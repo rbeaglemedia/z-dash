@@ -1,6 +1,6 @@
 /* Z-DASH offline service worker. Everything (app, 3D model, fonts) is inside index.html / jr.html, so caching these
    few files makes the whole app work with no internet. A new deploy changes VERSION -> new cache -> old one deleted. */
-const VERSION = 'zdash-162eebac4715';
+const VERSION = 'zdash-cbf1095d5bbf';
 const ASSETS = ["index.html", "jr.html", "manifest.webmanifest", "manifest-jr.webmanifest", "icons/zdash-192.png", "icons/zdash-512.png", "icons/zdash-apple-180.png", "icons/zdash-jr-192.png", "icons/zdash-jr-512.png", "icons/zdash-jr-apple-180.png", "icons/zdash-jr-maskable-512.png", "icons/zdash-maskable-512.png"];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(VERSION).then((c) => c.addAll(ASSETS.map((a) => new Request(a, { cache: 'reload' })))).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith('zdash-') && k !== VERSION).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
