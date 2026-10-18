@@ -483,8 +483,26 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
 <meta name="apple-mobile-web-app-title" content="Z-DASH JR">
 <meta name="application-name" content="Z-DASH JR">
 <script>window.ZD_JR = true; /* Z-DASH JR: always opens in Passenger Mode */</script>
-<script>/* offline: service worker caches the app, so it runs with no internet after one online visit */
-if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch((e) => console.warn('SW', e)));</script>
+<script>window.ZD_BUILD = '1792286867-418ca4b7';
+/* offline: the service worker caches the app so it runs with no internet after one online visit. Pages load network-first,
+   so a new deploy shows straight away. If a newer build takes over while this page is open: reload once by itself when
+   nothing is in progress, otherwise show a small "Update ready" button. */
+(function () { if (!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
+  var sw = navigator.serviceWorker, KEY = 'zdash.swReload';
+  function busy() { try { var K = window.ZDKID; if (K && K.K.on && (K.R.phase === 'play' || K.B.phase === 'play' || K.D.phase === 'tree' || K.D.phase === 'run')) return true;
+    var A = window.ZDAPP; if (A && A.src && A.src.status === 'live' && A.src.label !== 'SIM' && A.src.label !== 'CSV') return true; // OBD adapter connected: never drop it
+    var L = window.ZD && ZD.Link; if (L && L.state && L.state !== 'idle' && L.state !== 'lost') return true; } catch (e) {} return false; }
+  function toast() { if (document.getElementById('zdUpd')) return; var b = document.createElement('button'); b.id = 'zdUpd'; b.textContent = 'Update ready · tap to refresh';
+    b.style.cssText = 'position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 50px);transform:translateX(-50%);z-index:9999;padding:8px 16px;border-radius:18px;border:2px solid #3ee6ff;background:rgba(18,5,42,.92);color:#fff;font:700 13px Rajdhani,system-ui,sans-serif;letter-spacing:1px;box-shadow:0 0 14px rgba(62,230,255,.6);cursor:pointer';
+    b.onclick = function () { location.reload(); }; document.body.appendChild(b); }
+  function onBuild(build) { if (!build || build === window.ZD_BUILD || parseInt(build, 10) <= parseInt(window.ZD_BUILD, 10)) return; // ignore an older worker that is still finishing window.ZD_NEWBUILD = build;
+    if (busy() || sessionStorage.getItem(KEY) === build) return toast(); sessionStorage.setItem(KEY, build); location.reload(); }
+  sw.addEventListener('message', function (e) { if (e.data && e.data.type === 'zd-sw') onBuild(e.data.build); });
+  sw.addEventListener('controllerchange', function () { if (sw.controller) sw.controller.postMessage('zd-build?'); });
+  addEventListener('load', function () { sw.register('./sw.js', { updateViaCache: 'none' }).then(function (reg) { window.ZD_SWREG = reg;
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') reg.update().catch(function () {}); }); // home-screen app brought back
+    setInterval(function () { reg.update().catch(function () {}); }, 30 * 60 * 1000); }).catch(function (e) { console.warn('SW', e); }); });
+})();</script>
 </head>
 <body>
 <div id="wakeWarn" class="wakewarn hidden" title="The screen may turn off: tap to retry keeping it on">☾ SCREEN MAY SLEEP</div>
