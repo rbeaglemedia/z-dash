@@ -6,7 +6,7 @@
    - A new deploy changes VERSION/BUILD -> installs at once (skipWaiting), takes over open pages (clients.claim), deletes the
      old cache and tells the pages its BUILD so a stale page can reload itself (only when no game/drive is in progress). */
 const VERSION = 'zdash-92587636c441';
-const BUILD = '1792303142-ff0257ab';
+const BUILD = '1792306395-37bfbe05';
 const ASSETS = ["index.html", "jr.html", "manifest.webmanifest", "manifest-jr.webmanifest", "icons/zdash-192.png", "icons/zdash-512.png", "icons/zdash-apple-180.png", "icons/zdash-jr-192.png", "icons/zdash-jr-512.png", "icons/zdash-jr-apple-180.png", "icons/zdash-jr-maskable-512.png", "icons/zdash-maskable-512.png"];
 const NAV_TIMEOUT = 2500;
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(VERSION).then((c) => c.addAll(ASSETS.map((a) => new Request(a, { cache: 'reload' })))).then(() => self.skipWaiting())); });

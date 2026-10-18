@@ -578,7 +578,7 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
 <meta name="apple-mobile-web-app-title" content="Z-DASH JR">
 <meta name="application-name" content="Z-DASH JR">
 <script>window.ZD_JR = true; /* Z-DASH JR: always opens in Passenger Mode */</script>
-<script>window.ZD_BUILD = '1792303142-ff0257ab';
+<script>window.ZD_BUILD = '1792306395-37bfbe05';
 /* offline: the service worker caches the app so it runs with no internet after one online visit. Pages load network-first,
    so a new deploy shows straight away. If a newer build takes over while this page is open: reload once by itself when
    nothing is in progress, otherwise show a small "Update ready" button. */
@@ -9454,18 +9454,20 @@ var qrcode = function() {
     const x0 = 18, x1 = w - 18, y0 = 12, bh = 30, maxR = 8000, n = 80, segW = (x1 - x0) / n;
     // progressive shift light: builds from the mode's START rpm to its SHIFT rpm, then flashes the screen edge
     const SL = S.ex ? S.ex.cfg.shiftLight[S.mode] : { start: 5800, shift: 7000 };
-    const rpm = f.rpm || 0, shiftNow = rpm >= SL.shift && (f.throttle || 0) > 15 && f.clutch !== true, flash = shiftNow && Math.floor(performance.now() / 80) % 2;
+    /* 6th is top gear on the 6MT: no upshift cue / flash / SHIFT label there; the light only warns near redline (over-rev) */
+    const gNow = f.gear >= 1 ? f.gear : (f.clutch !== true && S.scorer && S.scorer.gear) || 0, topGear = gNow >= (C.topGear || 6), SLc = topGear ? { start: C.redline - 800, shift: C.redline - 300 } : SL;
+    const rpm = f.rpm || 0, shiftNow = rpm >= SLc.shift && (f.throttle || 0) > 15 && f.clutch !== true, flash = shiftNow && Math.floor(performance.now() / 80) % 2; S.cue = { gear: gNow, top: topGear, shiftNow, label: !topGear }; /* for tests */
     const L = ZD.layout.view(S.src && S.src.caps);
     if (L.tach) {
     for (let i = 0; i < n; i++) {
       const r = (i / n) * maxR, lit = r < rpm;
       let col;
-      if (!lit) col = r >= C.redline ? '#3a0d13' : r >= SL.start && r < SL.shift ? '#1f1012' : '#140a0c';
+      if (!lit) col = r >= C.redline ? '#3a0d13' : r >= SLc.start && r < SLc.shift ? '#1f1012' : '#140a0c';
       else if (shiftNow) col = flash ? '#ffffff' : (S.mode === 'cruise' ? '#3ee6ff' : '#ff2a3d');
-      else if (r < SL.start) col = '#5a1a22';
-      else { const t = ZD.clamp((r - SL.start) / (SL.shift - SL.start), 0, 1); col = t < 0.5 ? `rgb(${Math.round(62 + 193 * t * 2)},${Math.round(230 - 54 * t * 2)},${Math.round(255 - 223 * t * 2)})` : `rgb(255,${Math.round(176 - 134 * (t - 0.5) * 2)},${Math.round(32 + 29 * (t - 0.5) * 2)})`; }
+      else if (r < SLc.start) col = '#5a1a22';
+      else { const t = ZD.clamp((r - SLc.start) / (SLc.shift - SLc.start), 0, 1); col = t < 0.5 ? `rgb(${Math.round(62 + 193 * t * 2)},${Math.round(230 - 54 * t * 2)},${Math.round(255 - 223 * t * 2)})` : `rgb(255,${Math.round(176 - 134 * (t - 0.5) * 2)},${Math.round(32 + 29 * (t - 0.5) * 2)})`; }
       ctx.fillStyle = col; const hh = bh * (0.55 + 0.45 * (i / n));
-      if (lit && r >= SL.start) { ctx.shadowColor = col; ctx.shadowBlur = 8; }
+      if (lit && r >= SLc.start) { ctx.shadowColor = col; ctx.shadowBlur = 8; }
       ctx.fillRect(x0 + i * segW + 1, y0 + bh - hh, segW - 2, hh); ctx.shadowBlur = 0;
     }
     // shift-point marker
@@ -9501,11 +9503,11 @@ var qrcode = function() {
     let rH = 0; if (L.rpm) for (const c of [112, 100, 90]) { rH = c; if (!L.boost || avail - fixedNoRpm - c - 20 >= 46) break; }
     const bH = Math.min(140, avail - fixedNoRpm - (L.rpm ? rH + 10 : 0) - 10);
     if (L.rpm) {
-      const hot = rpm >= SL.start, rc = shiftNow ? (flash ? '#ffffff' : accent) : rpm >= SL.start ? (S.mode === 'cruise' ? '#3ee6ff' : '#ffb020') : '#ffffff';
+      const hot = rpm >= SLc.start, rc = shiftNow ? (flash ? '#ffffff' : accent) : rpm >= SLc.start ? (S.mode === 'cruise' ? '#3ee6ff' : '#ffb020') : '#ffffff';
       ZD.panel(ctx, rx, ry, 196, rH); T(ctx, 'RPM', rx + 12, ry + 18, 11, COL.MUTE, 'left', 'txt', 700);
       const rs = String(Math.round(rpm / 10) * 10); let fs = rH >= 112 ? 76 : 66; ctx.font = `800 ${fs}px ${ZD.FONT.num}`; const mw = ctx.measureText(rs).width; if (mw > 176) fs = Math.floor(fs * 176 / mw);
       T(ctx, rs, rx + 98, ry + rH - 22, fs, rc, 'center', 'num', 800, hot ? 18 : 14);
-      T(ctx, `SHIFT ${SL.shift.toLocaleString()}`, rx + 184, ry + rH - 8, 10, rpm >= SL.start ? rc : COL.MUTE, 'right', 'txt', 700); ry += rH + 10;
+      if (!topGear) T(ctx, `SHIFT ${SL.shift.toLocaleString()}`, rx + 184, ry + rH - 8, 10, rpm >= SL.start ? rc : COL.MUTE, 'right', 'txt', 700); ry += rH + 10;
     }
     if (L.boost && bH >= 105) { ZD.panel(ctx, rx, ry, 196, bH); ZD.arcGauge(ctx, w - 112, ry + bH / 2 + 4, bH >= 130 ? 52 : 40, f.boost, 'BOOST', 'PSI', { min: -15, max: C.boostGaugeMax, zero: 0, dec: 1, big: 27, lw: 8, colorFn: (v) => (v > 0.5 ? '#ff2a3d' : '#6d5f62') }); ry += bH + 10; }
     else if (L.boost && bH >= 44) { // compact boost: number + bar
