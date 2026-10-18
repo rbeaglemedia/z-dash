@@ -5,7 +5,7 @@
  "description": "Neon dash for the 370Z 40th Anniversary",
  "start_url": "./",
  "scope": "./",
- "display": "standalone",
+ "display": "fullscreen",
  "orientation": "landscape",
  "background_color": "#000000",
  "theme_color": "#000000",
@@ -28,5 +28,9 @@
    "type": "image/png",
    "purpose": "maskable"
   }
+ ],
+ "display_override": [
+  "fullscreen",
+  "standalone"
  ]
 }
