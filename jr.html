@@ -662,7 +662,7 @@ body:not(.kidon) #kFpsRow { display: none; }
 <meta name="apple-mobile-web-app-title" content="Z-DASH JR">
 <meta name="application-name" content="Z-DASH JR">
 <script>window.ZD_JR = true; /* Z-DASH JR: always opens in Passenger Mode */</script>
-<script>window.ZD_BUILD = '1792390001-b543094f';
+<script>window.ZD_BUILD = '1792426520-8037b088';
 /* offline: the service worker caches the app so it runs with no internet after one online visit. Pages load network-first,
    so a new deploy shows straight away. If a newer build takes over while this page is open: reload once by itself when
    nothing is in progress, otherwise show a small "Update ready" button. */
@@ -768,6 +768,7 @@ body:not(.kidon) #kFpsRow { display: none; }
       <div class="alt">
         <span class="mute">ADAPTER</span> <select id="adapterSel2" class="adsel"></select>
         <label class="filebtn">REPLAY A LOG (CSV)<input type="file" id="csvFile2" accept=".csv,.txt,text/csv"></label>
+        <button id="btnLogs2" type="button">DRIVE LOGS · EXPORT</button>
       </div>
       <div id="startMsg" class="startmsg"></div>
     </div>
@@ -5689,7 +5690,7 @@ void main() {
     async start(sourceLabel, meta = {}) {
       await this.stop();
       const id = new Date().toISOString().replace(/[:.]/g, '-');
-      this.cur = { id, started: Date.now(), source: sourceLabel, rows: 0, shifts: 0, miles: 0, meta };
+      this.cur = { id, started: Date.now(), source: sourceLabel, rows: 0, shifts: 0, miles: 0, ran: 0, meta };
       const db = await this.dbp; if (db) await req(tx(db, ['drives'], 'readwrite').objectStore('drives').put(this.cur));
       this.flushT = setInterval(() => this.flush(), 10000);
       this.prune();
@@ -5697,7 +5698,7 @@ void main() {
     add(f) {
       if (!this.cur) return;
       this.rows.push(COLS.map((k) => { const v = f[k]; return v === null || v === undefined ? '' : typeof v === 'boolean' ? (v ? 'On' : 'Off') : v; }).join(','));
-      this.cur.rows++;
+      this.cur.rows++; if (f.rpm >= 400) this.cur.ran = 1;
     }
     note(kind, data) { if (this.cur) this.rows.push('# ' + kind + ' ' + JSON.stringify(data)); if (kind === 'shift' && this.cur) this.cur.shifts++; }
     async flush() {
@@ -5745,8 +5746,9 @@ void main() {
     }
     async prune() {
       const l = await this.list(), live = this.cur && this.cur.id;
-      for (const d of l) if (d.id !== live && d.rows < 50) await this.remove(d.id); // drop empty/aborted drives
-      for (const d of l.filter((d) => d.id === live || d.rows >= 50).slice(MAX_DRIVES)) await this.remove(d.id);
+      for (const d of l) if (d.id !== live && (d.rows < 50 || d.ran === 0)) await this.remove(d.id); // drop empty/aborted drives and ones where the engine never ran
+      const junk = (d) => /\(demo\)/.test(d.source || '') || (d.ran == null && !(d.miles > 0) && !d.shifts && d.rows < 1200); // demo drives, and pre-fix 3-second "trips" (0 mi, no shifts)
+      for (const d of l.filter((d) => d.id === live || (d.rows >= 50 && d.ran !== 0)).sort((a, b) => (a.id === live ? -1 : b.id === live ? 1 : junk(a) - junk(b)) || b.started - a.started).slice(MAX_DRIVES)) await this.remove(d.id); // over 20: junk goes first, real drives last
     }
   }
   ZD.DriveLogger = DriveLogger;
@@ -8652,7 +8654,7 @@ var qrcode = function() {
 
   R.start = async function (label, meta = {}) { if (off) return; if (R.on) await R.stop('restart');
     R.t0 = performance.now(); const id = new Date().toISOString().replace(/[:.]/g, '-');
-    R.run = { id, started: Date.now(), label, ua: navigator.userAgent, screen: `${screen.width}x${screen.height}@${devicePixelRatio}`, build: G.ZD_BUILD || '', meta, samples: 0, events: 0, chunks: 0 };
+    R.run = { id, started: Date.now(), label, ua: navigator.userAgent, screen: `${screen.width}x${screen.height}@${devicePixelRatio}`, build: G.ZD_BUILD || '', meta, samples: 0, events: 0, chunks: 0, ran: 0 };
     R.on = true; R.n = 0; R.buf = []; R.event('start', label); R.event('wake', ZD.wake ? (ZD.wake.lock ? 'wakelock' : ZD.wake.how || 'none') : 'n/a');
     const d = await db(); if (d) { try { await rq(d.transaction('runs', 'readwrite').objectStore('runs').put(R.run)); } catch (e) {} }
     clearInterval(R.flushT); R.flushT = setInterval(R.flush, FLUSH_MS); R.prune(); R.changed(); };
@@ -8660,14 +8662,14 @@ var qrcode = function() {
   /* raw OBD poll results, called by the OBD source after each poll cycle */
   R.pollDone = function (last, ms) { R.poll = { last, ms }; };
   /* one row per frame the dash receives (= real poll rate) */
-  R.sample = function (f, gear) { if (!R.on) return; const L = (R.poll && R.poll.last) || {}, ms = R.poll ? R.poll.ms : null; R.poll = null;
+  R.sample = function (f, gear) { if (!R.on) return; if (f.rpm >= 400 && R.run && !R.run.ran) R.run.ran = 1; const L = (R.poll && R.poll.last) || {}, ms = R.poll ? R.poll.ms : null; R.poll = null;
     R.buf.push(['s', now(), num(f.rpm, 0), num(f.speed), f.gear ?? gear ?? (ZD.inferGear && f.rpm && f.speed > 3 ? ZD.inferGear(f.rpm, f.speed) ?? '' : ''), num(f.throttle), num(f.coolant, 0), num(L.map, 0), num(f.iat, 0), num(f.timing), num(f.volts, 2), num(f.load), num(f.fuelLevel), num(ms, 0), '', '', '', '']); R.n++; };
   R.event = function (kind, info) { if (!R.on) return; const row = new Array(COLS.length).fill(''); row[0] = 'e'; row[1] = now(); row[17] = String(kind) + (info != null && info !== '' ? ':' + String(info).replace(/[\n,]/g, ' ').slice(0, 160) : ''); R.buf.push(row); if (R.run) R.run.events++; };
   R.flush = async function () { if (!R.run || !R.buf.length) return; const rows = R.buf; R.buf = []; R.run.samples = R.n; R.run.ended = Date.now(); R.run.chunks++;
     const d = await db(); if (!d) { (R.mem ||= []).push(...rows); return; }
     try { const t = d.transaction(['runs', 'chunks'], 'readwrite'); t.objectStore('chunks').add({ run: R.run.id, rows }); t.objectStore('runs').put(Object.assign({}, R.run)); } catch (e) { (R.mem ||= []).push(...rows); } };
   R.list = async function () { const d = await db(); if (!d) return R.run ? [R.run] : []; const all = await rq(d.transaction('runs').objectStore('runs').getAll()); return all.sort((a, b) => b.started - a.started); };
-  R.prune = async function () { const d = await db(); if (!d) return; const l = await R.list(); for (const r of l.slice(MAX_RUNS)) { if (R.run && r.id === R.run.id) continue;
+  R.prune = async function () { const d = await db(); if (!d) return; const l = (await R.list()).sort((a, b) => (a.ran === 0) - (b.ran === 0) || b.started - a.started); for (const r of l.slice(MAX_RUNS)) { if (R.run && r.id === R.run.id) continue; // runs where the engine never ran are evicted first
       const t = d.transaction(['runs', 'chunks'], 'readwrite'); t.objectStore('runs').delete(r.id); const keys = await rq(t.objectStore('chunks').index('run').getAllKeys(r.id)); keys.forEach((k) => t.objectStore('chunks').delete(k)); } };
   R.rows = async function (id) { if (R.run && R.run.id === id) await R.flush(); const d = await db(); let rows = [];
     if (d) { const ch = await rq(d.transaction('chunks').objectStore('chunks').index('run').getAll(id)); ch.forEach((c) => rows.push(...c.rows)); } if (R.mem && R.run && R.run.id === id) rows.push(...R.mem); return rows; };
@@ -8679,14 +8681,15 @@ var qrcode = function() {
     return { run, duration_s: +dur.toFixed(1), samples: s.length, sample_hz: dur ? +(s.length / dur).toFixed(2) : 0, gaps_over_500ms: gaps.length, worst_gap_ms: maxGap, gaps: gaps.slice(0, 50),
       fps: { min: fps[0] ?? null, p05: q(fps, 0.05), median: q(fps, 0.5) }, poll_ms: { median: q(poll, 0.5), p95: q(poll, 0.95), max: poll[poll.length - 1] ?? null }, long_tasks: h.reduce((a, r) => a + (+r[16] || 0), 0), events: evc,
       hidden_or_sleep: e.filter((r) => /^(hidden|pagehide|freeze)/.test(r[17])).map((r) => ({ at_ms: r[1], what: r[17] })) }; };
-  R.export = async function (id) { const l = await R.list(); const run = id ? l.find((r) => r.id === id) : l[0]; if (!run) return 'none';
+  R.export = async function (id) { const l = await R.list(); if (!id && l[0] && l[0].ran === 0) { const d = l.find((r) => r.ran !== 0); if (d) return R.export2([d, l[0]]); } const run = id ? l.find((r) => r.id === id) : l[0]; if (!run) return 'none'; return R.export2([run]); };
+  R.export2 = async function (runs) { const out = []; for (const run of runs) {
     const obd = (R.run && R.run.id === run.id && R.run.obd) || run.obd; // supported-PID scan from the OBD source (first second after connect)
     const rows = await R.rows(run.id), csv = `# Z-DASH run recorder v1 · ${run.label} · started ${new Date(run.started).toISOString()} · build ${run.build}\n# type: s = sample (one per OBD frame), h = app health (1 per second), e = event\n${obd ? `# supported-pids: ${obd.mode01.join(' ') || 'none'}\n# mode09: ${obd.mode09 || 'none'}\n` : ''}${COLS.join(',')}\n` + rows.map((r) => r.join(',')).join('\n') + '\n';
-    const sum = JSON.stringify(R.summary(run, rows), null, 1), base = `zdash-run-${run.id}`;
-    const files = typeof File !== 'undefined' ? [new File([csv], base + '.csv', { type: 'text/csv' }), new File([sum], base + '.json', { type: 'application/json' })] : null;
-    if (G.ZDNative && G.ZDNative.shareFile) { G.ZDNative.shareFile(base + '.csv', csv); return 'shared'; }
-    if (files && navigator.canShare && navigator.canShare({ files })) { try { await navigator.share({ files, title: 'Z-DASH run ' + run.id, text: 'Z-DASH run recording' }); return 'shared'; } catch (e) { if (e && e.name === 'AbortError') return 'cancelled'; } }
-    for (const [txt, name, type] of [[csv, base + '.csv', 'text/csv'], [sum, base + '.json', 'application/json']]) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 8000); }
+    const sum = JSON.stringify(R.summary(run, rows), null, 1), base = `zdash-run-${run.id}`; out.push([csv, sum, base]); }
+    const files = typeof File !== 'undefined' ? out.flatMap(([csv, sum, base]) => [new File([csv], base + '.csv', { type: 'text/csv' }), new File([sum], base + '.json', { type: 'application/json' })]) : null;
+    if (G.ZDNative && G.ZDNative.shareFile) { out.forEach(([csv, , base]) => G.ZDNative.shareFile(base + '.csv', csv)); return 'shared'; }
+    if (files && navigator.canShare && navigator.canShare({ files })) { try { await navigator.share({ files, title: 'Z-DASH run ' + out[0][2].slice(10), text: 'Z-DASH run recording' }); return 'shared'; } catch (e) { if (e && e.name === 'AbortError') return 'cancelled'; } }
+    for (const [txt, name, type] of out.flatMap(([csv, sum, base]) => [[csv, base + '.csv', 'text/csv'], [sum, base + '.json', 'application/json']])) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 8000); }
     return 'downloaded'; };
 
   /* app health: a tiny rAF counter (no drawing), long tasks, visibility / lifecycle */
@@ -9014,6 +9017,7 @@ var qrcode = function() {
             if (n++ % 10 === 0) { for (const s of slow) await this.poll(s); if (!this.has42) await this.readVolts(); } // no PID 42 -> adapter battery voltage (ATRV)
           });
           if (ZD.Rec) ZD.Rec.pollDone(this.last, this.pollMs);
+          if (performance.now() - (this.okAt || 0) > 2500) { this.last = {}; await new Promise((r) => setTimeout(r, 250)); continue; } // ECU not answering (key off / asleep): no stale frames
           const L = this.last;
           this.emit({
             t: (performance.now() - this.t0) / 1000, rpm: L.rpm ?? null, speed: L.speed ?? null, throttle: L.throttle ?? null,
@@ -9021,7 +9025,7 @@ var qrcode = function() {
             coolant: L.coolant ?? null, oil: null, iat: L.iat ?? null, timing: L.timing ?? null, volts: L.volts ?? null,
             load: L.load ?? null, ethanol: null, fuelLevel: L.fuelLevel ?? null, brake: null, latG: null, lonG: null,
           });
-        } catch (e) { console.warn(e); if (ZD.Rec) { const tn = performance.now(); this.errN = (this.errN || 0) + 1; if (!this.errT || tn - this.errT > 1000) { ZD.Rec.event('obd-error', (e && e.message) + (this.errN > 1 ? ' x' + this.errN : '')); this.errT = tn; this.errN = 0; } } }
+        } catch (e) { console.warn(e); if (ZD.Rec) { const tn = performance.now(); this.errN = (this.errN || 0) + 1; if (!this.errT || tn - this.errT > 1000) { ZD.Rec.event('obd-error', (e && e.message) + (this.errN > 1 ? ' x' + this.errN : '')); this.errT = tn; this.errN = 0; } } await new Promise((r) => setTimeout(r, 250)); }
       }
     }
     // Supported-PID scan: 0100 / 0120 / 0140 ... while the bitmask says the next block exists, then 0900 (Mode 09 info).
@@ -9088,7 +9092,7 @@ var qrcode = function() {
         return bad();
       }
       if (!vals.length) return bad();
-      const L = this.last, got = new Set();
+      const L = this.last, got = new Set(); this.okAt = performance.now();
       for (const [pid, b] of vals) {
         got.add(pid);
         switch (pid) {
@@ -9533,7 +9537,7 @@ var qrcode = function() {
     if (S.demo && !S.demoRace && !params.has('mode') && f.t > 120) { S.demoRace = true; setMode('race'); if (!S.warming) toast('DEMO · SWITCHED TO RACE MODE'); }
     if (S.demo && !S.demoDyno && f.t > 40 && S.src.requestDynoPull) { S.demoDyno = true; S.src.requestDynoPull(); } // demo: show a dyno pull early
     // engine off for 3 s → trip summary
-    if ((f.rpm || 0) < 100 && !(f.speed > 0)) { S.stillSince ??= f.t; if (f.t - S.stillSince > 3 && !S.warming) showPowerOff(); } else S.stillSince = null;
+    S.frameAt = performance.now(); if ((f.rpm || 0) < 100 && !(f.speed > 0)) { S.stillSince ??= f.t; if (f.t - S.stillSince > 3 && !S.warming && tr.maxRpm >= 400) showPowerOff(); } else S.stillSince = null; // only a trip the engine actually ran in can end (Oct 19 tripfix)
   }
   S.scorer.on((ev) => {
     S.lastShift = ev; S.trip.counts[ev.rating]++; S.log.note('shift', { t: ev.t, from: ev.from, to: ev.to, mode: ev.mode, score: ev.score, rating: ev.rating, raw: ev.raw }); S.ex && S.ex.onShift(ev, S.scorer);
@@ -10289,6 +10293,7 @@ var qrcode = function() {
   $('#csvFile').addEventListener('change', onCsv);
   $('#csvFile2').addEventListener('change', (e) => { S.demo = false; onCsv(e); });
   $('#btnObd2').addEventListener('click', connectLive);
+  $('#btnLogs2').addEventListener('click', () => { hideSplash(); SET.open(); setTimeout(() => { const h = $('#btnExportRun'); h && h.closest('.row').previousElementSibling.scrollIntoView({ block: 'start' }); }, 60); }); // into the app with no adapter: drive logs, EXPORT RUN, replay
   $('#btnDemo').addEventListener('click', () => { phoneFullscreen(); startDemo(); });
   // small "tap for fullscreen" button in the header whenever fullscreen isn't active (and the browser supports it)
   function syncFsBtn() { const can = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen), fs = !!(document.fullscreenElement || document.webkitFullscreenElement) || matchMedia('(display-mode: fullscreen)').matches; $('#btnFs').classList.toggle('hidden', !can || fs); }
@@ -10318,6 +10323,7 @@ var qrcode = function() {
   function loop(now) {
     const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now;
     if (ZD.perf.fps) { FPS.n++; if (now - FPS.t0 >= 500) { const fps = (FPS.n * 1000) / (now - FPS.t0); FPS.el.textContent = `${fps.toFixed(0)} FPS${ZD.perf.low ? ' · LOW' : ''} · ${Math.round(ZD.perf.dpr(3) * 100) / 100}×`; FPS.el.classList.toggle('slow', fps < 40); FPS.n = 0; FPS.t0 = now; } }
+    if (S.src && S.src.label === 'OBD' && S.frameAt && now - S.frameAt > 5000 && S.trip.maxRpm >= 400 && $('#poweroff').classList.contains('hidden')) showPowerOff(); // no OBD data for 5 s after a real drive: end it once (newTrip after the tap can't end again)
     if (document.body.classList.contains('kidon')) { requestAnimationFrame(loop); return; } // Passenger Mode is showing: keep data/state running, skip drawing Dad's screens
     if (SP.on) drawSplash(now);
     if (!$('#poweroff').classList.contains('hidden')) drawPowerOff(now);
