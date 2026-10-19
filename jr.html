@@ -394,8 +394,8 @@ body:not(.kidon) #joinRow { display: none; } body.kidon #shareRow { display: non
 @keyframes kgo { 50% { transform: scale(1.08); filter: brightness(1.35); } }
 .ksgprac { position: absolute; right: 16px; bottom: calc(min(92px, 24vh) + 34px); z-index: 3; }
 /* RIDE ALONG: SHIFT sits left of BOOST */
-#kShift { right: calc(min(118px, 30vh) + 40px); bottom: calc(env(safe-area-inset-bottom, 0px) + 30px); } /* room for the 9px countdown ring + pulse */
-#kBoost { bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); }
+#kShift { right: calc(env(safe-area-inset-right, 0px) + 26px); bottom: calc(env(safe-area-inset-bottom, 0px) + 30px); } /* RIDE ALONG (Bob Oct 19): SHIFT on the RIGHT; room for the 9px countdown ring + pulse */
+#kBoost { right: auto; left: calc(env(safe-area-inset-left, 0px) + 62px); bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); } /* BOOST on the LEFT (clear of the ? help button) */
 
 /* toast sits top-center above content; drops below the code alert when that is showing */
 body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) + 118px); }
@@ -638,6 +638,19 @@ body.kidon #tglStillen { display: none; }
 #kFps.hot { color: #ffe14d; opacity: .85; }
 body:not(.kidon) #kFps { display: none; }
 body:not(.kidon) #kFpsRow { display: none; }
+/* WANTED 1.0 / 2.0 (Bob Oct 19): mode selector, lock note, 2.0 note, unlock celebration */
+.kdiff.kwver button.kw2:not(.on) { border-color: #ff3b4f; box-shadow: 0 0 10px rgba(255,59,79,.55), inset 0 0 8px rgba(62,123,255,.35); }
+.kdiff.kwver button.locked { opacity: .55; border-style: dashed; }
+.kready.kwlock2 { color: #ffb3bd; }
+.kready.kw2new { color: #9df7ff; font-size: 12px; }
+.kw2cel { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 2px 0 8px; padding: 10px 12px; border-radius: 16px; border: 3px solid #fff; background: linear-gradient(90deg, rgba(255,42,61,.85), rgba(62,123,255,.85)); background-size: 200% 100%; animation: kw2cel 1.1s ease-in-out infinite alternate, kw2pop .6s cubic-bezier(.2,1.6,.4,1) both; text-align: center; }
+.kw2cel b { font: 900 22px Orbitron, sans-serif; letter-spacing: 1px; color: #fff; text-shadow: 0 0 12px #fff; }
+.kw2cel span { font-size: 13px; color: #fff; }
+.kbig.kw2go { background: linear-gradient(90deg, #ff2a3d, #3e7bff); color: #fff; animation: kw2glow 1s ease-in-out infinite alternate; }
+@keyframes kw2cel { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
+@keyframes kw2pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes kw2glow { from { box-shadow: 0 0 10px #ff2a3d; } to { box-shadow: 0 0 22px #3e7bff; } }
+@media (prefers-reduced-motion: reduce) { .kw2cel, .kbig.kw2go { animation: none; } }
 
 </style>
 <link rel="manifest" href="manifest-jr.webmanifest">
@@ -649,7 +662,7 @@ body:not(.kidon) #kFpsRow { display: none; }
 <meta name="apple-mobile-web-app-title" content="Z-DASH JR">
 <meta name="application-name" content="Z-DASH JR">
 <script>window.ZD_JR = true; /* Z-DASH JR: always opens in Passenger Mode */</script>
-<script>window.ZD_BUILD = '1792390000-wantedon1';
+<script>window.ZD_BUILD = '1792390001-b543094f';
 /* offline: the service worker caches the app so it runs with no internet after one online visit. Pages load network-first,
    so a new deploy shows straight away. If a newer build takes over while this page is open: reload once by itself when
    nothing is in progress, otherwise show a small "Update ready" button. */
@@ -10349,7 +10362,8 @@ var qrcode = function() {
 (function () {
   const ZD = window.ZD, $ = (s) => document.querySelector(s), clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const Q = new URLSearchParams(location.search), LS = 'zdash.kid.v1', MODE = 'zdash.kidOn';
-  const WANTED_ON = !Q.has('nowanted'); // WANTED shipped to main app (Bob, Oct 19 1:00 AM)
+  const WANTED_ON = !Q.has('nowanted'); // WANTED shipped to main app (Bob, Oct 19 1:00 AM); ?nowanted hides it. The unlock requirement (wantedOpen) still applies.
+  const WANTED_LOCK = Q.has('wantedlock'); // WANTED open from the start for now (Bob Oct 19: Ellie hasn't played yet). ?wantedlock restores the ECON.wantedReq gate (code kept intact).
   const FONT = "'Orbitron', 'Rajdhani', sans-serif", TXT = "'Rajdhani', 'Roboto Condensed', sans-serif";
   const PINK = '#ff4fd8', CYAN = '#3ee6ff', YEL = '#ffe14d', LIME = '#7dff6b', PURP = '#9b5cff', ORNG = '#ff9a2e';
 
@@ -11119,7 +11133,7 @@ var qrcode = function() {
     funnel: 0.62, funnelZone: 22, queueGap: 7, // cops at a smashed gap: capped to 70% of her post-smash speed and queue one by one
     rampLen: 4, rampRise: 1.0, rampGap: 10, rampHw: 1.35, cleanOff: 0.6, cleanVz: 0.9, gAir: 5.4, wob: 1.4, sketchySlow: 0.72, slowmo: 0.35, slowT: 0.75,
     // Round 2 (Bob 11:33 PM): free steering (tilt / drag / hold / keys) instead of lane jumps; real widths for every hit test
-    zMax: 4.15, herW: 1.85, herL: 4.25, copW: 1.95, copL: 5.0, copPad: 0.35, forgive: 0.12, tiltDeadDeg: 1.5, tiltSmooth: 7,
+    zMax: 4.15, herW: 1.85, herL: 4.25, copW: 1.95, copL: 5.0, copPad: 0.35, forgive: 0.12, tiltDeadDeg: 1.5, tiltSmooth: 7, /* WANTED 1.0 tilt (frozen); 2.0 tilt lives in WT2 */
     // cops ride in tandem behind her (slot = [metres behind, lateral offset]), follow her line with a lag, converge from off-screen at the first bump
     slots: [[6.4, 0], [9.6, -2.6], [9.6, 2.6], [12.8, 0]], tailgate: 5.0, copLag: 2.4, copConv: 9, copMin: 2, respawn: 1.2, pullChase: 1.3, sqGap: 0.45,
     // takedowns (Bob 11:54 PM): ram = swerve into a cop's side/corner; traffic takedown = dodge a car LATE so the cop behind can't react in time.
@@ -11133,13 +11147,19 @@ var qrcode = function() {
   // Default TILT when there's a gyro, else TOUCH; auto-falls back to TOUCH when tilt is unavailable or denied.
   const WSK = 'zdash.wantedSteer';
   const wGyro = () => TL.have || (typeof DeviceOrientationEvent !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0));
+  // WANTED 2.0 tilt (Bob Oct 19): a modest tilt (~14 deg) reaches the edge, edge to edge in ~0.5 s, ~0.92 damped (no wobble). 1.0 = smooth 7 / span 1.1 / latK-latC-grip 16-6.8-12.5
+  const WT2 = { tiltSmooth: 20, tiltSpan: 0.55, tiltK: 110, tiltC: 19.3, tiltGrip: 150 };
   function wSteerPref() { let v = null; try { v = localStorage.getItem(WSK); } catch (e) {} return v === 'tilt' || v === 'touch' ? v : wGyro() ? 'tilt' : 'touch'; }
   function wSteerSet(v) { try { localStorage.setItem(WSK, v); } catch (e) {} if (W.phase && W.phase !== 'intro') { W.smode = v === 'tilt' && TL.perm !== 'denied' ? 'tilt' : 'touch'; if (W.smode === 'touch') W.lane = clamp(Math.round(W.z / WT.lane), -1, 1); else { W.tz = W.tzs = W.z; TL.calNext = true; W.tiltWait = 0; } } }
   const WLV_N = 6;
   function wLevel(n) { const r = RLV[n - 1] || RLV[0]; return { n, name: r.name, top: 64 + n * 7, cops: 1 + Math.floor((n - 1) / 2), dens: r.dens, cleanMph: 48 + n * 2, rampEvery: n <= 2 ? 2 : 3, blockGap: [240 - n * 8, 330 - n * 10], fullP: 0.45 + n * 0.06 }; }
   const W = { phase: 'intro' };
-  function wLvMax() { return clamp(P.wantMax || 1, 1, WLV_N); }
-  function wLvSel() { return clamp(Math.min(P.wantLv || wLvMax(), wLvMax()), 1, WLV_N); }
+  // WANTED 1.0 (the frozen classic, open from the start) / WANTED 2.0 (new tricks; unlock = beat 1.0 level 6, ?w2open forces it). Separate progress:
+  // 1.0 keeps the original P.wantMax / wantLv / wantStars / wantTimes; 2.0 uses P.w2 = { max, lv, stars, times }. P.wVer = the picked mode.
+  const w2Open = () => Q.has('w2open') || !!P.w2open || !!(P.wantStars && P.wantStars[WLV_N]);
+  const wSelVer = () => (P.wVer === 2 && w2Open() ? 2 : 1);
+  function wLvMax(v = wSelVer()) { return clamp((v === 2 ? (P.w2 || {}).max : P.wantMax) || 1, 1, WLV_N); }
+  function wLvSel(v = wSelVer()) { const lv = v === 2 ? (P.w2 || {}).lv : P.wantLv; return clamp(Math.min(lv || wLvMax(v), wLvMax(v)), 1, WLV_N); }
   function wIsDad() { const d = PRESETS.find((p) => p.id === 'p-dad'); return !!d && ['paint', 'rims', 'tips', 'wheels'].every((k) => P.eq[k] === d.eq[k]); }
   function wLook(t) { if (!wIsDad()) return look(t); const keep = P.eq; P.eq = Object.assign({}, keep, PRESETS[0].eq); try { return look(t); } finally { P.eq = keep; } }
   function wReset() { Object.assign(W, { phase: 'intro', t: 0, d: 0, v: 0, lane: 0, z: 0, vz: 0, az: 0, azs: 0, camZ: 0, nos: 0.5, nosOn: 0, padT: 0, heat: 0, bust: 0, bustMax: 0, cops: [], traffic: [], blocks: [], ramps: [], pads: [], fx: [], msg: null, cd: 0, spawnT: 0, earned: 0, stars: 0, won: false, busted: false, why: '', vs: 0, vShown: 0, vT: 0, bump: null,
@@ -11165,7 +11185,7 @@ var qrcode = function() {
       W.blocks.push(b); W.traffic = W.traffic.filter((c) => Math.abs(c.d - bd) > 24);
       for (let pd = d0 + 50; pd < bd - 40; pd += 90 + Math.random() * 70) { if (b.ramp && pd > b.ramp.d - 60) break; const ln = [-1, 0, 1][Math.floor(Math.random() * 3)]; W.pads.push({ d: pd, lane: ln, hit: false }); W.traffic = W.traffic.filter((c) => !(Math.abs(c.d - pd) < 14 && c.lane === ln)); }
       W.genD = bd; } }
-  function wStart() { wReset(); const L = (W.L = wLevel(wLvSel())); W.lv = L.n; W.phase = 'cd'; W.cd = Q.has('nocd') ? 0 : WT.cd; W.v = WT.start; W.nos = 1; bindSwipe(); W.smode = wSteerPref(); if (W.smode === 'tilt' && TL.perm === 'denied') W.smode = 'touch'; TL.sens = SENS[P.tiltSens] || SENS.gentle; TL.calNext = true; if (W.smode === 'tilt' && typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function' && TL.perm !== 'granted' && TL.perm !== 'denied') allowTilt(); /* iPad/iPhone: ask on the START tap */ W.calm = true; W.calmD = 110; W.genD = 1e9;
+  function wStart() { wReset(); W.ver = wSelVer(); const L = (W.L = wLevel(wLvSel(W.ver))); W.lv = L.n; W.phase = 'cd'; W.cd = Q.has('nocd') ? 0 : WT.cd; W.v = WT.start; W.nos = 1; bindSwipe(); W.smode = wSteerPref(); if (W.smode === 'tilt' && TL.perm === 'denied') W.smode = 'touch'; TL.sens = SENS[P.tiltSens] || SENS.gentle; TL.calNext = true; if (W.smode === 'tilt' && typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function' && TL.perm !== 'granted' && TL.perm !== 'denied') allowTilt(); /* iPad/iPhone: ask on the START tap */ W.calm = true; W.calmD = 110; W.genD = 1e9;
     wMsg('JUST CRUISING…', CYAN, `LEVEL ${L.n}: ${L.name} · traffic is getting busy`); wUI(); }
   /* WANTED opening (Bob 7:32 PM): no cops, just forward-moving lane-keeping traffic that gets denser until she can't get through without a bump.
      The first bump starts the chase. A rolling jam across all 3 lanes guarantees the bump by ~40-50 s. */
@@ -11180,9 +11200,9 @@ var qrcode = function() {
   // her free steering target: tilt (calibrated at START) / finger drag / hold a side / arrow keys; tests can still use wLane(dir)
   // TILT: same mapping as ROAD's tilt steering (degrees from TILT CENTER -> position, SENSITIVITY setting), small dead zone, smoothed, clamped to the road
   function wSteer(dt) { if (W.smode !== 'tilt') return; const Z = WT.zMax;
-    if (tiltOk() && TL.n0) { W.tiltWait = 0; const k = 22 / ((TL.sens || SENS.gentle) / 0.7), d = TL.lr - TL.n0.lr, m = Math.max(0, Math.abs(d) - WT.tiltDeadDeg); W.tz = Math.sign(d) * Z * Math.pow(Math.min(1, m / (k * 1.1)), 0.8); W.steer = 'tilt'; }
+    if (tiltOk() && TL.n0) { W.tiltWait = 0; const k = 22 / ((TL.sens || SENS.gentle) / 0.7), d = TL.lr - TL.n0.lr, m = Math.max(0, Math.abs(d) - WT.tiltDeadDeg); W.tz = Math.sign(d) * Z * Math.pow(Math.min(1, m / (k * (W.ver === 2 && !(W.tiltSafeT > 0) ? WT2.tiltSpan : 1.1))), 0.8); W.steer = 'tilt'; }
     else if ((W.tiltWait += dt) > (TL.have ? 2.5 : TL.perm === "ask" ? 6 : 1) || TL.perm === "denied") { W.smode = 'touch'; W.lane = clamp(Math.round(W.z / WT.lane), -1, 1); wUI(); toast(TL.perm === 'denied' ? 'Tilt is blocked: steering switched to TOUCH (swipe / tap a side)' : 'No tilt sensor: steering switched to TOUCH (swipe / tap a side)', 3200); return; }
-    W.tz = clamp(W.tz, -Z, Z); W.tzs += (W.tz - W.tzs) * Math.min(1, dt * WT.tiltSmooth); }
+    W.tz = clamp(W.tz, -Z, Z); W.tzs += (W.tz - W.tzs) * Math.min(1, dt * (W.ver === 2 && !(W.tiltSafeT > 0) ? WT2.tiltSmooth : WT.tiltSmooth)); }
   // a cop that can't fit a gap she squeezed through: it clips the traffic car, spins out with a hop, smoke and stars, and is out of the chase
   function wTDCount(k) { const T = (P.wTD ||= { ram: 0, traffic: 0 }); T[k] = (T[k] || 0) + 1; }
   // (a) RAM TAKEDOWN: she swerves into a chasing cop's side / corner -> it flips away (slow-mo, sparks, bonus, heat down)
@@ -11203,7 +11223,7 @@ var qrcode = function() {
     try { navigator.vibrate && navigator.vibrate(25); } catch (e) {} }
   function wUI() { const on = K.tab === 'wanted' && (W.phase === 'play' || W.phase === 'cd'); const b = $('#kWNos'); if (b) { b.classList.toggle('hidden', !on); b.classList.toggle('ready', W.nos >= 0.99 && W.nosOn <= 0); } if (K.tab === 'wanted') { $('#kHelp').classList.toggle('hidden', on); const tc = $('#kTiltC'); if (tc) tc.classList.toggle('hidden', !(on && W.smode === 'tilt')); } }
   function wLane(dir) { if (W.phase !== 'play' || W.air) return; const to = W.lane + dir; if (to < -1 || to > 1) { W.bump = { side: dir, t: performance.now() / 1000 }; return; } W.lane = to; W.laneAge = 0; if (W.smode === 'tilt') W.tz = W.tzs = to * WT.lane; }
-  function wNos() { if (W.phase !== 'play' || W.nosOn > 0 || W.nos < 0.99) return; W.nosOn = WT.nosT; W.nos = 0; W.stats.nos++; wMsg('NOS!', CYAN, 'shake them off!'); wUI(); }
+  function wNos() { const cc = W.phase === 'play' && wBustHot(); if (cc) wCloseCall('nos'); if (W.phase !== 'play' || W.nosOn > 0 || W.nos < 0.99) return; W.nosOn = WT.nosT; W.nos = 0; W.stats.nos++; if (cc) wMsg('CLOSE CALL!', LIME, 'NOS blast: you shook him off! +NOS'); else wMsg('NOS!', CYAN, 'shake them off!'); wUI(); }
   function wBurstAt(d, z, y, cols, n) { const p = ZD.Xray && ZD.Xray.project(d - W.d, y, z), r = $('#kCv').getBoundingClientRect(); if (p) burst(r.left + p.x, r.top + p.y, n, cols, 240, 0.9); }
   function wKnock(c, why) { const side = Math.sign(c.z - W.z) || (Math.random() < 0.5 ? -1 : 1); c.hit = true; c.vz = side * (6 + W.v * 0.12); c.spin = side * (2.2 + Math.random() * 1.6); c.v = W.v + 2.5; W.vz -= side * 0.5; // light car flies aside, her heavy car barely twitches
     wBurstAt(c.d, c.z, 1, why === 'cop' ? ['#3e7bff', '#ff2a3d', '#fff'] : [YEL, '#fff', PINK], 16); try { navigator.vibrate && navigator.vibrate(20); } catch (e) {} }
@@ -11238,7 +11258,7 @@ var qrcode = function() {
     W.v = Math.max(0, W.v + a * dt); W.d += W.v * dt;
     // lateral: spring toward the lane centre, grip-limited, ~0.85 of critical damping (one soft settle, no wobble); in the air she keeps her drift
     if (W.air) { W.z += W.vz * dt; W.vz *= 1 - 0.2 * dt; W.az = 0; }
-    else { const tilt = W.smode === 'tilt', tz = tilt ? W.tzs : W.lane * WT.lane; if (tilt && Math.abs(tz - W.z) > 0.7) W.laneAge = 0; let az = WT.latK * (tz - W.z) - WT.latC * W.vz; const gmax = WT.grip * clamp(0.55 + W.v / 30, 0.55, 1); az = clamp(az, -gmax, gmax); W.vz += az * dt; W.z += W.vz * dt; W.az = az; }
+    else { const tilt = W.smode === 'tilt', tz = tilt ? W.tzs : W.lane * WT.lane; if (tilt && Math.abs(tz - W.z) > 0.7) W.laneAge = 0; const v2t = tilt && W.ver === 2, fast = v2t && !(W.tiltSafeT > 0); /* WANTED 2.0 TILT only: stiffer, well-damped spring; 1.0, TOUCH + ROAD unchanged */ if (v2t) { const e = tz - W.z, sg = Math.sign(e); if (W.tiltSafeT > 0) W.tiltSafeT -= dt; W.oscN = Math.max(0, (W.oscN || 0) - dt * 2); if (sg && W.eSg && sg !== W.eSg && Math.abs(W.vz) > 2.5) { W.oscN += 1; if (W.oscN >= 3) { W.tiltSafeT = 2; W.oscN = 0; W.log.push(['tiltSafe', +W.t.toFixed(2)]); } } if (sg) W.eSg = sg; } /* anti-oscillation fallback: 3 fast overshoots -> the old soft gains for 2 s */ let az = (fast ? WT2.tiltK : WT.latK) * (tz - W.z) - (fast ? WT2.tiltC : WT.latC) * W.vz; const gmax = (fast ? WT2.tiltGrip : WT.grip) * clamp(0.55 + W.v / 30, 0.55, 1); az = clamp(az, -gmax, gmax); W.vz += az * dt; W.z += W.vz * dt; W.az = az; }
     { const E = WT.zMax + 0.35; if (Math.abs(W.z) > E) { W.z = Math.sign(W.z) * E; if (Math.abs(W.vz) > 1.2 && W.t - W.edgeT > 0.6) { W.edgeT = W.t; W.bump = { side: Math.sign(W.z), t: performance.now() / 1000 }; } W.vz = 0; } if (W.smode === 'tilt' && !W.air) W.lane = clamp(Math.round(W.z / WT.lane), -1, 1); } // road edge (soft wall, TILT); in TILT her lane = where she is
     W.azs += (W.az - W.azs) * Math.min(1, dt * 6); W.camZ += (W.z - W.camZ) * Math.min(1, dt * WT.camLag);
     if (play) { W.nos = Math.min(1, W.nos + WT.nosFill * dt); if (!W.calm) W.heat = Math.min(5, W.heat + WT.heatT * dt); if (W.nos >= 0.99) wUI(); }
@@ -11323,28 +11343,50 @@ var qrcode = function() {
     if (play && !W.calm) { W.spawnT -= dt; const want = Math.max(1, Math.round((L.cops + Math.floor(W.heat / 1.25)) * (0.5 + 0.5 * cK))), live = W.cops.filter((c) => !c.hit).length; if (live < want && W.spawnT <= 0) { W.cops.push(wCop(-70, [-1, 0, 1][Math.floor(Math.random() * 3)])); W.spawnT = 4; if (W.t > 2) wMsg('MORE COPS!', '#5aa0ff', `HEAT ${Math.floor(W.heat) + 1}`); } }
     }
     wHints();
-    if (play) { W.near = near; W.bust = clamp(W.bust + (near ? WT.bustFill[L.n - 1] * (W.v < 18 ? 1 + WT.bustSlow * 3 : 1) : -WT.bustDrain) * dt, 0, 1); W.bustMax = Math.max(W.bustMax, W.bust); if (W.bust >= 1) wFinish(false, 'boxed'); }
+    if (play) { W.near = near; W.bust = clamp(W.bust + (near ? WT.bustFill[L.n - 1] * (W.v < 18 ? 1 + WT.bustSlow * 3 : 1) : -WT.bustDrain) * dt, 0, 1); W.bustMax = Math.max(W.bustMax, W.bust); if (B2()) wBustWarn(dt, near); else if (W.bust >= 1) wFinish(false, 'boxed'); }
   }
   function wFinish(won, why) { if (W.phase !== 'play') return; W.phase = 'end'; W.won = won; W.busted = !won; W.why = why || ''; W.nosOn = 0; W.air = null; wUI(); const L = W.L, S = W.stats;
     W.stars = won ? 1 + (W.strikes === 0 ? 1 : 0) + (S.takedowns >= 1 || W.heat >= 3 ? 1 : 0) : 0;
     W.earned = earn(won ? 12 + 4 * L.n + 2 * S.bars + 4 * S.copsOut + 5 * S.takedowns + S.pads : 4 + S.bars + 2 * S.copsOut + 3 * S.takedowns); P.stars += W.stars; P.wantRuns = (P.wantRuns || 0) + 1;
-    let best = false; if (won) { P.wantWins = (P.wantWins || 0) + 1; const st = (P.wantStars ||= {}); if (!(st[L.n] >= W.stars)) st[L.n] = W.stars; if (L.n >= wLvMax() && L.n < WLV_N) { P.wantMax = L.n + 1; } const bt = (P.wantTimes ||= {}); best = !bt[L.n] || W.t < bt[L.n]; if (best) bt[L.n] = W.t; }
+    let best = false; if (won) { P.wantWins = (P.wantWins || 0) + 1; const G2 = W.ver === 2 ? (P.w2 ||= {}) : null, st = G2 ? (G2.stars ||= {}) : (P.wantStars ||= {}); if (!(st[L.n] >= W.stars)) st[L.n] = W.stars; if (L.n >= wLvMax(G2 ? 2 : 1) && L.n < WLV_N) { if (G2) G2.max = L.n + 1; else P.wantMax = L.n + 1; } if (!G2 && L.n === WLV_N && !P.w2open) { P.w2open = 1; W.w2New = true; } const bt = G2 ? (G2.times ||= {}) : (P.wantTimes ||= {}); best = !bt[L.n] || W.t < bt[L.n]; if (best) bt[L.n] = W.t; }
     P.wantCops = (P.wantCops || 0) + S.copsOut; P.wantHeat = Math.max(P.wantHeat || 0, Math.floor(W.heat)); save();
-    wMsg(won ? 'ESCAPED!' : 'BUSTED!', won ? LIME : '#5aa0ff', won ? 'clean landing over the roadblock!' : why === 'engine' ? '3 engine hits: aim for the corners!' : 'boxed in by the cops: try again!');
+    wMsg(won ? 'ESCAPED!' : 'BUSTED!', won ? LIME : '#5aa0ff', won ? 'clean landing over the roadblock!' : why === 'engine' ? '3 engine hits: aim for the corners!' : why === 'bumper' ? 'he caught your bumper: you were slow too long' : 'boxed in by the cops: try again!');
     if (won) { const r = $('#kCv').getBoundingClientRect(); for (let i = 0; i < 4; i++) setTimeout(() => burst(r.left + r.width * (0.2 + Math.random() * 0.6), r.top + r.height * 0.3, 30, [LIME, CYAN, YEL, '#fff'], 300), i * 220); }
     setTimeout(() => { if (K.tab === 'wanted' && W.phase === 'end') showWantedEnd(best); }, 1300); }
-  function showWantedEnd(best) { const L = W.L, S = W.stats, st = (n) => '★'.repeat(n) + '☆'.repeat(3 - n), next = W.won && L.n < WLV_N && wLvMax() > L.n;
-    const el = over(endCard({ title: W.won ? 'ESCAPED!' : 'BUSTED!', sub: `LEVEL ${L.n} · ${L.name}`,
-      stats: W.won ? [['TIME', W.t.toFixed(1) + ' s'], ['HEAT', '★'.repeat(Math.max(1, Math.floor(W.heat)))], ['STARS', st(W.stars)]] : [['WHY', W.why === 'engine' ? '3 ENGINE HITS' : 'BOXED IN'], ['DISTANCE', Math.round(W.d) + ' m'], ['HEAT', '★'.repeat(Math.max(1, Math.floor(W.heat)))]],
+  function showWantedEnd(best) { const L = W.L, S = W.stats, st = (n) => '★'.repeat(n) + '☆'.repeat(3 - n), next = W.won && L.n < WLV_N && wLvMax(W.ver === 2 ? 2 : 1) > L.n, cel = !!W.w2New; W.w2New = false;
+    const el = over(endCard({ title: W.won ? 'ESCAPED!' : 'BUSTED!', sub: `WANTED ${W.ver === 2 ? '2.0' : '1.0'} · LEVEL ${L.n} · ${L.name}`,
+      stats: W.won ? [['TIME', W.t.toFixed(1) + ' s'], ['HEAT', '★'.repeat(Math.max(1, Math.floor(W.heat)))], ['STARS', st(W.stars)]] : [['WHY', W.why === 'engine' ? '3 ENGINE HITS' : W.why === 'bumper' ? 'CAUGHT YOUR BUMPER' : 'BOXED IN'], ['DISTANCE', Math.round(W.d) + ' m'], ['HEAT', '★'.repeat(Math.max(1, Math.floor(W.heat)))]],
       earn: `+${W.earned} COINS${W.stars ? `  +${W.stars}★` : ''}${K.real ? ' <em>×2</em>' : ''}`,
-      info: [`<div class="kline small">TAKEDOWNS ${S.takedowns} (RAMS ${S.ramTD || 0} · TRAFFIC ${S.trafficTD || 0}) · COPS SPUN OUT ${S.copsOut} · COPS WIPED OUT ON RAMPS ${S.wrecked} · BARRIERS ${S.bars} · SKETCHY LANDINGS ${S.sketchy}</div>`,
-        W.won ? `<div class="kline small">★ escape · ★ no engine hits · ★ a TAKEDOWN or HEAT 3</div>` : '<div class="kline small">Tip: only a RAMP over a roadblock escapes: line it up early, land straight and fast. Swipe away from cops on your tail, and save NOS for when the BUSTED bar fills.</div>',
+      info: [cel ? '<div class="kw2cel"><b>🚨 WANTED 2.0 UNLOCKED! 🚨</b><span>You beat WANTED 1.0! Quicker TILT steering and CLOSE CALL escapes.</span></div>' : '', `<div class="kline small">TAKEDOWNS ${S.takedowns} (RAMS ${S.ramTD || 0} · TRAFFIC ${S.trafficTD || 0}) · COPS SPUN OUT ${S.copsOut} · COPS WIPED OUT ON RAMPS ${S.wrecked} ·${S.closeCalls ? ` CLOSE CALLS ${S.closeCalls} ·` : ''} BARRIERS ${S.bars} · SKETCHY LANDINGS ${S.sketchy}</div>`,
+        W.won ? `<div class="kline small">★ escape · ★ no engine hits · ★ a TAKEDOWN or HEAT 3</div>` : (W.why === 'bumper' ? '<div class="kline">🚓 <b>Caught your bumper: you were slow too long.</b> When the BUSTED bar turns red, SWERVE hard or tap NOS to shake him off!</div>' : '') + '<div class="kline small">Tip: only a RAMP over a roadblock escapes: line it up early, land straight and fast. Swipe away from cops on your tail, and save NOS for when the BUSTED bar fills.</div>',
         best ? '<div class="kline"><span class="ki star">★</span><span>NEW BEST TIME!</span></div>' : ''],
-      btns: `<button class="kbig" data-a="${next ? 'next' : 'again'}">${next ? 'NEXT LEVEL' : W.won ? 'PLAY AGAIN' : 'RETRY'}</button>${next ? '<button class="ksmall" data-a="again">PLAY AGAIN</button>' : ''}<button class="ksmall" data-a="levels">LEVELS</button><button class="ksmall" data-a="garage">GARAGE</button>` }));
+      btns: `${cel ? '<button class="kbig kw2go" data-a="w2">PLAY WANTED 2.0</button>' : ''}<button class="${cel ? 'ksmall' : 'kbig'}" data-a="${next ? 'next' : 'again'}">${next ? 'NEXT LEVEL' : W.won ? 'PLAY AGAIN' : 'RETRY'}</button>${next ? '<button class="ksmall" data-a="again">PLAY AGAIN</button>' : ''}<button class="ksmall" data-a="levels">LEVELS</button><button class="ksmall" data-a="garage">GARAGE</button>` }));
     const on = (a, fn) => { const b = el.querySelector(`[data-a="${a}"]`); if (b) b.addEventListener('click', fn); };
-    on('next', () => { P.wantLv = L.n + 1; save(); hideOver(); wStart(); }); on('again', () => { hideOver(); wStart(); }); on('levels', () => { wReset(); showIntro('wanted'); }); on('garage', () => { hideOver(); wReset(); setTab('garage'); }); }
-  function wantedOpts() { const mx = wLvMax(), cur = wLvSel(), stS = P.wantStars || {};
-    return `<div class="kdiff klv"><span>LEVEL</span>${Array.from({ length: WLV_N }, (_, i) => { const n = i + 1, lk = n > mx; return `<button data-wlv="${n}" class="${n === cur ? 'on' : ''}${lk ? ' locked' : ''}" ${lk ? 'disabled' : ''} title="${wLevel(n).name}">${lk ? '🔒' : n}${!lk && stS[n] ? `<i>${'★'.repeat(stS[n])}</i>` : ''}</button>`; }).join('')}</div><div class="kready kwcar">YOUR CAR: <b>${wIsDad() ? 'BATMOBILE' : 'YOUR GARAGE LOOK'}</b></div>${wSteerRow()}${wantedOpen() ? '' : `<div class="kready kwlock">🔒 UNLOCK WANTED: ${gateMsg(ECON.wantedReq)}</div>`}`; }
+    on('next', () => { if (W.ver === 2) (P.w2 ||= {}).lv = L.n + 1; else P.wantLv = L.n + 1; save(); hideOver(); wStart(); }); on('w2', () => { P.wVer = 2; save(); wReset(); showIntro('wanted'); });
+    if (cel) { el.classList.add('kcel'); const r = $('#kCv').getBoundingClientRect(); for (let i = 0; i < 10; i++) setTimeout(() => burst(r.left + r.width * (0.1 + Math.random() * 0.8), r.top + r.height * (0.15 + Math.random() * 0.5), 34, ['#ff2a3d', '#3e7bff', YEL, LIME, '#fff'], 340), i * 180); try { navigator.vibrate && navigator.vibrate([60, 60, 120]); } catch (e) {} } on('again', () => { hideOver(); wStart(); }); on('levels', () => { wReset(); showIntro('wanted'); }); on('garage', () => { hideOver(); wReset(); setTab('garage'); }); }
+  function wantedOpts() { const v = wSelVer(), o2 = w2Open(), mx = wLvMax(v), cur = wLvSel(v), stS = (v === 2 ? (P.w2 || {}).stars : P.wantStars) || {};
+    const ver = `<div class="kdiff kwver"><span>MODE</span><button data-wver="1" class="${v === 1 ? 'on' : ''}">1.0 CLASSIC</button><button data-wver="2" class="${v === 2 ? 'on' : ''}${o2 ? ' kw2' : ' locked'}">${o2 ? '🚨 2.0 NEW' : '🔒 2.0'}</button></div>${o2 ? (v === 2 ? '<div class="kready kw2new">NEW IN 2.0: quicker TILT · TOO SLOW! warning: SWERVE or NOS = CLOSE CALL</div>' : '') : '<div class="kready kwlock2">🔒 WANTED 2.0: Beat WANTED 1.0 level 6</div>'}`;
+    return `${ver}<div class="kdiff klv"><span>LEVEL</span>${Array.from({ length: WLV_N }, (_, i) => { const n = i + 1, lk = n > mx; return `<button data-wlv="${n}" class="${n === cur ? 'on' : ''}${lk ? ' locked' : ''}" ${lk ? 'disabled' : ''} title="${wLevel(n).name}">${lk ? '🔒' : n}${!lk && stS[n] ? `<i>${'★'.repeat(stS[n])}</i>` : ''}</button>`; }).join('')}</div><div class="kready kwcar">YOUR CAR: <b>${wIsDad() ? 'BATMOBILE' : 'YOUR GARAGE LOOK'}</b></div>${wSteerRow()}${wantedOpen() ? '' : `<div class="kready kwlock">🔒 UNLOCK WANTED: ${gateMsg(ECON.wantedReq)}</div>`}`; }
+  // ---------------- BUSTED clarity (Bob Oct 19): warn loudly, then give her a fair last-second escape ----------------
+  // A cop on her bumper while she's slow fills the red BUSTED bar: the bar + panel pulse red, the cops' lights flash and a big hint says TOO SLOW! SWERVE TO
+  // SHAKE HIM!. At a full bar she gets LAST CHANCE (WTB.lastT s): a hard swerve (TILT: WTB.swerveZ m sideways; TOUCH: a lane change) or a NOS tap breaks
+  // free = CLOSE CALL! (+NOS, the cop is shoved back). Only ignoring it busts her, and the busted card says why. ?w3nobust = the old instant bust.
+  const W3B = !Q.has('w3nobust');
+  const B2 = () => W3B && W.ver === 2; // BUSTED warning + CLOSE CALL are WANTED 2.0 only; 1.0 keeps the instant 'boxed' bust
+  const WTB = { warnAt: 0.45, escAt: 0.6, lastT: 1.8, swerveZ: 1.6, lostT: 0.45, pushGap: 11, pushV: 5, recT: 1.2, hintGap: 2.4, after: 0.3 };
+  function wBustWarn(dt, near) { const BW = (W.bw ||= { on: false, last: 0, lane0: 0, z0: 0, hintT: -9, lostT: 0 });
+    if (W.bust >= WTB.warnAt && near && !BW.on) { BW.on = true; BW.lane0 = W.lane; BW.z0 = W.z; }
+    if (BW.on && BW.last <= 0 && W.bust < WTB.warnAt - 0.12) BW.on = false;
+    if (BW.on || BW.last > 0) { if (W.t - BW.hintT > WTB.hintGap) { BW.hintT = W.t; W.hint = { k: 'bust', txt: BW.last > 0 ? 'LAST CHANCE! SWERVE!' : 'TOO SLOW! SWERVE TO SHAKE HIM!', sub: 'or tap NOS!', col: '#ff3b4f', t: W.t }; W.hintT = W.t; }
+      const swerved = W.smode === 'tilt' ? Math.abs(W.z - BW.z0) > WTB.swerveZ : W.lane !== BW.lane0;
+      if (swerved) { if (W.bust >= WTB.escAt || BW.last > 0) return wCloseCall('swerve'); BW.lane0 = W.lane; BW.z0 = W.z; } }
+    if (W.bust >= 1 && BW.last <= 0) { BW.last = WTB.lastT; BW.lostT = 0; BW.hintT = -9; W.log.push(['lastChance', +W.t.toFixed(2)]); }
+    if (BW.last > 0) { W.bust = 1; BW.lostT = near ? 0 : BW.lostT + dt; if (BW.lostT > WTB.lostT) { BW.last = 0; BW.on = false; W.bust = 0.8; return; } /* the cop dropped off by himself: no bust, no bonus */
+      BW.last -= dt; if (BW.last <= 0) { BW.last = 0; wFinish(false, 'bumper'); } } }
+  function wCloseCall(how) { const BW = W.bw; BW.on = false; BW.last = 0; W.bust = WTB.after; W.stats.closeCalls = (W.stats.closeCalls || 0) + 1; W.nos = Math.min(1, W.nos + 0.25); W.slowT = 0.35; W.shakeT = 0.25;
+    for (const c of W.cops) if (!c.hit && W.d - c.d > -2 && W.d - c.d < WTB.pushGap + 2) { c.d = Math.min(c.d, W.d - WTB.pushGap); c.v = Math.min(c.v, W.v - WTB.pushV); c.recT = WTB.recT; }
+    wMsg('CLOSE CALL!', LIME, how === 'nos' ? 'NOS blast: you shook him off! +NOS' : 'great swerve: you shook him off! +NOS'); W.hint = null; W.log.push(['closeCall', how, +W.t.toFixed(2)]); wBurstAt(W.d, W.z, 1, [LIME, '#fff', CYAN], 18); try { navigator.vibrate && navigator.vibrate(40); } catch (e) {} }
+  const wBustHot = () => B2() && W.bw && (W.bw.last > 0 || (W.bw.on && W.bust >= WTB.escAt));
   function wSteerRow() { const m = wSteerPref(), sv = P.tiltSens || 'gentle';
     return `<div class="kdiff kwsteer"><span>STEER</span><button data-ws="tilt" class="${m === 'tilt' ? 'on' : ''}">📱 TILT</button><button data-ws="touch" class="${m === 'touch' ? 'on' : ''}">👆 TOUCH</button></div>` +
       (m === 'tilt' ? `<div class="kdiff ktilt kwtilt"><span>TILT</span>${TL.perm === 'ask' ? '<button data-wt="allow" class="kallow">ALLOW TILT</button>' : ''}<button data-wt="center">TILT CENTER</button>${Object.keys(SENS).map((k) => `<button data-wsens="${k}" class="${sv === k ? 'on' : ''}">${k.toUpperCase()}</button>`).join('')}<em class="ktstat">${tiltStatus()}</em></div>` : ''); }
@@ -11390,7 +11432,7 @@ var qrcode = function() {
       const list = W.traffic.map((c) => ({ c, x: rel(c.d), z: c.z, kind: c.kind, col: c.hit ? '#9a8fb0' : c.col, yaw: c.yaw, a: c.fade })).concat(W.cops.map((c) => Object.assign({ c, cop: true, x: rel(c.d), z: c.z, kind: 'police', col: '#ffffff', yaw: c.yaw + (c.hit ? 0 : -c.vz * 0.04 + (c.jostle > 0 ? Math.sin(t * 22) * 0.08 : 0)), a: c.fade }, fl(c)))).concat(blockCars);
       const vis = list.filter((o) => o.x > -12 && o.x < 150 && o.a > 0.05), far = vis.filter((o) => o.x > 1.5).sort((p, q) => q.x - p.x), nearL = vis.filter((o) => o.x <= 1.5).sort((p, q) => q.x - p.x);
       const lights = (o) => { const len = 2.3, tl = P3(o.x - len, o.z - 0.6, 0.78), tr = P3(o.x - len, o.z + 0.6, 0.78); if (!tl || !tr) return; const r = Math.max(2, (tr.x - tl.x) * 0.09); ctx.save();
-        if (o.cop && !o.c.hit) { const bl = P3(o.x - 0.1, o.z - 0.32, 1.42), br = P3(o.x - 0.1, o.z + 0.32, 1.42), ph = Math.floor(t * 6) % 2; if (bl && br) { const rr2 = Math.max(2.5, r * 1.15); [[bl, ph ? '#ff2a3d' : '#5a1020'], [br, ph ? '#2a3a7a' : '#3e7bff']].forEach(([p, c]) => { ctx.fillStyle = c; if (!low) { ctx.shadowColor = c; ctx.shadowBlur = 22; } ctx.beginPath(); ctx.arc(p.x, p.y, rr2, 0, Math.PI * 2); ctx.fill(); }); } }
+        if (o.cop && !o.c.hit) { const wn = B2() && W.bw && (W.bw.on || W.bw.last > 0) && W.d - o.c.d > -1 && W.d - o.c.d < WT.bustGap + 2, bl = P3(o.x - 0.1, o.z - 0.32, 1.42), br = P3(o.x - 0.1, o.z + 0.32, 1.42), ph = Math.floor(t * (wn ? 14 : 6)) % 2; /* BUSTED warning: the bumper cop's lights go wild */ if (bl && br && wn && !low) { const hc = P3(o.x - 0.1, o.z, 1.5); if (hc) { ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = ph ? '#ff2a3d' : '#3e7bff'; ctx.beginPath(); ctx.arc(hc.x, hc.y, Math.max(12, (br.x - bl.x) * 2.2), 0, Math.PI * 2); ctx.fill(); ctx.restore(); } } if (bl && br) { const rr2 = Math.max(2.5, r * 1.15) * (wn ? 1.9 : 1); [[bl, ph ? '#ff2a3d' : '#5a1020'], [br, ph ? '#2a3a7a' : '#3e7bff']].forEach(([p, c]) => { ctx.fillStyle = c; if (!low) { ctx.shadowColor = c; ctx.shadowBlur = 22; } ctx.beginPath(); ctx.arc(p.x, p.y, rr2, 0, Math.PI * 2); ctx.fill(); }); } }
         else if (!o.cop) { if (!low) { ctx.shadowColor = '#ff2a3d'; ctx.shadowBlur = 10; } ctx.fillStyle = o.c.hit ? '#5a2a2e' : '#ff2a3d'; ctx.fillRect(tl.x - r, tl.y - r * 0.6, r * 2.2, r * 1.2); ctx.fillRect(tr.x - r * 1.2, tr.y - r * 0.6, r * 2.2, r * 1.2); }
         if (o.c.hit && o.c.fade > 0.5) { const sp = P3(o.x, o.z, 1.9); if (sp) for (let i = 0; i < 3; i++) starShape(ctx, sp.x + Math.cos(t * 5 + i * 2.1) * sp.m * 0.8, sp.y + Math.sin(t * 5 + i * 2.1) * sp.m * 0.25, Math.max(3, sp.m * 0.18), YEL); } // cartoon dizzy stars
         ctx.restore(); };
@@ -11398,6 +11440,7 @@ var qrcode = function() {
       draw3d(far);
       const wobY = W.wob > 0 ? Math.sin(t * 18) * 0.13 * (W.wob / WT.wob) : 0; X.renderMini(ctx, { kid: wLook(t), t, throttle: W.phase === 'play' ? 85 : 10, x: 0, y: W.y || 0, z: W.z, yaw: clamp(-W.vz / Math.max(6, W.v) * WT.yawK, -0.3, 0.3) + (W.air ? W.air.yaw : 0) + wobY, roll: clamp(-W.azs * WT.roll, -0.09, 0.09) + wobY * 0.4, pitch: (W.nosOn > 0 ? -0.025 : 0) + (W.air ? -W.air.pitch * Math.min(1, W.air.t / W.air.T) : 0), wheelAng: W.d / 0.33, flame: W.nosOn > 0 ? 1 : W.padT > 0 ? 0.6 : 0 });
       draw3d(nearL);
+      if (B2() && W.bw && (W.bw.on || W.bw.last > 0) && W.phase === 'play') { const last = W.bw.last > 0, pz = 0.5 + 0.5 * Math.sin(t * (last ? 20 : 11)), g = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.35, w / 2, h / 2, Math.max(w, h) * 0.72); g.addColorStop(0, 'rgba(255,42,61,0)'); g.addColorStop(1, `rgba(255,42,61,${(last ? 0.45 : 0.25) * pz})`); ctx.save(); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h); ctx.restore(); } // red edge pulse while the BUSTED bar is in the danger zone
       if (W.nosOn > 0 && !low) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const cx = w / 2, cy = h * 0.45; for (let i = 0; i < 36; i++) { const an = (i * 2.399) % (Math.PI * 2), r0 = 60 + ((t * 900 + i * 53) % 400), r1 = r0 + 60; ctx.strokeStyle = `rgba(150,230,255,${0.15 + (i % 3) * 0.08})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx + Math.cos(an) * r0, cy + Math.sin(an) * r0 * 0.6); ctx.lineTo(cx + Math.cos(an) * r1, cy + Math.sin(an) * r1 * 0.6); ctx.stroke(); } ctx.restore(); }
     }
     if (W.near && W.phase === 'play') { const a = 0.18 + 0.12 * Math.sin(t * 8), g = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.35, w / 2, h / 2, Math.max(w, h) * 0.7); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, Math.floor(t * 4) % 2 ? `rgba(255,42,61,${a})` : `rgba(62,123,255,${a})`); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h); } // soft siren glow at the screen edge
@@ -11408,13 +11451,14 @@ var qrcode = function() {
     bubble(ctx, 12, 10, 196, 92, W.bust > 0.6 && Math.floor(t * 6) % 2 ? '#ff2a3d' : '#3e7bff'); T(ctx, 'HEAT', 26, 32, 13, '#ffd0f4', 'left', TXT, 800);
     for (let i = 0; i < 5; i++) starShape(ctx, 84 + i * 24, 27, 9, i < Math.floor(W.heat) ? '#ff2a3d' : i < W.heat ? '#ff8a9a' : 'rgba(255,255,255,.18)');
     T(ctx, W.near ? 'COP ON YOUR TAIL!' : 'BUSTED', 26, 58, 12, W.near ? '#ff6a7a' : '#bfd6ff', 'left', TXT, 800);
-    { const bx = 26, by = 66, bw = 168, bh = 14; ctx.fillStyle = 'rgba(255,255,255,.1)'; rr(ctx, bx, by, bw, bh, 7); ctx.fill(); const g = ctx.createLinearGradient(bx, 0, bx + bw, 0); g.addColorStop(0, '#3e7bff'); g.addColorStop(1, '#ff2a3d'); ctx.fillStyle = g; if (W.bust > 0.01) { rr(ctx, bx, by, Math.max(14, bw * W.bust), bh, 7); ctx.fill(); } T(ctx, W.bust > 0.01 ? 'SWERVE · NOS!' : 'ALL CLEAR', bx + bw / 2, by + 11, 10, '#fff', 'center', TXT, 900); }
+    { const bx = 26, by = 66, bw = 168, bh = 14; ctx.fillStyle = 'rgba(255,255,255,.1)'; rr(ctx, bx, by, bw, bh, 7); ctx.fill(); const hot = B2() && W.bw && (W.bw.on || W.bw.last > 0), last = hot && W.bw.last > 0; const g = ctx.createLinearGradient(bx, 0, bx + bw, 0); g.addColorStop(0, hot ? '#ff7a5a' : '#3e7bff'); g.addColorStop(1, '#ff2a3d'); ctx.fillStyle = g; if (W.bust > 0.01) { rr(ctx, bx, by, Math.max(14, bw * W.bust), bh, 7); ctx.fill(); } if (hot) { const pz = 0.5 + 0.5 * Math.sin(t * (last ? 22 : 12)); ctx.save(); ctx.strokeStyle = '#ff2a3d'; ctx.lineWidth = 3 + pz * 3; if (!(ZD.perf && ZD.perf.low)) { ctx.shadowColor = '#ff2a3d'; ctx.shadowBlur = 18 * pz; } rr(ctx, bx - 3, by - 3, bw + 6, bh + 6, 9); ctx.stroke(); ctx.restore(); if (last) { ctx.fillStyle = 'rgba(255,255,255,.85)'; rr(ctx, bx, by + bh - 4, Math.max(6, bw * W.bw.last / WTB.lastT), 4, 2); ctx.fill(); } } /* bar turns solid red while he is on her bumper */
+      T(ctx, last ? 'LAST CHANCE: SWERVE!' : hot ? 'TOO SLOW! SWERVE!' : W.bust > 0.01 ? 'SWERVE · NOS!' : 'ALL CLEAR', bx + bw / 2, by + 11, 10, '#fff', 'center', TXT, 900); }
     // LEFT (under HEAT): 3-strike ENGINE HITS indicator
     { const sy = 116; bubble(ctx, 12, sy - 6, 196, 34, W.strikes >= 2 && Math.floor(t * 5) % 2 ? '#ff2a3d' : 'rgba(255,79,216,.8)'); T(ctx, 'ENGINE HITS', 26, sy + 15, 11, '#ffd0f4', 'left', TXT, 800);
       for (let i = 0; i < WT.strikes; i++) { const on = i < W.strikes, x = 130 + i * 24, y = sy + 11; ctx.beginPath(); ctx.arc(x, y, 8.5, 0, Math.PI * 2); ctx.fillStyle = on ? '#ff2a3d' : 'rgba(255,255,255,.12)'; if (on && !(ZD.perf && ZD.perf.low)) { ctx.shadowColor = '#ff2a3d'; ctx.shadowBlur = 10; } ctx.fill(); ctx.shadowBlur = 0; T(ctx, on ? '✕' : '', x, y + 4.5, 11, '#fff', 'center', TXT, 900); } }
     // TOP CENTRE: level + the next RAMP over a roadblock (the only way out)
     { const mw = Math.min(320, Wd * 0.36), mx = Wd / 2 - mw / 2, my = 8, mh = 40; ctx.save(); ctx.beginPath(); ctx.roundRect(mx, my, mw, mh, 14); ctx.fillStyle = 'rgba(10,5,24,.82)'; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = PINK; if (!(ZD.perf && ZD.perf.low)) { ctx.shadowColor = PINK; ctx.shadowBlur = 8; } ctx.stroke(); ctx.restore();
-      T(ctx, `LV ${L.n} · ${L.name}`, Wd / 2, my + 15, 11, '#ffd0f4', 'center', TXT, 800); const rp = (W.ramps || []).filter((r) => !r.used && r.d > W.d).sort((p, q) => p.d - q.d)[0];
+      T(ctx, `${W.ver === 2 ? '2.0 · ' : ''}LV ${L.n} · ${L.name}`, Wd / 2, my + 15, 11, '#ffd0f4', 'center', TXT, 800); const rp = (W.ramps || []).filter((r) => !r.used && r.d > W.d).sort((p, q) => p.d - q.d)[0];
       const lx = mx + 18, lw = mw - 36, ly = my + 28, span = 500, fr = (d) => clamp((d - W.d) / span, 0, 1); ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fillRect(lx, ly - 2, lw, 4);
       for (const b of W.blocks || []) if (b.d > W.d && b.d - W.d < span) { ctx.fillStyle = b.full ? '#3e7bff' : ORNG; ctx.fillRect(lx + lw * fr(b.d) - 1.5, ly - 6, 3, 12); }
       if (rp && rp.d - W.d < span) { T(ctx, '⤴', lx + lw * fr(rp.d), ly + 5, 15, YEL, 'center', TXT, 900); }
@@ -11479,7 +11523,7 @@ var qrcode = function() {
     $('#kDrvShift').addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, 14, [PINK, YEL]); drvShiftTap(performance.now() / 1000, 'button'); });
     $('#kDTutSkip').addEventListener('click', (e) => { e.stopPropagation(); dragTutSkip(); });
     $('#kMeterTap').addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); drvShiftTap(performance.now() / 1000, 'meter'); });
-    $('#kShift').addEventListener('pointerdown', () => { const now = performance.now() / 1000; K.lastTap = now; burst(innerWidth - 80, innerHeight - 80, 14, [PINK, YEL]); sgTap(now); });
+    $('#kShift').addEventListener('pointerdown', () => { const now = performance.now() / 1000; K.lastTap = now; { const r = $('#kShift').getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, 14, [PINK, YEL]); } sgTap(now); });
     $('#kBoost').addEventListener('pointerdown', (e) => { e.preventDefault(); boostHit(); });
     $('#kPractice').addEventListener('click', () => { if (B.phase === 'play') ridePractice(); });
     $('#kToGarage').addEventListener('click', () => setTab('garage'));
@@ -11620,6 +11664,8 @@ var qrcode = function() {
     const pulling = prac || ((rf.throttle == null || rf.throttle >= 30) && !(rf.gear >= 6)); // no SHIFT! cue while cruising or in top gear (Dad can't shift up)
     const HY = (K.pwH ||= { ready: false, band: 0 }); if (!HY.ready && pulling && rpm >= Lt.ready) HY.ready = true; else if (HY.ready && (!pulling || rpm < Lt.ready - 300)) HY.ready = false; // hysteresis: no GET READY ping-pong
     const go = (pulling && rpm >= Lt.shift) || now - SG.shiftT < 0.45, ready = !go && HY.ready, flash = Math.floor(now * 8) % 2 === 0;
+    { const b0 = Lt.ready * 0.6; let bd = HY.band; if (bd === 0 && rpm >= 1700) bd = 1; else if (bd >= 1 && rpm < 1300) bd = 0; if (bd === 1 && rpm >= b0 + 200) bd = 2; else if (bd === 2 && rpm < b0 - 200) bd = 1; HY.band = bd; } // CHILL / VROOM / ZOOM! bands with ±200 rpm hysteresis
+    if (game) powerBig(ctx, w, f, now, Lt, rpm, top, lvl, go, ready, flash, prac, HY); else {
     bubble(ctx, w - 204, 14, 190, 160, go ? (flash ? PINK : '#fff') : ready ? YEL : PINK); T(ctx, game && SG.prac ? 'PRACTICE SHIFT' : 'POWER METER', w - 188, 38, 13, '#ffd0f4', 'left', TXT, 700); TN(ctx, String(prac ? Math.round(rpm / 50) * 50 : RD.rpmShown).padStart(4, ' '), w - 58, 38, 12, '#fff', 'right', TXT, 800); T(ctx, 'RPM', w - 24, 38, 11, '#fff', 'right', TXT, 700);
     if ((ready || go) && !(ZD.perf && ZD.perf.low)) { ctx.save(); ctx.shadowColor = go ? PINK : YEL; ctx.shadowBlur = go ? 34 : 22; ctx.strokeStyle = go ? PINK : YEL; ctx.lineWidth = 3; rr(ctx, w - 204, 14, 190, 160, 14); ctx.stroke(); ctx.restore(); }
     const ang = (v) => Math.PI * (1 + clamp(v / top, 0, 1));
@@ -11629,15 +11675,41 @@ var qrcode = function() {
       if (lit && !(ZD.perf && ZD.perf.low)) { ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = 10; } ctx.stroke(); ctx.shadowBlur = 0; }
     { const a = ang(Lt.shift); ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * (R0 - 12), cy + 10 + Math.sin(a) * (R0 - 12)); ctx.lineTo(cx + Math.cos(a) * (R0 + 18), cy + 10 + Math.sin(a) * (R0 + 18)); ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.stroke(); }
     if (!game) { K.dGo = go && !(now - SG.shiftT < 0.45 && rpm < Lt.shift); K.dReady = ready; const db = $('#kDrvShift'); db.style.setProperty('--p', (go ? 1 : ready ? clamp((rpm - Lt.ready) / (Lt.shift - Lt.ready), 0, 1) : 0).toFixed(3)); db.classList.toggle('ready', ready && !K.real); db.classList.toggle('go', go && !K.real); }
-    { const b0 = Lt.ready * 0.6; let bd = HY.band; if (bd === 0 && rpm >= 1700) bd = 1; else if (bd >= 1 && rpm < 1300) bd = 0; if (bd === 1 && rpm >= b0 + 200) bd = 2; else if (bd === 2 && rpm < b0 - 200) bd = 1; HY.band = bd; } // CHILL / VROOM / ZOOM! bands with ±200 rpm hysteresis
     const wk = go ? 'go' : ready ? 'ready' : ['chill', 'vroom', 'zoom'][HY.band], wm = holdMsg((K.pwMsg ||= {}), wk, go ? 4 : ready ? 3 : 1, now); // each word holds >= 1.5 s (SHIFT! / GET READY cut in at once), with a fade
     { const k = wm.key, word = k === 'go' ? (!game && K.real ? 'DAD, SHIFT!' : 'SHIFT!') : k === 'ready' ? 'GET READY' : k === 'chill' ? 'CHILL' : k === 'vroom' ? 'VROOM' : 'ZOOM!', wc = k === 'go' ? (flash ? PINK : '#fff') : k === 'ready' ? YEL : k === 'chill' ? LIME : k === 'vroom' ? YEL : ORNG;
       K.pwWord = word; ctx.save(); ctx.globalAlpha = wm.a; T(ctx, word, cx, cy + 6, k === 'go' ? (!game && K.real ? 24 : 32) : k === 'ready' ? 22 : 28, wc, 'center', FONT, 900, k === 'go' || k === 'ready' ? 18 : 14); ctx.restore(); }
     T(ctx, game && SG.prac ? 'TAP SHIFT WHEN IT FLASHES' : f.gear ? `GEAR ${f.gear}` : f.gear === 0 ? 'NEUTRAL' : '', cx, cy + 30, 13, '#ffd0f4', 'center', TXT, 700);
+    }
     if (game) K.cue = go ? { k: 'go', flash } : ready ? { k: 'ready' } : null; // the big centre word is drawn by drawBoost's single message slot
     if (game) { const kb = $('#kShift'); const p = go ? 1 : ready ? clamp((rpm - Lt.ready) / (Lt.shift - Lt.ready), 0, 1) : 0; kb.style.setProperty('--p', p.toFixed(3)); kb.classList.toggle('ready', ready); kb.classList.toggle('go', go); }
   }
 
+  /* RIDE ALONG POWER METER (Bob Oct 19): big, high-contrast, glanceable in a moving car: one fat horizontal bar on a solid dark card, a solid fill that
+     goes green -> yellow -> orange, a labelled yellow READY zone, a white SHIFT line, a big status word and big RPM digits. Same cue logic as before. */
+  function powerBig(ctx, w, f, now, Lt, rpm, top, lvl, go, ready, flash, prac, HY) {
+    const pw = 296, ph = 158, x0 = w - pw - 14, y0 = 14, bx = x0 + 18, bw = pw - 36, by = y0 + 82, bh = 38, X = (v) => bx + bw * clamp(v / top, 0, 1), lowP = ZD.perf && ZD.perf.low;
+    const edge = go ? (flash ? PINK : '#fff') : ready ? YEL : '#ffffff';
+    ctx.save(); rr(ctx, x0, y0, pw, ph, 16); ctx.fillStyle = 'rgba(6,2,16,.94)'; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = edge; if ((ready || go) && !lowP) { ctx.shadowColor = go ? PINK : YEL; ctx.shadowBlur = go ? 30 : 18; } ctx.stroke(); ctx.shadowBlur = 0; ctx.restore();
+    T(ctx, prac ? 'PRACTICE SHIFT' : 'POWER', x0 + 18, y0 + 26, 15, '#ffffff', 'left', FONT, 900); T(ctx, f.gear ? `GEAR ${f.gear}` : f.gear === 0 ? 'NEUTRAL' : '', x0 + pw - 18, y0 + 26, 15, '#ffffff', 'right', FONT, 900);
+    // status word (held >= 1.5 s like before; SHIFT! / GET READY cut in at once)
+    const wk = go ? 'go' : ready ? 'ready' : ['chill', 'vroom', 'zoom'][HY.band], wm = holdMsg((K.pwMsg ||= {}), wk, go ? 4 : ready ? 3 : 1, now);
+    { const k = wm.key, word = k === 'go' ? 'SHIFT!' : k === 'ready' ? 'GET READY' : k === 'chill' ? 'CHILL' : k === 'vroom' ? 'VROOM' : 'ZOOM!', wc = k === 'go' ? (flash ? PINK : '#fff') : k === 'ready' ? YEL : k === 'chill' ? LIME : k === 'vroom' ? YEL : ORNG;
+      K.pwWord = word; ctx.save(); ctx.globalAlpha = wm.a; T(ctx, word, x0 + pw / 2, y0 + 64, k === 'go' ? 36 : 30, wc, 'center', FONT, 900, k === 'go' || k === 'ready' ? 14 : 8); ctx.restore(); }
+    // READY zone band above the bar + label
+    const rx0 = X(Lt.ready), rx1 = X(Lt.shift); ctx.fillStyle = ready || go ? YEL : 'rgba(255,225,77,.55)'; ctx.fillRect(rx0, by - 9, rx1 - rx0, 6);
+    // bar: dark well, solid fill, chunky white frame
+    ctx.save(); rr(ctx, bx, by, bw, bh, 10); ctx.fillStyle = '#1b0d33'; ctx.fill(); ctx.clip();
+    const fw = bw * lvl; if (fw > 0) { if (go) ctx.fillStyle = flash ? PINK : '#ffffff'; else { const g = ctx.createLinearGradient(bx, 0, bx + bw, 0); g.addColorStop(0, '#39ff6a'); g.addColorStop(0.55, '#ffe14d'); g.addColorStop(0.85, '#ff9a1f'); g.addColorStop(1, '#ff3b5c'); ctx.fillStyle = g; } ctx.fillRect(bx, by, fw, bh);
+      ctx.fillStyle = 'rgba(255,255,255,.28)'; ctx.fillRect(bx, by, fw, bh * 0.32); } // glossy top
+    ctx.fillStyle = 'rgba(0,0,0,.45)'; for (let k = 1000; k < top; k += 1000) ctx.fillRect(X(k) - 1, by, 2, bh); // 1k ticks
+    ctx.restore(); rr(ctx, bx, by, bw, bh, 10); ctx.lineWidth = 3; ctx.strokeStyle = '#ffffff'; ctx.stroke();
+    // SHIFT line + flag
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(rx1 - 2.5, by - 12, 5, bh + 16); T(ctx, 'SHIFT', rx1, by + bh + 18, 13, go ? PINK : '#ffffff', 'center', FONT, 900);
+    T(ctx, 'READY', rx1 - 6, by - 13, 11, ready || go ? YEL : 'rgba(255,225,77,.8)', 'right', FONT, 900);
+    // big RPM digits under the bar (left), tap hint while practising
+    TN(ctx, String(prac ? Math.round(rpm / 50) * 50 : RD.rpmShown).padStart(4, ' '), bx, by + bh + 22, 18, '#ffffff', 'left', FONT, 900); T(ctx, 'RPM', bx + 66, by + bh + 22, 12, '#ffd0f4', 'left', TXT, 800);
+    if (prac) T(ctx, 'TAP SHIFT WHEN IT FLASHES', x0 + pw / 2, y0 + ph + 18, 13, '#ffd0f4', 'center', TXT, 800, 4);
+  }
   // ---------------- CAR (spinning model in her colours) ----------------
   const GZ = { min: 0.42, max: 1, step: 0.16, om: 11 }; // GARAGE zoom (Oct 18): + / − buttons, clamped between a close detail view and the whole car
   function gzStep(dir) { K.gz = clamp(+((K.gz ?? 1) + dir * GZ.step).toFixed(3), GZ.min, GZ.max); gzUI(); }
@@ -12197,7 +12269,7 @@ var qrcode = function() {
   function boostEnd(why) { if (B.phase !== 'play' && B.phase !== 'paused') return; B.phase = 'end'; B.ring = null; B.why = why; save(); showEnd('boost', { why }); }
   const RING = 1.0; // seconds for the ring to close
   function boostHit() {
-    const now = performance.now() / 1000; burst(innerWidth - 90, innerHeight - 90, 12, [PINK, CYAN]);
+    const now = performance.now() / 1000; { const r = $('#kBoost').getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, 12, [PINK, CYAN]); }
     if (B.phase !== 'play') return; if (!B.ring) { B.grade = { txt: 'WAIT FOR IT...', col: '#b9a7c9', t: now }; return; }
     const e = Math.abs((now - B.ring) / RING - 1); let g;
     if (e < 0.08) g = ['PERFECT!', YEL, ECON.ring.perfect]; else if (e < 0.16) g = ['GREAT!', CYAN, ECON.ring.great]; else if (e < 0.27) g = ['GOOD', LIME, ECON.ring.good]; else g = ['OOPS!', '#ff5a66', 0];
@@ -12205,6 +12277,10 @@ var qrcode = function() {
     B.grade = { txt: g[0], col: g[1], t: now, pts: g[2] * Math.min(ECON.comboCap, B.combo) * (K.real ? 2 : 1) }; B.burstAt = g[2] ? now : null; unlockCombos(); save(); boostDone();
   }
   function unlockCombos() { for (const i of ALL) if (i.how && i.how.startsWith('combo:') && P.bestCombo >= +i.how.split(':')[1] && !P.owned.includes(i.id)) { P.owned.push(i.id); toast(`NEW PART UNLOCKED: ${i.name}!`, 3200); } }
+  function boostCarRing(w, h, s) { // a halo that hugs her 3D car on screen (centred on the body, as wide as a ~2.5 m ring round it), in drawBoost's scaled units; fallback = lower middle
+    const X = ZD.Xray; let x = w / 2, y = h * 0.6, rx = w * 0.24;
+    if (X && X.ready && X._rect) { const c = X.project(0, 0.65, 0), pts = X.groundRing(2.5, 32); if (c && pts.length > 24) { const xs = pts.map((q) => q.x); x = c.x; y = c.y; rx = (Math.max(...xs) - Math.min(...xs)) / 2; } }
+    rx = Math.min(rx, w * 0.36); return { x: x / s, y: y / s, rx: rx / s, ry: (rx * 0.62) / s }; }
   function drawBoost(ctx, w, h, f, dt, t) {
     sky(ctx, w, h, t); chase(ctx, w, h, f, dt, t);
     const mph = f.speed || 0, pull = mph > 2 && ((f.throttle != null ? f.throttle >= 70 : true) && (f.lonG || 0) > 0.18);
@@ -12220,13 +12296,13 @@ var qrcode = function() {
     if (B.phase === 'play' && !B.ring && !SG.prac && (ringCue || B.practice > 0) && t - B.last > 0.45 && t - SG.shiftT > 1) { B.ring = t; if (f.prac) { PD.ring = 1; PD.rings++; } if (!ringCue) B.practice--; }
     if (B.ring && t - B.ring > RING * 1.3) { B.ring = null; B.combo = 0; B.last = t; B.grade = { txt: 'MISSED', col: '#b9a7c9', t }; boostDone(); }
     const s = clamp(h / 378, 0.72, 1.35); ctx.save(); ctx.scale(s, s); const W = w / s, H = h / s, cx = W / 2, cy = H * 0.42;
-    // timing ring: tap BOOST when the outer ring meets the target
-    if (B.ring) { const p = (t - B.ring) / RING, r0 = 42, r = r0 * (1 + 2.2 * Math.max(0, 1 - p)), near = Math.abs(p - 1) < 0.16;
-      ctx.lineWidth = 6; ctx.strokeStyle = near ? YEL : 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(cx, cy, r0, 0, Math.PI * 2); ctx.stroke();
-      ctx.strokeStyle = PINK; if (!(ZD.perf && ZD.perf.low)) { ctx.shadowColor = PINK; ctx.shadowBlur = 16; } ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke(); ctx.shadowBlur = 0;
-      T(ctx, 'BOOST!', cx, cy + 7, 18, near ? YEL : '#fff', 'center', FONT, 900, 8); }
+    // timing ring (Bob Oct 19): it now closes in AROUND HER CAR (a ring on the road round the 3D car); same RING timing + scoring, tap BOOST when it meets the target
+    if (B.ring) { const p = (t - B.ring) / RING, k = 1 + 1.25 * Math.max(0, 1 - p), near = Math.abs(p - 1) < 0.16, E = boostCarRing(w, h, s);
+      ctx.save(); ctx.lineWidth = 7; ctx.strokeStyle = near ? YEL : 'rgba(255,255,255,.7)'; if (near && !(ZD.perf && ZD.perf.low)) { ctx.shadowColor = YEL; ctx.shadowBlur = 16; } ctx.beginPath(); ctx.ellipse(E.x, E.y, E.rx, E.ry, 0, 0, Math.PI * 2); ctx.stroke(); ctx.shadowBlur = 0;
+      ctx.strokeStyle = PINK; if (!(ZD.perf && ZD.perf.low)) { ctx.shadowColor = PINK; ctx.shadowBlur = 16; } ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(E.x, E.y, E.rx * k, E.ry * k, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+      T(ctx, 'BOOST!', E.x, Math.max(120, E.y - E.ry - 12), 22, near ? YEL : '#fff', 'center', FONT, 900, 10); B.ringE = { x: +E.x.toFixed(1), y: +E.y.toFixed(1), rx: +E.rx.toFixed(1), ry: +E.ry.toFixed(1), k: +k.toFixed(3) }; }
     if (B.phase === 'play') { const lab = B.pq && B.pq.length ? `PRACTICE · ${B.pq.length} TO GO` : B.realRide ? `RIDING WITH DAD · ${B.n} DONE · ENDS WHEN DAD PARKS` : `PRACTICE DRIVE · ${Math.min(B.n + 1, B.max)} / ${B.max} SHIFTS + BOOSTS`; ctx.font = `800 13px ${FONT}`; const mw = ctx.measureText(lab).width, room = W - 2 * 250; T(ctx, lab, cx, H - 18, mw > room ? Math.max(9, Math.floor(13 * room / mw)) : 13, B.realRide ? YEL : '#ffd0f4', 'center', FONT, 800, 6); K.rideLabel = lab; }
-    if (B.burstAt) { burst(cx * s, cy * s, 26, [YEL, PINK, CYAN, '#fff'], 200, 0.9); B.burstAt = null; }
+    if (B.burstAt) { const E = boostCarRing(w, h, s), cr = $('#kCv').getBoundingClientRect(); burst(cr.left + E.x * s, cr.top + E.y * s, 26, [YEL, PINK, CYAN, '#fff'], 200, 0.9); B.burstAt = null; }
     // combo + 0-60 panels
     bubble(ctx, 14, 14, 180, 76, PINK); T(ctx, 'COMBO', 30, 38, 13, '#ffd0f4', 'left', TXT, 700); T(ctx, `×${B.combo}`, 30, 76, 34, B.combo >= 5 ? YEL : '#fff', 'left', FONT, 900, 10); T(ctx, `BEST ×${P.bestCombo}`, 180, 76, 12, '#ffd0f4', 'right', TXT, 700);
     bubble(ctx, 14, 98, 180, 62, YEL); T(ctx, '0-60 TIMER', 30, 118, 12, '#fff7c2', 'left', TXT, 700);
@@ -12234,7 +12310,7 @@ var qrcode = function() {
     T(ctx, tm, 30, 148, 24, B.t0 ? CYAN : '#fff', 'left', FONT, 900, 8); T(ctx, `BEST ${P.best060 ? P.best060.toFixed(1) + 's' : '--'}`, 180, 148, 11, '#fff7c2', 'right', TXT, 700);
     K.cue = null; drawPower(ctx, W, H, f, dt, t, B.phase === 'play');
     // ONE centre message at a time (priority: SHIFT! > latest result > 0-60 > GET READY > idle hint); sized to fit between the side panels
-    { const slotW = Math.max(220, W - 2 * 232), y = 72, cue = B.phase === 'play' ? K.cue : null, nw = performance.now() / 1000, M = (K.boostMsg ||= {}), gr = B.grade && !B.grade.done && t - B.grade.t < 3 ? B.grade : null;
+    { const slotW = Math.max(220, W - 2 * 318), y = 72, cue = B.phase === 'play' ? K.cue : null, nw = performance.now() / 1000, M = (K.boostMsg ||= {}), gr = B.grade && !B.grade.done && t - B.grade.t < 3 ? B.grade : null;
       const idle = B.phase === 'play' && !B.ring && !SG.prac && !pull, res = t - B.resultT < 4.5;
       const want = gr ? ['g' + gr.t, 5] : cue && cue.k === 'go' ? ['go', 4] : res ? ['r' + B.resultT, 3] : cue && cue.k === 'ready' ? ['ready', 2] : idle ? ['idle', 1] : ['none', 0];
       const hm = holdMsg(M, want[0], want[1], nw); if (gr && M.cur === 'g' + gr.t && nw - M.t0 >= 1.5) gr.done = true; K.boostSlot = hm.key; // a result is "used up" once it has shown for 1.5 s
@@ -12246,7 +12322,7 @@ var qrcode = function() {
       else if (hm.key === 'ready') fit('GET READY…', 26, YEL, y, FONT, 900, 16);
       else if (hm.key === 'idle') { fit(B.pq && B.pq.length ? 'PRACTICE: GET READY…' : 'WATCH THE METER AND THE RING', 16, 'rgba(255,255,255,.75)', y, FONT, 800, 0); fit(K.real ? 'Riding with Dad: ends when Dad parks' : 'Practice drive · real drives with Dad pay ×2', 12, '#ffd0f4', y + 20, TXT, 700, 0); }
       ctx.restore(); }
-    TN(ctx, String(RD.shown).padStart(3, ' '), 64, H - 18, 22, '#fff', 'left', FONT, 900, 8); T(ctx, 'MPH', 64 + 22 * 0.74 * 3 + 6, H - 18, 13, '#ffd0f4', 'left', TXT, 800);
+    { const bb = $('#kBoost'), cr = $('#kCv').getBoundingClientRect(), br = bb && !bb.classList.contains('hidden') ? bb.getBoundingClientRect() : null, mx = br ? (br.left + br.width / 2 - cr.left) / s - 38 : 64, my = br ? (br.top - cr.top) / s - 12 : H - 18; TN(ctx, String(RD.shown).padStart(3, ' '), mx, my, 22, '#fff', 'left', FONT, 900, 8); T(ctx, 'MPH', mx + 22 * 0.74 * 3 + 6, my, 13, '#ffd0f4', 'left', TXT, 800); } // just above BOOST (bottom-left)
     ctx.restore();
   }
 
@@ -12269,7 +12345,7 @@ var qrcode = function() {
   const STAT = { easyWins: () => (P.dragWinsBy || {}).easy || 0, hardOnly: () => (P.dragWinsBy || {}).hard || 0, roadLv: () => P.roadLvMax || 1, medWins: () => (P.dragWinsBy || {}).medium || 0, hardWins: () => ((P.dragWinsBy || {}).hard || 0) + ((P.dragWinsBy || {}).expert || 0), dragWins: () => P.dragWins || 0, dragPerfect: () => P.dragPerfect || 0, realBoxes: () => P.realBoxes || 0 };
   const gateRows = (req) => (req || []).map(([k, n, label]) => ({ label, have: Math.min(n, STAT[k]()), need: n }));
   const dragOpen = (d) => d === 'easy' || (P.dragOpen || []).includes(d) || gateRows(ECON.dragGate[d]).every((r) => r.have >= r.need);
-  const wantedOpen = () => !!P.wantOpen || gateRows(ECON.wantedReq).every((r) => r.have >= r.need);
+  const wantedOpen = () => !WANTED_LOCK || !!P.wantOpen || gateRows(ECON.wantedReq).every((r) => r.have >= r.need);
   const gateMsg = (req) => gateRows(req).filter((r) => r.have < r.need).map((r) => `${r.label} (${r.have}/${r.need})`).join(' · ');
   function roadGateOk(lv) { const g = ECON.roadGate[lv]; if (!g) return true; return ((P.roadStars || {})[`classic-${lv - 1}`] || (P.roadStars || {})[lv - 1] || 0) >= g.prev && (P.stars || 0) >= g.stars; }
   function reqProgress(i) { // [{label, have, need}], overall 0..1 (achievements + previous tier + stars + coins)
@@ -12412,7 +12488,7 @@ var qrcode = function() {
     if (g === 'drag') { const tb = el.querySelector('[data-tut]'); if (tb) tb.addEventListener('click', () => { D.tutReplay = true; tb.textContent = 'TUTORIAL ON ✓'; tb.classList.add('on'); });
       el.querySelector('[data-a="start"]').addEventListener('click', () => { hideOver(); dragStart(); }); return; }
     if (g === 'road') bindRoadOpts(el);
-    if (g === 'wanted') { bindWSteer(el); el.querySelectorAll('[data-wlv]').forEach((b) => b.addEventListener('click', () => { if (b.disabled) return; P.wantLv = +b.dataset.wlv; save(); el.querySelectorAll('[data-wlv]').forEach((x) => x.classList.toggle('on', x === b)); toast(`LEVEL ${b.dataset.wlv}: ${wLevel(+b.dataset.wlv).name}`, 1400); }));
+    if (g === 'wanted') { bindWSteer(el); el.querySelectorAll('[data-wver]').forEach((b) => b.addEventListener('click', () => { const v = +b.dataset.wver; if (v === 2 && !w2Open()) { toast('WANTED 2.0: Beat WANTED 1.0 level 6 to unlock it!', 3500); return; } if (wSelVer() === v) return; P.wVer = v; save(); wReset(); showIntro('wanted'); })); el.querySelectorAll('[data-wlv]').forEach((b) => b.addEventListener('click', () => { if (b.disabled) return; if (wSelVer() === 2) (P.w2 ||= {}).lv = +b.dataset.wlv; else P.wantLv = +b.dataset.wlv; save(); el.querySelectorAll('[data-wlv]').forEach((x) => x.classList.toggle('on', x === b)); toast(`LEVEL ${b.dataset.wlv}: ${wLevel(+b.dataset.wlv).name}`, 1400); }));
       el.querySelectorAll('[data-a]').forEach((b) => b.addEventListener('click', () => { if (b.dataset.a !== 'resume' && !wantedOpen()) { toast('WANTED: ' + gateMsg(ECON.wantedReq), 4500); return; } hideOver(); if (b.dataset.a === 'resume') { W.phase = 'play'; wUI(); } else wStart(); })); return; }
     el.querySelectorAll('[data-a]').forEach((b) => b.addEventListener('click', () => { hideOver(); if (b.dataset.a === 'resume') { if (g === 'road') R.phase = 'play'; else B.phase = 'play'; } else if (g === 'road') restartRoad(); else { startBoost(); if (b.dataset.a === 'practice') ridePractice(); } }));
   }
@@ -12510,7 +12586,7 @@ var qrcode = function() {
     if (Q.get('kplay') === '1') { hideOver(); restartRoad(); startBoost(); } // test hook: skip the intro card
     requestAnimationFrame(loop);
     ZD.Kid = { setOn, toast };
-    window.ZDKID = { wFinish: (w, y) => wFinish(w, y), WR2, wSteerPref, wSteerSet: (v) => wSteerSet(v), wSteer: (dt) => wSteer(dt), wSqueeze: (d, l) => wSqueeze(d, l), ECON, RANKS, starsEver, rank, STAT, dragOpen, wantedOpen, roadGateOk, gateRows, fps: FP, fpsSet: (on) => fpsSet(on), DYN, DCUT, XSLOTS, xEquip: (id) => xEquip(id), dragStep: (dt) => dragStep(dt), dragRival: (dt) => dragRival(dt), coinBurst, closeFact, HOT_N, hotQ: (id) => hotQ(id, hotPoints(), ZD.Xray), HOT, hotPoints, showroomTap: (e) => showroomTap(e), RLV, RBOOST, roadFinish, roadPace, LANDFX, groundTilt, landGain, trafficLite: () => tLite, dragTraffic: (m) => dragTraffic(m), TGUARD, PRESETS, MYP_MAX, renderGarage, drvShiftTap, simCar, gPick, gSection, GSECS, pairInfo, inRampZone, POS, XMAX, K, P, R, B, SG, RD, D, DR, DLEN, CAT, TL, RAMP, rampSpawn, rampGrade, tiltRead, tiltCenter, screenAngle, tiltIn, DRAG_LOOK, DRAG_HUD, OBST, ROAD_TUNE, roadLevel, look, dragStart, dragTap, dragNos, dragLane, dragReset, dragDown, snapPhoto, HOT, sgPractice, ridePractice, sgTap, sgMoment, sgTick, setOn, setTab, showIntro, showEnd, showDragEnd, showTut, hideOver, restartRoad, startBoost, roadPace, W, WT, wLevel, wStart, wReset, wLane, wNos, wStep, wGen, wHitPiece, wLand, wChase, wCalmGen, wDiff, wIsDad, wLook, showWantedEnd, fireworks: () => fireworks($('#kCv').clientWidth, $('#kCv').clientHeight, 6), shift: (r) => onShift({ rating: r || 'PERFECT', to: 3 }, !!K.own), LROW, lrow, obstacleRow, spawnTraffic, RTK, RTLEN, RTRAF, TLEN, roadBeat, jumpCars, CAR_H, TKIND, TCOL, roadV, PD, PDG, pdStep, pdReset, pdFrame, pdRpm, holdMsg, RIDE, boostEnd, boostHit, GZ, gzStep, WANTED_ON, sgLights, readTick, boostDone, drawPower: (...a) => drawPower(...a) };
+    window.ZDKID = { wFinish: (w, y) => wFinish(w, y), WR2, WT2, w2Open: () => w2Open(), wSelVer: () => wSelVer(), W3B, WTB, wNos: () => wNos(), wanted_on: WANTED_ON, wSteerPref, wSteerSet: (v) => wSteerSet(v), wSteer: (dt) => wSteer(dt), wSqueeze: (d, l) => wSqueeze(d, l), ECON, RANKS, starsEver, rank, STAT, dragOpen, wantedOpen, roadGateOk, gateRows, fps: FP, fpsSet: (on) => fpsSet(on), DYN, DCUT, XSLOTS, xEquip: (id) => xEquip(id), dragStep: (dt) => dragStep(dt), dragRival: (dt) => dragRival(dt), coinBurst, closeFact, HOT_N, hotQ: (id) => hotQ(id, hotPoints(), ZD.Xray), HOT, hotPoints, showroomTap: (e) => showroomTap(e), RLV, RBOOST, roadFinish, roadPace, LANDFX, groundTilt, landGain, trafficLite: () => tLite, dragTraffic: (m) => dragTraffic(m), TGUARD, PRESETS, MYP_MAX, renderGarage, drvShiftTap, simCar, gPick, gSection, GSECS, pairInfo, inRampZone, POS, XMAX, K, P, R, B, SG, RD, D, DR, DLEN, CAT, TL, RAMP, rampSpawn, rampGrade, tiltRead, tiltCenter, screenAngle, tiltIn, DRAG_LOOK, DRAG_HUD, OBST, ROAD_TUNE, roadLevel, look, dragStart, dragTap, dragNos, dragLane, dragReset, dragDown, snapPhoto, HOT, sgPractice, ridePractice, sgTap, sgMoment, sgTick, setOn, setTab, showIntro, showEnd, showDragEnd, showTut, hideOver, restartRoad, startBoost, roadPace, W, WT, wLevel, wStart, wReset, wLane, wNos, wStep, wGen, wHitPiece, wLand, wChase, wCalmGen, wDiff, wIsDad, wLook, showWantedEnd, fireworks: () => fireworks($('#kCv').clientWidth, $('#kCv').clientHeight, 6), shift: (r) => onShift({ rating: r || 'PERFECT', to: 3 }, !!K.own), LROW, lrow, obstacleRow, spawnTraffic, RTK, RTLEN, RTRAF, TLEN, roadBeat, jumpCars, CAR_H, TKIND, TCOL, roadV, PD, PDG, pdStep, pdReset, pdFrame, pdRpm, holdMsg, RIDE, boostEnd, boostHit, GZ, gzStep, WANTED_ON, sgLights, readTick, boostDone, drawPower: (...a) => drawPower(...a) };
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
