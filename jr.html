@@ -73,7 +73,7 @@ html, body { margin: 0; height: 100%; background: #000; color: var(--txt); font-
 .codes.on { display: flex; gap: 10px; padding: 8px 10px; }
 .codes .col { border: 1px solid rgba(255,42,61,.22); background: rgba(255,42,61,.03); padding: 8px 10px; overflow: auto; position: relative; }
 .codes .list { flex: 1.35; }
-.codes .side { flex: 1; display: flex; flex-direction: column; }
+.codes .side { flex: 1; display: flex; flex-direction: column; } .codes .side > * { flex-shrink: 0; } .codes .side > #codeHist { flex: 1 0 auto; } /* short screens: the column scrolls instead of squashing; READ NOW / CLEAR CODES sit above ECU INFO */
 .ph { font-size: 11px; letter-spacing: 3px; color: var(--mute); margin-bottom: 6px; }
 .mute { color: #5a4a4d; letter-spacing: 1px; }
 .code { display: grid; grid-template-columns: 62px 1fr auto; gap: 2px 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid #1d0b0e; }
@@ -662,7 +662,7 @@ body:not(.kidon) #kFpsRow { display: none; }
 <meta name="apple-mobile-web-app-title" content="Z-DASH JR">
 <meta name="application-name" content="Z-DASH JR">
 <script>window.ZD_JR = true; /* Z-DASH JR: always opens in Passenger Mode */</script>
-<script>window.ZD_BUILD = '1792426520-8037b088';
+<script>window.ZD_BUILD = '1792438352-b9b05d7c';
 /* offline: the service worker caches the app so it runs with no internet after one online visit. Pages load network-first,
    so a new deploy shows straight away. If a newer build takes over while this page is open: reload once by itself when
    nothing is in progress, otherwise show a small "Update ready" button. */
@@ -695,6 +695,7 @@ body:not(.kidon) #kFpsRow { display: none; }
     <nav id="tabs">
       <button data-scr="drive" class="on">DRIVE</button>
       <button data-scr="gauges">GAUGES</button>
+      <button data-scr="engine" id="tabEngine" style="display:none">ENGINE</button>
       <button data-scr="car">CAR</button>
       <button data-scr="dyno">DYNO</button>
       <button data-scr="trip">TRIP</button>
@@ -714,6 +715,7 @@ body:not(.kidon) #kFpsRow { display: none; }
       <div id="modeBtn" class="modebtn"><button data-mode="cruise" class="on">CRUISE</button><button data-mode="race">RACE</button></div>
     </section>
     <section id="scr-gauges" class="scr"><canvas id="cv-gauges"></canvas></section>
+    <section id="scr-engine" class="scr"><canvas id="cv-engine"></canvas></section>
     <section id="scr-car" class="scr"><canvas id="cv-car"></canvas>
       <div class="chips" id="partChips">
         <button data-part="engine" class="on">ENGINE</button>
@@ -753,6 +755,7 @@ body:not(.kidon) #kFpsRow { display: none; }
           <button id="btnReadCodes" class="sm">READ NOW</button>
           <button id="btnClearCodes" class="sm danger">CLEAR CODES</button>
         </div>
+        <div id="ecuInfoBox" style="display:none;margin-top:10px"><div class="ph">ECU INFO</div><div id="ecuInfo"></div></div>
       </div>
     </section>
   </main>
@@ -5084,7 +5087,7 @@ void main() {
     // Driving modes. Every shift (up AND down) is scored; what "good" means depends on the mode.
     modes: {
       cruise: { // safe/smooth: early low-rpm upshifts, steady throttle, gentle braking, no lurch
-        shiftRpmUp: [3000, 5000], lurch: [0.8, 3.5], steady: [25, 160], brake: [0.3, 0.7],
+        shiftRpmUp: [3000, 5000], lurch: [0.8, 3.5], steady: [25, 160], brake: [0.5, 1.1], downLurch: [3, 9], // Oct 19: downs judged on smoothness, not rev-match (OBD speed comes in 1 mph steps, so jerk is noisy)
         up: { shiftRpm: 0.25, clutch: 0.25, lurch: 0.25, steady: 0.15, time: 0.1 },
         down: { clutch: 0.3, lurch: 0.35, brake: 0.25, time: 0.1 },
       },
@@ -5201,8 +5204,8 @@ void main() {
       const pre = this.buf.filter((x) => x.t >= c.tStart - 1.5 && x.t <= c.tStart);
       if (pre.length) brakeG = Math.max(0, -Math.min(...pre.map((x) => x._acc)));
       const parts = {
-        clutch: lin(rate, S.clutchRate),
-        lurch: lin(jerk, MS.lurch || S.lurch),
+        clutch: lin(mode === 'cruise' && !up ? Math.max(0, rate - 10 * Math.max(0, -(relDev || 0))) : rate, S.clutchRate), // CRUISE downshift: the rpm the clutch makes up (no blip) isn't held against it
+        lurch: lin(jerk, (mode === 'cruise' && !up && MS.downLurch) || MS.lurch || S.lurch),
         time: lin(duration, up ? MS.upTime || S.upTime : S.downTime),
       };
       const hard = c.preThrottle >= 60; // RACE only grades shift point / pull on upshifts made under power
@@ -5219,6 +5222,7 @@ void main() {
       let score = 0, wsum = 0;
       for (const k in w) if (parts[k] !== undefined) { score += parts[k] * w[k]; wsum += w[k]; }
       score = Math.round(score / (wsum || 1));
+      if (mode === 'cruise' && !up && relDev !== null) { parts.revMatch = lin(Math.abs(relDev), [80, 500]); if (Math.abs(relDev) < 250) score = Math.min(100, score + (Math.abs(relDev) < 120 ? 10 : 5)); } // rev-match = bonus in CRUISE
       const [, rating, base] = S.ratings.find(([min]) => score >= min);
       const B = this.byMode[mode];
       if (rating === 'SLOPPY') B.combo = 0; else B.combo++;
@@ -5670,8 +5674,8 @@ void main() {
    scoring from real drives. In the Android build, export goes through the Share sheet. */
 (function (G) {
   const ZD = (G.ZD = G.ZD || {});
-  const COLS = ['t', 'rpm', 'speed', 'throttle', 'gear', 'clutch', 'boost', 'afr', 'ethanol', 'coolant', 'oil', 'iat', 'timing', 'volts', 'load', 'fuelLevel', 'latG', 'lonG'];
-  const HEAD = ['Time (s)', 'Engine Speed (RPM)', 'Vehicle Speed (mph)', 'Throttle Position (%)', 'Gear', 'Clutch Switch', 'Boost (psi)', 'AFR', 'Ethanol Content (%)', 'Coolant Temp (F)', 'Oil Temp (F)', 'Intake Air Temp (F)', 'Ignition Timing (deg)', 'Battery Voltage (V)', 'Engine Load (%)', 'Fuel Level (%)', 'Lateral G', 'Longitudinal G'];
+  const COLS = ['t', 'rpm', 'speed', 'throttle', 'gear', 'clutch', 'boost', 'afr', 'ethanol', 'coolant', 'oil', 'iat', 'timing', 'volts', 'load', 'fuelLevel', 'latG', 'lonG', ...["lam1", "lam2", "stft1", "ltft1", "stft2", "ltft2", "cat1", "cat2", "pedalD", "pedalE", "relThr", "cmdThr", "thrB", "maf", "baro", "absLoad", "cmdLam", "purge", "evapVp", "runTime", "distClr", "timeClr", "warmups", "distMil", "timeMil", "fuelType", "o2s"]];
+  const HEAD = ['Time (s)', 'Engine Speed (RPM)', 'Vehicle Speed (mph)', 'Throttle Position (%)', 'Gear', 'Clutch Switch', 'Boost (psi)', 'AFR', 'Ethanol Content (%)', 'Coolant Temp (F)', 'Oil Temp (F)', 'Intake Air Temp (F)', 'Ignition Timing (deg)', 'Battery Voltage (V)', 'Engine Load (%)', 'Fuel Level (%)', 'Lateral G', 'Longitudinal G', ...["Lambda B1S1", "Lambda B2S1", "STFT B1 (%)", "LTFT B1 (%)", "STFT B2 (%)", "LTFT B2 (%)", "Cat Temp B1S1 (F)", "Cat Temp B2S1 (F)", "Accel Pedal D (%)", "Accel Pedal E (%)", "Relative Throttle (%)", "Commanded Throttle (%)", "Throttle B (%)", "MAF (g/s)", "Barometric Pressure (kPa)", "Absolute Load (%)", "Commanded Lambda", "Evap Purge (%)", "Evap Vapor Pressure (Pa)", "Engine Run Time (s)", "Distance Since Codes Cleared (mi)", "Time Since Codes Cleared (min)", "Warm-ups Since Clear", "Distance With MIL (mi)", "Time With MIL (min)", "Fuel Type", "O2 Sensors Present"]];
   const MAX_DRIVES = 20;
 
   function idb() {
@@ -8642,7 +8646,7 @@ var qrcode = function() {
 (function (G) {
   const ZD = (G.ZD = G.ZD || {}), MAX_RUNS = 5, FLUSH_MS = 4000;
   const PIDS = ['rpm', 'speed', 'throttle', 'map', 'coolant', 'iat', 'timing', 'volts', 'load', 'fuelLevel'];
-  const COLS = ['type', 't_ms', 'rpm', 'speed_mph', 'gear', 'throttle', 'coolant_f', 'map_kpa', 'iat_f', 'timing', 'volts', 'load', 'fuel', 'poll_ms', 'fps', 'frame_max_ms', 'longtasks', 'info'];
+  const COLS = ['type', 't_ms', 'rpm', 'speed_mph', 'gear', 'throttle', 'coolant_f', 'map_kpa', 'iat_f', 'timing', 'volts', 'load', 'fuel', 'poll_ms', 'fps', 'frame_max_ms', 'longtasks', 'info', ...["lambda_b1", "lambda_b2", "stft_b1", "ltft_b1", "stft_b2", "ltft_b2", "cat_b1_f", "cat_b2_f", "pedal_d", "pedal_e", "rel_throttle", "cmd_throttle", "throttle_b", "maf_gs", "baro_kpa", "abs_load", "cmd_lambda", "evap_purge", "evap_pa", "run_time_s", "dist_since_clear_mi", "time_since_clear_min", "warmups_since_clear", "dist_mil_mi", "time_mil_min", "fuel_type", "o2_sensors"]];
   const off = (() => { try { return new URLSearchParams(location.search).has('norec'); } catch (e) { return false; } })();
   let dbp = null; const db = () => (dbp ||= new Promise((res) => { try { const r = indexedDB.open('zdash-runs', 1); r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('runs', { keyPath: 'id' }); d.createObjectStore('chunks', { autoIncrement: true }).createIndex('run', 'run'); }; r.onsuccess = () => res(r.result); r.onerror = () => res(null); } catch (e) { res(null); } }));
   const rq = (r) => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
@@ -8663,7 +8667,7 @@ var qrcode = function() {
   R.pollDone = function (last, ms) { R.poll = { last, ms }; };
   /* one row per frame the dash receives (= real poll rate) */
   R.sample = function (f, gear) { if (!R.on) return; if (f.rpm >= 400 && R.run && !R.run.ran) R.run.ran = 1; const L = (R.poll && R.poll.last) || {}, ms = R.poll ? R.poll.ms : null; R.poll = null;
-    R.buf.push(['s', now(), num(f.rpm, 0), num(f.speed), f.gear ?? gear ?? (ZD.inferGear && f.rpm && f.speed > 3 ? ZD.inferGear(f.rpm, f.speed) ?? '' : ''), num(f.throttle), num(f.coolant, 0), num(L.map, 0), num(f.iat, 0), num(f.timing), num(f.volts, 2), num(f.load), num(f.fuelLevel), num(ms, 0), '', '', '', '']); R.n++; };
+    R.buf.push(['s', now(), num(f.rpm, 0), num(f.speed), f.gear ?? gear ?? (ZD.inferGear && f.rpm && f.speed > 3 ? ZD.inferGear(f.rpm, f.speed) ?? '' : ''), num(f.throttle), num(f.coolant, 0), num(L.map, 0), num(f.iat, 0), num(f.timing), num(f.volts, 2), num(f.load), num(f.fuelLevel), num(ms, 0), '', '', '', '', ...["lam1", "lam2", "stft1", "ltft1", "stft2", "ltft2", "cat1", "cat2", "pedalD", "pedalE", "relThr", "cmdThr", "thrB", "maf", "baro", "absLoad", "cmdLam", "purge", "evapVp", "runTime", "distClr", "timeClr", "warmups", "distMil", "timeMil", "fuelType", "o2s"].map((k) => num(f[k], 3))]); R.n++; };
   R.event = function (kind, info) { if (!R.on) return; const row = new Array(COLS.length).fill(''); row[0] = 'e'; row[1] = now(); row[17] = String(kind) + (info != null && info !== '' ? ':' + String(info).replace(/[\n,]/g, ' ').slice(0, 160) : ''); R.buf.push(row); if (R.run) R.run.events++; };
   R.flush = async function () { if (!R.run || !R.buf.length) return; const rows = R.buf; R.buf = []; R.run.samples = R.n; R.run.ended = Date.now(); R.run.chunks++;
     const d = await db(); if (!d) { (R.mem ||= []).push(...rows); return; }
@@ -8684,7 +8688,7 @@ var qrcode = function() {
   R.export = async function (id) { const l = await R.list(); if (!id && l[0] && l[0].ran === 0) { const d = l.find((r) => r.ran !== 0); if (d) return R.export2([d, l[0]]); } const run = id ? l.find((r) => r.id === id) : l[0]; if (!run) return 'none'; return R.export2([run]); };
   R.export2 = async function (runs) { const out = []; for (const run of runs) {
     const obd = (R.run && R.run.id === run.id && R.run.obd) || run.obd; // supported-PID scan from the OBD source (first second after connect)
-    const rows = await R.rows(run.id), csv = `# Z-DASH run recorder v1 · ${run.label} · started ${new Date(run.started).toISOString()} · build ${run.build}\n# type: s = sample (one per OBD frame), h = app health (1 per second), e = event\n${obd ? `# supported-pids: ${obd.mode01.join(' ') || 'none'}\n# mode09: ${obd.mode09 || 'none'}\n` : ''}${COLS.join(',')}\n` + rows.map((r) => r.join(',')).join('\n') + '\n';
+    const rows = await R.rows(run.id), csv = `# Z-DASH run recorder v1 · ${run.label} · started ${new Date(run.started).toISOString()} · build ${run.build}\n# type: s = sample (one per OBD frame), h = app health (1 per second), e = event\n${obd ? `# supported-pids: ${obd.mode01.join(' ') || 'none'}\n# mode09: ${obd.mode09 || 'none'}\n${obd.vin ? '# vin: ' + obd.vin + '\n' : ''}${obd.calid ? '# calid: ' + obd.calid + '\n' : ''}` : ''}${COLS.join(',')}\n` + rows.map((r) => r.join(',')).join('\n') + '\n';
     const sum = JSON.stringify(R.summary(run, rows), null, 1), base = `zdash-run-${run.id}`; out.push([csv, sum, base]); }
     const files = typeof File !== 'undefined' ? out.flatMap(([csv, sum, base]) => [new File([csv], base + '.csv', { type: 'text/csv' }), new File([sum], base + '.json', { type: 'application/json' })]) : null;
     if (G.ZDNative && G.ZDNative.shareFile) { out.forEach(([csv, , base]) => G.ZDNative.shareFile(base + '.csv', csv)); return 'shared'; }
@@ -8801,7 +8805,7 @@ var qrcode = function() {
     let hi = lines.findIndex((l) => /rpm|engine.?speed/i.test(l));
     if (hi < 0) throw new Error('Could not find a header row with RPM in it');
     const header = split(lines[hi]);
-    const map = {};
+    const map = {}, EXACT = {"lambda b1s1": "lam1", "lambda b2s1": "lam2", "stft b1 (%)": "stft1", "ltft b1 (%)": "ltft1", "stft b2 (%)": "stft2", "ltft b2 (%)": "ltft2", "cat temp b1s1 (f)": "cat1", "cat temp b2s1 (f)": "cat2", "accel pedal d (%)": "pedalD", "accel pedal e (%)": "pedalE", "relative throttle (%)": "relThr", "commanded throttle (%)": "cmdThr", "throttle b (%)": "thrB", "maf (g/s)": "maf", "barometric pressure (kpa)": "baro", "absolute load (%)": "absLoad", "commanded lambda": "cmdLam", "evap purge (%)": "purge", "evap vapor pressure (pa)": "evapVp", "engine run time (s)": "runTime", "distance since codes cleared (mi)": "distClr", "time since codes cleared (min)": "timeClr", "warm-ups since clear": "warmups", "distance with mil (mi)": "distMil", "time with mil (min)": "timeMil", "fuel type": "fuelType", "o2 sensors present": "o2s", "lambda_b1": "lam1", "lambda_b2": "lam2", "stft_b1": "stft1", "ltft_b1": "ltft1", "stft_b2": "stft2", "ltft_b2": "ltft2", "cat_b1_f": "cat1", "cat_b2_f": "cat2", "pedal_d": "pedalD", "pedal_e": "pedalE", "rel_throttle": "relThr", "cmd_throttle": "cmdThr", "throttle_b": "thrB", "maf_gs": "maf", "baro_kpa": "baro", "abs_load": "absLoad", "cmd_lambda": "cmdLam", "evap_purge": "purge", "evap_pa": "evapVp", "run_time_s": "runTime", "dist_since_clear_mi": "distClr", "time_since_clear_min": "timeClr", "warmups_since_clear": "warmups", "dist_mil_mi": "distMil", "time_mil_min": "timeMil", "fuel_type": "fuelType", "o2_sensors": "o2s"}; header.forEach((h, i) => { const k = EXACT[h.toLowerCase()]; if (k && map[k] === undefined) map[k] = i; }); // OBD+ columns by exact name, before the loose matching
     for (const key in COLS) {
       const idx = header.findIndex((h) => COLS[key].some((re) => re.test(h)) && !Object.values(map).includes(header.indexOf(h)));
       if (idx >= 0) map[key] = idx;
@@ -8823,12 +8827,12 @@ var qrcode = function() {
       let boost = num('boost'); if (boost !== null && boostKpaAbs) boost = (boost - 101.3) * 0.145038;
       let afr = num('afr'); if (afr !== null && lambda) afr *= 14.7;
       const temp = (k) => { const v = num(k); return v === null ? null : tempC(k) ? v * 1.8 + 32 : v; };
-      const clutchRaw = map.clutch !== undefined ? c[map.clutch] : null;
+      const clutchRaw = map.clutch !== undefined && c[map.clutch] !== '' && c[map.clutch] != null ? c[map.clutch] : null; // blank clutch column (OBD logs) = no clutch switch, not 'released'
       frames.push({
         t, rpm: num('rpm'), speed: F(speed), throttle: F(num('throttle')), gear: F(num('gear')),
         clutch: clutchRaw === null ? null : /^(1|on|true|pressed|depressed|yes)$/i.test(clutchRaw),
         boost, afr, coolant: temp('coolant'), oil: temp('oil'), iat: temp('iat'),
-        timing: F(num('timing')), volts: F(num('volts')), load: F(num('load')), ethanol: F(num('ethanol')), fuelLevel: F(num('fuelLevel')), brake: null, latG: null, lonG: null,
+        timing: F(num('timing')), volts: F(num('volts')), load: F(num('load')), ethanol: F(num('ethanol')), fuelLevel: F(num('fuelLevel')), brake: null, latG: null, lonG: null, ...Object.fromEntries(["lam1", "lam2", "stft1", "ltft1", "stft2", "ltft2", "cat1", "cat2", "pedalD", "pedalE", "relThr", "cmdThr", "thrB", "maf", "baro", "absLoad", "cmdLam", "purge", "evapVp", "runTime", "distClr", "timeClr", "warmups", "distMil", "timeMil", "fuelType", "o2s"].map((k) => [k, num(k)])),
       });
     }
     const t0 = frames.length ? frames[0].t : 0; frames.forEach((f) => (f.t -= t0));
@@ -9008,26 +9012,35 @@ var qrcode = function() {
     }
     // Mode 01 PIDs. Up to 6 PIDs per request on CAN; STN chips answer fast (~15-25 req/s).
     async loop() {
-      const fast = '010C0D110B', slow = ['01050F0E42', '01042F']; let n = 0;
+      const fast = '010C0D110B', slow = ['01050F0E42', '01042F']; let n = 0, ri = 0, si = 0;
       while (this.running) {
         try {
           await this.exclusive(async () => {
             if (this.scanQ && this.scanQ.length) await this.scanStep(); // one supported-PID request per cycle, so it never holds up the gauges
-            const pt = performance.now(); await this.poll(fast); this.pollMs = performance.now() - pt;
-            if (n++ % 10 === 0) { for (const s of slow) await this.poll(s); if (!this.has42) await this.readVolts(); } // no PID 42 -> adapter battery voltage (ATRV)
+            const X = this.extra(), fx = X.fast.length && n % 2 ? X.fast[ri++ % X.fast.length] : '';
+            const pt = performance.now(); await this.poll(fast + fx); this.pollMs = performance.now() - pt; // every other cycle: + 2 rotating extra PIDs in the same request (no extra round trip)
+            if (n++ % 10 === 0) { for (const s of slow) await this.poll(s); if (!this.has42) await this.readVolts(); }
+            if (n % 20 === 6 && X.slow.length) await this.poll(X.slow[si++ % X.slow.length]); // OBD+ slow round-robin: temps / air / since-clear, one request every 20 cycles // no PID 42 -> adapter battery voltage (ATRV)
           });
           if (ZD.Rec) ZD.Rec.pollDone(this.last, this.pollMs);
           if (performance.now() - (this.okAt || 0) > 2500) { this.last = {}; await new Promise((r) => setTimeout(r, 250)); continue; } // ECU not answering (key off / asleep): no stale frames
           const L = this.last;
           this.emit({
             t: (performance.now() - this.t0) / 1000, rpm: L.rpm ?? null, speed: L.speed ?? null, throttle: L.throttle ?? null,
-            gear: null, clutch: null, boost: L.map !== undefined ? (L.map - 101.3) * 0.145038 : null, afr: null,
+            gear: null, clutch: null, boost: L.map !== undefined ? (L.map - 101.3) * 0.145038 : null, afr: L.lam1 != null || L.lam2 != null ? 14.7 * (L.lam1 != null && L.lam2 != null ? (L.lam1 + L.lam2) / 2 : L.lam1 ?? L.lam2) : null, // gasoline-equivalent AFR from wideband lambda
             coolant: L.coolant ?? null, oil: null, iat: L.iat ?? null, timing: L.timing ?? null, volts: L.volts ?? null,
-            load: L.load ?? null, ethanol: null, fuelLevel: L.fuelLevel ?? null, brake: null, latG: null, lonG: null,
+            load: L.load ?? null, ethanol: null, fuelLevel: L.fuelLevel ?? null, brake: null, latG: null, lonG: null, ...Object.fromEntries(["lam1", "lam2", "stft1", "ltft1", "stft2", "ltft2", "cat1", "cat2", "pedalD", "pedalE", "relThr", "cmdThr", "thrB", "maf", "baro", "absLoad", "cmdLam", "purge", "evapVp", "runTime", "distClr", "timeClr", "warmups", "distMil", "timeMil", "fuelType", "o2s"].map((k) => [k, L[k] ?? null])),
           });
         } catch (e) { console.warn(e); if (ZD.Rec) { const tn = performance.now(); this.errN = (this.errN || 0) + 1; if (!this.errT || tn - this.errT > 1000) { ZD.Rec.event('obd-error', (e && e.message) + (this.errN > 1 ? ' x' + this.errN : '')); this.errT = tn; this.errN = 0; } } await new Promise((r) => setTimeout(r, 250)); }
       }
     }
+    // OBD+ extra PIDs, only the ones this car reported as supported (scan, or the cached scan from last time)
+    extra() { const sup = this.supported || this.cachedSup || (this.cachedSup = (() => { try { return JSON.parse(localStorage.getItem('zdash.obd.pids')).mode01 || []; } catch (e) { return []; } })());
+      if (this._xs === sup) return this._x; this._xs = sup; const has = (p) => sup.includes(p), F = [];
+      for (const pr of [['24', '28'], ['06', '08'], ['24', '28'], ['49', '45'], ['24', '28'], ['07', '09']]) { const s = pr.filter(has).join(''); if (s) F.push(s); } // lambda ~1/4, each trim / pedal pair ~1/12 of fast cycles
+      const grp = (l) => { const s = l.filter(has); return s.length ? '01' + s.join('') : null; };
+      const SL = [grp(['3C', '3D', '33', '43', '44', '2E']), grp(['32', '4C', '47', '4A', '66']), grp(['3C', '3D', '33', '43', '44', '2E']), grp(['1F', '31', '4E', '30', '21', '4D']), grp(['51', '13'])].filter(Boolean);
+      return (this._x = { fast: F, slow: SL }); }
     // Supported-PID scan: 0100 / 0120 / 0140 ... while the bitmask says the next block exists, then 0900 (Mode 09 info).
     // Read-only requests only. Result -> '# supported-pids: ...' row in the run export + localStorage 'zdash.obd.pids'.
     async scanStep() {
@@ -9040,12 +9053,15 @@ var qrcode = function() {
           for (let k = 0; k < 32; k++) if (m & (0x80000000 >>> k)) this.scanPids.push((blk + k + 1).toString(16).toUpperCase().padStart(2, '0'));
           if ((m & 1) && blk < 0xE0) this.scanQ.unshift('01' + (blk + 0x20).toString(16).toUpperCase().padStart(2, '0')); }
         if (!this.scanQ.some((x) => x.startsWith('01'))) this.scanQ.push('0900');
-      } else this.scanM09 = hex.slice(hex.indexOf('4900') >= 0 ? hex.indexOf('4900') : 0).slice(0, 40) || String(r).slice(0, 40);
+      } else if (q === '0900') { this.scanM09 = hex.slice(hex.indexOf('4900') >= 0 ? hex.indexOf('4900') : 0).slice(0, 40) || String(r).slice(0, 40);
+        const j = hex.indexOf('4900'), m = j >= 0 ? parseInt(hex.substr(j + 4, 8), 16) >>> 0 : 0; if (m & 0x40000000) this.scanQ.push('0902'); if (m & 0x10000000) this.scanQ.push('0904'); } // VIN, calibration ID (once)
+      else { const asc = (h) => h.replace(/../g, (x) => { const c = parseInt(x, 16); return c > 32 && c < 127 ? String.fromCharCode(c) : ''; }), k = hex.indexOf(q === '0902' ? '4902' : '4904'), txt = k >= 0 ? asc(hex.slice(k + 6)) : '';
+        (this.info ||= {})[q === '0902' ? 'vin' : 'calid'] = txt || null; if (txt) this.note(q === '0902' ? 'vin' : 'calid', txt); }
       if (!this.scanQ.length) {
         const pids = this.scanPids.filter((p) => p.slice(1) !== '0' || !['20', '40', '60', '80', 'A0', 'C0', 'E0'].includes(p)); // drop the "next block supported" markers
         this.supported = pids;
         try { localStorage.setItem('zdash.obd.pids', JSON.stringify({ t: Date.now(), adapter: this.prof && this.prof.name, mode01: pids, mode09: this.scanM09 })); } catch (e) {}
-        if (ZD.Rec && ZD.Rec.run) ZD.Rec.run.obd = { mode01: pids, mode09: this.scanM09 }; // -> EXPORT RUN header comments
+        if (ZD.Rec && ZD.Rec.run) ZD.Rec.run.obd = { mode01: pids, mode09: this.scanM09, vin: (this.info || {}).vin, calid: (this.info || {}).calid }; // -> EXPORT RUN header comments
         this.note('supported-pids', pids.join(' ') || 'none'); this.note('mode09', this.scanM09 || 'none');
       }
     }
@@ -9070,7 +9086,7 @@ var qrcode = function() {
     //   "00A\r0:410C0B2E0D00\r1:11140B1E" : a 3-digit byte-count line, then "N:" frame-index prefixes on each line.
     // Returns the Set of PIDs read, or null if the reply is inconsistent (nothing is applied then).
     parse(resp, req = '') {
-      const lens = { '0C': 2, '0D': 1, '11': 1, '0B': 1, '05': 1, '0F': 1, '0E': 1, '42': 2, '04': 1, '2F': 1 };
+      const lens = { '0C': 2, '0D': 1, '11': 1, '0B': 1, '05': 1, '0F': 1, '0E': 1, '42': 2, '04': 1, '2F': 1, '24': 4, '28': 4, '06': 1, '07': 1, '08': 1, '09': 1, '3C': 2, '3D': 2, '49': 1, '4A': 1, '45': 1, '4C': 1, '47': 1, '66': 5, '33': 1, '43': 2, '44': 2, '2E': 1, '32': 2, '1F': 2, '31': 2, '4E': 2, '30': 1, '21': 2, '4D': 2, '51': 1, '13': 1 };
       this.rawNote('obd-raw', req, resp);
       let hex = '', count = 0, counts = 0; this.badHex = false;
       for (let ln of String(resp).split(/[\r\n]+/)) {
@@ -9105,7 +9121,16 @@ var qrcode = function() {
           case '0E': L.timing = b[0] / 2 - 64; break;
           case '42': L.volts = (b[0] * 256 + b[1]) / 1000; this.has42 = true; break;
           case '04': L.load = (b[0] * 100) / 255; break;
-          case '2F': L.fuelLevel = (b[0] * 100) / 255; break; // factory sender — unreliable when low
+          case '2F': L.fuelLevel = (b[0] * 100) / 255; break;
+          case '24': L.lam1 = ((b[0] * 256 + b[1]) * 2) / 65536; break; case '28': L.lam2 = ((b[0] * 256 + b[1]) * 2) / 65536; break; // wideband: lambda (fuel-independent)
+          case '06': L.stft1 = ((b[0] - 128) * 100) / 128; break; case '07': L.ltft1 = ((b[0] - 128) * 100) / 128; break; case '08': L.stft2 = ((b[0] - 128) * 100) / 128; break; case '09': L.ltft2 = ((b[0] - 128) * 100) / 128; break;
+          case '3C': L.cat1 = ((b[0] * 256 + b[1]) / 10 - 40) * 1.8 + 32; break; case '3D': L.cat2 = ((b[0] * 256 + b[1]) / 10 - 40) * 1.8 + 32; break;
+          case '49': L.pedalD = (b[0] * 100) / 255; break; case '4A': L.pedalE = (b[0] * 100) / 255; break; case '45': L.relThr = (b[0] * 100) / 255; break; case '4C': L.cmdThr = (b[0] * 100) / 255; break; case '47': L.thrB = (b[0] * 100) / 255; break;
+          case '66': if (b[0] & 1) L.maf = (b[1] * 256 + b[2]) / 32; else if (b[0] & 2) L.maf = (b[3] * 256 + b[4]) / 32; break;
+          case '33': L.baro = b[0]; break; case '43': L.absLoad = ((b[0] * 256 + b[1]) * 100) / 255; break; case '44': L.cmdLam = ((b[0] * 256 + b[1]) * 2) / 65536; break; case '2E': L.purge = (b[0] * 100) / 255; break;
+          case '32': { let v = b[0] * 256 + b[1]; if (v > 32767) v -= 65536; L.evapVp = v / 4; break; }
+          case '1F': L.runTime = b[0] * 256 + b[1]; break; case '31': L.distClr = (b[0] * 256 + b[1]) * 0.621371; break; case '4E': L.timeClr = b[0] * 256 + b[1]; break; case '30': L.warmups = b[0]; break;
+          case '21': L.distMil = (b[0] * 256 + b[1]) * 0.621371; break; case '4D': L.timeMil = b[0] * 256 + b[1]; break; case '51': L.fuelType = b[0]; break; case '13': L.o2s = b[0]; break; // factory sender — unreliable when low
         }
       }
       return got;
@@ -9858,6 +9883,79 @@ var qrcode = function() {
   }
 
   const afrCol = (v) => (v < 11 ? '#ff2a3d' : v < 12.8 ? '#ff7a50' : v < 15.5 ? '#e9e3e4' : '#3ee6ff');
+  // ENGINE status words: smoothed value -> state with dead bands -> 0.8 s dwell before the word changes.
+  const ENGW = {};
+  function engWord(key, raw, pick) {
+    const now = performance.now(), e = ENGW[key] || (ENGW[key] = { v: raw, s: null, c: null, ct: now, t: now });
+    if (raw == null) { e.s = null; e.c = null; e.v = null; return null; }
+    const dt = Math.min(2000, now - e.t); e.t = now; e.v = e.v == null ? raw : e.v + (raw - e.v) * (1 - Math.exp(-dt / 600));
+    const cand = pick(e.v, e.s);
+    if (e.s == null) e.s = cand;
+    else if (cand !== e.s) { if (cand !== e.c) { e.c = cand; e.ct = now; } else if (now - e.ct >= 800) { e.s = cand; e.c = null; } }
+    else e.c = null;
+    return e.s;
+  }
+  const ENG_WCOL = { OK: '#7d6a6d', AMB: '#ffb020', RED: '#ff2a3d' };
+  // lambda: boosted above 2 psi (leaves below 1.5). Off boost: OK 0.97-1.03, RICH below 0.97, LEAN above 1.05 (1.03-1.05 keeps the last word).
+  // On boost, rich is expected; above 0.90 is LEAN! (clears below 0.88).
+  function lamWord(bank, lam, boost) {
+    const b = engWord('boost', boost ?? 0, (v, s) => (s === 'B' ? (v < 1.5 ? 'N' : 'B') : v > 2 ? 'B' : 'N')) === 'B';
+    const w = engWord('lam' + bank + (b ? 'b' : 'n'), lam, b
+      ? (v, s) => (s === 'LEAN!' ? (v < 0.88 ? 'RICH · BOOST OK' : 'LEAN!') : v > 0.9 ? 'LEAN!' : 'RICH · BOOST OK')
+      : (v, s) => { if (s === 'RICH' && v < 0.975) return 'RICH'; if (s === 'LEAN' && v > 1.03) return 'LEAN'; return v < 0.97 ? 'RICH' : v > 1.05 ? 'LEAN' : s === 'LEAN' || s === 'RICH' || s == null ? 'OK' : s; });
+    return w && [w, w === 'LEAN!' ? 'RED' : w === 'RICH' || w === 'LEAN' ? 'AMB' : 'OK'];
+  }
+  // fuel trim: total correction (short + long). OK within ±10% (leaves at ±10, returns inside ±8).
+  function trimWord(bank, s, l) {
+    const tot = s == null && l == null ? null : (s || 0) + (l || 0);
+    const w = engWord('trim' + bank, tot, (v, st) => { const m = st && st !== 'OK' ? 8 : 10; return v > m ? 'ADDING FUEL' : v < -m ? 'PULLING FUEL' : 'OK'; });
+    const a = Math.abs(ENGW['trim' + bank]?.v ?? 0);
+    return w && [w, w === 'OK' ? 'OK' : a > 20 ? 'RED' : 'AMB'];
+  }
+  // cat temp: hotter bank. OK / HOT above 1400°F / TOO HOT above 1600°F, 30°F dead band on the way down.
+  function catWord(c1, c2) {
+    const m = c1 == null && c2 == null ? null : Math.max(c1 ?? -1e9, c2 ?? -1e9);
+    const w = engWord('cat', m, (v, s) => { if (v > 1600 || (s === 'TOO HOT' && v > 1570)) return 'TOO HOT'; if (v > 1400 || (s !== 'OK' && s != null && v > 1370)) return 'HOT'; return 'OK'; });
+    return w && [w, w === 'TOO HOT' ? 'RED' : w === 'HOT' ? 'AMB' : 'OK'];
+  }
+  // ENGINE (OBD+), condensed (Oct 19): lambda per bank, fuel trims per bank, cat temps, pedal, throttle, MAF, abs load.
+  // A tile shows when any of its values has data; blank ones are left out and the rest reflow.
+  function drawEngine() {
+    const { ctx, w, h } = ZD.fit($('#cv-engine')), f = S.F || {};
+    ZD.grid(ctx, w, h, 32, 0.035);
+    const has = (...k) => k.some((x) => f[x] != null), n = (v, d) => (v == null ? '--' : (+v).toFixed(d)), sg = (v, d) => (v == null ? '--' : (v > 0 ? '+' : '') + (+v).toFixed(d));
+    const trimCol = (...v) => { const m = Math.max(0, ...v.filter((x) => x != null).map(Math.abs)); return m > 20 ? '#ff2a3d' : m > 10 ? '#ffb020' : COL.TXT; };
+    const lam = (k, b) => ({ show: has(k), lab: 'LAMBDA ' + b, big: n(f[k], 3), sub: f[k] != null ? `${(f[k] * 14.7).toFixed(1)} AFR GAS-EQ` : '', sub2: f.cmdLam != null ? `CMD ${n(f.cmdLam, 3)}` : '', word: lamWord(b, f[k], f.boost) });
+    const trim = (s, l, b) => ({ show: has(s, l), lab: 'FUEL TRIM ' + b, pair: [['SHORT', sg(f[s], 1)], ['LONG', sg(f[l], 1)]], unit: '%', col: trimCol(f[s], f[l]), word: trimWord(b, f[s], f[l]) });
+    const cm = Math.max(f.cat1 || 0, f.cat2 || 0);
+    const TL = [lam('lam1', 'B1'), lam('lam2', 'B2'), trim('stft1', 'ltft1', 'B1'), trim('stft2', 'ltft2', 'B2'),
+      { show: has('cat1', 'cat2'), lab: 'CAT TEMP', pair: [['B1', n(f.cat1, 0)], ['B2', n(f.cat2, 0)]], unit: '°F', col: cm > 1600 ? '#ff2a3d' : cm > 1400 ? '#ffb020' : COL.TXT, word: catWord(f.cat1, f.cat2) },
+      { show: has('pedalD'), lab: 'PEDAL', big: n(f.pedalD, 0), sub: '%' },
+      { show: has('relThr'), lab: 'THROTTLE', big: n(f.relThr, 0), sub: '% RELATIVE', sub2: f.cmdThr != null ? `CMD ${n(f.cmdThr, 0)}%` : '' },
+      { show: has('maf'), lab: 'MAF', big: n(f.maf, 1), sub: 'G/S' }, { show: has('absLoad'), lab: 'ABS LOAD', big: n(f.absLoad, 0), sub: '%' }].filter((t) => t.show);
+    if (!TL.length) { T(ctx, 'NO ENGINE DATA FROM THIS SOURCE', w / 2, h / 2, 13, COL.MUTE, 'center', 'txt', 700); return; }
+    const rows = TL.length > 4 ? 2 : 1, cols = Math.ceil(TL.length / rows), tw = (w - 16) / cols, th = (h - 12) / rows;
+    TL.forEach((t, i) => { const x = 8 + (i % cols) * tw, y = 6 + Math.floor(i / cols) * th, pw = tw - 6, ph = th - 6, big = ZD.clamp(Math.min(ph * 0.26, pw * 0.2), 16, 40);
+      ZD.panel(ctx, x, y, pw, ph, t.lab);
+      if (t.word) T(ctx, t.word[0], x + pw - 8, y + 15, pw < 140 ? 9 : 10, ENG_WCOL[t.word[1]], 'right', 'txt', 800);
+      if (t.pair) { t.pair.forEach(([l, v], j) => { const cx = x + pw * (j ? 0.75 : 0.25); T(ctx, v, cx, y + ph * 0.56, big * 0.8, t.col, 'center', 'num', 700); T(ctx, l, cx, y + ph * 0.56 + 18, 10, COL.MUTE, 'center', 'txt', 700); });
+        T(ctx, t.unit, x + pw / 2, y + ph - 8, 10, COL.MUTE, 'center', 'txt', 700); return; }
+      const yb = y + ph * (t.sub2 ? 0.52 : 0.58);
+      T(ctx, t.big, x + pw / 2, yb, big, COL.TXT, 'center', 'num', 700);
+      T(ctx, t.sub, x + pw / 2, yb + 20, 10, COL.MUTE, 'center', 'txt', 700);
+      if (t.sub2) T(ctx, t.sub2, x + pw / 2, y + ph - 9, 11, COL.TXT, 'center', 'txt', 700); });
+  }
+  // CODES → ECU INFO (OBD+): VIN / calibration (Mode 09, read once) and the since-clear / run-time PIDs. Hidden when there's nothing.
+  function renderEcuInfo() { const f = S.F || {}, I = (S.src && S.src.info) || {}, R = [];
+    const add = (k, v) => { if (v != null && v !== '') R.push(`<div class="hist"><span class="id">${k}</span><span>${esc(v)}</span><span class="c"></span></div>`); };
+    const o2 = (m) => [0, 4].map((s, b) => { const l = [1, 2, 3, 4].filter((n) => m & (1 << (s + n - 1))); return l.length ? `B${b + 1}: S${l.join(', S')}` : ''; }).filter(Boolean).join(' · ');
+    add('VIN', I.vin); add('CAL ID', I.calid); add('RUN', f.runTime != null ? tfmt(f.runTime) + ' this start' : null);
+    add('CLEAR', f.distClr != null || f.timeClr != null || f.warmups != null ? [f.distClr != null ? Math.round(f.distClr).toLocaleString() + ' mi' : '', f.timeClr != null ? Math.round(f.timeClr / 60).toLocaleString() + ' h engine time' : '', f.warmups != null ? f.warmups + ' warm-ups' : ''].filter(Boolean).join(' · ') + ' since codes cleared' : null);
+    add('MIL', f.distMil != null || f.timeMil != null ? `${Math.round(f.distMil || 0)} mi · ${Math.round(f.timeMil || 0)} min with check-engine light on` : null);
+    add('FUEL', f.fuelType != null ? ({ 1: 'Gasoline', 2: 'Methanol', 3: 'Ethanol', 4: 'Diesel', 9: 'Bi-fuel gasoline', 0: 'Not reported' }[f.fuelType] || 'Type ' + f.fuelType) : null);
+    add('O2', f.o2s != null ? o2(f.o2s) || 'none' : null);
+    add('BARO', f.baro != null ? `${Math.round(f.baro)} kPa` : null); add('EVAP', f.purge != null || f.evapVp != null ? [f.purge != null ? `purge ${Math.round(f.purge)}%` : '', f.evapVp != null ? `vapor ${Math.round(f.evapVp)} Pa` : ''].filter(Boolean).join(' · ') : null);
+    $('#ecuInfoBox').style.display = R.length ? '' : 'none'; const html = R.join(''); if ($('#ecuInfo').innerHTML !== html) $('#ecuInfo').innerHTML = html; }
   function drawGauges() {
     const { ctx, w, h } = ZD.fit($('#cv-gauges')), f = S.F || {};
     ZD.grid(ctx, w, h, 32, 0.035);
@@ -10324,11 +10422,12 @@ var qrcode = function() {
     const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now;
     if (ZD.perf.fps) { FPS.n++; if (now - FPS.t0 >= 500) { const fps = (FPS.n * 1000) / (now - FPS.t0); FPS.el.textContent = `${fps.toFixed(0)} FPS${ZD.perf.low ? ' · LOW' : ''} · ${Math.round(ZD.perf.dpr(3) * 100) / 100}×`; FPS.el.classList.toggle('slow', fps < 40); FPS.n = 0; FPS.t0 = now; } }
     if (S.src && S.src.label === 'OBD' && S.frameAt && now - S.frameAt > 5000 && S.trip.maxRpm >= 400 && $('#poweroff').classList.contains('hidden')) showPowerOff(); // no OBD data for 5 s after a real drive: end it once (newTrip after the tap can't end again)
+    { const on = !!(S.seen && ["lam1", "lam2", "stft1", "ltft1", "stft2", "ltft2", "cat1", "cat2", "pedalD", "pedalE", "relThr", "cmdThr", "thrB", "maf", "baro", "absLoad", "cmdLam", "purge", "evapVp", "runTime", "distClr", "timeClr", "warmups", "distMil", "timeMil", "fuelType", "o2s"].some((k) => S.seen.has(k))), te = $('#tabEngine'); if (te.style.display !== (on ? '' : 'none')) te.style.display = on ? '' : 'none'; } if (S.screen === 'codes' && now - (S.ecuT || 0) > 500) { S.ecuT = now; renderEcuInfo(); } // ENGINE tab only with OBD+ data
     if (document.body.classList.contains('kidon')) { requestAnimationFrame(loop); return; } // Passenger Mode is showing: keep data/state running, skip drawing Dad's screens
     if (SP.on) drawSplash(now);
     if (!$('#poweroff').classList.contains('hidden')) drawPowerOff(now);
     const edge = $('#edge'); const eOn = !!S.edgeOn && S.screen === 'drive'; edge.classList.toggle('on', eOn); edge.classList.toggle('cruise', S.edgeMode === 'cruise');
-    const fn = { runs: drawRuns, handling: drawHandling, drive: drawDrive, gauges: drawGauges, car: () => drawCar(dt), dyno: drawDyno, trip: drawTrip }[S.screen]; if (fn) fn();
+    const fn = { runs: drawRuns, handling: drawHandling, drive: drawDrive, gauges: drawGauges, engine: drawEngine, car: () => drawCar(dt), dyno: drawDyno, trip: drawTrip }[S.screen]; if (fn) fn();
     requestAnimationFrame(loop);
   }
 
