@@ -640,7 +640,7 @@ body.kidon #tglStillen { display: none; }
 <meta name="apple-mobile-web-app-title" content="Z-DASH JR">
 <meta name="application-name" content="Z-DASH JR">
 <script>window.ZD_JR = true; /* Z-DASH JR: always opens in Passenger Mode */</script>
-<script>window.ZD_BUILD = '1792357370-4d54fea4';
+<script>window.ZD_BUILD = '1792376566-3eeb7a95';
 /* offline: the service worker caches the app so it runs with no internet after one online visit. Pages load network-first,
    so a new deploy shows straight away. If a newer build takes over while this page is open: reload once by itself when
    nothing is in progress, otherwise show a small "Update ready" button. */
@@ -8658,7 +8658,8 @@ var qrcode = function() {
       fps: { min: fps[0] ?? null, p05: q(fps, 0.05), median: q(fps, 0.5) }, poll_ms: { median: q(poll, 0.5), p95: q(poll, 0.95), max: poll[poll.length - 1] ?? null }, long_tasks: h.reduce((a, r) => a + (+r[16] || 0), 0), events: evc,
       hidden_or_sleep: e.filter((r) => /^(hidden|pagehide|freeze)/.test(r[17])).map((r) => ({ at_ms: r[1], what: r[17] })) }; };
   R.export = async function (id) { const l = await R.list(); const run = id ? l.find((r) => r.id === id) : l[0]; if (!run) return 'none';
-    const rows = await R.rows(run.id), csv = `# Z-DASH run recorder v1 · ${run.label} · started ${new Date(run.started).toISOString()} · build ${run.build}\n# type: s = sample (one per OBD frame), h = app health (1 per second), e = event\n${COLS.join(',')}\n` + rows.map((r) => r.join(',')).join('\n') + '\n';
+    const obd = (R.run && R.run.id === run.id && R.run.obd) || run.obd; // supported-PID scan from the OBD source (first second after connect)
+    const rows = await R.rows(run.id), csv = `# Z-DASH run recorder v1 · ${run.label} · started ${new Date(run.started).toISOString()} · build ${run.build}\n# type: s = sample (one per OBD frame), h = app health (1 per second), e = event\n${obd ? `# supported-pids: ${obd.mode01.join(' ') || 'none'}\n# mode09: ${obd.mode09 || 'none'}\n` : ''}${COLS.join(',')}\n` + rows.map((r) => r.join(',')).join('\n') + '\n';
     const sum = JSON.stringify(R.summary(run, rows), null, 1), base = `zdash-run-${run.id}`;
     const files = typeof File !== 'undefined' ? [new File([csv], base + '.csv', { type: 'text/csv' }), new File([sum], base + '.json', { type: 'application/json' })] : null;
     if (G.ZDNative && G.ZDNative.shareFile) { G.ZDNative.shareFile(base + '.csv', csv); return 'shared'; }
@@ -8926,25 +8927,59 @@ var qrcode = function() {
     constructor(transport, prof = ZD.ADAPTERS['obdlink-mxp']) { super('OBD'); this.prof = prof; this.tr = transport || ZD.pickTransport(prof) || new WebBluetoothTransport(prof); this.buf = ''; this.waiters = []; }
     cmd(s, timeout = 1500) {
       return new Promise((res, rej) => {
-        const to = setTimeout(() => rej(new Error('timeout ' + s)), timeout);
-        this.waiters.push((r) => { clearTimeout(to); res(r); });
-        this.tr.write(s + '\r');
+        const drop = () => { const i = this.waiters.indexOf(w); if (i >= 0) this.waiters.splice(i, 1); }; // a timed-out waiter must leave the queue, or every later reply goes to the wrong command
+        const to = setTimeout(() => { drop(); const e = new Error('timeout ' + s); e.raw = this.buf; rej(e); }, timeout);
+        const w = (r) => { clearTimeout(to); res(r); };
+        this.waiters.push(w);
+        Promise.resolve().then(() => this.tr.write(s + '\r')).catch((e) => { clearTimeout(to); drop(); rej(e); });
       });
     }
     onData(s) {
-      this.buf += s;
+      this.buf += String(s).replace(/\0/g, '');
       let i; while ((i = this.buf.indexOf('>')) >= 0) { const r = this.buf.slice(0, i).trim(); this.buf = this.buf.slice(i + 1); const w = this.waiters.shift(); w && w(r); }
     }
     async start() {
       this.setStatus('connecting');
       this.tr.ondata = (s) => this.onData(s);
-      await this.tr.connect();
-      for (const c of ['ATZ', 'ATE0', 'ATL0', 'ATS0', 'ATH0', 'ATSP6']) await this.cmd(c, 3000); // 370Z = ISO15765 CAN 500k
+      await this.exclusive(async () => { await this.tr.connect(); await this.init(); }); // locked, so the 4 s trouble-code poll can't interleave '03'/'07' with the init
       if (this.prof.stn) { try { await this.cmd('STI', 1500); } catch (e) {} }
       if (ZD.Clutch) { try { this.clutchProbe = await ZD.Clutch.probe(this); } catch (e) {} } // clutch-switch channel? (stays 'unknown' until verified)
       this.setStatus('live', this.prof.name);
+      setTimeout(() => (this.initLog || []).forEach((m) => this.note('obd-init', m)), 1000); // after the recorder + drive log have started // the recorder starts at 'live', so replay the init steps into the run
       this.running = true; this.t0 = performance.now(); this.last = {};
+      this.scanQ = ['0100']; this.scanPids = []; this.scanM09 = ''; // one-time supported-PID scan, run in the background between polls
       this.loop();
+    }
+    // Adapter init (Oct 18 hotfix, OBDLink LX "timeout ATE0"): ATZ resets the chip (~1 s) and drops anything sent meanwhile,
+    // and its banner can carry stray '>'s. So: wake, reset, wait, flush, then each setting with retries on a clean buffer.
+    async init() {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      const flush = () => { this.buf = ''; this.waiters.length = 0; };
+      const log = (m) => this.initLog.push(m);
+      const raw = (r) => JSON.stringify(String(r == null ? '' : r).slice(-60));
+      this.initLog = []; log('transport open');
+      try { await this.tr.write('\r'); } catch (e) {} // wake / cancel anything half-sent
+      await sleep(300); flush();
+      try { log('ATZ ' + raw(await this.cmd('ATZ', 2500))); } catch (e) { log('ATZ no prompt (ok) ' + raw(e.raw)); }
+      await sleep(1500); flush(); // let the reset finish; drop the banner and any stray prompts
+      for (const c of ['ATE0', 'ATL0', 'ATS0', 'ATH0', 'ATSP6']) { // 370Z = ISO15765 CAN 500k
+        let last = '', err = null, ok = false;
+        for (let k = 1; k <= 3 && !ok; k++) {
+          flush();
+          try { last = await this.cmd(c, 2000); err = null; ok = /OK/i.test(last); if (!ok) log(c + ' try ' + k + ' reply ' + raw(last)); }
+          catch (e) { err = e; last = e.raw || ''; log(c + ' try ' + k + ' ' + e.message + ' raw ' + raw(last)); }
+          if (!ok) await sleep(300);
+        }
+        if (!ok && (err || !last.replace(/[\s>?]/g, ''))) {
+          const e = new Error(`adapter didn't answer ${c} after 3 tries (${err ? err.message : 'bad reply'}), last reply ${raw(last)}`);
+          log(e.message); throw e;
+        }
+        log(c + (ok ? ' OK' : ' accepted ' + raw(last)));
+      }
+      flush();
+      try { const r = await this.cmd('0100', 6000); log('0100 ' + raw(r) + (/41\s*00/i.test(r) ? ' ECU ok' : ' (no ECU answer yet)')); } // first request does SEARCHING...
+      catch (e) { log('0100 timeout raw ' + raw(e.raw)); }
+      flush();
     }
     // Mode 01 PIDs. Up to 6 PIDs per request on CAN; STN chips answer fast (~15-25 req/s).
     async loop() {
@@ -8952,8 +8987,9 @@ var qrcode = function() {
       while (this.running) {
         try {
           await this.exclusive(async () => {
-            const pt = performance.now(); this.parse(await this.cmd(fast)); this.pollMs = performance.now() - pt;
-            if (n++ % 10 === 0) for (const s of slow) this.parse(await this.cmd(s));
+            if (this.scanQ && this.scanQ.length) await this.scanStep(); // one supported-PID request per cycle, so it never holds up the gauges
+            const pt = performance.now(); await this.poll(fast); this.pollMs = performance.now() - pt;
+            if (n++ % 10 === 0) { for (const s of slow) await this.poll(s); if (!this.has42) await this.readVolts(); } // no PID 42 -> adapter battery voltage (ATRV)
           });
           if (ZD.Rec) ZD.Rec.pollDone(this.last, this.pollMs);
           const L = this.last;
@@ -8966,14 +9002,73 @@ var qrcode = function() {
         } catch (e) { console.warn(e); if (ZD.Rec) { const tn = performance.now(); this.errN = (this.errN || 0) + 1; if (!this.errT || tn - this.errT > 1000) { ZD.Rec.event('obd-error', (e && e.message) + (this.errN > 1 ? ' x' + this.errN : '')); this.errT = tn; this.errN = 0; } } }
       }
     }
-    parse(resp) {
-      // concatenate hex bytes, find "41" response blocks: 41 PID data...
-      const hex = resp.replace(/[^0-9A-F]/gi, '').toUpperCase(); const L = this.last;
+    // Supported-PID scan: 0100 / 0120 / 0140 ... while the bitmask says the next block exists, then 0900 (Mode 09 info).
+    // Read-only requests only. Result -> '# supported-pids: ...' row in the run export + localStorage 'zdash.obd.pids'.
+    async scanStep() {
+      const q = this.scanQ.shift(); let r = '';
+      try { r = await this.cmd(q, 3000); } catch (e) { r = 'timeout'; }
+      const hex = String(r).split(/[\r\n]+/).map((l) => l.replace(/\s+/g, '').toUpperCase().replace(/^[0-9A-F]:/, '')).filter((l) => /^[0-9A-F]+$/.test(l) && l.length % 2 === 0).join('');
+      if (q.startsWith('01')) {
+        const blk = parseInt(q.slice(2), 16), j = hex.indexOf('41' + q.slice(2));
+        if (j >= 0 && hex.length >= j + 12) { const m = parseInt(hex.substr(j + 4, 8), 16) >>> 0;
+          for (let k = 0; k < 32; k++) if (m & (0x80000000 >>> k)) this.scanPids.push((blk + k + 1).toString(16).toUpperCase().padStart(2, '0'));
+          if ((m & 1) && blk < 0xE0) this.scanQ.unshift('01' + (blk + 0x20).toString(16).toUpperCase().padStart(2, '0')); }
+        if (!this.scanQ.some((x) => x.startsWith('01'))) this.scanQ.push('0900');
+      } else this.scanM09 = hex.slice(hex.indexOf('4900') >= 0 ? hex.indexOf('4900') : 0).slice(0, 40) || String(r).slice(0, 40);
+      if (!this.scanQ.length) {
+        const pids = this.scanPids.filter((p) => p.slice(1) !== '0' || !['20', '40', '60', '80', 'A0', 'C0', 'E0'].includes(p)); // drop the "next block supported" markers
+        this.supported = pids;
+        try { localStorage.setItem('zdash.obd.pids', JSON.stringify({ t: Date.now(), adapter: this.prof && this.prof.name, mode01: pids, mode09: this.scanM09 })); } catch (e) {}
+        if (ZD.Rec && ZD.Rec.run) ZD.Rec.run.obd = { mode01: pids, mode09: this.scanM09 }; // -> EXPORT RUN header comments
+        this.note('supported-pids', pids.join(' ') || 'none'); this.note('mode09', this.scanM09 || 'none');
+      }
+    }
+    // One Mode 01 group. Multi-PID first; if the reply doesn't parse cleanly, ask each PID on its own (3 bad multi replies -> per-PID for good).
+    async poll(req) {
+      this.noPid ||= new Set(); this.multiBad ||= {}; this.miss ||= {};
+      const want = []; for (let i = 2; i < req.length; i += 2) if (!this.noPid.has(req.substr(i, 2))) want.push(req.substr(i, 2));
+      if (!want.length) return;
+      if (want.length > 1 && (this.multiBad[req] || 0) < 3) { const q = '01' + want.join(''); if (this.parse(await this.cmd(q), q)) return;
+        if (!this.badHex) return; this.multiBad[req] = (this.multiBad[req] || 0) + 1; } // NO DATA / STOPPED (no bytes at all): just skip this cycle
+      const no = []; let ok = 0;
+      for (const p of want) { const q = '01' + p, r = await this.cmd(q), got = this.parse(r, q); if (got && got.has(p)) { ok++; this.miss[p] = 0; } else if (/NO DATA|\?/.test(r)) no.push([p, q, r]); }
+      if (ok) for (const [p, q, r] of no) if ((this.miss[p] = (this.miss[p] || 0) + 1) >= 3) { this.noPid.add(p); this.rawNote('obd-nopid', q, r); } // unsupported only while the ECU answers the others
+    }
+    async readVolts() { try { const m = (await this.cmd('ATRV')).match(/(\d{1,2}(?:\.\d+)?)\s*V/i); if (m && +m[1] > 5 && +m[1] < 20) this.last.volts = +m[1]; } catch (e) {} }
+    // Raw replies into the run file: the first 50 after connect plus parse failures (capped), so real logs can be debugged without bloating it.
+    rawNote(kind, q, r) { if (!(ZD.Rec && ZD.Rec.on) && !(G.ZDAPP && G.ZDAPP.log && G.ZDAPP.log.cur)) return; this.rawN ||= { 'obd-raw': 0, 'obd-bad': 0, 'obd-nopid': 0 };
+      if (this.rawN[kind] >= (kind === 'obd-raw' ? 50 : 100)) return; this.rawN[kind]++; this.note(kind, q + ' => ' + JSON.stringify(String(r)).slice(0, 140)); }
+    // debug note -> run recorder event AND a '# kind ...' comment row in the drive-log CSV (the file EXPORT gives Bob)
+    note(kind, text) { try { if (ZD.Rec && ZD.Rec.on) ZD.Rec.event(kind, text); const DL = G.ZDAPP && G.ZDAPP.log; if (DL && DL.note) DL.note(kind, text); } catch (e) {} }
+    // Mode 01 reply -> this.last. Handles CAN multi-frame (ISO-TP) replies with headers off, e.g.
+    //   "00A\r0:410C0B2E0D00\r1:11140B1E" : a 3-digit byte-count line, then "N:" frame-index prefixes on each line.
+    // Returns the Set of PIDs read, or null if the reply is inconsistent (nothing is applied then).
+    parse(resp, req = '') {
       const lens = { '0C': 2, '0D': 1, '11': 1, '0B': 1, '05': 1, '0F': 1, '0E': 1, '42': 2, '04': 1, '2F': 1 };
-      let i = hex.indexOf('41'); if (i < 0) return; i += 2;
-      while (i + 2 <= hex.length) {
-        const pid = hex.substr(i, 2), n = lens[pid]; if (!n) { i += 2; continue; }
-        const b = []; for (let k = 0; k < n; k++) b.push(parseInt(hex.substr(i + 2 + k * 2, 2), 16)); i += 2 + n * 2;
+      this.rawNote('obd-raw', req, resp);
+      let hex = '', count = 0, counts = 0; this.badHex = false;
+      for (let ln of String(resp).split(/[\r\n]+/)) {
+        ln = ln.replace(/\s+/g, '').toUpperCase(); if (!ln || ln === req) continue; // blank / echoed command
+        if (/^[0-9A-F]{3}$/.test(ln)) { count = parseInt(ln, 16); counts++; continue; } // ISO-TP byte count
+        ln = ln.replace(/^[0-9A-F]:/, ''); // frame index "0:", "1:" ...
+        if (/^[0-9A-F]+$/.test(ln) && ln.length % 2 === 0) hex += ln; // SEARCHING..., NO DATA, STOPPED etc. are skipped
+      }
+      let B = hex.match(/../g) || []; if (counts === 1 && B.length > count) B = B.slice(0, count); // drop last-frame padding
+      const want = new Set(); for (let i = 2; i < req.length; i += 2) want.add(req.substr(i, 2).toUpperCase());
+      const bad = () => { this.badHex = true; this.rawNote('obd-bad', req, resp); return null; };
+      let i = B.indexOf('41'); if (i < 0) return hex ? bad() : null;
+      const vals = []; i++;
+      while (i < B.length) {
+        const pid = B[i], n = lens[pid];
+        if (n && (!want.size || want.has(pid)) && i + n < B.length) { vals.push([pid, B.slice(i + 1, i + 1 + n).map((x) => parseInt(x, 16))]); i += 1 + n; continue; }
+        if (pid === '41') { i++; continue; } // a second "41" block (another ECU answering)
+        if (B.slice(i).every((x) => x === '00' || x === 'AA' || x === '55')) break; // CAN padding
+        return bad();
+      }
+      if (!vals.length) return bad();
+      const L = this.last, got = new Set();
+      for (const [pid, b] of vals) {
+        got.add(pid);
         switch (pid) {
           case '0C': L.rpm = (b[0] * 256 + b[1]) / 4; break;
           case '0D': L.speed = b[0] * 0.621371; break;
@@ -8982,11 +9077,12 @@ var qrcode = function() {
           case '05': L.coolant = (b[0] - 40) * 1.8 + 32; break;
           case '0F': L.iat = (b[0] - 40) * 1.8 + 32; break;
           case '0E': L.timing = b[0] / 2 - 64; break;
-          case '42': L.volts = (b[0] * 256 + b[1]) / 1000; break;
+          case '42': L.volts = (b[0] * 256 + b[1]) / 1000; this.has42 = true; break;
           case '04': L.load = (b[0] * 100) / 255; break;
           case '2F': L.fuelLevel = (b[0] * 100) / 255; break; // factory sender — unreliable when low
         }
       }
+      return got;
     }
     // Trouble codes: Mode 03 stored, Mode 07 pending, Mode 04 clear (engine computer only).
     // TPMS/body codes need Nissan-specific requests to other modules (ATSH header + service 0x21/0x19) — TODO.
@@ -9396,6 +9492,7 @@ var qrcode = function() {
     if (f.latG == null) f.latG = S.motion.lat; // phone accelerometer fallback
     if (f.lonG == null) f.lonG = S.motion.lon;
     const prev = S.F; S.F = f;
+    if (S.seen) for (const k in f) if (k !== 't' && f[k] != null) S.seen.add(k); // fields that have had data (auto-hide)
     const tr = S.trip;
     if (tr.t0 === null) tr.t0 = f.t;
     if (prev && f.t > prev.t && f.t - prev.t < 1) { const mi = ((f.speed || 0) * (f.t - prev.t)) / 3600; tr.dist += mi; S.fuel && S.fuel.addMiles(mi); S.ex && S.ex.addMiles(mi); }
@@ -9418,7 +9515,7 @@ var qrcode = function() {
   }
   S.scorer.on((ev) => {
     S.lastShift = ev; S.trip.counts[ev.rating]++; S.log.note('shift', { t: ev.t, from: ev.from, to: ev.to, mode: ev.mode, score: ev.score, rating: ev.rating, raw: ev.raw }); S.ex && S.ex.onShift(ev, S.scorer);
-    if (S.warming || !ZD.layout.view(S.src && S.src.caps).popup) return;
+    if (S.warming || !ZD.layout.view(viewCaps()).popup) return;
     const el = $('#popup');
     el.className = 'popup ' + ev.rating;
     const R = ev.raw || {}, det = [R.shiftRpm ? `${R.shiftRpm} RPM` : '', R.duration != null ? `SHIFT ${R.duration}s` : '', R.jerk != null ? `LURCH ${R.jerk}` : '', R.revMatchErr != null ? `MATCH ±${R.revMatchErr}` : ''].filter(Boolean).slice(0, 3).join(' · ');
@@ -9434,14 +9531,19 @@ var qrcode = function() {
   });
 
   // ---------------- sources ----------------
+  // Anything blank gets hidden: live OBD panels whose data is still null ~5 s after going live drop out (and come back if a value
+  // shows up later). Demo / replay: the adapter caps as before (null = everything shows).
+  function viewCaps() { const src = S.src, c = src && src.caps; if (!src || src.label !== 'OBD' || !S.seenT0 || performance.now() - S.seenT0 < 5000) return c;
+    return c ? new Set([...c].filter((k) => S.seen.has(k))) : S.seen; }
   async function useSource(src) {
     if (S.src) S.src.stop(); if (ZD.Rec && ZD.Rec.on) ZD.Rec.stop('source changed');
-    S.src = src; S.F = null; S.hist = [];
+    S.src = src; S.F = null; S.hist = []; S.seen = new Set(); S.seenT0 = 0;
     src.onFrame(onFrame);
     src.onStatus((st, msg) => {
       const chip = $('#srcChip'); chip.className = 'chip ' + st; chip.querySelector('b').textContent = src.label;
       if (ZD.Rec) { if (st === 'live' && src.label === 'OBD' && !ZD.Rec.on) ZD.Rec.start('OBD ' + (msg || '')); ZD.Rec.event('status', st + (msg ? ' ' + msg : '')); }
       if (st === 'live' && ZD.wake) ZD.wake.acquire();
+      if (st === 'live') S.seenT0 = performance.now();
       if (st === 'live') { splashLinked(); if (src.label !== 'CSV') S.log.start(src.label + (S.demo ? ' (demo)' : '')); } // replays aren't re-logged
       if (msg) $('#srcMsg').textContent = msg;
     });
@@ -9636,7 +9738,7 @@ var qrcode = function() {
     /* 6th is top gear on the 6MT: no upshift cue / flash / SHIFT label there; the light only warns near redline (over-rev) */
     const gNow = f.gear >= 1 ? f.gear : (f.clutch !== true && S.scorer && S.scorer.gear) || 0, topGear = gNow >= (C.topGear || 6), SLc = topGear ? { start: C.redline - 800, shift: C.redline - 300 } : SL;
     const rpm = f.rpm || 0, shiftNow = rpm >= SLc.shift && (f.throttle || 0) > 15 && f.clutch !== true, flash = shiftNow && Math.floor(performance.now() / 80) % 2; S.cue = { gear: gNow, top: topGear, shiftNow, label: !topGear }; /* for tests */
-    const L = ZD.layout.view(S.src && S.src.caps);
+    const cp = viewCaps(), L = ZD.layout.view(cp), has = (k) => !cp || cp.has(k);
     if (L.tach) {
     for (let i = 0; i < n; i++) {
       const r = (i / n) * maxR, lit = r < rpm;
@@ -9713,8 +9815,8 @@ var qrcode = function() {
       np.classList.toggle('hidden', !show); }
     // bottom-centre strip: temps / mixture
     const strip = [];
-    if (L.temps) strip.push(`COOL ${ZD.fmt(f.coolant, 0)}°`, `OIL ${ZD.fmt(f.oil, 0)}°`, `IAT ${ZD.fmt(f.iat, 0)}°`);
-    if (L.afr) strip.push(`AFR ${ZD.fmt(f.afr, 1)}`, `E${ZD.fmt(f.ethanol, 0)}`);
+    if (L.temps) { if (has('coolant')) strip.push(`COOL ${ZD.fmt(f.coolant, 0)}°`); if (has('oil')) strip.push(`OIL ${ZD.fmt(f.oil, 0)}°`); if (has('iat')) strip.push(`IAT ${ZD.fmt(f.iat, 0)}°`); }
+    if (L.afr) { if (has('afr')) strip.push(`AFR ${ZD.fmt(f.afr, 1)}`); if (has('ethanol')) strip.push(`E${ZD.fmt(f.ethanol, 0)}`); }
     if (strip.length) { const swx = 0; const sw = strip.length * 88 + 16; ZD.panel(ctx, w / 2 - sw / 2, h - 34, sw, 26); strip.forEach((t, i) => T(ctx, t, w / 2 - sw / 2 + 8 + 44 + i * 88, h - 16, 12, COL.TXT, 'center', 'num', 600)); }
     ctx.restore();
   }
@@ -9750,8 +9852,12 @@ var qrcode = function() {
     // Tall enough: 2 tile rows + chart under them (chart ≥ ~32% of height). Short: chart moves to the right column under a smaller G-force circle.
     const minChart = Math.max(110, h * 0.32), short = h < 400 || (h - 26 - 2 * 62) < minChart;
     const thT = short ? ZD.clamp((h - 18) / 2, 56, 124) : ZD.clamp((h - 26 - minChart) / 2, 62, 124), k = thT / 124;
-    G.forEach(([lab, unit, val, o], i) => {
-      const cx = 8 + (i % cols) * tw, cy = 6 + Math.floor(i / cols) * (thT + 4);
+    // blank tiles hidden (live OBD, see viewCaps): the rest reflow into two full-width rows (10 tiles = the usual 5 + 5)
+    const cp = viewCaps(), KEYS = ['boost', 'afr', 'ethanol', 'oil', 'coolant', 'iat', 'throttle', 'timing', 'volts', 'load'], Gv = cp ? G.filter((g, i) => cp.has(KEYS[i])) : G;
+    const c0 = Math.ceil(Gv.length / 2);
+    Gv.forEach(([lab, unit, val, o], j) => {
+      const row = j < c0 ? 0 : 1, tw = gw / (row ? Gv.length - c0 : c0), i = row ? j - c0 : j;
+      const cx = 8 + i * tw, cy = 6 + row * (thT + 4);
       ZD.panel(ctx, cx, cy, tw - 6, thT);
       const danger = o.danger !== undefined && val > o.danger, r = Math.max(22, Math.min(40 * k, (tw - 6) * 0.36));
       ZD.arcGauge(ctx, cx + (tw - 6) / 2, cy + Math.max(30, 58 * k), r, val, lab, unit, Object.assign({ big: Math.max(13, 19 * k), lw: Math.max(4, 6 * k) }, o, danger ? { color: '#ffffff' } : {}));
@@ -9760,7 +9866,7 @@ var qrcode = function() {
     const fx = gw + 8, fw = w - fx - 8, gH = short ? Math.round(h * 0.46) : h - 14;
     // throttle / boost / rpm trace: under the tiles, or in the right column under the G circle on short screens
     const cX = short ? fx : 8, cW = short ? fw : gw - 6, ty = short ? 6 + gH + 6 : 6 + 2 * (thT + 4), tH = h - ty - 8;
-    ZD.panel(ctx, cX, ty, cW, tH, 'THROTTLE · BOOST · RPM  (20 s)');
+    const nb = cp && !cp.has('boost'); ZD.panel(ctx, cX, ty, cW, tH, nb ? 'THROTTLE · RPM  (20 s)' : 'THROTTLE · BOOST · RPM  (20 s)');
     const top = ty + 26, bot = ty + tH - 10, now = S.F ? S.F.t : 0, px = (t) => cX + 4 + ((t - (now - 20)) / 20) * (cW - 8), py = (v, lo, hi) => bot - ((v - lo) / (hi - lo)) * (bot - top);
     ctx.strokeStyle = 'rgba(255,255,255,.06)'; ctx.lineWidth = 1; for (let q = 0; q <= 4; q++) { const y = top + ((bot - top) * q) / 4; ctx.beginPath(); ctx.moveTo(cX + 4, y); ctx.lineTo(cX + cW - 4, y); ctx.stroke(); }
     const line = (key, lo, hi, col, lw, glow) => {
@@ -9769,9 +9875,9 @@ var qrcode = function() {
       ctx.lineJoin = 'round'; ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.shadowColor = col; ctx.shadowBlur = glow; ctx.stroke(); ctx.shadowBlur = 0; ctx.restore();
     };
     line('rpm', 0, 8000, 'rgba(235,235,245,.6)', 1.8, 0);
-    line('b', -15, C.boostGaugeMax, '#ffc040', 2.6, 6);
+    if (!nb) line('b', -15, C.boostGaugeMax, '#ffc040', 2.6, 6);
     line('th', 0, 100, '#ff3b4e', 3.2, 10);
-    T(ctx, 'THR', cX + cW - 96, ty + 15, 11, '#ff3b4e', 'left', 'txt', 700); T(ctx, 'BST', cX + cW - 66, ty + 15, 11, '#ffc040', 'left', 'txt', 700); T(ctx, 'RPM', cX + cW - 36, ty + 15, 11, '#d8d0d2', 'left', 'txt', 700);
+    T(ctx, 'THR', cX + cW - (nb ? 66 : 96), ty + 15, 11, '#ff3b4e', 'left', 'txt', 700); if (!nb) T(ctx, 'BST', cX + cW - 66, ty + 15, 11, '#ffc040', 'left', 'txt', 700); T(ctx, 'RPM', cX + cW - 36, ty + 15, 11, '#d8d0d2', 'left', 'txt', 700);
     // friction circle
     ZD.panel(ctx, fx, 6, fw, gH, 'G-FORCE');
     const R = Math.max(20, Math.min(fw, gH - (short ? 50 : 80)) / 2 - 10), ccx = fx + fw / 2, ccy = short ? 6 + gH / 2 + 4 : 6 + 22 + R + 4, gmax = 1.2;
