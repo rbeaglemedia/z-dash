@@ -648,7 +648,7 @@ body:not(.kidon) #kFpsRow { display: none; }
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Z-DASH">
 <meta name="application-name" content="Z-DASH">
-<script>window.ZD_BUILD = '1792383866-1a4ff708';
+<script>window.ZD_BUILD = '1792390000-wantedon1';
 /* offline: the service worker caches the app so it runs with no internet after one online visit. Pages load network-first,
    so a new deploy shows straight away. If a newer build takes over while this page is open: reload once by itself when
    nothing is in progress, otherwise show a small "Update ready" button. */
@@ -10348,7 +10348,7 @@ var qrcode = function() {
 (function () {
   const ZD = window.ZD, $ = (s) => document.querySelector(s), clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const Q = new URLSearchParams(location.search), LS = 'zdash.kid.v1', MODE = 'zdash.kidOn';
-  const WANTED_ON = Q.has('wanted'); // WANTED (cop chase) is paused for now: hidden unless ?wanted (Bob, Oct 18 1:59 PM)
+  const WANTED_ON = !Q.has('nowanted'); // WANTED shipped to main app (Bob, Oct 19 1:00 AM)
   const FONT = "'Orbitron', 'Rajdhani', sans-serif", TXT = "'Rajdhani', 'Roboto Condensed', sans-serif";
   const PINK = '#ff4fd8', CYAN = '#3ee6ff', YEL = '#ffe14d', LIME = '#7dff6b', PURP = '#9b5cff', ORNG = '#ff9a2e';
 
