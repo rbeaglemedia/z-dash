@@ -618,6 +618,12 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
 .npKid.npCard .npT { white-space: normal; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word; min-width: 0; }
 
 /* ---- device roles + parent passcode (Wave 2) ---- */
+/*reopen*/ .zdDevRow { display: none; } body.kidon .zdDevRow { display: flex; } body.kidon:not(.zd-passdev) #btnDrvMode, body.kidon.zd-passdev #btnKidDev { display: none; }
+#kStart { position: fixed; inset: 0; z-index: 120; background: #000; } #kStart canvas { width: 100%; height: 100%; display: block; }
+#kStart .kstb { position: absolute; left: 0; right: 0; bottom: 34px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+#kStart .kshi { font: 800 15px 'Orbitron', sans-serif; letter-spacing: 5px; color: #3ee6ff; text-shadow: 0 0 10px #3ee6ff; }
+#kStart .demo { color: #fff; background: rgba(255,79,216,.18); border-color: #ff4fd8; box-shadow: 0 0 24px rgba(255,79,216,.55), 0 0 8px rgba(255,79,216,.6) inset; text-shadow: 0 0 8px #ff4fd8; animation: kbreathe 2.2s ease-in-out infinite; }
+@keyframes kbreathe { 50% { box-shadow: 0 0 34px rgba(62,230,255,.8), 0 0 10px rgba(62,230,255,.7) inset; border-color: #3ee6ff; } }
 body.kidon #passRow { display: none; }
 .regrow { display: none; justify-content: flex-end; margin: -6px 0 10px; }
 body.kidon.zd-passdev .regrow { display: flex; }
@@ -694,7 +700,7 @@ body:not(.kidon) #kFpsRow { display: none; }
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Z-DASH">
 <meta name="application-name" content="Z-DASH">
-<script>window.ZD_BUILD = '1792525871-b12d5cc6';
+<script>window.ZD_BUILD = '1792551995-35f15b8f';
 /* offline: the service worker caches the app so it runs with no internet after one online visit. Pages load network-first,
    so a new deploy shows straight away. If a newer build takes over while this page is open: reload once by itself when
    nothing is in progress, otherwise show a small "Update ready" button. */
@@ -8389,7 +8395,8 @@ var qrcode = function() {
   }
   R.hasPass = () => !!S.pass;
   R.isDriverDev = () => !!S.pass && S.pass.driver === S.dev;
-  R.isPassengerDev = () => S.role === 'passenger' && !R.isDriverDev();
+  const DM = () => { try { return localStorage.getItem('zdash.devMode') || ''; } catch (e) { return ''; } }; /*reopen*/ R.devMode = DM; R.setDevMode = (m) => { try { m ? localStorage.setItem('zdash.devMode', m) : localStorage.removeItem('zdash.devMode'); } catch (e) {} if (R.apply) R.apply(); };
+  R.isPassengerDev = () => DM() === 'kid' || (DM() !== 'adult' && S.role === 'passenger' && !R.isDriverDev());
   R.needsPass = () => R.isDriverDev(); /* leaving Passenger Mode */
   R.canDrive = () => !R.isPassengerDev();
   let fails = 0, lockUntil = 0;
@@ -8399,7 +8406,7 @@ var qrcode = function() {
   R.registerDriver = () => { if (!S.pass) return; S.pass = Object.assign({}, S.pass, { driver: S.dev, at: Date.now() }); S.role = 'driver'; save(); share(); };
   R.clearPass = () => { S.pass = null; S.role = null; save(); };
   /* pairing sync: newest passcode record wins on both sides; a device that is not the record's driver becomes a passenger */
-  R.merge = (rec) => { if (!rec || !rec.hash || !rec.salt) return; if (S.pass && (S.pass.at || 0) >= (rec.at || 0)) return; S.pass = { salt: rec.salt, it: rec.it, hash: rec.hash, driver: rec.driver, at: rec.at }; S.role = rec.driver === S.dev ? 'driver' : 'passenger'; save(); if (S.role === 'passenger' && ZD.Kid && ZD.Kid.setOn) ZD.Kid.setOn(true, false); };
+  R.merge = (rec) => { if (!rec || !rec.hash || !rec.salt) return; if (S.pass && (S.pass.at || 0) >= (rec.at || 0)) return; S.pass = { salt: rec.salt, it: rec.it, hash: rec.hash, driver: rec.driver, at: rec.at }; S.role = rec.driver === S.dev ? 'driver' : 'passenger'; if (S.role === 'passenger') try { localStorage.removeItem('zdash.devMode'); } catch (e) {} save(); if (S.role === 'passenger' && ZD.Kid && ZD.Kid.setOn) ZD.Kid.setOn(true, false); };
   const rec = () => (S.pass ? { salt: S.pass.salt, it: S.pass.it, hash: S.pass.hash, driver: S.pass.driver, at: S.pass.at } : null);
   function share() { const L = ZD.Link; if (L && L.send && L.state === 'linked') { L.send({ k: 'ro', rec: rec() }); } }
   R.onLink = (L) => { if (S.pass) L.send({ k: 'ro', rec: rec() }); if (L.role === 'guest') L.send({ k: 'pf', p: R.profile() }); };
@@ -12757,7 +12764,15 @@ var qrcode = function() {
       if (K.on && RO && !RO.canDrive()) { toast('This is a passenger device', 2600); return; }
       if (K.on && RO && RO.needsPass() && !(await RO.gate('Enter the parent passcode for DAD MODE'))) return;
       setOn(!K.on); if (ZD.Settings) ZD.Settings.close(); else $('#settings').classList.add('hidden'); });
-    let on = false; try { on = localStorage.getItem(MODE) === '1'; } catch (e) {}
+    /*reopen*/ let sess = null; try { sess = sessionStorage.getItem('zd.sess'); } catch (e) {} const cold = !sess || Q.has('zdcold'), kidDev = !!(ZD.Roles && ZD.Roles.isPassengerDev()), keep = Q.has('zdpwa') ? '?zdpwa' : '';
+    const pwa = Q.has('zdpwa') || !!(window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches), base = location.pathname.replace(/[^/]*$/, '');
+    if (cold && !Q.has('stay') && window.ZD_JR && !kidDev && pwa) { location.replace(base + keep); return; } /* ADULT device: the app always reopens on the driver start screen */
+    if (cold && !Q.has('stay') && !window.ZD_JR && kidDev) { location.replace(base + 'jr.html' + keep); return; } /* KID device: always her own start screen */
+    try { sessionStorage.setItem('zd.sess', '1'); } catch (e) {} K.coldKid = cold && kidDev && !!window.ZD_JR;
+    let on = false; try { on = localStorage.getItem(MODE) === '1'; } catch (e) {} if (cold && !kidDev) on = false; /* ADULT cold launch: never resume Passenger Mode (zdash.kidOn only holds within a session) */
+    { const pn = $('#settings .panel'); if (pn && !$('#zdDevRow')) { const r = document.createElement('div'); r.id = 'zdDevRow'; r.className = 'row zdDevRow'; r.innerHTML = '<button id="btnDrvMode" class="tgl">🚗 DRIVER MODE</button><button id="btnKidDev" class="tgl">MAKE THIS ELLIE\'S DEVICE</button><span class="mute">DRIVER MODE switches this device back to Dad\'s driver app (parent passcode).</span>'; pn.insertBefore(r, pn.firstChild);
+      r.querySelector('#btnDrvMode').addEventListener('click', async () => { const RO = ZD.Roles; if (RO && RO.gate && !(await RO.gate('Enter the parent passcode for DRIVER MODE'))) return; if (RO && RO.setDevMode) RO.setDevMode('adult'); try { localStorage.setItem(MODE, '0'); sessionStorage.removeItem('zd.sess'); } catch (e) {} location.replace(base + keep); });
+      r.querySelector('#btnKidDev').addEventListener('click', () => { const RO = ZD.Roles; if (RO && RO.setDevMode) RO.setDevMode('kid'); toast("This is now Ellie's device: it opens on her start screen", 3200); }); } }
     if (Q.has('passenger')) on = Q.get('passenger') !== '0';
     const jr = !!window.ZD_JR || !!(ZD.Roles && ZD.Roles.isPassengerDev()); if (jr) on = true; // Z-DASH JR home-screen icon: always opens straight into Passenger Mode (not saved, so Dad's icon is unaffected)
     if (Q.get('ktab')) K.tab = Q.get('ktab') === 'ride' ? 'boost' : Q.get('ktab');
