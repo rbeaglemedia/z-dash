@@ -187,6 +187,7 @@ html,body{margin:0;height:100%;background:#000;color:var(--txt);font-family:'Orb
 <div class="kline"><span class="ki">🧈</span><span>Land soft: slow down, nose a little up, AIR BRAKE. Float it in under 10 km/h for a <em>BUTTER LANDING!</em></span></div>
 <div class="kline small">Desktop: hold E = throttle · F = wings · arrows/WASD · double-tap ←/→ or Z/C = barrel roll · Shift = NOS · Space = air brake</div>
 </div></div></div>
+<div id="kWreck" class="kover hidden"><div class="kcard"><div class="kact"><h2>WRECKED!</h2><div class="kready">Way too hard! Come in slow, nose a little up, and use AIR BRAKE.</div></div><div class="kstart"><button id="kWrR" class="kbig">↺ BACK TO RUNWAY</button><button id="kWrH" class="kbig" style="margin-top:10px;filter:hue-rotate(160deg)">⌂ HOME</button></div></div></div>
 <div id="kToast" class="ktoast hidden"></div>
 </div></div>
 
@@ -4092,7 +4093,7 @@ const PRESETS = { wings: {
   rollTime: 0.9, rollTilt: 1.6,               // BARREL ROLL: s per full 360; tilt past rollTilt x tiltRange (or double-tap ←/→, Z/C) triggers it
   flipPitch: 30, flipSpeed: 36,               // STALL FLIP: nose above flipPitch deg while slower than flipSpeed m/s
   flipRate: 140, flipDive: 50, flipTime: 1.6, // nose-over rate deg/s, dive angle where control returns, max s without control
-  pitchRate: 75, maxPitch: 55,                // deg/s, deg (glider: twitchy)
+  pitchRate: 45, maxPitch: 55,                // deg/s, deg (glider: twitchy)
   autoLevel: 0.7,                             // per-second pull back to neutral when stick centred
   tiltRange: 30, deadZone: 0.10,              // deg of phone tilt = full input
   maxSpeed: 90,                               // m/s at 100% throttle
@@ -4114,14 +4115,32 @@ const PRESETS = { wings: {
   wingLiftTf: 0.7,                            // wings must be this far open (0..1 of the hinge anim) before the ground lets go
   closedSink: 7, closedClimb: 0.25,           // air with wings CLOSED: extra sink m/s, fraction of normal climb from pitch
   airThrust: 0.6,                             // AIR: throttle push m/s^2 (wheels in the air: weak, cannot hold level flight)
-  airNos: 7,                                  // AIR: NOS push m/s^2, ONLY with THROTTLE held (bottle = 6 s)
-  cd: 0.00035, ci: 4500, ciMax: 6,            // AIR drag = cd*v^2 + min(ci/v^2, ciMax): least drag ~2.5 m/s^2 at ~60 m/s, more when slow or fast
+  airNos: 1.2,                                  // AIR: NOS push m/s^2, ONLY with THROTTLE held (bottle = 6 s)
+  cd: 0.0003, ci: 4500, ciMax: 6,            // AIR drag = cd*v^2 + min(ci/v^2, ciMax): least drag ~2.5 m/s^2 at ~60 m/s, more when slow or fast
   gravityAir: 9.8,                            // AIR: climbing costs / diving gains g*sin(pitch) (full gravity trade)
   bankDrag: 1.5,                              // AIR: extra drag from banking (x (1/cos(bank) - 1))
-  liftFullSpeed: 62,                          // AIR: full lift at/above this m/s (~210 km/h); lift falls with (v/this)^2, times cos(bank)
+  liftFullSpeed: 55,                          // AIR: full lift at/above this m/s (~210 km/h); lift falls with (v/this)^2, times cos(bank)
   airSinkMax: 14,                             // AIR: sink m/s with zero lift
-  geH: 6, geMin: 0.06,                        // ground effect: within geH m of the ground sink fades to geMin (lets BUTTER LANDING work)
+  geH: 3, geMin: 0.06,                        // ground effect: within geH m of the ground sink fades to geMin (lets BUTTER LANDING work)
   roughSpeed: 60, wobble: 35,                 // below roughSpeed in the air: rough, shaky (bank wobble deg/s); liftoff under it = TOO SLOW!
+  // --- momentum model (fly3mom) ---
+  pitchResp: 3.5, pitchStab: 13,              // pitch inertia: nose rate chases stick at pitchResp/s; weathervane toward the flight path (x (v/liftFullSpeed)^2)
+  alpha0: 3, alphaL: 8, clMax: 1.4, alphaStall: 14,  // lift coeff = (AoA+alpha0)/alphaL deg, capped clMax; above alphaStall deg lift collapses
+  cdi: 0.12, floatLift: 1.0,  // low-speed lift helper: dynamic-pressure factor gets + floatLift*vr*(1-vr) below liftFullSpeed (glider can be flown slow, nose up)
+                                  // induced drag x CL^2
+  closedLift: 0.2,                            // AIR with WINGS CLOSED: share of lift left (sinks)
+  geLift: 0.12,                               // ground effect: up to +8% lift within geH m (small cushion)
+  liftAccel: 2.5, liftT: 1.6,                 // liftoff: upward accel capped at liftAccel m/s^2 for liftT s (floats off, no jump)
+  maxNz: 18,                                  // max path-bending accel m/s^2 (~1.8 g)
+  rotPitchMax: 12,                            // nose-up allowed on the runway once rotate speed + wings 100% open
+  slideK: 2.0, slipMax: 22,                                 // turns: flight path heading catches the nose heading at this rate /s (slide ~1-3 s)
+  slipDrag: 0.35,                             // drag from sliding sideways (x g x |sin slip| x (v/vf)^2)
+  buffet: 50,                                 // turbulence deg/s^2 near stall / low speed (physical buffeting)
+  softSink: 2.0, butterSink: 1.2, butterKmh: 150,               // touchdown: sink <= softSink and nose not down = clean; BUTTER only under butterKmh
+  crashSink: 6.5, crashPitch: 12, crashSpeed: 42,   // WRECKED: sink > crashSink, or nose down > crashPitch deg, or > crashSpeed m/s with nose down >3 deg, or upside down
+  roughKeep: 0.6, dipDeg: 4,                  // ROUGH LANDING keeps 60% speed, nose slams down dipDeg
+  gSpring: 40, gDamp: 9,                      // runway pitch spring (nose dip/suspension settle)
+  wreckFric: 14, wreckCard: 1.7,              // WRECKED grinding slide decel m/s^2; card after s
   rotateSpeed: 48,                            // GROUND ONLY: no lift until this speed (m/s, ~173 km/h); airborne flight ignores it
   groundAccel: 0.24,                          // ground spool rate toward throttle speed (lower = longer run-up)
   groundPitchMax: 3,                          // deg of nose-up allowed while rolling below rotateSpeed
@@ -4157,7 +4176,7 @@ function input(){const dz=v=>Math.abs(v)<TUNE.deadZone?0:v;let lr=0,fb=0;
   return{hard,lr:clamp(lr,-1,1),climb:clamp(-fb,-1,1),nos:B.nos||K.ShiftLeft||K.ShiftRight,brk:B.brk||K.Space,tu:B.tup||K.KeyE};}
 // ===== STATE =====
 const P={nosTank:1,tf:1,lands:0,landKmh:0,ground:false,vs:0,x:0,y:0,z:0,yaw:0,pitch:0,bank:0,v:0,thr:0,stall:false,bounces:0,nosT:0};
-function reset(){Object.assign(P,{x:0,z:0,y:0,yaw:0,pitch:0,bank:0,v:0,thr:0,stall:false,ground:true,vs:0,tf:0,wings:0,rotOK:false,nosTank:1});setWings(0,true);} // starts on the RUNWAY, stopped, car mode
+function reset(){Object.assign(P,{x:0,z:0,y:0,yaw:0,pitch:0,bank:0,v:0,thr:0,stall:false,ground:true,vs:0,tf:0,wings:0,rotOK:false,nosTank:1,gam:0,hd:0,q:0,wreck:null,sus:0,susV:0,roll:null,flip:null,rec:0});setWings(0,true);try{FX.length=0;showWreck(false);}catch(e){}} // starts on the RUNWAY, stopped, car mode
 reset();
 let flying=false;
 // ===== WORLD (procedural) =====
@@ -4264,7 +4283,7 @@ function hrr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r)
 function hbub(c,x,y,w,h,col,fill='rgba(12,4,24,.72)'){hrr(c,x,y,w,h,14);c.fillStyle=fill;c.fill();c.lineWidth=2.5;c.strokeStyle=col;c.shadowColor=col;c.shadowBlur=12;c.stroke();c.shadowBlur=0;}
 // popups: WANTED's wMsg (big glowing word + white sub line, pops in then fades)
 let FMSG=null;function wMsg(txt,col=H_YEL,sub=''){FMSG={txt,col,sub,t:performance.now()/1000};}
-const TOASTC={'PULL UP!':[H_YEL,'tilt the top of the phone toward you'],'LIFT OFF!':[H_LIME,'you are flying!'],'BUTTER LANDING!':[H_YEL,'smooth as butter'],'TOUCHDOWN':[H_CYAN,''],'BOUNCE!':['#ff2a3d','too fast or too steep'],'WINGS OUT!':[H_CYAN,''],'LOW SPEED: NOSE SINKING':[H_ORNG,'nose down or more throttle'],'FLY!':[H_LIME,'hold THROTTLE to roll'],'STALL!':['#ff2a3d','nose drops: dive for speed, then pull up'],'BARREL ROLL!':[H_PINK,'woohoo!'],'RECOVERED!':[H_LIME,'nice save!'],'TOO SLOW!':['#ff2a3d','not enough speed: she will settle back'],'BUMP!':[H_ORNG,'back on the runway'],'WINGS CLOSED!':['#ff2a3d','no lift: you will sink. Tap WINGS to open'],'WINGS OPEN!':[H_CYAN,'lift ON']};
+const TOASTC={'PULL UP!':[H_YEL,'tilt the top of the phone toward you'],'LIFT OFF!':[H_LIME,'you are flying!'],'BUTTER LANDING!':[H_YEL,'smooth as butter'],'TOUCHDOWN':[H_CYAN,''],'BOUNCE!':['#ff2a3d','too fast or too steep'],'WINGS OUT!':[H_CYAN,''],'LOW SPEED: NOSE SINKING':[H_ORNG,'nose down or more throttle'],'FLY!':[H_LIME,'hold THROTTLE to roll'],'STALL!':['#ff2a3d','nose drops: dive for speed, then pull up'],'BARREL ROLL!':[H_PINK,'woohoo!'],'RECOVERED!':[H_LIME,'nice save!'],'TOO SLOW!':['#ff2a3d','not enough speed: she will settle back'],'WRECKED!':['#ff2a3d','way too hard!'],'ROUGH LANDING!':[H_ORNG,'too hard: lost speed'],'BUMP!':[H_ORNG,'back on the runway'],'WINGS CLOSED!':['#ff2a3d','no lift: you will sink. Tap WINGS to open'],'WINGS OPEN!':[H_CYAN,'lift ON']};
 let ktT=0;function kToast(s,ms=1600){const el=document.getElementById('kToast');el.textContent=s;el.classList.remove('hidden','fade');clearTimeout(ktT);ktT=setTimeout(()=>el.classList.add('hidden'),ms);}
 function toast(s){const c=TOASTC[s];if(c)wMsg(s,c[0],c[1]);else kToast(s);}
 let vShown=0,vS=0,vT=0;
@@ -4307,39 +4326,74 @@ document.getElementById('kPzBg').addEventListener('click',()=>kPause(false));
 document.getElementById('kHome').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;const m=b.dataset.m;
   if(m==='resume')kPause(false);else if(m==='home')location.href='jr.html';else if(m==='recal'){tiltCenter();kPause(false);kToast('TILT CENTERED ✓');}else if(m==='runway'){reset();kPause(false);kToast('BACK ON THE RUNWAY');}});
 
-function step(dt){P.simT=(P.simT||0)+dt;const I=input(),T=TUNE;
+function step(dt){P.simT=(P.simT||0)+dt;const T=TUNE,g=9.8;
+  if(P._lv!==P.v||P._ly!==P.y||P.gam==null){P.gam=P.ground?0:clamp(P.pitch,-1.3,1.3);P.hd=P.yaw;P.q=0;if(P.wreck){P.wreck=null;showWreck(false);}}  /* state set from outside (tests/teleport): path = nose */
+  const I0=input(),I=P.wreck?{hard:0,lr:0,climb:0,nos:0,brk:0,tu:0}:I0;
   P.thr=clamp(P.thr+(I.tu?T.thrUp:-T.thrDown)*dt,0,1);
   if(I.hard&&!P.roll&&!(TL.hardT>0))startRoll(I.hard);TL.hardT=I.hard?1:Math.max(0,(TL.hardT||0)-dt*4);
   if(P.roll){P.roll.t+=dt/T.rollTime;const e=P.roll.t>=1?1:(1-Math.cos(Math.PI*P.roll.t))/2;P.bank=P.roll.b0+P.roll.d*2*Math.PI*e;if(P.roll.t>=1){P.bank=P.roll.b0;P.roll=null;P.rolls=(P.rolls||0)+1;}}
   else{const tb=I.lr*T.maxBank*D;if(I.lr&&!P.ground)P.bank+=clamp(tb-P.bank,-T.bankRate*D*dt,T.bankRate*D*dt);else P.bank-=P.bank*Math.min(1,T.autoLevel*dt);}
-  if(I.climb&&!P.flip)P.pitch+=I.climb*T.pitchRate*D*dt;else if(!P.flip)P.pitch-=P.pitch*Math.min(1,T.autoLevel*0.6*dt);
-  if(!P.ground&&!P.flip&&P.y>8&&P.pitch>T.flipPitch*D&&P.v<T.flipSpeed){P.flip={t:0};P.flips=(P.flips||0)+1;P.rec=1;toast('STALL!');navigator.vibrate&&navigator.vibrate([40,40,80]);}
-  if(P.flip){P.flip.t+=dt;P.pitch-=T.flipRate*D*dt;P.bank-=P.bank*Math.min(1,3*dt);if(P.pitch<=-T.flipDive*D||P.flip.t>T.flipTime){P.flip=null;toast('PULL UP!');}}
+  const vr=Math.max(0,P.v/T.liftFullSpeed),alpha=P.pitch-(P.ground?0:P.gam);P.aoa=alpha;
+  // --- pitch with inertia (angular velocity P.q) ---
+  if(!P.flip){P.q+=(I.climb*T.pitchRate*D-P.q)*Math.min(1,T.pitchResp*dt);
+    if(!P.ground)P.q+=(-alpha*T.pitchStab*Math.min(4,vr*vr)-(I.climb?0:P.pitch*T.autoLevel*0.3))*dt;
+    else if(!I.climb||P.pitch<0)P.q+=(-P.pitch*T.gSpring-P.q*T.gDamp)*dt;}
+  if(!P.ground&&!P.flip&&P.y>8&&((P.pitch>T.flipPitch*D&&P.v<T.flipSpeed)||(alpha>(T.alphaStall+2)*D&&P.v<T.flipSpeed))){P.flip={t:0};P.flips=(P.flips||0)+1;P.rec=1;toast('STALL!');navigator.vibrate&&navigator.vibrate([40,40,80]);}
+  if(P.flip){P.flip.t+=dt;P.q=-T.flipRate*D;P.bank-=P.bank*Math.min(1,3*dt);if(P.pitch<=-T.flipDive*D||P.flip.t>T.flipTime){P.flip=null;P.q*=.3;toast('PULL UP!');}}
   else if(P.rec&&P.pitch>-5*D&&P.v>T.stallSpeed+4){P.rec=0;P.recs=(P.recs||0)+1;toast('RECOVERED!');}
   const wasStall=P.stall;P.stall=!P.ground&&P.v<T.stallSpeed;if(P.stall&&!wasStall)toast('LOW SPEED: NOSE SINKING');
-  if(P.stall)P.pitch-=T.stallSink*D*(1-P.v/T.stallSpeed)*dt*(P.y<T.geH?P.y/T.geH:1);
-  P.pitch=clamp(P.pitch,(P.ground?0:-T.maxPitch)*D,(P.ground&&P.v<T.rotateSpeed?T.groundPitchMax:T.maxPitch)*D);
-  const nz=I.nos&&P.nosTank>0;P.nosTank=clamp(P.nosTank+(nz?-dt/T.nosTank:dt*T.nosRefill),0,1);P.nosT=nz?1:0;const vT=T.maxSpeed*(nz&&I.tu?T.nosBoost:P.thr);
-  if(P.ground)P.v+=(vT-P.v)*(vT>P.v?T.groundAccel:T.momentum)*dt-Math.sin(P.pitch)*T.gravityK*dt-(I.brk?T.groundBrake*dt:0)-T.groundFric*dt;
-  else{const cb=Math.max(.3,Math.abs(Math.cos(P.roll?P.roll.b0:P.bank))),drag=T.cd*P.v*P.v+Math.min(T.ci/Math.max(P.v*P.v,1),T.ciMax)*clamp(1+2*Math.sin(P.pitch),0,1)*clamp((P.v/T.liftFullSpeed)**2,0,1)+T.bankDrag*(1/cb-1);
-    P.v+=((I.tu?T.airThrust*P.thr:0)+(nz&&I.tu?T.airNos:0)-drag-Math.sin(P.pitch)*T.gravityAir-(I.brk?T.airBrake:0))*dt;}
-  P.v=clamp(P.v,P.ground?0:T.minFlySpeed,T.maxSpeed*T.nosBoost*1.1);
-  P.yaw+=9.8*Math.tan(clamp(P.roll?P.roll.b0:P.bank,-1.3,1.3))/Math.max(P.v,15)*T.turnK*dt*1.6;
-  if(P.ground)P.yaw+=I.lr*0.6*dt*Math.min(1,P.v/5);
-  const lift=clamp(T.lowSpeedLift+(1-T.lowSpeedLift)*P.v/T.stallSpeed,0,1);
-  if(P.ground){const rr=P.v>=T.rotateSpeed&&P.wings;if(rr&&!P.rotOK)toast('PULL UP!');P.rotOK=rr;}else P.rotOK=false;
-  const vs=P.ground?(P.v<T.rotateSpeed||P.tf<T.wingLiftTf?0:1)*Math.max(0,Math.sin(P.pitch)*P.v-(1-lift)*T.sinkMax):(()=>{const aL=clamp((P.v/T.liftFullSpeed)**2,0,1)*Math.max(.15,Math.abs(Math.cos(P.bank))),ge=P.y<T.geH?Math.max(T.geMin,P.y/T.geH):1;P.lift=aL;return Math.sin(P.pitch)*P.v*(P.pitch>0?aL*aL:1)-(1-aL)*T.airSinkMax*ge;})()*P.tf+(Math.sin(P.pitch)*P.v*T.closedClimb-T.closedSink)*(1-P.tf);P.vs=vs;
-  const hv=P.v*Math.cos(P.pitch);P.x+=Math.sin(P.yaw)*hv*dt;P.z+=Math.cos(P.yaw)*hv*dt;P.y+=vs*dt;
-  if(P.ground&&P.y>0.05){P.ground=false;P.slowLaunch=P.v<T.roughSpeed;toast(P.slowLaunch?'TOO SLOW!':'LIFT OFF!');}
-  if(!P.ground&&P.y<25&&P.v<T.roughSpeed&&P.tf>.5&&!P.roll&&!P.flip){const k=(1-P.v/T.roughSpeed);P.bank+=(Math.sin(P.simT*19)*.6+Math.sin(P.simT*7.3)*.4)*T.wobble*D*k*dt;P.pitch+=Math.sin(P.simT*11)*T.wobble*.3*D*k*dt;}
-  if(!P.ground&&P.y<=0){
-    if(-vs<=T.softSink&&P.v<=T.softMaxSpeed&&P.pitch>=T.softMinPitch*D){P.y=0;P.ground=true;P.pitch=Math.max(0,P.pitch);P.bank=0;P.lands++;P.landKmh=P.v*3.6;toast(P.v*3.6<10?'BUTTER LANDING!':'TOUCHDOWN');}
-    else if(P.wings&&-vs<=T.softSink*1.6&&P.pitch>=T.softMinPitch*D){P.y=0;P.ground=true;P.pitch=0;P.bank=0;P.v*=.85;P.bumps=(P.bumps||0)+1;toast('BUMP!');navigator.vibrate&&navigator.vibrate(40);}
-    else{P.y=TUNE.bounce*4;P.pitch=Math.abs(P.pitch)*T.bounce+8*D;P.v*=0.7;P.bank*=0.3;P.bounces++;toast('BOUNCE!');navigator.vibrate&&navigator.vibrate(60);if(P.bounces%3===0){toast('RESET');reset();}}}
+  if(P.stall)P.q-=T.stallSink*3*D*(1-P.v/T.stallSpeed)*dt*(P.y<T.geH?P.y/T.geH:1);
+  // --- buffeting: smoothed random turbulence, stronger the closer to stall (speed or AoA) ---
+  {const kb=P.ground||P.roll||P.flip||P.tf<.5?0:clamp((T.roughSpeed-P.v)/(T.roughSpeed-T.stallSpeed*.8),0,1)+clamp((alpha/D-T.alphaStall*.7)/(T.alphaStall*.6),0,1);
+   P.tbq=(P.tbq||0)+((brn()-.5)*2-(P.tbq||0))*Math.min(1,8*dt);P.tbb=(P.tbb||0)+((brn()-.5)*2-(P.tbb||0))*Math.min(1,6*dt);
+   if(kb>0){P.q+=P.tbq*T.buffet*D*kb*dt*3;P.bank+=P.tbb*T.buffet*D*kb*dt*1.5;}P.buf=kb;}
+  P.pitch+=P.q*dt;
+  {const pmax=(P.ground?(P.v>=T.rotateSpeed&&P.tf>=1&&P.wings?T.rotPitchMax:T.groundPitchMax):T.maxPitch)*D,pmin=(P.ground?-T.dipDeg*1.5:-T.maxPitch)*D;
+   if(P.pitch>pmax){P.pitch=pmax;P.q=Math.min(P.q,0);}if(P.pitch<pmin){P.pitch=pmin;P.q=Math.max(P.q,0);}}
+  const nz=I.nos&&P.nosTank>0;P.nosTank=clamp(P.nosTank+(nz?-dt/T.nosTank:(P.ground?dt*T.nosRefill:0)),0,1);P.nosT=(I0.nos&&P.nosTank>0)?1:0;  /* bottle refills on the ground only: one bottle per flight */const vT=T.maxSpeed*(nz&&I.tu?T.nosBoost:P.thr);
+  const wf=P.tf*P.tf*(3-2*P.tf),cbank=Math.cos(P.roll?P.roll.b0:P.bank);
+  const CL=a=>{const d=a/D;let c=clamp((d+T.alpha0)/T.alphaL,-.6,T.clMax);if(d>T.alphaStall)c*=Math.max(.35,1-(d-T.alphaStall)/12);return c;};
+  const ge=P.y<T.geH?1+T.geLift*(1-Math.max(0,P.y)/T.geH):1;
+  if(P.ground){
+    if(P.wreck){P.wreck.t+=dt;P.v=Math.max(0,P.v-Math.max(T.wreckFric,P.v*1.2)*dt);if(P.v>2)fxBurst('spark',3);if(P.wreck.t<4)fxBurst('smoke',P.wreck.t<1.5?2:1);if(P.wreck.t>T.wreckCard&&!P.wreck.card){P.wreck.card=1;showWreck(true);}}
+    else P.v+=(vT-P.v)*(vT>P.v?T.groundAccel:T.momentum)*dt-Math.sin(P.pitch)*T.gravityK*dt-(I.brk?T.groundBrake*dt:0)-T.groundFric*dt;
+    P.v=clamp(P.v,0,T.maxSpeed*T.nosBoost*1.1);P.gam=0;P.yaw+=I.lr*0.6*dt*Math.min(1,P.v/5);P.hd=P.yaw;
+    const rr=P.v>=T.rotateSpeed&&P.wings;if(rr&&!P.rotOK)toast('PULL UP!');P.rotOK=rr;
+    if(rr&&!P.wreck&&g*CL(P.pitch)*(vr<1?vr*vr+T.floatLift*vr*(1-vr):vr*vr)*wf*ge*cbank>g){P.ground=false;P.y=0.001;P.toT=P.simT;P.slowLaunch=P.v<T.roughSpeed;P.lift0=1;toast(P.slowLaunch?'TOO SLOW!':'LIFT OFF!');}
+  }else{P.rotOK=false;
+    const cl=CL(alpha),lk=Math.max(T.closedLift,wf),dq=vr<1?vr*vr+T.floatLift*vr*(1-vr):vr*vr,L=g*cl*dq*lk*ge,slip=Math.sin(P.yaw-P.hd);
+    const drag=T.cd*P.v*P.v+T.cdi*cl*cl*dq*g*lk+T.bankDrag*(1/Math.max(.3,Math.abs(cbank))-1)+T.slipDrag*g*Math.abs(slip)*Math.min(4,vr*vr);
+    const along=(I.tu?T.airThrust*P.thr:0)+(nz&&I.tu?T.airNos:0)-drag-g*Math.sin(P.gam)-(I.brk?T.airBrake*Math.max(0,Math.cos(P.gam)):0);  /* air brake can't hold her up in a vertical fall */
+    let nrm=clamp(L*cbank-g*Math.cos(P.gam),-T.maxNz,T.maxNz);if(P.simT-(P.toT||-9)<T.liftT)nrm=Math.min(nrm,T.liftAccel);
+    P.lift=clamp(L/g,0,1);P.v=clamp(P.v+along*dt,T.minFlySpeed,T.maxSpeed*T.nosBoost*1.1);P.gam=clamp(P.gam+nrm/Math.max(P.v,3)*dt,-1.45,1.45);
+    P.yaw+=9.8*Math.tan(clamp(P.roll?P.roll.b0:P.bank,-1.3,1.3))/Math.max(P.v,15)*T.turnK*dt*1.6;
+    {let dh=P.yaw-P.hd;dh=Math.atan2(Math.sin(dh),Math.cos(dh));P.hd+=dh*Math.min(1,T.slideK*dt);dh=Math.atan2(Math.sin(P.yaw-P.hd),Math.cos(P.yaw-P.hd));if(Math.abs(dh)>T.slipMax*D){P.hd=P.yaw-Math.sign(dh)*T.slipMax*D;dh=Math.sign(dh)*T.slipMax*D;}P.slip=dh;}}
+  const hv=P.v*Math.cos(P.ground?0:P.gam),vy=P.ground?0:P.v*Math.sin(P.gam);P.vs=vy;
+  P.x+=Math.sin(P.hd)*hv*dt;P.z+=Math.cos(P.hd)*hv*dt;P.y+=vy*dt;
+  if(!P.ground&&P.y<=0)touchDown(-vy);
   if(P.ground)P.y=Math.max(0,P.y);
+  P.susV=(P.susV||0)+(-(P.sus||0)*140-(P.susV||0)*8)*dt;P.sus=(P.sus||0)+P.susV*dt;
+  fxStep(dt);
   wheelA-=(P.ground||P.tf<1?P.v:P.v*.2)*dt/ZDM.wr;
   const tfT=P.wings?1:0,pt=P.tf;P.tf=clamp(P.tf+Math.sign(tfT-P.tf)*dt/T.transformTime,0,1);if(pt===1&&P.tf<1)toast('WINGS IN');if(pt===0&&P.tf>0)toast('WINGS OUT!');
-  if(P.y>900)P.pitch=Math.min(P.pitch,0);}
+  if(P.y>900){P.gam=Math.min(P.gam,0);P.pitch=Math.min(P.pitch,0);}
+  P._lv=P.v;P._ly=P.y;}
+let bz=12345;const brn=()=>(bz=(bz*16807)%2147483647)/2147483647;
+function touchDown(s){const T=TUNE,pd=P.pitch/D,cb=Math.cos(P.bank);P.y=0;P.butter=false;P.ground=true;P.gam=0;P.hd=P.yaw;P.landSink=s;
+  if(cb<.35||s>T.crashSink||pd<-T.crashPitch||(P.v>T.crashSpeed&&pd<-3)){P.wreck={t:0};P.wrecks=(P.wrecks||0)+1;P.bank=0;P.roll=null;P.flip=null;P.pitch=-T.dipDeg*1.5*D;P.q=0;P.thr=0;P.susV=-s*.5;fxBurst('spark',40);fxBurst('smoke',12);toast('WRECKED!');navigator.vibrate&&navigator.vibrate([120,60,200]);return;}
+  P.bank=0;
+  if(s<=T.softSink&&pd>=-2){P.pitch=Math.max(0,P.pitch);P.lands++;P.landKmh=P.v*3.6;P.v*=.97;P.susV=-s*.3;P.butter=P.landKmh<T.butterKmh&&s<=T.butterSink&&pd>=0;toast(P.butter?'BUTTER LANDING!':'TOUCHDOWN');return;}
+  P.roughs=(P.roughs||0)+1;P.landKmh=P.v*3.6;P.v*=T.roughKeep;P.pitch=-T.dipDeg*D;P.q=-.5;P.susV=-s*.6;fxBurst('spark',25);toast('ROUGH LANDING!');navigator.vibrate&&navigator.vibrate([60,30,60]);}
+// --- sparks + black smoke particles ---
+const FX=[];function fxBurst(k,n){const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw);for(let i=0;i<n;i++){const r=brn,sp=k==='spark';
+  FX.push({k,x:P.x-fx*1.6+(r()-.5)*1.6,y:sp?.15:.6,z:P.z-fz*1.6+(r()-.5)*1.6,vx:fx*P.v*(sp?.5:.1)+(r()-.5)*(sp?8:2),vy:sp?1+r()*4:1+r()*1.5,vz:fz*P.v*(sp?.5:.1)+(r()-.5)*(sp?8:2),life:sp?.35+r()*.4:1.6+r()*1.2,t:0,s:sp?0:1+r()});}
+  if(FX.length>600)FX.splice(0,FX.length-600);}
+function fxStep(dt){for(let i=FX.length-1;i>=0;i--){const f=FX[i];f.t+=dt;if(f.t>f.life){FX.splice(i,1);continue;}f.x+=f.vx*dt;f.y+=f.vy*dt;f.z+=f.vz*dt;
+  if(f.k==='spark'){f.vy-=9.8*dt;if(f.y<0){f.y=0;f.vy*=-.3;}f.vx*=.98;f.vz*=.98;}else{f.vy*=.99;f.vx*=.97;f.vz*=.97;f.s+=dt*2.2;}}}
+function drawFX(){for(const f of FX){const p=proj(f.x,f.y,f.z);if(!p)continue;const a=1-f.t/f.life,sc=H*0.9/p[2];
+  if(f.k==='spark'){const q=proj(f.x-f.vx*.03,f.y-f.vy*.03,f.z-f.vz*.03);if(!q)continue;ctx.strokeStyle=`rgba(255,${180+Math.round(60*a)},60,${a})`;ctx.lineWidth=Math.max(1.5,sc*.06);ctx.shadowColor='#ffb020';ctx.shadowBlur=8;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();ctx.shadowBlur=0;}
+  else{ctx.fillStyle=`rgba(18,14,22,${.75*a})`;ctx.strokeStyle=`rgba(120,110,130,${.35*a})`;ctx.lineWidth=1;ctx.beginPath();ctx.arc(p[0],p[1],Math.max(3,sc*f.s*.8),0,7);ctx.fill();ctx.stroke();}}}
+function showWreck(on){const e=document.getElementById('kWreck');if(e)e.classList.toggle('hidden',!on);}
 // ===== RENDER =====
 const FLYCAM={back:10,up:2.0};function rotBar(){const T=TUNE,mx=T.rotateSpeed*1.25,f=Math.min(1,P.v/mx),m=T.rotateSpeed/mx,ok=P.v>=T.rotateSpeed;
   return `<div style="position:relative;width:170px;height:12px;margin-top:4px;border:1px solid ${ok?'#ffb020':'#3ee6ff'};background:rgba(62,230,255,.08)"><div style="width:${f*100}%;height:100%;background:${ok?'#ffb020':'rgba(62,230,255,.6)'}"></div><div style="position:absolute;left:${m*100}%;top:-4px;width:2px;height:18px;background:#ffb020"></div></div><div style="font-size:10px;color:${ok?'#ffb020':'#8a7a7d'}">${ok?'PULL UP!':'ROTATE '+Math.round(T.rotateSpeed*3.6)+' KM/H'}</div>`;}
@@ -4375,7 +4429,7 @@ function render(){
   ctx.globalAlpha=1;
   // shadow on ground
   const sh=proj(P.x,0,P.z);if(sh){ctx.fillStyle='rgba(255,42,61,.25)';ctx.beginPath();ctx.ellipse(sh[0],sh[1],Math.max(2,900/sh[2]),Math.max(1,300/sh[2]),0,0,7);ctx.fill();}
-  drawRunway();drawZ();
+  drawRunway();P.y+=P.sus||0;drawZ();P.y-=P.sus||0;drawFX();
   drawHud(hudDt);}
 let last=performance.now(),hudDt=1/60;
 function loop(t){const dt=Math.min(0.05,(t-last)/1000);last=t;fpsAcc+=dt;fpsN++;if(fpsAcc>0.5){fps=fpsN/fpsAcc;fpsAcc=0;fpsN=0;}
@@ -4383,5 +4437,6 @@ function loop(t){const dt=Math.min(0.05,(t-last)/1000);last=t;fpsAcc+=dt;fpsN++;
 requestAnimationFrame(loop);
 document.getElementById('ready').addEventListener('click',async()=>{await allowTilt();tiltCenter();flying=true;document.getElementById('kOver').classList.add('hidden');document.getElementById('kMenuB').classList.remove('hidden');toast('FLY!');});
 
-window.FLY={P,TUNE,TL,FLYCAM,cam,proj,get fps(){return fps;}};
+document.getElementById('kWrR').addEventListener('click',()=>{reset();kToast('BACK ON THE RUNWAY');});document.getElementById('kWrH').addEventListener('click',()=>{location.href='jr.html';});
+window.FLY={P,TUNE,TL,FLYCAM,cam,proj,FX,showWreck,get fps(){return fps;}};
 </script></body></html>
