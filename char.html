@@ -1,0 +1,471 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Z-DASH · Neon Character</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:#05030c;color:#e8f6ff;font:600 13px/1.2 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none}
+#cv{position:fixed;inset:0;width:100%;height:100%;touch-action:none}
+#top{position:fixed;left:0;right:0;top:0;display:flex;gap:6px;padding:8px;flex-wrap:wrap;align-items:center;pointer-events:none}
+#top>*{pointer-events:auto}
+h1{margin:0 8px 0 2px;font-size:15px;letter-spacing:.18em;color:#3ee6ff;text-shadow:0 0 8px #3ee6ff}
+button{font:700 12px system-ui;letter-spacing:.06em;color:#dff;background:#0b1020cc;border:1px solid #2b4a66;border-radius:8px;padding:7px 10px;cursor:pointer}
+button.on{border-color:var(--g,#3ee6ff);color:#fff;box-shadow:0 0 10px var(--g,#3ee6ff) inset,0 0 8px var(--g,#3ee6ff)}
+#panel{position:fixed;left:0;right:0;bottom:0;padding:10px 12px 14px;background:linear-gradient(#05030c00,#05030cf2 22%);display:grid;gap:8px}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.lab{width:62px;color:#7fa3c0;font-size:11px;letter-spacing:.14em}
+.sw{width:30px;height:30px;border-radius:50%;border:2px solid #0000;padding:0}.sw.on{border-color:#fff}
+#fit{position:fixed;right:8px;top:52px;font:600 11px ui-monospace,Menlo,monospace;color:#9fd;background:#0008;padding:6px 8px;border-radius:8px;white-space:pre;display:none}
+#panel.hide{display:none}
+</style></head><body>
+<canvas id="cv"></canvas>
+<div id="top"><h1>NEON&nbsp;ID</h1>
+ <span id="anims"></span>
+ <button id="bBoth">BOTH</button><button id="bView">VIEW</button><button id="bFit">FIT</button><button id="bEd">EDIT</button>
+</div>
+<div id="fit"></div>
+<div id="panel">
+ <div class="row"><span class="lab">BODY</span><span id="oG"></span></div>
+ <div class="row"><span class="lab">HAIR</span><span id="oH"></span></div>
+  <div class="row"><span class="lab">COLOR</span><span id="oL"></span></div>
+ <div class="row"><span class="lab">PET</span><span id="pT"></span></div>
+ <div class="row"><span class="lab">PET COLOR</span><span id="pL"></span></div>
+ <div class="row"><span class="lab">PET MOVE</span><span id="pM"></span></div>
+ <div class="row"><span class="lab">RIDE SPOT</span><span id="pS"></span></div>
+ <div class="row"><span class="lab">REACT</span><span id="pR"></span></div>
+</div>
+<script>
+"use strict";
+/* NEONCHAR phase 1. Units/axes match world.html zModel: metres, x right, y up, z forward (car nose +z).
+   ONE shared skeleton (same joints + bone lengths for both bodies) so every animation lines up; male/female differ only in
+   shape (widths/thickness), hair and outfit. Saved to localStorage 'zdash.char.v1' for world.html to read later. */
+const KEY='zdash.char.v1',H=1.75;
+const HAIRS=['short','spiky','bob','long','ponytail','buns'];
+/* Bob: one bright neon colour per character; only saturated neon picks, no dark/dull options */
+const OUTFITS=['#3ee6ff','#ff3df2','#7cff4f','#ffb020','#ff4d5e','#b48cff','#fff04d','#ffffff'];
+const GLOWS=OUTFITS;
+const DEF={v:1,gender:'female',hair:'ponytail',outfit:'#ff3df2',glow:'#ff3df2'};
+function load(){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');if(o&&o.v===1){const c=Object.assign({},DEF,o);if(!GLOWS.includes(c.glow))c.glow=DEF.glow;c.outfit=c.glow;return c;}}catch(e){}return Object.assign({},DEF);}
+let C=load();
+function save(){C.updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify(C));}catch(e){}}
+
+/* ---------- 370Z geometry (copied read-only from world.html zModel: ST body stations, RF roofline, doors) ---------- */
+const ST=[[2.125,.70,.28,.56],[2.02,.84,.22,.62],[1.80,.90,.20,.70],[1.50,.925,.20,.78],[1.15,.92,.20,.80],[.80,.89,.22,.79],[.55,.88,.22,.80],
+ [0,.87,.22,.84],[-.55,.88,.22,.88],[-1.05,.91,.22,.93],[-1.40,.925,.22,.95],[-1.75,.91,.24,.96],[-2.0,.86,.28,.95],[-2.125,.78,.32,.93]];
+const RF=[[.55,.82,.80],[.05,1.20,.66],[-.25,1.32,.60],[-.65,1.29,.57],[-1.05,1.17,.52],[-1.45,1.04,.48],[-1.72,.97,.62]];
+const lerp=(a,b,t)=>a+(b-a)*t,clamp=(v,a,b)=>v<a?a:v>b?b:v,ease=t=>t*t*(3-2*t);
+const rfAt=z=>{for(let i=0;i<RF.length-1;i++){const a=RF[i],b=RF[i+1];if(z<=a[0]&&z>=b[0]){const t=(a[0]-z)/(a[0]-b[0]);return[lerp(a[1],b[1],t),lerp(a[2],b[2],t)];}}return null;};
+const DOOR={z0:.55,z1:-.78,sill:.22,x:.9};
+/* Interior (derived from the shell above + real 370Z packaging): left-hand drive, driver centre x=-0.37,
+   seat cushion top y=0.34, seat H-point z=-0.42, floor y=0.14, pedals z≈+0.55, headliner = roof - 0.055 m. */
+const SEAT={x:-.37,hy:.40,hz:-.42,cushion:.34,floor:.14,back:22,liner:.055};
+const CAR={x:0,z:0,on:false};
+
+/* ---------- shared skeleton: bone lengths as fractions of height (standard anthropometry) ---------- */
+const B={leg:.530*H,thigh:.245*H,shin:.247*H,ankle:.038*H,foot:.15*H,spine:.17*H,chest:.115*H,neck:.045*H,head:.14*H,uarm:.186*H,farm:.146*H,hand:.09*H};
+/* ragdoll-ready skeleton data: parent hierarchy, segment mass fractions (Dempster/Winter), joint limits (deg).
+   fk() applies LIMITS to every pose, so physics/ragdoll can later drive the same joints with the same constraints. */
+const SKEL=[{j:'pel',p:null,m:.142},{j:'waist',p:'pel',m:.139},{j:'chest',p:'waist',m:.216},{j:'neck',p:'chest',m:.012},{j:'head',p:'neck',m:.069},
+ ...['L','R'].flatMap(k=>[{j:'hip'+k,p:'pel',m:0},{j:'knee'+k,p:'hip'+k,m:.100},{j:'ank'+k,p:'knee'+k,m:.0465},{j:'toe'+k,p:'ank'+k,m:.0145},
+  {j:'sh'+k,p:'chest',m:0},{j:'el'+k,p:'sh'+k,m:.028},{j:'wr'+k,p:'el'+k,m:.016},{j:'hand'+k,p:'wr'+k,m:.006}])];
+const LIMITS={hip:[-35,125],knee:[0,150],ank:[-30,45],sh:[-60,180],el:[0,150],lean:[-40,50],head:[-40,40],twist:[-50,50],roll:[-20,20],ao:[-10,90]};
+function limit(p){const q=Object.assign({},p),c=(k,L)=>{if(q[k]!=null)q[k]=clamp(q[k],L[0],L[1]);};
+ for(const k of['L','R']){c('hip'+k,LIMITS.hip);c('knee'+k,LIMITS.knee);c('ank'+k,LIMITS.ank);c('sh'+k,LIMITS.sh);c('el'+k,LIMITS.el);c('ao'+k,LIMITS.ao);}
+ c('lean',LIMITS.lean);c('head',LIMITS.head);c('twist',LIMITS.twist);c('roll',LIMITS.roll);return q;}
+const SH={male:{sh:.130*H,hip:.088*H,waist:.085*H,chest:.115,torsoD:.24,limb:1,neckW:.06},
+          female:{sh:.114*H,hip:.098*H,waist:.072*H,chest:.10,torsoD:.21,limb:.86,neckW:.05}};
+/* pose = {px,py,pz,yaw, lean(+fwd), hipL,hipR (+fwd), kneeL,kneeR (flex), shL,shR (+fwd), elL,elR (flex), armOut, legOut, head} angles deg */
+const R=Math.PI/180;
+function fk(p,shape){p=limit(p);const cy=Math.cos(p.yaw*R),sy=Math.sin(p.yaw*R);
+ const W=(lx,ly,lz)=>[p.px+lx*cy+lz*sy,p.py+ly,p.pz-lx*sy+lz*cy]; // local: x right of body, z body-forward
+ const J={};const pel=[0,0,0];
+ const rl=(p.roll||0)*R,up=[Math.sin(rl),Math.cos(p.lean*R)*Math.cos(rl),Math.sin(p.lean*R)];pel[0]=p.sway||0;J.pel=W(...pel);const add=(a,d,l)=>[a[0]+d[0]*l,a[1]+d[1]*l,a[2]+d[2]*l];
+ const waist=add(pel,up,B.spine*.5),chest=add(pel,up,B.spine),nk=add(chest,up,B.chest),hd=add(nk,[0,Math.cos((p.lean+p.head)*R),Math.sin((p.lean+p.head)*R)],B.neck);
+ const top=add(hd,[0,Math.cos((p.lean+p.head)*R),Math.sin((p.lean+p.head)*R)],B.head);
+ J.waist=W(...waist);J.chest=W(...chest);J.neck=W(...nk);J.head=W(...add(hd,[0,Math.cos((p.lean+p.head)*R),Math.sin((p.lean+p.head)*R)],B.head*.5));J.top=W(...top);J.chin=W(...hd);
+ for(const s of[-1,1]){const k=s<0?'L':'R';
+  const hip=[pel[0]+s*.09*H*.5*1.1,-.02+s*Math.sin(rl)*.05,0];const ha=p['hip'+k]*R,ka=(p['hip'+k]-p['knee'+k])*R,lo=(p.legOut||0)*R*s;
+  const kn=[hip[0]+Math.sin(lo)*B.thigh,hip[1]-Math.cos(ha)*B.thigh*Math.cos(lo),hip[2]+Math.sin(ha)*B.thigh];
+  const an=[kn[0]+Math.sin(lo)*B.shin*.6,kn[1]-Math.cos(ka)*B.shin,kn[2]+Math.sin(ka)*B.shin];
+  const fa=ka+(90-(p['ank'+k]||0))*R;const toe=[an[0],an[1]-Math.cos(fa)*B.foot,an[2]+Math.sin(fa)*B.foot];
+  J['hip'+k]=W(...hip);J['knee'+k]=W(...kn);J['ank'+k]=W(...an);J['toe'+k]=W(...toe);
+  const shp=add(nk,[s*shape.sh,0,0],1);shp[1]-=.035;const sa=(p['sh'+k]+0)*R,ea=(p['sh'+k]+p['el'+k])*R,ao=((p['ao'+k]??p.armOut??0)+6)*R*s;
+  const lean=p.lean*R;const rot=(v)=>v; // arms hang in world-down frame
+  const el=[shp[0]+Math.sin(ao)*B.uarm,shp[1]-Math.cos(sa)*B.uarm*Math.cos(ao),shp[2]+Math.sin(sa)*B.uarm];
+  const wr=[el[0]+Math.sin(ao)*B.farm*.5,el[1]-Math.cos(ea)*B.farm,el[2]+Math.sin(ea)*B.farm];
+  const hn=[wr[0],wr[1]-Math.cos(ea)*B.hand*.8,wr[2]+Math.sin(ea)*B.hand*.8];
+  const tw=(p.twist||0)*R,ct=Math.cos(tw),st=Math.sin(tw),T=v=>[nk[0]+(v[0]-nk[0])*ct+(v[2]-nk[2])*st,v[1],nk[2]-(v[0]-nk[0])*st+(v[2]-nk[2])*ct];
+  J['sh'+k]=W(...T(shp));J['el'+k]=W(...T(el));J['wr'+k]=W(...T(wr));J['hand'+k]=W(...T(hn));
+  J['wst'+k]=W(...add(waist,[s*shape.waist,0,0],1));J['hp'+k]=W(...[pel[0]+s*shape.hip,-.01,0]);}
+ return J;}
+
+/* ---------- animations (shared by both bodies) ---------- */
+const P0={px:0,py:B.leg,pz:0,yaw:0,lean:0,head:0,hipL:0,hipR:0,kneeL:0,kneeR:0,ankL:0,ankR:0,shL:0,shR:0,elL:8,elR:8,armOut:0,legOut:0};
+function mix(a,b,t){const o={};for(const k in a)o[k]=lerp(a[k],b[k]??a[k],t);return o;}
+function legH(p){// pelvis height so lowest foot touches ground (inverse of fk vertical chain)
+ const h=k=>Math.cos(p['hip'+k]*R)*B.thigh+Math.cos((p['hip'+k]-p['knee'+k])*R)*B.shin+B.ankle;return Math.max(h('L'),h('R'))+.02;}
+function gait(t,run){const s=Math.sin(t*Math.PI*2),c=Math.cos(t*Math.PI*2),A=run?42:26;const p=Object.assign({},P0);
+ p.hipL=A*s;p.hipR=-A*s;p.kneeL=(run?70:38)*Math.max(0,-c)+ (run?20:6);p.kneeR=(run?70:38)*Math.max(0,c)+(run?20:6);
+ p.shL=-(run?55:24)*s;p.shR=(run?55:24)*s;p.elL=p.elR=run?85:18;p.lean=run?12:3;p.head=run?-6:-2;
+ // foot pitch over each leg's cycle (+ = toe up): heel strike -> flat -> push-off -> swing
+ const fp=ph=>{const u=((ph-.25)%1+1)%1,T=run?[18,0,-45,-8]:[15,0,-35,-5];if(u<.12)return lerp(T[0],T[1],ease(u/.12));if(u<.36)return T[1];if(u<.5)return lerp(T[1],T[2],ease((u-.36)/.14));if(u<.75)return lerp(T[2],T[3],ease((u-.5)/.25));return lerp(T[3],T[0],ease((u-.75)/.25));};
+ for(const[k,ph]of[['L',t],['R',t+.5]]){const ka=p['hip'+k]-p['knee'+k];p['ank'+k]=ka-fp(ph);}
+ p.sway=(run?.012:.022)*Math.sin(t*Math.PI*2);p.roll=(run?3:5)*Math.sin(t*Math.PI*2);p.twist=-(run?10:6)*s;
+ p.py=B.leg;const J=fk(p,SH.female);p.py-=Math.min(J.toeL[1],J.toeR[1],J.ankL[1]-B.ankle*.7,J.ankR[1]-B.ankle*.7);return p;}
+function idle(t){const p=Object.assign({},P0),b=Math.sin(t*Math.PI*2);p.lean=1+b*.8;p.shL=2+b*2;p.shR=2-b*2;p.elL=p.elR=10;p.hipL=3;p.hipR=-2;p.kneeL=5;p.kneeR=2;p.head=Math.sin(t*Math.PI*4)*1.5;p.py=legH(p)-.02+b*.004;return p;}
+// seated: world-space pelvis = SEAT H-point, torso reclined SEAT.back, hips flexed, knees bent, feet on pedals
+function sitPose(t){const p=Object.assign({},P0);p.px=CAR.x+SEAT.x;p.pz=CAR.z+SEAT.hz;p.py=SEAT.hy;p.yaw=0;p.lean=-SEAT.back;p.head=SEAT.back-6+Math.sin((t||0)*Math.PI*2)*1.2;
+ p.hipL=p.hipR=95;p.kneeL=p.kneeR=39;p.ankL=p.ankR=-8;p.legOut=4;
+ if(seatHands==='lap'){p.shL=p.shR=18;p.elL=p.elR=62;p.armOut=10;}else{p.shL=p.shR=80;p.elL=p.elR=14;p.armOut=-8+Math.sin((t||0)*Math.PI*2)*1;}
+ p.head=SEAT.back-10+Math.sin((t||0)*Math.PI*2)*1.2;p.roll=Math.sin((t||0)*Math.PI*2)*.8;return p;}
+let seatHands='wheel';
+/* seated emotes: upper body only, hips stay on the cushion, arms kept inside the cabin (checked in fitCheck) */
+function sitWave(t){const p=sitPose(t);const w=Math.sin(t*Math.PI*2*3);p.shR=72;p.aoR=4;p.elR=88+w*22;p.head=SEAT.back-4;p.twist=-4;p.roll=-3;p.shL=80;p.elL=14;p.aoL=-10;p.aoL=-10;return p;}
+function sitDance(t){const b=t*8,k=Math.floor(b),f=b-k,hit=Math.sin(Math.PI*f),s=k%2?1:-1,p=sitPose(t);
+ const up=(k%4===2||k%4===3);p.shL=up&&s<0?58:55+hit*10;p.shR=up&&s>0?78:55+hit*10;p.elL=p.shL>70?85:95;p.elR=p.shR>70?85:95;p.aoL=-10;p.aoR=-6;
+ p.twist=s*12*ease(Math.min(1,f*3));p.roll=s*4;p.head=SEAT.back-6+hit*8;p.lean=-SEAT.back+hit*5;return p;}
+/* get in (t 0..1): walk up outside the open left door -> face rear-quarter, duck + sit onto sill -> swing in -> settle. Get out = reverse. */
+const GI=[ // [t, pose builder]  low-coupe technique: back to the seat, bottom in first, head ducks in last
+ [0,  ()=>Object.assign(gait(0,false),{px:CAR.x-1.3,pz:CAR.z+.9,yaw:180})],
+ [.18,()=>Object.assign(gait(.5,false),{px:CAR.x-1.2,pz:CAR.z-.15,yaw:200})],
+ [.32,()=>{const p=idle(0);return Object.assign(p,{px:CAR.x-1.15,pz:CAR.z-.42,yaw:270})}], // back to the seat, outside the sill
+ [.52,()=>Object.assign({},P0,{px:CAR.x-.78,pz:CAR.z-.42,py:.6,yaw:270,lean:38,head:-14,hipL:85,hipR:85,kneeL:95,kneeR:95,shL:40,shR:40,elL:30,elR:30,armOut:8})], // sit onto seat edge, head stays outside
+ [.70,()=>Object.assign(sitPose(0),{px:CAR.x-.52,py:.44,yaw:320,lean:24,head:-16,hipL:90,hipR:80,kneeL:70,kneeR:95,legOut:10})], // duck + swing in
+ [1,  ()=>sitPose(0)]];
+function getIn(t){let i=0;while(i<GI.length-2&&t>GI[i+1][0])i++;const a=GI[i],b=GI[i+1],u=ease(clamp((t-a[0])/(b[0]-a[0]),0,1));
+ const pa=a[1](),pb=b[1]();let dy=pb.yaw-pa.yaw;if(dy>180)dy-=360;if(dy<-180)dy+=360;const p=mix(pa,pb,u);p.yaw=pa.yaw+dy*u;return p;}
+function dance(t){const b=t*8,k=Math.floor(b),f=b-k,e=f<.35?ease(f/.35):1,hit=Math.sin(Math.PI*f),p=idle(0),s=k%2?1:-1,ps=k%2?-1:1;
+ const K=[ // 8-count: sway, sway, arm wave, arm wave, spin-pose, hit, body roll, pose
+  {sway:.06,roll:8,twist:15,shL:40,shR:-10,aoL:30,aoR:10,elL:90,elR:20,head:-5},{sway:-.06,roll:-8,twist:-15,shR:40,shL:-10,aoR:30,aoL:10,elR:90,elL:20,head:5},
+  {sway:.04,roll:6,shL:170,aoL:20,elL:20,shR:20,elR:60,twist:10},{sway:-.04,roll:-6,shR:170,aoR:20,elR:20,shL:20,elL:60,twist:-10},
+  {twist:40,shL:90,aoL:70,elL:10,shR:90,aoR:70,elR:10,hipL:20,kneeL:35,head:-10},{lean:10,shL:60,shR:60,aoL:40,aoR:40,elL:110,elR:110,kneeL:25,kneeR:25,head:12},
+  {lean:-8,roll:10,sway:.07,shL:120,shR:120,aoL:30,aoR:30,elL:70,elR:70},{shL:175,aoL:15,elL:5,shR:-20,aoR:35,elR:10,roll:-10,sway:-.05,hipR:15,kneeR:25,head:-8}];
+ const a=Object.assign({},p,K[(k+7)%8]),c=Object.assign({},p,K[k%8]);const q=mix(Object.assign({sway:0,roll:0,twist:0,aoL:0,aoR:0},a),Object.assign({sway:0,roll:0,twist:0,aoL:0,aoR:0},c),e);
+ q.kneeL+=8*hit;q.kneeR+=8*hit;q.py=legH(q)-.02-.03*hit;return q;}
+const ANIMS={idle:{len:3.2,f:t=>idle(t),car:0},walk:{len:1.1,f:t=>Object.assign(gait(t,false),{pz:0}),car:0},run:{len:.68,f:t=>gait(t,true),car:0},
+ sit:{len:4,f:t=>sitPose(t),car:1},getin:{len:3.4,f:t=>getIn(t),car:1,once:1},getout:{len:3.4,f:t=>getIn(1-t),car:1,once:1},dance:{len:4.2,f:t=>dance(t),car:0},sitwave:{len:2.4,f:t=>sitWave(t),car:1},sitdance:{len:4.2,f:t=>sitDance(t),car:1}};
+let snapCam=0,anim='idle',aT=0,both=false,view=0,showFit=false;
+
+/* ---------- seated fit checks (numbers exposed as window.CHARFIT) ---------- */
+const glassX=(z,y)=>{const r=rfAt(z);return lerp(.88,r[1]+.04,clamp((y-.84)/(r[0]-.04-.84),0,1))-.03;}; // inner door glass half-width at height y
+function fitCheck(){const J=fk(sitPose(0),SH.male),r=rfAt(J.top[2]-CAR.z);const liner=r[0]-SEAT.liner;
+ const st=fk(Object.assign({},P0,{py:legH(P0)-.02}),SH.male);
+ let minDoor=9,minDoorT=0,minRoof=9;for(let i=0;i<=200;i++){const t=i/200,q=getIn(t),j=fk(q,SH.male);
+  for(const n of['top','head','sh'+'L','shR','neck']){const pnt=j[n],x=Math.abs(pnt[0]-CAR.x),z=pnt[2]-CAR.z;const rr=rfAt(z);if(!rr)continue;
+   const rad=n==='top'?0:(n==='head'?B.head*.5:.05);
+   if(x<DOOR.x+.08&&x>rr[1]-.05&&z<DOOR.z0&&z>DOOR.z1){const c=(rr[0]-.04)-(pnt[1]+ (n==='head'?rad:0));if(c<minDoor){minDoor=c;minDoorT=t;}}
+   if(x<rr[1]-.05){const c=(rr[0]-SEAT.liner)-(pnt[1]+(n==='head'?rad:0));if(c<minRoof)minRoof=c;}}}
+ const fl=Math.min(J.toeL[1],J.ankL[1]);
+ const o={standingHeight:+(st.top[1]).toFixed(3),seatedHeadTopY:+J.top[1].toFixed(3),headlinerY:+liner.toFixed(3),headClearance:+(liner-J.top[1]).toFixed(3),
+  hPoint:[+(J.pel[0]-CAR.x).toFixed(2),+J.pel[1].toFixed(2),+(J.pel[2]-CAR.z).toFixed(2)],seatBack:SEAT.back,
+  shoulderHalfWidth:+(Math.abs(J.shL[0]-J.shR[0])/2).toFixed(3),cabinHalfWidthAtShoulder:+glassX(J.shL[2]-CAR.z,J.shL[1]).toFixed(3),
+  leftShoulderToGlass:+(glassX(J.shL[2]-CAR.z,J.shL[1])-Math.abs(J.shL[0]-CAR.x)-.05).toFixed(3),
+  footY:+fl.toFixed(3),floorY:SEAT.floor,footZ:+(J.toeL[2]-CAR.z).toFixed(2),pedalZ:.55,
+  entryMinDoorClear:+minDoor.toFixed(3),entryMinDoorT:+minDoorT.toFixed(2),entryMinRoofClear:+minRoof.toFixed(3),
+  hipOverSillAtEntry:(()=>{const j=fk(getIn(.52),SH.male);return +(j.pel[1]-DOOR.sill).toFixed(3)})()};
+ let emMin=9,emSide=9;for(const a of['sit','sitwave','sitdance'])for(let i=0;i<=40;i++){const j=fk(ANIMS[a].f(i/40),SH.male);
+  for(const n of['top','handL','handR','wrL','wrR','elL','elR','shL','shR']){const q=j[n],z=q[2]-CAR.z,rr=rfAt(z);if(!rr)continue;const r=n==='top'?0:.04;
+   emMin=Math.min(emMin,(rr[0]-SEAT.liner)-(q[1]+r));if(q[1]>.84)emSide=Math.min(emSide,glassX(z,q[1])-Math.abs(q[0]-CAR.x)-r);else emSide=Math.min(emSide,.86-Math.abs(q[0]-CAR.x)-r);}}
+ o.emoteRoofClear=+emMin.toFixed(3);o.emoteSideClear=+emSide.toFixed(3);
+ o.pass={emote:emMin>=0&&emSide>=0,height:Math.abs(o.standingHeight-H)<.02,head:o.headClearance>=.03,shoulder:o.leftShoulderToGlass>=0,feet:o.footY>=SEAT.floor-.01&&o.footZ<=.75,door:o.entryMinDoorClear>=0,roof:o.entryMinRoofClear>=0};
+ o.allPass=Object.values(o.pass).every(Boolean);return o;}
+window.CHARFIT=fitCheck();
+
+/* ---------- renderer: Canvas 2D neon, perspective camera like world.html ---------- */
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');let Wd=0,Ht=0,DPR=1;
+function rs(){DPR=Math.min(2,devicePixelRatio||1);Wd=innerWidth;Ht=innerHeight;cv.width=Wd*DPR;cv.height=Ht*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}addEventListener('resize',rs);rs();
+const VIEWS=[{n:'3/4',yaw:-35,pitch:8,d:4.2},{n:'SIDE',yaw:-90,pitch:3,d:4.2},{n:'FRONT',yaw:0,pitch:5,d:4},{n:'CABIN',yaw:-90,pitch:12,d:2.6},{n:'COCKPIT',yaw:20,pitch:14,d:2.6}];
+const CK={tx:0,ty:.85,tz:-.2,d:2.6}; // cockpit camera target/distance (over-shoulder view of both seats)
+const _V=[0];
+let cam={yaw:-35,pitch:8,d:4.2,tx:0,ty:.95,tz:0};
+function camS(x,y,z){const cy=Math.cos(cam.yaw*R),sy=Math.sin(cam.yaw*R),cp=Math.cos(cam.pitch*R),sp=Math.sin(cam.pitch*R);
+ let dx=x-cam.tx,dy=y-cam.ty,dz=z-cam.tz;let X=dx*cy-dz*sy,Z=dx*sy+dz*cy;let Y=dy*cp-Z*sp;Z=dy*sp+Z*cp;return[X,Y,Z+cam.d];}
+function pr(p){const c=camS(p[0],p[1],p[2]),f=Math.min(Wd,Ht*1.25)*.9;if(c[2]<.1)return null;return[Wd/2+c[0]/c[2]*f,Ht*.47-c[1]/c[2]*f,f/c[2],c[2]];}
+function seg3(a,b,col,w){const P=pr(a),Q=pr(b);if(!P||!Q)return;ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(P[0],P[1]);ctx.lineTo(Q[0],Q[1]);ctx.stroke();}
+function poly3(pts,col,w,open){for(let i=0;i<pts.length-(open?1:0);i++)seg3(pts[i],pts[(i+1)%pts.length],col,w);}
+function drawCar(front,doorOpen,rDoor){rDoor=rDoor||0;ctx.save();ctx.shadowColor='#ff5a66';ctx.shadowBlur=8;ctx.lineCap='round';const Rc='#ff5a66',Cc='#3ee6ff',o=[CAR.x,0,CAR.z];
+ const T=p=>[p[0]+o[0],p[1],p[2]+o[2]];const s=(p,q,c,w)=>seg3(T(p),T(q),c,w);const pl=(pts,c,w,op)=>poly3(pts.map(T),c,w,op);
+ if(!front){for(const sx of[-1,1])for(const k of[2,3]){const pts=ST.map(r=>[sx*r[1],r[k],r[0]]);for(let i=0;i<pts.length-1;i++){const zm=(pts[i][2]+pts[i+1][2])/2;if(((sx<0&&doorOpen>.05)||(sx>0&&rDoor>.05))&&zm<DOOR.z0&&zm>DOOR.z1&&k===2)continue;s(pts[i],pts[i+1],Rc,k===3?1.8:1.2);}}
+  for(const r of[ST[0],ST[1],ST[ST.length-1],ST[ST.length-2]])pl([[-r[1],r[2],r[0]],[r[1],r[2],r[0]],[r[1],r[3],r[0]],[-r[1],r[3],r[0]]],Rc,1);
+  for(const sx of[-1,1])for(const az of[1.175,-1.375]){const pts=[];for(let i=0;i<=10;i++){const a=Math.PI*i/10;pts.push([sx*.93,.33+Math.sin(a)*.43,az+Math.cos(a)*.45]);}pl(pts,Rc,1.6,1);
+   const w=[];for(let i=0;i<14;i++){const a=i/14*Math.PI*2;w.push([sx*.86,.33+Math.sin(a)*.33,az+Math.cos(a)*.33]);}pl(w,'#e9e3e4',1.2);}
+  // seat (driver) outline
+  ctx.shadowColor=Cc;const sb=SEAT,bk=SEAT.back*R;for(const dx of[-.22,.22]){const x=sb.x+dx;s([x,sb.cushion,sb.hz+.1],[x,sb.cushion+.02,sb.hz+.45],'#2fa8c0',1.2);s([x,sb.cushion,sb.hz+.1],[x,sb.cushion+Math.cos(bk)*.7,sb.hz+.1-Math.sin(bk)*.7],'#2fa8c0',1.2);}
+  s([sb.x-.22,sb.cushion+Math.cos(bk)*.7,sb.hz+.1-Math.sin(bk)*.7],[sb.x+.22,sb.cushion+Math.cos(bk)*.7,sb.hz+.1-Math.sin(bk)*.7],'#2fa8c0',1.2);
+  s([-.75,.72,.62],[.75,.72,.62],'#2fa8c0',1.4); // dash
+  const sw=[];for(let i=0;i<16;i++){const a=i/16*Math.PI*2;sw.push([SEAT.x+Math.cos(a)*.18,.78+Math.sin(a)*.17,.25+Math.sin(a)*.07]);}pl(sw,'#2fa8c0',1.4);
+ }else{ctx.globalAlpha=.85;for(const sx of[-1,1]){pl(RF.map(([z,y,h])=>[sx*h,y,z]),Rc,2,1);}for(const r of[RF[0],RF[2],RF[RF.length-2]])s([-r[2],r[1],r[0]],[r[2],r[1],r[0]],Rc,1.3);
+  pl([[-.74,.86,.5],[.74,.86,.5],[.62,1.17,.05],[-.62,1.17,.05]],Cc,1.1);
+  for(const sx of[-1,1]){const pts=ST.map(r=>[sx*r[1],lerp(r[2],r[3],.55),r[0]]);for(let i=0;i<pts.length-1;i++){const zm=(pts[i][2]+pts[i+1][2])/2;if(((sx<0&&doorOpen>.05)||(sx>0&&rDoor>.05))&&zm<DOOR.z0&&zm>DOOR.z1)continue;s(pts[i],pts[i+1],Rc,1.2);}}
+  // driver door: hinged at front (z0), swings out up to 68deg like world.html OPEN.doorDeg
+  const a=doorOpen*68*R,dl=DOOR.z0-DOOR.z1,D=(u,h)=>{const zz=DOOR.z0-u*dl,y=h<=.62?lerp(.24,.84,h/.62):lerp(.84,(rfAt(zz)||[1.2])[0]-.04,(h-.62)/.38),x=h<=.62?.9:lerp(.88,(rfAt(zz)||[0,.6])[1]+.04,(h-.62)/.38);
+   const lz=zz-DOOR.z0;return[-(x+ -lz*Math.sin(a))+0,y,DOOR.z0+lz*Math.cos(a)];};
+  const door=[[0,0],[1,0],[1,.62],[.97,.66],[.08,.62],[0,.5]],win=[[.04,.66],[.94,.68],[.72,1],[.22,1]];
+  pl(door.map(q=>D(...q)),Rc,2.2);pl(win.map(q=>D(...q)),Cc,1.3);
+  // right door closed
+  const Dr=(u,h)=>{const p=D(u,h);return p;};ctx.globalAlpha=.5;const dR=(u,h)=>{const zz=DOOR.z0-u*dl,y=h<=.62?lerp(.24,.84,h/.62):lerp(.84,(rfAt(zz)||[1.2])[0]-.04,(h-.62)/.38),x=h<=.62?.9:lerp(.88,(rfAt(zz)||[0,.6])[1]+.04,(h-.62)/.38);const lz=zz-DOOR.z0,ar=rDoor*68*R;return[x-lz*Math.sin(ar),y,DOOR.z0+lz*Math.cos(ar)]};
+  if(rDoor>.02){ctx.globalAlpha=1;ctx.shadowColor=Rc;ctx.shadowBlur=14;pl(door.map(q=>dR(...q)),'#ff8a92',3.2);pl(win.map(q=>dR(...q)),Cc,2);ctx.shadowBlur=8;}else pl(door.map(q=>dR(...q)),Rc,1.6);}
+ ctx.restore();}
+function shade(hex,k){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;const f=v=>Math.round(clamp(k<0?v*(1+k):v+(255-v)*k,0,255));return'#'+[f(r),f(g),f(b)].map(v=>v.toString(16).padStart(2,'0')).join('');} // hex out so shade() can be chained
+const GROW=[6,2.5,0];
+function drawChar(p,cfg){const sh=SH[cfg.gender]||SH.female,J=fk(p,sh),g=cfg.glow,o=shade(g,-.12),pants=shade(g,-.18),skin=shade(g,-.5);
+ const caps=[];const L=(a,b,r,col,z)=>caps.push({a:J[a],b:J[b],r:r*sh.limb,col});
+ const lw=sh===SH.male?1:.88;
+ // limbs (shared skeleton, body-shape radii)
+ for(const k of['L','R']){L('hip'+k,'knee'+k,.075*(sh===SH.female?1.04:1),pants);L('knee'+k,'ank'+k,.055,pants);L('ank'+k,'toe'+k,.04,shade(g,.25));
+  L('sh'+k,'el'+k,.05*lw,o);L('el'+k,'wr'+k,.04*lw,o);L('wr'+k,'hand'+k,.032*lw,skin);}
+ const parts=caps.map(c=>{const A=pr(c.a),Bb=pr(c.b);return A&&Bb?{A,B:Bb,r:c.r,col:c.col,z:(A[3]+Bb[3])/2}:null}).filter(Boolean);
+ const tor=['shL','shR','wstR','hpR','hpL','wstL'].map(n=>pr(J[n]));const neck=[pr(J.chin),pr(J.neck)],hd=pr(J.head),top=pr(J.top);if(!hd||tor.some(t=>!t))return J;
+ const tz=tor.reduce((s,t)=>s+t[3],0)/6;
+ const torsoR=sh.torsoD*.5*tor[0][2];
+ const drawTorso=(pass)=>{ctx.beginPath();tor.forEach((t,i)=>i?ctx.lineTo(t[0],t[1]):ctx.moveTo(t[0],t[1]));ctx.closePath();
+   if(pass<2){ctx.lineWidth=torsoR*.9+GROW[pass];ctx.strokeStyle=pass?rim:g;ctx.stroke();ctx.fillStyle=pass?rim:g;ctx.fill();}else{ctx.lineWidth=torsoR*.9;ctx.strokeStyle=o;ctx.stroke();ctx.fillStyle=o;ctx.fill();
+   // jacket detail: zip line + chest glow stripe
+   }}; // simplicity: no surface detail
+ // painter: far limbs, torso, near limbs, head
+ parts.sort((a,b)=>b.z-a.z);const far=parts.filter(q=>q.z>tz),near=parts.filter(q=>q.z<=tz);
+ const capDraw=(q,pass,far)=>{ctx.lineWidth=q.r*2*q.A[2]+GROW[pass];ctx.strokeStyle=pass===2?(far?shade(q.col,-.32):q.col):pass?(far?shade(g,-.25):rim):g;ctx.beginPath();ctx.moveTo(q.A[0],q.A[1]);ctx.lineTo(q.B[0],q.B[1]);ctx.stroke();};
+ ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+ // glow pass (one blurred silhouette), then fill pass
+ const rim=shade(g,.5);
+ for(let pass=0;pass<3;pass++){ctx.shadowColor=g;ctx.shadowBlur=[20,6,0][pass];
+  far.forEach(q=>capDraw(q,pass,1));if(pass===2&&far.length&&near.length){/* thin rim between far limbs and body keeps side views readable */}
+  drawTorso(pass);
+  ctx.lineWidth=sh.neckW*2*neck[0][2]+GROW[pass];ctx.strokeStyle=pass===2?skin:pass?rim:g;ctx.beginPath();ctx.moveTo(neck[0][0],neck[0][1]);ctx.lineTo(neck[1][0],neck[1][1]);ctx.stroke();
+  near.forEach(q=>capDraw(q,pass,0));
+  const hr=B.head*.5*hd[2]*(sh===SH.male?.9:.88);ctx.fillStyle=pass===2?skin:pass?rim:g;const hg=GROW[pass]/2;ctx.beginPath();ctx.ellipse(hd[0],hd[1],hr*.86+hg,hr+hg,Math.atan2(top[0]-hd[0],-(top[1]-hd[1])),0,7);ctx.fill();
+  drawHair(cfg.hair,hd,top,hr,pass,g,p,rim);}
+ // visor/eye line: faces camera only when body faces camera
+ const fwd=pr([J.head[0]+Math.sin(p.yaw*R)*.2,J.head[1],J.head[2]+Math.cos(p.yaw*R)*.2]);
+ if(fwd&&fwd[3]<hd[3]){const hr=B.head*.5*hd[2]*.8,dx=(fwd[0]-hd[0]),k=clamp(dx/(hr*2.2),-1,1);ctx.shadowBlur=10;ctx.strokeStyle=g;ctx.lineWidth=Math.max(1.5,hr*.13);ctx.beginPath();ctx.moveTo(hd[0]+k*hr*.5-hr*.45*(1-Math.abs(k)*.6),hd[1]-hr*.05);ctx.lineTo(hd[0]+k*hr*.5+hr*.45*(1-Math.abs(k)*.6),hd[1]-hr*.05);ctx.stroke();}
+ ctx.restore();return J;}
+function drawHair(st,hd,top,r,pass,g,p,rim){const ux=(top[0]-hd[0])/r,uy=(top[1]-hd[1])/r,L=Math.hypot(ux,uy)||1,u=[ux/L,uy/L],n=[-u[1],u[0]];
+ const P=(a,b)=>[hd[0]+u[0]*a*r+n[0]*b*r,hd[1]+u[1]*a*r+n[1]*b*r];const back=Math.sin(p.yaw*R-cam.yaw*R)>0?-1:1; // which side is the back of the head on screen
+ const side=Math.cos((p.yaw-cam.yaw)*R+Math.PI/2);const bk=clamp(-Math.sin(((p.yaw)+cam.yaw)*R),-1,1);
+ const sgn=b=>b; ctx.fillStyle=pass===2?shade(g,-.55):pass?rim:g;const grow=[3.5,1.5,0][pass];ctx.strokeStyle=ctx.fillStyle;
+ const shape=pts=>{ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();if(pass<2){ctx.lineWidth=grow*2;ctx.stroke();}ctx.fill();};
+ {const c=P(.42,0);ctx.beginPath();ctx.ellipse(c[0],c[1],r*1.0+grow,r*.78+grow,Math.atan2(u[1],u[0])+Math.PI/2,0,7);ctx.fill();} // crown volume
+ const cap=k=>{const pts=[];for(let i=0;i<=12;i++){const a=-Math.PI*.5+Math.PI*i/12;pts.push(P(Math.cos(a-Math.PI*.5+Math.PI*.5)*0+Math.sin(a+Math.PI*.5)*1.08*k+.05,Math.cos(a+Math.PI*.5)*-1.0));}return pts;};
+ const B2=bk; // back direction along n (screen) for ponytail
+ if(st==='short'){shape(cap(1.06).concat([P(.2,1.02),P(.15,-1.02)]));}
+ else if(st==='spiky'){const pts=[P(.2,-1)];for(let i=0;i<=6;i++){const b=-1+i/3;pts.push(P(.9+(i%2?.55:.1)-Math.abs(b)*.2,b*.95));}pts.push(P(.2,1));shape(pts);}
+ else if(st==='bob'){shape(cap(1.12).concat([P(-.6,1.2),P(-.8,1.02),P(-.15,.88),P(-.15,-.88),P(-.8,-1.02),P(-.6,-1.2)]));}
+ else if(st==='long'){shape(cap(1.12).concat([P(-.4,1.18),P(-2.0,1.15),P(-2.2,.65),P(-.2,.88),P(-.2,-.88),P(-2.2,-.65),P(-2.0,-1.15),P(-.4,-1.18)]));}
+ else if(st==='ponytail'){shape(cap(1.05).concat([P(.1,.98),P(.1,-.98)]));const s=B2>=0?1:-1;shape([P(.55,s*.75),P(.75,s*1.25),P(-.4,s*1.55+Math.sin(performance.now()/260)*.08),P(-1.5,s*1.45),P(-.8,s*1.1),P(.1,s*.9)]);}
+ else if(st==='buns'){shape(cap(1.04).concat([P(.1,.98),P(.1,-.98)]));for(const s of[-1,1]){ctx.beginPath();const c=P(.95,s*.62);ctx.arc(c[0],c[1],r*.36+grow,0,7);ctx.fill();}}}
+function drawGround(){ctx.save();ctx.strokeStyle='#1d2f55';ctx.lineWidth=1;ctx.shadowBlur=0;for(let i=-6;i<=6;i++){seg3([i*.5,0,-3],[i*.5,0,3],'#14234a',1);seg3([-3,0,i*.5],[3,0,i*.5],'#14234a',1);}ctx.restore();}
+
+/* ===================== NEONPET phase 1 =====================
+   Same split as the character: RIG (data) -> CLIPS (pose logic) -> petFk (joints, metres, car/world axes) -> renderer.
+   A future detailed or skinned pet only needs a new renderer that reads the same joint names. Saved to 'zdash.pet.v1'. */
+const PETKEY='zdash.pet.v1';
+const PET_RIG={ // dims in metres: len shoulder-hip, leg, head radius, body radius, ear, tail
+ fox:   {n:'FOX',len:.26,leg:.16,head:.088,body:.068,ear:'point',earL:.075,tail:'brush',tailL:.26,tailR:.042,snout:.05},
+ cat:   {n:'CAT',len:.22,leg:.14,head:.084,body:.058,ear:'point',earL:.05,tail:'up',tailL:.26,tailR:.02,snout:.02},
+ dragon:{n:'DRAGON PUP',len:.25,leg:.13,head:.092,body:.072,ear:'horn',earL:.06,tail:'taper',tailL:.28,tailR:.03,snout:.045,wings:1},
+ robo:  {n:'ROBO-DOG',len:.26,leg:.15,head:.088,body:.07,ear:'antenna',earL:.08,tail:'stub',tailL:.07,tailR:.026,snout:.04}};
+const PET_COLORS=OUTFITS;
+const PDEF={v:1,type:'fox',glow:'#ffb020',spot:'hatch'}; // spot: 'hatch' (default ride spot, Bob) | 'seat'
+function pload(){try{const o=JSON.parse(localStorage.getItem(PETKEY)||'null');if(o&&o.v===1&&PET_RIG[o.type])return Object.assign({},PDEF,o,{glow:PET_COLORS.includes(o.glow)?o.glow:PDEF.glow});}catch(e){}return Object.assign({},PDEF);}
+let PC=pload();function psave(){PC.updated=Date.now();try{localStorage.setItem(PETKEY,JSON.stringify(PC));}catch(e){}}
+const PP0={fold:0,pitch:0,x:.55,y:0,z:.2,yaw:-30,ph:0,amp:0,sit:0,bob:0,tuck:0,wag:0,tilt:0,look:0,pawUp:0,flap:0};
+const pp=o=>Object.assign({},PP0,o);
+const SEATP={x:.37,y:SEAT.cushion+.012,z:-.40}; // passenger cushion, mirror of the driver seat
+function bez(a,c,b,u){return a.map((v,i)=>(1-u)*(1-u)*v+2*u*(1-u)*c[i]+u*u*b[i]);}
+let fitSpot=null;const spotName=()=>fitSpot||(PC.spot==='seat'?'seat':'hatch'),SPOT=()=>spotName()==='seat'?SEATP:HATCHP;
+function hopIn(t){if(spotName()==='hatch'&&t>=.32)return hopHatch(t); // goes in first through the open driver door, over the driver seat, onto the passenger seat
+ const A=[-1.2,0,.15],Cc=[-.4,1.3,-.15],Bp=[SEATP.x,SEATP.y,SEATP.z];
+ if(t<.08)return pp({x:A[0]-.05,z:A[2]+.15,yaw:150+t*400,wag:Math.sin(t*60)*.6,look:10});
+ if(t<.32){const u=ease((t-.08)/.24),q=bez(A,Cc,Bp,u);return pp({x:q[0],y:q[1],z:q[2],yaw:lerp(-140,-270,u)+360,tuck:Math.sin(Math.PI*u),bob:0,tilt:-10*Math.sin(Math.PI*u)});}
+ const u=ease(clamp((t-.32)/.25,0,1));return pp({x:SEATP.x,y:SEATP.y,z:SEATP.z,yaw:lerp(90,0,u),sit:u,bob:t<.38?-.02*Math.sin((t-.32)/.06*Math.PI):0,wag:Math.sin(t*40)*.5});}
+const PET_CLIPS={
+ idle:  {len:3.2,f:t=>pp({bob:.004*Math.sin(t*Math.PI*2),wag:.35*Math.sin(t*Math.PI*4),look:20*Math.sin(t*Math.PI*2)})},
+ sit:   {len:3.2,f:t=>pp({sit:1,wag:.3*Math.sin(t*Math.PI*4),tilt:8*Math.sin(t*Math.PI*2)})},
+ follow:{len:1.1,f:t=>pp({x:.5,z:-.1,yaw:0,ph:t*2,amp:.8,bob:.01*Math.abs(Math.sin(t*Math.PI*4)),wag:.5*Math.sin(t*Math.PI*4)})},
+ trot:  {len:.68,f:t=>pp({x:.5,z:-.25,yaw:0,ph:t*2,amp:1.25,bob:.03*Math.abs(Math.sin(t*Math.PI*4)),tuck:.25,wag:.3*Math.sin(t*Math.PI*8)})},
+ dance: {len:4.2,f:t=>{const b=t*8,k=Math.floor(b),f=b-k,h=Math.sin(Math.PI*f),s=k%2?1:-1,up=k%8>=4&&k%8<=6; // same 8-count as her dance
+   return pp({x:.6,z:.3,yaw:-30+s*22,bob:.055*h,tuck:.4*h,sit:up?.7:0,pawUp:up?1:0,tilt:s*14,wag:s*.9,flap:h});}},
+ hopin: {len:3.4,f:t=>hopIn(t),car:1,once:1},
+ hopout:{len:3.4,f:t=>{const q=hopIn(1-t);if(1-t>=.08&&1-t<.32)q.yaw+=180;return q;},car:1,once:1},
+ ride:  {len:4,f:t=>pp({x:SPOT().x,y:SPOT().y,z:SPOT().z,yaw:0,sit:1,bob:.004*Math.sin(t*Math.PI*6),look:35*Math.sin(t*Math.PI*2),wag:.3*Math.sin(t*Math.PI*4)}),car:1},
+ ridedance:{len:4.2,f:t=>{const b=t*8,k=Math.floor(b),f=b-k,h=Math.sin(Math.PI*f),s=k%2?1:-1;return pp({x:SPOT().x,y:SPOT().y,z:SPOT().z,yaw:0,sit:1,bob:.02*h,tilt:s*14,pawUp:k%4>=2?1:0,wag:s*.8,flap:h});},car:1}};
+/* TAKEOFF (for when flying starts): passenger door pops, pet is flung out, hangs on the door-frame top by its front paws
+   ~1 s flapping in the wind, scrambles back in, squeezes between the seats into the back hatch spot, door shuts. */
+const HATCHP={x:.03,y:.5,z:-1.2}; // back hatch, centred so the squeeze between the seat backs stays clear
+const TK={door:t=>t<.08?0:t<.14?ease((t-.08)/.06):t<.8?1:t<.93?1-ease((t-.8)/.13):0};
+function tkHang(t,type){const fl=Math.sin(t*90),q=pp({x:0,y:0,z:0,yaw:-90,pitch:72,pawUp:1,ph:t*14,amp:1.3,wag:fl*1.2,tilt:fl*10,flap:.5+.5*Math.sin(t*120),look:0});
+ const J=petFk(q,type),pw=[(J.pawFL[0]+J.pawFR[0])/2,(J.pawFL[1]+J.pawFR[1])/2,(J.pawFL[2]+J.pawFR[2])/2];
+ q.x=.9-pw[0];q.y=1.07-pw[1];q.z=-.3-pw[2]+Math.sin(t*50)*.01;return q;} // paws hooked on the frame top at x .9, y 1.07
+/* hop-in to the hatch: land on the passenger seat (same flight as before), then the same seat->console->gap->hatch path TAKEOFF uses */
+function hopHatch(t){const land=(()=>{fitSpot=fitSpot;const o=pp({x:SEATP.x,y:SEATP.y,z:SEATP.z,yaw:90});return o;})();
+ if(t<.36){const u=ease((t-.32)/.04);const o=pp({x:SEATP.x,y:SEATP.y,z:SEATP.z,yaw:90,tuck:.4*u});o.bob=-.02*Math.sin(u*Math.PI);return o;}
+ const S1=pp({x:.42,y:SEATP.y,z:-.22,yaw:-120,tuck:.4});
+ if(t<.42){const u=ease((t-.36)/.06),o={};for(const k in land)o[k]=lerp(land[k],S1[k],u);o.yaw=lerp(90,-120,u);return o;}
+ return takeoff(.74+.26*clamp((t-.42)/.2,0,1),'fox',1);}
+function takeoff(t,type,noStart){type=type||'fox';const ride=PET_CLIPS.ride.f(0),gap=pp({x:0,y:.42,z:-.55,yaw:180,tuck:.3}),hat=pp({x:HATCHP.x,y:HATCHP.y,z:HATCHP.z,yaw:0,sit:1});
+ const mixq=(a,b,u)=>{const o={};for(const k in a)o[k]=lerp(a[k],b[k],u);return o;};
+ if(!noStart&&spotName()==='hatch'&&t<.22){const G=pp({x:.05,y:.5,z:-.2,yaw:0,tuck:.5,fold:1});
+  if(t<.08)return ride;if(t<.15){const u=ease((t-.08)/.07),o=mixq(ride,G,u);o.y+=.03*Math.sin(Math.PI*u);return o;}
+  const u=ease((t-.15)/.07),o=mixq(G,tkHang(t,type),u);o.y+=.08*Math.sin(Math.PI*u);o.yaw=lerp(0,-90,u);return o;}
+ if(t<.08)return ride;
+ if(t<.22){const u=ease((t-.08)/.14),o=mixq(ride,tkHang(t,type),u);o.y+=.2*Math.sin(Math.PI*u);o.yaw=lerp(0,-90,ease(clamp((u-.45)/.55,0,1)));o.pitch=72*ease(clamp((u-.3)/.7,0,1));return o;} // flung out
+ if(t<.6)return tkHang(t,type);                                                                                // hanging on ~1.1 s
+ if(t<.74){const u=ease((t-.6)/.14),o=mixq(tkHang(.6,type),pp({x:.42,y:SEATP.y,z:-.22,yaw:-120,tuck:.4}),u);o.y+=.08*Math.sin(Math.PI*u);o.pitch=lerp(72,0,u);return o;} // scramble back in
+ const S1=pp({x:.42,y:SEATP.y,z:-.22,yaw:-120,tuck:.4}),S2=pp({x:.42,y:SEATP.y,z:-.22,yaw:-180,tuck:.3}),G0=pp({x:.02,y:.42,z:-.22,yaw:-180,tuck:.3,fold:1}),G1=pp({x:.02,y:.5,z:-1.0,yaw:-180,tuck:.3,fold:1}),H0=pp({x:HATCHP.x,y:HATCHP.y,z:HATCHP.z,yaw:-180});
+ if(t<.8)return mixq(S1,S2,ease((t-.74)/.06));            // turn round on the seat
+ if(t<.86)return mixq(S2,G0,ease((t-.8)/.06));             // over the console
+ if(t<.93)return mixq(G0,G1,ease((t-.86)/.07));            // squeeze back between the seats
+ if(t<.97){const u=ease((t-.93)/.04),o=mixq(G1,H0,u);o.y+=.04*Math.sin(Math.PI*u);return o;}
+ const u=ease((t-.97)/.03),o=mixq(H0,hat,u);o.yaw=lerp(-180,0,u);o.wag=Math.sin(t*40)*.4;return o;} // settle in the hatch, facing forward
+PET_CLIPS.takeoff={len:2.8,f:(t,type)=>takeoff(t,type),car:1,once:1,door:TK.door};
+const PET_AUTO={idle:'idle',walk:'follow',run:'trot',sit:'ride',getin:'hopin',getout:'hopout',dance:'dance',sitwave:'ride',sitdance:'ridedance'};
+function petFk(q,type){const R0=PET_RIG[type],cy=Math.cos(q.yaw*R),sy=Math.sin(q.yaw*R),cpi=Math.cos((q.pitch||0)*R),spi=Math.sin((q.pitch||0)*R),pv=R0.leg;
+ const W=v0=>{const dy=v0[1]-pv,dz=v0[2],v=[v0[0],pv+dy*cpi+dz*spi,-dy*spi+dz*cpi];return[q.x+v[0]*cy+v[2]*sy,q.y+v[1],q.z-v[0]*sy+v[2]*cy];},J={},L=R0.len,lg=R0.leg;
+ const hy=lg*(1-.35*q.tuck)+q.bob,hipY=hy-q.sit*lg*.72,shY=hy+q.sit*lg*.12+q.pawUp*.03;
+ const S=[0,shY,L/2-q.sit*.03],Hp=[0,hipY,-L/2+q.sit*.05];J.S=W(S);J.Hp=W(Hp);
+ const lk=q.look*R,tl=q.tilt*R,hd=[Math.sin(lk)*.05,shY+.075+.02*q.sit,S[2]+Math.cos(lk)*.05];J.head=W(hd);
+ const fw=[Math.sin(lk),0,Math.cos(lk)],sd=[Math.cos(lk),0,-Math.sin(lk)];J.fw=W([hd[0]+fw[0],hd[1],hd[2]+fw[2]]);
+ J.snout=W([hd[0]+fw[0]*R0.head*.95,hd[1]-.022,hd[2]+fw[2]*R0.head*.95]);
+ for(const s of[-1,1]){const k=s<0?'L':'R',ex=s*R0.head*.62*Math.cos(tl)-.0*s,ey=R0.head*.7+s*Math.sin(tl)*R0.head*.4;
+  const base=[hd[0]+sd[0]*ex,hd[1]+ey,hd[2]+sd[2]*ex-.01];J['ear'+k]=W(base);
+  const tip=R0.ear==='antenna'?[base[0]+sd[0]*s*.005,base[1]+R0.earL,base[2]-.01]:[base[0]+sd[0]*s*.018,base[1]+R0.earL,base[2]-(R0.ear==='horn'?.035:.005)];J['earT'+k]=W(tip);
+  J['eye'+k]=W([hd[0]+fw[0]*R0.head*.8+sd[0]*s*R0.head*.38,hd[1]+.012,hd[2]+fw[2]*R0.head*.8+sd[2]*s*R0.head*.38]);
+  for(const[fr,top,off]of[['F',S,0],['B',Hp,.5]]){const ph=(q.ph+off+(s>0?.5:0))*Math.PI*2,sw=Math.sin(ph)*q.amp*.085,lift=Math.max(0,Math.cos(ph))*q.amp*.045;
+   const tx=s*R0.body*.65;let foot=[tx,lift+lg*.5*q.tuck,top[2]+sw];
+   if(fr==='B'&&q.sit>0){foot=[lerp(foot[0],s*R0.body*.9,q.sit),lerp(foot[1],0,q.sit),lerp(foot[2],top[2]+.09,q.sit)];}
+   if(fr==='F'&&q.pawUp>0){foot=[lerp(foot[0],s*.035,q.pawUp),lerp(foot[1],top[1]-.04,q.pawUp),lerp(foot[2],top[2]+.08,q.pawUp)];}
+   const t3=[tx,top[1]-.01,top[2]];const kn=[(t3[0]+foot[0])/2,(t3[1]+foot[1])/2,(t3[2]+foot[2])/2+(fr==='F'?-.012:.02)+(fr==='B'?q.sit*.06:0)];
+   J['leg'+fr+k]=W(t3);J['knee'+fr+k]=W(kn);J['paw'+fr+k]=W(foot);}
+  if(R0.wings){J['wing'+k]=W([s*.03,shY+.02,S[2]-.04]);J['wingT'+k]=W([s*(.13-.03*q.flap)*(1-.75*(q.fold||0)),shY+.09+.05*q.flap,S[2]-.1]);}}
+ const w=q.wag,up=R0.tail==='up'?1:R0.tail==='stub'?.6:.35;
+ const t1=[w*.06,hipY+.05+up*.06,Hp[2]-.07],t2=[w*.13,hipY+.04+up*.17,Hp[2]-R0.tailL*(1-up*.4)];J.tail0=W([0,hipY+.01,Hp[2]-.02]);J.tail1=W(t1);J.tail2=W(t2);
+ return J;}
+/* bounding radius per joint, used by the fit check (and later by physics) */
+function petParts(type){const r=PET_RIG[type],P=[['S','Hp',r.body],['S','head',.03],['head','head',r.head],['head','snout',r.head*.45],['tail0','tail1',r.tailR],['tail1','tail2',r.tailR*(r.tail==='brush'?1.2:.6)]];
+ for(const k of['L','R']){P.push(['ear'+k,'earT'+k,r.ear==='antenna'?.007:.018]);for(const f of['F','B']){P.push(['leg'+f+k,'knee'+f+k,.024]);P.push(['knee'+f+k,'paw'+f+k,.02]);}if(r.wings)P.push(['wing'+k,'wingT'+k,.02]);}return P;}
+/* renderer: Canvas 2D neon, one colour + modest rim, same 3-pass look as the character */
+function drawPet(J,cfg){const g=cfg.glow,fill=shade(g,-.12),rim=shade(g,.5),parts=[];
+ for(const[a,b,r]of petParts(cfg.type)){const A=pr(J[a]),Bq=pr(J[b]);if(A&&Bq)parts.push({A,B:Bq,r,z:(A[3]+Bq[3])/2});}
+ parts.sort((x,y)=>y.z-x.z);ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+ for(let pass=0;pass<3;pass++){ctx.shadowColor=g;ctx.shadowBlur=[18,5,0][pass];ctx.strokeStyle=[g,rim,fill][pass];
+  for(const q of parts){ctx.lineWidth=q.r*2*q.A[2]+GROW[pass];ctx.beginPath();ctx.moveTo(q.A[0],q.A[1]);ctx.lineTo(q.B[0]+.01,q.B[1]);ctx.stroke();}}
+ // big friendly eyes, only on the side facing the camera
+ const h=pr(J.head),f=pr(J.fw);if(h&&f&&f[3]<h[3]+.06){ctx.shadowBlur=6;ctx.shadowColor='#fff';ctx.fillStyle='#fff';
+  for(const k of['L','R']){const e=pr(J['eye'+k]);if(e&&e[3]<h[3]+.01){ctx.beginPath();ctx.ellipse(e[0],e[1],Math.max(1.8,.02*e[2]),Math.max(2.4,.028*e[2]),0,0,7);ctx.fill();}}}
+ ctx.restore();}
+const PETRENDER={drawPet}; // renderer interface: drawPet(joints, cfg)
+/* pet fit: never through the roof, the door frame, the closed passenger door/glass, the driver's space or the seat */
+function petFit(){const out={};let all=true;for(const type of Object.keys(PET_RIG)){let roof=9,door=9,side=9,driver=9,seat=9;
+ let tko=9,tkw='';const tkm=(n,v)=>{if(v<tko){tko=v;tkw=n+' '+CUR;}};let CUR='';for(const c of['hopin','hopout','ride','ridedance','takeoff'])for(let i=0;i<=100;i++){const t=i/100,q=PET_CLIPS[c].f(t,type),J=petFk(q,type);
+  for(const[a,b,r]of petParts(type))for(const u of[0,.5,1]){const p=[lerp(J[a][0],J[b][0],u),lerp(J[a][1],J[b][1],u),lerp(J[a][2],J[b][2],u)],x=p[0]-CAR.x,z=p[2]-CAR.z,rr=rfAt(z);if(!rr)continue;
+   const ax=Math.abs(x);if(ax<rr[1]-.05)roof=Math.min(roof,(rr[0]-SEAT.liner)-(p[1]+r));
+   if(x<0&&ax<.95&&ax>.7&&p[1]>.05){door=Math.min(door,x<0&&z<DOOR.z0&&z>DOOR.z1?Math.min(p[1]-r-DOOR.sill,(rr[0]-.04)-(p[1]+r),DOOR.z0-z-r,z-DOOR.z1-r):-1);}
+   CUR=type+' '+t.toFixed(2)+' '+a+'-'+b+' '+p.map(v=>v.toFixed(2));if(c==='takeoff'){const dO=TK.door(t),ang=dO*68*R,hx=.9,hz=DOOR.z0,ex=hx+(DOOR.z0-DOOR.z1)*Math.sin(ang),ez=hz-(DOOR.z0-DOOR.z1)*Math.cos(ang);
+     if(p[1]>.24&&p[1]<1.2){const vx=ex-hx,vz=ez-hz,w=clamp(((x-hx)*vx+(z-hz)*vz)/(vx*vx+vz*vz),0,1),dd=Math.hypot(x-hx-vx*w,z-hz-vz*w);if(!(dO<.02&&x<.86))tkm(1,dd-r);} // door panel
+     if(x>.7&&x<.95&&p[1]>.05)tkm(2,Math.min(p[1]-r-DOOR.sill,(rr[0]-.04)-(p[1]+r),DOOR.z0-z-r,z-DOOR.z1-r)); // through the opening only
+     if(x>=.95&&p[1]<.84&&!(z<DOOR.z0-r&&z>DOOR.z1+r&&p[1]-r>DOOR.sill))tkm(3,x-r-.95); // outside the body side
+     if(ax<rr[1]-.05&&z>-.9)tkm(4,x-r+.13); // never into her space
+     {const bz=SEAT.hz-.12-Math.max(0,p[1]-SEAT.cushion)*Math.tan(SEAT.back*R);if(!a.startsWith('tail')&&ax+r>.15&&ax-r<.6&&p[1]-r<1.0&&p[1]+r>SEAT.cushion&&z+r>bz-.12&&z-r<bz)tkm(5,-Math.min(z+r-(bz-.12),bz-(z-r)));} // seat backrests (H-point-relative, 12 cm thick): only the gap between them
+     if(dO<1&&t>.8&&ax<.95)tkm(6,.7-x-r>0?9:.7-x-r);continue;}
+   if(x>0)side=Math.min(side,(p[1]>.84?glassX(z,p[1]):.86)-x-r);
+   if(c==='ride'||c==='ridedance'){driver=Math.min(driver,x-r-.02);seat=Math.min(seat,p[1]-r-(SEAT.cushion-.03));}}}
+ const o={tkWhy:tkw,takeoffClear:+tko.toFixed(3),roofClear:+roof.toFixed(3),doorClear:+door.toFixed(3),passengerSideClear:+side.toFixed(3),driverGap:+driver.toFixed(3),seatClear:+seat.toFixed(3)};
+ o.pass=tko>=0&&roof>=0&&door>=0&&side>=0&&driver>=0&&seat>=-.005;all=all&&o.pass;out[type]=o;}out.allPass=all;return out;}
+function hatchFit(){const out={};let all=true;fitSpot='hatch';
+ const clips=[...['hopin','hopout','ride','ridedance','takeoff'].map(c=>[c,u=>PET_CLIPS[c].f]),...Object.keys(REACT).map(n=>['react:'+n,0])];
+ for(const type of Object.keys(PET_RIG)){let m=9,why='';const T=(v,n)=>{if(v<m){m=v;why=n;}};
+  for(const[c]of clips)for(let i=0;i<=100;i++){const t=i/100,q=c.startsWith('react:')?reactPose(c.slice(6),t,type):PET_CLIPS[c].f(t,type),J=petFk(q,type),tk=c==='takeoff'||c==='react:takeoff';
+   for(const[a,b,r]of petParts(type))for(const u of[0,.5,1]){const p=[lerp(J[a][0],J[b][0],u),lerp(J[a][1],J[b][1],u),lerp(J[a][2],J[b][2],u)],x=p[0]-CAR.x,z=p[2]-CAR.z,rr=rfAt(z);if(!rr)continue;const ax=Math.abs(x),tag=c+' '+t.toFixed(2)+' '+a;
+    const inCab=ax<rr[1]-.05;if(inCab)T((rr[0]-SEAT.liner)-(p[1]+r),'roof '+tag);
+    if(x<0&&ax>.7&&ax<.95&&p[1]>.05)T(z<DOOR.z0&&z>DOOR.z1?Math.min(p[1]-r-DOOR.sill,(rr[0]-.04)-(p[1]+r),DOOR.z0-z-r,z-DOOR.z1-r):-1,'ldoor '+tag);
+    if(!tk&&x>0)T((p[1]>.84?glassX(z,p[1]):.86)-x-r,'rside '+tag);
+    if(!tk&&x<0&&!c.startsWith('hop'))T((p[1]>.84?glassX(z,p[1]):.86)-ax-r,'lside '+tag);
+    if(!a.startsWith('tail')){const bz=SEAT.hz-.12-Math.max(0,p[1]-SEAT.cushion)*Math.tan(SEAT.back*R);if(ax+r>.15&&ax-r<.6&&p[1]-r<1.0&&p[1]+r>SEAT.cushion&&z+r>bz-.12&&z-r<bz)T(-Math.min(z+r-(bz-.12),bz-(z-r)),'seatback '+tag);}
+    if(z<-.9&&inCab)T(p[1]-r-(HATCHP.y-.042),'hatchfloor '+tag);
+    if(inCab)T(z-r+1.85,'rear '+tag);
+    if(z>-.9&&inCab&&x<0&&!c.startsWith('hop'))T(x-r+.13,'driver '+tag);}}
+  out[type]={minClear:+m.toFixed(3),worst:why,pass:m>=0};all=all&&m>=0;}
+ fitSpot=null;out.allPass=all;return out;}
+
+/* PET REACTIONS: NEONPET.react(name) -> true if accepted. Each is a short additive layer on top of the ride pose at its ride
+   spot, weight ramps in 0.15 and out 0.2 of the clip so it always blends back to ride. Higher priority interrupts lower; each name
+   has its own cooldown. 'takeoff' plays the full TAKEOFF clip (2.8 s, the door sequence). */
+const sn=Math.sin,PI=Math.PI;
+const REACT={
+ nos:      {len:.9, pri:3,cd:1500,d:u=>({bob:.03*Math.abs(sn(u*PI*6)),pitch:-8,wag:sn(u*60)*1.2,tuck:.2})},
+ speed:    {len:1.2,pri:1,cd:2500,d:u=>({pitch:-12,tuck:.12,wag:sn(u*80)*.3,look:-10})},
+ jump:     {len:.7, pri:3,cd:800, d:u=>({bob:.07*sn(PI*u),tuck:.6*sn(PI*u),sit:-.5*sn(PI*u)})},
+ land_soft:{len:.6, pri:2,cd:600, d:u=>({pitch:-6*sn(PI*u),tuck:.2*sn(PI*u),wag:sn(u*30)*.6})},
+ land_hard:{len:1.0,pri:4,cd:1200,d:u=>({pitch:-12*sn(PI*Math.min(1,u*3)),tilt:12*sn(u*25)*(1-u),look:25*sn(u*12)*(1-u),tuck:.08*(1-u)})},
+ drift_l:  {len:1.0,pri:2,cd:700, d:u=>({x:.05*sn(PI*u),tilt:15*sn(PI*u),yaw:25*sn(PI*u),wag:-.8*sn(PI*u)})},
+ drift_r:  {len:1.0,pri:2,cd:700, d:u=>({x:-.05*sn(PI*u),tilt:-15*sn(PI*u),yaw:-25*sn(PI*u),wag:.8*sn(PI*u)})},
+ crash:    {len:1.5,pri:5,cd:2000,d:u=>({yaw:360*ease(Math.min(1,u*1.6)),bob:.04*sn(Math.min(1,u*1.6)*PI),tilt:20*sn(u*30)*(1-u),tuck:.15*sn(PI*u)})},
+ takeoff:  {len:2.8,pri:5,cd:3000,full:'takeoff'},
+ idle:     {len:1.5,pri:0,cd:4000,d:u=>({look:40*sn(u*2*PI),tilt:10*sn(u*4*PI),wag:.4*sn(u*12)})},
+ dance:    {len:1.5,pri:1,cd:1500,d:u=>({bob:.02*Math.abs(sn(u*PI*6)),tilt:14*Math.sign(sn(u*PI*6)),pawUp:sn(u*PI*3)>0?1:0,wag:sn(u*PI*6)*.8,flap:Math.abs(sn(u*PI*6))})}};
+function reactPose(name,u,type){const r=REACT[name];if(r.full)return PET_CLIPS[r.full].f(u,type);const base=PET_CLIPS.ride.f(0),d=r.d(u),w=Math.min(1,u/.15,(1-u)/.2);
+ const o=Object.assign({},base);for(const k in d)o[k]=(o[k]||0)+d[k]*Math.max(0,w);if(d.tuck||d.pitch)o.y+=.025*Math.max(0,w); // brace pose rides up off the floor a touch so folded legs never sink in
+ o.sit=clamp(o.sit,0,1);o.pawUp=clamp(o.pawUp,0,1);o.tuck=clamp(o.tuck,0,1);return o;}
+let RS=null;const rLast={};
+const NEONPET={REACT,reactPose,react(name,now){const r=REACT[name];if(!r)return false;now=now??performance.now();if(rLast[name]!=null&&now-rLast[name]<r.cd)return false;
+  if(RS&&now-RS.t0<RS.len*1000&&REACT[RS.name].pri>r.pri)return false;rLast[name]=now;RS={name,t0:now,len:r.len};return true;},
+ get active(){return RS&&performance.now()-RS.t0<RS.len*1000?RS.name:null},reset(){RS=null;for(const k in rLast)delete rLast[k];}};
+window.NEONPET=NEONPET;
+fitSpot='seat';window.PETFIT=petFit();fitSpot=null;window.PETFIT_HATCH=hatchFit();
+let petMove='auto',pT=0,lineup=false,rgrid=false;
+
+/* ---------- loop ---------- */
+let last=performance.now(),paused=false;
+function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(!paused){aT+=dt;pT+=dt;}const A=ANIMS[anim];let t=aT/A.len;t=A.once?Math.min(1,t%(1+.35/A.len*1)):(t%1);
+ if(A.once&&aT>A.len+1.2)aT=0;render(t);requestAnimationFrame(frame);}
+function render(t){const A=ANIMS[anim];const pm=petMove==='auto'?PET_AUTO[anim]:petMove,PCl=PET_CLIPS[pm];CAR.on=!!(A.car||PCl.car);const g=C.glow;
+ ctx.fillStyle='#05030c';ctx.fillRect(0,0,Wd,Ht);const gr=ctx.createRadialGradient(Wd/2,Ht*.55,10,Wd/2,Ht*.55,Math.max(Wd,Ht)*.7);gr.addColorStop(0,shade(g,-.86));gr.addColorStop(1,'#05030c');ctx.fillStyle=gr;ctx.fillRect(0,0,Wd,Ht);
+ const v=VIEWS[view];cam.yaw+=( v.yaw-cam.yaw)*.15;cam.pitch+=(v.pitch-cam.pitch)*.15;const ck=view===4;cam.d+=((CAR.on?(ck?CK.d:view===3?2.6:5.2):v.d)-cam.d)*.15;cam.tx+=((CAR.on?(ck?CK.tx:view===3?SEAT.x:-.3):0)-cam.tx)*.15;cam.ty+=((CAR.on?(ck?CK.ty:view===3?.75:.7):.95)-cam.ty)*.15;cam.tz+=((CAR.on&&ck?CK.tz:0)-cam.tz)*.15;
+ if(snapCam){snapCam=0;for(let i=0;i<60;i++){cam.yaw+=(v.yaw-cam.yaw)*.15;cam.pitch+=(v.pitch-cam.pitch)*.15;}}
+ drawGround();
+ let ptt=t;if(petMove!=='auto'){ptt=pT/PCl.len;ptt=PCl.once?Math.min(1,ptt%(1+.35/PCl.len)):ptt%1;if(PCl.once&&pT>PCl.len+1.2)pT=0;}
+ let door=0;if(anim==='getin')door=t<.75?1:clamp(1-(t-.75)/.2,0,1);else if(anim==='getout')door=t<.25?clamp(t/.15,0,1):1;
+ const rdoor=PCl.door?PCl.door(ptt):0;if(CAR.on)drawCar(false,door,rdoor);
+ const p=(PCl.car&&!A.car)?sitPose(t):A.f(t);
+
+ let pq=PCl.f(ptt,PC.type);if(RS&&(pm==='ride'||pm==='ridedance')){const u=(performance.now()-RS.t0)/(RS.len*1000);if(u<1)pq=reactPose(RS.name,u,PC.type);else RS=null;}
+ if(window.__rfix){pq=reactPose(__rfix[0],__rfix[1],PC.type);}if(!PCl.car&&!A.car){pq.x+=p.px;}const PJ=petFk(pq,PC.type);const pdep=(pr(PJ.S)||[0,0,0,0])[3],cdep=(pr(fk(p,SH[C.gender]||SH.female).pel)||[0,0,0,0])[3];
+ if(rgrid){const N=Object.keys(REACT).filter(n=>n!=='takeoff');ctx.font='600 11px system-ui';ctx.textAlign='center';
+  Object.keys(PET_RIG).forEach((k,r)=>N.forEach((n,c)=>{const q=reactPose(n,.45,k);q.x=-2.5+c*.5;q.z=1.5-r*1.0;q.y=0;q.yaw=-20+(q.yaw||0);RENDER.drawPet(petFk(q,k),{type:k,glow:PET_COLORS[[3,1,2,0][r]]});
+   if(r===0){const P=pr([q.x,-.02,q.z+.45]);if(P){ctx.fillStyle='#9fd';ctx.fillText(n.toUpperCase(),P[0],P[1]+14);}}}));window.PETSTATE={rgrid:1,frames:(window.PETSTATE?.frames||0)+1};return;}
+ if(lineup){Object.keys(PET_RIG).forEach((k,i)=>{const q=PET_CLIPS[petMove==='auto'?'idle':petMove].f(ptt);q.x=-1.05+i*.7;q.z=0;q.yaw=-55;RENDER.drawPet(petFk(q,k),{type:k,glow:PET_COLORS[[3,1,2,0][i]]});});window.PETSTATE={lineup:1,frames:(window.PETSTATE?.frames||0)+1};return;}
+ const petNear=pdep<cdep;if(!petNear)RENDER.drawPet(PJ,PC);
+ if(both&&!CAR.on){const g2=C.gender==='male'?'female':'male';drawChar(Object.assign({},p,{px:p.px-.45}),C);drawChar(Object.assign({},p,{px:p.px+.45}),Object.assign({},C,{gender:g2,hair:C.gender==='male'?(C.hair==='short'||C.hair==='spiky'?'ponytail':C.hair):(C.hair==='ponytail'||C.hair==='buns'||C.hair==='long'?'short':C.hair)}));}
+ else RENDER.drawCharacter(p,C);
+ if(petNear)RENDER.drawPet(PJ,PC);
+ if(CAR.on)drawCar(true,door,rdoor);window.PETSTATE={move:pm,t:+ptt.toFixed(3),type:PC.type,frames:(window.PETSTATE?.frames||0)+1};
+ window.CHARSTATE={anim,t:+t.toFixed(3),frames:(window.CHARSTATE?.frames||0)+1};}
+
+/* renderer interface: the only functions that draw. Rig + clips above are pure data/logic (no canvas), so a detailed
+   or skinned-mesh renderer can replace these and reuse the same bones (fk / petFk joint names) and clips. */
+const RENDER={drawCharacter:(pose,cfg)=>drawChar(pose,cfg),drawPet:(joints,cfg)=>PETRENDER.drawPet(joints,cfg),drawCar};
+window.NEONRIG={char:{SKEL,LIMITS,B,SH,fk,clips:ANIMS},pet:{RIG:PET_RIG,fk:petFk,parts:petParts,clips:PET_CLIPS,auto:PET_AUTO},RENDER};
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+function btn(par,label,on,fn,extra){const b=document.createElement('button');b.textContent=label;if(on)b.classList.add('on');b.onclick=fn;if(extra)extra(b);par.appendChild(b);return b;}
+function ui(){document.documentElement.style.setProperty('--g',C.glow);
+ const an=$('anims');an.innerHTML='';for(const k of Object.keys(ANIMS))btn(an,{getin:'GET IN',getout:'GET OUT',sitwave:'SEAT WAVE',sitdance:'SEAT DANCE'}[k]||k.toUpperCase(),anim===k,()=>{setAnim(k)});
+ $('oG').innerHTML='';for(const k of['female','male'])btn($('oG'),k.toUpperCase(),C.gender===k,()=>{C.gender=k;save();ui();});
+ $('oH').innerHTML='';for(const k of HAIRS)btn($('oH'),k.toUpperCase(),C.hair===k,()=>{C.hair=k;save();ui();});
+ for(const[id,list,key]of[['oL',GLOWS,'glow']]){$(id).innerHTML='';for(const c of list)btn($(id),'',C[key]===c,()=>{C[key]=c;C.outfit=c;save();ui();},b=>{b.className='sw'+(C[key]===c?' on':'');b.style.background=c;b.style.boxShadow=key==='glow'?`0 0 10px ${c}`:'';b.title=c;});}
+ $('pT').innerHTML='';for(const k in PET_RIG)btn($('pT'),PET_RIG[k].n,PC.type===k,()=>{PC.type=k;psave();ui();});
+ $('pL').innerHTML='';for(const c of PET_COLORS)btn($('pL'),'',PC.glow===c,()=>{PC.glow=c;psave();ui();},b=>{b.className='sw'+(PC.glow===c?' on':'');b.style.background=c;b.style.boxShadow=`0 0 10px ${c}`;b.title='pet '+c;});
+ $('pM').innerHTML='';for(const k of['auto','idle','sit','follow','trot','dance','hopin','hopout','ride','takeoff'])btn($('pM'),{hopin:'HOP IN',hopout:'HOP OUT'}[k]||k.toUpperCase(),petMove===k,()=>{petMove=k;pT=0;ui();});
+ $('pS').innerHTML='';for(const k of['hatch','seat'])btn($('pS'),k==='hatch'?'BACK HATCH':'PASSENGER SEAT',spotName()===k,()=>{PC.spot=k;psave();ui();});
+ $('pR').innerHTML='';for(const k of Object.keys(REACT))btn($('pR'),k.toUpperCase().replace('_',' '),false,()=>{if(PET_CLIPS[petMove]?.car!==1&&petMove!=='auto'||!(['ride','ridedance'].includes(petMove==='auto'?PET_AUTO[anim]:petMove))){petMove='ride';}if(REACT[k].full){petMove=REACT[k].full;pT=0;ui();return;}NEONPET.react(k);ui();});
+ $('bBoth').classList.toggle('on',both);$('bFit').classList.toggle('on',showFit);$('bView').textContent='VIEW: '+VIEWS[view].n;
+ const f=window.CHARFIT;$('fit').style.display=showFit?'block':'none';
+ $('fit').textContent=`FIT (370Z, LHD driver)\nheight      ${f.standingHeight} m\nhead clear  ${(f.headClearance*100).toFixed(1)} cm\nH-point     x${f.hPoint[0]} y${f.hPoint[1]} z${f.hPoint[2]}\nshoulder→glass ${(f.leftShoulderToGlass*100).toFixed(1)} cm\nfeet y${f.footY} z${f.footZ}\ndoor min    ${(f.entryMinDoorClear*100).toFixed(1)} cm\nroof min    ${(f.entryMinRoofClear*100).toFixed(1)} cm\n${f.allPass?'ALL PASS':'CHECK FAIL'}`;}
+function setAnim(k){anim=k;aT=0;if(ANIMS[k].car&&view!==3)view=1;ui();}
+$('bBoth').onclick=()=>{both=!both;ui();};$('bView').onclick=()=>{view=(view+1)%VIEWS.length;ui();};$('bFit').onclick=()=>{showFit=!showFit;ui();};
+$('bEd').onclick=()=>{$('panel').classList.toggle('hide');};
+let drag=null;cv.addEventListener('pointerdown',e=>drag=[e.clientX,e.clientY]);addEventListener('pointerup',()=>drag=null);
+cv.addEventListener('pointermove',e=>{if(!drag)return;VIEWS[view].yaw-= (e.clientX-drag[0])*.4;VIEWS[view].pitch=clamp(VIEWS[view].pitch+(e.clientY-drag[1])*.2,-5,60);drag=[e.clientX,e.clientY];});
+// test hooks: ?anim=walk&t=.25&view=1&both=1&fit=1&ui=0
+window.CK=CK;window.PET={get cfg(){return PC},RIG:PET_RIG,CLIPS:PET_CLIPS,fk:petFk,set:o=>{if(o.move)petMove=o.move;if(o.t!=null){paused=true;pT=o.t*PET_CLIPS[petMove==='auto'?'idle':petMove].len;}ui();}};
+window.CHAR={get cfg(){return C},ANIMS,fk,SH,B,SEAT,set:(o)=>{if(o.anim)anim=o.anim;if(o.view!=null){view=o.view;cam=Object.assign(cam,VIEWS[view]);snapCam=1;}if(o.both!=null)both=o.both;if(o.t!=null){paused=true;aT=o.t*ANIMS[anim].len;}ui();}};
+{const q=new URLSearchParams(location.search);const o={};if(q.get('anim'))o.anim=q.get('anim');if(q.get('view'))o.view=+q.get('view');if(q.get('both'))o.both=q.get('both')==='1';if(q.get('t'))o.t=+q.get('t');if(q.get('fit'))showFit=true;if(q.get('lineup'))lineup=true;if(q.get('rgrid'))rgrid=true;if(q.get('pet'))petMove=q.get('pet');if(q.get('pt')){paused=true;pT=+q.get('pt')*PET_CLIPS[petMove].len;}if(q.get('ui')==='0')$('panel').classList.add('hide');
+ if(o.anim&&ANIMS[o.anim].car&&o.view==null)o.view=1;CHAR.set(o);}
+ui();requestAnimationFrame(frame);
+</script></body></html>
