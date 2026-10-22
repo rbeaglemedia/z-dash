@@ -46,7 +46,7 @@ const PRESETS = { wings: {
   eBrakeIn: 0.1, eBrakeOut: 0.42,             // s blend in / out (turn rate, grip, camera)
   eBrakeRoll: 7,                              // deg visual body roll at full tilt (draw only)
   eBrakeSmoke: 14, eBrakeDonutSmoke: 2.6,     // tire-smoke puffs/s, and the donut multiplier
-  eBrakeSkidLife: 3.6,                        // s skid marks last before they fade
+  eBrakeSkidLife: 5.4,                        // s skid marks last before they fade
   waterDrag: 1.1,                             // RIVER: in the water (sunk 0.6 m) speed decays at this rate /s on top of off-road drag; she drives back out
   offRoad: 0.55,                              // OFF-ROAD (grass / dirt / park, fully rolling only): ground accel x this, rolling drag x (1 + 2*(1-this)); paved = 1
   nosTank: 6, nosRefill: 0.15,               // NOS bottle: seconds of hold when full, refill per s (UI bottle drains)

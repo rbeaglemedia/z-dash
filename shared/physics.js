@@ -75,10 +75,10 @@ const FX=[];function fxBurst(k,n){const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw);fo
   FX.push({k,x:P.x-fx*1.6+(r()-.5)*1.6,y:sp?.15:.6,z:P.z-fz*1.6+(r()-.5)*1.6,vx:fx*P.v*(sp?.5:.1)+(r()-.5)*(sp?8:2),vy:sp?1+r()*4:1+r()*1.5,vz:fz*P.v*(sp?.5:.1)+(r()-.5)*(sp?8:2),life:sp?.35+r()*.4:1.6+r()*1.2,t:0,s:sp?0:1+r()});}
   if(FX.length>600)FX.splice(0,FX.length-600);}
 function fxStep(dt){for(let i=FX.length-1;i>=0;i--){const f=FX[i];f.t+=dt;if(f.t>f.life){FX.splice(i,1);continue;}f.x+=f.vx*dt;f.y+=f.vy*dt;f.z+=f.vz*dt;
-  if(f.k==='spark'){f.vy-=9.8*dt;if(f.y<0){f.y=0;f.vy*=-.3;}f.vx*=.98;f.vz*=.98;}else{f.vy*=.99;f.vx*=.97;f.vz*=.97;f.s+=dt*(f.k==='tire'?3.4:2.2);if(f.k==='tire'&&f.y<0.15)f.y=0.15;}}}
+  if(f.k==='spark'){f.vy-=9.8*dt;if(f.y<0){f.y=0;f.vy*=-.3;}f.vx*=.98;f.vz*=.98;}else{f.vy*=.99;f.vx*=.97;f.vz*=.97;f.s+=dt*(f.k==='tire'?2.1:2.2);if(f.k==='tire'&&f.y<0.15)f.y=0.15;}}}
 function drawFX(){for(const f of FX){const p=proj(f.x,f.y,f.z);if(!p)continue;const a=1-f.t/f.life,sc=H*0.9/p[2];
   if(f.k==='spark'){const q=proj(f.x-f.vx*.03,f.y-f.vy*.03,f.z-f.vz*.03);if(!q)continue;ctx.strokeStyle=`rgba(255,${180+Math.round(60*a)},60,${a})`;ctx.lineWidth=Math.max(1.5,sc*.06);ctx.shadowColor='#ffb020';ctx.shadowBlur=8;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();ctx.shadowBlur=0;}
-  else if(f.k==='tire'){ctx.fillStyle=`rgba(226,228,234,${.5*a})`;ctx.beginPath();ctx.arc(p[0],p[1],Math.max(3,sc*f.s*1.15),0,7);ctx.fill();}
+  else if(f.k==='tire'){ctx.fillStyle=`rgba(226,228,234,${.42*a})`;ctx.beginPath();ctx.arc(p[0],p[1],Math.max(3,sc*f.s*0.72),0,7);ctx.fill();}
   else{ctx.fillStyle=`rgba(18,14,22,${.75*a})`;ctx.strokeStyle=`rgba(120,110,130,${.35*a})`;ctx.lineWidth=1;ctx.beginPath();ctx.arc(p[0],p[1],Math.max(3,sc*f.s*.8),0,7);ctx.fill();ctx.stroke();}}}
 // Ground e-brake: loose rear, tighter path, drift angle. Plain ground brake never comes through here.
 function ebDamp(cur,to,tau,dt){return cur+(to-cur)*(1-Math.exp(-dt/Math.max(0.03,tau)));}
@@ -95,10 +95,10 @@ function ebMarks(dt){const T=TUNE,eb=P.ebK||0;if(eb<0.08||!P.ground||P.v<0.8)ret
   if(FX.length>600)FX.splice(0,FX.length-600);}
 function drawSkids(){const life=TUNE.eBrakeSkidLife||3.6,now=P.simT||0;if(!SKID.L.length&&!SKID.R.length)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
   for(const arr of[SKID.L,SKID.R]){while(arr.length&&now-arr[0].t>life)arr.shift();
-    for(let i=1;i<arr.length;i++){const a=arr[i-1],b=arr[i];if(Math.hypot(b.x-a.x,b.z-a.z)>2.8)continue;const al=clamp(1-(now-b.t)/life,0,1);if(al<=0.02)continue;
-      const p=proj(a.x,a.y,a.z),q=proj(b.x,b.y,b.z);if(!p||!q)continue;const w=Math.max(1.2,(H*0.9/((p[2]+q[2])*0.5))*0.16);
-      ctx.strokeStyle=`rgba(255,120,180,${(0.22*al).toFixed(3)})`;ctx.lineWidth=w*2.4;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();
-      ctx.strokeStyle=`rgba(236,236,242,${(0.82*al).toFixed(3)})`;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();}}
+    for(let i=1;i<arr.length;i++){const a=arr[i-1],b=arr[i];if(Math.hypot(b.x-a.x,b.z-a.z)>2.8)continue;const al=clamp(1-(now-b.t)/life,0,1);if(al<=0.02)continue;const vis=Math.pow(al,0.4);
+      const p=proj(a.x,a.y,a.z),q=proj(b.x,b.y,b.z);if(!p||!q)continue;const w=Math.max(2.2,(H*0.9/((p[2]+q[2])*0.5))*0.28);
+      ctx.strokeStyle=`rgba(255,120,180,${(0.5*vis).toFixed(3)})`;ctx.lineWidth=w*2.2;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();
+      ctx.strokeStyle=`rgba(244,244,250,${(0.95*vis).toFixed(3)})`;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();}}
   ctx.restore();}
 function ebGround(dt,T,I,ofr,vT){
   const want=!!I.eb;
