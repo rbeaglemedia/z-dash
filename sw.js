@@ -5,7 +5,7 @@
    - Other files (manifests, icons): stale-while-revalidate inside a versioned cache.
    - A new deploy changes VERSION/BUILD -> installs at once (skipWaiting), takes over open pages (clients.claim), deletes the
      old cache and tells the pages its BUILD so a stale page can reload itself (only when no game/drive is in progress). */
-const VERSION = 'zdash-f5f4db3cffe9';
+const VERSION = 'zdash-f5f4db3cffe9-fly1';
 const BUILD = '1792461369-936cae93';
 const ASSETS = ["index.html", "jr.html", "manifest.webmanifest", "manifest-jr.webmanifest", "icons/zdash-192.png", "icons/zdash-512.png", "icons/zdash-apple-180.png", "icons/zdash-jr-192.png", "icons/zdash-jr-512.png", "icons/zdash-jr-apple-180.png", "icons/zdash-jr-maskable-512.png", "icons/zdash-maskable-512.png"];
 const NAV_TIMEOUT = 2500;
@@ -16,7 +16,7 @@ self.addEventListener('activate', (e) => {
     .then(() => self.clients.matchAll({ type: 'window' })).then((cs) => cs.forEach((c) => c.postMessage({ type: 'zd-sw', build: BUILD }))));
 });
 self.addEventListener('message', (e) => { if (e.data === 'zd-build?' && e.source) e.source.postMessage({ type: 'zd-sw', build: BUILD }); });
-const pageKey = (url) => (url.pathname.endsWith('jr.html') ? 'jr.html' : 'index.html'); // ?passenger / ?code= etc. share one cached copy
+const pageKey = (url) => (url.pathname.endsWith('jr.html') ? 'jr.html' : url.pathname.endsWith('fly3.html') ? 'fly3.html' : 'index.html'); // ?passenger / ?code= etc. share one cached copy
 function fromNetwork(req, key) { // revalidate with the server (bypasses the 10-min HTTP cache on GitHub Pages; an unchanged page is a cheap 304)
   return fetch(new Request(req.url, { cache: 'no-cache', credentials: 'same-origin' })).then((res) => {
     if (res.redirected) return Response.redirect(res.url, 302); // e.g. /z-dash -> /z-dash/: let the browser follow it
