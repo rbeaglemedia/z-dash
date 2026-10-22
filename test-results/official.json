@@ -1,0 +1,153 @@
+{
+  "sha": "99d7d2ceb8c13dc9bec26f6b9148acf0750c8c13",
+  "ready": {
+    "ready": true,
+    "overlay": true,
+    "label": "START"
+  },
+  "boot": {
+    "ready": true,
+    "overlay": true,
+    "xray": true,
+    "traffic": true
+  },
+  "errors": [
+    "console: Failed to load resource: the server responded with a status of 404 (File not found)",
+    "console: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "report": {
+    "audit": {
+      "n": 60,
+      "onRunway": 0,
+      "inSolid": 0,
+      "offLane": 0
+    },
+    "st": {
+      "enabled": true,
+      "model": "z370",
+      "clonedMeshes": 443,
+      "simCap": 24,
+      "dotCap": 36,
+      "sim": 24,
+      "dots": 36,
+      "alive": 60,
+      "lanes": 810,
+      "straight": 718,
+      "turns": 2016,
+      "fullDist": 150,
+      "boxDist": 400,
+      "dotDist": 800,
+      "speedMin": 13,
+      "speedMax": 19,
+      "highwayAdd": 4,
+      "paints": [
+        "cyan",
+        "pink",
+        "lime",
+        "purple",
+        "gold",
+        "tuner-orange",
+        "blackout",
+        "gunmetal",
+        "red40"
+      ],
+      "cache": 3,
+      "bakes": 3,
+      "bakeErr": "",
+      "runErr": ""
+    },
+    "tight": 0,
+    "bump": {
+      "v": 22,
+      "wreck": null,
+      "sep": 2
+    },
+    "tow": {
+      "maxY": 9.76,
+      "jumped": true,
+      "wreck": false,
+      "z": 716.9
+    }
+  },
+  "fpsBefore": {
+    "street": [
+      60,
+      60,
+      60,
+      23.9,
+      23.9
+    ],
+    "cross": [
+      21.3,
+      21.3,
+      21.3,
+      21.3,
+      20
+    ],
+    "highway": [
+      20,
+      20,
+      21.3,
+      21.3,
+      21.3
+    ],
+    "tow": [
+      20,
+      21.3,
+      21.3,
+      21.3,
+      21.3
+    ],
+    "air": [
+      20,
+      20,
+      20,
+      22.5,
+      22.5
+    ]
+  },
+  "fpsAfter": {
+    "street": [
+      60,
+      23.5,
+      23.5,
+      23.5,
+      22.5
+    ],
+    "cross": [
+      20,
+      20,
+      20,
+      27.3,
+      27.3
+    ],
+    "highway": [
+      20,
+      20,
+      22.5,
+      22.5,
+      22.5
+    ],
+    "tow": [
+      26.3,
+      26.3,
+      23.2,
+      23.2,
+      23.2
+    ],
+    "air": [
+      21.3,
+      21.3,
+      21.3,
+      23.6,
+      23.6
+    ]
+  },
+  "tiers": {
+    "full": 150,
+    "box": 400,
+    "dot": 800,
+    "simCap": 24,
+    "dotCap": 36
+  }
+}
