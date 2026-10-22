@@ -188,10 +188,13 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   const STEP=0.7,WM=0.8,CARH=1.4;
   const rampH=(q,x,z)=>{let t=clamp([(z-q.z0)/(q.z1-q.z0),(x-q.x0)/(q.x1-q.x0),(q.z1-z)/(q.z1-q.z0),(q.x1-x)/(q.x1-q.x0)][q.dir||0],0,1);if(q.prof==='crest')t=t<.88?t/.88:(1-t)/.12;return q.yb+(q.y1-q.yb)*t;};
   // probe(x,z,y): floor under her, ceiling above her, a wall she is inside of; st = on a stick surface (half-pipe)
-  function probe(x,z,y,py){if(py==null)py=y;const yh=Math.max(y,py),yl=Math.min(y,py),g0=gnd(x,z);let fl=g0[0],ce=1e9,wl=null;const L=HM.get(key(Math.floor(x/CS),Math.floor(z/CS)));if(L)for(const q of L){const m=q.y0>0||q.ramp?0:WM;if(x<q.x0-m||x>q.x1+m||z<q.z0-m||z>q.z1+m)continue;const ins=x>=q.x0&&x<=q.x1&&z>=q.z0&&z<=q.z1;
-      if(q.ramp){const rh=rampH(q,x,z);if(yh>=rh-0.9)fl=Math.max(fl,rh);else wl=wl||q;continue;}
-      if(yh>=q.y1-STEP){if(ins)fl=Math.max(fl,q.y1);}else if(yl+CARH<=q.y0+0.3){if(ins)ce=Math.min(ce,q.y0);}else wl=wl||q;}
-    return{fl,ce,wl,st:g0[1]&&fl===g0[0]?1:0};}
+  const LIVE=[];
+  function soak(q,x,z,yh,yl,box){const m=q.y0>0||q.ramp?0:WM;if(x<q.x0-m||x>q.x1+m||z<q.z0-m||z>q.z1+m)return;const ins=x>=q.x0&&x<=q.x1&&z>=q.z0&&z<=q.z1;
+    if(q.ramp){const rh=rampH(q,x,z);if(yh>=rh-0.9)box.fl=Math.max(box.fl,rh);else box.wl=box.wl||q;return;}
+    if(yh>=q.y1-STEP){if(ins)box.fl=Math.max(box.fl,q.y1);}else if(yl+CARH<=q.y0+0.3){if(ins)box.ce=Math.min(box.ce,q.y0);}else box.wl=box.wl||q;}
+  function probe(x,z,y,py){if(py==null)py=y;const yh=Math.max(y,py),yl=Math.min(y,py),g0=gnd(x,z),box={fl:g0[0],ce:1e9,wl:null};const L=HM.get(key(Math.floor(x/CS),Math.floor(z/CS)));if(L)for(const q of L)soak(q,x,z,yh,yl,box);for(let i=0;i<LIVE.length;i++)soak(LIVE[i],x,z,yh,yl,box);
+    return{fl:box.fl,ce:box.ce,wl:box.wl,st:g0[1]&&box.fl===g0[0]?1:0};}
+  function live(q){if(q&&LIVE.indexOf(q)<0)LIVE.push(q);return q;}
   { // street grid (100 m in x, 200 m in z) + highway (bridge, tunnel) + race track loop + track connector
     const xs=[];for(let x=150;x<=XS1;x+=100)xs.push(x,-x);xs.sort((a,b)=>a-b);const o={noRebuild:1};
     for(const x of xs){if(x===HW.x){ROADS.addRoad(x,ZS0-400,x,ZS1+400,Object.assign({w:30,kind:'highway',kindAt:(X,Z)=>Z>RIV.z0-50&&Z<RIV.z1+50?'bridge':(Z>TUN.z0&&Z<TUN.z1?'tunnel':'highway')},o));continue;}
@@ -217,7 +220,7 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
     if(window.SOCCER&&SOCCER.paved&&SOCCER.paved(x,z))return'paved';
     return'grass';}
   const padAt=(x,z,y)=>PADS.find(p=>Math.abs(p.y-y)<1&&inR(x,z,p))||null;
-  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,BX,RAMPS,PADS,TREES,LOTS,HOOPS,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,XS0,XS1,ZS0,ZS1,
+  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,BX,RAMPS,PADS,TREES,LOTS,HOOPS,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,XS0,XS1,ZS0,ZS1,
     probe,gnd,riverY,pipeY,rampH,trackPts,trackDist,surfaceAt,padAt,inTunnel:(x,z)=>x>TUN.bx0&&x<TUN.bx1&&z>TUN.z0&&z<TUN.z1};})();
 const surfaceAt=CITY.surfaceAt;
 // walls: glancing = SKIM (same skimDeg / skimKeep), steep = HARD HIT (same impactKeep * cos^impactExp). She is pushed out and turned along the wall: no reset, no damage

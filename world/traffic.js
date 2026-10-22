@@ -44,6 +44,7 @@ const TRAFFIC = (() => {
     return false;
   }
 
+  const towOid = id => { const ts = CITY.TOWS || []; for (let i = 0; i < ts.length; i++) if (ts[i].oid === id) return true; return false; };
   function build() {
     if (built) return;
     built = true;
@@ -66,6 +67,7 @@ const TRAFFIC = (() => {
           if (len < 8) return;
           const blocks = [];
           for (const b of e.blockedBy || []) {
+            if (towOid(b.oid)) continue;
             let s0, s1;
             if (!li) { s0 = b.d0 - 4; s1 = b.d1 + 4; }
             else { s0 = e.len - (b.d1 + 4); s1 = e.len - (b.d0 - 4); }
@@ -220,6 +222,7 @@ const TRAFFIC = (() => {
     return hold ? {o:hold, d:hd} : null;
   }
   function advance(c, dt) {
+    if (c.sim && window.TOWDRIVE && TOWDRIVE.ride(c, dt)) return;
     const L = c.lane;
     if (!L) { respawn(c); return; }
     if (c.utT > 0) c.utT -= dt;
@@ -455,6 +458,7 @@ const TRAFFIC = (() => {
     }
     return {n, onRunway, inSolid, offLane};
   }
-  return {update, collect, stats, audit, get cars(){ return cars; }, get lanes(){ return lanes; }};
+  function ensure() { build(); }
+  return {update, collect, stats, audit, ensure, get cars(){ return cars; }, get lanes(){ return lanes; }};
 })();
 window.TRAFFIC = TRAFFIC;
