@@ -1,0 +1,260 @@
+{
+  "storage_event": "fail Page.wait_for_function: Timeout 4000ms exceeded.",
+  "after_other_tab": {
+    "on": false,
+    "id": null,
+    "paint": "#1aa6c8",
+    "rim": null,
+    "roof": null,
+    "wheel": "#4a4f57",
+    "sig": false
+  },
+  "fallback": {
+    "broken": {
+      "on": false,
+      "paint": "#1aa6c8",
+      "rim": null
+    },
+    "arr": {
+      "on": false,
+      "paint": "#1aa6c8"
+    },
+    "gone": {
+      "on": false,
+      "paint": "#1aa6c8",
+      "show": true
+    }
+  },
+  "pageerrors": [],
+  "nosave": {
+    "on": false,
+    "id": null,
+    "liv": 0,
+    "paint": "#1aa6c8",
+    "glow": "#3ee6ff",
+    "wheel": "#4a4f57",
+    "rim": null,
+    "size": null,
+    "roof": null,
+    "spoiler": null,
+    "stance": null,
+    "window": null,
+    "wings": null,
+    "bumper": null,
+    "extra": null,
+    "extras": [],
+    "showroom": true,
+    "gz": false,
+    "crew": {
+      "phase": "ride",
+      "tk": 0,
+      "hatch": 0,
+      "type": "fox",
+      "ready": true,
+      "fx": 1,
+      "fz": 1,
+      "axis": true,
+      "head": [
+        -0.366,
+        1.013,
+        -0.344
+      ],
+      "pet": [
+        -1.144,
+        0.935,
+        0.155
+      ],
+      "char": "#ff3df2",
+      "hair": "ponytail",
+      "petGlow": "#ffb020",
+      "spot": "hatch"
+    },
+    "badge": true,
+    "badgeOwn": true,
+    "errs": 0,
+    "errors": [],
+    "jr_paint": "cyan",
+    "jr_errors": []
+  },
+  "pink": {
+    "on": true,
+    "id": "pink",
+    "liv": 0,
+    "paint": "#e0359f",
+    "glow": "#ff4fd8",
+    "wheel": "#3ee6ff",
+    "rim": "star",
+    "size": 19,
+    "roof": {
+      "color": "#3ee6ff"
+    },
+    "spoiler": null,
+    "stance": "stock",
+    "window": {
+      "color": "#8fe3ff",
+      "op": 0.5,
+      "glow": "#3ee6ff"
+    },
+    "wings": null,
+    "bumper": null,
+    "extra": null,
+    "extras": [],
+    "showroom": false,
+    "gz": true,
+    "crew": {
+      "phase": "ride",
+      "tk": 0,
+      "hatch": 0,
+      "type": "fox",
+      "ready": true,
+      "fx": 1,
+      "fz": 1,
+      "axis": true,
+      "head": [
+        -0.366,
+        1.013,
+        -0.344
+      ],
+      "pet": [
+        -1.144,
+        0.935,
+        0.155
+      ],
+      "char": "#ff3df2",
+      "hair": "ponytail",
+      "petGlow": "#ffb020",
+      "spot": "hatch"
+    },
+    "badge": true,
+    "badgeOwn": true,
+    "errs": 0,
+    "errors": [],
+    "jr_paint": "pink",
+    "jr_errors": []
+  },
+  "black": {
+    "on": true,
+    "id": "blackout",
+    "liv": 0,
+    "paint": "#121318",
+    "glow": "#3a7bff",
+    "wheel": "#15161a",
+    "rim": "5spoke",
+    "size": 20,
+    "roof": {
+      "color": "#0c0c10"
+    },
+    "spoiler": "gtwing",
+    "stance": "slam",
+    "window": {
+      "color": "#08090c",
+      "op": 0.9
+    },
+    "wings": null,
+    "bumper": null,
+    "extra": null,
+    "extras": [],
+    "showroom": false,
+    "gz": true,
+    "crew": {
+      "phase": "ride",
+      "tk": 0,
+      "hatch": 0,
+      "type": "fox",
+      "ready": true,
+      "fx": 1,
+      "fz": 1,
+      "axis": true,
+      "head": [
+        -0.366,
+        1.013,
+        -0.345
+      ],
+      "pet": [
+        -1.141,
+        0.936,
+        0.157
+      ],
+      "char": "#ff3df2",
+      "hair": "ponytail",
+      "petGlow": "#ffb020",
+      "spot": "hatch"
+    },
+    "badge": true,
+    "badgeOwn": true,
+    "errs": 0,
+    "errors": [],
+    "jr_paint": "blackout",
+    "jr_errors": []
+  },
+  "cop": {
+    "on": true,
+    "id": "cop_bw",
+    "liv": 1,
+    "paint": "#0e0f13",
+    "glow": "#3a7bff",
+    "wheel": "#15161a",
+    "rim": "stock",
+    "size": 19,
+    "roof": null,
+    "spoiler": null,
+    "stance": "stock",
+    "window": {
+      "color": "#5a6470",
+      "op": 0.55
+    },
+    "wings": null,
+    "bumper": null,
+    "extra": "lightbar",
+    "extras": [
+      "lightbar",
+      "copdoor"
+    ],
+    "showroom": false,
+    "gz": true,
+    "crew": {
+      "phase": "ride",
+      "tk": 0,
+      "hatch": 0,
+      "type": "fox",
+      "ready": true,
+      "fx": 1,
+      "fz": 1,
+      "axis": true,
+      "head": [
+        -0.366,
+        1.013,
+        -0.344
+      ],
+      "pet": [
+        -1.143,
+        0.935,
+        0.155
+      ],
+      "char": "#ff3df2",
+      "hair": "ponytail",
+      "petGlow": "#ffb020",
+      "spot": "hatch"
+    },
+    "badge": true,
+    "badgeOwn": true,
+    "errs": 0,
+    "errors": [],
+    "jr_paint": "cop_bw",
+    "jr_errors": []
+  },
+  "storage_http": {
+    "same_origin_setItem": "pass",
+    "id": "pink",
+    "paint": "#e0359f",
+    "rim": "star",
+    "roof": "#3ee6ff",
+    "wheel": "#3ee6ff",
+    "removeItem_fallback": {
+      "on": false,
+      "paint": "#1aa6c8",
+      "rim": null
+    },
+    "note": "file:// tabs do not share this origin, so the storage event was checked on http://127.0.0.1 (same origin as the published site)."
+  }
+}

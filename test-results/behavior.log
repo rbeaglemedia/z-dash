@@ -1,0 +1,182 @@
+SHA 95bdd51ae45611bb2d1c493e1cb5db38ac8081a0
+e-brake is engaged through the brake pad (B.brk + drag), which is what syncEb arms.
+{
+ "traffic": {
+  "stats": {
+   "enabled": true,
+   "model": "z370",
+   "clonedMeshes": 443,
+   "simCap": 24,
+   "dotCap": 36,
+   "sim": 24,
+   "dots": 36,
+   "alive": 60,
+   "lanes": 810,
+   "straight": 718,
+   "turns": 2016,
+   "fullDist": 150,
+   "boxDist": 400,
+   "dotDist": 800,
+   "speedMin": 13,
+   "speedMax": 19,
+   "highwayAdd": 4,
+   "paints": [
+    "cyan",
+    "pink",
+    "lime",
+    "purple",
+    "gold",
+    "tuner-orange",
+    "blackout",
+    "gunmetal",
+    "red40"
+   ],
+   "cache": 7,
+   "bakes": 7,
+   "bakeErr": "",
+   "runErr": ""
+  },
+  "audit": {
+   "n": 60,
+   "onRunway": 0,
+   "inSolid": 0,
+   "offLane": 0
+  },
+  "on": 60,
+  "paintsVariety": 9,
+  "notPlayerColor": 55
+ },
+ "ebrake": {
+  "v0": 25,
+  "held": {
+   "v": 20.38,
+   "ebK": 1,
+   "slip": -42,
+   "dyaw": -322.95,
+   "wreck": false,
+   "latched": 1
+  },
+  "released": {
+   "v": 16.18,
+   "ebK": 0.019
+  }
+ },
+ "takeoff": {
+  "rotate_s": 3.47,
+  "liftoff_s": 5.2,
+  "y": 1.51,
+  "ground": false,
+  "v": 49.7,
+  "wreck": false,
+  "tf": 1
+ },
+ "landing": {
+  "land": {
+   "t": 2.73,
+   "y": 0,
+   "v": 3.1,
+   "gy": 0
+  },
+  "wreck": false,
+  "minY": 0,
+  "end": {
+   "y": 0,
+   "v": 3.1,
+   "ground": true,
+   "pitch": -4
+  },
+  "trace": [
+   {
+    "t": 0,
+    "y": 9.91,
+    "v": 22.1,
+    "g": false
+   },
+   {
+    "t": 1,
+    "y": 2.51,
+    "v": 25.6,
+    "g": false
+   },
+   {
+    "t": 2,
+    "y": 0.26,
+    "v": 8.4,
+    "g": false
+   }
+  ]
+ },
+ "pet": {
+  "closed": {
+   "phase": "ride",
+   "hatch": 0,
+   "ready": true,
+   "pet": [
+    -1.141,
+    0.936,
+    0.156
+   ],
+   "head": [
+    -0.366,
+    1.013,
+    -0.345
+   ]
+  },
+  "open": {
+   "phase": "takeoff",
+   "hatch": 1,
+   "ready": true,
+   "tk": 0,
+   "pet": [
+    -1.12,
+    0.933,
+    0.161
+   ],
+   "head": [
+    -0.366,
+    1.013,
+    -0.345
+   ]
+  },
+  "shut": {
+   "phase": "ride",
+   "hatch": 0,
+   "ready": true,
+   "pet": [
+    -1.141,
+    0.936,
+    0.156
+   ],
+   "head": [
+    -0.366,
+    1.013,
+    -0.345
+   ]
+  },
+  "petFinite": true,
+  "headFinite": true
+ },
+ "garage": {
+  "on": true,
+  "id": "pink",
+  "paint": "#e0359f",
+  "rim": "star",
+  "wings": null,
+  "bumper": null,
+  "sig": true,
+  "badge": true,
+  "badgeOwn": true
+ },
+ "pass": {
+  "traffic": true,
+  "ebrake": true,
+  "takeoff": true,
+  "landing": true,
+  "pet": true,
+  "garageHeld": true,
+  "noErrors": true
+ },
+ "ok": true,
+ "pageerrors": []
+}
+PASS -
