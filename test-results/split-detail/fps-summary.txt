@@ -1,0 +1,17 @@
+Neon World split detail FPS. Viewport 915x412, swiftshader, FLY.fps after 1.2s at the pose, 5 rounds.
+ON is world-split.html with the shipped detail flags. OFF is the same page with ?detail=off.
+Median of the five rounds.
+
+load seconds    ON 4.52    OFF 4.56    historical main baseline median 4.702
+downtown fps    ON 60      OFF 60      baseline median 27.1 (same pose, earlier session, slower band)
+intersection    ON 60      OFF 60      baseline median 27.1
+river           ON 60      OFF 60      baseline median 27.1
+high            ON 40.01   OFF 42.59   baseline median 30.0
+park (extra)    ON 40.01   OFF 42.59
+
+Raw rounds are in fps.json. Street-level medians match OFF. High and park differ by about 2.5fps in the median, but the high camera draws none of the new detail (it is distance-culled) and the OFF samples swing from 32 to 45, so that gap is the bench spread.
+
+Downtown round 0 ON was 27.99 and OFF round 4 was 28.14. Every other street sample was 60. One sample in five lands in the slow band on both builds.
+
+Shipped: windows, signs, lanes, crosswalks, sidewalks, streetlights, grass, river, trees.
+Dropped: roofTrim (downtown held at ~26fps vs ~60), shapes (downtown held at ~31fps vs ~60). Flags remain in shared/detail-tune.js.
