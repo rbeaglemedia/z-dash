@@ -12,13 +12,36 @@ let FMSG=null;function wMsg(txt,col=H_YEL,sub=''){FMSG={txt,col,sub,t:performanc
 const TOASTC={'PULL UP!':[H_YEL,'tilt the top of the phone toward you'],'LIFT OFF!':[H_LIME,'you are flying!'],'BUTTER LANDING!':[H_YEL,'smooth as butter'],'TOUCHDOWN':[H_CYAN,''],'BOUNCE!':['#ff2a3d','too fast or too steep'],'WINGS OUT!':[H_CYAN,''],'LOW SPEED: NOSE SINKING':[H_ORNG,'nose down or more throttle'],'FLY!':[H_LIME,'hold THROTTLE to roll'],'STALL!':['#ff2a3d','nose drops: dive for speed, then pull up'],'BARREL ROLL!':[H_PINK,'woohoo!'],'RECOVERED!':[H_LIME,'nice save!'],'TOO SLOW!':['#ff2a3d','not enough speed: she will settle back'],'SKIM!':[H_CYAN,'skipped off the ground: keep flying!'],'WRECKED!':['#ff2a3d','way too hard!'],'HARD HIT!':['#ff2a3d','too steep: lost your speed · keep going!'],'ROUGH LANDING!':[H_ORNG,'too hard: lost speed'],'BUMP!':[H_ORNG,'back on the runway'],'WINGS CLOSED!':['#ff2a3d','no lift: you will sink. Tap WINGS to open'],'WINGS OPEN!':[H_CYAN,'lift ON']};
 let ktT=0;function kToast(s,ms=1600){const el=document.getElementById('kToast');el.textContent=s;el.classList.remove('hidden','fade');clearTimeout(ktT);ktT=setTimeout(()=>el.classList.add('hidden'),ms);}
 function toast(s){const c=TOASTC[s];if(c)wMsg(s,c[0],c[1]);else kToast(s);}
-let vShown=0,vS=0,vT=0;
+let vShown=0,vS=0,vT=0,hudStackBottom=168;
+// North-up minimap. City is baked once; each frame blits that image and draws the player arrow.
+const MINI={X0:-1500,Z0:-900,X1:1900,Z1:2900,S:0.34,cv:null};
+function miniHex(hex,a){const n=parseInt(String(hex||'').replace('#',''),16);if(!Number.isFinite(n))return`rgba(62,230,255,${a})`;return`rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
+function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;const S=MINI.S,w=Math.ceil((MINI.X1-MINI.X0)*S),h=Math.ceil((MINI.Z1-MINI.Z0)*S),cv=document.createElement('canvas');cv.width=w;cv.height=h;const c=cv.getContext('2d'),X=x=>(x-MINI.X0)*S,Y=z=>(MINI.Z1-z)*S,C=CITY;
+  c.fillStyle='#070314';c.fillRect(0,0,w,h);
+  c.fillStyle='rgba(8,40,90,.95)';c.fillRect(0,Y(C.RIV.z1),w,(C.RIV.z1-C.RIV.z0)*S);
+  c.fillStyle='rgba(10,60,30,.85)';c.fillRect(X(C.PARK.x0),Y(C.PARK.z1),(C.PARK.x1-C.PARK.x0)*S,(C.PARK.z1-C.PARK.z0)*S);
+  const N=C.ROADS.nodes,roads=(pred,col,lw)=>{c.beginPath();for(const e of C.ROADS.edges){if(!e||!pred(e))continue;const A=N[e.a],B=N[e.b];c.moveTo(X(A.x),Y(A.z));c.lineTo(X(B.x),Y(B.z));}c.strokeStyle=col;c.lineWidth=lw;c.stroke();};
+  roads(e=>e.kind==='street','rgba(62,230,255,.8)',1.35);
+  roads(e=>e.kind==='highway'||e.kind==='bridge'||e.kind==='tunnel','#ffb020',2.1);
+  roads(e=>e.kind==='track','#ff4fd8',1.6);
+  c.strokeStyle='#ffb020';c.lineWidth=1.5;c.strokeRect(X(C.TAXI.x0),Y(C.TAXI.z1),(C.TAXI.x1-C.TAXI.x0)*S,(C.TAXI.z1-C.TAXI.z0)*S);
+  for(const b of C.BL){const bw=b.x1-b.x0,bd=b.z1-b.z0;if(bw<6||bd<6)continue;const ol=b.kind==='outline';c.fillStyle=ol?'rgba(62,230,255,.08)':miniHex(b.c,.3);c.strokeStyle=ol?'rgba(62,230,255,.5)':(b.c||'#3ee6ff');c.lineWidth=1;c.fillRect(X(b.x0),Y(b.z1),bw*S,bd*S);c.strokeRect(X(b.x0),Y(b.z1),bw*S,bd*S);}
+  const z0=-40,z1=1500;c.fillStyle='rgba(62,230,255,.5)';c.fillRect(X(-15),Y(z1),30*S,(z1-z0)*S);c.strokeStyle='#e9fbff';c.lineWidth=2;c.strokeRect(X(-15),Y(z1),30*S,(z1-z0)*S);
+  c.strokeStyle='rgba(255,255,255,.92)';c.lineWidth=1.1;c.beginPath();for(let z=0;z<z1;z+=70){c.moveTo(X(0),Y(z));c.lineTo(X(0),Y(Math.min(z1,z+28)));}c.stroke();
+  c.fillStyle='#ff9a2e';for(const r of C.RAMPS){if(r.hid||r.yb>0||r.nm==='tow')continue;c.fillRect(X((r.x0+r.x1)/2)-1.3,Y((r.z0+r.z1)/2)-1.3,2.6,2.6);}
+  c.fillStyle='#ffe14d';for(const t of C.TOWS){c.beginPath();c.arc(X(t.x),Y(t.z),2.5,0,7);c.fill();}
+  MINI.cv=cv;}
+function drawMini(mx,my,mw,mh){try{miniBake();}catch(e){MINI.cv=MINI.cv||null;}
+  ctx.save();hrr(ctx,mx,my,mw,mh,14);ctx.clip();ctx.fillStyle='rgba(7,3,20,.94)';ctx.fillRect(mx-1,my-1,mw+2,mh+2);
+  if(MINI.cv){const ppm=mw/680,cx=mx+mw/2,cy=my+mh/2,dw=(MINI.X1-MINI.X0)*ppm,dh=(MINI.Z1-MINI.Z0)*ppm;ctx.drawImage(MINI.cv,cx+(MINI.X0-P.x)*ppm,cy-(MINI.Z1-P.z)*ppm,dw,dh);}
+  ctx.translate(mx+mw/2,my+mh/2);ctx.rotate(P.yaw||0);ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(5.2,6);ctx.lineTo(0,2.2);ctx.lineTo(-5.2,6);ctx.closePath();ctx.fillStyle='#fff';ctx.fill();ctx.lineWidth=1.4;ctx.strokeStyle=H_CYAN;ctx.stroke();ctx.restore();
+  hrr(ctx,mx,my,mw,mh,14);ctx.lineWidth=2.5;ctx.strokeStyle=H_CYAN;ctx.shadowColor=H_CYAN;ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;hT(ctx,'N',mx+mw/2,my+12,9,H_CYAN,'center',H_TXT,800);}
+// WINGS sits under the right-hand ALT stack. Same size; THROTTLE is left on its CSS anchor.
+let wingKey='';function placeWings(s,bottomHud){const wng=document.getElementById('wng'),thr=document.getElementById('tup');if(!wng)return;const key=W+'x'+H+'x'+bottomHud;if(key===wingKey)return;const gap=6;let top=Math.round(bottomHud*s+gap),wh=wng.offsetHeight||84;if(thr){const thrTop=thr.offsetTop;if(top+wh>thrTop-gap)top=thrTop-gap-wh;}if(top<bottomHud*s+2&&thr){wng.style.right=(20+(thr.offsetWidth||112)+10)+'px';top=Math.round(Math.max(bottomHud*s+gap,thr.offsetTop));}else wng.style.right='20px';wng.style.top=Math.round(top)+'px';wng.style.bottom='auto';wingKey=key;}
 function drawHud(dt){const t=performance.now()/1000,w=W,h=H,s=clamp(h/378,.72,1.35);ctx.save();ctx.scale(s,s);const Wd=w/s,Hh=h/s,TU=TUNE;
   vS+=(P.v*2.237-vS)*(1-Math.exp(-dt/.3));vT+=dt;if(vT>.14){vT=0;const r=Math.round(vS);if(Math.abs(vS-vShown)>.75||r===0)vShown=r;}
-  // LEFT: ALT + THROTTLE meter (WANTED's HEAT / BUSTED bubble)
-  hbub(ctx,12,10,140,60,P.stall&&Math.floor(t*6)%2?H_ORNG:'#3e7bff');hT(ctx,'ALT',22,28,10,'#ffd0f4','left',H_TXT,800);hTN(ctx,String(Math.round(P.y)),126,30,14,'#fff','right',H_FONT,900,6);hT(ctx,'M',142,30,9,H_CYAN,'right',H_FONT,900);
-  hT(ctx,'THR',22,46,9,'#bfd6ff','left',H_TXT,800);{const bx=22,by=52,bw=120,bh=11;ctx.fillStyle='rgba(255,255,255,.1)';hrr(ctx,bx,by,bw,bh,7);ctx.fill();const g=ctx.createLinearGradient(bx,0,bx+bw,0);g.addColorStop(0,'#3e7bff');g.addColorStop(1,H_PINK);ctx.fillStyle=g;if(P.thr>.01){hrr(ctx,bx,by,Math.max(14,bw*P.thr),bh,7);ctx.fill();}hT(ctx,Math.round(P.thr*100)+'%'+(P.nosT?' · NOS!':''),bx+bw/2,by+9,8,'#fff','center',H_TXT,900);}
-  {const sy=82,st=P.ground?(P.v<1?'PARKED':'ROLLING'):P.flip?'STALL!':P.stall?'LOW SPEED!':'FLYING';hbub(ctx,12,sy-6,140,30,P.stall&&Math.floor(t*5)%2?H_ORNG:'rgba(255,79,216,.8)');hT(ctx,'STATUS',22,sy+13,9,'#ffd0f4','left',H_TXT,800);hT(ctx,st,142,sy+14,10,P.flip?'#ff2a3d':P.stall?H_ORNG:P.ground?H_CYAN:H_LIME,'right',H_FONT,900,6);}
+  // TOP LEFT: minimap in the slot the ALT/THR panel used on main (x 12, y 10, 196×134)
+  {const mapW=Math.min(196,Math.max(96,Wd/2-79));drawMini(12,10,mapW,134);}
   // TOP CENTRE: ROTATE speed cue (WANTED's level / ramp bar)
   {const gw=118,gh=58,gx=Wd/2-gw/2,gy=6,cm=window.TCMD||[0,0],ok=P.ground&&P.rotOK,cx=gx+gw/2,cy=gy+gh/2,on=typeof tiltOk==='function'&&tiltOk();
     ctx.save();ctx.beginPath();ctx.roundRect(gx,gy,gw,gh,12);ctx.fillStyle='rgba(10,5,24,.82)';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=on?H_CYAN:'#55507a';ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=6;ctx.stroke();
@@ -31,17 +54,23 @@ function drawHud(dt){const t=performance.now()/1000,w=W,h=H,s=clamp(h/378,.72,1.
     const by=gy+gh+5,bw=gw;if(P.ground){const mxv=TU.rotateSpeed*1.25,fr=v=>clamp(v/mxv,0,1);ctx.fillStyle='rgba(255,255,255,.14)';hrr(ctx,gx,by,bw,5,2.5);ctx.fill();ctx.fillStyle=ok?(Math.floor(t*6)%2?'#fff':H_YEL):H_CYAN;if(P.v>.3){hrr(ctx,gx,by,Math.max(5,bw*fr(P.v)),5,2.5);ctx.fill();}ctx.fillStyle=H_LIME;ctx.fillRect(gx+bw*fr(TU.rotateSpeed)-1.5,by-3,3,11);
       hT(ctx,ok?'PULL UP!  ▲ TILT TOWARD YOU':!P.wings?(P.v>=TU.rotateSpeed?'OPEN WINGS TO LAUNCH!':'WINGS CLOSED · NO LIFT · TAP WINGS'):P.v<1?`HOLD THROTTLE · ROTATE AT ${Math.round(TU.rotateSpeed*2.237)} MPH`:'BUILD SPEED TO THE GREEN MARK',Wd/2,by+20+(ok?2:0),ok?13:10,ok?H_YEL:'#bfd6ff','center',ok?H_FONT:H_TXT,900,ok?10:4);}
     else hT(ctx,P.stall?'LOW SPEED · NOSE DOWN OR MORE THROTTLE':P.y<15&&P.v*3.6<40?'SLOW & NOSE UP · AIR BRAKE · BUTTER IT!':'DIVE = SPEED · CLIMB = HEIGHT',Wd/2,by+14,10,P.stall?H_ORNG:'#bfd6ff','center',H_TXT,800,4);}
-  // RIGHT: KM/H dial + digits, N2O bottle bar (WANTED's MPH block)
-  {const rx=Wd-16;ctx.save();const g=ctx.createLinearGradient(Wd-200,0,Wd,0);g.addColorStop(0,'rgba(8,3,20,0)');g.addColorStop(1,'rgba(8,3,20,.6)');ctx.fillStyle=g;ctx.fillRect(Wd-200,8,200,58);ctx.restore();
+  // RIGHT: MPH dial, then the smaller ALT/THR + STATUS stack directly under it. N2O gauge stays off (bottle is on the NOS button).
+  {const rx=Wd-16;ctx.save();const g=ctx.createLinearGradient(Wd-200,0,Wd,0);g.addColorStop(0,'rgba(8,3,20,0)');g.addColorStop(1,'rgba(8,3,20,.6)');ctx.fillStyle=g;ctx.fillRect(Wd-200,8,200,60);ctx.restore();
     {const cx=rx-128,cy=46,r=26,MAX=TU.maxSpeed*TU.nosBoost*2.237,v=clamp(vS,0,MAX),a0=Math.PI*.8,a1=Math.PI*2.2,A=m=>a0+(a1-a0)*(m/MAX);ctx.save();ctx.lineCap='round';ctx.lineWidth=5;ctx.strokeStyle='rgba(255,255,255,.14)';ctx.beginPath();ctx.arc(cx,cy,r,a0,a1);ctx.stroke();
       ctx.strokeStyle=P.stall?H_ORNG:H_CYAN;ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=8;ctx.beginPath();ctx.arc(cx,cy,r,a0,A(v));ctx.stroke();ctx.shadowBlur=0;
       const cm=A(TU.rotateSpeed*2.237);ctx.strokeStyle=H_LIME;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx+Math.cos(cm)*(r-8),cy+Math.sin(cm)*(r-8));ctx.lineTo(cx+Math.cos(cm)*(r+5),cy+Math.sin(cm)*(r+5));ctx.stroke();
       ctx.strokeStyle='#fff';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(A(v))*(r-4),cy+Math.sin(A(v))*(r-4));ctx.stroke();ctx.restore();}
     hTN(ctx,String(vShown),rx-48,48,34,'#fff','right',H_FONT,900,10);hT(ctx,'MPH',rx,48,12,H_CYAN,'right',H_FONT,900);
-    /* N2O gauge removed for now (NOS still works: bottle on the NOS button). Minimap slot reserved: screen-space below the MPH block, right side, approx x Wd-150..Wd-14, y 70..200 (HUD units). *//* TILT status is the #kTilt button (DOM) */hT(ctx,(fps|0)+' FPS',Wd-4,10,9,'rgba(191,214,255,.6)','right',H_TXT,700);}
+    // ~63% of main's 196-wide panel and ~60% of its 126px of boxes (92+34). ALT number stays 18px; bar stays 13px. Labels trimmed.
+    const aw=124,ah=50,ax=rx-aw,ay=76,st=P.ground?(P.v<1?'PARKED':'ROLLING'):P.flip?'STALL!':P.stall?'LOW SPEED!':'FLYING';
+    hbub(ctx,ax,ay,aw,ah,P.stall&&Math.floor(t*6)%2?H_ORNG:'#3e7bff');
+    hT(ctx,'ALT',ax+8,ay+14,9,'#ffd0f4','left',H_TXT,800);hTN(ctx,String(Math.round(P.y)),ax+aw-18,ay+20,18,'#fff','right',H_FONT,900,6);hT(ctx,'M',ax+aw-6,ay+18,10,H_CYAN,'right',H_FONT,900);
+    hT(ctx,'THR',ax+8,ay+42,9,'#bfd6ff','left',H_TXT,800);{const bx=ax+34,by=ay+32,bw=aw-42,bh=13;ctx.fillStyle='rgba(255,255,255,.1)';hrr(ctx,bx,by,bw,bh,7);ctx.fill();const g2=ctx.createLinearGradient(bx,0,bx+bw,0);g2.addColorStop(0,'#3e7bff');g2.addColorStop(1,H_PINK);ctx.fillStyle=g2;if(P.thr>.01){hrr(ctx,bx,by,Math.max(14,bw*P.thr),bh,7);ctx.fill();}hT(ctx,Math.round(P.thr*100)+'%'+(P.nosT?' · NOS!':''),bx+bw/2,by+10,10,'#fff','center',H_TXT,900);}
+    {const sy=142,sh=26;hbub(ctx,ax,sy,aw,sh,P.stall&&Math.floor(t*5)%2?H_ORNG:'rgba(255,79,216,.8)');hT(ctx,'STATUS',ax+8,sy+17,9,'#ffd0f4','left',H_TXT,800);hT(ctx,st,ax+aw-8,sy+17,11,P.flip?'#ff2a3d':P.stall?H_ORNG:P.ground?H_CYAN:H_LIME,'right',H_FONT,900,4);hudStackBottom=sy+sh;}
+    /* FPS is back where main draws it: right edge, baseline y=134 (under the speedometer, above STATUS). */hT(ctx,(fps|0)+' FPS',rx,134,9,'rgba(191,214,255,.6)','right',H_TXT,700);}
   // popup (WANTED wMsg)
   if(FMSG&&t-FMSG.t<1.4){const a=clamp((1.4-(t-FMSG.t))/.4,0,1),sc=1+Math.max(0,.25-(t-FMSG.t))*1.2;ctx.globalAlpha=a;ctx.save();ctx.translate(Wd/2,Hh*.6);ctx.scale(sc,sc);hT(ctx,FMSG.txt,0,0,28,FMSG.col,'center',H_FONT,900,18);if(FMSG.sub)hT(ctx,FMSG.sub,0,22,13,'#fff','center',H_TXT,800);ctx.restore();ctx.globalAlpha=1;}
-  ctx.restore();
+  ctx.restore();placeWings(s,hudStackBottom);
   // NOS bottle on the NOS button (WANTED's .nfxcan)
   if(!nosCan){nosCan=document.createElement('div');nosCan.className='nfxcan';nosCan.innerHTML='<i></i><b></b>';document.getElementById('nos').appendChild(nosCan);}
   const f=Math.round(P.nosTank*200)/200;if(f!==nosCan.f){nosCan.f=f;nosCan.style.setProperty('--cf',f);document.getElementById('nos').classList.toggle('ready',f>=.99);document.getElementById('nos').classList.toggle('empty',f<.05);}}

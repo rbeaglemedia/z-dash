@@ -35,8 +35,5 @@ requestAnimationFrame(loop);
 document.getElementById('ready').addEventListener('click',async()=>{goFull();TL.a0=screenAngle();orientFix();await allowTilt();tiltCenter();flying=true;document.getElementById('kOver').classList.add('hidden');document.getElementById('kMenuB').classList.remove('hidden');toast('FLY!');});
 
 document.getElementById('kWrR').addEventListener('click',()=>{reset();kToast('BACK ON THE RUNWAY');});document.getElementById('kWrH').addEventListener('click',()=>{location.href='jr.html';});
-{const b=document.getElementById('kTilt'),sS=()=>{const on=!TL.off;b.classList.toggle('off',!on);document.getElementById('kTiltS').textContent=on?(tiltOk()?'ON':'ON'):'OFF';};let lt=0,lp=false;
- b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();b.classList.add('nfxp');lp=false;clearTimeout(lt);lt=setTimeout(()=>{lp=true;TL.off=true;sS();kToast('TILT OFF · keys/buttons only');},600);});
- const up=async e=>{b.classList.remove('nfxp');clearTimeout(lt);if(e&&e.type==='pointerup'&&!lp){TL.off=false;try{await allowTilt();}catch(_){}tiltCenter();sS();kToast('TILT CENTERED');}};
- b.addEventListener('pointerup',up);b.addEventListener('pointercancel',()=>{b.classList.remove('nfxp');clearTimeout(lt);});setInterval(sS,500);window.tiltBtnState=sS;}
+// On-screen TILT button removed. Pause-menu ⊙ TILT CENTER still calls tiltCenter(); tilt input itself is unchanged.
 window.FLY={VP,visPose,CITY,CDRAW,P,TUNE,TL,FLYCAM,cam,proj,FX,showWreck,get fps(){return fps;}};
