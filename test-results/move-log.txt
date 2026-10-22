@@ -1,0 +1,31 @@
+soccer regression 540d72d2bcc29f7fecebe7360553abc3a626b2a3
+when 2026-10-22T22:43:41.918Z
+PASS  smoke
+PASS  traffic
+PASS  ebrake
+PASS  takeoff
+PASS  landing
+PASS  soft-tap
+PASS  hard-hit
+PASS  angled-hit
+PASS  sideline
+PASS  north-goal
+PASS  south-goal
+PASS  crossbar
+PASS  car-kinematic
+PASS  car-through-line
+PASS  spur-drive
+PASS  fps
+PASS  shot-edge
+PASS  shot-road
+PASS  shot-hit
+PASS  console
+FPS far  23.7, 23.7, 23.7, 23.7, 20.0
+FPS near 21.3, 20.0, 20.0, 20.0, 20.0
+shots
+  edge /workspace/test-results/after-edge.png
+  road /workspace/test-results/after-road.png
+  hit /workspace/test-results/after-ball.png
+
+smoke.py PASS
+world2test: physics checks passed; rooftopEasier and rampsOffRoads failed as noted in world2-log.txt
