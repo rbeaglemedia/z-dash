@@ -47,7 +47,15 @@ function zIconBake(){if(ZICON.cv)return;const paint=miniIconPaint(),N=160,cv=doc
   trace([[-.18,2.20],[.18,2.20],[.12,2.08],[-.12,2.08]]);c.closePath();c.fillStyle=ink;c.fill();
   ZICON.cv=cv;ZICON.paint=paint;}
 function miniHex(hex,a){const n=parseInt(String(hex||'').replace('#',''),16);if(!Number.isFinite(n))return`rgba(62,230,255,${a})`;return`rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
-function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;const S=MINI.S,w=Math.ceil((MINI.X1-MINI.X0)*S),h=Math.ceil((MINI.Z1-MINI.Z0)*S),cv=document.createElement('canvas');cv.width=w;cv.height=h;const c=cv.getContext('2d'),X=x=>(x-MINI.X0)*S,Y=z=>(MINI.Z1-z)*S,C=CITY;
+// Pitch and spur live in the baked layer (shared/soccer-tune.js). Bounds grow only if that pitch sits outside the city frame.
+function miniFitPitch(){const T=window.SOCCER_TUNE;if(!T||MINI.fit)return;MINI.fit=1;const pad=24,x0=Math.min(T.roadX0,T.fieldCx-T.fieldHw)-pad,x1=Math.max(T.roadX1,T.fieldCx+T.fieldHw)+pad,z0=T.fieldCz-T.fieldHl-pad,z1=T.fieldCz+T.fieldHl+pad;if(x0<MINI.X0)MINI.X0=x0;if(x1>MINI.X1)MINI.X1=x1;if(z0<MINI.Z0)MINI.Z0=z0;if(z1>MINI.Z1)MINI.Z1=z1;}
+function miniPitch(c,X,Y,S){const T=window.SOCCER_TUNE;if(!T)return;const F=window.SOCCER&&SOCCER.field,x0=T.fieldCx-T.fieldHw,x1=T.fieldCx+T.fieldHw,z0=T.fieldCz-T.fieldHl,z1=T.fieldCz+T.fieldHl,gw=(F&&F.goalW)||Math.min((x1-x0)*.46,16),gd=(F&&F.goalD)||5,gx0=T.fieldCx-gw/2,gx1=T.fieldCx+gw/2;
+  c.fillStyle='rgba(62,230,255,.55)';c.fillRect(X(T.roadX0),Y(T.roadZ+T.roadHalfW),(T.roadX1-T.roadX0)*S,T.roadHalfW*2*S);
+  c.fillStyle='rgba(7,40,28,.92)';c.fillRect(X(x0),Y(z1),(x1-x0)*S,(z1-z0)*S);c.strokeStyle='#3ee6ff';c.lineWidth=1.7;c.strokeRect(X(x0),Y(z1),(x1-x0)*S,(z1-z0)*S);
+  c.beginPath();c.moveTo(X(x0),Y(T.fieldCz));c.lineTo(X(x1),Y(T.fieldCz));c.stroke();
+  const goal=(z,sign,col)=>{c.beginPath();c.moveTo(X(gx0),Y(z));c.lineTo(X(gx0),Y(z+sign*gd));c.lineTo(X(gx1),Y(z+sign*gd));c.lineTo(X(gx1),Y(z));c.strokeStyle=col;c.lineWidth=1.8;c.stroke();};
+  goal(z0,-1,'#ff4fd8');goal(z1,1,'#7dfff2');}
+function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;miniFitPitch();const S=MINI.S,w=Math.ceil((MINI.X1-MINI.X0)*S),h=Math.ceil((MINI.Z1-MINI.Z0)*S),cv=document.createElement('canvas');cv.width=w;cv.height=h;const c=cv.getContext('2d'),X=x=>(x-MINI.X0)*S,Y=z=>(MINI.Z1-z)*S,C=CITY;
   c.fillStyle='#070314';c.fillRect(0,0,w,h);
   c.fillStyle='rgba(8,40,90,.95)';c.fillRect(0,Y(C.RIV.z1),w,(C.RIV.z1-C.RIV.z0)*S);
   c.fillStyle='rgba(10,60,30,.85)';c.fillRect(X(C.PARK.x0),Y(C.PARK.z1),(C.PARK.x1-C.PARK.x0)*S,(C.PARK.z1-C.PARK.z0)*S);
@@ -61,6 +69,7 @@ function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;const S=MINI.S,
   c.strokeStyle='rgba(255,255,255,.92)';c.lineWidth=1.1;c.beginPath();for(let z=0;z<z1;z+=70){c.moveTo(X(0),Y(z));c.lineTo(X(0),Y(Math.min(z1,z+28)));}c.stroke();
   c.fillStyle='#ff9a2e';for(const r of C.RAMPS){if(r.hid||r.yb>0||r.nm==='tow')continue;c.fillRect(X((r.x0+r.x1)/2)-1.3,Y((r.z0+r.z1)/2)-1.3,2.6,2.6);}
   c.fillStyle='#ffe14d';for(const t of C.TOWS){c.beginPath();c.arc(X(t.x),Y(t.z),2.5,0,7);c.fill();}
+  miniPitch(c,X,Y,S);
   MINI.cv=cv;}
 function drawMini(mx,my,mw,mh){try{miniBake();}catch(e){MINI.cv=MINI.cv||null;}
   ctx.save();hrr(ctx,mx,my,mw,mh,14);ctx.clip();ctx.fillStyle='rgba(7,3,20,.94)';ctx.fillRect(mx-1,my-1,mw+2,mh+2);
