@@ -13,7 +13,7 @@ const TOASTC={'PULL UP!':[H_YEL,'tilt the top of the phone toward you'],'LIFT OF
 let ktT=0;function kToast(s,ms=1600){const el=document.getElementById('kToast');el.textContent=s;el.classList.remove('hidden','fade');clearTimeout(ktT);ktT=setTimeout(()=>el.classList.add('hidden'),ms);}
 function toast(s){const c=TOASTC[s];if(c)wMsg(s,c[0],c[1]);else kToast(s);}
 let vShown=0,vS=0,vT=0,hudStackBottom=168;
-// North-up minimap. City is baked once; each frame blits that image and a pre-drawn 370Z icon.
+// Heading-up minimap. City is baked once; each frame rotates that image by -yaw and blits it once. The Z icon stays pointing up.
 const MINI={X0:-1500,Z0:-900,X1:1900,Z1:2900,S:0.34,cv:null};
 // Garage Z (world/garage.js) reads localStorage 'zdash.kid.v1' -> eq.paint (and wheels, windows, rims, tires, stance, spoiler, spcol).
 // The player model is always the 370Z; the save does not swap the car. No save leaves KID.paint at the default cyan #1aa6c8.
@@ -47,7 +47,15 @@ function zIconBake(){if(ZICON.cv)return;const paint=miniIconPaint(),N=160,cv=doc
   trace([[-.18,2.20],[.18,2.20],[.12,2.08],[-.12,2.08]]);c.closePath();c.fillStyle=ink;c.fill();
   ZICON.cv=cv;ZICON.paint=paint;}
 function miniHex(hex,a){const n=parseInt(String(hex||'').replace('#',''),16);if(!Number.isFinite(n))return`rgba(62,230,255,${a})`;return`rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
-function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;const S=MINI.S,w=Math.ceil((MINI.X1-MINI.X0)*S),h=Math.ceil((MINI.Z1-MINI.Z0)*S),cv=document.createElement('canvas');cv.width=w;cv.height=h;const c=cv.getContext('2d'),X=x=>(x-MINI.X0)*S,Y=z=>(MINI.Z1-z)*S,C=CITY;
+// Pitch and spur live in the baked layer (shared/soccer-tune.js). Bounds grow only if that pitch sits outside the city frame.
+function miniFitPitch(){const T=window.SOCCER_TUNE;if(!T||MINI.fit)return;MINI.fit=1;const pad=24,x0=Math.min(T.roadX0,T.fieldCx-T.fieldHw)-pad,x1=Math.max(T.roadX1,T.fieldCx+T.fieldHw)+pad,z0=T.fieldCz-T.fieldHl-pad,z1=T.fieldCz+T.fieldHl+pad;if(x0<MINI.X0)MINI.X0=x0;if(x1>MINI.X1)MINI.X1=x1;if(z0<MINI.Z0)MINI.Z0=z0;if(z1>MINI.Z1)MINI.Z1=z1;}
+function miniPitch(c,X,Y,S){const T=window.SOCCER_TUNE;if(!T)return;const F=window.SOCCER&&SOCCER.field,x0=T.fieldCx-T.fieldHw,x1=T.fieldCx+T.fieldHw,z0=T.fieldCz-T.fieldHl,z1=T.fieldCz+T.fieldHl,gw=(F&&F.goalW)||Math.min((x1-x0)*.46,16),gd=(F&&F.goalD)||5,gx0=T.fieldCx-gw/2,gx1=T.fieldCx+gw/2;
+  c.fillStyle='rgba(62,230,255,.55)';c.fillRect(X(T.roadX0),Y(T.roadZ+T.roadHalfW),(T.roadX1-T.roadX0)*S,T.roadHalfW*2*S);
+  c.fillStyle='rgba(7,40,28,.92)';c.fillRect(X(x0),Y(z1),(x1-x0)*S,(z1-z0)*S);c.strokeStyle='#3ee6ff';c.lineWidth=1.7;c.strokeRect(X(x0),Y(z1),(x1-x0)*S,(z1-z0)*S);
+  c.beginPath();c.moveTo(X(x0),Y(T.fieldCz));c.lineTo(X(x1),Y(T.fieldCz));c.stroke();
+  const goal=(z,sign,col)=>{c.beginPath();c.moveTo(X(gx0),Y(z));c.lineTo(X(gx0),Y(z+sign*gd));c.lineTo(X(gx1),Y(z+sign*gd));c.lineTo(X(gx1),Y(z));c.strokeStyle=col;c.lineWidth=1.8;c.stroke();};
+  goal(z0,-1,'#ff4fd8');goal(z1,1,'#7dfff2');}
+function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;miniFitPitch();const S=MINI.S,w=Math.ceil((MINI.X1-MINI.X0)*S),h=Math.ceil((MINI.Z1-MINI.Z0)*S),cv=document.createElement('canvas');cv.width=w;cv.height=h;const c=cv.getContext('2d'),X=x=>(x-MINI.X0)*S,Y=z=>(MINI.Z1-z)*S,C=CITY;
   c.fillStyle='#070314';c.fillRect(0,0,w,h);
   c.fillStyle='rgba(8,40,90,.95)';c.fillRect(0,Y(C.RIV.z1),w,(C.RIV.z1-C.RIV.z0)*S);
   c.fillStyle='rgba(10,60,30,.85)';c.fillRect(X(C.PARK.x0),Y(C.PARK.z1),(C.PARK.x1-C.PARK.x0)*S,(C.PARK.z1-C.PARK.z0)*S);
@@ -61,18 +69,32 @@ function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;const S=MINI.S,
   c.strokeStyle='rgba(255,255,255,.92)';c.lineWidth=1.1;c.beginPath();for(let z=0;z<z1;z+=70){c.moveTo(X(0),Y(z));c.lineTo(X(0),Y(Math.min(z1,z+28)));}c.stroke();
   c.fillStyle='#ff9a2e';for(const r of C.RAMPS){if(r.hid||r.yb>0||r.nm==='tow')continue;c.fillRect(X((r.x0+r.x1)/2)-1.3,Y((r.z0+r.z1)/2)-1.3,2.6,2.6);}
   c.fillStyle='#ffe14d';for(const t of C.TOWS){c.beginPath();c.arc(X(t.x),Y(t.z),2.5,0,7);c.fill();}
+  miniPitch(c,X,Y,S);
   MINI.cv=cv;}
-function drawMini(mx,my,mw,mh){try{miniBake();}catch(e){MINI.cv=MINI.cv||null;}
+let miniSpan=0;
+const ZICON_W=.45; // visible car width ÷ sprite. Street width uses this.
+function miniTune(){return window.MINIMAP_TUNE||{spanClose:300,spanFar:3400,altClose:24,altFar:240,ease:.8,street:20,iconMin:20};}
+function miniZoom(dt){const T=miniTune(),y=Math.max(0,P.y||0),den=(T.altFar||240)-(T.altClose||24),u=den>0?clamp((y-(T.altClose||24))/den,0,1):0,e=u*u*(3-2*u),target=(T.spanClose||300)+((T.spanFar||3400)-(T.spanClose||300))*e;
+  if(!miniSpan){miniSpan=target;return miniSpan;}
+  const k=1-Math.exp(-Math.min(Math.max(dt,0),.1)/Math.max(.05,T.ease||.8));miniSpan+=(target-miniSpan)*k;return miniSpan;}
+function miniIconPx(mw,span){const T=miniTune(),px=(T.street||20)/span*mw;return Math.max(T.iconMin||20,px/ZICON_W);}
+// North on screen after the map is rotated by -yaw. yaw 0 faces +z, and +yaw turns toward +x.
+function miniNorth(mx,my,mw,mh,yaw){const dx=-Math.sin(yaw),dy=-Math.cos(yaw),r=12,cx=mx+mw/2,cy=my+mh/2,hx=mw/2-r-3,hy=mh/2-r-3,x=cx+dx*hx,y=cy+dy*hy;
+  ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fillStyle='rgba(8,4,20,.92)';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=H_CYAN;ctx.shadowColor=H_CYAN;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
+  ctx.beginPath();ctx.moveTo(x+dx*(r-1),y+dy*(r-1));ctx.lineTo(x+dx*(r+4),y+dy*(r+4));ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.stroke();
+  hT(ctx,'N',x,y+5,14,'#fff','center',H_FONT,900);}
+function drawMini(mx,my,mw,mh,dt){try{miniBake();}catch(e){MINI.cv=MINI.cv||null;}
+  const span=miniZoom(dt),yaw=P.yaw||0,cx=mx+mw/2,cy=my+mh/2;
   ctx.save();hrr(ctx,mx,my,mw,mh,14);ctx.clip();ctx.fillStyle='rgba(7,3,20,.94)';ctx.fillRect(mx-1,my-1,mw+2,mh+2);
-  if(MINI.cv){const ppm=mw/680,cx=mx+mw/2,cy=my+mh/2,dw=(MINI.X1-MINI.X0)*ppm,dh=(MINI.Z1-MINI.Z0)*ppm;ctx.drawImage(MINI.cv,cx+(MINI.X0-P.x)*ppm,cy-(MINI.Z1-P.z)*ppm,dw,dh);}
-  ctx.translate(mx+mw/2,my+mh/2);ctx.rotate(P.yaw||0);zIconBake();const d=40;ctx.imageSmoothingEnabled=true;ctx.drawImage(ZICON.cv,-d/2,-d/2,d,d);ctx.restore();
-  hrr(ctx,mx,my,mw,mh,14);ctx.lineWidth=2.5;ctx.strokeStyle=H_CYAN;ctx.shadowColor=H_CYAN;ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;hT(ctx,'N',mx+mw/2,my+12,9,H_CYAN,'center',H_TXT,800);}
+  if(MINI.cv){const ppm=mw/span,dw=(MINI.X1-MINI.X0)*ppm,dh=(MINI.Z1-MINI.Z0)*ppm;ctx.save();ctx.translate(cx,cy);ctx.rotate(-yaw);ctx.imageSmoothingEnabled=true;ctx.drawImage(MINI.cv,(MINI.X0-P.x)*ppm,-(MINI.Z1-P.z)*ppm,dw,dh);ctx.restore();}
+  zIconBake();const d=miniIconPx(mw,span);ctx.imageSmoothingEnabled=true;ctx.drawImage(ZICON.cv,cx-d/2,cy-d/2,d,d);ctx.restore();
+  hrr(ctx,mx,my,mw,mh,14);ctx.lineWidth=2.5;ctx.strokeStyle=H_CYAN;ctx.shadowColor=H_CYAN;ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;miniNorth(mx,my,mw,mh,yaw);}
 // WINGS sits under the right-hand ALT stack. Same size; THROTTLE is left on its CSS anchor.
 let wingKey='';function placeWings(s,bottomHud){const wng=document.getElementById('wng'),thr=document.getElementById('tup');if(!wng)return;const key=W+'x'+H+'x'+bottomHud;if(key===wingKey)return;const gap=6;let top=Math.round(bottomHud*s+gap),wh=wng.offsetHeight||84;if(thr){const thrTop=thr.offsetTop;if(top+wh>thrTop-gap)top=thrTop-gap-wh;}if(top<bottomHud*s+2&&thr){wng.style.right=(20+(thr.offsetWidth||112)+10)+'px';top=Math.round(Math.max(bottomHud*s+gap,thr.offsetTop));}else wng.style.right='20px';wng.style.top=Math.round(top)+'px';wng.style.bottom='auto';wingKey=key;}
 function drawHud(dt){const t=performance.now()/1000,w=W,h=H,s=clamp(h/378,.72,1.35);ctx.save();ctx.scale(s,s);const Wd=w/s,Hh=h/s,TU=TUNE;
   vS+=(P.v*2.237-vS)*(1-Math.exp(-dt/.3));vT+=dt;if(vT>.14){vT=0;const r=Math.round(vS);if(Math.abs(vS-vShown)>.75||r===0)vShown=r;}
   // TOP LEFT: minimap in the slot the ALT/THR panel used on main (x 12, y 10, 196×134)
-  {const mapW=Math.min(196,Math.max(96,Wd/2-79));drawMini(12,10,mapW,134);}
+  {const mapW=Math.min(196,Math.max(96,Wd/2-79));drawMini(12,10,mapW,134,dt);}
   // TOP CENTRE: ROTATE speed cue (WANTED's level / ramp bar)
   {const gw=118,gh=58,gx=Wd/2-gw/2,gy=6,cm=window.TCMD||[0,0],ok=P.ground&&P.rotOK,cx=gx+gw/2,cy=gy+gh/2,on=typeof tiltOk==='function'&&tiltOk();
     ctx.save();ctx.beginPath();ctx.roundRect(gx,gy,gw,gh,12);ctx.fillStyle='rgba(10,5,24,.82)';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=on?H_CYAN:'#55507a';ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=6;ctx.stroke();
