@@ -27,7 +27,26 @@ const PRESETS = { wings: {
   softSink: 3.0,                              // touchdown: max descent m/s for a soft landing
   softMaxSpeed: 22,                           // touchdown: max forward m/s for a soft landing (~80 km/h)
   softMinPitch: -8,                           // touchdown: nose can't be lower than this (deg)
-  groundFric: 0.5, groundBrake: 14,           // rolling decel m/s^2, wheel brake
+  groundFric: 0.5, groundBrake: 14,           // rolling decel m/s^2, wheel brake (plain AIR BRAKE hold on the ground; unchanged)
+  // --- ground E-BRAKE: hold AIR BRAKE and drag right. Air brake (airBrake) is not used on the ground.
+  // Path yaw rate = stick * 0.6 * groundSteer * min(1, v/5) * eBrakeSteer. eBrakeSteer 2.8 is the 2.5–3x band.
+  // One gesture: slow + hard tilt pivots (small slip, faster bleed); fast + moderate tilt sweeps (big slip, mild bleed).
+  // Throttle held at the same time holds speed and spins a donut. Releasing blends grip back (no snap).
+  eBrakeDrag: 40, eBrakeBack: 16,             // px right to engage; slide back under eBrakeBack disengages
+  eBrakeSteer: 2.8,                           // yaw-rate multiplier vs normal ground steering (all speeds; ratio stays 2.8x)
+  eBrakePivotMph: 25,                         // below this, hard tilt blends toward the pivot (faster bleed, small slip)
+  eBrakeDecel: 1.6, eBrakePivotDecel: 4.5,    // extra m/s^2 while sliding (no throttle coast); pivot blend is still far under groundBrake 14
+  eBrakePivotYaw: 0.42,                       // while a slow hard tilt bleeds speed, keep this much of the full yaw scale so a U-turn finishes. Does not change the 2.8x rate above 5 m/s
+  eBrakeDonutV: 8, eBrakeDonutSpool: 2.0,     // throttle+e-brake: spool up to this m/s (~18 mph), then hold speed (no bleed)
+  eBrakeSlipSlow: 14, eBrakeSlipMax: 42,      // deg nose leads travel: small in a pivot, up to ~42 once at eBrakeSlipFullMph
+  eBrakeSlipMph0: 18, eBrakeSlipFullMph: 36,  // drift angle stays small until slipMph0, full sweep angle at slipFullMph
+  eBrakeSlipSteer: 0.34,                      // |tilt| that counts as a moderate steer (full drift angle)
+  eBrakeDonutSlip: 38,                        // deg rear hang-out while throttle is held with the e-brake
+  eBrakeSlipIn: 6, eBrakeAlign: 3.4,          // 1/s drift angle in, and back to 0 on release
+  eBrakeIn: 0.1, eBrakeOut: 0.42,             // s blend in / out (turn rate, grip, camera)
+  eBrakeRoll: 7,                              // deg visual body roll at full tilt (draw only)
+  eBrakeSmoke: 14, eBrakeDonutSmoke: 2.6,     // tire-smoke puffs/s, and the donut multiplier
+  eBrakeSkidLife: 5.4,                        // s skid marks last before they fade
   waterDrag: 1.1,                             // RIVER: in the water (sunk 0.6 m) speed decays at this rate /s on top of off-road drag; she drives back out
   offRoad: 0.55,                              // OFF-ROAD (grass / dirt / park, fully rolling only): ground accel x this, rolling drag x (1 + 2*(1-this)); paved = 1
   nosTank: 6, nosRefill: 0.15,               // NOS bottle: seconds of hold when full, refill per s (UI bottle drains)
