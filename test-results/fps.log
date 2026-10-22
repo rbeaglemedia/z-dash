@@ -1,9 +1,0 @@
-SHA 95bdd51ae45611bb2d1c493e1cb5db38ac8081a0
-5 pairs, world-split.html, no Garage save. base=main be399cc (/tmp/z-dash-main), head=95bdd51 (this branch). Chase cam at the first tow truck, wings closed. SwiftShader.
-pair 1 (5.1, 5.1)
-pair 2 (5.0, 5.0)
-pair 3 (4.4, 5.1)
-pair 4 (5.2, 5.2)
-pair 5 (5.0, 5.2)
-[[5.1, 5.1], [5.0, 5.0], [4.4, 5.1], [5.2, 5.2], [5.0, 5.2]]
-base avg 4.9 head avg 5.1 ratio 1.036
