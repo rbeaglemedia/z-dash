@@ -1,0 +1,582 @@
+{
+ "rooftop": {
+  "base": {
+   "trials": 120,
+   "ok": 98,
+   "hard": 0,
+   "missed": 4,
+   "fell_off": 18,
+   "rate": 0.817,
+   "roofs": 24,
+   "avgRoof_m2": 17773,
+   "avgTop": 16.6
+  },
+  "new": {
+   "trials": 120,
+   "ok": 98,
+   "hard": 0,
+   "missed": 4,
+   "fell_off": 18,
+   "rate": 0.817,
+   "roofs": 24,
+   "avgRoof_m2": 17773,
+   "avgTop": 16.6
+  },
+  "ratio": 1.0,
+  "fail_rate_ratio": 1.0
+ },
+ "rooftopEasier_ok": false,
+ "slow": {
+  "vBefore": 9,
+  "bankLaunch": true,
+  "minY": -0.6,
+  "waterSecs": 6.4,
+  "inWaterAvg_mps": 8.6,
+  "out": {
+   "t": 10.4,
+   "v": 17.4,
+   "y": 0,
+   "inWaterAvg": 8.6
+  },
+  "after3s": {
+   "v": 39.2,
+   "y": 0
+  },
+  "hards": 0,
+  "walls": 0,
+  "splash": 1,
+  "wreck": false
+ },
+ "fast": {
+  "vBefore": 23.8,
+  "bankLaunch": true,
+  "minY": -0.6,
+  "waterSecs": 3.2,
+  "inWaterAvg_mps": 9.1,
+  "out": {
+   "t": 5.9,
+   "v": 17.5,
+   "y": 0,
+   "inWaterAvg": 9.1
+  },
+  "after3s": {
+   "v": 38.9,
+   "y": 0
+  },
+  "hards": 0,
+  "walls": 0,
+  "splash": 1,
+  "wreck": false
+ },
+ "loop_fast": {
+  "entryMps": 36.6,
+  "loops": 1,
+  "maxY": 24,
+  "frames": 69,
+  "endV": 63.1,
+  "endYawDeg": 0,
+  "endX": -71,
+  "endZ": 1899,
+  "hards": 0,
+  "walls": 0,
+  "ground": false
+ },
+ "loop_slow": {
+  "entryMps": 13.6,
+  "loops": 0,
+  "maxY": 9.4,
+  "frames": 112,
+  "endV": 0.2,
+  "endYawDeg": 180,
+  "endX": -80,
+  "endZ": 1393.1,
+  "hards": 0,
+  "walls": 0,
+  "ground": true
+ },
+ "pipe_along": {
+  "maxY": 0,
+  "maxDyFrame": 0,
+  "airFrames": 0,
+  "turns": 0,
+  "hards": 0,
+  "walls": 0,
+  "end": {
+   "x": -95,
+   "z": 494,
+   "v": 65.8
+  }
+ },
+ "pipe_slow": {
+  "maxY": 1.25,
+  "maxDyFrame": 0.05,
+  "airFrames": 0,
+  "turns": 1,
+  "hards": 0,
+  "walls": 0,
+  "end": {
+   "x": -94.1,
+   "z": 260,
+   "v": 1.1
+  }
+ },
+ "pipe_fast": {
+  "maxY": 5,
+  "maxDyFrame": 2.28,
+  "airFrames": 0,
+  "turns": 0,
+  "hards": 0,
+  "walls": 0,
+  "end": {
+   "x": -144.7,
+   "z": 260,
+   "v": 42.8
+  }
+ },
+ "pipe_geo": {
+  "x0": -127,
+  "x1": -63,
+  "z0": 200,
+  "z1": 320,
+  "H": 5
+ },
+ "ramps": {
+  "n": 133,
+  "kinds": {
+   "small_hidden": 36,
+   "small_marked": 23,
+   "big_marked": 13,
+   "medium_marked": 24,
+   "medium_hidden_roof": 18,
+   "medium_hidden": 8,
+   "small_hidden_crest": 5,
+   "small_marked_roof": 6
+  },
+  "fails": []
+ },
+ "bank": {
+  "res": {
+   "south": [
+    {
+     "x": -650,
+     "launched": true,
+     "atZ": 1781.2,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": -550,
+     "launched": true,
+     "atZ": 1780.6,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": -350,
+     "launched": true,
+     "atZ": 1780.6,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": -150,
+     "launched": true,
+     "atZ": 1780.6,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": -75,
+     "launched": true,
+     "atZ": 1781.2,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 30,
+     "launched": true,
+     "atZ": 1781.2,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 85,
+     "launched": true,
+     "atZ": 1781.2,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 150,
+     "launched": true,
+     "atZ": 1780.6,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 350,
+     "launched": true,
+     "atZ": 1780.6,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 450,
+     "launched": true,
+     "atZ": 1780.6,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 650,
+     "launched": true,
+     "atZ": 1781.2,
+     "walls": 0,
+     "hards": 0
+    }
+   ],
+   "north": [
+    {
+     "x": -650,
+     "launched": true,
+     "atZ": 1838.8,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": -350,
+     "launched": true,
+     "atZ": 1839.4,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": -200,
+     "launched": true,
+     "atZ": 1839.4,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": -60,
+     "launched": true,
+     "atZ": 1838.8,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 30,
+     "launched": true,
+     "atZ": 1838.8,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 180,
+     "launched": true,
+     "atZ": 1839.4,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 250,
+     "launched": true,
+     "atZ": 1839.4,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 450,
+     "launched": true,
+     "atZ": 1839.4,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 650,
+     "launched": true,
+     "atZ": 1838.8,
+     "walls": 0,
+     "hards": 0
+    }
+   ]
+  },
+  "launched": 20,
+  "total": 20
+ },
+ "parallel": [
+  {
+   "nm": "south_slope",
+   "z": 1777,
+   "endX": 722,
+   "airFrames": 0,
+   "maxDyFrame": 0.033,
+   "walls": 0,
+   "hards": 0,
+   "minV": 29.8,
+   "maxDrift": 0,
+   "inWater": false
+  },
+  {
+   "nm": "south_crest",
+   "z": 1779.7,
+   "endX": 722,
+   "airFrames": 0,
+   "maxDyFrame": 0.063,
+   "walls": 0,
+   "hards": 0,
+   "minV": 29.8,
+   "maxDrift": 0,
+   "inWater": false
+  },
+  {
+   "nm": "north_slope",
+   "z": 1843,
+   "endX": 722,
+   "airFrames": 0,
+   "maxDyFrame": 0.033,
+   "walls": 0,
+   "hards": 0,
+   "minV": 29.8,
+   "maxDrift": 0,
+   "inWater": false
+  },
+  {
+   "nm": "north_crest",
+   "z": 1840.3,
+   "endX": 722,
+   "airFrames": 0,
+   "maxDyFrame": 0.063,
+   "walls": 0,
+   "hards": 0,
+   "minV": 29.8,
+   "maxDrift": 0,
+   "inWater": false
+  }
+ ],
+ "rampsOnRoads": [
+  {
+   "oid": 289,
+   "edge": 150,
+   "kind": "street"
+  },
+  {
+   "oid": 289,
+   "edge": 151,
+   "kind": "street"
+  },
+  {
+   "oid": 290,
+   "edge": 68,
+   "kind": "street"
+  },
+  {
+   "oid": 290,
+   "edge": 68,
+   "kind": "street"
+  },
+  {
+   "oid": 291,
+   "edge": 108,
+   "kind": "street"
+  },
+  {
+   "oid": 291,
+   "edge": 109,
+   "kind": "street"
+  },
+  {
+   "oid": 292,
+   "edge": 78,
+   "kind": "street"
+  },
+  {
+   "oid": 292,
+   "edge": 79,
+   "kind": "street"
+  },
+  {
+   "oid": 293,
+   "edge": 138,
+   "kind": "street"
+  },
+  {
+   "oid": 293,
+   "edge": 139,
+   "kind": "street"
+  },
+  {
+   "oid": 294,
+   "edge": 6,
+   "kind": "street"
+  },
+  {
+   "oid": 294,
+   "edge": 6,
+   "kind": "street"
+  }
+ ],
+ "roadsBlocked": [
+  {
+   "id": 76,
+   "kind": "street",
+   "by": [
+    37
+   ]
+  },
+  {
+   "id": 77,
+   "kind": "street",
+   "by": [
+    37
+   ]
+  },
+  {
+   "id": 86,
+   "kind": "street",
+   "by": [
+    48
+   ]
+  },
+  {
+   "id": 87,
+   "kind": "street",
+   "by": [
+    48
+   ]
+  },
+  {
+   "id": 142,
+   "kind": "street",
+   "by": [
+    1
+   ]
+  },
+  {
+   "id": 143,
+   "kind": "street",
+   "by": [
+    1
+   ]
+  },
+  {
+   "id": 156,
+   "kind": "street",
+   "by": [
+    24
+   ]
+  },
+  {
+   "id": 157,
+   "kind": "street",
+   "by": [
+    24
+   ]
+  },
+  {
+   "id": 168,
+   "kind": "street",
+   "by": [
+    65
+   ]
+  },
+  {
+   "id": 169,
+   "kind": "street",
+   "by": [
+    65
+   ]
+  },
+  {
+   "id": 170,
+   "kind": "street",
+   "by": [
+    66
+   ]
+  },
+  {
+   "id": 171,
+   "kind": "street",
+   "by": [
+    66
+   ]
+  },
+  {
+   "id": 194,
+   "kind": "street",
+   "by": [
+    113
+   ]
+  },
+  {
+   "id": 195,
+   "kind": "street",
+   "by": [
+    113
+   ]
+  },
+  {
+   "id": 198,
+   "kind": "street",
+   "by": [
+    116
+   ]
+  },
+  {
+   "id": 199,
+   "kind": "street",
+   "by": [
+    116
+   ]
+  },
+  {
+   "id": 262,
+   "kind": "street",
+   "by": [
+    228
+   ]
+  },
+  {
+   "id": 263,
+   "kind": "street",
+   "by": [
+    228
+   ]
+  },
+  {
+   "id": 270,
+   "kind": "street",
+   "by": [
+    228
+   ]
+  },
+  {
+   "id": 271,
+   "kind": "street",
+   "by": [
+    228
+   ]
+  }
+ ],
+ "hoops": 28,
+ "loops": 1,
+ "pipes": 1,
+ "track": 36,
+ "riverSlowsSinksRecovers_ok": true,
+ "loopTraversable_ok": true,
+ "halfPipeTraversable_ok": true,
+ "everyRampLaunches_ok": true,
+ "bankLaunchesEverywhere_ok": true,
+ "bankParallelSmooth_ok": true,
+ "rampsOffRoads_ok": false,
+ "noErrors_ok": true
+}
+ERRORS []
+FAILS rooftopEasier rampsOffRoads
+FAIL
+
+--- notes ---
+smoke.py: SMOKE PASS on world.html
+world2test rooftopEasier: base and head are the same checkout (fail_rate_ratio 1.0, 98/120 both). The check expects an older ZD_BASE_DIR.
+world2test rampsOffRoads: overlaps are on the existing street graph. This change does not add a ROADS edge.
+All other world2 checks passed. No page errors.
