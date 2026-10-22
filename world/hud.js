@@ -13,8 +13,39 @@ const TOASTC={'PULL UP!':[H_YEL,'tilt the top of the phone toward you'],'LIFT OF
 let ktT=0;function kToast(s,ms=1600){const el=document.getElementById('kToast');el.textContent=s;el.classList.remove('hidden','fade');clearTimeout(ktT);ktT=setTimeout(()=>el.classList.add('hidden'),ms);}
 function toast(s){const c=TOASTC[s];if(c)wMsg(s,c[0],c[1]);else kToast(s);}
 let vShown=0,vS=0,vT=0,hudStackBottom=168;
-// North-up minimap. City is baked once; each frame blits that image and draws the player arrow.
+// North-up minimap. City is baked once; each frame blits that image and a pre-drawn 370Z icon.
 const MINI={X0:-1500,Z0:-900,X1:1900,Z1:2900,S:0.34,cv:null};
+// Garage Z (world/garage.js) reads localStorage 'zdash.kid.v1' -> eq.paint (and wheels, windows, rims, tires, stance, spoiler, spcol).
+// The player model is always the 370Z; the save does not swap the car. No save leaves KID.paint at the default cyan #1aa6c8.
+// That cyan, and other map-like paints, disappear into the roads, runway, highways, track, ramps, or tow dots, so those fall back to white.
+const ZICON={cv:null,paint:''};
+function miniIconPaint(){const white='#f4f6fb';
+  if(typeof GZ==='undefined'||!GZ.on||typeof KID==='undefined')return white;
+  const hex=String(KID.paint||'');if(!/^#[0-9a-fA-F]{6}$/.test(hex))return white;
+  const n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  if(.2126*r+.7152*g+.0722*b<52)return white;
+  const near=(R,G,B,d)=>Math.hypot(r-R,g-G,b-B)<d;
+  if(near(62,230,255,108)||near(255,176,32,82)||near(255,79,216,88)||near(255,154,46,82)||near(255,225,77,82))return white;
+  return hex;}
+function zIconBake(){if(ZICON.cv)return;const paint=miniIconPaint(),N=160,cv=document.createElement('canvas');cv.width=cv.height=N;
+  const c=cv.getContext('2d'),cx=N/2,y0=14,y1=N-16,span=4.56,k=(y1-y0)/span,zA=2.32,X=w=>cx+w*k,Y=z=>y0+(zA-z)*k,ink='#140814';
+  const trace=pts=>{c.beginPath();pts.forEach((p,i)=>i?c.lineTo(X(p[0]),Y(p[1])):c.moveTo(X(p[0]),Y(p[1])));};
+  const ring=side=>{trace(side);for(let i=side.length-1;i>=0;i--)c.lineTo(X(-side[i][0]),Y(side[i][1]));c.closePath();};
+  c.lineJoin='round';c.lineCap='round';
+  // Plan of the 370Z: narrow nose, long hood, cabin set back, wide rear hips, flat tail. Nose is up.
+  const side=[[.08,2.30],[.42,2.22],[.66,2.04],[.84,1.74],[.90,1.30],[.82,.70],[.78,.10],[.88,-.40],[1.04,-1.15],[.98,-1.64],[.82,-2.00],[.64,-2.16]];
+  ring(side);c.fillStyle=paint;c.fill();c.lineWidth=7;c.strokeStyle=ink;c.stroke();
+  trace([[-.82,-2.06],[.82,-2.06],[.82,-2.26],[-.82,-2.26]]);c.closePath();c.fillStyle=paint;c.fill();c.lineWidth=5;c.strokeStyle=ink;c.stroke();
+  const wheel=(sx,z)=>{c.beginPath();c.ellipse(X(sx*1.05),Y(z),.22*k,.38*k,0,0,7);c.fillStyle='#12141a';c.fill();c.lineWidth=3;c.strokeStyle='#3a3e48';c.stroke();};
+  wheel(1,1.18);wheel(-1,1.18);wheel(1,-1.38);wheel(-1,-1.38);
+  ring([[.64,-.05],[.56,-.45],[.46,-1.00],[.34,-1.48],[.20,-1.66]]);c.fillStyle='#10131c';c.fill();
+  const lamp=sx=>{c.beginPath();c.moveTo(X(sx*.26),Y(2.18));c.lineTo(X(sx*.74),Y(2.04));c.lineTo(X(sx*.94),Y(1.48));c.lineTo(X(sx*.52),Y(1.42));c.lineTo(X(sx*.34),Y(1.92));c.closePath();c.fillStyle=ink;c.fill();
+    c.beginPath();c.moveTo(X(sx*.40),Y(2.06));c.lineTo(X(sx*.66),Y(1.98));c.lineTo(X(sx*.76),Y(1.64));c.lineTo(X(sx*.50),Y(1.68));c.closePath();c.fillStyle='#fff';c.fill();};
+  lamp(1);lamp(-1);
+  const tail=sx=>{c.beginPath();c.moveTo(X(sx*.42),Y(-2.08));c.lineTo(X(sx*.74),Y(-2.02));c.lineTo(X(sx*.70),Y(-1.86));c.lineTo(X(sx*.40),Y(-1.94));c.closePath();c.fillStyle='#ff2a3d';c.fill();};
+  tail(1);tail(-1);
+  trace([[-.18,2.20],[.18,2.20],[.12,2.08],[-.12,2.08]]);c.closePath();c.fillStyle=ink;c.fill();
+  ZICON.cv=cv;ZICON.paint=paint;}
 function miniHex(hex,a){const n=parseInt(String(hex||'').replace('#',''),16);if(!Number.isFinite(n))return`rgba(62,230,255,${a})`;return`rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
 function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;const S=MINI.S,w=Math.ceil((MINI.X1-MINI.X0)*S),h=Math.ceil((MINI.Z1-MINI.Z0)*S),cv=document.createElement('canvas');cv.width=w;cv.height=h;const c=cv.getContext('2d'),X=x=>(x-MINI.X0)*S,Y=z=>(MINI.Z1-z)*S,C=CITY;
   c.fillStyle='#070314';c.fillRect(0,0,w,h);
@@ -34,7 +65,7 @@ function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;const S=MINI.S,
 function drawMini(mx,my,mw,mh){try{miniBake();}catch(e){MINI.cv=MINI.cv||null;}
   ctx.save();hrr(ctx,mx,my,mw,mh,14);ctx.clip();ctx.fillStyle='rgba(7,3,20,.94)';ctx.fillRect(mx-1,my-1,mw+2,mh+2);
   if(MINI.cv){const ppm=mw/680,cx=mx+mw/2,cy=my+mh/2,dw=(MINI.X1-MINI.X0)*ppm,dh=(MINI.Z1-MINI.Z0)*ppm;ctx.drawImage(MINI.cv,cx+(MINI.X0-P.x)*ppm,cy-(MINI.Z1-P.z)*ppm,dw,dh);}
-  ctx.translate(mx+mw/2,my+mh/2);ctx.rotate(P.yaw||0);ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(5.2,6);ctx.lineTo(0,2.2);ctx.lineTo(-5.2,6);ctx.closePath();ctx.fillStyle='#fff';ctx.fill();ctx.lineWidth=1.4;ctx.strokeStyle=H_CYAN;ctx.stroke();ctx.restore();
+  ctx.translate(mx+mw/2,my+mh/2);ctx.rotate(P.yaw||0);zIconBake();const d=40;ctx.imageSmoothingEnabled=true;ctx.drawImage(ZICON.cv,-d/2,-d/2,d,d);ctx.restore();
   hrr(ctx,mx,my,mw,mh,14);ctx.lineWidth=2.5;ctx.strokeStyle=H_CYAN;ctx.shadowColor=H_CYAN;ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;hT(ctx,'N',mx+mw/2,my+12,9,H_CYAN,'center',H_TXT,800);}
 // WINGS sits under the right-hand ALT stack. Same size; THROTTLE is left on its CSS anchor.
 let wingKey='';function placeWings(s,bottomHud){const wng=document.getElementById('wng'),thr=document.getElementById('tup');if(!wng)return;const key=W+'x'+H+'x'+bottomHud;if(key===wingKey)return;const gap=6;let top=Math.round(bottomHud*s+gap),wh=wng.offsetHeight||84;if(thr){const thrTop=thr.offsetTop;if(top+wh>thrTop-gap)top=thrTop-gap-wh;}if(top<bottomHud*s+2&&thr){wng.style.right=(20+(thr.offsetWidth||112)+10)+'px';top=Math.round(Math.max(bottomHud*s+gap,thr.offsetTop));}else wng.style.right='20px';wng.style.top=Math.round(top)+'px';wng.style.bottom='auto';wingKey=key;}
