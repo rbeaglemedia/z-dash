@@ -1,0 +1,24 @@
+Crew regression on fb332b19c7b04011fb4251e4ec1a8bac5c3dc8d4 (split-crew, contains origin/main a96dc8d).
+Headless Chrome, SwiftShader. One run. z-dash-tools was not readable (private / unresolved).
+
+Load: START overlay, car model ready, crew ready. No page errors.
+Only noise: favicon.ico 404 (before and after).
+
+FPS, 5 samples, wings closed, car held on the runway (render loop, physics paused).
+The counter is seeded at 60 until the first half-second window, so the early 60s are that seed.
+before: 60, 60, 21.3, 21.3, 21.3
+after:  60, 60, 60, 20, 20
+Settled: 21.3 before, 20 after.
+
+Chase cam, same spots before and after:
+- ground: driver in the seat, fox lying in the hatch (phase ride, hatch 0)
+- takeoff hang: tk 0.393, pet at the passenger door (0.98, 0.56, 1.16), wings tf 0.61
+- flying: phase fly, hatch 1, pet standing at the open hatch (-1.54, 1.13, 0.00)
+Wings closed again: phase ride, hatch 0, pet back in the trunk.
+
+Landing: airborne at y=22, back on the ground (y=0, ground true, not wrecked) in 164 steps.
+Ramp: launched (ramps 1, airborne, gam 0.16).
+Tow truck bed: launched (ramps 1, airborne, gam 0.29, 6 tow trucks in the city).
+
+Pets fox/cat/dragon/robo: takeoff pose finite. Dragon has wing joints. Dull glow #112233 rejected, falls back to #ff3df2.
+Keys: zdash.char.v1, zdash.pet.v1. Car paint stays zdash.kid.v1 (garage.js, not touched).

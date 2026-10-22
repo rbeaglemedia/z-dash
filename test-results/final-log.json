@@ -1,0 +1,297 @@
+{
+  "sha": "fb332b19c7b04011fb4251e4ec1a8bac5c3dc8d4",
+  "when": "2026-10-22T21:45:48.297Z",
+  "errors": [
+    "BEFORE CONSOLE Failed to load resource: the server responded with a status of 404 (File not found)",
+    "AFTER CONSOLE Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "fails": [],
+  "notes": [],
+  "beforeReady": {
+    "xray": true,
+    "crew": false,
+    "flying": true,
+    "start": true
+  },
+  "fpsBefore": [
+    60,
+    60,
+    21.3,
+    21.3,
+    21.3
+  ],
+  "afterReady": {
+    "xray": true,
+    "crew": {
+      "phase": "ride",
+      "tk": 0,
+      "hatch": 0,
+      "type": "fox",
+      "ready": true,
+      "fx": 1,
+      "fz": 1,
+      "axis": true,
+      "head": [
+        -0.369,
+        1.013,
+        -0.349
+      ],
+      "pet": [
+        -1.125,
+        0.935,
+        0.161
+      ],
+      "char": "#ff3df2",
+      "hair": "ponytail",
+      "petGlow": "#ffb020",
+      "spot": "hatch"
+    },
+    "flying": true,
+    "start": true
+  },
+  "fpsAfter": [
+    60,
+    60,
+    60,
+    20,
+    20
+  ],
+  "groundState": {
+    "phase": "ride",
+    "tk": 0,
+    "hatch": 0,
+    "type": "fox",
+    "ready": true,
+    "fx": 1,
+    "fz": 1,
+    "axis": true,
+    "head": [
+      -0.368,
+      1.013,
+      -0.349
+    ],
+    "pet": [
+      -1.126,
+      0.935,
+      0.161
+    ],
+    "char": "#ff3df2",
+    "hair": "ponytail",
+    "petGlow": "#ffb020",
+    "spot": "hatch"
+  },
+  "hang": {
+    "ok": true,
+    "s": {
+      "phase": "takeoff",
+      "tk": 0.393,
+      "hatch": 0.469,
+      "type": "fox",
+      "ready": true,
+      "fx": 1,
+      "fz": 1,
+      "axis": true,
+      "head": [
+        -0.365,
+        1.013,
+        -0.343
+      ],
+      "pet": [
+        0.984,
+        0.555,
+        1.157
+      ],
+      "char": "#ff3df2",
+      "hair": "ponytail",
+      "petGlow": "#ffb020",
+      "spot": "hatch"
+    },
+    "tf": 0.611,
+    "y": 0
+  },
+  "hangState": {
+    "phase": "takeoff",
+    "tk": 0.393,
+    "hatch": 0.489,
+    "type": "fox",
+    "ready": true,
+    "fx": 1,
+    "fz": 1,
+    "axis": true,
+    "head": [
+      -0.365,
+      1.013,
+      -0.343
+    ],
+    "pet": [
+      0.984,
+      0.555,
+      1.157
+    ],
+    "char": "#ff3df2",
+    "hair": "ponytail",
+    "petGlow": "#ffb020",
+    "spot": "hatch"
+  },
+  "fly": {
+    "ok": true,
+    "s": {
+      "phase": "fly",
+      "tk": 0,
+      "hatch": 1,
+      "type": "fox",
+      "ready": true,
+      "fx": 1,
+      "fz": 1,
+      "axis": true,
+      "head": [
+        -0.373,
+        1.014,
+        -0.357
+      ],
+      "pet": [
+        -1.535,
+        1.134,
+        -0.008
+      ],
+      "char": "#ff3df2",
+      "hair": "ponytail",
+      "petGlow": "#ffb020",
+      "spot": "hatch"
+    },
+    "tf": 1
+  },
+  "flyState": {
+    "phase": "fly",
+    "tk": 0,
+    "hatch": 1,
+    "type": "fox",
+    "ready": true,
+    "fx": 1,
+    "fz": 1,
+    "axis": true,
+    "head": [
+      -0.373,
+      1.014,
+      -0.357
+    ],
+    "pet": [
+      -1.535,
+      1.134,
+      -0.008
+    ],
+    "char": "#ff3df2",
+    "hair": "ponytail",
+    "petGlow": "#ffb020",
+    "spot": "hatch"
+  },
+  "settle": {
+    "ok": true,
+    "s": {
+      "phase": "ride",
+      "tk": 0,
+      "hatch": 0,
+      "type": "fox",
+      "ready": true,
+      "fx": 1,
+      "fz": 1,
+      "axis": true,
+      "head": [
+        -0.366,
+        1.013,
+        -0.344
+      ],
+      "pet": [
+        -1.146,
+        0.934,
+        0.154
+      ],
+      "char": "#ff3df2",
+      "hair": "ponytail",
+      "petGlow": "#ffb020",
+      "spot": "hatch"
+    },
+    "tf": 0.028
+  },
+  "landing": {
+    "steps": 164,
+    "ground": true,
+    "y": 0,
+    "lands": 0,
+    "hards": 0,
+    "v": 26.6,
+    "wreck": false
+  },
+  "ramp": {
+    "ok": true,
+    "ramps": 1,
+    "ground": false,
+    "y": 1.59,
+    "h": 0.13,
+    "dir": 3,
+    "nm": "",
+    "air": {
+      "i": 14,
+      "y": 1.59,
+      "gam": 0.159,
+      "v": 40.3
+    },
+    "end": {
+      "x": 194.4,
+      "z": 46.4
+    }
+  },
+  "tow": {
+    "ok": true,
+    "ramps": 1,
+    "ground": false,
+    "y": 2.57,
+    "h": 0.21,
+    "dir": 0,
+    "air": {
+      "i": 11,
+      "y": 2.57,
+      "gam": 0.291,
+      "v": 43.8
+    },
+    "tows": 6
+  },
+  "pets": {
+    "out": {
+      "fox": {
+        "finite": true,
+        "wings": false,
+        "wingL": false,
+        "parts": 16,
+        "glow": "#7cff4f"
+      },
+      "cat": {
+        "finite": true,
+        "wings": false,
+        "wingL": false,
+        "parts": 16,
+        "glow": "#7cff4f"
+      },
+      "dragon": {
+        "finite": true,
+        "wings": true,
+        "wingL": true,
+        "parts": 18,
+        "glow": "#7cff4f"
+      },
+      "robo": {
+        "finite": true,
+        "wings": false,
+        "wingL": false,
+        "parts": 16,
+        "glow": "#7cff4f"
+      }
+    },
+    "cyan": "#3ee6ff",
+    "rejected": "#ff3df2",
+    "restored": "#ff3df2 fox"
+  },
+  "fpsBeforeAvg": 36.78,
+  "fpsAfterAvg": 44,
+  "fpsDrop": -7.22
+}
