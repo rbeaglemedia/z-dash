@@ -1,0 +1,29 @@
+soccer regression 6318ec826b4776cdf72252da163d62317059374e
+when 2026-10-22T22:31:18.844Z
+PASS  smoke
+PASS  traffic
+PASS  ebrake
+PASS  takeoff
+PASS  landing
+PASS  soft-tap
+PASS  hard-hit
+PASS  angled-hit
+PASS  sideline
+PASS  north-goal
+PASS  south-goal
+PASS  crossbar
+PASS  car-kinematic
+PASS  car-through-line
+PASS  fps
+PASS  shot-hit
+PASS  shot-sideline
+PASS  shot-goal
+PASS  shot-overview
+PASS  console
+FPS far  23.7, 23.7, 23.7, 20.0, 20.0
+FPS near 20.0, 20.0, 20.0, 20.0, 20.0
+shots
+  overview /workspace/test-results/after-overview.png
+  hit /workspace/test-results/after-hit.png
+  sideline /workspace/test-results/after-sideline.png
+  goal /workspace/test-results/after-goal.png
