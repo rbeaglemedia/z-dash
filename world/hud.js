@@ -60,11 +60,11 @@ function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;const S=MINI.S,
   const z0=-40,z1=1500;c.fillStyle='rgba(62,230,255,.5)';c.fillRect(X(-15),Y(z1),30*S,(z1-z0)*S);c.strokeStyle='#e9fbff';c.lineWidth=2;c.strokeRect(X(-15),Y(z1),30*S,(z1-z0)*S);
   c.strokeStyle='rgba(255,255,255,.92)';c.lineWidth=1.1;c.beginPath();for(let z=0;z<z1;z+=70){c.moveTo(X(0),Y(z));c.lineTo(X(0),Y(Math.min(z1,z+28)));}c.stroke();
   c.fillStyle='#ff9a2e';for(const r of C.RAMPS){if(r.hid||r.yb>0||r.nm==='tow')continue;c.fillRect(X((r.x0+r.x1)/2)-1.3,Y((r.z0+r.z1)/2)-1.3,2.6,2.6);}
-  c.fillStyle='#ffe14d';for(const t of C.TOWS){c.beginPath();c.arc(X(t.x),Y(t.z),2.5,0,7);c.fill();}
   MINI.cv=cv;}
 function drawMini(mx,my,mw,mh){try{miniBake();}catch(e){MINI.cv=MINI.cv||null;}
   ctx.save();hrr(ctx,mx,my,mw,mh,14);ctx.clip();ctx.fillStyle='rgba(7,3,20,.94)';ctx.fillRect(mx-1,my-1,mw+2,mh+2);
-  if(MINI.cv){const ppm=mw/680,cx=mx+mw/2,cy=my+mh/2,dw=(MINI.X1-MINI.X0)*ppm,dh=(MINI.Z1-MINI.Z0)*ppm;ctx.drawImage(MINI.cv,cx+(MINI.X0-P.x)*ppm,cy-(MINI.Z1-P.z)*ppm,dw,dh);}
+  if(MINI.cv){const ppm=mw/680,cx=mx+mw/2,cy=my+mh/2,dw=(MINI.X1-MINI.X0)*ppm,dh=(MINI.Z1-MINI.Z0)*ppm;ctx.drawImage(MINI.cv,cx+(MINI.X0-P.x)*ppm,cy-(MINI.Z1-P.z)*ppm,dw,dh);
+    ctx.fillStyle='#ffe14d';for(const t of CITY.TOWS){const sx=cx+(t.x-P.x)*ppm,sy=cy-(t.z-P.z)*ppm;if(sx<mx-6||sx>mx+mw+6||sy<my-6||sy>my+mh+6)continue;ctx.beginPath();ctx.arc(sx,sy,2.4,0,7);ctx.fill();}}
   ctx.translate(mx+mw/2,my+mh/2);ctx.rotate(P.yaw||0);zIconBake();const d=40;ctx.imageSmoothingEnabled=true;ctx.drawImage(ZICON.cv,-d/2,-d/2,d,d);ctx.restore();
   hrr(ctx,mx,my,mw,mh,14);ctx.lineWidth=2.5;ctx.strokeStyle=H_CYAN;ctx.shadowColor=H_CYAN;ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;hT(ctx,'N',mx+mw/2,my+12,9,H_CYAN,'center',H_TXT,800);}
 // WINGS sits under the right-hand ALT stack. Same size; THROTTLE is left on its CSS anchor.
