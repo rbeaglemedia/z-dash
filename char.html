@@ -48,14 +48,20 @@ function save(){C.updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify
 /* ---------- 370Z geometry (copied read-only from world.html zModel: ST body stations, RF roofline, doors) ---------- */
 const ST=[[2.125,.70,.28,.56],[2.02,.84,.22,.62],[1.80,.90,.20,.70],[1.50,.925,.20,.78],[1.15,.92,.20,.80],[.80,.89,.22,.79],[.55,.88,.22,.80],
  [0,.87,.22,.84],[-.55,.88,.22,.88],[-1.05,.91,.22,.93],[-1.40,.925,.22,.95],[-1.75,.91,.24,.96],[-2.0,.86,.28,.95],[-2.125,.78,.32,.93]];
-const RF=[[.55,.82,.80],[.05,1.20,.66],[-.25,1.32,.60],[-.65,1.29,.57],[-1.05,1.17,.52],[-1.45,1.04,.48],[-1.72,.97,.62]];
+const RF=[[.55,.935,.80],[.05,1.251,.66],[-.3,1.247,.60],[-.5,1.234,.58],[-.7,1.215,.57],[-.95,1.205,.54],[-1.2,1.175,.52],[-1.4,1.115,.50],[-1.6,1.045,.50],[-1.72,.995,.55]]; // real Z (world.html 370Z GLB) interior underside + liner .055
 const lerp=(a,b,t)=>a+(b-a)*t,clamp=(v,a,b)=>v<a?a:v>b?b:v,ease=t=>t*t*(3-2*t);
 const rfAt=z=>{for(let i=0;i<RF.length-1;i++){const a=RF[i],b=RF[i+1];if(z<=a[0]&&z>=b[0]){const t=(a[0]-z)/(a[0]-b[0]);return[lerp(a[1],b[1],t),lerp(a[2],b[2],t)];}}return null;};
-const DOOR={z0:.55,z1:-.78,sill:.22,x:.9};
+const DOOR={z0:.55,z1:-.78,sill:.25,x:.9,wing:1}; // real Z door opening (wing-style door swings up and out); sill top y .25
 /* Interior (derived from the shell above + real 370Z packaging): left-hand drive, driver centre x=-0.37,
    seat cushion top y=0.34, seat H-point z=-0.42, floor y=0.14, pedals z≈+0.55, headliner = roof - 0.055 m. */
-const SEAT={x:-.37,hy:.40,hz:-.42,cushion:.34,floor:.14,back:22,liner:.055};
+const SEAT={x:-.35,hy:.375,hz:-.17,cushion:.345,floor:.15,back:28,liner:.055,head:38,
+ bz0:-.40,bDeg:17,cushFz:.05,cushFy:.455}; // real Z seat: back face from (z-.40,y.345) at 17deg, cushion pan rises to (z.05,y.455)
+const WHEEL={x:-.365,y:.83,z:.06,r:.155}; // real Z steering rim (slice of world.html GLB): centre, radius; grips at 9 and 3
+const CARGO={floor:.79,z0:-.92,z1:-1.80,hw:.55,lipZ:-1.62,lipY:.96}; // real Z hatch cargo floor + rear lip
 const CAR={x:0,z:0,on:false};
+const WIN={belt:.89,top:1.17,slope:1.7,z0:.62,z1:-.50,x0:.70,x1:.80}; // real Z side window opening (passenger door card + glass stay in place)
+const WING={x0:.95,x1:2.0,y0:.44,y1:.60,z0:-.10,z1:.85}; // real Z passenger wing door when raised: thin slab out the side
+const HATCH_HINGE=-.90; // with the hatch up there is no roof aft of this
 
 /* ---------- shared skeleton: bone lengths as fractions of height (standard anthropometry) ---------- */
 const B={leg:.530*H,thigh:.245*H,shin:.247*H,ankle:.038*H,foot:.15*H,spine:.17*H,chest:.115*H,neck:.045*H,head:.14*H,uarm:.186*H,farm:.146*H,hand:.09*H};
@@ -64,7 +70,7 @@ const B={leg:.530*H,thigh:.245*H,shin:.247*H,ankle:.038*H,foot:.15*H,spine:.17*H
 const SKEL=[{j:'pel',p:null,m:.142},{j:'waist',p:'pel',m:.139},{j:'chest',p:'waist',m:.216},{j:'neck',p:'chest',m:.012},{j:'head',p:'neck',m:.069},
  ...['L','R'].flatMap(k=>[{j:'hip'+k,p:'pel',m:0},{j:'knee'+k,p:'hip'+k,m:.100},{j:'ank'+k,p:'knee'+k,m:.0465},{j:'toe'+k,p:'ank'+k,m:.0145},
   {j:'sh'+k,p:'chest',m:0},{j:'el'+k,p:'sh'+k,m:.028},{j:'wr'+k,p:'el'+k,m:.016},{j:'hand'+k,p:'wr'+k,m:.006}])];
-const LIMITS={hip:[-35,125],knee:[0,150],ank:[-30,45],sh:[-60,180],el:[0,150],lean:[-40,50],head:[-40,40],twist:[-50,50],roll:[-20,20],ao:[-10,90]};
+const LIMITS={hip:[-35,125],knee:[0,150],ank:[-30,45],sh:[-60,180],el:[0,150],lean:[-40,50],head:[-40,40],twist:[-50,50],roll:[-20,20],ao:[-30,90]};
 function limit(p){const q=Object.assign({},p),c=(k,L)=>{if(q[k]!=null)q[k]=clamp(q[k],L[0],L[1]);};
  for(const k of['L','R']){c('hip'+k,LIMITS.hip);c('knee'+k,LIMITS.knee);c('ank'+k,LIMITS.ank);c('sh'+k,LIMITS.sh);c('el'+k,LIMITS.el);c('ao'+k,LIMITS.ao);}
  c('lean',LIMITS.lean);c('head',LIMITS.head);c('twist',LIMITS.twist);c('roll',LIMITS.roll);return q;}
@@ -85,7 +91,7 @@ function fk(p,shape){p=limit(p);const cy=Math.cos(p.yaw*R),sy=Math.sin(p.yaw*R);
   const an=[kn[0]+Math.sin(lo)*B.shin*.6,kn[1]-Math.cos(ka)*B.shin,kn[2]+Math.sin(ka)*B.shin];
   const fa=ka+(90-(p['ank'+k]||0))*R;const toe=[an[0],an[1]-Math.cos(fa)*B.foot,an[2]+Math.sin(fa)*B.foot];
   J['hip'+k]=W(...hip);J['knee'+k]=W(...kn);J['ank'+k]=W(...an);J['toe'+k]=W(...toe);
-  const shp=add(nk,[s*shape.sh,0,0],1);shp[1]-=.035;const sa=(p['sh'+k]+0)*R,ea=(p['sh'+k]+p['el'+k])*R,ao=((p['ao'+k]??p.armOut??0)+6)*R*s;
+  const shp=add(nk,[s*shape.sh,0,0],1);shp[1]-=.035;if(p.grip&&p.grip.includes(k))gripIK(p,k,s,shp);let sa=(p['sh'+k]+0)*R,ea=(p['sh'+k]+p['el'+k])*R,ao=((p['ao'+k]??p.armOut??0)+6)*R*s;
   const lean=p.lean*R;const rot=(v)=>v; // arms hang in world-down frame
   const el=[shp[0]+Math.sin(ao)*B.uarm,shp[1]-Math.cos(sa)*B.uarm*Math.cos(ao),shp[2]+Math.sin(sa)*B.uarm];
   const wr=[el[0]+Math.sin(ao)*B.farm*.5,el[1]-Math.cos(ea)*B.farm,el[2]+Math.sin(ea)*B.farm];
@@ -95,6 +101,13 @@ function fk(p,shape){p=limit(p);const cy=Math.cos(p.yaw*R),sy=Math.sin(p.yaw*R);
   J['wst'+k]=W(...add(waist,[s*shape.waist,0,0],1));J['hp'+k]=W(...[pel[0]+s*shape.hip,-.01,0]);}
  return J;}
 
+/* wheel grip IK: solve shoulder/elbow/arm-out so the wrist sits just behind the real rim at 9 (L) / 3 (R) o'clock.
+   Same joint chain + limits as fk, so physics can drive it later. Local frame: x right, y up, z body-forward (yaw 0). */
+function gripIK(p,k,s,shp){const tx=WHEEL.x+s*(WHEEL.r-.012)-p.px,ty=WHEEL.y+.002-p.py,tz=WHEEL.z-.045-p.pz,a=B.uarm,b=B.farm;
+ const dx=tx-shp[0],ao=Math.asin(clamp(dx/(a+.5*b),-.5,.5));p['ao'+k]=clamp(ao/R*s-6,LIMITS.ao[0],LIMITS.ao[1]);const ca=Math.cos(ao);
+ let dy=ty-shp[1],dz=tz-shp[2];for(let it=0;it<3;it++){const d=Math.min(Math.hypot(dy,dz),a+b-.002),ph=Math.atan2(dz,-dy),al=Math.acos(clamp((a*a+d*d-b*b)/(2*a*d),-1,1)),bd=Math.PI-Math.acos(clamp((a*a+b*b-d*d)/(2*a*b),-1,1));
+  const sa=ph-al,ea=sa+bd,ey=-Math.cos(sa)*a*ca-Math.cos(ea)*b,ez=Math.sin(sa)*a-0+Math.sin(ea)*b;p['sh'+k]=sa/R;p['el'+k]=bd/R;
+  dy+= (ty-shp[1])-ey;dz+=(tz-shp[2])-ez;}}
 /* ---------- animations (shared by both bodies) ---------- */
 const P0={px:0,py:B.leg,pz:0,yaw:0,lean:0,head:0,hipL:0,hipR:0,kneeL:0,kneeR:0,ankL:0,ankR:0,shL:0,shR:0,elL:8,elR:8,armOut:0,legOut:0};
 function mix(a,b,t){const o={};for(const k in a)o[k]=lerp(a[k],b[k]??a[k],t);return o;}
@@ -110,23 +123,26 @@ function gait(t,run){const s=Math.sin(t*Math.PI*2),c=Math.cos(t*Math.PI*2),A=run
  p.py=B.leg;const J=fk(p,SH.female);p.py-=Math.min(J.toeL[1],J.toeR[1],J.ankL[1]-B.ankle*.7,J.ankR[1]-B.ankle*.7);return p;}
 function idle(t){const p=Object.assign({},P0),b=Math.sin(t*Math.PI*2);p.lean=1+b*.8;p.shL=2+b*2;p.shR=2-b*2;p.elL=p.elR=10;p.hipL=3;p.hipR=-2;p.kneeL=5;p.kneeR=2;p.head=Math.sin(t*Math.PI*4)*1.5;p.py=legH(p)-.02+b*.004;return p;}
 // seated: world-space pelvis = SEAT H-point, torso reclined SEAT.back, hips flexed, knees bent, feet on pedals
-function sitPose(t){const p=Object.assign({},P0);p.px=CAR.x+SEAT.x;p.pz=CAR.z+SEAT.hz;p.py=SEAT.hy;p.yaw=0;p.lean=-SEAT.back;p.head=SEAT.back-6+Math.sin((t||0)*Math.PI*2)*1.2;
- p.hipL=p.hipR=95;p.kneeL=p.kneeR=39;p.ankL=p.ankR=-8;p.legOut=4;
- if(seatHands==='lap'){p.shL=p.shR=18;p.elL=p.elR=62;p.armOut=10;}else{p.shL=p.shR=80;p.elL=p.elR=14;p.armOut=-8+Math.sin((t||0)*Math.PI*2)*1;}
- p.head=SEAT.back-10+Math.sin((t||0)*Math.PI*2)*1.2;p.roll=Math.sin((t||0)*Math.PI*2)*.8;return p;}
+function sitPose(t){const p=Object.assign({},P0);p.px=CAR.x+SEAT.x;p.pz=CAR.z+SEAT.hz;p.py=SEAT.hy;p.yaw=0;p.lean=-SEAT.back;
+ p.hipL=p.hipR=120;p.kneeL=p.kneeR=100;p.ankL=p.ankR=0;p.legOut=4; // hips forward, knees up off the real cushion pan, heels on the floor
+ if(seatHands==='lap'){p.shL=p.shR=18;p.elL=p.elR=62;p.armOut=10;}else{p.grip='LR';}
+ p.head=SEAT.head+Math.sin((t||0)*Math.PI*2)*1.2;p.roll=Math.sin((t||0)*Math.PI*2)*.8;return p;}
 let seatHands='wheel';
 /* seated emotes: upper body only, hips stay on the cushion, arms kept inside the cabin (checked in fitCheck) */
-function sitWave(t){const p=sitPose(t);const w=Math.sin(t*Math.PI*2*3);p.shR=72;p.aoR=4;p.elR=88+w*22;p.head=SEAT.back-4;p.twist=-4;p.roll=-3;p.shL=80;p.elL=14;p.aoL=-10;p.aoL=-10;return p;}
+function sitWave(t){const p=sitPose(t);const w=Math.sin(t*Math.PI*2*3);p.grip=seatHands==='lap'?null:'L';p.shR=72;p.aoR=4;p.elR=88+w*22;p.head=SEAT.head-2;p.twist=-2;p.roll=2;return p;}
 function sitDance(t){const b=t*8,k=Math.floor(b),f=b-k,hit=Math.sin(Math.PI*f),s=k%2?1:-1,p=sitPose(t);
- const up=(k%4===2||k%4===3);p.shL=up&&s<0?58:55+hit*10;p.shR=up&&s>0?78:55+hit*10;p.elL=p.shL>70?85:95;p.elR=p.shR>70?85:95;p.aoL=-10;p.aoR=-6;
- p.twist=s*12*ease(Math.min(1,f*3));p.roll=s*4;p.head=SEAT.back-6+hit*8;p.lean=-SEAT.back+hit*5;return p;}
+ // hands stay on the real wheel; on the 'up' beats one hand pops off for a fist pump between the wheel and the headliner
+ const up=(k%4===2||k%4===3),free=up?(s<0?'L':'R'):null;p.grip=seatHands==='lap'?null:(free?(free==='L'?'R':'L'):'LR');
+ if(free){p['sh'+free]=62+hit*6;p['el'+free]=112;p['ao'+free]=-14;}
+ p.twist=free?s*4*ease(Math.min(1,f*3)):0;p.roll=s*2;p.head=SEAT.head-hit*4;p.lean=-SEAT.back+hit*1.5;return p;}
 /* get in (t 0..1): walk up outside the open left door -> face rear-quarter, duck + sit onto sill -> swing in -> settle. Get out = reverse. */
 const GI=[ // [t, pose builder]  low-coupe technique: back to the seat, bottom in first, head ducks in last
  [0,  ()=>Object.assign(gait(0,false),{px:CAR.x-1.3,pz:CAR.z+.9,yaw:180})],
  [.18,()=>Object.assign(gait(.5,false),{px:CAR.x-1.2,pz:CAR.z-.15,yaw:200})],
- [.32,()=>{const p=idle(0);return Object.assign(p,{px:CAR.x-1.15,pz:CAR.z-.42,yaw:270})}], // back to the seat, outside the sill
- [.52,()=>Object.assign({},P0,{px:CAR.x-.78,pz:CAR.z-.42,py:.6,yaw:270,lean:38,head:-14,hipL:85,hipR:85,kneeL:95,kneeR:95,shL:40,shR:40,elL:30,elR:30,armOut:8})], // sit onto seat edge, head stays outside
- [.70,()=>Object.assign(sitPose(0),{px:CAR.x-.52,py:.44,yaw:320,lean:24,head:-16,hipL:90,hipR:80,kneeL:70,kneeR:95,legOut:10})], // duck + swing in
+ [.32,()=>{const p=idle(0);return Object.assign(p,{px:CAR.x-1.15,pz:CAR.z+SEAT.hz,yaw:270})}], // back to the seat, outside the sill
+ [.52,()=>Object.assign({},P0,{px:CAR.x-.80,pz:CAR.z+SEAT.hz,py:.52,yaw:270,lean:52,head:-30,hipL:85,hipR:85,kneeL:95,kneeR:95,shL:40,shR:40,elL:30,elR:30,armOut:8})], // sit onto seat edge, head stays outside
+ [.70,()=>Object.assign(sitPose(0),{px:CAR.x-.55,py:.41,yaw:320,lean:46,head:-40,hipL:90,hipR:80,kneeL:70,kneeR:95,legOut:10})], // duck + swing in
+ [.86,()=>Object.assign(sitPose(0),{px:CAR.x+SEAT.x-.04,py:SEAT.hy+.01,lean:-SEAT.back+24,head:-32})], // settle in, head still ducked under the header
  [1,  ()=>sitPose(0)]];
 function getIn(t){let i=0;while(i<GI.length-2&&t>GI[i+1][0])i++;const a=GI[i],b=GI[i+1],u=ease(clamp((t-a[0])/(b[0]-a[0]),0,1));
  const pa=a[1](),pb=b[1]();let dy=pb.yaw-pa.yaw;if(dy>180)dy-=360;if(dy<-180)dy+=360;const p=mix(pa,pb,u);p.yaw=pa.yaw+dy*u;return p;}
@@ -185,21 +201,23 @@ function drawCar(front,doorOpen,rDoor){rDoor=rDoor||0;ctx.save();ctx.shadowColor
   for(const r of[ST[0],ST[1],ST[ST.length-1],ST[ST.length-2]])pl([[-r[1],r[2],r[0]],[r[1],r[2],r[0]],[r[1],r[3],r[0]],[-r[1],r[3],r[0]]],Rc,1);
   for(const sx of[-1,1])for(const az of[1.175,-1.375]){const pts=[];for(let i=0;i<=10;i++){const a=Math.PI*i/10;pts.push([sx*.93,.33+Math.sin(a)*.43,az+Math.cos(a)*.45]);}pl(pts,Rc,1.6,1);
    const w=[];for(let i=0;i<14;i++){const a=i/14*Math.PI*2;w.push([sx*.86,.33+Math.sin(a)*.33,az+Math.cos(a)*.33]);}pl(w,'#e9e3e4',1.2);}
-  // seat (driver) outline
-  ctx.shadowColor=Cc;const sb=SEAT,bk=SEAT.back*R;for(const dx of[-.22,.22]){const x=sb.x+dx;s([x,sb.cushion,sb.hz+.1],[x,sb.cushion+.02,sb.hz+.45],'#2fa8c0',1.2);s([x,sb.cushion,sb.hz+.1],[x,sb.cushion+Math.cos(bk)*.7,sb.hz+.1-Math.sin(bk)*.7],'#2fa8c0',1.2);}
-  s([sb.x-.22,sb.cushion+Math.cos(bk)*.7,sb.hz+.1-Math.sin(bk)*.7],[sb.x+.22,sb.cushion+Math.cos(bk)*.7,sb.hz+.1-Math.sin(bk)*.7],'#2fa8c0',1.2);
+  // seat (driver) outline: real Z cushion pan + 17deg back face + headrest; steering rim; cargo floor
+  ctx.shadowColor=Cc;const sb=SEAT,tb=Math.tan(sb.bDeg*R);for(const dx of[-.22,.22]){const x=sb.x+dx;s([x,sb.cushion,sb.bz0],[x,sb.cushFy,sb.cushFz],'#2fa8c0',1.2);s([x,sb.cushion,sb.bz0],[x,1.0,sb.bz0-(1.0-sb.cushion)*tb],'#2fa8c0',1.2);}
+  s([sb.x-.22,1.0,sb.bz0-(1.0-sb.cushion)*tb],[sb.x+.22,1.0,sb.bz0-(1.0-sb.cushion)*tb],'#2fa8c0',1.2);
+  pl([[sb.x-.1,1.0,-.57],[sb.x+.1,1.0,-.57],[sb.x+.1,1.09,-.59],[sb.x-.1,1.09,-.59]],'#2fa8c0',1.1); // headrest
   s([-.75,.72,.62],[.75,.72,.62],'#2fa8c0',1.4); // dash
-  const sw=[];for(let i=0;i<16;i++){const a=i/16*Math.PI*2;sw.push([SEAT.x+Math.cos(a)*.18,.78+Math.sin(a)*.17,.25+Math.sin(a)*.07]);}pl(sw,'#2fa8c0',1.4);
+  const sw=[];for(let i=0;i<16;i++){const a=i/16*Math.PI*2;sw.push([WHEEL.x+Math.cos(a)*WHEEL.r,WHEEL.y+Math.sin(a)*WHEEL.r,WHEEL.z+Math.sin(a)*WHEEL.r*.35]);}pl(sw,'#2fa8c0',1.4);
+  pl([[-CARGO.hw,CARGO.floor,CARGO.z0],[CARGO.hw,CARGO.floor,CARGO.z0],[CARGO.hw,CARGO.floor,CARGO.z1],[-CARGO.hw,CARGO.floor,CARGO.z1]],'#2fa8c0',1.1); // cargo floor
  }else{ctx.globalAlpha=.85;for(const sx of[-1,1]){pl(RF.map(([z,y,h])=>[sx*h,y,z]),Rc,2,1);}for(const r of[RF[0],RF[2],RF[RF.length-2]])s([-r[2],r[1],r[0]],[r[2],r[1],r[0]],Rc,1.3);
   pl([[-.74,.86,.5],[.74,.86,.5],[.62,1.17,.05],[-.62,1.17,.05]],Cc,1.1);
   for(const sx of[-1,1]){const pts=ST.map(r=>[sx*r[1],lerp(r[2],r[3],.55),r[0]]);for(let i=0;i<pts.length-1;i++){const zm=(pts[i][2]+pts[i+1][2])/2;if(((sx<0&&doorOpen>.05)||(sx>0&&rDoor>.05))&&zm<DOOR.z0&&zm>DOOR.z1)continue;s(pts[i],pts[i+1],Rc,1.2);}}
-  // driver door: hinged at front (z0), swings out up to 68deg like world.html OPEN.doorDeg
-  const a=doorOpen*68*R,dl=DOOR.z0-DOOR.z1,D=(u,h)=>{const zz=DOOR.z0-u*dl,y=h<=.62?lerp(.24,.84,h/.62):lerp(.84,(rfAt(zz)||[1.2])[0]-.04,(h-.62)/.38),x=h<=.62?.9:lerp(.88,(rfAt(zz)||[0,.6])[1]+.04,(h-.62)/.38);
-   const lz=zz-DOOR.z0;return[-(x+ -lz*Math.sin(a))+0,y,DOOR.z0+lz*Math.cos(a)];};
+  // doors: wing-style like the real Z GLB (open = flat slab out the side at y~.52)
+  const a=doorOpen*90*R,dl=DOOR.z0-DOOR.z1,D=(u,h)=>{const zz=DOOR.z0-u*dl,y=h<=.62?lerp(.24,.84,h/.62):lerp(.84,(rfAt(zz)||[1.2])[0]-.04,(h-.62)/.38),x=h<=.62?.9:lerp(.88,(rfAt(zz)||[0,.6])[1]+.04,(h-.62)/.38);
+   const sa=Math.sin(a);return[-(x+(y-DOOR.sill)*sa),lerp(y,.52,sa),zz];}; // wing-style: swings up and out to a flat slab beside the car (real Z WING)
   const door=[[0,0],[1,0],[1,.62],[.97,.66],[.08,.62],[0,.5]],win=[[.04,.66],[.94,.68],[.72,1],[.22,1]];
   pl(door.map(q=>D(...q)),Rc,2.2);pl(win.map(q=>D(...q)),Cc,1.3);
   // right door closed
-  const Dr=(u,h)=>{const p=D(u,h);return p;};ctx.globalAlpha=.5;const dR=(u,h)=>{const zz=DOOR.z0-u*dl,y=h<=.62?lerp(.24,.84,h/.62):lerp(.84,(rfAt(zz)||[1.2])[0]-.04,(h-.62)/.38),x=h<=.62?.9:lerp(.88,(rfAt(zz)||[0,.6])[1]+.04,(h-.62)/.38);const lz=zz-DOOR.z0,ar=rDoor*68*R;return[x-lz*Math.sin(ar),y,DOOR.z0+lz*Math.cos(ar)]};
+  const Dr=(u,h)=>{const p=D(u,h);return p;};ctx.globalAlpha=.5;const dR=(u,h)=>{const zz=DOOR.z0-u*dl,y=h<=.62?lerp(.24,.84,h/.62):lerp(.84,(rfAt(zz)||[1.2])[0]-.04,(h-.62)/.38),x=h<=.62?.9:lerp(.88,(rfAt(zz)||[0,.6])[1]+.04,(h-.62)/.38);const sa=Math.sin(rDoor*90*R);return[x+(y-DOOR.sill)*sa,lerp(y,.52,sa),zz]};
   if(rDoor>.02){ctx.globalAlpha=1;ctx.shadowColor=Rc;ctx.shadowBlur=14;pl(door.map(q=>dR(...q)),'#ff8a92',3.2);pl(win.map(q=>dR(...q)),Cc,2);ctx.shadowBlur=8;}else pl(door.map(q=>dR(...q)),Rc,1.6);}
  ctx.restore();}
 function shade(hex,k){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;const f=v=>Math.round(clamp(k<0?v*(1+k):v+(255-v)*k,0,255));return'#'+[f(r),f(g),f(b)].map(v=>v.toString(16).padStart(2,'0')).join('');} // hex out so shade() can be chained
@@ -264,13 +282,18 @@ const PET_COLORS=OUTFITS;
 const PDEF={v:1,type:'fox',glow:'#ffb020',spot:'hatch'}; // spot: 'hatch' (default ride spot, Bob) | 'seat'
 function pload(){try{const o=JSON.parse(localStorage.getItem(PETKEY)||'null');if(o&&o.v===1&&PET_RIG[o.type])return Object.assign({},PDEF,o,{glow:PET_COLORS.includes(o.glow)?o.glow:PDEF.glow});}catch(e){}return Object.assign({},PDEF);}
 let PC=pload();function psave(){PC.updated=Date.now();try{localStorage.setItem(PETKEY,JSON.stringify(PC));}catch(e){}}
-const PP0={fold:0,pitch:0,x:.55,y:0,z:.2,yaw:-30,ph:0,amp:0,sit:0,bob:0,tuck:0,wag:0,tilt:0,look:0,pawUp:0,flap:0};
+const PP0={tailCurl:0,earFold:0,tailDown:0,fold:0,pitch:0,x:.55,y:0,z:.2,yaw:-30,ph:0,amp:0,sit:0,bob:0,tuck:0,wag:0,tilt:0,look:0,pawUp:0,flap:0};
 const pp=o=>Object.assign({},PP0,o);
-const SEATP={x:.37,y:SEAT.cushion+.012,z:-.40}; // passenger cushion, mirror of the driver seat
+const SEATP={x:.37,y:.415,z:-.10}; // real Z passenger cushion pan (y .38 at z -.25) // passenger cushion, mirror of the driver seat
 function bez(a,c,b,u){return a.map((v,i)=>(1-u)*(1-u)*v+2*u*(1-u)*c[i]+u*u*b[i]);}
 let fitSpot=null;const spotName=()=>fitSpot||(PC.spot==='seat'?'seat':'hatch'),SPOT=()=>spotName()==='seat'?SEATP:HATCHP;
-function hopIn(t){if(spotName()==='hatch'&&t>=.32)return hopHatch(t); // goes in first through the open driver door, over the driver seat, onto the passenger seat
- const A=[-1.2,0,.15],Cc=[-.4,1.3,-.15],Bp=[SEATP.x,SEATP.y,SEATP.z];
+function hopRear(t,type){type=type||'fox';const land=pp({x:0,y:0,z:HATCHP.z,yaw:0});land.y=CARGO.floor+.006-petLow(land,type);
+ const A=[0,petLow(pp({}),type)*-1,-2.75],Cc=[0,1.78,-2.3],Bp=[land.x,land.y,land.z]; /* hatch mode: jumps in over the bumper through the open hatch */
+ if(t<.08)return pp({x:A[0],y:A[1],z:A[2],yaw:0,wag:Math.sin(t*60)*.6,look:10});
+ if(t<.4){const u=ease((t-.08)/.32),q=bez(A,Cc,Bp,u);return pp({x:q[0],y:q[1],z:q[2],yaw:0,tuck:Math.sin(Math.PI*u),tilt:-10*Math.sin(Math.PI*u),earFold:clamp((u-.5)/.2,0,1)});}
+ const u=ease(clamp((t-.4)/.15,0,1)),T=trunkQ(type),o={};for(const k in land)o[k]=lerp(land[k],T[k]??land[k],u);o.yaw=lerp(0,90,u);return o;}
+function hopIn(t,type){if(spotName()==='hatch')return hopRear(t,type); // goes in first through the open driver door, over the driver seat, onto the passenger seat
+ const A=[-1.2,0,-.05],Cc=[-1.0,1.35,-.05],Bp=[SEATP.x,SEATP.y,SEATP.z]; // arc stays under the real door-opening header
  if(t<.08)return pp({x:A[0]-.05,z:A[2]+.15,yaw:150+t*400,wag:Math.sin(t*60)*.6,look:10});
  if(t<.32){const u=ease((t-.08)/.24),q=bez(A,Cc,Bp,u);return pp({x:q[0],y:q[1],z:q[2],yaw:lerp(-140,-270,u)+360,tuck:Math.sin(Math.PI*u),bob:0,tilt:-10*Math.sin(Math.PI*u)});}
  const u=ease(clamp((t-.32)/.25,0,1));return pp({x:SEATP.x,y:SEATP.y,z:SEATP.z,yaw:lerp(90,0,u),sit:u,bob:t<.38?-.02*Math.sin((t-.32)/.06*Math.PI):0,wag:Math.sin(t*40)*.5});}
@@ -281,38 +304,67 @@ const PET_CLIPS={
  trot:  {len:.68,f:t=>pp({x:.5,z:-.25,yaw:0,ph:t*2,amp:1.25,bob:.03*Math.abs(Math.sin(t*Math.PI*4)),tuck:.25,wag:.3*Math.sin(t*Math.PI*8)})},
  dance: {len:4.2,f:t=>{const b=t*8,k=Math.floor(b),f=b-k,h=Math.sin(Math.PI*f),s=k%2?1:-1,up=k%8>=4&&k%8<=6; // same 8-count as her dance
    return pp({x:.6,z:.3,yaw:-30+s*22,bob:.055*h,tuck:.4*h,sit:up?.7:0,pawUp:up?1:0,tilt:s*14,wag:s*.9,flap:h});}},
- hopin: {len:3.4,f:t=>hopIn(t),car:1,once:1},
- hopout:{len:3.4,f:t=>{const q=hopIn(1-t);if(1-t>=.08&&1-t<.32)q.yaw+=180;return q;},car:1,once:1},
- ride:  {len:4,f:t=>pp({x:SPOT().x,y:SPOT().y,z:SPOT().z,yaw:0,sit:1,bob:.004*Math.sin(t*Math.PI*6),look:35*Math.sin(t*Math.PI*2),wag:.3*Math.sin(t*Math.PI*4)}),car:1},
- ridedance:{len:4.2,f:t=>{const b=t*8,k=Math.floor(b),f=b-k,h=Math.sin(Math.PI*f),s=k%2?1:-1;return pp({x:SPOT().x,y:SPOT().y,z:SPOT().z,yaw:0,sit:1,bob:.02*h,tilt:s*14,pawUp:k%4>=2?1:0,wag:s*.8,flap:h});},car:1}};
+ hopin: {len:3.4,f:(t,type)=>hopIn(t,type),car:1,once:1},
+ hopout:{len:3.4,f:(t,type)=>{const r=1-t,q=hopIn(r,type);if(spotName()==='hatch'){if(r>=.08&&r<.4)q.yaw+=180*ease(clamp((.4-r)/.14,0,1));}else if(r>=.08&&r<.32)q.yaw+=180;return q;},car:1,once:1},
+ ride:  {len:4,f:(t,type)=>spotName()==='hatch'?trunkQ(type,{bob:.003*Math.sin(t*Math.PI*6),look:35*Math.sin(t*Math.PI*2),wag:.3*Math.sin(t*Math.PI*4)}):pp({x:SPOT().x,y:SPOT().y,z:SPOT().z,yaw:0,sit:1,bob:.004*Math.sin(t*Math.PI*6),look:35*Math.sin(t*Math.PI*2),wag:.3*Math.sin(t*Math.PI*4)}),car:1},
+ ridedance:{len:4.2,f:(t,type)=>{const b=t*8,k=Math.floor(b),f=b-k,h=Math.sin(Math.PI*f),s=k%2?1:-1;if(spotName()==='hatch')return trunkQ(type,{bob:.004*h,tilt:s*10,look:s*20,pawUp:k%4>=2?.4:0,wag:s*.8,flap:h});return pp({x:SPOT().x,y:SPOT().y,z:SPOT().z,yaw:0,sit:1,bob:.02*h,tilt:s*14,pawUp:k%4>=2?1:0,wag:s*.8,flap:h});},car:1},
+ flyride:{len:2,f:(t,type)=>flyQ(t,type),car:1}};
 /* TAKEOFF (for when flying starts): passenger door pops, pet is flung out, hangs on the door-frame top by its front paws
    ~1 s flapping in the wind, scrambles back in, squeezes between the seats into the back hatch spot, door shuts. */
-const HATCHP={x:.03,y:.5,z:-1.2}; // back hatch, centred so the squeeze between the seat backs stays clear
-const TK={door:t=>t<.08?0:t<.14?ease((t-.08)/.06):t<.8?1:t<.93?1-ease((t-.8)/.13):0};
-function tkHang(t,type){const fl=Math.sin(t*90),q=pp({x:0,y:0,z:0,yaw:-90,pitch:72,pawUp:1,ph:t*14,amp:1.3,wag:fl*1.2,tilt:fl*10,flap:.5+.5*Math.sin(t*120),look:0});
+const HATCHP={x:-.02,y:CARGO.floor,z:-1.12}; // real Z cargo floor, centred, well back of the seat backs (y is per-pet, see trunkQ)
+const TK={door:t=>t<.12?0:t<.18?ease((t-.12)/.06):t<.8?1:t<.93?1-ease((t-.8)/.13):0};
+const petLow=(q,type)=>{const J=petFk(q,type);let m=9;for(const[a,b,r]of petParts(type))m=Math.min(m,J[a][1]-r,J[b][1]-r);return m;};
+const _tq={},_fq={};
+/* trunk ride: lying down (legs tucked, chin low) on the real cargo floor, under the closed hatch glass */
+function trunkQ(type,o){type=type||'fox';if(!_tq[type]){const q=pp({x:HATCHP.x,y:0,z:HATCHP.z,yaw:90,tuck:1,pitch:-6,tailDown:.6}); /* lies across the cargo floor, side-on to the chase cam */q.y=CARGO.floor+.006-petLow(q,type);_tq[type]=q;}return Object.assign({},_tq[type],o||{});}
+/* flying ride (hatch open): stands up tall at the open hatch, facing back out of the car, a front paw on the rear lip, ears/tail in the wind */
+function flyBase(type){if(_fq[type])return _fq[type];let best=null;
+ for(let pi=0;pi<=40;pi+=4)for(let z=-1.30;z>=-1.48;z-=.02){const q=pp({x:0,y:0,z,yaw:180,pitch:pi,pawUp:.8});const J=petFk(q,type);
+  q.y=CARGO.floor+.006-petLow(q,type);const J2=petFk(q,type);
+  const pw=J2.pawFL,e=Math.hypot(pw[2]-(CARGO.lipZ+.035),pw[1]-(CARGO.lipY+.03));if(!best||e<best[0])best=[e,q];}
+ return _fq[type]=best[1];}
+function flyQ(t,type){type=type||'fox';const q=Object.assign({},flyBase(type)),w=Math.sin(t*Math.PI*2*5);q.tilt=6*w;q.wag=.9*Math.sin(t*Math.PI*2*3);q.look=12*Math.sin(t*Math.PI*2*.5);q.flap=.6+.4*w;q.ph=0;return q;}
+/* in Neon World: hatch = hatch-open fraction (0..1). Pet stays lying until the hatch is well open, and is back down before it shuts. */
+const flyMix=h=>ease(clamp((h-.55)/.35,0,1));
+function rideFor(t,type,hatch){const a=PET_CLIPS.ride.f(t,type),u=flyMix(hatch||0);if(u<=0)return a;const b=flyQ(t,type),o={};for(const k in a)o[k]=lerp(a[k],b[k]??a[k],u);o.yaw=lerp(90,180,u);return o;}
+/* TAKEOFF hang: the real Z doors swing UP like wings, so the raised passenger door's lower edge ends up roughly level (y~.55)
+   sticking out sideways from the A-pillar. The pet is flung out, grabs that edge ~.3 m out from the body and dangles. */
+const DOORLIP={x:1.15,y:.548,z:.865}; // just behind the raised door's lower edge (edge plane X~.72-.80)
+function tkHang(t,type){const fl=Math.sin(t*90),q=pp({x:0,y:0,z:0,yaw:180,pitch:72,pawUp:1,ph:t*14,amp:1.3,wag:fl*1.2,tilt:fl*10,flap:.5+.5*Math.sin(t*120),look:0});
  const J=petFk(q,type),pw=[(J.pawFL[0]+J.pawFR[0])/2,(J.pawFL[1]+J.pawFR[1])/2,(J.pawFL[2]+J.pawFR[2])/2];
- q.x=.9-pw[0];q.y=1.07-pw[1];q.z=-.3-pw[2]+Math.sin(t*50)*.01;return q;} // paws hooked on the frame top at x .9, y 1.07
-/* hop-in to the hatch: land on the passenger seat (same flight as before), then the same seat->console->gap->hatch path TAKEOFF uses */
+ q.x=DOORLIP.x-pw[0]+Math.sin(t*50)*.01;q.y=DOORLIP.y-pw[1];q.z=DOORLIP.z-pw[2];return q;} // front paws hooked over the raised door's lower edge
+/* hop-in to the hatch: land on the passenger seat (same flight as before), then the same seat->console->gap->bulkhead->trunk path TAKEOFF uses */
 function hopHatch(t){const land=(()=>{fitSpot=fitSpot;const o=pp({x:SEATP.x,y:SEATP.y,z:SEATP.z,yaw:90});return o;})();
  if(t<.36){const u=ease((t-.32)/.04);const o=pp({x:SEATP.x,y:SEATP.y,z:SEATP.z,yaw:90,tuck:.4*u});o.bob=-.02*Math.sin(u*Math.PI);return o;}
- const S1=pp({x:.42,y:SEATP.y,z:-.22,yaw:-120,tuck:.4});
+ const S1=pp({x:SEATP.x,y:SEATP.y,z:SEATP.z,yaw:-120,tuck:.4});
  if(t<.42){const u=ease((t-.36)/.06),o={};for(const k in land)o[k]=lerp(land[k],S1[k],u);o.yaw=lerp(90,-120,u);return o;}
- return takeoff(.74+.26*clamp((t-.42)/.2,0,1),'fox',1);}
-function takeoff(t,type,noStart){type=type||'fox';const ride=PET_CLIPS.ride.f(0),gap=pp({x:0,y:.42,z:-.55,yaw:180,tuck:.3}),hat=pp({x:HATCHP.x,y:HATCHP.y,z:HATCHP.z,yaw:0,sit:1});
- const mixq=(a,b,u)=>{const o={};for(const k in a)o[k]=lerp(a[k],b[k],u);return o;};
- if(!noStart&&spotName()==='hatch'&&t<.22){const G=pp({x:.05,y:.5,z:-.2,yaw:0,tuck:.5,fold:1});
-  if(t<.08)return ride;if(t<.15){const u=ease((t-.08)/.07),o=mixq(ride,G,u);o.y+=.03*Math.sin(Math.PI*u);return o;}
-  const u=ease((t-.15)/.07),o=mixq(G,tkHang(t,type),u);o.y+=.08*Math.sin(Math.PI*u);o.yaw=lerp(0,-90,u);return o;}
+ return takeoff(.76+.24*clamp((t-.42)/.58,0,1),'fox',1);}
+function fling(F,u,t,type){const mixq=(a,b,v)=>{const o={};for(const k in a)o[k]=lerp(a[k],b[k]??a[k],v);return o;};
+ /* real Z with the passenger door swung up: the door card + belt stay, so she flings the pet out over the belt line through the window opening, across the top of the raised door, round its front edge */
+ const D1=pp({x:.38,y:.66,z:-.12,yaw:90,tuck:.6}),D1b=pp({x:.73,y:.977,z:-.05,yaw:90,tuck:1,wag:0,fold:1,tailDown:1}),D2=pp({x:1.1,y:.86,z:.5,yaw:120,tuck:.4}),D3=pp({x:1.15,y:.8,z:1.02,yaw:180,tuck:.3,pitch:40}),H=tkHang(t,type);let o;
+ const seg=[[F,D1,.05],[D1,D1b,.03],[D1b,D2,.03],[D2,D3,.02],[D3,H,0]],n=seg.length,k=Math.min(n-1,Math.floor(u*n)),v=ease(u*n-k);
+ o=mixq(seg[k][0],seg[k][1],v);o.y+=seg[k][2]*Math.sin(Math.PI*v);return o;}
+function takeoff(t,type,noStart){type=type||'fox';const ride=PET_CLIPS.ride.f(0,type),hat=trunkQ(type);
+ const mixq=(a,b,u)=>{const o={};for(const k in a)o[k]=lerp(a[k],b[k]??a[k],u);return o;};
+ const B0=pp({x:0,y:CARGO.floor+.005,z:-1.02,yaw:0,tuck:.3,earFold:1}),G=pp({x:.04,y:.53,z:-.45,yaw:0,tuck:.75,fold:1}),
+  S1=pp({x:.30,y:SEATP.y+.022,z:SEATP.z-.04,yaw:-100,tuck:.4,tailCurl:1}),S2=pp({x:.30,y:SEATP.y+.022,z:SEATP.z-.04,yaw:-90,tuck:.3}),
+  O1=pp({x:.97,y:.16,z:.3,yaw:-160,tuck:.3,pitch:10}),G0=pp({x:.0,y:.57,z:-.28,yaw:-180,tuck:.3,fold:1}),
+  G1=pp({x:.0,y:.51,z:-.58,yaw:-180,tuck:.3,fold:1,tailDown:1}),B1=pp({x:0,y:CARGO.floor+.005,z:-1.02,yaw:-180,tuck:.3}),H0=Object.assign({},hat,{yaw:-180});
+ const arc=(a,b,u,h)=>{const o=mixq(a,b,ease(u));o.y+=h*Math.sin(Math.PI*u);return o;};
+ if(!noStart&&spotName()==='hatch'&&t<.28){
+  if(t<.06)return ride;
+  if(t<.12)return arc(ride,B0,(t-.06)/.06,.02);                         // get up, trot forward to the bulkhead edge
+  if(t<.18){const Bq=pp({x:0,y:.848,z:-.9,yaw:0,tuck:.85,tailDown:.3,earFold:1});return t<.15?arc(B0,Bq,(t-.12)/.03,.02):arc(Bq,G,(t-.15)/.03,.02);}                 // hop down between the seat backs onto the console
+  return fling(G,(t-.18)/.1,t,type);} // flung out the open passenger door
  if(t<.08)return ride;
- if(t<.22){const u=ease((t-.08)/.14),o=mixq(ride,tkHang(t,type),u);o.y+=.2*Math.sin(Math.PI*u);o.yaw=lerp(0,-90,ease(clamp((u-.45)/.55,0,1)));o.pitch=72*ease(clamp((u-.3)/.7,0,1));return o;} // flung out
- if(t<.6)return tkHang(t,type);                                                                                // hanging on ~1.1 s
- if(t<.74){const u=ease((t-.6)/.14),o=mixq(tkHang(.6,type),pp({x:.42,y:SEATP.y,z:-.22,yaw:-120,tuck:.4}),u);o.y+=.08*Math.sin(Math.PI*u);o.pitch=lerp(72,0,u);return o;} // scramble back in
- const S1=pp({x:.42,y:SEATP.y,z:-.22,yaw:-120,tuck:.4}),S2=pp({x:.42,y:SEATP.y,z:-.22,yaw:-180,tuck:.3}),G0=pp({x:.02,y:.42,z:-.22,yaw:-180,tuck:.3,fold:1}),G1=pp({x:.02,y:.5,z:-1.0,yaw:-180,tuck:.3,fold:1}),H0=pp({x:HATCHP.x,y:HATCHP.y,z:HATCHP.z,yaw:-180});
- if(t<.8)return mixq(S1,S2,ease((t-.74)/.06));            // turn round on the seat
- if(t<.86)return mixq(S2,G0,ease((t-.8)/.06));             // over the console
- if(t<.93)return mixq(G0,G1,ease((t-.86)/.07));            // squeeze back between the seats
- if(t<.97){const u=ease((t-.93)/.04),o=mixq(G1,H0,u);o.y+=.04*Math.sin(Math.PI*u);return o;}
- const u=ease((t-.97)/.03),o=mixq(H0,hat,u);o.yaw=lerp(-180,0,u);o.wag=Math.sin(t*40)*.4;return o;} // settle in the hatch, facing forward
+ if(t<.28)return fling(ride,(t-.08)/.2,t,type);
+ if(t<.6)return tkHang(t,type);                                          // dangling from the raised door ~0.9 s
+ if(t<.76){const u=1-ease((t-.6)/.16),o=fling(S1,u,.6,type);o.yaw=(o.yaw||0)+180*clamp((u-.58)/.1,0,1)*clamp((1-u)/.05,0,1);o.y-=.03*Math.max(0,1-Math.abs(u-.4)/.12);if(u<.3)o.yaw=lerp(S1.yaw+360,90,u/.3);o.tailCurl=clamp(Math.min((u+.1)/.1,(.6-u)/.1),0,1);o.tailDown=clamp(Math.min((u-.05)/.08,(.68-u)/.08),0,1);return o;} // climbs back the way it went: up onto the raised door, back in over the belt line, onto the passenger seat
+ if(t<.8)return mixq(S1,S2,ease((t-.76)/.04));                           // turn round on the seat
+ if(t<.85)return arc(S2,G0,(t-.8)/.05,.04);                              // onto the console
+ if(t<.9)return mixq(G0,G1,ease((t-.85)/.05));                           // back between the seat backs
+ if(t<.95){const Bm=pp({x:0,y:.865,z:-.87,yaw:-180,tuck:.6,pitch:-10,tailDown:1,earFold:1});if(t<.925){const u=(t-.9)/.025,o=arc(G1,Bm,u,0);o.y=lerp(G1.y,Bm.y,Math.sin(Math.PI/2*Math.min(1,u*1.6)));return o;}return arc(Bm,B1,(t-.925)/.025,.02);} // up through the gap between the bulkhead lip and the roof, onto the cargo floor                               // hop up over the bulkhead onto the cargo floor
+ const u=ease((t-.95)/.05),o=mixq(B1,H0,u);o.yaw=lerp(-180,-360,u);o.wag=Math.sin(t*40)*.4;return o;} // walk back and lie down, facing forward
 PET_CLIPS.takeoff={len:2.8,f:(t,type)=>takeoff(t,type),car:1,once:1,door:TK.door};
 const PET_AUTO={idle:'idle',walk:'follow',run:'trot',sit:'ride',getin:'hopin',getout:'hopout',dance:'dance',sitwave:'ride',sitdance:'ridedance'};
 function petFk(q,type){const R0=PET_RIG[type],cy=Math.cos(q.yaw*R),sy=Math.sin(q.yaw*R),cpi=Math.cos((q.pitch||0)*R),spi=Math.sin((q.pitch||0)*R),pv=R0.leg;
@@ -324,7 +376,7 @@ function petFk(q,type){const R0=PET_RIG[type],cy=Math.cos(q.yaw*R),sy=Math.sin(q
  J.snout=W([hd[0]+fw[0]*R0.head*.95,hd[1]-.022,hd[2]+fw[2]*R0.head*.95]);
  for(const s of[-1,1]){const k=s<0?'L':'R',ex=s*R0.head*.62*Math.cos(tl)-.0*s,ey=R0.head*.7+s*Math.sin(tl)*R0.head*.4;
   const base=[hd[0]+sd[0]*ex,hd[1]+ey,hd[2]+sd[2]*ex-.01];J['ear'+k]=W(base);
-  const tip=R0.ear==='antenna'?[base[0]+sd[0]*s*.005,base[1]+R0.earL,base[2]-.01]:[base[0]+sd[0]*s*.018,base[1]+R0.earL,base[2]-(R0.ear==='horn'?.035:.005)];J['earT'+k]=W(tip);
+  const eL=R0.earL*(1-.65*(q.earFold||0)),tip=R0.ear==='antenna'?[base[0]+sd[0]*s*.005,base[1]+eL,base[2]-.01]:[base[0]+sd[0]*s*.018,base[1]+eL,base[2]-(R0.ear==='horn'?.035:.005)];J['earT'+k]=W(tip);
   J['eye'+k]=W([hd[0]+fw[0]*R0.head*.8+sd[0]*s*R0.head*.38,hd[1]+.012,hd[2]+fw[2]*R0.head*.8+sd[2]*s*R0.head*.38]);
   for(const[fr,top,off]of[['F',S,0],['B',Hp,.5]]){const ph=(q.ph+off+(s>0?.5:0))*Math.PI*2,sw=Math.sin(ph)*q.amp*.085,lift=Math.max(0,Math.cos(ph))*q.amp*.045;
    const tx=s*R0.body*.65;let foot=[tx,lift+lg*.5*q.tuck,top[2]+sw];
@@ -333,8 +385,8 @@ function petFk(q,type){const R0=PET_RIG[type],cy=Math.cos(q.yaw*R),sy=Math.sin(q
    const t3=[tx,top[1]-.01,top[2]];const kn=[(t3[0]+foot[0])/2,(t3[1]+foot[1])/2,(t3[2]+foot[2])/2+(fr==='F'?-.012:.02)+(fr==='B'?q.sit*.06:0)];
    J['leg'+fr+k]=W(t3);J['knee'+fr+k]=W(kn);J['paw'+fr+k]=W(foot);}
   if(R0.wings){J['wing'+k]=W([s*.03,shY+.02,S[2]-.04]);J['wingT'+k]=W([s*(.13-.03*q.flap)*(1-.75*(q.fold||0)),shY+.09+.05*q.flap,S[2]-.1]);}}
- const w=q.wag,up=R0.tail==='up'?1:R0.tail==='stub'?.6:.35;
- const t1=[w*.06,hipY+.05+up*.06,Hp[2]-.07],t2=[w*.13,hipY+.04+up*.17,Hp[2]-R0.tailL*(1-up*.4)];J.tail0=W([0,hipY+.01,Hp[2]-.02]);J.tail1=W(t1);J.tail2=W(t2);
+ const w=q.wag,up=(R0.tail==='up'?1:R0.tail==='stub'?.6:.35)*(1-(q.tailDown||0));
+ const t1=[w*.06,hipY+.05+up*.06,Hp[2]-.07],t2=[w*.13,hipY+.04+up*.17,Hp[2]-R0.tailL*(1-up*.4)];{const c=q.tailCurl||0;if(c){for(let i=0;i<3;i++)t2[i]=lerp(t2[i],t1[i]+(i===1?.03:i===2?-.03:0),c);}}J.tail0=W([0,hipY+.01,Hp[2]-.02]);J.tail1=W(t1);J.tail2=W(t2);
  return J;}
 /* bounding radius per joint, used by the fit check (and later by physics) */
 function petParts(type){const r=PET_RIG[type],P=[['S','Hp',r.body],['S','head',.03],['head','head',r.head],['head','snout',r.head*.45],['tail0','tail1',r.tailR],['tail1','tail2',r.tailR*(r.tail==='brush'?1.2:.6)]];
@@ -354,14 +406,14 @@ const PETRENDER={drawPet}; // renderer interface: drawPet(joints, cfg)
 function petFit(){const out={};let all=true;for(const type of Object.keys(PET_RIG)){let roof=9,door=9,side=9,driver=9,seat=9;
  let tko=9,tkw='';const tkm=(n,v)=>{if(v<tko){tko=v;tkw=n+' '+CUR;}};let CUR='';for(const c of['hopin','hopout','ride','ridedance','takeoff'])for(let i=0;i<=100;i++){const t=i/100,q=PET_CLIPS[c].f(t,type),J=petFk(q,type);
   for(const[a,b,r]of petParts(type))for(const u of[0,.5,1]){const p=[lerp(J[a][0],J[b][0],u),lerp(J[a][1],J[b][1],u),lerp(J[a][2],J[b][2],u)],x=p[0]-CAR.x,z=p[2]-CAR.z,rr=rfAt(z);if(!rr)continue;
-   const ax=Math.abs(x);if(ax<rr[1]-.05)roof=Math.min(roof,(rr[0]-SEAT.liner)-(p[1]+r));
+   const ax=Math.abs(x),hOpen=c!=='ride'&&c!=='ridedance';if(ax<rr[1]-.05&&!(c==='takeoff'&&ax>.5)&&!(hOpen&&z<HATCH_HINGE))roof=Math.min(roof,(rr[0]-SEAT.liner)-(p[1]+r));
    if(x<0&&ax<.95&&ax>.7&&p[1]>.05){door=Math.min(door,x<0&&z<DOOR.z0&&z>DOOR.z1?Math.min(p[1]-r-DOOR.sill,(rr[0]-.04)-(p[1]+r),DOOR.z0-z-r,z-DOOR.z1-r):-1);}
-   CUR=type+' '+t.toFixed(2)+' '+a+'-'+b+' '+p.map(v=>v.toFixed(2));if(c==='takeoff'){const dO=TK.door(t),ang=dO*68*R,hx=.9,hz=DOOR.z0,ex=hx+(DOOR.z0-DOOR.z1)*Math.sin(ang),ez=hz-(DOOR.z0-DOOR.z1)*Math.cos(ang);
-     if(p[1]>.24&&p[1]<1.2){const vx=ex-hx,vz=ez-hz,w=clamp(((x-hx)*vx+(z-hz)*vz)/(vx*vx+vz*vz),0,1),dd=Math.hypot(x-hx-vx*w,z-hz-vz*w);if(!(dO<.02&&x<.86))tkm(1,dd-r);} // door panel
-     if(x>.7&&x<.95&&p[1]>.05)tkm(2,Math.min(p[1]-r-DOOR.sill,(rr[0]-.04)-(p[1]+r),DOOR.z0-z-r,z-DOOR.z1-r)); // through the opening only
-     if(x>=.95&&p[1]<.84&&!(z<DOOR.z0-r&&z>DOOR.z1+r&&p[1]-r>DOOR.sill))tkm(3,x-r-.95); // outside the body side
-     if(ax<rr[1]-.05&&z>-.9)tkm(4,x-r+.13); // never into her space
-     {const bz=SEAT.hz-.12-Math.max(0,p[1]-SEAT.cushion)*Math.tan(SEAT.back*R);if(!a.startsWith('tail')&&ax+r>.15&&ax-r<.6&&p[1]-r<1.0&&p[1]+r>SEAT.cushion&&z+r>bz-.12&&z-r<bz)tkm(5,-Math.min(z+r-(bz-.12),bz-(z-r)));} // seat backrests (H-point-relative, 12 cm thick): only the gap between them
+   CUR=type+' '+t.toFixed(2)+' '+a+'-'+b+' '+p.map(v=>v.toFixed(2));if(c==='takeoff'){const dO=TK.door(t);
+     if(x>WIN.x0&&x<WIN.x1&&p[1]>.3){tkm(1,z>WIN.z1&&z<WIN.z0?Math.min(p[1]-r-WIN.belt,WIN.top+Math.max(0,x-WIN.x0)*WIN.slope-(p[1]+r),WIN.z0-z-r,z-WIN.z1-r):-1);} // real Z: door card + belt stay, out/in only through the window opening
+     if(dO>.98){const bx=Math.max(WING.x0-x,0,x-WING.x1),by=Math.max(WING.y0-p[1],0,p[1]-WING.y1),bz=Math.max(WING.z0-z,0,z-WING.z1);tkm(2,Math.hypot(bx,by,bz)-r);} // the raised wing door slab
+     if(x>=.88&&p[1]<.84&&z<WING.z1+.02)tkm(3,p[1]>.62?9:-1); // stays above the body side until past the door's front edge
+     if(ax<rr[1]-.05&&z>-.65)tkm(4,x-r+.13); // never into her space
+     {const bz=SEAT.bz0-Math.max(0,p[1]-SEAT.cushion)*Math.tan(SEAT.bDeg*R);if(!a.startsWith('tail')&&ax+r>.15&&ax-r<.6&&p[1]-r<1.0&&p[1]+r>SEAT.cushion&&z+r>bz-.12&&z-r<bz)tkm(5,-Math.min(z+r-(bz-.12),bz-(z-r)));} // seat backrests (H-point-relative, 12 cm thick): only the gap between them
      if(dO<1&&t>.8&&ax<.95)tkm(6,.7-x-r>0?9:.7-x-r);continue;}
    if(x>0)side=Math.min(side,(p[1]>.84?glassX(z,p[1]):.86)-x-r);
    if(c==='ride'||c==='ridedance'){driver=Math.min(driver,x-r-.02);seat=Math.min(seat,p[1]-r-(SEAT.cushion-.03));}}}
@@ -372,14 +424,14 @@ function hatchFit(){const out={};let all=true;fitSpot='hatch';
  for(const type of Object.keys(PET_RIG)){let m=9,why='';const T=(v,n)=>{if(v<m){m=v;why=n;}};
   for(const[c]of clips)for(let i=0;i<=100;i++){const t=i/100,q=c.startsWith('react:')?reactPose(c.slice(6),t,type):PET_CLIPS[c].f(t,type),J=petFk(q,type),tk=c==='takeoff'||c==='react:takeoff';
    for(const[a,b,r]of petParts(type))for(const u of[0,.5,1]){const p=[lerp(J[a][0],J[b][0],u),lerp(J[a][1],J[b][1],u),lerp(J[a][2],J[b][2],u)],x=p[0]-CAR.x,z=p[2]-CAR.z,rr=rfAt(z);if(!rr)continue;const ax=Math.abs(x),tag=c+' '+t.toFixed(2)+' '+a;
-    const inCab=ax<rr[1]-.05;if(inCab)T((rr[0]-SEAT.liner)-(p[1]+r),'roof '+tag);
+    const inCab=ax<rr[1]-.05,hOpen=c.startsWith('hop')||tk;if(inCab&&!(tk&&ax>.5)&&!(hOpen&&z<HATCH_HINGE))T((rr[0]-SEAT.liner)-(p[1]+r),'roof '+tag);
     if(x<0&&ax>.7&&ax<.95&&p[1]>.05)T(z<DOOR.z0&&z>DOOR.z1?Math.min(p[1]-r-DOOR.sill,(rr[0]-.04)-(p[1]+r),DOOR.z0-z-r,z-DOOR.z1-r):-1,'ldoor '+tag);
     if(!tk&&x>0)T((p[1]>.84?glassX(z,p[1]):.86)-x-r,'rside '+tag);
     if(!tk&&x<0&&!c.startsWith('hop'))T((p[1]>.84?glassX(z,p[1]):.86)-ax-r,'lside '+tag);
-    if(!a.startsWith('tail')){const bz=SEAT.hz-.12-Math.max(0,p[1]-SEAT.cushion)*Math.tan(SEAT.back*R);if(ax+r>.15&&ax-r<.6&&p[1]-r<1.0&&p[1]+r>SEAT.cushion&&z+r>bz-.12&&z-r<bz)T(-Math.min(z+r-(bz-.12),bz-(z-r)),'seatback '+tag);}
-    if(z<-.9&&inCab)T(p[1]-r-(HATCHP.y-.042),'hatchfloor '+tag);
-    if(inCab)T(z-r+1.85,'rear '+tag);
-    if(z>-.9&&inCab&&x<0&&!c.startsWith('hop'))T(x-r+.13,'driver '+tag);}}
+    if(!a.startsWith('tail')){const bz=SEAT.bz0-Math.max(0,p[1]-SEAT.cushion)*Math.tan(SEAT.bDeg*R);if(ax+r>.15&&ax-r<.6&&p[1]-r<1.0&&p[1]+r>SEAT.cushion&&z+r>bz-.12&&z-r<bz)T(-Math.min(z+r-(bz-.12),bz-(z-r)),'seatback '+tag);}
+    if(z<CARGO.z0&&inCab)T(p[1]-r-CARGO.floor,'hatchfloor '+tag);
+    if(inCab&&!c.startsWith('hop'))T(z-r-CARGO.z1,'rear '+tag);
+    if(z>-.65&&inCab&&x<0&&!c.startsWith('hop'))T(x-r+.13,'driver '+tag);}}
   out[type]={minClear:+m.toFixed(3),worst:why,pass:m>=0};all=all&&m>=0;}
  fitSpot=null;out.allPass=all;return out;}
 
@@ -395,15 +447,15 @@ const REACT={
  land_hard:{len:1.0,pri:4,cd:1200,d:u=>({pitch:-12*sn(PI*Math.min(1,u*3)),tilt:12*sn(u*25)*(1-u),look:25*sn(u*12)*(1-u),tuck:.08*(1-u)})},
  drift_l:  {len:1.0,pri:2,cd:700, d:u=>({x:.05*sn(PI*u),tilt:15*sn(PI*u),yaw:25*sn(PI*u),wag:-.8*sn(PI*u)})},
  drift_r:  {len:1.0,pri:2,cd:700, d:u=>({x:-.05*sn(PI*u),tilt:-15*sn(PI*u),yaw:-25*sn(PI*u),wag:.8*sn(PI*u)})},
- crash:    {len:1.5,pri:5,cd:2000,d:u=>({yaw:360*ease(Math.min(1,u*1.6)),bob:.04*sn(Math.min(1,u*1.6)*PI),tilt:20*sn(u*30)*(1-u),tuck:.15*sn(PI*u)})},
+ crash:    {len:1.5,pri:5,cd:2000,d:u=>({yaw:360*ease(Math.min(1,u*1.6)),bob:.015*sn(Math.min(1,u*1.6)*PI),tilt:20*sn(u*30)*(1-u),tuck:.15*sn(PI*u)})},
  takeoff:  {len:2.8,pri:5,cd:3000,full:'takeoff'},
  idle:     {len:1.5,pri:0,cd:4000,d:u=>({look:40*sn(u*2*PI),tilt:10*sn(u*4*PI),wag:.4*sn(u*12)})},
  dance:    {len:1.5,pri:1,cd:1500,d:u=>({bob:.02*Math.abs(sn(u*PI*6)),tilt:14*Math.sign(sn(u*PI*6)),pawUp:sn(u*PI*3)>0?1:0,wag:sn(u*PI*6)*.8,flap:Math.abs(sn(u*PI*6))})}};
-function reactPose(name,u,type){const r=REACT[name];if(r.full)return PET_CLIPS[r.full].f(u,type);const base=PET_CLIPS.ride.f(0),d=r.d(u),w=Math.min(1,u/.15,(1-u)/.2);
+function reactPose(name,u,type){const r=REACT[name];if(r.full)return PET_CLIPS[r.full].f(u,type);const base=PET_CLIPS.ride.f(0,type),d=r.d(u);if(spotName()==='hatch'){if(d.bob)d.bob*=.4;delete d.tuck;if(d.pitch)d.pitch*=.5;delete d.pawUp;delete d.sit;d.earFold=.8;d.tailCurl=.6;}const w=Math.min(1,u/.15,(1-u)/.2);
  const o=Object.assign({},base);for(const k in d)o[k]=(o[k]||0)+d[k]*Math.max(0,w);if(d.tuck||d.pitch)o.y+=.025*Math.max(0,w); // brace pose rides up off the floor a touch so folded legs never sink in
  o.sit=clamp(o.sit,0,1);o.pawUp=clamp(o.pawUp,0,1);o.tuck=clamp(o.tuck,0,1);return o;}
 let RS=null;const rLast={};
-const NEONPET={REACT,reactPose,react(name,now){const r=REACT[name];if(!r)return false;now=now??performance.now();if(rLast[name]!=null&&now-rLast[name]<r.cd)return false;
+const NEONPET={REACT,reactPose,rideFor,flyMix,trunkQ,flyQ,react(name,now){const r=REACT[name];if(!r)return false;now=now??performance.now();if(rLast[name]!=null&&now-rLast[name]<r.cd)return false;
   if(RS&&now-RS.t0<RS.len*1000&&REACT[RS.name].pri>r.pri)return false;rLast[name]=now;RS={name,t0:now,len:r.len};return true;},
  get active(){return RS&&performance.now()-RS.t0<RS.len*1000?RS.name:null},reset(){RS=null;for(const k in rLast)delete rLast[k];}};
 window.NEONPET=NEONPET;
