@@ -1,0 +1,102 @@
+{
+  "sha": "56c4e56b3b7fa42dce6c71938f134ab0e082fdfc",
+  "ready": {
+    "ready": true,
+    "overlay": true,
+    "label": "START"
+  },
+  "boot": {
+    "ready": true,
+    "overlay": true,
+    "xray": true
+  },
+  "errors": [
+    "console: Failed to load resource: the server responded with a status of 404 (File not found)",
+    "console: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "behavior": {
+    "moved": [
+      {
+        "id": 0,
+        "v": 8.08,
+        "d": 24.3,
+        "kind": "street"
+      },
+      {
+        "id": 1,
+        "v": 7.45,
+        "d": 22.4,
+        "kind": "street"
+      },
+      {
+        "id": 2,
+        "v": 9.27,
+        "d": 27.8,
+        "kind": "street"
+      },
+      {
+        "id": 3,
+        "v": 6.76,
+        "d": 20.3,
+        "kind": "street"
+      },
+      {
+        "id": 4,
+        "v": 9.3,
+        "d": 27.8,
+        "kind": "street"
+      },
+      {
+        "id": 5,
+        "v": 7.28,
+        "d": 21.8,
+        "kind": "street"
+      }
+    ],
+    "slow": {
+      "v0": 10,
+      "air": true,
+      "maxY": 5.25,
+      "peakV": 26.16,
+      "wreck": false,
+      "truck": 8.08472251566127
+    },
+    "fast": {
+      "v0": 32,
+      "air": true,
+      "maxY": 10.5,
+      "peakV": 42.28,
+      "wreck": false,
+      "truck": 8.08472251566127
+    },
+    "err": "",
+    "audit": {
+      "n": 60,
+      "onRunway": 0,
+      "inSolid": 0,
+      "offLane": 0
+    },
+    "n": 6
+  },
+  "fpsBefore": [
+    60,
+    60,
+    60,
+    23.4,
+    23.4
+  ],
+  "fpsAfter": [
+    22,
+    22,
+    22,
+    22,
+    24
+  ],
+  "hop": {
+    "ok": true,
+    "y": 3.34,
+    "t": 0.13,
+    "x": 255,
+    "z": 712.3
+  }
+}
