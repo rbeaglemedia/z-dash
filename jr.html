@@ -12104,7 +12104,7 @@ var qrcode = function() {
   // GARAGE tile: a neon roll-up door lifts to show HER Z in her current Garage paint (P.eq.paint), holds ~1.5 s, rolls down.
   function kGarageSvg() { let pa = null; try { pa = byId(P.eq.paint) || CAT.paint[0]; } catch (e) {} const c = (pa && pa.paint) || '#1aa6c8', g = (pa && pa.glow) || CYAN;
     return `<svg viewBox="0 0 64 40" style="--gp:${c};--gg:${g}"><path class="gd-frame" d="M6 39 V12 L32 3 L58 12 V39"/><g class="gd-car"><path d="M13 33 L16 27 Q21 23 29 23 L38 23 Q45 24 49 28 L52 29 Q54 30 54 32 L54 34 L13 34 Z"/><circle cx="21" cy="34" r="3.3"/><circle cx="45" cy="34" r="3.3"/></g><g class="gd-door"><rect x="10" y="13" width="44" height="25" rx="1"/><path d="M10 18 H54 M10 23 H54 M10 28 H54 M10 33 H54"/></g></svg>`; }
-  function flyOpen() { try { return localStorage.getItem('zd_fly_unlocked') === '1' && !P.w2hide; } catch (e) { return false; } }
+  function flyOpen() { try { return localStorage.getItem('zd_fly_unlocked') === '1'; } /*lockpick*/ catch (e) { return false; } }
   function kTilesRender() { const el = $('#kTilesM'); if (!el) return; const lockW = !wantedOpen();
     el.innerHTML = KTILES.filter((x) => (x.k !== 'wanted' || WANTED_ON) && (x.k !== 'fly' || flyOpen())).map((x) => { const lk = x.k === 'wanted' && lockW; return `<button class="ktile${lk ? ' locked' : ''}" data-tile="${x.k}" style="--tc:${x.col}"><span class="kti">${x.svg === 'GARAGE_DOOR' ? kGarageSvg() : x.svg}</span><span class="ktn">${lk ? '🔒 ' : ''}${x.name}</span><span class="kts">${lk ? 'LOCKED · ' + gateMsg(ECON.wantedReq) : x.k === 'wanted' && !P.w2hide ? (w2Open() ? '<b class="kv1">1.0</b> + <b class="kv2">Z TAKEOVER</b>' : `<b class="kv1">1.0</b> · 🔒 Z TAKEOVER${w2Earned() ? ': grown-up code' : ': beat level 6'}`) : x.sub}</span></button>`; }).join(''); }
   /*reopen*/ // KID START screen: the driver start screen's layout (grid, turning car, title + line, big button at the bottom) with HER Z
@@ -13153,9 +13153,19 @@ var qrcode = function() {
     if (Q.get('ktab')) K.tab = Q.get('ktab') === 'ride' ? 'boost' : Q.get('ktab');
     if (Q.has('notut')) P.tut = 1; // test hook
     setOn(on, !Q.has('passenger') && !jr); if ((K.coldKid || Q.has('kstart')) && !Q.has('nokstart')) kStartShow(); /*reopen*/ /*neonstart*/ setTimeout(() => { const pn = $('#settings .panel'), d = $('#zdDevRow'); if (pn && d) pn.insertBefore(d, pn.firstChild); }, 0); /* DRIVER MODE stays the top row (above RE-LOCK) */
-    /*relock*/ { const pn = $('#settings .panel'); if (pn && !$('#kRelockRow')) { const r = document.createElement('div'); r.id = 'kRelockRow'; r.className = 'row'; r.innerHTML = '<button id="btnRelockZT" class="tgl">🔒 RE-LOCK</button><span class="mute">Locks WANTED: Z TAKEOVER and NEON FLYING on this device (passcode to open). Coins, garage and progress stay.</span>'; pn.insertBefore(r, pn.firstChild);
-      const rlLocked = () => !!P.w2hide || !w2Key(), rlLbl = () => { const b = $('#btnRelockZT'); if (b) b.textContent = rlLocked() ? '🔓 UNLOCK' : '🔒 RE-LOCK'; }; rlLbl(); window.ZD_RL_LBL = rlLbl; /*relockui*/ { const so = ZD.Settings.open; ZD.Settings.open = function () { rlLbl(); return so.apply(this, arguments); }; }
-      r.querySelector('#btnRelockZT').addEventListener('click', () => { if (rlLocked()) { w2Pin(() => { P.w2hide = 0; P.w2open = 1; try { localStorage.setItem('zd_fly_unlocked', '1'); } catch (e) {} save(); try { kTilesRender(); } catch (e) {} rlLbl(); toast('Z TAKEOVER + NEON FLYING UNLOCKED', 2600); try { if (K.tab === 'wanted' && W.phase !== 'play') showIntro('wanted'); } catch (e) {} }); return; } w2Pin(() => { w2Lock(); P.w2hide = 1; try { localStorage.removeItem('zd_fly_unlocked'); } catch (e) {} save(); try { kTilesRender(); } catch (e) {} try { if (W.phase !== 'play') wReset(); } catch (e) {} if (ZD.Settings) ZD.Settings.close(); rlLbl(); toast('WANTED: Z TAKEOVER LOCKED on this device', 2600); if (K.tab === 'wanted' && W.phase !== 'play') showIntro('wanted'); }); }); } }
+    /*relock*/ { const pn = $('#settings .panel'); if (pn && !$('#kRelockRow')) { const r = document.createElement('div'); r.id = 'kRelockRow'; r.className = 'row'; r.innerHTML = '<button id="btnRelockZT" class="tgl">🔐 LOCKS</button><span class="mute">Pick which games are locked on this device (grown-up code). Coins, garage and progress stay.</span>'; pn.insertBefore(r, pn.firstChild);
+      const rlLocked = () => !!P.w2hide || !w2Key(), rlLbl = () => { const b = $('#btnRelockZT'); if (b) b.textContent = '🔐 LOCKS'; }; rlLbl(); window.ZD_RL_LBL = rlLbl; /*relockui*/ { const so = ZD.Settings.open; ZD.Settings.open = function () { rlLbl(); return so.apply(this, arguments); }; }
+      /*lockpick*/ const LKG = [{ k: 'zt', name: 'WANTED: Z TAKEOVER', locked: () => rlLocked() }, { k: 'fly', name: 'NEON FLYING', locked: () => !flyOpen() }];
+      const lpApply = (st) => { const zt = st.zt, fl = st.fly; if (zt !== LKG[0].locked()) { if (zt) { w2Lock(); P.w2hide = 1; } else { P.w2hide = 0; P.w2open = 1; try { localStorage.setItem(W2K, W2H); } catch (e) {} } }
+        if (fl !== LKG[1].locked()) { try { fl ? localStorage.removeItem('zd_fly_unlocked') : localStorage.setItem('zd_fly_unlocked', '1'); } catch (e) {} }
+        save(); try { kTilesRender(); } catch (e) {} try { if (zt && W.phase !== 'play') wReset(); } catch (e) {} rlLbl(); toast(LKG.map((g) => (st[g.k] ? '🔒 ' : '🔓 ') + g.name.replace('WANTED: ', '')).join(' · '), 2600); try { if (K.tab === 'wanted' && W.phase !== 'play') showIntro('wanted'); } catch (e) {} };
+      const lpOpen = () => { let el = $('#kLocks'); if (el) el.remove(); const st = {}; LKG.forEach((g) => { st[g.k] = g.locked(); }); el = document.createElement('div'); el.id = 'kLocks';
+        const draw = () => { el.innerHTML = '<div class="cbox"><button class="cx" id="kLocksX" title="Close">✕</button><h3>LOCKS</h3><p class="sm">Tap a game to lock or unlock it on this device.</p>' + LKG.map((g) => `<div class="lrow"><span>${g.name}</span><button class="ltg${st[g.k] ? ' on' : ''}" data-lk="${g.k}">${st[g.k] ? '🔒 LOCKED' : '🔓 OPEN'}</button></div>`).join('') + '<button class="ldone" id="kLocksDone">DONE</button></div>';
+          el.querySelectorAll('[data-lk]').forEach((b) => b.addEventListener('click', () => { st[b.dataset.lk] = !st[b.dataset.lk]; draw(); }));
+          el.querySelector('#kLocksX').addEventListener('click', () => el.remove()); el.querySelector('#kLocksDone').addEventListener('click', () => { el.remove(); lpApply(st); }); };
+        el.addEventListener('click', (e) => { if (e.target === el) el.remove(); }); draw(); document.body.appendChild(el); };
+      window.ZD_LOCKS = { open: lpOpen, games: () => LKG.map((g) => ({ k: g.k, locked: g.locked() })) };
+      r.querySelector('#btnRelockZT').addEventListener('click', () => { w2Pin(lpOpen); }); } }
     if (Q.get('kplay') === '1') { hideOver(); restartRoad(); startBoost(); } // test hook: skip the intro card
     requestAnimationFrame(loop);
     ZD.Kid = { setOn, toast };
@@ -13168,6 +13178,16 @@ var qrcode = function() {
 <style>/*credits*/
 #kCredits{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center}
 #kCredits.hidden{display:none}
+#kLocks{position:fixed;inset:0;z-index:61;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center}
+#kLocks .cbox{position:relative;width:min(460px,94vw);background:#0a0306;border:1px solid #ff2a3d;border-radius:12px;box-shadow:0 0 22px rgba(255,42,61,.45);padding:14px 18px;color:#ddd;font-family:'Rajdhani',sans-serif;font-size:16px}
+#kLocks h3{font-family:'Orbitron';color:#ff2a3d;letter-spacing:3px;margin:2px 0 6px;font-size:18px;text-shadow:0 0 8px rgba(255,42,61,.7)}
+#kLocks .cx{position:absolute;top:8px;right:8px;width:40px;height:40px;background:transparent;border:1px solid #ff2a3d;border-radius:8px;color:#fff;font-size:20px}
+#kLocks .sm{color:#8a7a7d;font-size:13px;margin:0 0 8px;border:0;background:none;padding:0;box-shadow:none}
+#kLocks .lrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid #2a0d12}
+#kLocks .lrow span{font-family:'Orbitron';font-size:13px;color:#fff;letter-spacing:1px}
+#kLocks .ltg{min-width:118px;height:40px;border-radius:8px;border:1px solid #22e6a0;background:transparent;color:#22e6a0;font-family:'Orbitron';font-size:12px;box-shadow:0 0 8px rgba(34,230,160,.35)}
+#kLocks .ltg.on{border-color:#ff2a3d;color:#ff8a95;box-shadow:0 0 8px rgba(255,42,61,.45)}
+#kLocks .ldone{display:block;width:100%;margin-top:12px;height:44px;border-radius:8px;border:1px solid #ff2a3d;background:#ff2a3d;color:#fff;font-family:'Orbitron';letter-spacing:3px;font-size:15px}
 #kCredits .cbox{position:relative;width:min(560px,94vw);max-height:90vh;overflow:auto;background:#0a0306;border:1px solid #ff2a3d;border-radius:12px;box-shadow:0 0 22px rgba(255,42,61,.45);padding:14px 18px;color:#ddd;font-family:'Rajdhani',sans-serif;font-size:15px;line-height:1.35}
 #kCredits h3{font-family:'Orbitron';color:#ff2a3d;letter-spacing:3px;margin:2px 0 10px;font-size:18px;text-shadow:0 0 8px rgba(255,42,61,.7)}
 #kCredits .cx{position:absolute;top:8px;right:8px;width:40px;height:40px;background:transparent;border:1px solid #ff2a3d;border-radius:8px;color:#fff;font-size:20px}
