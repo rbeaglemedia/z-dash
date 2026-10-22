@@ -8,5 +8,17 @@ window.SOCCER_TUNE = {
   carMass: 1480,      // kg. The Z. Only used for the hit (the car is not pushed back).
   bounciness: 0.55,   // restitution on the car, the ground, and the boundary lines
   hitStrength: 1.12,  // scales the contact impulse. 1 = the momentum share alone.
-  friction: 0.46      // ground roll-out and the sideways grip on a car hit (spin)
+  friction: 0.46,     // ground roll-out and the sideways grip on a car hit (spin)
+  // Pitch just outside the east city limit (x=560). The z=300 cross street ends there.
+  // Open grass on every side: the next streets are z=100 and z=500, and nothing solid
+  // sits east of the pitch until the far stadium. That gap is for a later tunnel.
+  fieldCx: 790,
+  fieldCz: 300,
+  fieldHw: 30,        // half-width, metres. Pitch is 60 x 116.
+  fieldHl: 58,
+  // Spur from the end of that street. Stops 80 m short of the pitch.
+  roadX0: 550,
+  roadX1: 680,
+  roadZ: 300,
+  roadHalfW: 10
 };

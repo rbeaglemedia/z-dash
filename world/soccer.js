@@ -11,12 +11,12 @@ const SOCCER = (() => {
   const YL = 0.07;
 
   const F = {
-    cx: 102, cz: 280, hw: 30, hl: 58,
+    cx: T.fieldCx, cz: T.fieldCz, hw: T.fieldHw, hl: T.fieldHl,
     x0: 0, x1: 0, z0: 0, z1: 0,
     goalW: 0, goalH: 0, goalD: 0, mouth: 0
   };
-  // Open grass east of the taxiway and west of the x=140 street.
-  // Probed clear of roads, ramps, runway, and walls: x 68–136, z 200–360, floor 0.
+  // East of the city limit, on flat grass. Probed clear of walls, ramps, and water
+  // from x 640–960, z 140–460. The spur is the only pavement, and it stops short.
   F.x0 = F.cx - F.hw; F.x1 = F.cx + F.hw;
   F.z0 = F.cz - F.hl; F.z1 = F.cz + F.hl;
 
@@ -421,28 +421,47 @@ const SOCCER = (() => {
     }
     return m;
   }
-  function drawPitch() {
-    if (typeof cam === 'undefined') return;
-    const dx = F.cx - cam.x, dz = F.cz - cam.z;
-    if (dx * dx + dz * dz > 1050 * 1050) return;
-    const y = 0.035;
-    const c0 = camS(F.x0, y, F.z0), c1 = camS(F.x1, y, F.z0), c2 = camS(F.x1, y, F.z1), c3 = camS(F.x0, y, F.z1);
+  function fillQuad(x0, z0, x1, z1, x2, z2, x3, z3, y, color) {
+    const c0 = camS(x0, y, z0), c1 = camS(x1, y, z1), c2 = camS(x2, y, z2), c3 = camS(x3, y, z3);
     CX[0] = c0[0]; CY[0] = c0[1]; CZ[0] = c0[2];
     CX[1] = c1[0]; CY[1] = c1[1]; CZ[1] = c1[2];
     CX[2] = c2[0]; CY[2] = c2[1]; CZ[2] = c2[2];
     CX[3] = c3[0]; CY[3] = c3[1]; CZ[3] = c3[2];
     const m = clipNear(4, CX, CY, CZ, DX, DY, DZ);
-    if (m >= 3) {
-      const f = H * 0.9;
-      ctx.beginPath();
-      for (let i = 0; i < m; i++) {
-        const X = W / 2 + DX[i] * f / DZ[i], Y = H / 2 - DY[i] * f / DZ[i];
-        if (i) ctx.lineTo(X, Y); else ctx.moveTo(X, Y);
-      }
-      ctx.closePath();
-      ctx.fillStyle = '#07160f';
-      ctx.fill();
+    if (m < 3) return;
+    const f = H * 0.9;
+    ctx.beginPath();
+    for (let i = 0; i < m; i++) {
+      const X = W / 2 + DX[i] * f / DZ[i], Y = H / 2 - DY[i] * f / DZ[i];
+      if (i) ctx.lineTo(X, Y); else ctx.moveTo(X, Y);
     }
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+  function drawRoad() {
+    const x0 = T.roadX0, x1 = T.roadX1, z = T.roadZ, w = T.roadHalfW;
+    if (!(x1 > x0) || !(w > 0)) return;
+    fillQuad(x0, z - w, x1, z - w, x1, z + w, x0, z + w, 0.02, '#120a18');
+    ctx.beginPath();
+    seg(x0, 0.03, z - w, x1, 0.03, z - w);
+    seg(x0, 0.03, z + w, x1, 0.03, z + w);
+    ctx.strokeStyle = 'rgba(62,230,255,.55)';
+    ctx.lineWidth = 1.6;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+  function paved(x, z) {
+    return x >= T.roadX0 && x <= T.roadX1 && Math.abs(z - T.roadZ) <= T.roadHalfW;
+  }
+  function drawPitch() {
+    if (typeof cam === 'undefined') return;
+    const dx = F.cx - cam.x, dz = F.cz - cam.z;
+    if (dx * dx + dz * dz > 1050 * 1050) return;
+    drawRoad();
+    const y = 0.035;
+    fillQuad(F.x0, F.z0, F.x1, F.z0, F.x1, F.z1, F.x0, F.z1, y, '#07160f');
     strokeGroup(0, '#3ee6ff', 2.4);
     strokeGroup(1, 'rgba(236,255,248,.82)', 1.35);
   }
@@ -570,7 +589,8 @@ const SOCCER = (() => {
     reset: resetBall,
     state: S,
     field: F,
-    sim
+    sim,
+    paved
   };
 })();
 window.SOCCER = SOCCER;
