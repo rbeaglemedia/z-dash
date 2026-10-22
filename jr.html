@@ -10553,7 +10553,7 @@ var qrcode = function() {
     ],
     rims: [
       { id: 'gtx04', name: "DAD'S SSR GTX04", cost: 0, desc: 'SSR GTX04 · 19 in · dark gunmetal · 10 thin spokes in 5 split pairs' },
-      { id: 'stock', name: 'NISSAN STOCK', cost: 0 },
+      { id: 'stock', name: 'FACTORY', cost: 0 },
       { id: '5spoke', name: '5-SPOKE', cost: 0 },
       { id: 'steel', name: 'CLASSIC STEEL', cost: 0 },
       { id: 'star', name: '10-SPOKE STAR', cost: 40 },
@@ -13165,5 +13165,29 @@ var qrcode = function() {
 })();
 
 </script>
+<style>/*credits*/
+#kCredits{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center}
+#kCredits.hidden{display:none}
+#kCredits .cbox{position:relative;width:min(560px,94vw);max-height:90vh;overflow:auto;background:#0a0306;border:1px solid #ff2a3d;border-radius:12px;box-shadow:0 0 22px rgba(255,42,61,.45);padding:14px 18px;color:#ddd;font-family:'Rajdhani',sans-serif;font-size:15px;line-height:1.35}
+#kCredits h3{font-family:'Orbitron';color:#ff2a3d;letter-spacing:3px;margin:2px 0 10px;font-size:18px;text-shadow:0 0 8px rgba(255,42,61,.7)}
+#kCredits .cx{position:absolute;top:8px;right:8px;width:40px;height:40px;background:transparent;border:1px solid #ff2a3d;border-radius:8px;color:#fff;font-size:20px}
+#kCredits b{color:#fff} #kCredits a{color:#ff8a95;word-break:break-all} #kCredits p{margin:6px 0} #kCredits .sm{color:#8a7a7d;font-size:13px}
+</style>
+<script>/*credits*/(function(){
+ const H='<div class="cbox"><button class="cx" id="kCreditsX" title="Close">✕</button><h3>CREDITS</h3>'
+ +'<p><b>3D car model:</b> "NISSAN_370Z_IMPROVED" by <b>WolfGames36</b> (Sketchfab)<br><a href="https://sketchfab.com/3d-models/nissan-370z-improved-7e0340261fea49318b55297f974a8200" target="_blank" rel="noopener">sketchfab.com/3d-models/nissan-370z-improved-7e0340261fea49318b55297f974a8200</a></p>'
+ +'<p>Based on the original "Nissan 370z" by <b>hasancarspro454</b> (Sketchfab)<br><a href="https://sketchfab.com/3d-models/nissan-370z-63882e8fafd8408a92cc9fde76ef3ffe" target="_blank" rel="noopener">sketchfab.com/3d-models/nissan-370z-63882e8fafd8408a92cc9fde76ef3ffe</a></p>'
+ +'<p>Both licensed <b>CC BY 4.0</b>: <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">creativecommons.org/licenses/by/4.0/</a><br>Model recolored/modified for Z-DASH. No endorsement by the authors implied.</p>'
+ +'<p><b>Traffic &amp; police cars:</b> "Car Kit" by <b>Kenney</b> (<a href="https://www.kenney.nl" target="_blank" rel="noopener">kenney.nl</a>), CC0 1.0. Tinted for Z-DASH.</p>'
+ +'<p><b>Fonts:</b> Orbitron and Rajdhani, SIL Open Font License 1.1.</p>'
+ +'<p class="sm">Rims, tires, city, signs and effects are made in code by Z-DASH.</p></div>';
+ function card(){let el=document.getElementById('kCredits');if(!el){el=document.createElement('div');el.id='kCredits';el.className='hidden';el.innerHTML=H;document.body.appendChild(el);
+  el.querySelector('#kCreditsX').addEventListener('click',()=>el.classList.add('hidden'));el.addEventListener('click',(e)=>{if(e.target===el)el.classList.add('hidden');});}return el;}
+ function add(){const pn=document.querySelector('#settings .panel');if(!pn)return false;if(document.getElementById('kCreditsRow'))return true;
+  const r=document.createElement('div');r.id='kCreditsRow';r.className='row';r.innerHTML='<button id="btnCredits" class="tgl">ⓘ CREDITS</button><span class="mute">Who made the 3D car, fonts and other parts.</span>';
+  pn.appendChild(r);r.querySelector('#btnCredits').addEventListener('click',()=>card().classList.remove('hidden'));return true;}
+ window.ZD_CREDITS={open:()=>card().classList.remove('hidden'),close:()=>card().classList.add('hidden')};
+ let n=0;(function t(){if(!(window.ZDKID&&add())&&n++<200)setTimeout(t,100);})();
+})();</script>
 </body>
 </html>
