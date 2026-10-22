@@ -1,0 +1,13 @@
+Merge regression on b6f2585b3ecbeada243d5b3fc8a26f78f7b6d8e6 (split-crew, main merged).
+Headless Chrome, SwiftShader. One run.
+
+Ready: car model, crew, traffic, drawSkids. START dismissed. No script errors.
+Console noise: existing favicon.ico 404.
+
+FPS (wings closed, physics paused): 60, 21.3, 21.3, 21.3, 21.3
+
+Traffic: 60 alive (24 sim, 36 dots), 810 lanes, no run error.
+Takeoff hang: tk 0.391, pet at the passenger door. Hatch ride: phase fly, pet at (-1.535, 1.134, -0.005).
+Wings closed: phase ride, hatch 0, pet back in the trunk.
+Landing: airborne y=22, back on the ground (y=0, not wrecked) in 164 steps.
+E-brake: drag on AIR BRAKE showed the pad (latch 1, dx 90). Held, ebK rose to 0.999.
