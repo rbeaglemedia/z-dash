@@ -5,7 +5,8 @@ function render(){const _vs=visApply();
   if(FLYCAM.orbit){const o=FLYCAM.orbit,tx=P.x,ty=P.y+.6,tz=P.z,ay=P.yaw+o.az;cam.x=tx+Math.sin(ay)*Math.cos(o.el)*o.d;cam.z=tz+Math.cos(ay)*Math.cos(o.el)*o.d;cam.y=ty+Math.sin(o.el)*o.d;
     const dx=tx-cam.x,dy=ty-cam.y,dz=tz-cam.z;cam.yaw=Math.atan2(dx,dz);cam.pitch=Math.atan2(-dy,Math.hypot(dx,dz));cam.roll=0;}else{
   const back=FLYCAM.back,up=FLYCAM.up,ty=P.y+ZV.ty,cp=Math.cos(P.pitch);
-  cam.x=P.x-Math.sin(P.yaw)*cp*back;cam.z=P.z-Math.cos(P.yaw)*cp*back;cam.y=Math.max(1,ty-Math.sin(P.pitch)*back+up);
+  let aim=P.yaw;if((P.ebK||0)>0.02){const dh=Math.atan2(Math.sin((P.hd||0)-P.yaw),Math.cos((P.hd||0)-P.yaw));aim=P.yaw+dh*P.ebK;}
+  cam.x=P.x-Math.sin(aim)*cp*back;cam.z=P.z-Math.cos(aim)*cp*back;cam.y=Math.max(1,ty-Math.sin(P.pitch)*back+up);
   {const dx=P.x-cam.x,dy=ty-cam.y,dz=P.z-cam.z;cam.yaw=Math.atan2(dx,dz);cam.pitch=Math.atan2(-dy,Math.hypot(dx,dz));}cam.roll=0;} /* locked chase cam: behind on heading+pitch, car dead centre, horizon level */
   // sky + horizon
   ctx.fillStyle='#05020c';ctx.fillRect(0,0,W,H);
@@ -26,7 +27,7 @@ function render(){const _vs=visApply();
   ctx.globalAlpha=1;farFlush();drawTunnelInside();
   // shadow on ground
   const sh=proj(P.x,P.gy||0,P.z);if(sh){ctx.fillStyle='rgba(255,42,61,.25)';ctx.beginPath();ctx.ellipse(sh[0],sh[1],Math.max(2,900/sh[2]),Math.max(1,300/sh[2]),0,0,7);ctx.fill();}
-  if(RWXRAY.on)drawRunway();P.y+=P.sus||0;drawZ();P.y-=P.sus||0;drawWaterline();drawFX();
+  if(RWXRAY.on)drawRunway();drawSkids();P.y+=P.sus||0;drawZ();P.y-=P.sus||0;drawWaterline();drawFX();
   visRestore(_vs);drawHud(hudDt);}
 let last=performance.now(),hudDt=1/60;
 function loop(t){const dt=Math.min(0.05,(t-last)/1000);last=t;fpsAcc+=dt;fpsN++;if(fpsAcc>0.5){fps=fpsN/fpsAcc;fpsAcc=0;fpsN=0;}

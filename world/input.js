@@ -29,6 +29,26 @@ function setWings(on,quiet){P.wings=on?1:0;const b=document.getElementById('wng'
 function startRoll(d){return;/* Bob: no barrel rolls */if(!flying||P.ground||P.roll||P.flip)return;P.roll={d,t:0,b0:clamp(P.bank,-TUNE.maxBank*D,TUNE.maxBank*D)};toast('BARREL ROLL!');}
 {const tap={};addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='KeyZ')startRoll(-1);if(e.code==='KeyC')startRoll(1);const d=(e.code==='ArrowLeft'||e.code==='KeyA')?-1:(e.code==='ArrowRight'||e.code==='KeyD')?1:0;if(!d)return;const n=performance.now();if(n-(tap[d]||0)<300){startRoll(d);tap[d]=0;}else tap[d]=n;});}
 const K={};addEventListener('keydown',e=>{K[e.code]=1;if(e.code.startsWith('Arrow')||e.code==='Space')e.preventDefault();});addEventListener('keyup',e=>{K[e.code]=0;});
-const B={tup:0,nos:0,brk:0};
-for(const id of['tup','nos','brk']){const el=document.getElementById(id);const on=e=>{e.preventDefault();B[id]=1;el.classList.add('on','nfxp');},off=()=>{B[id]=0;el.classList.remove('on','nfxp');};
-  el.addEventListener('pointerdown',on);el.addEventListener('pointerup',off);el.addEventListener('pointercancel',off);el.addEventListener('pointerleave',off);}
+const B={tup:0,nos:0,brk:0,brkDx:0,ebLatch:0};
+// Each button keeps its own pointer and its own touch so AIR BRAKE and THROTTLE can be held together.
+// Touch is handled on touch events (two fingers). Mouse/pen use pointer events. A touch does not also
+// take the mouse-compat pointer that some browsers fire afterwards.
+let ebTouchAt=0;
+function brkCue(){const el=document.getElementById('brk');if(!el)return;const eb=!!B.ebLatch,on=!!B.brk;if(B._on===on&&B._eb===eb)return;B._on=on;B._eb=eb;
+  el.classList.toggle('on',on);el.classList.toggle('nfxp',on);el.classList.toggle('eb',eb);
+  const L=document.getElementById('brkL'),S=document.getElementById('brkS');if(L)L.textContent=eb?'E-':'AIR';if(S)S.textContent='BRAKE';}
+function syncEb(){if(!B.brk||!P.ground)B.ebLatch=0;else if(!B.ebLatch&&B.brkDx>=TUNE.eBrakeDrag)B.ebLatch=1;else if(B.ebLatch&&B.brkDx<=TUNE.eBrakeBack)B.ebLatch=0;brkCue();}
+function bindHold(id){const el=document.getElementById(id);let ptr=null,touchId=null,x0=0;
+  const down=x=>{B[id]=1;el.classList.add('on','nfxp');if(id==='brk'){x0=x;B.brkDx=0;syncEb();}};
+  const move=x=>{if(id!=='brk'||!B.brk)return;B.brkDx=x-x0;syncEb();};
+  const up=()=>{B[id]=0;el.classList.remove('on','nfxp');if(id==='brk'){B.brkDx=0;B.ebLatch=0;brkCue();}};
+  el.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();ptr=e.pointerId;try{el.setPointerCapture(e.pointerId);}catch(_){}down(e.clientX);});
+  el.addEventListener('pointermove',e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;move(e.clientX);});
+  const pup=e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;ptr=null;up();};
+  el.addEventListener('pointerup',pup);el.addEventListener('pointercancel',pup);
+  el.addEventListener('touchstart',e=>{ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}
+    for(const t of e.changedTouches)if(touchId==null){touchId=t.identifier;down(t.clientX);}},{passive:false});
+  el.addEventListener('touchmove',e=>{for(const t of e.changedTouches)if(t.identifier===touchId){ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}move(t.clientX);}},{passive:false});
+  const tup=e=>{ebTouchAt=performance.now();for(const t of e.changedTouches)if(t.identifier===touchId){touchId=null;up();}};
+  el.addEventListener('touchend',tup,{passive:false});el.addEventListener('touchcancel',tup,{passive:false});}
+for(const id of['tup','nos','brk'])bindHold(id);
