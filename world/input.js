@@ -29,19 +29,32 @@ function setWings(on,quiet){P.wings=on?1:0;const b=document.getElementById('wng'
 function startRoll(d){return;/* Bob: no barrel rolls */if(!flying||P.ground||P.roll||P.flip)return;P.roll={d,t:0,b0:clamp(P.bank,-TUNE.maxBank*D,TUNE.maxBank*D)};toast('BARREL ROLL!');}
 {const tap={};addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='KeyZ')startRoll(-1);if(e.code==='KeyC')startRoll(1);const d=(e.code==='ArrowLeft'||e.code==='KeyA')?-1:(e.code==='ArrowRight'||e.code==='KeyD')?1:0;if(!d)return;const n=performance.now();if(n-(tap[d]||0)<300){startRoll(d);tap[d]=0;}else tap[d]=n;});}
 const K={};addEventListener('keydown',e=>{K[e.code]=1;if(e.code.startsWith('Arrow')||e.code==='Space')e.preventDefault();});addEventListener('keyup',e=>{K[e.code]=0;});
-const B={tup:0,nos:0,brk:0,brkDx:0,ebLatch:0};
+const B={tup:0,nos:0,brk:0,brkDx:0,brkX:null,ebLatch:0};
 // Each button keeps its own pointer and its own touch so AIR BRAKE and THROTTLE can be held together.
 // Touch is handled on touch events (two fingers). Mouse/pen use pointer events. A touch does not also
 // take the mouse-compat pointer that some browsers fire afterwards.
+// AIR BRAKE stays labeled AIR BRAKE. Past the drag threshold, on the ground, a separate E-BRAKE pad
+// pops up under the finger, to the right of the button. It is live only while the finger is on it.
 let ebTouchAt=0;
-function brkCue(){const el=document.getElementById('brk');if(!el)return;const eb=!!B.ebLatch,on=!!B.brk;if(B._on===on&&B._eb===eb)return;B._on=on;B._eb=eb;
-  el.classList.toggle('on',on);el.classList.toggle('nfxp',on);el.classList.toggle('eb',eb);
-  const L=document.getElementById('brkL'),S=document.getElementById('brkS');if(L)L.textContent=eb?'E-':'AIR';if(S)S.textContent='BRAKE';}
-function syncEb(){if(!B.brk||!P.ground)B.ebLatch=0;else if(!B.ebLatch&&B.brkDx>=TUNE.eBrakeDrag)B.ebLatch=1;else if(B.ebLatch&&B.brkDx<=TUNE.eBrakeBack)B.ebLatch=0;brkCue();}
+function syncEb(){const el=document.getElementById('brk'),pad=document.getElementById('ebpad');
+  const ground=typeof P!=='undefined'&&!!P.ground;
+  let on=false;
+  if(el&&pad&&B.brk&&ground&&B.brkX!=null&&B.brkDx>=(TUNE.eBrakeDrag||40)){
+    const body=el.offsetParent||el.parentElement,br=body.getBoundingClientRect();
+    const flip=!!(document.getElementById('kid')&&document.getElementById('kid').classList.contains('flip180'));
+    let fx=B.brkX-br.left;if(flip)fx=br.width-fx;
+    const size=el.offsetWidth||92,gap=8;
+    const minLeft=el.offsetLeft+el.offsetWidth+gap;
+    const maxLeft=Math.max(minLeft,(body.clientWidth||br.width)-size-8);
+    let left=fx-size/2;if(left<minLeft)left=minLeft;if(left>maxLeft)left=maxLeft;
+    on=fx>=left-1;
+    if(on){pad.style.left=left+'px';pad.style.top=el.offsetTop+'px';pad.style.width=size+'px';pad.style.height=(el.offsetHeight||size)+'px';pad.style.right='auto';pad.style.bottom='auto';}}
+  B.ebLatch=on?1:0;
+  if(pad){pad.classList.toggle('show',on);pad.setAttribute('aria-hidden',on?'false':'true');}}
 function bindHold(id){const el=document.getElementById(id);let ptr=null,touchId=null,x0=0;
-  const down=x=>{B[id]=1;el.classList.add('on','nfxp');if(id==='brk'){x0=x;B.brkDx=0;syncEb();}};
-  const move=x=>{if(id!=='brk'||!B.brk)return;B.brkDx=x-x0;syncEb();};
-  const up=()=>{B[id]=0;el.classList.remove('on','nfxp');if(id==='brk'){B.brkDx=0;B.ebLatch=0;brkCue();}};
+  const down=x=>{B[id]=1;el.classList.add('on','nfxp');if(id==='brk'){x0=x;B.brkX=x;B.brkDx=0;syncEb();}};
+  const move=x=>{if(id!=='brk'||!B.brk)return;B.brkX=x;B.brkDx=x-x0;syncEb();};
+  const up=()=>{B[id]=0;el.classList.remove('on','nfxp');if(id==='brk'){B.brkDx=0;B.brkX=null;B.ebLatch=0;syncEb();}};
   el.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();ptr=e.pointerId;try{el.setPointerCapture(e.pointerId);}catch(_){}down(e.clientX);});
   el.addEventListener('pointermove',e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;move(e.clientX);});
   const pup=e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;ptr=null;up();};
