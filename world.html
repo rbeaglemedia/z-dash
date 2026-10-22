@@ -4117,6 +4117,7 @@ const PRESETS = { wings: {
   softMaxSpeed: 22,                           // touchdown: max forward m/s for a soft landing (~80 km/h)
   softMinPitch: -8,                           // touchdown: nose can't be lower than this (deg)
   groundFric: 0.5, groundBrake: 14,           // rolling decel m/s^2, wheel brake
+  waterDrag: 1.1,                             // RIVER: in the water (sunk 0.6 m) speed decays at this rate /s on top of off-road drag; she drives back out
   offRoad: 0.55,                              // OFF-ROAD (grass / dirt / park, fully rolling only): ground accel x this, rolling drag x (1 + 2*(1-this)); paved = 1
   nosTank: 6, nosRefill: 0.15,               // NOS bottle: seconds of hold when full, refill per s (UI bottle drains)
   wingLiftTf: 0.7,                            // wings must be this far open (0..1 of the hinge anim) before the ground lets go
@@ -4220,7 +4221,7 @@ function input(){const dz=v=>Math.abs(v)<TUNE.deadZone?0:v;let lr=0,fb=0;
   return{hard,lr:clamp(lr,-1,1),climb:clamp(-fb,-1,1),nos:B.nos||K.ShiftLeft||K.ShiftRight,brk:B.brk||K.Space,tu:B.tup||K.KeyE};}
 // ===== STATE =====
 const P={gy:0,gT:0,gsl:0,nosTank:1,tf:1,lands:0,landKmh:0,ground:false,vs:0,x:0,y:0,z:0,yaw:0,pitch:0,bank:0,v:0,thr:0,stall:false,bounces:0,nosT:0};
-function reset(){Object.assign(P,{x:0,z:0,y:0,yaw:0,pitch:0,bank:0,v:0,thr:0,stall:false,ground:true,vs:0,tf:0,wings:0,rotOK:false,nosTank:1,gam:0,hd:0,q:0,wreck:null,sus:0,susV:0,roll:null,flip:null,rec:0,rebT:null,nosLeft:0,hpDebt:0,hards:0,floating:0,lift0:0,slowLaunch:false,aoa:0,slip:0,rebV:0,_climb:0,gy:0,gT:0,gsl:0,walls:0,wallHards:0,lastWall:null,ceil:0,ramps:0,roofs:0});setWings(0,true);try{FX.length=0;showWreck(false);}catch(e){}} // starts on the RUNWAY, stopped, car mode
+function reset(){Object.assign(P,{x:0,z:0,y:0,yaw:0,pitch:0,bank:0,v:0,thr:0,stall:false,ground:true,vs:0,tf:0,wings:0,rotOK:false,nosTank:1,gam:0,hd:0,q:0,wreck:null,sus:0,susV:0,roll:null,flip:null,rec:0,rebT:null,nosLeft:0,hpDebt:0,hards:0,floating:0,lift0:0,slowLaunch:false,aoa:0,slip:0,rebV:0,_climb:0,gy:0,gT:0,gsl:0,walls:0,wallHards:0,lastWall:null,ceil:0,ramps:0,roofs:0,loop:null,inWater:false,_pg:null,hoops:0,loops:0,splash:0,pipeTurns:0});setWings(0,true);try{FX.length=0;showWreck(false);}catch(e){}} // starts on the RUNWAY, stopped, car mode
 reset();
 let flying=false;
 // ===== WORLD (procedural) =====
@@ -4446,9 +4447,9 @@ function step(dt){P.simT=(P.simT||0)+dt;const T=TUNE,g=9.8;
     {let dh=P.yaw-P.hd;dh=Math.atan2(Math.sin(dh),Math.cos(dh));P.hd+=dh*Math.min(1,T.slideK*dt);dh=Math.atan2(Math.sin(P.yaw-P.hd),Math.cos(P.yaw-P.hd));if(Math.abs(dh)>T.slipMax*D){P.hd=P.yaw-Math.sign(dh)*T.slipMax*D;dh=Math.sign(dh)*T.slipMax*D;}P.slip=dh;}}
   const hv=P.v*Math.cos(P.ground?0:P.gam),vy=P.ground?0:P.v*Math.sin(P.gam);P.vs=vy;
   const px0=P.x,pz0=P.z,py0=P.y;P.x+=Math.sin(P.hd)*hv*dt;P.z+=Math.cos(P.hd)*hv*dt;if(P.floating&&vy>-T.floatSinkLow&&vy<0.2&&!(P.rebT!=null)){P.vs=-T.floatSinkLow;P.y-=T.floatSinkLow*dt;}else P.y+=vy*dt;
-  {const pr=cityMove(px0,pz0,py0),gy=pr.fl;  /* FLY3CITY: roofs + ramps are ground at a height; same touchDown rules */
+  {const pr=cityMove(px0,pz0,py0,dt),gy=pr.fl;  /* FLY3CITY: roofs + ramps are ground at a height; same touchDown rules */
    if(!P.ground&&P.y<=gy){touchDown(-P.vs);if(P.ground&&gy>0.5){const pd=CITY.padAt(P.x,P.z,gy);if(pd&&!pd.hit){pd.hit=1;P.roofs=(P.roofs||0)+1;kToast('ROOFTOP!');}}}
-   else if(P.ground){if(P.y-gy>0.45){const sl=P.gsl||0;P.ground=false;P.toT=P.simT;P.gam=Math.max(0,sl);P.gT=0;if(sl>0.02){P.pitch=Math.max(P.pitch,sl);P.ramps=(P.ramps||0)+1;toast('RAMP JUMP!');}else toast('OFF THE EDGE!');}
+   else if(P.ground){if(P.y-gy>0.45&&!pr.st){const sl=P.gsl||0;P.ground=false;P.toT=P.simT;P.gam=Math.max(0,sl);P.gT=0;if(sl>0.02){P.pitch=Math.max(P.pitch,sl);P.ramps=(P.ramps||0)+1;toast('RAMP JUMP!');}else toast('OFF THE EDGE!');}
      else{const dd=Math.hypot(P.x-px0,P.z-pz0);P.gsl=dd>1e-4?Math.atan2(gy-P.y,dd):0;P.y=gy;}}}
   P.susV=(P.susV||0)+(-(P.sus||0)*140-(P.susV||0)*8)*dt;P.sus=(P.sus||0)+P.susV*dt;
   fxStep(dt);
@@ -4474,89 +4475,158 @@ function drawFX(){for(const f of FX){const p=proj(f.x,f.y,f.z);if(!p)continue;co
   if(f.k==='spark'){const q=proj(f.x-f.vx*.03,f.y-f.vy*.03,f.z-f.vz*.03);if(!q)continue;ctx.strokeStyle=`rgba(255,${180+Math.round(60*a)},60,${a})`;ctx.lineWidth=Math.max(1.5,sc*.06);ctx.shadowColor='#ffb020';ctx.shadowBlur=8;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();ctx.shadowBlur=0;}
   else{ctx.fillStyle=`rgba(18,14,22,${.75*a})`;ctx.strokeStyle=`rgba(120,110,130,${.35*a})`;ctx.lineWidth=1;ctx.beginPath();ctx.arc(p[0],p[1],Math.max(3,sc*f.s*.8),0,7);ctx.fill();ctx.stroke();}}}
 function showWreck(on){const e=document.getElementById('kWreck');if(e)e.classList.toggle('hidden',!on);}
-// ===== CITY (FLY3CITY): procedural neon city. Solid boxes (walls = HARD HIT / SKIM, roofs = ground), helipads, ramps, tunnel, river, highway =====
+// ===== CITY (NEONWORLD2): smaller, lower neon city. Solid boxes (walls = HARD HIT / SKIM, roofs = ground), long low roofs + pads, doors, ramps everywhere,
+// river (sinks + slows), continuous bank lips, race track, loop, half-pipe, hoops, signs, far outlines =====
 const CITY=(()=>{let sd=90210;const cr=()=>(sd=(sd*16807)%2147483647)/2147483647;
-  const BL=[],BX=[],RAMPS=[],PADS=[],TREES=[],LOTS=[],NEON=['#ff2a3d','#3ee6ff','#ffb020','#ff4fd8','#3ee6ff','#ff2a3d'],WINC=['#ffd27a','#9ff3ff','#ffb3e6','#fff2c0'];
-  const XS0=-850,XS1=950,ZS0=-300,ZS1=2300,RIV={z0:1780,z1:1840},HW={x:-450,hw:15},TUN={z0:500,z1:700,x0:-530,x1:-370,bx0:-465,bx1:-435,ceil:10,top:34},
-    PARK={x0:-340,x1:-160,z0:1010,z1:1190},STAD={x:1100,z:400,r:95},TAXI={x0:38,x1:62,z0:-20,z1:1450},DT={x:600,z:1250};
+  const BL=[],BX=[],RAMPS=[],PADS=[],TREES=[],LOTS=[],HOOPS=[],LOOPS=[],PIPES=[],NEON=['#ff2a3d','#3ee6ff','#ffb020','#ff4fd8','#3ee6ff','#ff2a3d','#7dff6b'],WINC=['#ffd27a','#9ff3ff','#ffb3e6','#fff2c0'];
+  const XS0=-560,XS1=560,ZS0=-300,ZS1=2100,RIV={z0:1780,z1:1840,lip:0.8,land:6,wet:3,sink:0.6,step:0.8},HW={x:-450,hw:15},TUN={z0:500,z1:700,x0:-530,x1:-370,bx0:-465,bx1:-435,ceil:10,top:34},
+    PARK={x0:-340,x1:-160,z0:1010,z1:1190},STAD={x:1100,z:400,r:95},TAXI={x0:38,x1:62,z0:-20,z1:1450},DT={x:420,z:1250},TRACK={cx:1000,cz:1100,L:360,R:80,w:22},
+    BRIDGES=[[-14,14],[HW.x-HW.hw,HW.x+HW.hw]],GF=4.5,FLOOR=3.5,SIGNW=['Z-DASH','NEON','DANCE','DRIFT','NOS','ARCADE','PIZZA','JUMP','PIXEL','CAFE','PETS','GARAGE','TURBO','BEATS'];
   // ---- WORLD AS DATA (builder-mode ready): OBJS = placed objects {id,type,x,z,rot,w,d,h,p}; each type has a builder that makes render items + registers its colliders.
-  // add(obj) / remove(id) rebuild the spatial hash, toJSON() saves the list. Boxes are axis-aligned, so rot is 0/90/180/270 (buildings swap w/d, ramps rise along rot).
   const OBJS=[],HND=new Map();let NID=1,cur=null;
   const box=(b,o)=>{const q=Object.assign({y0:0},o,{b,oid:cur.id});b.boxes.push(q);BX.push(q);cur.boxes.push(q);return q;};
   const bldg=(o)=>{const b=Object.assign({boxes:[],deco:[],id:BL.length,oid:cur.id},o);BL.push(b);cur.bl.push(b);return b;};
   const ext=(o)=>{const r=((o.rot||0)%180+180)%180===90,w=r?o.d:o.w,d=r?o.w:o.d;return[o.x-w/2,o.x+w/2,o.z-d/2,o.z+d/2];};
+  // door-ready ground floor: door slots (1.4 x 2.4 m) every ~16 m along each street face of the ground box, stored as data for walking later
+  function doorsOf(q){const D=[];for(const[ax,fix,n]of[['x',q.z0,[0,-1]],['x',q.z1,[0,1]],['z',q.x0,[-1,0]],['z',q.x1,[1,0]]]){const a0=ax==='x'?q.x0:q.z0,a1=ax==='x'?q.x1:q.z1,L=a1-a0,k=Math.max(1,Math.floor((L-8)/16));
+      for(let i=0;i<k;i++){const a=a0+(L/(k))*(i+.5);D.push(ax==='x'?[a,fix,n[0],n[1]]:[fix,a,n[0],n[1]]);}}return D;}
   const TYPES={
    building(o){const[x0,x1,z0,z1]=ext(o),p=o.p||{},h=o.h,b=bldg({x0,x1,z0,z1,cx:o.x,cz:o.z,c:p.c,wc:p.wc,dash:p.dash||[2,1.6],wseed:p.wseed||0,kind:p.kind||'b',slab:p.y0>0?1:0,top:h,rad:Math.hypot(x1-x0,z1-z0)/2});
      if(p.y0>0){box(b,{x0,x1,z0,z1,y0:p.y0,y1:h});return;}
      const T=p.tiers||[1];let y=0,ax0=x0,ax1=x1,az0=z0,az1=z1;for(let i=0;i<T.length;i++){const top=i===T.length-1?h:h*T[i];box(b,{x0:ax0,x1:ax1,z0:az0,z1:az1,y0:y,y1:top});y=top;const ix=(ax1-ax0)*(p.inset||.14),iz=(az1-az0)*(p.inset||.14);ax0+=ix;ax1-=ix;az0+=iz;az1-=iz;}
      const t=b.boxes[b.boxes.length-1],rx=(t.x0+t.x1)/2,rz=(t.z0+t.z1)/2,rw=Math.min(t.x1-t.x0,t.z1-t.z0);
+     if(b.kind==='b'||b.kind==='landmark'){b.doors=doorsOf(b.boxes[0]);b.gf=GF;}
+     if(p.sign)b.deco.push(['sign',p.sign]);
      if(p.roof==='ant')b.deco.push(['ant',rx+rw*.2,rz,h,p.antH||16]);else if(p.roof==='tank')b.deco.push(['tank',t.x0+rw*.25,t.z0+rw*.25,h]);
      if(p.cable)b.deco.push(['cable',o.x,o.z,h,p.cable]);b.roofBox=t;if(p.pad)TYPES.helipad({id:o.id,x:rx,z:rz,h});},
    helipad(o){const b=BL.slice().reverse().find(q=>q.roofBox&&o.x>=q.roofBox.x0&&o.x<=q.roofBox.x1&&o.z>=q.roofBox.z0&&o.z<=q.roofBox.z1&&Math.abs(q.top-o.h)<.5);if(!b)return;const t=b.roofBox;
      const pd={x:o.x,z:o.z,y:o.h,r:Math.min(t.x1-t.x0,t.z1-t.z0)*.32,b:b.id,oid:o.id,hit:0,x0:t.x0,x1:t.x1,z0:t.z0,z1:t.z1};PADS.push(pd);cur.pads.push(pd);b.deco.push(['pad',pd]);cur.host=b;},
-   ramp(o){const[x0,x1,z0,z1]=ext(o),q={x0,x1,z0,z1,y1:o.h,ramp:1,dir:Math.round(((o.rot||0)%360+360)%360/90)%4,nm:(o.p||{}).nm,oid:o.id};RAMPS.push(q);cur.ramps.push(q);},
+   // ramp: prof 'kick' (rises to a lip, then a drop) or 'crest' (road hump: long up, short steep down); yb = base height (sloped-roof kickers sit on a roof)
+   ramp(o){const[x0,x1,z0,z1]=ext(o),p=o.p||{},yb=p.yb||0,q={x0,x1,z0,z1,yb,y1:yb+o.h,h:o.h,ramp:1,dir:Math.round(((o.rot||0)%360+360)%360/90)%4,nm:p.nm,oid:o.id,prof:p.prof||'kick',sz:p.sz||(o.h>=6?'big':o.h>=3?'medium':'small'),hid:p.hid?1:0,spot:p.spot||null};RAMPS.push(q);cur.ramps.push(q);
+     if(p.hoop){const u=[[0,1],[1,0],[0,-1],[-1,0]][q.dir],cx=(x0+x1)/2,cz=(z0+z1)/2,L=(q.dir%2?x1-x0:z1-z0)/2,k=L+12+o.h*3;HOOPS.push({x:cx+u[0]*k,z:cz+u[1]*k,y:q.y1+3+o.h*.6,r:5.5,nx:u[0],nz:u[1],hit:0,oid:o.id});}},
    lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,c:(o.p||{}).c||'#fff2c0',wc:'#fff2c0',dash:[1,9],wseed:0,kind:'pylon',top:o.h,rad:3});box(b,{x0:b.x0,x1:b.x1,z0:b.z0,z1:b.z1,y1:o.h});b.deco.push(['lamp',o.x,o.z,o.h]);},
+   // billboard: pole + board slab (drive under it, land on top, hit its edge like any wall); sign drawn on both faces
+   billboard(o){const p=o.p||{},r=((o.rot||0)%180+180)%180===90,w=o.w,y0=p.y0||10,th=1;const pb=bldg({x0:o.x-.6,x1:o.x+.6,z0:o.z-.6,z1:o.z+.6,cx:o.x,cz:o.z,c:'#8a7a9d',wc:'#8a7a9d',dash:[1,9],wseed:0,kind:'pylon',top:y0,rad:2});box(pb,{x0:pb.x0,x1:pb.x1,z0:pb.z0,z1:pb.z1,y1:y0});
+     const bx0=r?o.x-th/2:o.x-w/2,bx1=r?o.x+th/2:o.x+w/2,bz0=r?o.z-w/2:o.z-th/2,bz1=r?o.z+w/2:o.z+th/2,b=bldg({x0:bx0,x1:bx1,z0:bz0,z1:bz1,cx:o.x,cz:o.z,c:p.c,wc:p.c,dash:[1,9],wseed:0,kind:'bill',slab:1,top:o.h,rad:w/2+1});
+     box(b,{x0:bx0,x1:bx1,z0:bz0,z1:bz1,y0,y1:o.h});for(const s of[-1,1])b.deco.push(['sign',{x:o.x+(r?s*(th/2+.15):0),z:o.z+(r?0:s*(th/2+.15)),y:(y0+o.h)/2,nx:r?s:0,nz:r?0:s,w:w-1.5,h:o.h-y0-1.2,t:p.t,c:p.c}]);},
    tunnel(o){const[x0,x1,z0,z1]=ext(o),p=o.p,h=o.h,bw=p.bore/2,o2={kind:'hill',c:'#7dff6b',wc:'#7dff6b',dash:[1,9],wseed:1},cz=(z0+z1)/2;
      const L=bldg(Object.assign({x0,x1:o.x-bw,z0,z1,cx:(x0+o.x-bw)/2,cz,rad:110,top:h},o2));box(L,{x0,x1:o.x-bw,z0,z1,y1:h});
      const R=bldg(Object.assign({x0:o.x+bw,x1,z0,z1,cx:(o.x+bw+x1)/2,cz,rad:110,top:h},o2));box(R,{x0:o.x+bw,x1,z0,z1,y1:h});
      const S=bldg(Object.assign({x0:o.x-bw,x1:o.x+bw,z0,z1,cx:o.x,cz,rad:105,top:h,slab:1},o2));box(S,{x0:o.x-bw,x1:o.x+bw,z0,z1,y0:p.ceil,y1:h});},
-   bridge(o){const p=o.p;for(const sx of[-1,1]){const b=bldg({x0:o.x+sx*p.py-1.5,x1:o.x+sx*p.py+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x+sx*p.py,cz:o.z,c:'#ffb020',wc:'#ffb020',dash:[1,9],wseed:0,kind:'pylon',top:o.h,rad:3});box(b,{x0:b.x0,x1:b.x1,z0:b.z0,z1:b.z1,y1:o.h});b.deco.push(['cable',o.x+sx*p.py,o.z,o.h,sx]);}}};
-  function build(o){cur={id:o.id,boxes:[],bl:[],ramps:[],pads:[]};HND.set(o.id,cur);TYPES[o.type](o);const h=cur;cur=null;return h;}
+   bridge(o){const p=o.p;for(const sx of[-1,1]){const b=bldg({x0:o.x+sx*p.py-1.5,x1:o.x+sx*p.py+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x+sx*p.py,cz:o.z,c:'#ffb020',wc:'#ffb020',dash:[1,9],wseed:0,kind:'pylon',top:o.h,rad:3});box(b,{x0:b.x0,x1:b.x1,z0:b.z0,z1:b.z1,y1:o.h});b.deco.push(['cable',o.x+sx*p.py,o.z,o.h,sx]);}},
+   // far areas: outline-only skyline blocks (solid, but always drawn as simple neon outlines)
+   outline(o){const[x0,x1,z0,z1]=ext(o),b=bldg({x0,x1,z0,z1,cx:o.x,cz:o.z,c:(o.p||{}).c||'#3ee6ff',wc:'#3ee6ff',dash:[1,9],wseed:0,kind:'outline',top:o.h,rad:Math.hypot(x1-x0,z1-z0)/2});box(b,{x0,x1,z0,z1,y1:o.h});},
+   // loop-de-loop: entry line at (x,z) heading rot; R radius, w lane width, off = sideways shift of the exit lane. No colliders: the ride is a path (see cityMove)
+   loop(o){const a=(o.rot||0)*D,L={x:o.x,z:o.z,ux:Math.sin(a),uz:Math.cos(a),R:o.h,w:o.w,off:(o.p||{}).off||9,oid:o.id,n:0};LOOPS.push(L);cur.loops.push(L);},
+   // half-pipe along z: flat floor F, quarter curves C up to H, deck, back slope; floor-only surface (see gnd)
+   halfpipe(o){const p=o.p||{},Pp={cx:o.x,z0:o.z-o.d/2,z1:o.z+o.d/2,H:o.h,F:p.F||16,C:p.C||7,deck:p.deck||3,back:p.back||14,oid:o.id};Pp.hw=Pp.F/2+Pp.C+Pp.deck+Pp.back;Pp.x0=Pp.cx-Pp.hw;Pp.x1=Pp.cx+Pp.hw;PIPES.push(Pp);cur.pipes.push(Pp);}};
+  function build(o){cur={id:o.id,boxes:[],bl:[],ramps:[],pads:[],loops:[],pipes:[]};HND.set(o.id,cur);TYPES[o.type](o);const h=cur;cur=null;return h;}
   // PREFABS: named, self-contained pieces (default size/params, snap footprint). The city is built only by placing these, so builder mode can drop any of them.
   const PREFABS={
-    tower_tall:{label:'Tall Tower',type:'building',w:44,d:44,h:190,snap:10,p:{tiers:[.55,.8,1],inset:.14,roof:'ant',antH:24,c:'#3ee6ff',wc:'#9ff3ff',dash:[2,1.6],wseed:11}},
+    tower_tall:{label:'Tall Tower',type:'building',w:44,d:44,h:120,snap:10,p:{tiers:[.6,1],inset:.14,roof:'ant',antH:24,c:'#3ee6ff',wc:'#9ff3ff',dash:[2,1.6],wseed:11}},
     tower_landmark:{label:'Sky Tower',type:'building',w:70,d:70,h:239,snap:10,p:{tiers:[.58,.84,1],inset:.15,pad:1,c:'#3ee6ff',wc:'#fff2c0',dash:[2,1.6],wseed:7,kind:'landmark'}},
-    office_mid:{label:'Office Block',type:'building',w:50,d:36,h:72,snap:10,p:{tiers:[.6,1],inset:.12,roof:'tank',c:'#ff2a3d',wc:'#ffd27a',dash:[4.5,2.5],wseed:5}},
-    shop_low:{label:'Corner Shop',type:'building',w:30,d:24,h:16,snap:5,p:{tiers:[1],c:'#ffb020',wc:'#ffb3e6',dash:[4.5,2.5],wseed:3}},
-    helipad_roof:{label:'Helipad Tower',type:'building',w:70,d:70,h:40,snap:10,p:{tiers:[1],pad:1,c:'#7dff6b',wc:'#ffd27a',dash:[2,1.6],wseed:9}},
+    office_mid:{label:'Long Office',type:'building',w:72,d:172,h:40,snap:10,p:{tiers:[1],roof:'tank',c:'#ff2a3d',wc:'#ffd27a',dash:[4.5,2.5],wseed:5}},
+    shop_low:{label:'Long Shops',type:'building',w:72,d:80,h:12,snap:5,p:{tiers:[1],c:'#ffb020',wc:'#ffb3e6',dash:[4.5,2.5],wseed:3}},
+    helipad_roof:{label:'Rooftop Pad Block',type:'building',w:72,d:172,h:26,snap:10,p:{tiers:[1],pad:1,c:'#7dff6b',wc:'#ffd27a',dash:[2,1.6],wseed:9}},
     stadium_stand:{label:'Stadium Stand',type:'building',w:34,d:20,h:26,snap:5,p:{tiers:[1],kind:'stand',c:'#ff4fd8',wc:'#fff2c0',dash:[1,2.5],wseed:4}},
-    ramp_small:{label:'Small Ramp',type:'ramp',w:14,d:40,h:4,snap:5,p:{}},
-    ramp_big:{label:'Big Ramp',type:'ramp',w:16,d:60,h:7.5,snap:5,p:{}},
+    ramp_small:{label:'Small Ramp (base)',type:'ramp',w:14,d:40,h:4,snap:5,p:{}},
+    ramp_big:{label:'Big Ramp (base)',type:'ramp',w:16,d:60,h:7.5,snap:5,p:{}},
+    ramp_kick:{label:'Kicker',type:'ramp',w:8,d:10,h:1.6,snap:1,p:{sz:'small'}},
+    ramp_med:{label:'Medium Ramp',type:'ramp',w:12,d:24,h:3.5,snap:2,p:{sz:'medium'}},
+    ramp_launch:{label:'Big Launch',type:'ramp',w:16,d:60,h:7.5,snap:5,p:{sz:'big'}},
+    ramp_curb:{label:'Curb Kicker',type:'ramp',w:10,d:5,h:0.8,snap:1,p:{sz:'small',hid:1}},
+    ramp_bank:{label:'Embankment',type:'ramp',w:20,d:30,h:4,snap:5,p:{sz:'medium',hid:1}},
+    road_crest:{label:'Road Crest',type:'ramp',w:20,d:19,h:1.8,snap:1,p:{sz:'small',hid:1,prof:'crest'}},
+    roof_slope:{label:'Sloped Roof Kicker',type:'ramp',w:10,d:20,h:2.5,snap:1,p:{sz:'medium',hid:1}},
+    billboard:{label:'Billboard',type:'billboard',w:16,d:1,h:17,snap:1,p:{y0:10,c:'#ff4fd8',t:'Z-DASH'}},
+    loop:{label:'Loop-de-loop',type:'loop',w:8,d:30,h:12,snap:5,p:{off:9}},
+    halfpipe:{label:'Half-pipe',type:'halfpipe',w:64,d:120,h:5,snap:5,p:{F:16,C:7,deck:3,back:14}},
+    far_outline:{label:'Far Skyline Block',type:'outline',w:60,d:60,h:60,snap:10,p:{}},
     tunnel_seg:{label:'Tunnel Hill',type:'tunnel',w:160,d:200,h:34,snap:10,p:{bore:30,ceil:10}},
     bridge_seg:{label:'Bridge Towers',type:'bridge',w:36,d:60,h:62,snap:10,p:{py:18}},
     lamp:{label:'Light Tower',type:'lamp',w:3,d:3,h:55,snap:5,p:{}}};
   function placePrefab(name,x,z,ov){const f=PREFABS[name];ov=ov||{};const o={id:ov.id||NID++,prefab:name,type:f.type,x,z,rot:ov.rot||0,w:ov.w!=null?ov.w:f.w,d:ov.d!=null?ov.d:f.d,h:ov.h!=null?ov.h:f.h,p:Object.assign({},f.p,ov.p||{})};if(o.id>=NID)NID=o.id+1;OBJS.push(o);build(o);return o;}
   const ringHit=(x0,x1,z0,z1,h)=>{let lim=h;for(const r of rings){const dx=Math.max(x0-r.x,0,r.x-x1),dz=Math.max(z0-r.z,0,r.z-z1);if(Math.hypot(dx,dz)<r.r+12&&h>r.y-r.r-15)lim=Math.min(lim,r.y-r.r-20);}return lim;};
+  // a street-facing neon sign on the ground-floor band or just above it
+  function signFor(x0,x1,z0,z1,h){const f=Math.floor(cr()*4),c=NEON[Math.floor(cr()*NEON.length)],t=SIGNW[Math.floor(cr()*SIGNW.length)],y=Math.min(h-2.5,GF+2.6+cr()*4),sh=3;
+    if(f<2){const L=x1-x0,w=Math.min(18,L*.45),s=f?1:-1;return{x:(x0+x1)/2+(cr()-.5)*(L-w)*.6,z:s>0?z1+.25:z0-.25,y,nx:0,nz:s,w,h:sh,t,c};}
+    const L=z1-z0,w=Math.min(18,L*.45),s=f===3?1:-1;return{x:s>0?x1+.25:x0-.25,z:(z0+z1)/2+(cr()-.5)*(L-w)*.6,y,nx:s,nz:0,w,h:sh,t,c};}
   // procedural generator: rolls the random look, then places a building (+ helipad) object
-  function tower(x0,x1,z0,z1,h,f){f=f||{};const n=f.pad&&!f.tiers?1:(f.tiers||(h>150?3:h>85?2:1)),T=[];let y=0;for(let i=0;i<n-1;i++){y=i===0?(f.t1||(.45+cr()*.2)):y+(1-y)*.6;T.push(y);}T.push(1);
-    const p={c:f.c||NEON[Math.floor(cr()*NEON.length)],wc:WINC[Math.floor(cr()*4)],dash:cr()<.5?[2,1.6]:[4.5,2.5],wseed:Math.floor(cr()*997),kind:f.kind||'b',tiers:T,inset:.1+cr()*.08};
-    if(!f.pad&&!['hill','stand','pylon'].includes(f.kind)){const r=cr();if(h>80&&r<.45){p.roof='ant';p.antH=10+cr()*22;}else if(r<.8)p.roof='tank';}
-    if(f.pad)p.pad=1;const pf=f.prefab||(f.kind==='stand'?'stadium_stand':f.pad?'helipad_roof':h>120?'tower_tall':h>40?'office_mid':'shop_low');
+  function tower(x0,x1,z0,z1,h,f){f=f||{};const n=f.tiers||(h>60?2:1),T=[];let y=0;for(let i=0;i<n-1;i++){y=i===0?(f.t1||(.55+cr()*.15)):y+(1-y)*.6;T.push(y);}T.push(1);
+    const p={c:f.c||NEON[Math.floor(cr()*NEON.length)],wc:WINC[Math.floor(cr()*4)],dash:cr()<.5?[2,1.6]:[4.5,2.5],wseed:Math.floor(cr()*997),kind:f.kind||'b',tiers:T,inset:.1+cr()*.06};
+    if(!f.pad&&!f.noRoof&&!['hill','stand','pylon'].includes(f.kind)){const r=cr();if(h>50&&r<.45){p.roof='ant';p.antH=10+cr()*16;}else if(r<.6)p.roof='tank';}
+    if(f.kind==null&&h>=10&&cr()<.5)p.sign=signFor(x0,x1,z0,z1,h);
+    if(f.pad)p.pad=1;const pf=f.prefab||(f.kind==='stand'?'stadium_stand':f.pad?'helipad_roof':h>80?'tower_tall':h>20?'office_mid':'shop_low');
     return placePrefab(pf,(x0+x1)/2,(z0+z1)/2,{w:x1-x0,d:z1-z0,h,p});}
-  // --- lots: streets every 100 m (20 m wide), the runway corridor |x|<150 stays open ---
+  // stunt spot: a plaza lot with a big launch + hoop, a medium, kickers, curb kickers at the street edges
+  function stuntSpot(x0,x1,z0,z1,i){const cx=(x0+x1)/2,L=z1-z0,sp='spot'+i,fl=i%2;LOTS[LOTS.length-1].stunt=1;
+    if(L>=150){placePrefab('ramp_launch',cx,fl?z1-42:z0+42,{rot:fl?180:0,p:{hoop:1,spot:sp}});placePrefab('ramp_med',x0+16,fl?z0+20:z1-20,{rot:fl?0:180,p:{hoop:1,spot:sp}});
+      placePrefab('ramp_kick',x1-12,(z0+z1)/2,{rot:fl?180:0,p:{spot:sp}});placePrefab('ramp_kick',x1-12,(z0+z1)/2+(fl?-30:30),{rot:fl?180:0,p:{spot:sp,hid:1}});}
+    else{placePrefab('ramp_med',cx,(z0+z1)/2,{rot:fl?180:0,p:{hoop:1,spot:sp}});placePrefab('ramp_kick',x1-12,(z0+z1)/2,{rot:fl?0:180,p:{spot:sp}});}
+    placePrefab('ramp_curb',x0+3.5,(z0+z1)/2+12,{rot:90,p:{spot:sp}});placePrefab('ramp_curb',x1-3.5,(z0+z1)/2-12,{rot:270,p:{spot:sp}});}
+  // --- lots: streets every 100 m in x, every 200 m in z (long blocks), 20 m wide; the runway corridor |x|<150 stays open ---
   const xl=[];for(let x=160;x+80<=XS1;x+=100){xl.push(x);xl.push(-x-80);}
-  const FORCE={'160,210':[26,1],'-240,610':[62,1],'160,1010':[110,1],'-240,1410':[165,1],'560,1210':[239,2]};
-  for(const lx of xl)for(let lz=ZS0+10;lz+80<=ZS1;lz+=100){let x0=lx,x1=lx+80,z0=lz,z1=lz+80;
+  const FORCE={'160,110':[26,1],'-240,510':[62,1],'160,910':[18,1],'-340,1510':[34,1],'460,1110':[239,2]};let nSpot=0;
+  const MERGED=new Set(),okLot=(x0,x1,z0,z1)=>!(x1>HW.x-HW.hw-3&&x0<HW.x+HW.hw+3)&&!(z1>RIV.z0-8&&z0<RIV.z1+8)&&!(x1>TUN.x0-5&&x0<TUN.x1+5&&z1>TUN.z0-5&&z0<TUN.z1+5)&&!(x1>PARK.x0&&x0<PARK.x1&&z1>PARK.z0&&z0<PARK.z1)&&x0>=XS0&&x1<=XS1;
+  for(const lx of xl)for(let lz=ZS0+10;lz+180<=ZS1;lz+=200){if(MERGED.has(lx+','+lz))continue;let x0=lx,x1=lx+80,z0=lz,z1=lz+180;
     if(x1>HW.x-HW.hw-3&&x0<HW.x+HW.hw+3){if(x0<HW.x)x1=Math.min(x1,HW.x-HW.hw-3);else x0=Math.max(x0,HW.x+HW.hw+3);}
     if(z1>RIV.z0-8&&z0<RIV.z1+8){if(z0<RIV.z0)z1=Math.min(z1,RIV.z0-8);else z0=Math.max(z0,RIV.z1+8);}
     if(x1-x0<30||z1-z0<30)continue;
     if(x1>TUN.x0-5&&x0<TUN.x1+5&&z1>TUN.z0-5&&z0<TUN.z1+5)continue;
     const inPark=x1>PARK.x0&&x0<PARK.x1&&z1>PARK.z0&&z0<PARK.z1;LOTS.push({x0,x1,z0,z1,park:inPark});if(inPark)continue;
-    const F=FORCE[lx+','+lz];
-    if(F){const m=5;if(F[1]===2)placePrefab('tower_landmark',(x0+x1)/2,(z0+z1)/2,{w:x1-x0-2*m,d:z1-z0-2*m});else tower(x0+m,x1-m,z0+m,z1-m,F[0],{pad:1,c:'#7dff6b'});continue;}
-    const dd=Math.hypot((x0+x1)/2-DT.x,(z0+z1)/2-DT.z),hM=18+175*Math.exp(-((dd/650)**2)),p=cr();
-    if(p<.1){LOTS[LOTS.length-1].plaza=1;continue;}
-    const fp=[];if(p<.45){const m=3+cr()*7;fp.push([x0+m,x1-m,z0+m,z1-m]);}
-    else if(p<.8){const g=10+cr()*6,sp=.35+cr()*.3;if(cr()<.5){const xm=x0+(x1-x0)*sp;fp.push([x0+3,xm-g/2,z0+3,z1-3],[xm+g/2,x1-3,z0+3,z1-3]);}else{const zm=z0+(z1-z0)*sp;fp.push([x0+3,x1-3,z0+3,zm-g/2],[x0+3,x1-3,zm+g/2,z1-3]);}}
-    else{const xm=(x0+x1)/2,zm=(z0+z1)/2,g=6;fp.push([x0+3,xm-g,z0+3,zm-g],[xm+g,x1-3,z0+3,zm-g],[x0+3,xm-g,zm+g,z1-3],[xm+g,x1-3,zm+g,z1-3]);}
-    for(const[a,b,c,d]of fp){let h=Math.min(225,12+cr()*hM*(fp.length>2?.55:1));h=ringHit(a,b,c,d,h);if(h<10)continue;tower(a,b,c,d,h);}}
+    const F=FORCE[lx+','+lz],m=4;
+    if(F){if(F[1]===2){const cz=(z0+z1)/2;placePrefab('tower_landmark',(x0+x1)/2,cz,{w:x1-x0-10,d:70});tower(x0+5,x1-5,z0+m,cz-45,44,{});tower(x0+5,x1-5,cz+45,z1-m,16,{});}
+      else tower(x0+m,x1-m,z0+m,z1-m,F[0],{pad:1,c:'#7dff6b',tiers:1});continue;}
+    const dd=Math.hypot((x0+x1)/2-DT.x,(z0+z1)/2-DT.z),hM=10+62*Math.exp(-((dd/480)**2)),p=cr();
+    if(p<.13&&x1-x0>=60){LOTS[LOTS.length-1].plaza=1;stuntSpot(x0,x1,z0,z1,nSpot++);continue;}
+    const padBlk=z1-z0>=150&&cr()<.22;
+    // ROOFTOP: a pad block takes the neighbouring lot too (one long, wide, low deck across the side street) so landings have room to stop
+    if(padBlk){const nx=lx>0?lx+100:lx-100,k=nx+','+lz;const gx0=lx>0?lx+80:nx+80,gx1=gx0+20,CR=[[400,300],[-300,900],[350,1400],[-250,300],[450,-200]];if(!FORCE[k]&&okLot(nx,nx+80,z0,z1)&&!CR.some(([cx,cz])=>cx>gx0-12&&cx<gx1+12&&cz>z0-20&&cz<z1+20)){MERGED.add(k);const L=LOTS[LOTS.length-1];if(lx>0)x1=nx+80;else x0=nx;L.x0=x0;L.x1=x1;tower(x0+m,x1-m,z0+m,z1-m,Math.round(8+cr()*8),{pad:1,tiers:1});continue;}}
+    const fp=[],alleys=[],q2=cr(),nb=padBlk?1:z1-z0<120?(q2<.5?1:2):q2<.15?1:q2<.4?2:q2<.7?3:4;
+    {const cuts=[];for(let i=1;i<nb;i++)cuts.push(z0+(z1-z0)*(i/nb+(cr()-.5)*.12/nb));let za=z0+m;for(const c of cuts){fp.push([x0+m,x1-m,za,c-6]);alleys.push(c);za=c+6;}fp.push([x0+m,x1-m,za,z1-m]);}
+    for(const[a,b,c,d]of fp){let h=Math.min(90,8+cr()*hM);h=Math.max(8,ringHit(a,b,c,d,h));if(padBlk)h=Math.min(h,10+cr()*18);const L=d-c,pad=padBlk;
+      tower(a,b,c,d,Math.round(h),pad?{pad:1,tiers:1}:{});
+      if(!pad&&h<=16&&L>=44&&cr()<.3)placePrefab('roof_slope',(a+b)/2,(c+d)/2,{rot:cr()<.5?0:180,p:{yb:Math.round(h)}});}
+    for(const al of alleys)if(cr()<.3)placePrefab('ramp_kick',(x0+x1)/2,al,{rot:cr()<.5?90:270,p:{hid:cr()<.5?1:0}});}
   placePrefab('tunnel_seg',(TUN.x0+TUN.x1)/2,(TUN.z0+TUN.z1)/2,{w:TUN.x1-TUN.x0,d:TUN.z1-TUN.z0,h:TUN.top,p:{bore:TUN.bx1-TUN.bx0,ceil:TUN.ceil}});
   placePrefab('bridge_seg',0,1810);
   {const n=16;for(let i=0;i<n;i++){const a=i/n*Math.PI*2,x=STAD.x+Math.cos(a)*STAD.r,z=STAD.z+Math.sin(a)*STAD.r*.8,s=17;tower(x-s,x+s,z-s*.6,z+s*.6,24+(i%2)*4,{kind:'stand',c:'#ff4fd8'});}
    for(const[a,b]of[[1,1],[1,-1],[-1,1],[-1,-1]])placePrefab('lamp',STAD.x+a*125,STAD.z+b*95);}
-  for(const[pf,x,z,w,h,nm]of[['ramp_big',50,790,16,7.5,'taxiway'],['ramp_small',250,350,14,4,'street'],['ramp_big',-450,1630,24,6,'highway']])placePrefab(pf,x,z,{w,h,p:{nm}});
+  // base ramps (unchanged): taxiway, street, highway
+  for(const[pf,x,z,w,h,nm]of[['ramp_big',50,790,16,7.5,'taxiway'],['ramp_small',250,350,14,4,'street'],['ramp_big',-450,1630,24,6,'highway']])placePrefab(pf,x,z,{w,h,p:{nm,sz:pf==='ramp_big'?'big':'medium'}});
+  // runway-corridor ramps (open land beside the runway, never on the runway / taxiway / x 66-100 off-road lane)
+  for(const[pf,x,z,rot,hid,hoop]of[['ramp_med',120,150,0,0,1],['ramp_kick',120,420,0,0,0],['ramp_launch',120,640,0,0,1],['ramp_med',120,1000,180,0,1],['ramp_kick',120,1250,0,1,0],['ramp_kick',125,1390,180,0,0],
+     ['ramp_med',-40,520,0,0,1],['ramp_launch',-110,700,0,0,1],['ramp_kick',-40,900,0,1,0],['ramp_med',-110,1100,180,0,1],['ramp_kick',-40,1250,0,0,0],['ramp_kick',-125,1600,180,0,0],['ramp_kick',-40,60,180,1,0]])
+    placePrefab(pf,x,z,{rot,p:{hid,hoop}});
+  // river jumps: south bank rise +z to the lip, north bank rise -z; big ones clear the river, small ones land in the water
+  for(const[pf,x,rot]of[['ramp_launch',120,0],['ramp_med',-100,0],['ramp_kick',-40,0],['ramp_med',100,180],['ramp_launch',-120,180],['ramp_kick',60,180],['ramp_med',250,0],['ramp_kick',-250,0],['ramp_med',300,180],['ramp_med',-250,180]]){
+    const d=PREFABS[pf].d,z=rot?RIV.z1+RIV.land+2+d/2:RIV.z0-RIV.land-2-d/2;placePrefab(pf,x,z,{rot,p:{nm:'river',hoop:pf!=='ramp_kick'?1:0}});}
+  // embankments (hidden) on the grass just outside the city edges; road crests (hidden) on a few streets
+  for(const[x,z,rot]of[[300,-345,180],[-300,-345,180],[600,420,90],[600,1500,90],[-600,960,270],[300,2150,0],[-260,2150,0],[-600,1500,270]])placePrefab('ramp_bank',x,z,{rot});
+  for(const[x,z,rot]of[[400,300,90],[-300,900,270],[350,1400,0],[-250,300,180],[450,-200,0]])placePrefab('road_crest',x,z,{rot,p:{nm:'crest'}});
+  // stunts: half-pipe and loop beside the runway
+  placePrefab('halfpipe',-95,260,{});placePrefab('loop',-80,1440,{rot:0});
+  // billboards along the highway shoulders and the runway corridor
+  {let i=0;for(const z of[-150,150,330,900,1150,1450,2000]){const s=i%2?1:-1;placePrefab('billboard',HW.x+s*(HW.hw+6),z,{rot:90,p:{t:SIGNW[i%SIGNW.length],c:NEON[i%NEON.length]}});i++;}
+   for(const[x,z,t,c]of[[-70,1000,'NEON WORLD','#3ee6ff'],[90,1720,'JUMP!','#ffb020'],[-60,1700,'RIVER','#7dff6b'],[110,-80,'Z-DASH','#ff4fd8']])placePrefab('billboard',x,z,{w:22,p:{t,c}});}
+  // far areas: outline-only skyline blocks around the edges
+  for(let i=0;i<34;i++){const a=i/34*Math.PI*2+.07,rx=1000+cr()*300,rz=1500+cr()*350,x=Math.cos(a)*rx,z=900+Math.sin(a)*rz;if(Math.abs(x)<60)continue;const w=40+cr()*60,d=40+cr()*60,h=Math.max(20,ringHit(x-w/2,x+w/2,z-d/2,z+d/2,30+cr()*90));if(h<20)continue;
+    if(Math.abs(x-HW.x)<90||Math.hypot(x-TRACK.cx,(z-TRACK.cz)*.6)<300||Math.hypot(x-STAD.x,z-STAD.z)<220)continue;placePrefab('far_outline',x,z,{w,d,h:Math.round(h),p:{c:NEON[i%NEON.length]}});}
   for(let i=0;i<70;i++){const x=PARK.x0+6+cr()*(PARK.x1-PARK.x0-12),z=PARK.z0+6+cr()*(PARK.z1-PARK.z0-12);if(Math.abs(((x+1e4)%100)-50)>38||Math.abs(((z+1e4)%100))<14||Math.abs(((z+1e4)%100))>86)continue;TREES.push([x,z,5+cr()*4]);}
+  // --- floor-only surfaces: river profile (bank lips + sunk water) and half-pipes. st = stick to the surface (no edge launches inside a pipe) ---
+  const bridgeK=(x)=>{let k=1;for(const[a,b]of BRIDGES){if(x>=a&&x<=b)return-1;k=Math.min(k,Math.max(0,(x<a?a-x:x-b))/12);}return Math.min(1,k);};
+  function riverY(x,z){if(z<RIV.z0-RIV.land||z>RIV.z1+RIV.land)return 0;const k=bridgeK(x);if(k<0)return 0;const H=RIV.lip*k,S=-RIV.sink;
+    if(z<RIV.z0)return H*(z-(RIV.z0-RIV.land))/RIV.land;if(z<RIV.z0+RIV.wet)return Math.min(H-RIV.step*k,0)+(S-Math.min(H-RIV.step*k,0))*(z-RIV.z0)/RIV.wet;
+    if(z>RIV.z1)return H*((RIV.z1+RIV.land)-z)/RIV.land;if(z>RIV.z1-RIV.wet)return Math.min(H-RIV.step*k,0)+(S-Math.min(H-RIV.step*k,0))*(RIV.z1-z)/RIV.wet;return S;}
+  function pipeY(Pp,x){const a=Math.abs(x-Pp.cx),f=Pp.F/2,c=f+Pp.C,dk=c+Pp.deck;if(a<=f)return 0;if(a<=c){const u=Math.min(1,(a-f)/Pp.C);return Pp.H*(1-Math.sqrt(Math.max(0,1-u*u)));}if(a<=dk)return Pp.H;return Math.max(0,Pp.H*(1-(a-dk)/Pp.back));}
+  function gnd(x,z){for(const Pp of PIPES)if(x>Pp.x0&&x<Pp.x1&&z>=Pp.z0&&z<=Pp.z1)return[pipeY(Pp,x),1];return[riverY(x,z),0];}
   // --- spatial hash (50 m cells), rebuilt on add/remove ---
   const CS=50,HM=new Map(),key=(i,j)=>i*100003+j;
   function rehash(){HM.clear();for(const q of BX.concat(RAMPS)){for(let i=Math.floor((q.x0-2)/CS);i<=Math.floor((q.x1+2)/CS);i++)for(let j=Math.floor((q.z0-2)/CS);j<=Math.floor((q.z1+2)/CS);j++){const k=key(i,j);if(!HM.has(k))HM.set(k,[]);HM.get(k).push(q);}}}rehash();
   function add(o){if(o.prefab){o=placePrefab(o.prefab,o.x,o.z,o);rehash();ROADS.updateBlocked();return o.id;}o=Object.assign({id:NID++,rot:0,p:{}},o);if(o.id>=NID)NID=o.id+1;OBJS.push(o);build(o);rehash();ROADS.updateBlocked();return o.id;}
-  function remove(id){const h=HND.get(id);if(!h)return false;const rm=(A,L)=>{for(const x of L){const i=A.indexOf(x);if(i>=0)A.splice(i,1);}};rm(BX,h.boxes);rm(BL,h.bl);rm(RAMPS,h.ramps);rm(PADS,h.pads);
+  function remove(id){const h=HND.get(id);if(!h)return false;const rm=(A,L)=>{for(const x of L){const i=A.indexOf(x);if(i>=0)A.splice(i,1);}};rm(BX,h.boxes);rm(BL,h.bl);rm(RAMPS,h.ramps);rm(PADS,h.pads);rm(LOOPS,h.loops);rm(PIPES,h.pipes);for(let i=HOOPS.length-1;i>=0;i--)if(HOOPS[i].oid===id)HOOPS.splice(i,1);
     if(h.host)h.host.deco=h.host.deco.filter(k=>!(k[0]==='pad'&&h.pads.includes(k[1])));HND.delete(id);const i=OBJS.findIndex(o=>o.id===id);if(i>=0)OBJS.splice(i,1);rehash();ROADS.updateBlocked();return true;}
-  // --- ROADS: mutable road graph (future cops / Z traffic / builder mode). nodes {id,x,z,kind}, edges {id,a,b,len,w,kind,lanes[2],blockedBy[]} (ids stay stable;
-  // removed edges become null). Lanes: one per direction {from,to,dir,yaw,off}; spawns = lane midpoints. CHAINS = straight runs of edges with a WANTED: Z TAKEOVER
-  // style 1-D frame (its traffic/cops live on {d along the road, lane index, lateral = lane*3.4 m}): chainPos(ci,d,lane) -> {x,z,yaw}, +lane = a->b.
-  // addRoad / removeEdge / rebuild recompute connectivity, lanes, spawns, chains; updateBlocked() marks edges whose road strip overlaps a solid collider
-  // (blockedBy [{oid,d0,d1}]); isBlocked(edge,d0,d1) is the hook traffic AI asks before deciding to stop, U-turn or reroute. toJSON()/fromJSON() save the roads.
+  // --- ROADS: mutable road graph (future cops / Z traffic / builder mode). Same API as NEON WORLD 1 (nodes / edges / lanes / spawns / chains / blockedBy). ---
   const ROADS=(()=>{const G={nodes:[],edges:[],adj:[],spawns:[],chains:[],laneW:3.4},ix=new Map();
     const nid=(x,z,k)=>{x=Math.round(x*10)/10;z=Math.round(z*10)/10;const kk=x+','+z;if(!ix.has(kk)){ix.set(kk,G.nodes.length);G.nodes.push({id:G.nodes.length,x,z,kind:k});}return ix.get(kk);};
     G.addEdge=(a,b,w,kind)=>{const A=G.nodes[a],B=G.nodes[b],len=Math.hypot(B.x-A.x,B.z-A.z);if(len<1)return-1;const e={id:G.edges.length,a,b,len,w,kind,lanes:[],blockedBy:[]};G.edges.push(e);return e.id;};
@@ -4567,14 +4637,12 @@ const CITY=(()=>{let sd=90210;const cr=()=>(sd=(sd*16807)%2147483647)/2147483647
       for(const e of E){const A=N[e.a],B=N[e.b],ux=(B.x-A.x)/e.len,uz=(B.z-A.z)/e.len,o=e.w/4;G.adj[e.a].push(e.id);G.adj[e.b].push(e.id);
         e.lanes=[{from:e.a,to:e.b,dir:[ux,uz],yaw:Math.atan2(ux,uz),off:[uz*o,-ux*o]},{from:e.b,to:e.a,dir:[-ux,-uz],yaw:Math.atan2(-ux,-uz),off:[-uz*o,ux*o]}];
         if(e.kind!=='tunnel')e.lanes.forEach((l,li)=>G.spawns.push({edge:e.id,lane:li,x:(A.x+B.x)/2+l.off[0],z:(A.z+B.z)/2+l.off[1],yaw:l.yaw}));}
-      // chains: follow collinear edges through nodes
       const seen=new Set(),dirOf=(e)=>{const A=N[e.a],B=N[e.b];return[(B.x-A.x)/e.len,(B.z-A.z)/e.len];},same=(p,q)=>Math.abs(p[0]-q[0])<1e-6&&Math.abs(p[1]-q[1])<1e-6;G.chains=[];
       for(const e of E){if(seen.has(e.id))continue;const u=dirOf(e),run=[e];seen.add(e.id);
         for(const fwd of[1,0]){let cur=e;for(;;){const n=fwd?cur.b:cur.a,nx=G.adj[n].map(i=>G.edges[i]).find(f=>!seen.has(f.id)&&same(dirOf(f),u)&&(fwd?f.a===n:f.b===n));if(!nx)break;seen.add(nx.id);fwd?run.push(nx):run.unshift(nx);cur=nx;}}
         const s0=N[run[0].a],s1=N[run[run.length-1].b];G.chains.push({id:G.chains.length,edges:run.map(f=>f.id),x0:s0.x,z0:s0.z,ux:u[0],uz:u[1],len:Math.hypot(s1.x-s0.x,s1.z-s0.z),w:run[0].w,lanesPerDir:run[0].w>=30?3:2,laneW:LW,kind:run[0].kind});}
       G.updateBlocked();return G;};
     G.chainPos=(ci,d,lane)=>{const c=G.chains[ci],side=lane*G.laneW;return{x:c.x0+c.ux*d+c.uz*side,z:c.z0+c.uz*d-c.ux*side,yaw:Math.atan2(c.ux,c.uz)+(lane<0?Math.PI:0)};};
-    // collider overlap -> blocked stretch of an edge (samples every 4 m across the road strip; solid boxes that reach the road surface)
     G.updateBlocked=()=>{for(const e of G.edges){if(!e)continue;e.blockedBy=[];const A=G.nodes[e.a],B=G.nodes[e.b],ux=(B.x-A.x)/e.len,uz=(B.z-A.z)/e.len,hw=e.w/2-1;let curB=null;
       for(let d=2;d<e.len-2;d+=4){let hit=null;for(const s of[-hw,0,hw]){const x=A.x+ux*d+uz*s,z=A.z+uz*d-ux*s,pr=probe(x,z,0.3);if(pr.wl&&pr.wl.oid!=null&&!pr.wl.ramp){hit=pr.wl.oid;break;}}
         if(hit!=null){if(curB&&curB.oid===hit&&curB.d1>=d-4.1)curB.d1=d;else{curB={oid:hit,d0:d,d1:d};e.blockedBy.push(curB);}}}}};
@@ -4582,32 +4650,40 @@ const CITY=(()=>{let sd=90210;const cr=()=>(sd=(sd*16807)%2147483647)/2147483647
     G.toJSON=()=>G.edges.filter(Boolean).map(e=>({a:[G.nodes[e.a].x,G.nodes[e.a].z],b:[G.nodes[e.b].x,G.nodes[e.b].z],w:e.w,kind:e.kind}));
     G.fromJSON=(L)=>{G.nodes.length=0;G.edges.length=0;ix.clear();for(const r of L){const a=nid(r.a[0],r.a[1],r.kind),b=nid(r.b[0],r.b[1],r.kind);G.addEdge(a,b,r.w,r.kind);}return G.rebuild();};
     return G;})();
-  // moving things (future traffic Zs / cops): push {x,y,z,rad,draw(d)} into DYN and they join the painter sort with the buildings
   const DYN=[];
   const STEP=0.7,WM=0.8,CARH=1.4;
-  // probe(x,z,y): floor under her, ceiling above her, a wall she is inside of
-  function probe(x,z,y,py){if(py==null)py=y;const yh=Math.max(y,py),yl=Math.min(y,py);let fl=0,ce=1e9,wl=null;const L=HM.get(key(Math.floor(x/CS),Math.floor(z/CS)));if(L)for(const q of L){const m=q.y0>0||q.ramp?0:WM;if(x<q.x0-m||x>q.x1+m||z<q.z0-m||z>q.z1+m)continue;const ins=x>=q.x0&&x<=q.x1&&z>=q.z0&&z<=q.z1;
-      if(q.ramp){const rh=q.y1*clamp([(z-q.z0)/(q.z1-q.z0),(x-q.x0)/(q.x1-q.x0),(q.z1-z)/(q.z1-q.z0),(q.x1-x)/(q.x1-q.x0)][q.dir||0],0,1);if(yh>=rh-0.9)fl=Math.max(fl,rh);else wl=wl||q;continue;}
+  const rampH=(q,x,z)=>{let t=clamp([(z-q.z0)/(q.z1-q.z0),(x-q.x0)/(q.x1-q.x0),(q.z1-z)/(q.z1-q.z0),(q.x1-x)/(q.x1-q.x0)][q.dir||0],0,1);if(q.prof==='crest')t=t<.88?t/.88:(1-t)/.12;return q.yb+(q.y1-q.yb)*t;};
+  // probe(x,z,y): floor under her, ceiling above her, a wall she is inside of; st = on a stick surface (half-pipe)
+  function probe(x,z,y,py){if(py==null)py=y;const yh=Math.max(y,py),yl=Math.min(y,py),g0=gnd(x,z);let fl=g0[0],ce=1e9,wl=null;const L=HM.get(key(Math.floor(x/CS),Math.floor(z/CS)));if(L)for(const q of L){const m=q.y0>0||q.ramp?0:WM;if(x<q.x0-m||x>q.x1+m||z<q.z0-m||z>q.z1+m)continue;const ins=x>=q.x0&&x<=q.x1&&z>=q.z0&&z<=q.z1;
+      if(q.ramp){const rh=rampH(q,x,z);if(yh>=rh-0.9)fl=Math.max(fl,rh);else wl=wl||q;continue;}
       if(yh>=q.y1-STEP){if(ins)fl=Math.max(fl,q.y1);}else if(yl+CARH<=q.y0+0.3){if(ins)ce=Math.min(ce,q.y0);}else wl=wl||q;}
-    return{fl,ce,wl};}
-  { // default street grid + highway (with bridge and tunnel stretches)
+    return{fl,ce,wl,st:g0[1]&&fl===g0[0]?1:0};}
+  { // street grid (100 m in x, 200 m in z) + highway (bridge, tunnel) + race track loop + track connector
     const xs=[];for(let x=150;x<=XS1;x+=100)xs.push(x,-x);xs.sort((a,b)=>a-b);const o={noRebuild:1};
     for(const x of xs){if(x===HW.x){ROADS.addRoad(x,ZS0-400,x,ZS1+400,Object.assign({w:30,kind:'highway',kindAt:(X,Z)=>Z>RIV.z0-50&&Z<RIV.z1+50?'bridge':(Z>TUN.z0&&Z<TUN.z1?'tunnel':'highway')},o));continue;}
       ROADS.addRoad(x,ZS0,x,1700,o);ROADS.addRoad(x,1900,x,ZS1,o);}
-    for(let z=ZS0;z<=ZS1;z+=100){if(z>RIV.z0-10&&z<RIV.z1+10)continue;ROADS.addRoad(-XS1,z,-150,z,o);ROADS.addRoad(150,z,XS1,z,o);}
+    for(let z=ZS0;z<=ZS1;z+=200){if(z>RIV.z0-10&&z<RIV.z1+10)continue;ROADS.addRoad(-XS1,z,-150,z,o);ROADS.addRoad(150,z,XS1,z,o);}
+    const T=TRACK,pts=trackPts(0,12);for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];ROADS.addRoad(a[0],a[1],b[0],b[1],Object.assign({w:T.w,kind:'track',step:1e9},o));}
+    ROADS.addRoad(XS1,1100,T.cx-T.R,1100,Object.assign({kind:'street',step:120},o));
     ROADS.rebuild();}
+  // race track: stadium-shaped oval (two straights along z + two half-circle bends); off = lateral offset from the centre line (+ = outside)
+  function trackPts(off,nb){const T=TRACK,o=[],R=T.R+off,h=T.L/2;for(let i=0;i<=6;i++)o.push([T.cx+R,T.cz-h+T.L*i/6]);for(let i=1;i<nb;i++){const a=Math.PI*i/nb;o.push([T.cx+R*Math.cos(a),T.cz+h+R*Math.sin(a)]);}
+    for(let i=0;i<=6;i++)o.push([T.cx-R,T.cz+h-T.L*i/6]);for(let i=1;i<nb;i++){const a=Math.PI+Math.PI*i/nb;o.push([T.cx+R*Math.cos(a),T.cz-h+R*Math.sin(a)]);}return o;}
+  function trackDist(x,z){const T=TRACK,h=T.L/2,dz=z<T.cz-h?z-(T.cz-h):z>T.cz+h?z-(T.cz+h):0;return Math.hypot(x-T.cx,dz)-T.R;}
   const inR=(x,z,r)=>x>=r.x0&&x<=r.x1&&z>=r.z0&&z<=r.z1;
-  // surfaceAt(x,z): 'paved' (runway, taxiway, streets, highway, bridges, tunnel, ramps, plazas/sidewalks), 'grass', 'park', 'water'
+  // surfaceAt(x,z): 'paved' (runway, taxiway, streets, highway, bridges, tunnel, ramps, plazas, track, half-pipe), 'grass', 'park', 'water'
   function surfaceAt(x,z){if(Math.abs(x)<=16&&z>=-60&&z<=1500)return'paved';if(inR(x,z,TAXI)||(x>=0&&x<=62&&z>=-20&&z<=12))return'paved';
-    for(const r of RAMPS)if(inR(x,z,r))return'paved';
-    if(z>=RIV.z0&&z<=RIV.z1)return(Math.abs(x)<=14||Math.abs(x-HW.x)<=HW.hw)?'paved':'water';
+    for(const r of RAMPS)if(inR(x,z,r))return'paved';for(const Pp of PIPES)if(x>Pp.x0&&x<Pp.x1&&z>=Pp.z0&&z<=Pp.z1)return'paved';
+    if(z>=RIV.z0&&z<=RIV.z1)return bridgeK(x)<0?'paved':'water';
     if(Math.abs(x-HW.x)<=HW.hw&&z>=ZS0-400&&z<=ZS1+400)return'paved';
+    if(Math.abs(trackDist(x,z))<=TRACK.w/2+1)return'paved';if(Math.abs(z-1100)<=10&&x>=XS1&&x<=TRACK.cx-TRACK.R)return'paved';
     if(Math.hypot(x-STAD.x,(z-STAD.z)/.8)<STAD.r-12)return'park';
     if(x>=XS0-10&&x<=XS1+10&&z>=ZS0-10&&z<=ZS1+10&&Math.abs(x)>=140){if(x>=TUN.x0-5&&x<=TUN.x1+5&&z>=TUN.z0-5&&z<=TUN.z1+5)return'grass';
-      if(inR(x,z,PARK)){const sx=((Math.abs(x)-150)%100+100)%100,sz=((z+300)%100+100)%100;return(sx<=10||sx>=90||sz<=10||sz>=90)?'paved':'park';}return'paved';}
+      if(inR(x,z,PARK)){const sx=((Math.abs(x)-150)%100+100)%100,sz=((z+300)%200+200)%200;return(sx<=10||sx>=90||sz<=10||sz>=190)?'paved':'park';}return'paved';}
     return'grass';}
   const padAt=(x,z,y)=>PADS.find(p=>Math.abs(p.y-y)<1&&inR(x,z,p))||null;
-  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,BX,RAMPS,PADS,TREES,LOTS,RIV,HW,TUN,PARK,STAD,TAXI,DT,XS0,XS1,ZS0,ZS1,probe,surfaceAt,padAt,inTunnel:(x,z)=>x>TUN.bx0&&x<TUN.bx1&&z>TUN.z0&&z<TUN.z1};})();
+  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,BX,RAMPS,PADS,TREES,LOTS,HOOPS,LOOPS,PIPES,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,XS0,XS1,ZS0,ZS1,
+    probe,gnd,riverY,pipeY,rampH,trackPts,trackDist,surfaceAt,padAt,inTunnel:(x,z)=>x>TUN.bx0&&x<TUN.bx1&&z>TUN.z0&&z<TUN.z1};})();
 const surfaceAt=CITY.surfaceAt;
 // walls: glancing = SKIM (same skimDeg / skimKeep), steep = HARD HIT (same impactKeep * cos^impactExp). She is pushed out and turned along the wall: no reset, no damage
 function cityWall(q,px,pz){const T=TUNE,m=q.y0>0||q.ramp?0:0.8;let nx=0,nz=0;
@@ -4619,72 +4695,148 @@ function cityWall(q,px,pz){const T=TUNE,m=q.y0>0||q.ramp?0:0.8;let nx=0,nz=0;
   else if(P.ground&&P.v<12){P.v*=.5;P.bumps=(P.bumps||0)+1;toast('BUMP!');}
   else{P.hards=(P.hards||0)+1;P.wallHards=(P.wallHards||0)+1;P.landKmh=P.v*3.6;P.v*=T.impactKeep*Math.pow(Math.cos(a),T.impactExp);P.roll=null;P.flip=null;fxBurst('spark',30);fxBurst('smoke',6);toast('HARD HIT!');navigator.vibrate&&navigator.vibrate([120,60,200]);}
   P.hd=nh;P.yaw=nh;}
-// after the move: walls, tunnel ceiling (gentle cap, never a crash), floor height under her (roofs / ramps are ground)
-function cityMove(px,pz,py){let pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl){cityWall(pr.wl,px,pz);pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl){P.x=px;P.z=pz;pr=CITY.probe(P.x,P.z,P.y,py);}}
+// loop-de-loop ride: energy along the circle (v^2 = v0^2 - 2 g y); fast enough = full loop and out the exit lane, too slow = rolls back out the way she came
+function loopStep(dt){const o=P.loop,L=o.L,g=9.8;let y=L.R*(1-Math.cos(o.th)),v=Math.sqrt(Math.max(0,o.v0*o.v0-2*g*y))*0.995;
+  if(o.dn>0&&!o.full&&(v<1||o.th>=Math.PI/2))o.dn=-1;o.th+=o.dn*Math.max(v,1.2)*dt/L.R;
+  let done=0;if(o.th>=2*Math.PI){o.th=2*Math.PI;done=1;}else if(o.th<=0){o.th=0;done=-1;}
+  y=L.R*(1-Math.cos(o.th));v=Math.sqrt(Math.max(0,o.v0*o.v0-2*g*y))*0.995;const f=L.R*Math.sin(o.th),lat=L.off*o.th/(2*Math.PI);
+  P.x=L.x+L.ux*f+L.uz*lat;P.z=L.z+L.uz*f-L.ux*lat;P.y=y;P.v=Math.max(v,0.5);P.ground=true;P.gam=0;P.q=0;P.bank=0;P.yaw=P.hd=Math.atan2(L.ux,L.uz)+(o.dn<0?Math.PI:0);P.pitch=o.dn>0?(o.th>Math.PI?o.th-2*Math.PI:o.th):-(o.th);
+  if(typeof VP!=='undefined')VP.cp=null;
+  if(done){P.loop=null;P.y=0;P.pitch=0;if(done>0){P.loops=(P.loops||0)+1;L.n++;toast('LOOP!');}else{P.v=Math.max(2,Math.min(P.v,o.v0));toast('TOO SLOW!');}}
+  P.gy=P.y;return{fl:P.y,ce:1e9,wl:null,st:1};}
+// after the move: walls, tunnel ceiling (gentle cap, never a crash), floor height under her (roofs / ramps / bank lips / pipes are ground), river drag, hoops, loop entry
+function cityMove(px,pz,py,dt){dt=dt||1/30;if(P.loop)return loopStep(dt);
+  let pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl){cityWall(pr.wl,px,pz);pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl){P.x=px;P.z=pz;pr=CITY.probe(P.x,P.z,P.y,py);}}
   if(pr.ce<1e9&&P.y+1.4>pr.ce){P.y=Math.max(pr.fl,pr.ce-1.4);if(!P.ground){P.gam=Math.min(P.gam,0);P.pitch=Math.min(P.pitch,2*D);}P.ceil=(P.ceil||0)+1;}
+  // half-pipe: speed follows the height she climbs or drops (energy); runs out going up = rolls back down
+  if(P.ground&&pr.st&&P._pg!=null){const dy=pr.fl-P._pg,v2=P.v*P.v-2*9.8*dy;if(v2<=0.25&&dy>0){P.v=0.4;P.yaw+=Math.PI;P.hd=P.yaw;P.pipeTurns=(P.pipeTurns||0)+1;}else P.v=Math.sqrt(Math.max(0.16,v2));}
+  P._pg=P.ground&&pr.st?pr.fl:null;
+  // river: sinks (floor = -RIV.sink) and drags; drives back out over the bank lip
+  const wet=P.ground&&pr.fl<-0.3;if(wet){P.v-=P.v*TUNE.waterDrag*dt;if(!P.inWater){P.splash=(P.splash||0)+1;toast('SPLASH!');}}P.inWater=wet;
+  for(const h of CITY.HOOPS){const a=(px-h.x)*h.nx+(pz-h.z)*h.nz,b=(P.x-h.x)*h.nx+(P.z-h.z)*h.nz;if((a<0)!==(b<0)&&Math.abs(a-b)<20){const t=a/(a-b),cx=px+(P.x-px)*t,cz=pz+(P.z-pz)*t,cy=py+(P.y-py)*t;if(Math.hypot(cx-h.x,cz-h.z,cy-h.y)<h.r){h.hit=1;P.hoops=(P.hoops||0)+1;toast('HOOP!');}}}
+  if(P.ground&&!P.wreck&&P.v>8)for(const L of CITY.LOOPS){const f0=(px-L.x)*L.ux+(pz-L.z)*L.uz,f1=(P.x-L.x)*L.ux+(P.z-L.z)*L.uz,lat=(P.x-L.x)*L.uz-(P.z-L.z)*L.ux;
+    if(f0<0&&f1>=0&&Math.abs(lat)<L.w/2&&Math.sin(P.hd)*L.ux+Math.cos(P.hd)*L.uz>Math.cos(35*D)){P.loop={L,th:0,dn:1,v0:P.v,full:P.v*P.v>=5.4*9.8*L.R};return loopStep(dt);}}
   P.gy=pr.fl;return pr;}
 // off-road: only while fully rolling (0.3 s after any touchdown / skim / kick), never on roofs
 function offRoadK(){if(P.gy>0.3||(P.gT||0)<0.3)return 1;return surfaceAt(P.x,P.z)==='paved'?1:TUNE.offRoad;}
 // ---------- render ----------
-const CDRAW={dist:950,far:170,winDist:90,streets:360};
+const CDRAW={dist:950,far:170,winDist:90,streets:360,outline:1900};
 function cpoly(c){const o=[];for(let i=0;i<c.length;i++){const a=c[i],b=c[(i+1)%c.length],ai=a[2]>=NEAR,bi=b[2]>=NEAR;if(ai)o.push(a);if(ai!==bi){const t=(NEAR-a[2])/(b[2]-a[2]);o.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,NEAR]);}}return o;}
 let PT=null;function pathPoly(c){const o=cpoly(c);if(o.length<3)return;const f=H*0.9,g=PT||ctx;for(let i=0;i<o.length;i++){const q=o[i],X=W/2+q[0]*f/q[2],Y=H/2-q[1]*f/q[2];i?g.lineTo(X,Y):g.moveTo(X,Y);}g.closePath();}
 function pathSeg(a,b){let p=camS(a[0],a[1],a[2]),q=camS(b[0],b[1],b[2]);if(p[2]<NEAR&&q[2]<NEAR)return;if(p[2]<NEAR||q[2]<NEAR){const t=(NEAR-p[2])/(q[2]-p[2]),m=[p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t,NEAR];if(p[2]<NEAR)p=m;else q=m;}const f=H*0.9,g=PT||ctx;g.moveTo(W/2+p[0]*f/p[2],H/2-p[1]*f/p[2]);g.lineTo(W/2+q[0]*f/q[2],H/2-q[1]*f/q[2]);}
 const wpoly=(pts)=>pathPoly(pts.map(p=>camS(p[0],p[1],p[2])));
+function pathLine(pts){for(let i=1;i<pts.length;i++)pathSeg(pts[i-1],pts[i]);}
 function boxFaces(q){const C=[];for(const y of[q.y0,q.y1])for(const[x,z]of[[q.x0,q.z0],[q.x1,q.z0],[q.x1,q.z1],[q.x0,q.z1]])C.push(camS(x,y,z));
   if(cam.x<q.x0)pathPoly([C[0],C[3],C[7],C[4]]);else if(cam.x>q.x1)pathPoly([C[1],C[2],C[6],C[5]]);
   if(cam.z<q.z0)pathPoly([C[0],C[1],C[5],C[4]]);else if(cam.z>q.z1)pathPoly([C[3],C[2],C[6],C[7]]);
   if(cam.y>q.y1)pathPoly([C[4],C[5],C[6],C[7]]);else if(cam.y<q.y0)pathPoly([C[0],C[1],C[2],C[3]]);}
-function winRows(b,q,d){const st=d<120?4.5:9,s=H*0.9/d;let any=false;
-  for(let y=q.y0+3;y<q.y1-2;y+=st){if(((Math.floor(y/st)*31+b.wseed)%7)===0)continue;
+// windows: human-scale floors (3.5 m) above a 4.5 m ground floor; the ground floor itself gets doors (drawBldg)
+function winRows(b,q,d){const st=d<120?FLOORH:FLOORH*2,s=H*0.9/d;let any=false;
+  for(let y=q.y0+(q.y0>0?2:GFH+1.8);y<q.y1-1.5;y+=st){if(((Math.floor(y/st)*31+b.wseed)%7)===0)continue;
     if(cam.x<q.x0){pathSeg([q.x0-.2,y,q.z0+2],[q.x0-.2,y,q.z1-2]);any=true;}else if(cam.x>q.x1){pathSeg([q.x1+.2,y,q.z0+2],[q.x1+.2,y,q.z1-2]);any=true;}
     if(cam.z<q.z0){pathSeg([q.x0+2,y,q.z0-.2],[q.x1-2,y,q.z0-.2]);any=true;}else if(cam.z>q.z1){pathSeg([q.x0+2,y,q.z1+.2],[q.x1-2,y,q.z1+.2]);any=true;}}
   return s;}
+const GFH=4.5,FLOORH=3.5;
+function drawSign(g,d){const fr=(cam.x-g.x)*g.nx+(cam.z-g.z)*g.nz;if(fr<=0||d>520)return;const tx=-g.nz,tz=g.nx,hw=g.w/2,hh=g.h/2;
+  const pts=[[g.x-tx*hw,g.y-hh,g.z-tz*hw],[g.x+tx*hw,g.y-hh,g.z+tz*hw],[g.x+tx*hw,g.y+hh,g.z+tz*hw],[g.x-tx*hw,g.y+hh,g.z-tz*hw]];
+  ctx.beginPath();wpoly(pts);ctx.fillStyle='#07030d';ctx.fill();ctx.strokeStyle=g.c;ctx.lineWidth=d<200?2.4:1.4;ctx.shadowColor=g.c;ctx.shadowBlur=d<90?8:0;ctx.stroke();
+  const a=proj(...pts[0]),b=proj(...pts[1]),c=proj(g.x,g.y,g.z),e=proj(g.x,g.y+hh,g.z);if(a&&b&&c&&e&&d<380){const pw=Math.hypot(b[0]-a[0],b[1]-a[1]),ph=Math.abs(c[1]-e[1])*1.5,fs=Math.min(ph,pw/(g.t.length*.68));
+    if(fs>=5){ctx.font=`900 ${fs.toFixed(1)}px system-ui,Arial,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=g.c;ctx.fillText(g.t,c[0],c[1]);}}ctx.shadowBlur=0;}
 function drawDeco(b,d){const t=P.simT||0;for(const k of b.deco){
   if(k[0]==='pad'){const p=k[1];if(cam.y<p.y)continue;ctx.beginPath();const n=18;const pts=[];for(let i=0;i<n;i++){const a=i/n*Math.PI*2;pts.push([p.x+Math.cos(a)*p.r,p.y+.05,p.z+Math.sin(a)*p.r]);}wpoly(pts);
     pathSeg([p.x-p.r*.35,p.y+.05,p.z-p.r*.45],[p.x-p.r*.35,p.y+.05,p.z+p.r*.45]);pathSeg([p.x+p.r*.35,p.y+.05,p.z-p.r*.45],[p.x+p.r*.35,p.y+.05,p.z+p.r*.45]);pathSeg([p.x-p.r*.35,p.y+.05,p.z],[p.x+p.r*.35,p.y+.05,p.z]);
     ctx.strokeStyle=p.hit?'#ffb020':'#7dff6b';ctx.lineWidth=2.5;ctx.stroke();
     if(d<900){ctx.beginPath();for(const[x,z]of[[p.x0+1,p.z0+1],[p.x1-1,p.z0+1],[p.x1-1,p.z1-1],[p.x0+1,p.z1-1]])pathSeg([x,p.y,z],[x,p.y+1,z]);ctx.strokeStyle=(t*2%1)<.5?'#7dff6b':'#1d5a2a';ctx.lineWidth=3;ctx.stroke();}}
+  else if(k[0]==='sign')drawSign(k[1],d);
   else if(k[0]==='ant'){const[,x,z,y,h]=k;ctx.beginPath();pathSeg([x,y,z],[x,y+h,z]);ctx.strokeStyle='#8a7a9d';ctx.lineWidth=1.5;ctx.stroke();const p=proj(x,y+h,z);if(p&&(t%1.2)<.6){ctx.fillStyle='#ff2a3d';ctx.beginPath();ctx.arc(p[0],p[1],Math.max(1.5,H*1.2/p[2]),0,7);ctx.fill();}}
   else if(k[0]==='tank'&&d<700){const[,x,z,y]=k;ctx.beginPath();const r=3,h=5;wpoly([[x-r,y+2,z],[x+r,y+2,z],[x+r,y+2+h,z],[x-r,y+2+h,z]]);pathSeg([x-r*.7,y,z],[x-r*.7,y+2,z]);pathSeg([x+r*.7,y,z],[x+r*.7,y+2,z]);ctx.fillStyle='#120a18';ctx.fill();ctx.strokeStyle='#ffb020';ctx.lineWidth=1.2;ctx.stroke();}
   else if(k[0]==='cable'){const[,x,z,y]=k;ctx.beginPath();for(const dz of[-30,-15,15,30])pathSeg([x,y,z],[x,0.5,z+dz*1.0]);pathSeg([x,y,z],[x,0.5,z-60]);pathSeg([x,y,z],[x,0.5,z+60]);ctx.strokeStyle='#ffb020';ctx.lineWidth=1.3;ctx.stroke();}
   else if(k[0]==='lamp'){const[,x,z,y]=k;const p=proj(x,y+1,z);if(p){ctx.fillStyle='#fff2c0';ctx.shadowColor='#fff2c0';ctx.shadowBlur=12;ctx.beginPath();ctx.arc(p[0],p[1],Math.max(2,H*3/p[2]),0,7);ctx.fill();ctx.shadowBlur=0;}}}}
-// far buildings (> CDRAW.far): neon wireframe only, batched into one Path2D per colour (wireframes need no painter order)
+// doors + ground-floor band (near only): door slots are data (b.doors) so a walking mode can use them later
+function drawDoors(b,d){if(!b.doors||d>150)return;const q=b.boxes[0];ctx.beginPath();
+  if(cam.x<q.x0)pathSeg([q.x0-.2,GFH,q.z0],[q.x0-.2,GFH,q.z1]);else if(cam.x>q.x1)pathSeg([q.x1+.2,GFH,q.z0],[q.x1+.2,GFH,q.z1]);if(cam.z<q.z0)pathSeg([q.x0,GFH,q.z0-.2],[q.x1,GFH,q.z0-.2]);else if(cam.z>q.z1)pathSeg([q.x0,GFH,q.z1+.2],[q.x1,GFH,q.z1+.2]);
+  ctx.strokeStyle=b.c;ctx.globalAlpha=.55;ctx.lineWidth=1.2;ctx.stroke();ctx.globalAlpha=1;ctx.beginPath();
+  for(const[x,z,nx,nz]of b.doors){if((cam.x-x)*nx+(cam.z-z)*nz<=0)continue;const tx=-nz*.7,tz=nx*.7,ox=nx*.15,oz=nz*.15;pathLine([[x-tx+ox,0,z-tz+oz],[x-tx+ox,2.4,z-tz+oz],[x+tx+ox,2.4,z+tz+oz],[x+tx+ox,0,z+tz+oz]]);}
+  ctx.strokeStyle=b.wc;ctx.lineWidth=d<60?2:1.3;ctx.stroke();}
+// far buildings (> CDRAW.far) and outline blocks: neon wireframe only, batched into one Path2D per colour (wireframes need no painter order)
 const FARB=new Map();let FARF=null,FARW=null,FARD=0;function farFlush(){if(FARF){ctx.fillStyle='#0a0612';ctx.fill(FARF);FARF=null;}if(FARW){ctx.setLineDash([2,3]);ctx.strokeStyle='#ffd27a';ctx.globalAlpha=.45;ctx.lineWidth=1.3;ctx.stroke(FARW);ctx.setLineDash([]);ctx.globalAlpha=1;FARW=null;}if(!FARB.size)return;ctx.lineWidth=1.1;ctx.globalAlpha=.7;for(const[c,p]of FARB){ctx.strokeStyle=c;ctx.stroke(p);}ctx.globalAlpha=1;FARB.clear();}
 function farSil(q){/* far LOD: the face that looks most at the camera + its roof edge only */const dx=cam.x-(q.x0+q.x1)/2,dz=cam.z-(q.z0+q.z1)/2;let pts;
   if(Math.abs(dx)*(q.z1-q.z0)>Math.abs(dz)*(q.x1-q.x0)){const x=dx<0?q.x0:q.x1;pts=[[x,q.y0,q.z0],[x,q.y1,q.z0],[x,q.y1,q.z1],[x,q.y0,q.z1]];}else{const z=dz<0?q.z0:q.z1;pts=[[q.x0,q.y0,z],[q.x0,q.y1,z],[q.x1,q.y1,z],[q.x1,q.y0,z]];}
-  pathSeg(pts[0],pts[1]);pathSeg(pts[1],pts[2]);pathSeg(pts[2],pts[3]);if(FARF){PT=FARF;wpoly(pts);if(farSil.w){PT=FARW;const a=pts[0],b=pts[3];for(let y=q.y0+6;y<q.y1-4;y+=farSil.w)pathSeg(L3(a,b,.1).map((v,i)=>i===1?y:v),L3(a,b,.9).map((v,i)=>i===1?y:v));}PT=FARB.get(farSil.c);}}
-function drawBldg(b,d){if(CDRAW.nonear&&d<=CDRAW.far)return;if(d>CDRAW.far){if(CDRAW.nofar||(d>CDRAW.far*2&&b.top<30))return;if(FARF&&FARD-d>180)farFlush();if(!FARF){FARF=new Path2D();FARW=new Path2D();FARD=d;}farSil.w=d<420?20:0;let p=FARB.get(b.c);if(!p){p=new Path2D();FARB.set(b.c,p);}PT=p;farSil.c=b.c;if(d>CDRAW.far*2)farSil({x0:b.x0,x1:b.x1,z0:b.z0,z1:b.z1,y0:0,y1:b.top});else for(const q of b.boxes)farSil(q);PT=null;return;}farFlush();const a=clamp(1.5-d/CDRAW.dist,0.25,1);
+  pathSeg(pts[0],pts[1]);pathSeg(pts[1],pts[2]);pathSeg(pts[2],pts[3]);if(FARF&&!farSil.o){PT=FARF;wpoly(pts);if(farSil.w){PT=FARW;const a=pts[0],b=pts[3];for(let y=q.y0+6;y<q.y1-4;y+=farSil.w)pathSeg(L3(a,b,.1).map((v,i)=>i===1?y:v),L3(a,b,.9).map((v,i)=>i===1?y:v));}PT=FARB.get(farSil.c);}}
+function drawBldg(b,d){const ol=b.kind==='outline';if(CDRAW.nonear&&d<=CDRAW.far&&!ol)return;if(d>CDRAW.far||ol){if(CDRAW.nofar||(!ol&&d>CDRAW.far*3.5&&b.top<12))return;if(FARF&&FARD-d>180)farFlush();if(!FARF){FARF=new Path2D();FARW=new Path2D();FARD=d;}farSil.w=!ol&&d<420?20:0;farSil.o=ol;let p=FARB.get(b.c);if(!p){p=new Path2D();FARB.set(b.c,p);}PT=p;farSil.c=b.c;if(d>CDRAW.far*2||ol)farSil({x0:b.x0,x1:b.x1,z0:b.z0,z1:b.z1,y0:0,y1:b.top});else for(const q of b.boxes)farSil(q);PT=null;farSil.o=false;
+    if(!ol&&d<520)for(const k of b.deco)if(k[0]==='sign'){farFlush();drawSign(k[1],d);}return;}farFlush();const a=clamp(1.5-d/CDRAW.dist,0.25,1);
   ctx.beginPath();for(const q of b.boxes)boxFaces(q);ctx.fillStyle=b.kind==='hill'?'#05100a':'#0a0612';ctx.fill();ctx.globalAlpha=a;ctx.strokeStyle=b.c;ctx.lineWidth=d<400?1.8:1.2;ctx.stroke();
-  if(d<CDRAW.winDist&&b.kind!=='pylon'){ctx.beginPath();let s=1;for(const q of b.boxes)s=winRows(b,q,d);const lw=clamp(s*1.1,1,3.5);ctx.setLineDash([Math.max(1,b.dash[0]*s),Math.max(1.5,b.dash[1]*s)]);ctx.lineDashOffset=b.wseed%7;ctx.strokeStyle=b.wc;ctx.globalAlpha=a*.75;ctx.lineWidth=lw;ctx.stroke();ctx.setLineDash([]);}
-  ctx.globalAlpha=a;drawDeco(b,d);ctx.globalAlpha=1;}
+  if(d<CDRAW.winDist&&b.kind!=='pylon'&&b.kind!=='bill'){ctx.beginPath();let s=1;for(const q of b.boxes)s=winRows(b,q,d);const lw=clamp(s*1.1,1,3.5);ctx.setLineDash([Math.max(1,b.dash[0]*s),Math.max(1.5,b.dash[1]*s)]);ctx.lineDashOffset=b.wseed%7;ctx.strokeStyle=b.wc;ctx.globalAlpha=a*.75;ctx.lineWidth=lw;ctx.stroke();ctx.setLineDash([]);}
+  ctx.globalAlpha=a;drawDoors(b,d);drawDeco(b,d);ctx.globalAlpha=1;}
+// ramps: shared geometry per profile, batched into one fill + one stroke per style (marked = neon lip + chevrons, hidden = dim edges only)
+function rampGeo(r){const u=[[0,1],[1,0],[0,-1],[-1,0]][r.dir],lo=r.dir===0?r.z0:r.dir===1?r.x0:r.dir===2?r.z1:r.x1,hi=r.dir===0?r.z1:r.dir===1?r.x1:r.dir===2?r.z0:r.x0,
+    a0=r.dir%2?r.z0:r.x0,a1=r.dir%2?r.z1:r.x1,P3=(s,a,y)=>r.dir%2?[s,y,a]:[a,y,s],b=r.yb,t=r.y1,pk=r.prof==='crest'?lo+(hi-lo)*.88:hi;
+  const F=[[P3(lo,a0,b),P3(lo,a1,b),P3(pk,a1,t),P3(pk,a0,t)],[P3(lo,a0,b),P3(pk,a0,t),P3(pk,a0,b)],[P3(lo,a1,b),P3(pk,a1,t),P3(pk,a1,b)]];
+  if(r.prof==='crest')F.push([P3(pk,a0,t),P3(pk,a1,t),P3(hi,a1,b),P3(hi,a0,b)]);else F.push([P3(pk,a0,b),P3(pk,a1,b),P3(pk,a1,t),P3(pk,a0,t)]);
+  return{F,lip:[P3(pk,a0,t+.05),P3(pk,a1,t+.05)],lo,pk,a0,a1,P3,u};}
+function drawRamps(cx,cz,R){const C=CITY,fill=new Path2D(),mk=new Path2D(),hd=new Path2D(),lip=new Path2D(),chev=new Path2D();
+  for(const r of C.RAMPS){const mx=(r.x0+r.x1)/2,mz=(r.z0+r.z1)/2;const dr=r.hid?R*.6:R*.85;if(Math.abs(mx-cx)>dr||Math.abs(mz-cz)>dr)continue;if(r.yb>0&&cam.y<r.yb)continue;const g=rampGeo(r),o=r.hid?hd:mk;
+    PT=fill;for(const f of g.F)wpoly(f);PT=o;for(const f of g.F)wpoly(f);
+    if(!r.hid&&Math.hypot(mx-cx,mz-cz)<R*.7){PT=lip;pathSeg(g.lip[0],g.lip[1]);PT=chev;const n=r.sz==='small'?2:r.sz==='medium'?3:5,am=(g.a0+g.a1)/2,hw=(g.a1-g.a0)/2;
+      for(let i=1;i<=n;i++){const t=i/(n+1),s=g.lo+(g.pk-g.lo)*t,y=r.yb+(r.y1-r.yb)*t+.05,sb=s-(g.pk-g.lo)/(n+1)*.5;pathSeg(g.P3(sb,am-hw*.7,y-.2),g.P3(s,am,y));pathSeg(g.P3(s,am,y),g.P3(sb,am+hw*.7,y-.2));}}}
+  PT=null;ctx.fillStyle='#140a10';ctx.fill(fill);ctx.strokeStyle='#ffb020';ctx.lineWidth=2;ctx.stroke(mk);ctx.strokeStyle='rgba(150,110,170,.45)';ctx.lineWidth=1.1;ctx.stroke(hd);
+  ctx.strokeStyle='#ff4fd8';ctx.lineWidth=3;ctx.stroke(lip);ctx.strokeStyle='#7dff6b';ctx.lineWidth=2.2;ctx.stroke(chev);}
+// river bank lips: one strip per bank (neon edge line at the lip), broken only at the bridges
+function drawBanks(cx,R){const C=CITY,V=C.RIV,x0=cx-R,x1=cx+R,runs=[];let a=x0;for(const[b0,b1]of C.BRIDGES.slice().sort((p,q)=>p[0]-q[0])){if(b0>a)runs.push([a,Math.min(b0,x1)]);a=Math.max(a,b1);}if(a<x1)runs.push([a,x1]);
+  for(const s of[0,1]){const zL=s?V.z1+V.land:V.z0-V.land,zT=s?V.z1:V.z0,zW=s?V.z1-V.wet:V.z0+V.wet,face=new Path2D(),edge=new Path2D();
+    for(const[r0,r1]of runs){if(r1-r0<1)continue;const xs=[];const st=Math.max(8,(r1-r0)/40);for(let x=r0;x<r1;x+=st)xs.push(x);xs.push(r1);
+      const top=xs.map(x=>[x,C.riverY(x,zT)+.03,zT]);PT=face;wpoly([[r0,0,zL],[r1,0,zL]].concat(top.slice().reverse()));wpoly(top.concat([[r1,-V.sink,zW],[r0,-V.sink,zW]]));
+      PT=edge;pathLine(top);pathLine(xs.map(x=>[x,0.03,zL]));}
+    PT=null;ctx.fillStyle='#0b1630';ctx.fill(face);ctx.strokeStyle='#3ee6ff';ctx.lineWidth=2.4;ctx.stroke(edge);}}
+function drawTrack(cx,cz){const C=CITY,T=C.TRACK;if(Math.hypot(cx-T.cx,cz-T.cz)>CDRAW.dist+300)return;const out=C.trackPts(T.w/2,14),inn=C.trackPts(-T.w/2,14).reverse();
+  ctx.beginPath();wpoly(out.map(p=>[p[0],0.02,p[1]]));wpoly(inn.map(p=>[p[0],0.02,p[1]]));ctx.fillStyle='#0e0a16';ctx.fill('evenodd');
+  ctx.beginPath();pathLine(out.concat([out[0]]).map(p=>[p[0],0.04,p[1]]));ctx.strokeStyle='#3ee6ff';ctx.lineWidth=2.2;ctx.stroke();
+  ctx.beginPath();pathLine(inn.concat([inn[0]]).map(p=>[p[0],0.04,p[1]]));ctx.strokeStyle='#ff4fd8';ctx.stroke();
+  if(Math.hypot(cx-T.cx,cz-T.cz)<700){ctx.beginPath();const md=C.trackPts(0,14);for(let i=0;i<md.length;i+=1){const a=md[i],b=md[(i+1)%md.length];pathSeg([a[0],0.04,a[1]],[(a[0]+b[0])/2,0.04,(a[1]+b[1])/2]);}ctx.strokeStyle='rgba(255,255,255,.45)';ctx.lineWidth=1.2;ctx.stroke();
+    ctx.beginPath();for(let i=0;i<6;i++){const x=T.cx+T.R-T.w/2+i*T.w/6;pathSeg([x,0.05,T.cz],[x+T.w/12,0.05,T.cz]);pathSeg([x+T.w/12,0.05,T.cz+2],[x+T.w/6,0.05,T.cz+2]);}ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.stroke();}}
+function drawPipe(Pp,d){if(d>CDRAW.dist)return;const C=CITY,xs=[];for(let i=0;i<=24;i++)xs.push(Pp.x0+(Pp.x1-Pp.x0)*i/24);const prof=z=>xs.map(x=>[x,C.pipeY(Pp,x)+.03,z]);
+  ctx.beginPath();for(const z of[Pp.z0,Pp.z1])wpoly(prof(z).concat([[Pp.x1,0,z],[Pp.x0,0,z]]));ctx.fillStyle='#120a1c';ctx.fill();
+  ctx.beginPath();for(let z=Pp.z0;z<=Pp.z1+.1;z+=20)pathLine(prof(z));ctx.strokeStyle='rgba(62,230,255,.55)';ctx.lineWidth=1.2;ctx.stroke();
+  ctx.beginPath();const dk=Pp.F/2+Pp.C;for(const x of[Pp.cx-dk,Pp.cx+dk,Pp.cx-Pp.F/2,Pp.cx+Pp.F/2])pathSeg([x,C.pipeY(Pp,x)+.05,Pp.z0],[x,C.pipeY(Pp,x)+.05,Pp.z1]);ctx.strokeStyle='#ff4fd8';ctx.lineWidth=2.6;ctx.stroke();}
+function drawLoop(L,d){if(d>CDRAW.dist)return;ctx.beginPath();const n=40;for(const s of[-1,1]){const pts=[];for(let i=0;i<=n;i++){const th=i/n*2*Math.PI,f=L.R*Math.sin(th),y=L.R*(1-Math.cos(th))+.1,lat=L.off*th/(2*Math.PI)+s*L.w/2;pts.push([L.x+L.ux*f+L.uz*lat,y,L.z+L.uz*f-L.ux*lat]);}pathLine(pts);}
+  ctx.strokeStyle='#ffb020';ctx.lineWidth=d<300?3:1.8;ctx.shadowColor='#ffb020';ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;
+  if(d<400){ctx.beginPath();for(let i=0;i<n;i+=2){const th=i/n*2*Math.PI,f=L.R*Math.sin(th),y=L.R*(1-Math.cos(th))+.1,lat=L.off*th/(2*Math.PI);pathSeg([L.x+L.ux*f+L.uz*(lat-L.w/2),y,L.z+L.uz*f-L.ux*(lat-L.w/2)],[L.x+L.ux*f+L.uz*(lat+L.w/2),y,L.z+L.uz*f-L.ux*(lat+L.w/2)]);}ctx.strokeStyle='rgba(255,176,32,.35)';ctx.lineWidth=1;ctx.stroke();}}
+function drawHoop(h,d){if(d>700)return;ctx.beginPath();const pts=[];for(let i=0;i<20;i++){const a=i/20*Math.PI*2;pts.push([h.x+h.nz*Math.cos(a)*h.r,h.y+Math.sin(a)*h.r,h.z-h.nx*Math.cos(a)*h.r]);}wpoly(pts);ctx.strokeStyle=h.hit?'#7dff6b':'#ff4fd8';ctx.lineWidth=d<200?3:1.6;ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;}
+{for(const Pp of CITY.PIPES)CITY.DYN.push({x:Pp.cx,z:(Pp.z0+Pp.z1)/2,y:0,rad:70,draw:d=>drawPipe(Pp,d)});for(const L of CITY.LOOPS)CITY.DYN.push({x:L.x+L.ux*0+L.uz*L.off/2,z:L.z,y:L.R,rad:20,draw:d=>drawLoop(L,d)});for(const h of CITY.HOOPS)CITY.DYN.push({x:h.x,z:h.z,y:h.y,rad:8,draw:d=>drawHoop(h,d)});}
 function drawCityGround(){const cx=cam.x,cz=cam.z,R=CDRAW.dist,C=CITY;ctx.save();
-  // river + bridge decks
+  // river + bridge decks + bank lips
   const nearR=Math.abs(cz-(C.RIV.z0+C.RIV.z1)/2)<R;if(nearR){ctx.beginPath();wpoly([[cx-3000,0,C.RIV.z0],[cx+3000,0,C.RIV.z0],[cx+3000,0,C.RIV.z1],[cx-3000,0,C.RIV.z1]]);ctx.fillStyle='#03132e';ctx.fill();
   ctx.beginPath();for(let k=0;k<4;k++){const z=C.RIV.z0+8+k*14,o=((P.simT||0)*6+k*37)%60;for(let x=Math.floor((cx-R)/60)*60;x<cx+R;x+=60)pathSeg([x+o,0,z],[x+o+22,0,z]);}ctx.strokeStyle='rgba(62,230,255,.35)';ctx.lineWidth=1;if(Math.abs(cz-C.RIV.z0)<600)ctx.stroke();
+  if(Math.abs(cz-C.RIV.z0)<700)drawBanks(cx,Math.min(R,900));
   ctx.beginPath();for(const bx of[0,C.HW.x]){const w=bx?C.HW.hw:14;wpoly([[bx-w,0.05,C.RIV.z0-4],[bx+w,0.05,C.RIV.z0-4],[bx+w,0.05,C.RIV.z1+4],[bx-w,0.05,C.RIV.z1+4]]);}ctx.fillStyle='#120a18';ctx.fill();
   ctx.beginPath();for(const bx of[0,C.HW.x]){const w=bx?C.HW.hw:14;for(const s of[-1,1]){pathSeg([bx+s*w,1.2,C.RIV.z0-4],[bx+s*w,1.2,C.RIV.z1+4]);pathSeg([bx+s*w,0,C.RIV.z0-4],[bx+s*w,0,C.RIV.z1+4]);}}ctx.strokeStyle='#ffb020';ctx.lineWidth=1.6;ctx.stroke();}
   // park + stadium field
   ctx.beginPath();if(Math.hypot(cx+250,cz-1100)<R)wpoly([[C.PARK.x0,0,C.PARK.z0],[C.PARK.x1,0,C.PARK.z0],[C.PARK.x1,0,C.PARK.z1],[C.PARK.x0,0,C.PARK.z1]]);if(Math.hypot(cx-C.STAD.x,cz-C.STAD.z)<R){const pts=[];for(let i=0;i<20;i++){const a=i/20*Math.PI*2;pts.push([C.STAD.x+Math.cos(a)*(C.STAD.r-14),0,C.STAD.z+Math.sin(a)*(C.STAD.r-14)*.8]);}wpoly(pts);}ctx.fillStyle='#062a12';ctx.fill();
   if(Math.hypot(cx-C.STAD.x,cz-C.STAD.z)<R*.6){ctx.beginPath();wpoly([[C.STAD.x-50,0.05,C.STAD.z-30],[C.STAD.x+50,0.05,C.STAD.z-30],[C.STAD.x+50,0.05,C.STAD.z+30],[C.STAD.x-50,0.05,C.STAD.z+30]]);pathSeg([C.STAD.x,0.05,C.STAD.z-30],[C.STAD.x,0.05,C.STAD.z+30]);ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=1.2;ctx.stroke();}
   if(Math.hypot(cx-(C.PARK.x0+C.PARK.x1)/2,cz-(C.PARK.z0+C.PARK.z1)/2)<900){ctx.beginPath();for(const[x,z,h]of C.TREES){pathSeg([x,0,z],[x,h,z]);pathSeg([x-2,h*.7,z],[x+2,h*.7,z]);}ctx.strokeStyle='#7dff6b';ctx.lineWidth=1.4;ctx.stroke();}
-  // streets (edges), highway, taxiway
+  drawTrack(cx,cz);
+  // stunt spots: neon outline on the plaza ground
+  ctx.beginPath();for(const l of C.LOTS)if(l.stunt&&Math.hypot((l.x0+l.x1)/2-cx,(l.z0+l.z1)/2-cz)<R*.6)wpoly([[l.x0+1,0.04,l.z0+1],[l.x1-1,0.04,l.z0+1],[l.x1-1,0.04,l.z1-1],[l.x0+1,0.04,l.z1-1]]);ctx.strokeStyle='rgba(125,255,107,.45)';ctx.lineWidth=1.4;ctx.stroke();
+  // streets (edges), highway, taxiway, track connector
   ctx.beginPath();const RS=CDRAW.streets,z0=Math.max(C.ZS0,cz-RS),z1=Math.min(C.ZS1,cz+RS),x0=Math.max(C.XS0,cx-RS),x1=Math.min(C.XS1,cx+RS);
-  for(let x=150;x<=C.XS1;x+=100)for(const s of[-1,1]){const X=s*x;if(Math.abs(X-cx)>RS||X===C.HW.x)continue;for(const e of[-10,10]){const zb=Math.max(z0,C.ZS0),ze=Math.min(z1,C.ZS1);if(ze<=zb)continue;if(zb<C.RIV.z0&&ze>C.RIV.z1){pathSeg([X+e,0.02,zb],[X+e,0.02,C.RIV.z0]);pathSeg([X+e,0.02,C.RIV.z1],[X+e,0.02,ze]);}else pathSeg([X+e,0.02,zb],[X+e,0.02,ze]);}}
-  for(let z=C.ZS0;z<=C.ZS1;z+=100){if(Math.abs(z-cz)>RS||(z>=C.RIV.z0-10&&z<=C.RIV.z1+10))continue;for(const e of[-10,10])for(const s of[-1,1]){const a=s>0?140:-C.XS1,b2=s>0?C.XS1:-140,xa=Math.max(a,x0),xb=Math.min(b2,x1);if(xb>xa)pathSeg([xa,0.02,z+e],[xb,0.02,z+e]);}}
+  for(let x=150;x<=C.XS1;x+=100)for(const s of[-1,1]){const X=s*x;if(Math.abs(X-cx)>RS||X===C.HW.x)continue;for(const e of[-10,10]){const zb=Math.max(z0,C.ZS0),ze=Math.min(z1,C.ZS1);if(ze<=zb)continue;if(zb<1700&&ze>1900){pathSeg([X+e,0.02,zb],[X+e,0.02,1700]);pathSeg([X+e,0.02,1900],[X+e,0.02,ze]);}else if(zb<1700||ze>1900)pathSeg([X+e,0.02,Math.max(zb,ze>1900&&zb>=1700?1900:zb)],[X+e,0.02,Math.min(ze,zb<1700&&ze<=1900?1700:ze)]);}}
+  for(let z=C.ZS0;z<=C.ZS1;z+=200){if(Math.abs(z-cz)>RS||(z>=C.RIV.z0-10&&z<=C.RIV.z1+10))continue;for(const e of[-10,10])for(const s of[-1,1]){const a=s>0?140:-C.XS1,b2=s>0?C.XS1:-140,xa=Math.max(a,x0),xb=Math.min(b2,x1);if(xb>xa)pathSeg([xa,0.02,z+e],[xb,0.02,z+e]);}}
+  if(Math.abs(cz-1100)<RS)for(const e of[-10,10])pathSeg([C.XS1,0.02,1100+e],[C.TRACK.cx-C.TRACK.R-C.TRACK.w/2,0.02,1100+e]);
   ctx.strokeStyle='rgba(62,230,255,.35)';ctx.lineWidth=1.2;ctx.stroke();
   ctx.beginPath();for(const e of[-C.HW.hw,C.HW.hw])pathSeg([C.HW.x+e,0.03,Math.max(C.ZS0-400,cz-R)],[C.HW.x+e,0.03,Math.min(C.ZS1+400,cz+R)]);
   for(const e of[C.TAXI.x0,C.TAXI.x1])pathSeg([e,0.03,C.TAXI.z0],[e,0.03,C.TAXI.z1]);ctx.strokeStyle='#ffb020';ctx.lineWidth=1.8;ctx.stroke();
   if(Math.abs(cx-C.HW.x)<700){ctx.beginPath();for(let z=Math.floor((cz-500)/24)*24;z<cz+700;z+=24)for(const e of[-5,5])pathSeg([C.HW.x+e,0.03,z],[C.HW.x+e,0.03,z+10]);ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=1.2;ctx.stroke();}
-  // ramps
-  for(const r of C.RAMPS){if(Math.hypot(r.x0-cx,r.z0-cz)>R)continue;ctx.beginPath();wpoly([[r.x0,0,r.z0],[r.x1,0,r.z0],[r.x1,r.y1,r.z1],[r.x0,r.y1,r.z1]]);wpoly([[r.x0,0,r.z0],[r.x0,r.y1,r.z1],[r.x0,0,r.z1]]);wpoly([[r.x1,0,r.z0],[r.x1,r.y1,r.z1],[r.x1,0,r.z1]]);ctx.fillStyle='#140a10';ctx.fill();ctx.strokeStyle='#ffb020';ctx.lineWidth=2;ctx.stroke();
-    ctx.beginPath();const n=5,mx=(r.x0+r.x1)/2,hw=(r.x1-r.x0)/2;for(let i=1;i<=n;i++){const t=i/(n+1),z=r.z0+(r.z1-r.z0)*t,y=r.y1*t+.05;pathSeg([mx-hw*.7,y-.25,z-3],[mx,y,z]);pathSeg([mx,y,z],[mx+hw*.7,y-.25,z-3]);}ctx.strokeStyle='#7dff6b';ctx.lineWidth=2.2;ctx.stroke();}
+  drawRamps(cx,cz,R);
   ctx.restore();}
+// in the river: the water line covers the bottom of the car
+function drawWaterline(){if(!P.inWater||P.loop)return;const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),rx=fz,rz=-fx,L=3.2,Wd=1.6,t=P.simT||0;ctx.save();ctx.beginPath();
+  wpoly([[P.x-fx*L-rx*Wd,0,P.z-fz*L-rz*Wd],[P.x+fx*L-rx*Wd,0,P.z+fz*L-rz*Wd],[P.x+fx*L+rx*Wd,0,P.z+fz*L+rz*Wd],[P.x-fx*L+rx*Wd,0,P.z-fz*L+rz*Wd]]);ctx.fillStyle='rgba(3,19,46,.82)';ctx.fill();
+  ctx.beginPath();const n=16,r=3.6+(t*3%1.2);const pts=[];for(let i=0;i<n;i++){const a=i/n*Math.PI*2;pts.push([P.x+Math.cos(a)*r,0.02,P.z+Math.sin(a)*r*1.4]);}wpoly(pts);ctx.strokeStyle='rgba(62,230,255,.6)';ctx.lineWidth=1.4;ctx.stroke();ctx.restore();}
 function drawTunnelInside(){const C=CITY,T=C.TUN;if(!(cam.x>T.bx0-2&&cam.x<T.bx1+2&&cam.z>T.z0-60&&cam.z<T.z1+10))return;ctx.save();ctx.beginPath();
   for(let z=T.z0+6;z<T.z1;z+=12)for(const x of[T.bx0+.6,T.bx1-.6])pathSeg([x,T.ceil-1.2,z],[x,T.ceil-1.2,z+4]);ctx.strokeStyle='#ffb020';ctx.shadowColor='#ffb020';ctx.shadowBlur=10;ctx.lineWidth=4;ctx.stroke();ctx.shadowBlur=0;
   ctx.beginPath();for(let z=T.z0+12;z<T.z1;z+=24)pathSeg([C.HW.x,T.ceil-.1,z],[C.HW.x,T.ceil-.1,z+8]);ctx.strokeStyle='#fff2c0';ctx.lineWidth=3;ctx.stroke();
   ctx.beginPath();for(const x of[T.bx0+.3,T.bx1-.3])pathSeg([x,1,T.z0],[x,1,T.z1]);ctx.strokeStyle='#3ee6ff';ctx.lineWidth=2;ctx.stroke();ctx.restore();}
-function cityItems(items){const R2=CDRAW.dist**2,fx=W/(H*0.9)/2*1.3+.2;for(const b of CITY.BL){const dx=b.cx-cam.x,dz=b.cz-cam.z,d=dx*dx+dz*dz;if(d>R2)continue;const c=camS(b.cx,Math.min(b.top,Math.max(0,cam.y)),b.cz),r=b.rad+4;if(c[2]<-r)continue;if(Math.abs(c[0])-r>(Math.max(c[2],0)+r)*fx)continue;items.push([d,'t',b]);}for(const m of CITY.DYN){const d=(m.x-cam.x)**2+(m.z-cam.z)**2;if(d<R2)items.push([d,'t',m]);}}
+function cityItems(items){const R2=CDRAW.dist**2,O2=CDRAW.outline**2,fx=W/(H*0.9)/2*1.3+.2;for(const b of CITY.BL){const dx=b.cx-cam.x,dz=b.cz-cam.z,d=dx*dx+dz*dz;if(d>(b.kind==='outline'?O2:R2))continue;const c=camS(b.cx,Math.min(b.top,Math.max(0,cam.y)),b.cz),r=b.rad+4;if(c[2]<-r)continue;if(Math.abs(c[0])-r>(Math.max(c[2],0)+r)*fx)continue;items.push([d,'t',b]);}for(const m of CITY.DYN){const d=(m.x-cam.x)**2+(m.z-cam.z)**2;if(d<R2)items.push([d,'t',m]);}}
 // ===== SMOOTH LANDINGS (NEON WORLD): visual pose layer. touchDown() snaps pitch to the nose-dip, bank to 0 and the path heading to the nose in one frame
 // (gameplay rules, unchanged). The drawn car + chase camera now blend height / pitch / roll from the real contact pose over VP.dur with ease-out; physics untouched.
 const VP={dur:0.35,t:1,p0:0,b0:0,y0:0,cp:null,cb:0,cy:0,lp:null,lb:0,ly:0,lx:0,lz:0,lg:false,st:0,snaps:0};
@@ -4731,7 +4883,7 @@ function render(){const _vs=visApply();
   ctx.globalAlpha=1;farFlush();drawTunnelInside();
   // shadow on ground
   const sh=proj(P.x,P.gy||0,P.z);if(sh){ctx.fillStyle='rgba(255,42,61,.25)';ctx.beginPath();ctx.ellipse(sh[0],sh[1],Math.max(2,900/sh[2]),Math.max(1,300/sh[2]),0,0,7);ctx.fill();}
-  drawRunway();P.y+=P.sus||0;drawZ();P.y-=P.sus||0;drawFX();
+  drawRunway();P.y+=P.sus||0;drawZ();P.y-=P.sus||0;drawWaterline();drawFX();
   visRestore(_vs);drawHud(hudDt);}
 let last=performance.now(),hudDt=1/60;
 function loop(t){const dt=Math.min(0.05,(t-last)/1000);last=t;fpsAcc+=dt;fpsN++;if(fpsAcc>0.5){fps=fpsN/fpsAcc;fpsAcc=0;fpsN=0;}
