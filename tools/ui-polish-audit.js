@@ -1179,18 +1179,30 @@ function auditMenuReachability(root) {
     err('submenu', 'No live menu reaches ' + g.title + '. The Neon World start card only reaches ' + (start.map(function (s) { return s.label; }).join(', ') || 'nothing') + '.' + (home ? ' A separate main-menu tile also exists, which is why a layout pass missed this.' : ''));
   });
 
+  // Bob decided on Oct 23, 2026 to leave these off every menu. Their code stays.
+  // The menu check does not flag them.
+  const HIDDEN_STUBS = {
+    street: 'STREET CRUISE',
+    builder: 'CITY BUILDER',
+    stunt: 'ROOFTOP STUNT RUN',
+    takeover: 'Z TAKEOVER'
+  };
+  lines.push('INTENTIONALLY HIDDEN  Bob, Oct 23, 2026');
+  Object.keys(HIDDEN_STUBS).forEach(function (id) {
+    lines.push('  ' + HIDDEN_STUBS[id] + '  [' + id + ']');
+  });
+
   entries.forEach(function (e) {
-    if (e.id === 'hub') return;
+    if (e.id === 'hub' || HIDDEN_STUBS[e.id]) return;
     const inNav = Object.keys(nav).some(function (k) { return String(nav[k]).indexOf('entry=' + e.id) >= 0; });
     const inStart = start.some(function (s) { return s.id === e.id; });
     const inGames = games.some(function (g) { return g.id === e.id; });
     if (!inNav && !inStart && !inGames) {
-      const names = { street: 'STREET CRUISE', builder: 'CITY BUILDER', stunt: 'ROOFTOP STUNT RUN' };
-      err('unreachable', 'World mode "' + (names[e.id] || e.id) + '" (' + e.fn + ', entry=' + e.id + ') is built and no menu tile reaches it.');
+      err('unreachable', 'World mode "' + e.id + '" (' + e.fn + ', entry=' + e.id + ') is built and no menu tile reaches it.');
     }
   });
   const takeoverCalls = (icon.match(/playTakeover\(/g) || []).length;
-  if (icon.indexOf('function playTakeover') >= 0 && takeoverCalls < 2) {
+  if (!HIDDEN_STUBS.takeover && icon.indexOf('function playTakeover') >= 0 && takeoverCalls < 2) {
     err('unreachable', 'Z TAKEOVER inside Neon World (playTakeover) is built and no menu calls it.');
   }
 
@@ -1201,7 +1213,9 @@ function auditMenuReachability(root) {
   }
 
   const menuBlob = [jr, world, readRepo(root, 'world-split.html') || '', icon, boot, hud, crew].join('\n');
-  ['fly2.html', 'fly3.html', 'neon-paint.html', 'dance-stage.html', 'crew.html', 'char.html', 'world.html', 'world-split.html', 'garage-hub.html'].forEach(function (page) {
+  // char.html is the old recorder page. The Crew button opens dance-stage.html?record=character,
+  // so this file is not a menu destination. fly2.html stays a finding.
+  ['fly2.html', 'fly3.html', 'neon-paint.html', 'dance-stage.html', 'crew.html', 'world.html', 'world-split.html', 'garage-hub.html'].forEach(function (page) {
     if (menuBlob.indexOf(page) >= 0) return;
     const html = readRepo(root, page);
     if (!html) return;
