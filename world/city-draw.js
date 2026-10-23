@@ -69,10 +69,14 @@ function farSil(q){const P8=[];for(const y of[q.y0,q.y1])for(const[x,z]of[[q.x0,
   if(farSil.o){face([0,1,2,3]);face([4,5,6,7]);edge(0,4);edge(1,5);edge(2,6);edge(3,7);return;}
   if(cam.x<q.x0)face([0,3,7,4]);else if(cam.x>q.x1)face([1,2,6,5]);if(cam.z<q.z0)face([0,1,5,4]);else if(cam.z>q.z1)face([3,2,6,7]);if(cam.y>q.y1)face([4,5,6,7]);else if(cam.y<q.y0)face([0,1,2,3]);}
 function drawBldg(b,d){if(b.towCab&&TOW3.on(d))return;const ol=b.kind==='outline';if(CDRAW.nonear&&d<=CDRAW.far&&!ol)return;if(d>CDRAW.far||ol){if(CDRAW.nofar||(!ol&&d>CDRAW.far*3.5&&b.top<12))return;if(!FARF){FARF=new Path2D();FARD=d;}FARN=d;farSil.o=ol;let p=FARB.get(b.c);if(!p){p=new Path2D();FARB.set(b.c,p);}farSil.o=false;PT=p;for(const q of b.boxes)farSil(q);PT=null;farFlush();
-    if(!ol&&d<520)for(const k of b.deco)if(k[0]==='sign'){farFlush();drawSign(k[1],d);}if(!ol&&d<180){farFlush();drawParking(b,d);}return;}farFlush();const a=clamp(1.5-d/CDRAW.dist,0.25,1);
+    if(!ol&&d<520)for(const k of b.deco)if(k[0]==='sign'){farFlush();drawSign(k[1],d);}
+    if(!ol&&window.NEON_PAINT&&typeof window.NEON_PAINT.drawBuildingGraffiti==='function')window.NEON_PAINT.drawBuildingGraffiti(ctx,b);
+    if(!ol&&d<180){farFlush();drawParking(b,d);}return;}farFlush();const a=clamp(1.5-d/CDRAW.dist,0.25,1);
   ctx.beginPath();for(const q of b.boxes)boxFaces(q);ctx.fillStyle=b.kind==='hill'?'#05100a':'#0a0612';ctx.fill();ctx.globalAlpha=a;ctx.strokeStyle=b.c;ctx.lineWidth=d<400?1.8:1.2;ctx.stroke();
   if(d<CDRAW.winDist&&b.kind!=='pylon'&&b.kind!=='bill'){ctx.beginPath();for(const q of b.boxes)winRows(b,q,d);if(!b.dashFixed)b.dashFixed=b.dash[0]>3?[6,5]:[4,4];ctx.setLineDash(b.dashFixed);ctx.lineDashOffset=0;ctx.strokeStyle=b.wc;ctx.globalAlpha=a*.75;ctx.lineWidth=1.6;ctx.stroke();ctx.setLineDash([]);}
-  ctx.globalAlpha=a;drawDoors(b,d);drawDeco(b,d);if(d<180)drawParking(b,d);ctx.globalAlpha=1;}
+  ctx.globalAlpha=a;drawDoors(b,d);drawDeco(b,d);
+  if(window.NEON_PAINT&&typeof window.NEON_PAINT.drawBuildingGraffiti==='function')window.NEON_PAINT.drawBuildingGraffiti(ctx,b);
+  if(d<180)drawParking(b,d);ctx.globalAlpha=1;}
 // Side/rear drive-in. One floor fill plus one wire pass per bay, no shadowBlur, only inside 180 m.
 function drawParking(b,d){const p=b.parking;if(!p||d>180)return;const nx=p.nx||0,nz=p.nz||0,tx=-nz,tz=nx;
   const face=(x,z,ya,yb,half)=>[[x-tx*half,ya,z-tz*half],[x+tx*half,ya,z+tz*half],[x+tx*half,yb,z+tz*half],[x-tx*half,yb,z-tz*half]];
