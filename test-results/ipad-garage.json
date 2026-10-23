@@ -1,0 +1,63 @@
+{
+  "Z_IS_IPAD": true,
+  "html": "ipad-mode",
+  "body": "ipad-mode kidon",
+  "isDesktop": null,
+  "dpr": 2,
+  "inner": {
+    "w": 1180,
+    "h": 820
+  },
+  "mtp": 5,
+  "touch": true,
+  "ua": "Mozilla/5.0 (iPad; CPU OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like ",
+  "canvas": {
+    "w": 2360,
+    "h": 1572,
+    "cssW": "",
+    "cssH": "",
+    "ta": "none"
+  },
+  "buttons": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "id": "kMenuB",
+      "x": 692,
+      "y": 12,
+      "w": 56,
+      "h": 56,
+      "display": "flex",
+      "ta": "auto",
+      "callout": "",
+      "keys": 0
+    },
+    null,
+    null
+  ],
+  "pcKeys": 0,
+  "tiles": 0,
+  "tileNames": [],
+  "grid": {
+    "sh": 0,
+    "ch": 0,
+    "sw": 0,
+    "cw": 0
+  },
+  "main": null,
+  "garage": {
+    "display": "flex",
+    "x": 760,
+    "y": 0,
+    "w": 420,
+    "h": 820
+  },
+  "np": false,
+  "bodyTA": "manipulation",
+  "bodyCallout": "",
+  "bodySelect": "none",
+  "errors": []
+}

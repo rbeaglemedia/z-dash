@@ -1,0 +1,143 @@
+{
+  "failed": 0,
+  "results": [
+    {
+      "name": "menu-1180",
+      "ok": true,
+      "detail": {
+        "tiles": 15,
+        "cols": 5,
+        "grid": {
+          "sh": 751,
+          "ch": 751,
+          "sw": 1120,
+          "cw": 1120
+        },
+        "main": {
+          "sh": 820,
+          "ch": 820,
+          "w": 1180
+        }
+      }
+    },
+    {
+      "name": "menu-1024",
+      "ok": true,
+      "detail": {
+        "tiles": 15,
+        "cols": 5,
+        "grid": {
+          "sh": 699,
+          "ch": 699,
+          "cw": 992
+        },
+        "main": {
+          "sh": 768,
+          "ch": 768
+        }
+      }
+    },
+    {
+      "name": "menu-portrait",
+      "ok": true,
+      "detail": {
+        "cols": 3,
+        "grid": {
+          "sh": 1111,
+          "ch": 1111
+        },
+        "main": {
+          "sh": 1180,
+          "ch": 1180
+        }
+      }
+    },
+    {
+      "name": "neon",
+      "ok": true,
+      "detail": {
+        "pause": {
+          "x": 1112,
+          "y": 10,
+          "w": 56,
+          "h": 56,
+          "t": "⏸"
+        },
+        "hits": [],
+        "sw": 36,
+        "tools": {
+          "x": 860,
+          "y": 105,
+          "w": 320,
+          "h": 715,
+          "t": "COLORBRUSHTUBELASERSPRAY"
+        },
+        "stage": {
+          "x": 0,
+          "y": 105,
+          "w": 860,
+          "h": 715,
+          "t": ""
+        },
+        "off": true,
+        "errors": []
+      }
+    },
+    {
+      "name": "neon-1024",
+      "ok": true,
+      "detail": {
+        "hits": [],
+        "clipped": [],
+        "pause": {
+          "x": 956,
+          "y": 10,
+          "w": 56,
+          "h": 56,
+          "t": "⏸"
+        }
+      }
+    },
+    {
+      "name": "dance",
+      "ok": true,
+      "detail": {
+        "pause": {
+          "x": 1098,
+          "y": 12,
+          "w": 64,
+          "h": 56,
+          "t": "⏸"
+        },
+        "hits": [],
+        "clipped": [],
+        "n": 5,
+        "ipad": true,
+        "errors": []
+      }
+    },
+    {
+      "name": "crew",
+      "ok": true,
+      "detail": {
+        "pause": {
+          "x": 1098,
+          "y": 12,
+          "w": 64,
+          "h": 56
+        },
+        "bar": {
+          "x": 0,
+          "y": 530,
+          "w": 1180,
+          "h": 290
+        },
+        "clipped": 0,
+        "overlapPause": 0,
+        "n": 9,
+        "ipad": true,
+        "errors": []
+      }
+    }
+  ]
+}

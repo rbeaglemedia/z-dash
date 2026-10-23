@@ -1,5 +1,8 @@
 'use strict';
-// Desktop PC only: no touch screen, and wider than a tablet. Mobile and touch laptops stay on the phone layout.
+// isDesktopPC is strictly !hasTouch && innerWidth > 1024.
+// hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0).
+// An iPad Pro at 1180×820 or 1366×1024 has maxTouchPoints > 1, so hasTouch is
+// true and this stays false. iPad layout is body.ipad-mode, never pc-mode.
 function isDesktopPC(){return !(('ontouchstart' in window)||(navigator.maxTouchPoints>0))&&innerWidth>1024;}
 window.isDesktopPC=isDesktopPC;
 const PC_FOOT_IDS={tup:'walkFwdBtn',nos:'walkRunBtn',brk:'walkJumpBtn',exitCarBtn:'walkExitBtn',emoteBtn:'walkEmoteBtn'};
@@ -25,7 +28,7 @@ function pcKeyFor(el){if(!el)return '';const foot=onFootNow();
     case 'wng':return foot?'[C]':'[F · G MODE]';case 'ebpad':return '[SPACE]';case 'exitCarBtn':return '[C]';case 'enterBldBtn':return '[E]';
     case 'kMenuB':return '[ESC]';case 'emoteBtn':return '[1-4]';default:return '';}}
 function stampPcKey(el){if(!el)return;let k=el.querySelector(':scope > small.pc-key');
-  if(!isDesktopPC()){if(k)k.remove();return;}
+  if(!isDesktopPC()||window.Z_IS_IPAD){if(k)k.remove();return;}
   const text=pcKeyFor(el);if(!text){if(k)k.remove();return;}
   if(!k){k=document.createElement('small');k.className='pc-key';}
   if(k.textContent!==text)k.textContent=text;

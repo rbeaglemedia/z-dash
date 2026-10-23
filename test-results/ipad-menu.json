@@ -1,0 +1,83 @@
+{
+  "Z_IS_IPAD": true,
+  "html": "ipad-mode",
+  "body": "ipad-mode kidon",
+  "isDesktop": null,
+  "dpr": 2,
+  "inner": {
+    "w": 1180,
+    "h": 820
+  },
+  "mtp": 5,
+  "touch": true,
+  "ua": "Mozilla/5.0 (iPad; CPU OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like ",
+  "canvas": {
+    "w": 2360,
+    "h": 1572,
+    "cssW": "",
+    "cssH": "",
+    "ta": "none"
+  },
+  "buttons": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "id": "kMenuB",
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "ta": "auto",
+      "callout": "",
+      "keys": 0
+    },
+    null,
+    null
+  ],
+  "pcKeys": 0,
+  "tiles": 15,
+  "tileNames": [
+    "SHOWROOM CAR",
+    "ROAD",
+    "DRAG",
+    "NEON FLYING",
+    "NEON WORLD",
+    "GARAGE",
+    "WANTED",
+    "RIDE ALONG",
+    "CAR SOCCER",
+    "SKY DROP",
+    "NEON PAINT",
+    "GRAFFITI WALL",
+    "RECORD DANCE",
+    "RECORD MY PET",
+    "CREW & PETS"
+  ],
+  "grid": {
+    "sh": 751,
+    "ch": 751,
+    "sw": 684,
+    "cw": 684
+  },
+  "main": {
+    "sh": 820,
+    "ch": 820,
+    "overflow": "hidden"
+  },
+  "garage": {
+    "display": "none",
+    "x": 0,
+    "y": 0,
+    "w": 0,
+    "h": 0
+  },
+  "np": false,
+  "bodyTA": "manipulation",
+  "bodyCallout": "",
+  "bodySelect": "none",
+  "errors": []
+}

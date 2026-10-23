@@ -164,23 +164,57 @@ function drawMini(mx,my,mw,mh,dt){try{miniBake();}catch(e){MINI.cv=MINI.cv||null
   if(MINI.cv){const ppm=mw/span,dw=(MINI.X1-MINI.X0)*ppm,dh=(MINI.Z1-MINI.Z0)*ppm;ctx.save();ctx.translate(cx,cy);ctx.rotate(-yaw);ctx.imageSmoothingEnabled=true;ctx.drawImage(MINI.cv,(MINI.X0-P.x)*ppm,-(MINI.Z1-P.z)*ppm,dw,dh);if(window.CITY&&CITY.TOWS){ctx.fillStyle='#ffe14d';const lim=span*.75;for(const t of CITY.TOWS){const ex=t.x-P.x,ez=t.z-P.z;if(Math.abs(ex)>lim||Math.abs(ez)>lim)continue;ctx.beginPath();ctx.arc(ex*ppm,-ez*ppm,2.4,0,7);ctx.fill();}}miniZone(ppm);miniPurp(ppm,span*.9);miniPark(ppm,Math.max(span*.9,260));miniDome(ppm);ctx.restore();miniPois(cx,cy,mw,mh,yaw,ppm);miniZoneLabel(cx,cy,mw,mh,yaw,ppm);}
   zIconBake();const d=miniIconPx(mw,span);ctx.imageSmoothingEnabled=true;ctx.drawImage(ZICON.cv,cx-d/2,cy-d/2,d,d);miniFoot(cx,cy,mw,mh,yaw,mw/span);miniParkBadges(cx,cy,mw,mh,yaw,mw/span);ctx.restore();
   hrr(ctx,mx,my,mw,mh,14);ctx.lineWidth=2.5;ctx.strokeStyle=H_CYAN;ctx.shadowColor=H_CYAN;ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;miniNorth(mx,my,mw,mh,yaw);}
+function zIpadOn(){return !!(window.Z_IS_IPAD||document.documentElement.classList.contains('ipad-mode')||(document.body&&document.body.classList.contains('ipad-mode')));}
+function placeIpadDom(on,cssL){
+  const ids=['kMenuB','exitCarBtn','enterBldBtn'];
+  if(!on||!cssL){
+    for(const id of ids){const n=document.getElementById(id);if(!n||!n.dataset.ipadBox)continue;
+      n.style.position=n.style.left=n.style.top=n.style.right=n.style.bottom=n.style.width=n.style.height=n.style.transform=n.style.margin='';
+      delete n.dataset.ipadBox;}
+    return;
+  }
+  const put=(id,box)=>{const n=document.getElementById(id);if(!n||!box)return;
+    const sig=[box.x,box.y,box.w,box.h].map(v=>Math.round(v)).join('|');
+    if(n.dataset.ipadBox===sig)return;n.dataset.ipadBox=sig;
+    n.style.position='fixed';n.style.left=Math.round(box.x)+'px';n.style.top=Math.round(box.y)+'px';
+    n.style.right='auto';n.style.bottom='auto';n.style.width=Math.round(box.w)+'px';n.style.height=Math.round(box.h)+'px';
+    n.style.transform='none';n.style.margin='0';};
+  put('kMenuB',cssL.pause);put('exitCarBtn',cssL.exit);put('enterBldBtn',cssL.enter);
+}
+function drawIpadTel(b,st,t){
+  const col=P.stall&&Math.floor(t*6)%2?H_ORNG:H_CYAN;
+  hbub(ctx,b.x,b.y,b.w,b.h,col,'rgba(8,4,20,.88)');
+  hT(ctx,'ALT '+Math.round(P.y)+'M',b.x+8,b.y+16,11,'#fff','left',H_TXT,800);
+  hT(ctx,(fps|0)+' FPS',b.x+b.w-8,b.y+16,10,'rgba(191,214,255,.75)','right',H_TXT,700);
+  hTN(ctx,String(vShown),b.x+b.w-8,b.y+36,22,'#fff','right',H_FONT,900,6);
+  hT(ctx,'MPH',b.x+8,b.y+36,11,H_CYAN,'left',H_FONT,900);
+  hT(ctx,st,b.x+8,b.y+b.h-8,11,P.flip?'#ff2a3d':P.stall?H_ORNG:P.ground?H_CYAN:H_LIME,'left',H_FONT,900,3);
+  hudStackBottom=b.y+b.h;
+}
 // WINGS sits under the right-hand ALT stack. Same size; THROTTLE is left on its CSS anchor.
 let wingKey='';function placeWings(s,bottomHud){const wng=document.getElementById('wng'),thr=document.getElementById('tup');if(!wng)return;
   // On a desktop the canvas buffer is capped (1280×720) while CSS pixels are the real window.
   // Writing those buffer pixels into style.top parks WINGS over the telemetry. CSS owns the spot.
-  if(document.documentElement.classList.contains('pc-mode')){if(wingKey!=='pc'){wng.style.top='';wng.style.right='';wng.style.bottom='';wingKey='pc';}return;}
-  if(wingKey==='pc'){wng.style.top='';wng.style.right='';wng.style.bottom='';wingKey='';}
+  // iPad is the same: shared/ipad.css docks the thumb buttons. Do not write buffer pixels into style.
+  if(document.documentElement.classList.contains('pc-mode')){if(wingKey!=='pc'){wng.style.top='';wng.style.right='';wng.style.bottom='';wng.style.left='';wingKey='pc';}return;}
+  if(zIpadOn()){if(wingKey!=='ipad'){wng.style.top='';wng.style.right='';wng.style.bottom='';wng.style.left='';wingKey='ipad';}return;}
+  if(wingKey==='pc'||wingKey==='ipad'){wng.style.top='';wng.style.right='';wng.style.bottom='';wng.style.left='';wingKey='';}
   const key=W+'x'+H+'x'+bottomHud;if(key===wingKey)return;const gap=6;let top=Math.round(bottomHud*s+gap),wh=wng.offsetHeight||84;if(thr){const thrTop=thr.offsetTop;if(top+wh>thrTop-gap)top=thrTop-gap-wh;}if(top<bottomHud*s+2&&thr){wng.style.right=(20+(thr.offsetWidth||112)+10)+'px';top=Math.round(Math.max(bottomHud*s+gap,thr.offsetTop));}else wng.style.right='20px';wng.style.top=Math.round(top)+'px';wng.style.bottom='auto';wingKey=key;}
 function syncPcFps(){const on=document.documentElement.classList.contains('pc-mode');let n=document.getElementById('pcFps');
   if(!on){if(n)n.remove();return;}
   if(!n){n=document.createElement('div');n.id='pcFps';n.setAttribute('aria-label','Frames per second');(document.querySelector('.kbody')||document.body).appendChild(n);}
   const v=Math.max(0,Math.round(typeof fps==='number'?fps:0));const t=v+' FPS';if(n.textContent!==t)n.textContent=t;}
-function drawHud(dt){const t=performance.now()/1000,w=W,h=H,s=clamp(h/378,.72,1.35);ctx.save();ctx.scale(s,s);const Wd=w/s,Hh=h/s,TU=TUNE;
+function drawHud(dt){const t=performance.now()/1000,w=W,h=H,ipad=zIpadOn(),s=ipad?1:clamp(h/378,.72,1.35);ctx.save();ctx.scale(s,s);const Wd=w/s,Hh=h/s,TU=TUNE;
+  const cssL=ipad&&typeof zIpadChrome==='function'?zIpadChrome(innerWidth,innerHeight):null;
+  const sx=cssL?W/Math.max(1,innerWidth):1,sy=cssL?H/Math.max(1,innerHeight):1;
+  const scBox=b=>b?{x:b.x*sx,y:b.y*sy,w:b.w*sx,h:b.h*sy}:null;
+  const L=cssL?{map:scBox(cssL.map),tilt:scBox(cssL.tilt),tel:scBox(cssL.tel)}:null;
+  if(ipad)placeIpadDom(true,cssL);else placeIpadDom(false);
   vS+=(P.v*2.237-vS)*(1-Math.exp(-dt/.3));vT+=dt;if(vT>.14){vT=0;const r=Math.round(vS);if(Math.abs(vS-vShown)>.75||r===0)vShown=r;}
   // TOP LEFT: minimap in the slot the ALT/THR panel used on main (x 12, y 10, 196×134)
-  {const mapW=Math.min(196,Math.max(96,Wd/2-79));drawMini(12,10,mapW,134,dt);}
+  {const mapW=L?L.map.w:Math.min(196,Math.max(96,Wd/2-79));drawMini(L?L.map.x:12,L?L.map.y:10,mapW,L?L.map.h:134,dt);}
   // TOP CENTRE: ROTATE speed cue (WANTED's level / ramp bar)
-  {const gw=118,gh=58,gx=Wd/2-gw/2,gy=6,cm=window.TCMD||[0,0],ok=P.ground&&P.rotOK,cx=gx+gw/2,cy=gy+gh/2,on=typeof tiltOk==='function'&&tiltOk();
+  {const gw=L?L.tilt.w:118,gh=L?L.tilt.h:58,gx=L?L.tilt.x:Wd/2-gw/2,gy=L?L.tilt.y:6,cm=window.TCMD||[0,0],ok=P.ground&&P.rotOK,cx=gx+gw/2,cy=gy+gh/2,on=typeof tiltOk==='function'&&tiltOk();
     ctx.save();ctx.beginPath();ctx.roundRect(gx,gy,gw,gh,12);ctx.fillStyle='rgba(10,5,24,.82)';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=on?H_CYAN:'#55507a';ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=6;ctx.stroke();
     const edge=(x1,y1,x2,y2)=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.lineWidth=4;ctx.strokeStyle=H_YEL;ctx.shadowColor=H_YEL;ctx.shadowBlur=16;ctx.stroke();};
     if(cm[1]>=.98)edge(gx+14,gy+1.5,gx+gw-14,gy+1.5);if(cm[1]<=-.98)edge(gx+14,gy+gh-1.5,gx+gw-14,gy+gh-1.5);if(cm[0]<=-.98)edge(gx+1.5,gy+12,gx+1.5,gy+gh-12);if(cm[0]>=.98)edge(gx+gw-1.5,gy+12,gx+gw-1.5,gy+gh-12);
@@ -192,11 +226,13 @@ function drawHud(dt){const t=performance.now()/1000,w=W,h=H,s=clamp(h/378,.72,1.
       hT(ctx,ok?'PULL UP!  ▲ TILT TOWARD YOU':!P.wings?(P.v>=TU.rotateSpeed?'OPEN WINGS TO LAUNCH!':'WINGS CLOSED · NO LIFT · TAP WINGS'):P.v<1?`HOLD THROTTLE · ROTATE AT ${Math.round(TU.rotateSpeed*2.237)} MPH`:'BUILD SPEED TO THE GREEN MARK',Wd/2,by+20+(ok?2:0),ok?13:10,ok?H_YEL:'#bfd6ff','center',ok?H_FONT:H_TXT,900,ok?10:4);}
     else hT(ctx,P.stall?'LOW SPEED · NOSE DOWN OR MORE THROTTLE':P.y<15&&P.v*3.6<40?'SLOW & NOSE UP · AIR BRAKE · BUTTER IT!':'DIVE = SPEED · CLIMB = HEIGHT',Wd/2,by+14,10,P.stall?H_ORNG:'#bfd6ff','center',H_TXT,800,4);}
   // Hot Drop pill sits under the tilt prompt. Overcharge uses the same slot while the NOS reward is live.
-  {const H=miniHot(),over=H&&H.overchargeT>0,hot=H&&H.active&&H.tLeft>0;if(over||hot){const pw=184,ph=22,px=Wd/2-pw/2,py=98,col=over?H_LIME:H_YEL,frac=over?clamp(H.overchargeT/15,0,1):clamp(H.tLeft/(H.maxT||25),0,1);
+  {const H=miniHot(),over=H&&H.overchargeT>0,hot=H&&H.active&&H.tLeft>0;if(over||hot){const pw=184,ph=22,px=Wd/2-pw/2,py=L?Math.round(Math.max(L.map.y+L.map.h,L.tilt.y+L.tilt.h)+8):98,col=over?H_LIME:H_YEL,frac=over?clamp(H.overchargeT/15,0,1):clamp(H.tLeft/(H.maxT||25),0,1);
     const label=over?`🔥 OVERCHARGE NOS · ${Math.ceil(H.overchargeT)}S`:`⚡ HOT DROP · ${Math.ceil(H.tLeft)}S · ${Math.round(Math.hypot(H.x-P.x,H.z-P.z))}M`;
     ctx.save();hrr(ctx,px,py,pw,ph,11);ctx.fillStyle='rgba(8,4,20,.92)';ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle=H_CYAN;ctx.shadowColor=col;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
     hT(ctx,label,Wd/2,py+14,10,col,'center',H_FONT,800,3);
     ctx.fillStyle='rgba(255,255,255,.14)';ctx.fillRect(px+10,py+ph-4,pw-20,2);ctx.fillStyle=col;ctx.shadowColor=col;ctx.shadowBlur=6;ctx.fillRect(px+10,py+ph-4,Math.max(2,(pw-20)*frac),2);ctx.shadowBlur=0;ctx.restore();}}
+  if(L&&L.tel){const st=P.ground?(P.v<1?'PARKED':'ROLLING'):P.flip?'STALL!':P.stall?'LOW SPEED!':'FLYING';drawIpadTel(L.tel,st,t);}
+  else{
   // RIGHT: MPH dial, then the smaller ALT/THR + STATUS stack directly under it. N2O gauge stays off (bottle is on the NOS button).
   // pcDrop keeps that stack under the desktop top bar (FPS, exit car, pause) instead of underneath it.
   {const pcDrop=document.documentElement.classList.contains('pc-mode')?64:0;const rx=Wd-16;ctx.save();const g=ctx.createLinearGradient(Wd-200,0,Wd,0);g.addColorStop(0,'rgba(8,3,20,0)');g.addColorStop(1,'rgba(8,3,20,.6)');ctx.fillStyle=g;ctx.fillRect(Wd-200,8+pcDrop,200,60);ctx.restore();
@@ -212,7 +248,7 @@ function drawHud(dt){const t=performance.now()/1000,w=W,h=H,s=clamp(h/378,.72,1.
     hT(ctx,'THR',ax+8,ay+42,9,'#bfd6ff','left',H_TXT,800);{const bx=ax+34,by=ay+32,bw=aw-42,bh=13;ctx.fillStyle='rgba(255,255,255,.1)';hrr(ctx,bx,by,bw,bh,7);ctx.fill();const g2=ctx.createLinearGradient(bx,0,bx+bw,0);g2.addColorStop(0,'#3e7bff');g2.addColorStop(1,H_PINK);ctx.fillStyle=g2;if(P.thr>.01){hrr(ctx,bx,by,Math.max(14,bw*P.thr),bh,7);ctx.fill();}hT(ctx,Math.round(P.thr*100)+'%'+(P.nosT?' · NOS!':''),bx+bw/2,by+10,10,'#fff','center',H_TXT,900);}
     {const sy=142+pcDrop,sh=26;hbub(ctx,ax,sy,aw,sh,P.stall&&Math.floor(t*5)%2?H_ORNG:'rgba(255,79,216,.8)');hT(ctx,'STATUS',ax+8,sy+17,9,'#ffd0f4','left',H_TXT,800);hT(ctx,st,ax+aw-8,sy+17,11,P.flip?'#ff2a3d':P.stall?H_ORNG:P.ground?H_CYAN:H_LIME,'right',H_FONT,900,4);hudStackBottom=sy+sh;}
     /* Phone keeps the canvas readout. Desktop draws a DOM counter in the top bar so the buffer cap cannot hide it. */
-    if(!pcDrop)hT(ctx,(fps|0)+' FPS',rx,134,9,'rgba(191,214,255,.6)','right',H_TXT,700);}
+    if(!pcDrop)hT(ctx,(fps|0)+' FPS',rx,134,9,'rgba(191,214,255,.6)','right',H_TXT,700);}}
   // popup (WANTED wMsg)
   if(FMSG&&t-FMSG.t<1.4){const a=clamp((1.4-(t-FMSG.t))/.4,0,1),sc=1+Math.max(0,.25-(t-FMSG.t))*1.2;ctx.globalAlpha=a;ctx.save();ctx.translate(Wd/2,Hh*.6);ctx.scale(sc,sc);hT(ctx,FMSG.txt,0,0,28,FMSG.col,'center',H_FONT,900,18);if(FMSG.sub)hT(ctx,FMSG.sub,0,22,13,'#fff','center',H_TXT,800);ctx.restore();ctx.globalAlpha=1;}
   ctx.restore();placeWings(s,hudStackBottom);

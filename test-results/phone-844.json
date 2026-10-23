@@ -1,0 +1,122 @@
+{
+  "Z_IS_IPAD": false,
+  "html": "",
+  "body": "",
+  "isDesktop": false,
+  "dpr": 3,
+  "inner": {
+    "w": 844,
+    "h": 390
+  },
+  "mtp": 5,
+  "touch": true,
+  "ua": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHT",
+  "canvas": {
+    "w": 1688,
+    "h": 780,
+    "cssW": "",
+    "cssH": "",
+    "ta": "none"
+  },
+  "buttons": [
+    {
+      "id": "brk",
+      "x": 20,
+      "y": 157,
+      "w": 90,
+      "h": 90,
+      "display": "flex",
+      "ta": "none",
+      "callout": "",
+      "keys": 0
+    },
+    {
+      "id": "nos",
+      "x": 19,
+      "y": 260,
+      "w": 112,
+      "h": 112,
+      "display": "flex",
+      "ta": "none",
+      "callout": "",
+      "keys": 0
+    },
+    {
+      "id": "tup",
+      "x": 715,
+      "y": 261,
+      "w": 109,
+      "h": 109,
+      "display": "flex",
+      "ta": "none",
+      "callout": "",
+      "keys": 0
+    },
+    {
+      "id": "wng",
+      "x": 623,
+      "y": 261,
+      "w": 82,
+      "h": 82,
+      "display": "flex",
+      "ta": "none",
+      "callout": "",
+      "keys": 0
+    },
+    {
+      "id": "emoteBtn",
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "ta": "none",
+      "callout": "",
+      "keys": 0
+    },
+    {
+      "id": "kMenuB",
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "ta": "auto",
+      "callout": "",
+      "keys": 0
+    },
+    {
+      "id": "exitCarBtn",
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "ta": "none",
+      "callout": "",
+      "keys": 0
+    },
+    {
+      "id": "enterBldBtn",
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "ta": "none",
+      "callout": "",
+      "keys": 0
+    }
+  ],
+  "pcKeys": 0,
+  "tiles": 0,
+  "tileNames": [],
+  "grid": null,
+  "main": null,
+  "garage": null,
+  "np": false,
+  "bodyTA": "none",
+  "bodyCallout": "",
+  "bodySelect": "none",
+  "errors": []
+}
