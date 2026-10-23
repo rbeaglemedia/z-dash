@@ -1216,19 +1216,38 @@
   function readEntry() {
     try {
       const u = new URL(location.href);
-      let q = (u.searchParams.get('entry') || '').toLowerCase();
+      let q = (u.searchParams.get('entry') || u.searchParams.get('game') || '').toLowerCase();
       if (!q && u.hash) q = decodeURIComponent(u.hash.replace(/^#/, '')).toLowerCase();
       if (q === 'skydrop' || q === 'sky') return 'skydrop';
-      if (q === 'street' || q === 'cruise') return 'street';
+      if (q === 'street' || q === 'cruise' || q === 'walk') return 'street';
       if (q === 'wall' || q === 'graffiti') return 'wall';
+      if (q === 'soccer') return 'soccer';
+      if (q === 'builder' || q === 'city') return 'builder';
+      if (q === 'stunt' || q === 'rings') return 'stunt';
+      if (q === 'hub') return 'hub';
       return '';
     } catch (e) { return ''; }
   }
+  function dismissStartOverlay() {
+    try {
+      const ov = document.getElementById('kOver');
+      if (ov) ov.classList.add('hidden');
+      const mb = document.getElementById('kMenuB');
+      if (mb) mb.classList.remove('hidden');
+      if (typeof kPause === 'function') kPause(false);
+    } catch (e) {}
+  }
   function consumeEntry() {
     const entry = readEntry();
+    if (!entry) return;
+    dismissStartOverlay();
     if (entry === 'skydrop') startSkyDrop();
     else if (entry === 'street') startStreet();
     else if (entry === 'wall') viewWall();
+    else if (entry === 'soccer') playSoccer();
+    else if (entry === 'builder') playCity();
+    else if (entry === 'stunt') playStunt();
+    else if (entry === 'hub') open('home');
   }
   function listenCrew() {
     try {

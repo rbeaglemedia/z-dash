@@ -15,6 +15,12 @@
 </head>
 <body>
 <script src="world/dance-stage.js"></script>
-<script>DANCE_STAGE.open();</script>
+<script>
+(function(){
+  var u = new URL(location.href);
+  var r = (u.searchParams.get("record") || u.searchParams.get("mode") || u.searchParams.get("tab") || "").toLowerCase();
+  DANCE_STAGE.open(r ? { record: r } : undefined);
+})();
+</script>
 </body>
 </html>
