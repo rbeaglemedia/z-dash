@@ -23,24 +23,30 @@ function goFull(){const lk=()=>{try{const o=screen.orientation;if(o&&o.lock&&/^l
 function tiltCenter(){if(TL.a0!=null&&((screenAngle()-TL.a0)%180!==0)){TL.a0=screenAngle();orientFix();TL.calNext=true;TL.sl=0;TL.sf=0;return;}if(TL.have){TL.n0={lr:TL.lr,fb:TL.fb};TL.g0=TL.gv;TL.sl=0;TL.sf=0;TL.calNext=false;}else TL.calNext=true;}
 const tiltOk=()=>!TL.off&&TL.have&&TL.perm!=='denied'&&performance.now()-TL.last<1500;
 // ===== INPUT =====
-function syncWingsBtn(){const b=document.getElementById('wng');if(!b)return;const s=document.getElementById('wngS'),open=!!P.wings;
-  b.classList.toggle('open',open);
-  if(open){if(s)s.textContent='OPEN';b.style.background='';b.style.boxShadow='';b.style.color='';}
-  else if(P.driveMode==='street'){if(s)s.textContent='STREET';b.style.background='radial-gradient(circle at 40% 35%,#d8ffe6,#2fd980 45%,#093822)';b.style.boxShadow='0 0 22px #7dff6b';b.style.color='#042414';}
-  else{if(s)s.textContent='CLOSED';b.style.background='';b.style.boxShadow='';b.style.color='';}}
+function onFootNow(){const W=window.WALK_MODE;return !!(W&&W.onFoot);}
+function canExitCar(){const W=window.WALK_MODE;return !!(W&&!W.onFoot&&typeof W.canGetOut==='function'&&W.canGetOut());}
+function syncWingsBtn(){const b=document.getElementById('wng');if(!b)return;
+  if(onFootNow()){if(typeof syncOnFootButtons==='function')syncOnFootButtons();return;}
+  const s=document.getElementById('wngS'),hasP=typeof P!=='undefined',open=!!(hasP&&P.wings),street=!open&&hasP&&P.driveMode==='street';
+  b.classList.remove('enter-car','exit-car');
+  b.classList.toggle('open',open);b.classList.toggle('arcade',!open&&!street);b.classList.toggle('street',street);
+  b.style.background='';b.style.boxShadow='';b.style.color='';
+  if(s)s.textContent=open?'OPEN':street?'STREET':'ARCADE';}
+syncWingsBtn();
+function bootWingsBtn(){try{if(typeof P!=='undefined'&&P.driveMode!=='street'&&P.driveMode!=='arcade')P.driveMode='arcade';syncWingsBtn();}catch(e){}}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',bootWingsBtn);else bootWingsBtn();
 function setWings(on,quiet){P.wings=on?1:0;syncWingsBtn();if(!quiet)toast(on?'WINGS OPEN!':'WINGS CLOSED!');}
 function setDriveMode(mode,quiet){const street=mode==='street';P.driveMode=street?'street':'arcade';
   if(!quiet){if(street){if(P.wings&&P.ground)setWings(0,true);toast('STREET MODE · REALISTIC DRIVE');if(typeof wMsg==='function')wMsg('🛣️ STREET MODE','#7dff6b','realistic speed, easy slow-down & street drift');}
     else{toast('ARCADE MODE · FULL POWER');if(typeof wMsg==='function')wMsg('⚡ ARCADE MODE','#3ee6ff','full power & instant launch');}}
   syncWingsBtn();}
 window.setDriveMode=setDriveMode;
-function hitWng(x,y){const w=document.getElementById('wng');if(!w)return false;const r=w.getBoundingClientRect(),m=12;return x>=r.left-m&&x<=r.right+m&&y>=r.top-m&&y<=r.bottom+m;}
 function toggleDrive(){setDriveMode(P.driveMode==='street'?'arcade':'street');}
 addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='KeyF'&&flying)setWings(!P.wings);if(e.code==='KeyV'||e.code==='KeyM')toggleDrive();});
 function startRoll(d){return;/* Bob: no barrel rolls */if(!flying||P.ground||P.roll||P.flip)return;P.roll={d,t:0,b0:clamp(P.bank,-TUNE.maxBank*D,TUNE.maxBank*D)};toast('BARREL ROLL!');}
 {const tap={};addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='KeyZ')startRoll(-1);if(e.code==='KeyC')startRoll(1);const d=(e.code==='ArrowLeft'||e.code==='KeyA')?-1:(e.code==='ArrowRight'||e.code==='KeyD')?1:0;if(!d)return;const n=performance.now();if(n-(tap[d]||0)<300){startRoll(d);tap[d]=0;}else tap[d]=n;});}
 const K={};addEventListener('keydown',e=>{K[e.code]=1;if(e.code.startsWith('Arrow')||e.code==='Space')e.preventDefault();});addEventListener('keyup',e=>{K[e.code]=0;});
-const B={tup:0,nos:0,brk:0,brkDx:0,brkX:null,ebLatch:0};
+const B={tup:0,nos:0,brk:0,brkDx:0,brkX:null,ebLatch:0,walk:0,run:0,jump:0,emote:0};
 // Each button keeps its own pointer and its own touch so AIR BRAKE and THROTTLE can be held together.
 // Touch is handled on touch events (two fingers). Mouse/pen use pointer events. A touch does not also
 // take the mouse-compat pointer that some browsers fire afterwards.
@@ -65,47 +71,185 @@ function syncEb(){const el=document.getElementById('brk'),pad=document.getElemen
   if(canEb&&K.KeyB){B.ebLatch=1;B._ebKey=1;}
   else if(B._ebKey){B._ebKey=0;if(!B.brk)B.ebLatch=0;}
   if(pad){pad.classList.toggle('show',on);pad.setAttribute('aria-hidden',on?'false':'true');}}
-function bindHold(id){const el=document.getElementById(id);let ptr=null,touchId=null,x0=0;
-  const down=x=>{B[id]=1;el.classList.add('on','nfxp');if(id==='brk'){x0=x;B.brkX=x;B.brkDx=0;syncEb();}};
-  const move=(x,y)=>{if(id==='brk'&&B.brk){B.brkX=x;B.brkDx=x-x0;syncEb();}
-    if(id==='tup'&&B.tup&&!el._slidWng&&hitWng(x,y)){el._slidWng=true;toggleDrive();}};
-  const up=()=>{B[id]=0;el.classList.remove('on','nfxp');if(id==='brk'){B.brkDx=0;B.brkX=null;B.ebLatch=0;syncEb();}if(id==='tup')el._slidWng=false;};
-  el.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();ptr=e.pointerId;try{el.setPointerCapture(e.pointerId);}catch(_){}down(e.clientX);});
+function bindHold(id){const el=document.getElementById(id);let ptr=null,touchId=null,x0=0,y0=0,wasFoot=false,jumpLatched=false;
+  const down=(x,y)=>{y0=y==null?y0:y;wasFoot=onFootNow();jumpLatched=false;el.classList.add('on','nfxp');
+    if(wasFoot){if(id==='tup'){B.walk=1;B.tup=0;}else if(id==='nos'){B.run=1;B.nos=0;}else if(id==='brk'){B.jump=1;B.brk=0;B.brkX=null;B.brkDx=0;B.ebLatch=0;const pad=document.getElementById('ebpad');if(pad){pad.classList.remove('show');pad.setAttribute('aria-hidden','true');}if(window.WALK_MODE&&typeof WALK_MODE.jump==='function')WALK_MODE.jump();}
+      if(window.WALK_MODE)WALK_MODE.runMode=!!(B.run&&B.walk);return;}
+    B[id]=1;if(id==='brk'){x0=x;B.brkX=x;B.brkDx=0;syncEb();}};
+  const move=(x,y)=>{if(wasFoot&&id==='nos'&&B.run){const flip=!!(document.getElementById('kid')&&document.getElementById('kid').classList.contains('flip180'));
+      const upPx=flip?(y-y0):(y0-y);const brk=document.getElementById('brk');
+      if(upPx>=32){B.run=1;if(!jumpLatched){jumpLatched=true;B.jump=1;if(brk)brk.classList.add('on');if(window.WALK_MODE&&typeof WALK_MODE.jump==='function')WALK_MODE.jump();}}
+      else if(upPx<20&&jumpLatched){jumpLatched=false;if(brk&&!brk.classList.contains('nfxp')){B.jump=0;brk.classList.remove('on');}}
+      if(window.WALK_MODE)WALK_MODE.runMode=!!(B.run&&B.walk);return;}
+    if(!wasFoot&&id==='brk'&&B.brk){B.brkX=x;B.brkDx=x-x0;syncEb();}};
+  const up=()=>{el.classList.remove('on','nfxp');
+    if(wasFoot){if(id==='tup')B.walk=0;else if(id==='nos'){B.run=0;if(jumpLatched){jumpLatched=false;const brk=document.getElementById('brk');if(brk&&!brk.classList.contains('nfxp')){B.jump=0;brk.classList.remove('on');}}}else if(id==='brk')B.jump=0;
+      if(window.WALK_MODE)WALK_MODE.runMode=!!(onFootNow()&&B.run&&B.walk);return;}
+    B[id]=0;if(id==='brk'){B.brkDx=0;B.brkX=null;B.ebLatch=0;syncEb();}};
+  el.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();ptr=e.pointerId;try{el.setPointerCapture(e.pointerId);}catch(_){}down(e.clientX,e.clientY);});
   el.addEventListener('pointermove',e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;move(e.clientX,e.clientY);});
   const pup=e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;ptr=null;up();};
   el.addEventListener('pointerup',pup);el.addEventListener('pointercancel',pup);
   el.addEventListener('touchstart',e=>{ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}
-    for(const t of e.changedTouches)if(touchId==null){touchId=t.identifier;down(t.clientX);}},{passive:false});
+    for(const t of e.changedTouches)if(touchId==null){touchId=t.identifier;down(t.clientX,t.clientY);}},{passive:false});
   el.addEventListener('touchmove',e=>{for(const t of e.changedTouches)if(t.identifier===touchId){ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}move(t.clientX,t.clientY);}},{passive:false});
   const tup=e=>{ebTouchAt=performance.now();for(const t of e.changedTouches)if(t.identifier===touchId){touchId=null;up();}};
   el.addEventListener('touchend',tup,{passive:false});el.addEventListener('touchcancel',tup,{passive:false});}
 for(const id of['tup','nos','brk'])bindHold(id);
-// WINGS: a quick tap still opens/closes the wings. A slide or a long hold toggles street / arcade.
-{const b=document.getElementById('wng');let ptr=null,touchId=null,t0=0,x0=0,y0=0,moved=0,didMode=false,timer=0;
-  const arm=(x,y)=>{t0=performance.now();x0=x;y0=y;moved=0;didMode=false;b.classList.add('nfxp');clearTimeout(timer);
-    timer=setTimeout(()=>{if(!didMode&&(ptr!=null||touchId!=null)){didMode=true;toggleDrive();}},380);};
-  const drag=(x,y)=>{const d=Math.hypot(x-x0,y-y0);if(d>moved)moved=d;if(!didMode&&moved>=18){didMode=true;clearTimeout(timer);toggleDrive();}};
-  const release=()=>{clearTimeout(timer);b.classList.remove('nfxp');if(!didMode&&performance.now()-t0<360&&moved<18)setWings(!P.wings);ptr=null;touchId=null;};
+// WINGS: a quick tap (pad never shown, drag under 24px) opens or closes the wings.
+// Slide left at least 36px in unflipped coords (flip180 mapped like the E-BRAKE pad) and #mdpad
+// pops up to the left, naming the mode you will switch to. Slide back onto WINGS to cancel.
+// Release while that pad is showing (it latches the pending switch) calls setDriveMode.
+{const b=document.getElementById('wng');let ptr=null,touchId=null,x0=0,y0=0,fx0=0,moved=0,holding=false,padOn=false,everPad=false;
+  const unflip=clientX=>{const body=b.offsetParent||b.parentElement,br=body.getBoundingClientRect();
+    const flip=!!(document.getElementById('kid')&&document.getElementById('kid').classList.contains('flip180'));
+    let fx=clientX-br.left;if(flip)fx=br.width-fx;return fx;};
+  const syncMd=clientX=>{const pad=document.getElementById('mdpad');if(!pad)return false;let on=false;
+    if(holding&&clientX!=null){const fx=unflip(clientX);
+      if(fx0-fx>=36){const size=b.offsetWidth||84,gap=8,maxLeft=b.offsetLeft-size-gap;
+        let left=fx-size/2;if(left<8)left=8;if(left>maxLeft)left=maxLeft;
+        const toStreet=!(typeof P!=='undefined'&&P.driveMode==='street');
+        const t=document.getElementById('mdpadT'),s=document.getElementById('mdpadS');
+        if(t)t.textContent=toStreet?'STREET':'ARCADE';if(s)s.textContent='MODE';
+        pad.classList.toggle('to-street',toStreet);pad.classList.toggle('to-arcade',!toStreet);
+        pad.style.left=left+'px';pad.style.top=b.offsetTop+'px';pad.style.width=size+'px';pad.style.height=(b.offsetHeight||size)+'px';pad.style.right='auto';pad.style.bottom='auto';
+        on=true;everPad=true;}}
+    padOn=on;pad.classList.toggle('show',on);pad.setAttribute('aria-hidden',on?'false':'true');return on;};
+  const arm=(x,y)=>{holding=true;x0=x;y0=y;fx0=unflip(x);moved=0;padOn=false;everPad=false;b.classList.add('nfxp');syncMd(x);};
+  const drag=(x,y)=>{if(!holding)return;const d=Math.hypot(x-x0,y-y0);if(d>moved)moved=d;syncMd(x);};
+  const release=commit=>{b.classList.remove('nfxp');const latched=!!padOn;holding=false;padOn=false;
+    const pad=document.getElementById('mdpad');if(pad){pad.classList.remove('show');pad.setAttribute('aria-hidden','true');}
+    if(commit&&latched)setDriveMode((typeof P!=='undefined'&&P.driveMode==='street')?'arcade':'street');
+    else if(commit&&!everPad&&moved<24){const W=window.WALK_MODE;
+      if(W&&W.onFoot&&typeof W.toggleGetOut==='function')W.toggleGetOut();
+      else setWings(!P.wings);}
+    if(typeof syncOnFootButtons==='function')syncOnFootButtons();
+    ptr=null;touchId=null;};
   b.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();ptr=e.pointerId;try{b.setPointerCapture(e.pointerId);}catch(_){}arm(e.clientX,e.clientY);});
   b.addEventListener('pointermove',e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;drag(e.clientX,e.clientY);});
-  const pup=e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;release();};
+  const pup=e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;release(e.type==='pointerup');};
   b.addEventListener('pointerup',pup);b.addEventListener('pointercancel',pup);
   b.addEventListener('touchstart',e=>{ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}
     for(const t of e.changedTouches)if(touchId==null){touchId=t.identifier;arm(t.clientX,t.clientY);}},{passive:false});
-  b.addEventListener('touchmove',e=>{for(const t of e.changedTouches)if(t.identifier===touchId){ebTouchAt=performance.now();drag(t.clientX,t.clientY);}},{passive:false});
-  const tend=e=>{ebTouchAt=performance.now();for(const t of e.changedTouches)if(t.identifier===touchId)release();};
+  b.addEventListener('touchmove',e=>{for(const t of e.changedTouches)if(t.identifier===touchId){ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}drag(t.clientX,t.clientY);}},{passive:false});
+  const tend=e=>{ebTouchAt=performance.now();const commit=e.type==='touchend';for(const t of e.changedTouches)if(t.identifier===touchId)release(commit);};
   b.addEventListener('touchend',tend,{passive:false});b.addEventListener('touchcancel',tend,{passive:false});}
-// A thumb that starts on the right half of the screen, off the buttons, and slides onto WINGS toggles the mode once.
-{const body=document.querySelector('.kbody');if(body){let id=null,fired=false;
-  const onBtn=(x,y)=>{for(const el of['wng','tup','nos','brk','ebpad']){const n=document.getElementById(el);if(!n)continue;const r=n.getBoundingClientRect();if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)return true;}return false;};
-  const start=(x,y,k)=>{const r=body.getBoundingClientRect();if(x<r.left+r.width/2||onBtn(x,y))return;id=k;fired=false;};
-  const move=(x,y,k)=>{if(id!==k||fired)return;if(hitWng(x,y)){fired=true;toggleDrive();}};
-  const end=k=>{if(id===k)id=null;};
-  body.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;start(e.clientX,e.clientY,e.pointerId);});
-  body.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;move(e.clientX,e.clientY,e.pointerId);});
-  body.addEventListener('pointerup',e=>{if(e.pointerType!=='touch')end(e.pointerId);});
-  body.addEventListener('pointercancel',e=>{if(e.pointerType!=='touch')end(e.pointerId);});
-  body.addEventListener('touchstart',e=>{ebTouchAt=performance.now();for(const t of e.changedTouches)if(id==null)start(t.clientX,t.clientY,'t'+t.identifier);},{passive:true});
-  body.addEventListener('touchmove',e=>{for(const t of e.changedTouches)move(t.clientX,t.clientY,'t'+t.identifier);},{passive:true});
-  const bend=e=>{for(const t of e.changedTouches)end('t'+t.identifier);};
-  body.addEventListener('touchend',bend);body.addEventListener('touchcancel',bend);}}
+// On foot, the four drive buttons become WALK / RUN / JUMP / ENTER, and a bottom-middle EMOTE wheel appears.
+// Street exit/enter is #exitCarBtn, left of pause, so #wng stays WINGS while driving.
+// Injected here so world-split.html stays untouched.
+const EMOTE_OPTS=[{id:'up',name:'DANCE 1',label:'↑ Dance 1'},{id:'right',name:'DANCE 2',label:'→ Dance 2'},{id:'down',name:'PET GROOVE',label:'↓ Pet Groove'},{id:'left',name:'HYPE SPIN',label:'← Hype Spin'}];
+let footMode='';
+function setBtnFace(el,main,smallText,smallId){if(!el)return;const can=el.querySelector('.nfxcan');
+  [...el.childNodes].forEach(n=>{if(n!==can)n.remove();});
+  const sm=document.createElement('small');if(smallId)sm.id=smallId;sm.textContent=smallText;
+  el.insertBefore(document.createTextNode(main),can||null);el.insertBefore(sm,can||null);}
+function paintDriveWings(){const b=document.getElementById('wng');if(!b)return;const s=document.getElementById('wngS'),hasP=typeof P!=='undefined',open=!!(hasP&&P.wings),street=!open&&hasP&&P.driveMode==='street';
+  b.classList.remove('enter-car','exit-car');b.classList.toggle('open',open);b.classList.toggle('arcade',!open&&!street);b.classList.toggle('street',street);
+  b.style.background='';b.style.boxShadow='';b.style.color='';if(s)s.textContent=open?'OPEN':street?'STREET':'ARCADE';}
+function applyFootMode(mode){const tup=document.getElementById('tup'),nos=document.getElementById('nos'),brk=document.getElementById('brk'),wng=document.getElementById('wng');
+  const can=nos&&nos.querySelector('.nfxcan');if(can)can.style.visibility=mode==='walk'?'hidden':'';
+  if(mode==='walk'){if(tup){tup.classList.add('onfoot-walk');setBtnFace(tup,'WALK','HOLD');}
+    if(nos){nos.classList.add('onfoot-run');setBtnFace(nos,'RUN','HOLD · ↑ JUMP');}
+    if(brk){brk.classList.add('onfoot-jump');setBtnFace(brk,'JUMP','TAP');}
+    if(wng){wng.classList.remove('open','arcade','street','exit-car');wng.classList.add('enter-car');setBtnFace(wng,'ENTER','CAR','wngS');}
+    const pad=document.getElementById('ebpad');if(pad){pad.classList.remove('show');pad.setAttribute('aria-hidden','true');}
+    B.tup=0;B.nos=0;B.brk=0;B.ebLatch=0;}
+  else{if(tup){tup.classList.remove('onfoot-walk');setBtnFace(tup,'THROTTLE','HOLD');}
+    if(nos){nos.classList.remove('onfoot-run');setBtnFace(nos,'NOS','HOLD');}
+    if(brk){brk.classList.remove('onfoot-jump');setBtnFace(brk,'AIR','BRAKE');}
+    if(wng){wng.classList.remove('enter-car','exit-car');
+      const lead=wng.childNodes[0]&&wng.childNodes[0].nodeType===3?wng.childNodes[0].textContent:'';
+      if(lead!=='WINGS')setBtnFace(wng,'WINGS','ARCADE','wngS');
+      paintDriveWings();}}}
+function syncOnFootButtons(){ensureEmote();ensureExitBtn();const mode=onFootNow()?'walk':'drive';
+  const em=document.getElementById('emoteBtn'),wheel=document.getElementById('emoteWheel');
+  if(em)em.style.display=mode==='walk'?'flex':'none';
+  if(wheel&&mode!=='walk'){wheel.classList.remove('show');wheel.setAttribute('aria-hidden','true');}
+  if(mode!==footMode){applyFootMode(mode);footMode=mode;}
+  else if(mode==='drive')paintDriveWings();
+  const W=window.WALK_MODE;if(W)W.runMode=!!(mode==='walk'&&B.run&&B.walk);
+  if(mode!=='walk'){B.walk=0;B.run=0;if(!B.brk)B.jump=0;}
+  paintExitBtn();}
+window.syncOnFootButtons=syncOnFootButtons;
+function ensureEmote(){if(document.getElementById('emoteBtn'))return;
+  const css=document.createElement('style');css.id='emoteCss';css.textContent=''
+    +'#emoteBtn{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:25;display:none;width:min(92px,23vh);height:min(92px,23vh);border-radius:50%;border:4px solid #fff;margin:0;padding:0;'
+    +'background:radial-gradient(circle at 40% 35%,#ffe9ff,#d14dff 45%,#4a0a6a);box-shadow:0 0 22px #e06bff;color:#fff;font:900 clamp(12px,3.4vh,15px) Orbitron,sans-serif;letter-spacing:.5px;'
+    +'flex-direction:column;align-items:center;justify-content:center;touch-action:none;user-select:none;cursor:pointer}'
+    +'#emoteBtn small{font:800 9px Rajdhani,sans-serif;letter-spacing:.5px;margin-top:2px}'
+    +'#emoteBtn.held{filter:brightness(.86)}'
+    +'#tup.onfoot-walk{background:radial-gradient(circle at 40% 35%,#d8ffe6,#2fd980 45%,#093822);box-shadow:0 0 18px #7dff6b;color:#042414}'
+    +'#nos.onfoot-run{background:radial-gradient(circle at 40% 35%,#fff2a8,#ffb020 45%,#8a3c00);box-shadow:0 0 18px #ffe14d;color:#240c00}'
+    +'#brk.onfoot-jump{background:radial-gradient(circle at 40% 35%,#c8fbff,#3ee6ff 45%,#0b6a86);box-shadow:0 0 18px #3ee6ff;color:#04202a}'
+    +'#wng.enter-car,#wng.exit-car{background:radial-gradient(circle at 40% 35%,#ffe9ff,#d14dff 45%,#4a0a6a);box-shadow:0 0 18px #e06bff;color:#fff}'
+    +'#emoteWheel{position:fixed;left:50%;bottom:calc(20px + min(46px,11.5vh));transform:translateX(-50%);z-index:26;display:none;width:0;height:0;pointer-events:none}'
+    +'#emoteWheel.show{display:block}'
+    +'#emoteWheel .emoteOpt{position:absolute;white-space:nowrap;padding:6px 10px;border-radius:999px;border:3px solid #fff;background:rgba(20,0,40,.9);color:#fff;font:900 12px Orbitron,sans-serif;box-shadow:0 0 12px #e06bff;transform:translate(-50%,-50%)}'
+    +'#emoteWheel .emoteOpt.active{background:#ffe14d;color:#240c00;box-shadow:0 0 18px #ffe14d}'
+    +'#emoteWheel .emoteOpt[data-dir="up"]{left:0;top:-74px}#emoteWheel .emoteOpt[data-dir="right"]{left:118px;top:0}'
+    +'#emoteWheel .emoteOpt[data-dir="down"]{left:0;top:46px}#emoteWheel .emoteOpt[data-dir="left"]{left:-118px;top:0}';
+  document.head.appendChild(css);
+  const host=document.querySelector('.kbody')||document.body;
+  const wheel=document.createElement('div');wheel.id='emoteWheel';wheel.setAttribute('aria-hidden','true');
+  wheel.innerHTML=EMOTE_OPTS.map(o=>'<span class="emoteOpt" data-dir="'+o.id+'">'+o.label+'</span>').join('');
+  const btn=document.createElement('button');btn.id='emoteBtn';btn.type='button';btn.innerHTML='EMOTE<small id="emoteS">HOLD · DRAG</small>';
+  host.appendChild(wheel);host.appendChild(btn);
+  let ptr=null,touchId=null,cur='',maxD=0;
+  const nameOf=id=>{const o=EMOTE_OPTS.find(x=>x.id===id);return o?o.name:'';};
+  const dirAt=(x,y)=>{const r=btn.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+    const flip=!!(document.getElementById('kid')&&document.getElementById('kid').classList.contains('flip180'));
+    const dx=flip?(cx-x):(x-cx),dy=flip?(y-cy):(cy-y),dist=Math.hypot(dx,dy);
+    if(dist>maxD)maxD=dist;if(dist<24)return '';
+    if(Math.abs(dy)>=Math.abs(dx))return dy>=0?'up':'down';return dx>=0?'right':'left';};
+  const paint=d=>{cur=d;wheel.querySelectorAll('.emoteOpt').forEach(n=>n.classList.toggle('active',n.getAttribute('data-dir')===d));
+    const s=document.getElementById('emoteS');if(s)s.textContent=d?nameOf(d):'HOLD · DRAG';};
+  const show=on=>{wheel.classList.toggle('show',on);wheel.setAttribute('aria-hidden',on?'false':'true');btn.classList.toggle('held',on);if(!on)paint('');};
+  const fire=()=>{const W=window.WALK_MODE;if(cur){B.emote=cur;if(W&&typeof W.triggerEmote==='function')W.triggerEmote(cur);else if(W&&typeof W.toggleDance==='function')W.toggleDance();}
+    else if(maxD<24){if(W&&typeof W.triggerEmote==='function')W.triggerEmote('tap');else if(W&&typeof W.toggleDance==='function')W.toggleDance();}};
+  const start=()=>{if(!onFootNow())return false;maxD=0;cur='';show(true);paint('');return true;};
+  const end=commit=>{if(btn.classList.contains('held')){if(commit)fire();show(false);}ptr=null;touchId=null;};
+  btn.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;if(!start())return;e.preventDefault();ptr=e.pointerId;try{btn.setPointerCapture(e.pointerId);}catch(_){}});
+  btn.addEventListener('pointermove',e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;paint(dirAt(e.clientX,e.clientY));});
+  const pup=e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;end(e.type==='pointerup');};
+  btn.addEventListener('pointerup',pup);btn.addEventListener('pointercancel',pup);
+  btn.addEventListener('touchstart',e=>{ebTouchAt=performance.now();if(!start())return;try{e.preventDefault();}catch(_){}
+    for(const t of e.changedTouches)if(touchId==null)touchId=t.identifier;},{passive:false});
+  btn.addEventListener('touchmove',e=>{for(const t of e.changedTouches)if(t.identifier===touchId){ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}paint(dirAt(t.clientX,t.clientY));}},{passive:false});
+  const tend=e=>{ebTouchAt=performance.now();const commit=e.type==='touchend';for(const t of e.changedTouches)if(t.identifier===touchId)end(commit);};
+  btn.addEventListener('touchend',tend,{passive:false});btn.addEventListener('touchcancel',tend,{passive:false});}
+function streetInCar(){return typeof P!=='undefined'&&P.driveMode==='street'&&!onFootNow();}
+function paintExitBtn(){const b=document.getElementById('exitCarBtn');if(!b)return;
+  const show=onFootNow()||streetInCar()||canExitCar();
+  b.style.display=show?'flex':'none';
+  if(!show)return;
+  const want=onFootNow()?'ENTER':'EXIT';
+  const lead=b.childNodes[0]&&b.childNodes[0].nodeType===3?b.childNodes[0].textContent:'';
+  if(lead===want&&b.querySelector('small'))return;
+  b.replaceChildren(document.createTextNode(want));
+  const sm=document.createElement('small');sm.textContent='CAR';b.appendChild(sm);}
+function exitCarTap(){
+  if(!onFootNow()&&typeof P!=='undefined'&&P.ground&&P.v<15)P.v=0;
+  const W=window.WALK_MODE;if(W&&typeof W.toggleGetOut==='function')W.toggleGetOut();
+  if(typeof syncOnFootButtons==='function')syncOnFootButtons();}
+function ensureExitBtn(){if(document.getElementById('exitCarBtn'))return;
+  const css=document.createElement('style');css.id='exitCarCss';css.textContent=''
+    +'#exitCarBtn{position:absolute;top:5px;right:calc(var(--pzr, calc(21vw + 2px)) + 52px);z-index:25;display:none;'
+    +'height:44px;min-width:78px;padding:0 12px;border-radius:14px;border:2.5px solid #fff;margin:0;'
+    +'background:radial-gradient(circle at 40% 32%,#f4fff6,#39ff7a 38%,#ff2bd6 78%);'
+    +'box-shadow:0 0 16px #7dff6b,0 0 12px #ff2bd6;color:#140018;'
+    +'font:900 11px/1.05 Orbitron,sans-serif;letter-spacing:.4px;'
+    +'flex-direction:column;align-items:center;justify-content:center;touch-action:none;user-select:none;cursor:pointer;-webkit-tap-highlight-color:transparent}'
+    +'#exitCarBtn small{font:800 9px/1 Rajdhani,sans-serif;letter-spacing:.6px;margin-top:1px}';
+  document.head.appendChild(css);
+  const host=document.querySelector('.kbody')||document.body;
+  const btn=document.createElement('button');btn.id='exitCarBtn';btn.type='button';btn.setAttribute('aria-label','Exit or enter car');
+  btn.appendChild(document.createTextNode('EXIT'));
+  const sm=document.createElement('small');sm.textContent='CAR';btn.appendChild(sm);
+  const menu=document.getElementById('kMenuB');
+  if(menu&&menu.parentElement===host)host.insertBefore(btn,menu);else host.appendChild(btn);
+  let lock=0;
+  const fire=()=>{const n=performance.now();if(n-lock<280)return;lock=n;exitCarTap();};
+  btn.addEventListener('pointerup',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();fire();});
+  btn.addEventListener('touchend',e=>{ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}fire();},{passive:false});}
+function footLoop(){try{syncOnFootButtons();}catch(e){}requestAnimationFrame(footLoop);}
+if(document.getElementById('wng')){ensureEmote();ensureExitBtn();syncOnFootButtons();requestAnimationFrame(footLoop);}

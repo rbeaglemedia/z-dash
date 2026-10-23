@@ -119,7 +119,13 @@ const PRESETS = { wings: {
   eBrakeAirBank: 38,                          // deg bank into the whip turn (looks distinctly aerial, not flat like pavement)
   eBrakeAirRoll: 12,                          // deg extra visual body roll into the whip
   eBrakeAirFlarePitch: 11,                    // deg nose-up flare kick while whipping around in the air
-  eBrakeAirSinkMax: 1.8                       // m/s max sink rate while air e-braking (air-cushion flare so a U-turn doesn't drop like a rock)
+  eBrakeAirSinkMax: 1.8,                       // m/s max sink rate while air e-braking (air-cushion flare so a U-turn doesn't drop like a rock)
+  // --- airborne THROTTLE + NOS, wings open ---
+  airNosAccel: 18,                            // extra forward m/s^2 while flying, only below airCruiseMax
+  airNosLiftBoost: 1.25,                      // lift multiplier, plus upward path assist when the nose is level or up (every airspeed)
+  // --- starter glider level/powered airspeed. Dives and Sky Drop are not capped (later prop ~180 mph, jet ~225–250). ---
+  airCruiseMax: 65,                           // m/s (~145 mph) max powered or level airspeed, just above liftFullSpeed 55
+  airCruiseDrag: 0.38                        // 1/s settle back to airCruiseMax once level or climbing; 0 while diving
 } };
 const TUNE = Object.assign({}, PRESETS.wings);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), D=Math.PI/180;

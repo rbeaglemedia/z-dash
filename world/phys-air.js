@@ -1,6 +1,6 @@
 'use strict';
 // ===== PHYSICS: AIR (split from shared/physics.js) =====
-// Flight: lift (CL), air NOS, Sky Whip air e-brake, ramp / edge launch with wings out vs down, touchDown(),
+// Flight: lift (CL), air NOS, Sky Whip air e-brake, ramp / edge launch, touchDown(),
 // and the top-level step(dt) loop that delegates to groundStep() (world/phys-ground.js) or airStep().
 function CL(a){const T=TUNE,d=a/D;let c=clamp((d+T.alpha0)/T.alphaL,-.6,T.clMax);if(d>T.alphaStall)c*=Math.max(.35,1-(d-T.alphaStall)/12);return c;}
 // Sky Whip: banked nose-up U-turn in the air. Ground e-brake stays in ebGround(); this owns !P.ground.
@@ -35,10 +35,19 @@ function ebAir(dt,T,I){
   return true;
 }
 function airStep(dt,T,I,I0,nz,vT,vr,alpha,wf,ge,cbank,g){P.rotOK=false;P.gT=0;
-    const cl=CL(alpha),lk=Math.max(T.closedLift,wf),dq=vr<1?vr*vr+T.floatLift*vr*(1-vr):vr*vr,L=g*cl*dq*lk*ge*(P.gam<0&&I.climb>0&&vr>0.95?1+T.pullLift*I.climb*clamp(-P.gam*5,0,1):1)*(I.climb>0.5&&vr>0.8?1+T.pullLift2*clamp((I.climb-0.5)*2,0,1)*clamp((vr-0.8)*5,0,1):1),slip=Math.sin(P.yaw-P.hd);
-    const drag=T.ovK*Math.max(0,P.v-T.ovV)**2+T.cd*P.v*P.v+T.cdi*cl*cl*dq*g*lk+T.bankDrag*(P.gam<0?T.diveBankDrag:1)*(1/Math.max(.3,Math.abs(cbank))-1)+T.slipDrag*g*Math.abs(slip)*Math.min(4,vr*vr);
-    const along=(I.tu?T.airThrust*P.thr:0)+(nz&&I.tu?T.airNos:0)-drag-g*Math.sin(P.gam)*(P.gam>0?T.climbG:T.diveG)-(I.brk?T.airBrake*Math.max(0,Math.cos(P.gam)):0)+Math.min(drag+T.swoopMax,T.swoopK*Math.max(0,L*cbank/g-Math.cos(P.gam))*clamp(vr-0.8,0,1)*(P.gam<T.swoopGam*D?1:0));  /* swoop: pulling out of a dive at speed carries energy */  /* air brake can't hold her up in a vertical fall */
-    let nrm=clamp(L*cbank-g*Math.cos(P.gam),-T.maxNz,(P.gam<-0.3&&I.climb>0)?T.maxNz+(T.pullNz-T.maxNz)*clamp((I.climb-0.3)/0.7,0,1):T.maxNz);if(P.simT-(P.toT||-9)<T.liftT)nrm=Math.min(nrm,T.liftAccel);
+    const cl=CL(alpha),lk=Math.max(T.closedLift,wf),dq=vr<1?vr*vr+T.floatLift*vr*(1-vr):vr*vr,slip=Math.sin(P.yaw-P.hd);
+    let L=g*cl*dq*lk*ge*(P.gam<0&&I.climb>0&&vr>0.95?1+T.pullLift*I.climb*clamp(-P.gam*5,0,1):1)*(I.climb>0.5&&vr>0.8?1+T.pullLift2*clamp((I.climb-0.5)*2,0,1)*clamp((vr-0.8)*5,0,1):1);
+    const flyNos=!P.ground&&P.wings===1&&I.nos&&P.nosTank>0&&I.tu;
+    if(flyNos)L*=(T.airNosLiftBoost!=null?T.airNosLiftBoost:1.25);
+    const cruise=T.airCruiseMax||65,levelK=clamp((P.gam+3*D)/(6*D),0,1);
+    let drag=T.ovK*Math.max(0,P.v-T.ovV)**2+T.cd*P.v*P.v+T.cdi*cl*cl*dq*g*lk+T.bankDrag*(P.gam<0?T.diveBankDrag:1)*(1/Math.max(.3,Math.abs(cbank))-1)+T.slipDrag*g*Math.abs(slip)*Math.min(4,vr*vr);
+    if(P.v>cruise)drag+=(P.v-cruise)*(T.airCruiseDrag||0.38)*levelK;  /* level or climbing only; a dive (gam < -3°) keeps every bit of falling speed */
+    const push=P.v<cruise;
+    let along=((push&&I.tu)?T.airThrust*P.thr:0)+((push&&nz&&I.tu)?T.airNos:0)-drag-g*Math.sin(P.gam)*(P.gam>0?T.climbG:T.diveG)-(I.brk?T.airBrake*Math.max(0,Math.cos(P.gam)):0)+Math.min(drag+T.swoopMax,T.swoopK*Math.max(0,L*cbank/g-Math.cos(P.gam))*clamp(vr-0.8,0,1)*(P.gam<T.swoopGam*D?1:0));  /* swoop: pulling out of a dive at speed carries energy */  /* air brake can't hold her up in a vertical fall */
+    if(flyNos){const cap=cruise;if(P.v<cap)along+=(T.airNosAccel!=null?T.airNosAccel:18)*clamp((cap-P.v)/15,0.2,1);}
+    let nrm=clamp(L*cbank-g*Math.cos(P.gam),-T.maxNz,(P.gam<-0.3&&I.climb>0)?T.maxNz+(T.pullNz-T.maxNz)*clamp((I.climb-0.3)/0.7,0,1):T.maxNz);
+    if(flyNos&&P.pitch>=-2*D){const nose=clamp((P.pitch+2*D)/(12*D),0,1),vy=P.v*Math.sin(P.gam),want=6*(T.airNosLiftBoost!=null?T.airNosLiftBoost:1.25)*nose;if(vy<want)nrm+=clamp(want-vy,0,16);}  /* level or nose-up: pull a sink up into a climb */
+    if(P.simT-(P.toT||-9)<T.liftT)nrm=Math.min(nrm,T.liftAccel);
     if(P.gam<-T.hpPath*D)P.hpDebt=(P.hpDebt||0)+T.hpDrag*Math.max(0,L*cbank/g-T.hpG)*dt;let pay=0;if(P.hpDebt>0&&P.gam>0){pay=Math.min(P.hpDebt,T.hpPay*dt,Math.max(0,P.v-T.liftFullSpeed*0.6));P.hpDebt-=pay;}if((P.y-P.gy)<3)P.hpDebt=0;P.lift=clamp(L/g,0,1);P.v=clamp(P.v+along*dt-pay,T.minFlySpeed,T.maxSpeed*T.nosBoost*1.1);P.gam=clamp(P.gam+nrm/Math.max(P.v,3)*dt,-T.maxDive*D,1.45);
     if(P.wings&&P.tf>.9&&(P.y-P.gy)<T.floatH&&cbank>.5&&P.v<T.floatV&&(P.floating||-P.v*Math.sin(P.gam)<T.floatEnter)){const k=Math.max(0,(P.y-P.gy))/T.floatH,smax=T.floatSinkLow+(T.floatSink-T.floatSinkLow)*k;P.floating=1;if(P.v>0.5&&P.v*Math.sin(P.gam)<-smax)P.gam=-Math.asin(Math.min(1,smax/P.v));if(P.v<=0.5)P.gam=-1.2;}else P.floating=0;  /* FLOAT ZONE: near the ground with wings open she floats down slowly */
     if(!ebAir(dt,T,I)){P.yaw+=9.8*Math.tan(clamp(P.roll?P.roll.b0:P.bank,-1.3,1.3))/Math.max(P.v,15)*T.turnK*dt*1.6;
@@ -53,7 +62,7 @@ function step(dt){P.simT=(P.simT||0)+dt;const T=TUNE,g=9.8;
   const vr=Math.max(0,P.v/T.liftFullSpeed),alpha=P.pitch-(P.ground?0:P.gam);P.aoa=alpha;
   // --- pitch with inertia (angular velocity P.q) ---
   if(!P.flip){P.q+=(I.climb*T.pitchRate*D*(!P.ground&&P.gam<0&&vr>1&&I.climb>0?T.pullBoost:1)-P.q)*Math.min(1,T.pitchResp*dt);
-    if(!P.ground){if(!(I.eb||(P.ebK||0)>0.05))P.q+=(-alpha*T.pitchStab*(I.climb<0?T.pushStab*(1-0.85*clamp((-I.climb-0.5)*2,0,1)):(I.climb>0&&vr>0.8?1-(1-T.pullStab)*clamp((I.climb-0.5)*2,0,1):1))*Math.min(4,vr*vr)-(I.climb?0:P.pitch*T.autoLevel*0.3))*dt;}
+    if(!P.ground){const whip=I.eb||(P.ebK||0)>0.05,nosLift=P.wings===1&&I.nos&&P.nosTank>0&&I.tu&&I.climb>=-0.2;if(!whip){if(nosLift&&P.pitch>=-2*D){if(P.q<0)P.q*=Math.max(0,1-4*dt);const floor=4*D;if(P.pitch<floor)P.q+=(floor-P.pitch)*2.2*dt;}else P.q+=(-alpha*T.pitchStab*(I.climb<0?T.pushStab*(1-0.85*clamp((-I.climb-0.5)*2,0,1)):(I.climb>0&&vr>0.8?1-(1-T.pullStab)*clamp((I.climb-0.5)*2,0,1):1))*Math.min(4,vr*vr)-(I.climb?0:P.pitch*T.autoLevel*0.3))*dt;}}
     else if(!I.climb||P.pitch<0)P.q+=(-P.pitch*T.gSpring-P.q*T.gDamp)*dt;}
   if(false&&!P.ground&&!P.flip&&P.y>8&&((P.pitch>T.flipPitch*D&&P.v<T.flipSpeed)||(alpha>(T.alphaStall+2)*D&&P.v<T.flipSpeed))){P.flip={t:0};P.flips=(P.flips||0)+1;P.rec=1;toast('STALL!');navigator.vibrate&&navigator.vibrate([40,40,80]);}
   if(P.flip){P.flip.t+=dt;P.q=-T.flipRate*D;P.bank-=P.bank*Math.min(1,3*dt);if(P.pitch<=-T.flipDive*D||P.flip.t>T.flipTime){P.flip=null;P.q*=.3;toast('PULL UP!');}}
