@@ -25,6 +25,19 @@
 // mirrors, the grille, exhaust, wheels, and anything below the sills
 // or above the roof stay in the ray test so they block the stroke.
 (function () {
+  // Adult Z-DASH stays stock. This painter must not hook, patch, or draw
+  // on index.html, even when vinyls or garage saves share the same domain.
+  var npPath = '';
+  try { npPath = String(location.pathname || ''); } catch (e) { npPath = ''; }
+  var npFile = npPath.split('/').pop().toLowerCase();
+  var npKidPage = npFile === 'jr.html' || npFile === 'world.html' || npFile === 'world-split.html' || npFile === 'neon-paint.html';
+  var npAdultPath = npPath === '/' || npPath === '' || npFile === 'index.html';
+  var npAdultUi = false;
+  try {
+    npAdultUi = !!(document.getElementById('connectBtn') || document.getElementById('btnObd2') || document.getElementById('btnDemo'));
+  } catch (e2) { npAdultUi = false; }
+  if (npAdultPath || (npAdultUi && !npKidPage)) return;
+
   const KEY = 'zdash.neonpaint.v1';
   const CH = 'zdash-neonpaint';
   const TAB = Math.random().toString(36).slice(2);
