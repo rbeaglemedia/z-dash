@@ -27,7 +27,7 @@
     m[1].split(/[+,\s]+/).forEach((k) => { if (k in on) on[k] = true; });
   })();
 
-  const stat = { faces: 0, trims: 0, signs: 0, lights: 0, trees: 0, roads: 0, river: 0, grass: 0, close: 0, cruise: 0, winSegs: 0, segs: 0, band: 2 };
+  const stat = { faces: 0, trims: 0, signs: 0, lights: 0, trees: 0, roads: 0, river: 0, grass: 0, close: 0, cruise: 0, winSegs: 0, segs: 0, band: 2, storefronts: 0 };
   const NEAR_Z = (typeof NEAR === 'number' ? NEAR : 0.5);
   const BL = CITY.BL;
   const COLS = ['#3ee6ff', '#ff4fd8', '#ffb020', '#ff2a3d', '#fff2c0', '#ffd27a'];
@@ -370,7 +370,7 @@
   let mode = 2, active = false;
   function detailDraw() {
     cacheCam();
-    stat.faces = stat.trims = stat.signs = stat.lights = stat.trees = stat.roads = stat.river = stat.grass = stat.winSegs = stat.segs = 0;
+    stat.faces = stat.trims = stat.signs = stat.lights = stat.trees = stat.roads = stat.river = stat.grass = stat.winSegs = stat.segs = stat.storefronts = 0;
     const v = Math.abs(P.v || 0);
     const crawlMax = T.crawlSpeedMax != null ? T.crawlSpeedMax : 12;
     const streetMax = T.streetSpeedMax != null ? T.streetSpeedMax : 48;
@@ -561,6 +561,277 @@
     ctx.lineWidth = full ? 1.7 : 1.15;
     ctx.stroke();
     stat.trims++;
+  }
+
+  // Purpose storefronts. Lines are baked once in world space on b._sfSegs.
+  // The frame only projects the camera-facing wall, batched by color.
+  const PURPOSES = ['HOME', 'SHOWROOM', 'NEON_PAINT', 'GARAGE', 'NOS', 'DANCE', 'PETS', 'CAFE', 'ARCADE', 'SKY_DROP', 'SOCCER', 'BUILDER'];
+  const SFCOL = ['#3ee6ff', '#ff4fd8', '#ffe14d', '#ffb020', '#fff2c0', '#ff2a3d'];
+  const SFCAP = 96;
+  const SF_N = 6;
+  const sfId = new Int16Array(SF_N);
+  const sfD = new Float32Array(SF_N);
+  const sfSeen = new Uint8Array(SF_N);
+  function purposeOf(b) {
+    return b.purpose || PURPOSES[(b.id | 0) % 12];
+  }
+  function shopOk(b) {
+    if (!b || skipKind(b) || !b.boxes || !b.boxes.length) return false;
+    const q = b.boxes[0];
+    if (q.x1 - q.x0 < 8 || q.z1 - q.z0 < 8) return false;
+    if (b.purpose) return true;
+    const k = b.kind;
+    return !k || k === 'b' || k === 'landmark';
+  }
+  function wantStore() {
+    if (!extraOn || T.storefronts === false) return false;
+    if (typeof WALK_MODE !== 'undefined' && WALK_MODE && WALK_MODE.onFoot) return true;
+    return !!(P && P.driveMode === 'street' && P.ground && Math.abs(P.v || 0) < (T.storefrontMaxSpeed || 12));
+  }
+  function putSeg(rec, face, col, x1, y1, z1, x2, y2, z2) {
+    if (rec.n >= SFCAP) return;
+    const o = rec.n * 6, a = rec.xyz;
+    a[o] = x1; a[o + 1] = y1; a[o + 2] = z1; a[o + 3] = x2; a[o + 4] = y2; a[o + 5] = z2;
+    rec.col[rec.n] = col; rec.face[rec.n] = face; rec.n++;
+  }
+  function wallL(rec, face, plane, col, u0, y0, u1, y1) {
+    if (face < 2) putSeg(rec, face, col, plane, y0, u0, plane, y1, u1);
+    else putSeg(rec, face, col, u0, y0, plane, u1, y1, plane);
+  }
+  function wallR(rec, face, plane, col, u0, y0, u1, y1) {
+    wallL(rec, face, plane, col, u0, y0, u1, y0);
+    wallL(rec, face, plane, col, u1, y0, u1, y1);
+    wallL(rec, face, plane, col, u1, y1, u0, y1);
+    wallL(rec, face, plane, col, u0, y1, u0, y0);
+  }
+  function outPlane(face, plane, extra) {
+    return (face === 0 || face === 2) ? plane - extra : plane + extra;
+  }
+  function motifHome(rec, f, p, a, b) {
+    const mid = (a + b) * 0.5, w = Math.min(3.6, (b - a) * 0.22);
+    wallR(rec, f, p, 3, mid - w, 0.05, mid + w, 3.1);
+    wallL(rec, f, p, 3, mid - w, 0.8, mid + w, 0.8);
+    wallL(rec, f, p, 3, mid - w, 1.55, mid + w, 1.55);
+    wallL(rec, f, p, 3, mid - w, 2.3, mid + w, 2.3);
+    wallL(rec, f, p, 4, mid - w - 1.15, 0.05, mid - w - 1.15, 3.45);
+    wallL(rec, f, p, 4, mid + w + 1.15, 0.05, mid + w + 1.15, 3.45);
+    wallL(rec, f, p, 4, mid - w - 1.15, 3.45, mid + w + 1.15, 3.45);
+    if (mid - w - a > 3.2) wallR(rec, f, p, 0, a + 1.3, 1.15, a + 3.5, 2.85);
+  }
+  function motifShow(rec, f, p, a, b) {
+    const mid = (a + b) * 0.5, h = Math.min(4.2, (b - a) * 0.2);
+    wallR(rec, f, p, 0, mid - h - 1.4, 0.2, mid - 0.45, 3.8);
+    wallR(rec, f, p, 0, mid + 0.45, 0.2, mid + h + 1.4, 3.8);
+    wallL(rec, f, p, 5, mid - h - 1.4, 0.2, mid - 0.45, 1.15);
+    wallL(rec, f, p, 5, mid + 0.45, 0.2, mid + h + 1.4, 1.15);
+    wallL(rec, f, p, 0, a + 0.6, 4.05, b - 0.6, 4.05);
+  }
+  function motifPaint(rec, f, p, a, b) {
+    const mid = (a + b) * 0.5, h = Math.min(3.4, (b - a) * 0.18);
+    wallR(rec, f, p, 1, mid - h - 0.8, 0.3, mid - 0.35, 3.3);
+    wallR(rec, f, p, 0, mid + 0.35, 0.3, mid + h + 0.8, 3.3);
+    const sw = [1, 0, 2];
+    for (let i = 0; i < 3; i++) {
+      const u = a + 1.2 + i * ((b - a - 2.4) / 3);
+      wallL(rec, f, p, sw[i], u, 3.5, u + 1.15, 4.25);
+    }
+  }
+  function motifGarage(rec, f, p, a, b) {
+    const mid = (a + b) * 0.5, w = Math.min(3.2, (b - a) * 0.16);
+    const doors = [[mid - w - 0.35, mid - 0.3], [mid + 0.3, mid + w + 0.35]];
+    for (let d = 0; d < 2; d++) {
+      const u0 = doors[d][0], u1 = doors[d][1];
+      wallR(rec, f, p, 3, u0, 0.05, u1, 3.2);
+      wallL(rec, f, p, 3, u0, 1.05, u1, 1.05);
+      wallL(rec, f, p, 3, u0, 2.1, u1, 2.1);
+    }
+    const pp = outPlane(f, p, 0.55);
+    wallL(rec, f, pp, 2, mid - w - 1.5, 0.1, mid - w - 1.5, 1.55);
+    wallL(rec, f, pp, 2, mid - w - 1.5, 1.55, mid - w - 0.7, 0.85);
+    wallL(rec, f, pp, 2, mid + w + 1.5, 0.1, mid + w + 1.5, 1.55);
+    wallL(rec, f, pp, 2, mid + w + 1.5, 1.55, mid + w + 0.7, 0.85);
+  }
+  function motifNos(rec, f, p, a, b) {
+    wallL(rec, f, p, 0, a + 0.5, 3.3, b - 0.5, 3.3);
+    wallL(rec, f, p, 1, a + 0.5, 3.72, b - 0.5, 3.72);
+    wallL(rec, f, p, 0, a + 0.5, 3.3, a + 0.5, 3.72);
+    wallL(rec, f, p, 0, b - 0.5, 3.3, b - 0.5, 3.72);
+    const mid = (a + b) * 0.5, pp = outPlane(f, p, 0.75);
+    for (let i = -1; i <= 1; i++) {
+      const u = mid + i * Math.min(2.1, (b - a) * 0.12);
+      wallL(rec, f, pp, 2, u, 0.05, u, 1.45);
+      wallL(rec, f, pp, 1, u - 0.32, 1.45, u + 0.32, 1.45);
+    }
+  }
+  function motifDance(rec, f, p, a, b) {
+    const mid = (a + b) * 0.5, h = Math.min(3.6, (b - a) * 0.2);
+    wallR(rec, f, p, 1, mid - h, 0.4, mid + h, 3.15);
+    const ht = [1.1, 2.1, 1.5, 2.45, 1.25];
+    for (let i = 0; i < 5; i++) {
+      const u = mid - h + 0.7 + i * ((h * 2 - 1.4) / 4);
+      wallL(rec, f, p, i % 2 ? 0 : 1, u, 0.6, u, 0.6 + ht[i]);
+    }
+    const pp = outPlane(f, p, 0.65);
+    wallL(rec, f, pp, 5, mid - 1.2, 0.05, mid - 1.2, 1.1);
+    wallL(rec, f, pp, 5, mid + 1.2, 0.05, mid + 1.2, 1.1);
+    wallL(rec, f, pp, 1, mid - 1.2, 1.02, mid + 1.2, 1.02);
+  }
+  function motifPets(rec, f, p, a, b) {
+    const mid = (a + b) * 0.5, h = Math.min(3.2, (b - a) * 0.16);
+    wallR(rec, f, p, 0, mid - h - 0.5, 0.4, mid - 0.35, 2.55);
+    wallR(rec, f, p, 0, mid + 0.35, 0.4, mid + h + 0.5, 2.55);
+    wallL(rec, f, p, 2, mid - h - 0.5, 2.55, mid - h * 0.5 - 0.4, 3.25);
+    wallL(rec, f, p, 2, mid - h * 0.5 - 0.4, 3.25, mid - 0.35, 2.55);
+    wallL(rec, f, p, 2, mid + 0.35, 2.55, mid + h * 0.5 + 0.4, 3.25);
+    wallL(rec, f, p, 2, mid + h * 0.5 + 0.4, 3.25, mid + h + 0.5, 2.55);
+    const pp = outPlane(f, p, 0.6);
+    wallL(rec, f, pp, 4, a + 0.8, 0.7, b - 0.8, 0.7);
+    wallL(rec, f, pp, 4, a + 0.8, 0.32, b - 0.8, 0.32);
+    wallL(rec, f, pp, 2, a + 1.4, 0.05, a + 1.4, 0.7);
+    wallL(rec, f, pp, 2, b - 1.4, 0.05, b - 1.4, 0.7);
+  }
+  function motifCafe(rec, f, p, a, b) {
+    const mid = (a + b) * 0.5;
+    wallL(rec, f, p, 1, a + 0.7, 3.15, b - 0.7, 3.15);
+    for (let i = 0; i < 4; i++) {
+      const u = a + 1.1 + i * ((b - a - 2.2) / 3);
+      wallL(rec, f, p, i % 2 ? 2 : 1, u, 2.5, u, 3.15);
+    }
+    wallR(rec, f, p, 0, mid + 1.2, 1.05, mid + 3.1, 2.55);
+    const pp = outPlane(f, p, 1.05);
+    wallL(rec, f, pp, 4, mid - 2.6, 0.05, mid - 2.6, 1.65);
+    wallL(rec, f, pp, 2, mid - 3.5, 1.65, mid - 2.6, 2.15);
+    wallL(rec, f, pp, 2, mid - 2.6, 2.15, mid - 1.7, 1.65);
+    wallL(rec, f, pp, 4, mid + 2.2, 0.05, mid + 2.2, 1.65);
+    wallL(rec, f, pp, 2, mid + 1.3, 1.65, mid + 2.2, 2.15);
+    wallL(rec, f, pp, 2, mid + 2.2, 2.15, mid + 3.1, 1.65);
+  }
+  function motifArcade(rec, f, p, a, b) {
+    wallR(rec, f, p, 1, a + 0.6, 3.2, b - 0.6, 4.2);
+    for (let i = 1; i <= 4; i++) {
+      const u = a + 0.6 + (b - a - 1.2) * i / 5;
+      wallL(rec, f, p, 0, u, 3.2, u, 4.2);
+    }
+    const mid = (a + b) * 0.5;
+    wallR(rec, f, p, 5, mid - 3.2, 0.4, mid - 1.15, 2.15);
+    wallL(rec, f, p, 0, mid - 2.95, 1.45, mid - 1.4, 1.45);
+    wallR(rec, f, p, 5, mid + 1.15, 0.4, mid + 3.2, 2.15);
+    wallL(rec, f, p, 1, mid + 1.4, 1.45, mid + 2.95, 1.45);
+  }
+  function motifSky(rec, f, p, a, b, q) {
+    const mid = (a + b) * 0.5, top = Math.min((q.y1 || 8) - 0.3, 12);
+    wallL(rec, f, p, 0, mid - 0.5, 0.2, mid - 0.5, top);
+    wallL(rec, f, p, 0, mid + 0.5, 0.2, mid + 0.5, top);
+    wallL(rec, f, p, 0, mid - 0.5, top * 0.45, mid + 0.5, top * 0.45);
+    wallL(rec, f, p, 0, mid - 0.5, top * 0.75, mid + 0.5, top * 0.75);
+    wallL(rec, f, p, 2, mid - 1.7, 0.12, mid - 1.7, 2.7);
+    wallL(rec, f, p, 2, mid + 1.7, 0.12, mid + 1.7, 2.7);
+    wallL(rec, f, p, 2, mid - 1.7, 2.15, mid, 3.15);
+    wallL(rec, f, p, 2, mid, 3.15, mid + 1.7, 2.15);
+  }
+  function motifSoccer(rec, f, p, a, b) {
+    const mid = (a + b) * 0.5, h = Math.min(3.4, (b - a) * 0.16);
+    function net(u0, u1) {
+      wallR(rec, f, p, 4, u0, 0.4, u1, 2.75);
+      wallL(rec, f, p, 0, (u0 + u1) * 0.5, 0.4, (u0 + u1) * 0.5, 2.75);
+      wallL(rec, f, p, 0, u0, 1.55, u1, 1.55);
+    }
+    net(mid - h - 0.4, mid - 0.3);
+    net(mid + 0.3, mid + h + 0.4);
+    for (let i = 0; i < 3; i++) {
+      const u = a + (b - a) * (i + 1) / 4;
+      const col = i === 1 ? 1 : 2;
+      wallL(rec, f, p, col, u, 3.8, u + 0.65, 3.35);
+      wallL(rec, f, p, col, u + 0.65, 3.35, u, 2.95);
+    }
+  }
+  function motifBuilder(rec, f, p, a, b) {
+    const mid = (a + b) * 0.5, h = Math.min(3.6, (b - a) * 0.18);
+    function panel(u0, u1) {
+      wallR(rec, f, p, 0, u0, 0.75, u1, 3.35);
+      wallL(rec, f, p, 0, (u0 + u1) * 0.5, 0.75, (u0 + u1) * 0.5, 3.35);
+      wallL(rec, f, p, 0, u0, 2.05, u1, 2.05);
+    }
+    panel(mid - h - 0.45, mid - 0.4);
+    panel(mid + 0.4, mid + h + 0.45);
+    function cube(u, y) {
+      wallL(rec, f, p, 5, u, y, u + 0.7, y);
+      wallL(rec, f, p, 5, u + 0.7, y, u + 0.7, y + 0.7);
+      wallL(rec, f, p, 5, u, y + 0.7, u + 0.7, y + 0.7);
+    }
+    cube(mid - 1.35, 0.25);
+    cube(mid - 1.35, 1.1);
+    cube(mid + 0.65, 0.25);
+  }
+  const MOTIF = {
+    HOME: motifHome, SHOWROOM: motifShow, NEON_PAINT: motifPaint, GARAGE: motifGarage,
+    NOS: motifNos, DANCE: motifDance, PETS: motifPets, CAFE: motifCafe,
+    ARCADE: motifArcade, SKY_DROP: motifSky, SOCCER: motifSoccer, BUILDER: motifBuilder
+  };
+  function bakeStore(b) {
+    if (b._sfSegs) return b._sfSegs;
+    const rec = { n: 0, xyz: new Float32Array(SFCAP * 6), col: new Uint8Array(SFCAP), face: new Uint8Array(SFCAP) };
+    const q = b.boxes[0];
+    const fn = MOTIF[purposeOf(b)] || motifHome;
+    for (let f = 0; f < 4; f++) {
+      const a = f < 2 ? q.z0 : q.x0, b1 = f < 2 ? q.z1 : q.x1;
+      if (b1 - a < 7) continue;
+      let plane = q.x0 - 0.18;
+      if (f === 1) plane = q.x1 + 0.18;
+      else if (f === 2) plane = q.z0 - 0.18;
+      else if (f === 3) plane = q.z1 + 0.18;
+      fn(rec, f, plane, a, b1, q);
+    }
+    b._sfSegs = rec;
+    return rec;
+  }
+  function faceOn(face, q) {
+    if (face === 0) return cam.x < q.x0 - 0.4;
+    if (face === 1) return cam.x > q.x1 + 0.4;
+    if (face === 2) return cam.z < q.z0 - 0.4;
+    return cam.z > q.z1 + 0.4;
+  }
+  function storefrontPass(cx, cz) {
+    stat.storefronts = 0;
+    if (!wantStore()) return;
+    for (let i = 0; i < SF_N; i++) { sfId[i] = -1; sfD[i] = 1e9; sfSeen[i] = 0; }
+    const dist = T.storefrontDist || 48;
+    for (let i = 0; i < BL.length; i++) {
+      const b = BL[i];
+      if (!shopOk(b)) continue;
+      const d = boxDist(b);
+      if (d > dist || d >= sfD[SF_N - 1]) continue;
+      let j = SF_N - 1;
+      while (j > 0 && d < sfD[j - 1]) { sfD[j] = sfD[j - 1]; sfId[j] = sfId[j - 1]; j--; }
+      sfD[j] = d; sfId[j] = i;
+    }
+    let left = (T.storefrontMaxSegs | 0) || 260;
+    if (left < 1) return;
+    let drew = 0;
+    ctx.save();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 0.94;
+    ctx.lineWidth = 1.7;
+    for (let c = 0; c < SFCOL.length; c++) {
+      ctx.beginPath();
+      let any = false;
+      for (let k = 0; k < SF_N && left > 0; k++) {
+        const bi = sfId[k];
+        if (bi < 0) continue;
+        const b = BL[bi], q = b.boxes[0], rec = bakeStore(b), xyz = rec.xyz;
+        for (let s = 0; s < rec.n && left > 0; s++) {
+          if (rec.col[s] !== c || !faceOn(rec.face[s], q)) continue;
+          const o = s * 6;
+          seg(xyz[o], xyz[o + 1], xyz[o + 2], xyz[o + 3], xyz[o + 4], xyz[o + 5]);
+          any = true;
+          left--;
+          if (!sfSeen[k]) { sfSeen[k] = 1; drew++; }
+        }
+      }
+      if (any) { ctx.strokeStyle = SFCOL[c]; ctx.stroke(); }
+    }
+    ctx.restore();
+    stat.storefronts = drew;
   }
 
   const _drawBldg = drawBldg;
@@ -898,6 +1169,7 @@
   drawCityGround = function () {
     detailDraw();
     _drawCityGround();
+    storefrontPass(cam.x, cam.z);
     if (!active) return;
     if (on.lanes || on.crosswalks || on.sidewalks || on.grass || on.river) {
       drawRoads();
@@ -1046,6 +1318,7 @@
     on: on,
     stat: stat,
     draw: detailDraw,
+    stats: function () { return stat; },
     counts: { lights: nL, signs: nS, trees: nT, patches: nP },
     baked: 1,
     clipSpan: clipSpan,

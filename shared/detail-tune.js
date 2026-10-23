@@ -37,5 +37,10 @@ window.DETAIL_TUNE = {
   // Three speed bands. Other modules and tests read these names.
   crawlSpeedMax: 12,   // on the ground and slower than this: crawl close-up
   streetSpeedMax: 48,  // on the ground up to this: street set. At/above, or airborne: no detail
-  crawlDetailDist: 30  // crawl close-up radius (m)
+  crawlDetailDist: 30, // crawl close-up radius (m)
+  // Purpose storefronts: Street Mode under storefrontMaxSpeed, or on foot.
+  storefronts: true,
+  storefrontMaxSpeed: 12,
+  storefrontDist: 48,
+  storefrontMaxSegs: 260
 };
