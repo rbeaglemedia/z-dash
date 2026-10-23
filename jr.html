@@ -10646,6 +10646,16 @@ var qrcode = function() {
       { id: 'ug-blue', name: 'DEEP BLUE', ug: '#2a5bff', cost: 70 },
       { id: 'ug-rainbow', name: 'RAINBOW', ug: 'rainbow', how: 'box' },
     ],
+    tracks: [
+      { id: 'tr-match', name: 'MATCH CAR GLOW', tr: 'match', cost: 0 },
+      { id: 'tr-cyan', name: 'CYBER CYAN', tr: '#3ee6ff', cost: 0 },
+      { id: 'tr-pink', name: 'NEON PINK', tr: '#ff4fd8', cost: 0 },
+      { id: 'tr-lime', name: 'LASER LIME', tr: '#7dff6b', cost: 40 },
+      { id: 'tr-purple', name: 'ULTRA VIOLET', tr: '#9b5cff', cost: 40 },
+      { id: 'tr-gold', name: 'SOLAR GOLD', tr: '#ffe14d', cost: 50 },
+      { id: 'tr-red', name: 'RED HOT', tr: '#ff2a3d', cost: 50 },
+      { id: 'tr-rainbow', name: 'RAINBOW TRACKS', tr: 'rainbow', cost: 80 },
+    ],
     caliper: [
       { id: 'cal-red', name: "DAD'S RED", cal: '#d1121f', cost: 0 },
       { id: 'cal-yellow', name: 'YELLOW', cal: '#ffd21f', cost: 25 },
@@ -10745,7 +10755,7 @@ var qrcode = function() {
     { id: 'p-tuner', name: 'STREET TUNER', sw: 'linear-gradient(135deg,#ff7a1a 55%,#2a2c33 55%)', eq: { bumper: 'bp-stock', bcan: 'bc-off', paint: 'tuner-orange', roof: 'r-carbon', windows: 'win-smoke', heads: 'h-clear', tails: 't-red', underglow: 'ug-purple', rims: 'mesh', size: 19, wheels: 'w-chrome', tires: 'stretch', caliper: 'cal-blue', stance: 'st-low', camber: 'cb-mild', spoiler: 'gtwing', spcol: 'sc-carbon', wings: 'none-w', lip: 'lip-race', skirts: 'sk-race', diffuser: 'df-street', kitmat: 'km-carbon', tips: 'tip-round', extra: 'none-x' } },
     { id: 'p-dad', name: 'CLASSIC DAD', sw: 'linear-gradient(135deg,#5c6068 60%,#d1121f 60%)', desc: "Gun Metallic + SSR GTX04 19 in + blue Invidia tips, like Dad's real Z", eq: { bumper: 'bp-stock', bcan: 'bc-off', paint: 'gunmetal', roof: 'r-match', windows: 'win-clear', heads: 'h-clear', tails: 't-smoke', underglow: 'ug-off', rims: 'gtx04', size: 19, wheels: 'w-gun', tires: 'street', caliper: 'cal-red', stance: 'st-low', camber: 'cb-off', spoiler: 'none-s', spcol: 'sc-match', wings: 'none-w', lip: 'lip-none', skirts: 'sk-none', diffuser: 'df-none', kitmat: 'km-black', tips: 'tip-invidia', extra: 'none-x' } },
   ];
-  const CAT_NAMES = { paint: 'PAINT', windows: 'WINDOWS', rims: 'WHEELS', wheels: 'RIM COLOR', tires: 'TIRES', roof: 'ROOF & HOOD', nos: 'NOS TANK', heads: 'HEADLIGHTS', tails: 'TAILLIGHTS', spoiler: 'SPOILER', spcol: 'SPOILER COLOR', underglow: 'UNDERGLOW', caliper: 'CALIPERS', stance: 'STANCE', camber: 'CAMBER', lip: 'FRONT LIP', skirts: 'SIDE SKIRTS', diffuser: 'DIFFUSER', kitmat: 'KIT FINISH', tips: 'EXHAUST', wings: 'WINGS', extra: 'EXTRAS' };
+  const CAT_NAMES = { paint: 'PAINT', windows: 'WINDOWS', rims: 'WHEELS', wheels: 'RIM COLOR', tires: 'TIRES', roof: 'ROOF & HOOD', nos: 'NOS TANK', heads: 'HEADLIGHTS', tails: 'TAILLIGHTS', spoiler: 'SPOILER', spcol: 'SPOILER COLOR', underglow: 'UNDERGLOW', caliper: 'CALIPERS', stance: 'STANCE', camber: 'CAMBER', lip: 'FRONT LIP', skirts: 'SIDE SKIRTS', diffuser: 'DIFFUSER', kitmat: 'KIT FINISH', tips: 'EXHAUST', wings: 'WINGS', extra: 'EXTRAS', tracks: 'TRACK MARKS' };
   const ALL = Object.entries(CAT).flatMap(([c, l]) => l.map((i) => Object.assign(i, { cat: c })));
   const byId = (id) => ALL.find((i) => i.id === id);
   const BOX_EVERY = 120; // seconds of riding (car moving) per PART BOX
@@ -10759,7 +10769,7 @@ var qrcode = function() {
     wantedReq: [['roadLv', 5, 'Finish ROAD level 4'], ['hardOnly', 3, 'Win 3 HARD drag races']] };
   ALL.forEach((i) => { if (i.cost > 0 && !i.req && !i.unlock && !i.stars) i.cost = Math.max(10, Math.round((i.cost * ECON.priceK) / 5) * 5); }); // one-week prices
   // ---------------- saved progress ----------------
-  const fresh = () => ({ coins: 9999, stars: 99, owned: ALL.filter((i) => !i.hold).map((i) => i.id), roadLvMax: 6, wantMax: 6, wantOpen: 1, w2open: 1, w2hide: 0, w2: { max: 4, lv: 1, stars: {}, times: {} }, dragOpen: ["easy", "medium", "hard", "expert"], eq: { paint: 'cyan', windows: 'win-clear', rims: 'gtx04', size: 19, wheels: 'w-gun', tires: 'street', roof: 'r-match', bumper: 'bp-stock', bcan: 'bc-off', nos: 'n-stock', heads: 'h-clear', tails: 't-red', spoiler: 'none-s', spcol: 'sc-match', underglow: 'ug-off', caliper: 'cal-red', stance: 'st-stock', camber: 'cb-off', lip: 'lip-none', skirts: 'sk-none', diffuser: 'df-none', kitmat: 'km-black', tips: 'tip-stock', wings: 'none-w', extra: 'none-x' }, name: "ELLIE'S Z", boxes: 0, ride: 0, bestCombo: 0, best060: null, shifts: 0, roadBest: 0, dragBest: null, dragWins: 0 });
+  const fresh = () => ({ coins: 9999, stars: 99, owned: ALL.filter((i) => !i.hold).map((i) => i.id), roadLvMax: 6, wantMax: 6, wantOpen: 1, w2open: 1, w2hide: 0, w2: { max: 4, lv: 1, stars: {}, times: {} }, dragOpen: ["easy", "medium", "hard", "expert"], eq: { paint: 'cyan', windows: 'win-clear', rims: 'gtx04', size: 19, wheels: 'w-gun', tires: 'street', roof: 'r-match', bumper: 'bp-stock', bcan: 'bc-off', nos: 'n-stock', heads: 'h-clear', tails: 't-red', spoiler: 'none-s', spcol: 'sc-match', underglow: 'ug-off', caliper: 'cal-red', stance: 'st-stock', camber: 'cb-off', lip: 'lip-none', skirts: 'sk-none', diffuser: 'df-none', kitmat: 'km-black', tips: 'tip-stock', wings: 'none-w', extra: 'none-x', tracks: 'tr-match' }, name: "ELLIE'S Z", boxes: 0, ride: 0, bestCombo: 0, best060: null, shifts: 0, roadBest: 0, dragBest: null, dragWins: 0 });
   let P = fresh();
   try { const s = JSON.parse(localStorage.getItem(LS) || 'null'); if (s) P = Object.assign(fresh(), s, { eq: Object.assign(fresh().eq, s.eq || {}) }); } catch (e) {}
   ALL.forEach((i) => { if (!i.hold && !P.owned.includes(i.id)) P.owned.push(i.id); }); // unlock all non-hold items
@@ -12939,7 +12949,7 @@ var qrcode = function() {
     { id: 'presets', name: 'PRESETS', subs: [['presets', 'STYLE PRESETS']] },
     { id: 'paint', name: 'PAINT', subs: [['paint', 'BODY'], ['roof', 'ROOF & HOOD']] },
     { id: 'glass', name: 'GLASS & LIGHTS', subs: [['windows', 'WINDOWS'], ['heads', 'HEADLIGHTS'], ['tails', 'TAILLIGHTS'], ['underglow', 'UNDERGLOW']] },
-    { id: 'wheels', name: 'WHEELS', subs: [['rims', 'DESIGN & SIZE'], ['wheels', 'RIM COLOR'], ['tires', 'TIRES'], ['caliper', 'CALIPERS'], ['stance', 'STANCE'], ['camber', 'CAMBER']] },
+    { id: 'wheels', name: 'WHEELS', subs: [['rims', 'DESIGN & SIZE'], ['wheels', 'RIM COLOR'], ['tires', 'TIRES'], ['caliper', 'CALIPERS'], ['stance', 'STANCE'], ['camber', 'CAMBER'], ['tracks', 'TRACK MARKS']] },
     { id: 'aero', name: 'AERO & BODY', subs: [['spoiler', 'SPOILER'], ['spcol', 'SPOILER COLOR'], ['wings', 'WINGS'], ['lip', 'FRONT LIP'], ['skirts', 'SIDE SKIRTS'], ['diffuser', 'DIFFUSER'], ['kitmat', 'KIT FINISH'], ['tips', 'EXHAUST']] },
     { id: 'extra', name: 'EXTRAS', subs: [['extra', 'EXTRAS']] },
     { id: 'nos', name: 'NOS', subs: [['nos', 'NOS TANK']] },
@@ -12975,6 +12985,7 @@ var qrcode = function() {
   function swatch(i) {
     if (i.cat === 'windows') return `background:linear-gradient(135deg,${i.win.color}${Math.round(i.win.op * 255).toString(16).padStart(2, '0')},rgba(255,255,255,.25));border:2px solid #9aa`;
     if (i.cat === 'underglow') return i.ug ? (i.ug === 'rainbow' ? 'background:conic-gradient(#ff4fd8,#ffe14d,#7dff6b,#3ee6ff,#9b5cff,#ff4fd8);filter:blur(.5px)' : `background:radial-gradient(ellipse at 50% 70%,${i.ug},transparent 70%);box-shadow:0 6px 12px -4px ${i.ug}`) : 'background:#15121e;border:2px dashed #555';
+    if (i.cat === 'tracks') return i.tr === 'rainbow' ? 'background:conic-gradient(#ff4fd8,#ffe14d,#7dff6b,#3ee6ff,#9b5cff,#ff4fd8);border:2px solid #fff' : i.tr === 'match' ? `background:${look(0).glow || CYAN};box-shadow:0 0 10px ${look(0).glow || CYAN};border:2px dashed #fff` : `background:${i.tr};box-shadow:0 0 10px ${i.tr};border:2px solid #fff`;
     if (i.cat === 'caliper') return `background:radial-gradient(circle,#2a2d33 30%,transparent 31%),linear-gradient(${i.cal},${i.cal});border-radius:40% 40% 10% 10%;border:2px solid #333`;
     if (i.cat === 'kitmat') return i.km === 'carbon' ? 'background:repeating-linear-gradient(45deg,#1c1e24 0 4px,#3a3d46 4px 8px);border:2px solid #555' : i.km === 'body' ? `background:${look(0).paint};border:2px solid #777` : 'background:#0c0c10;border:2px solid #777';
     if (i.cat === 'spcol') return i.sc ? (i.sc.carbon ? 'background:repeating-linear-gradient(45deg,#1c1e24 0 4px,#3a3d46 4px 8px);border:2px solid #555' : i.sc.chrome ? 'background:linear-gradient(160deg,#fff,#8d96a3 45%,#f4f6fa 55%,#5d6570);border:2px solid #ccd' : `background:${i.sc.color};border:2px solid #777;${i.sc.neon ? `box-shadow:0 0 10px ${i.sc.color}` : ''}`) : `background:linear-gradient(135deg,${look(0).paint} 50%,#fff3 50%);border:2px dashed #aaa`;
@@ -13001,7 +13012,7 @@ var qrcode = function() {
       <div class="gsecs">${GSECS.map((g) => `<button data-s="${g.id}" class="${g === secOf(gCat) ? 'on' : ''}">${g.name}</button>`).join('')}</div>
       ${secOf(gCat).subs.length > 1 ? `<div class="gcats">${secOf(gCat).subs.map(([c, n]) => `<button data-c="${c}" class="${c === gCat ? 'on' : ''}">${n}</button>`).join('')}</div>` : ''}
       ${gCat === 'rims' ? `<div class="gsize">SIZE ${[17, 18, 19, 20].map((z) => `<button data-sz="${z}" class="${(P.eq.size || 19) === z ? 'on' : ''}">${z}"</button>`).join('')}<span>bigger wheel = thinner tyre</span></div>` : ''}
-      <div class="gitems">${gCat === 'presets' ? myPresetsHtml() + PRESETS.map((pr) => { const on = Object.entries(pr.eq).every(([k, v]) => eqMatch(k, v)), lk = preLocked(pr); return `<button class="gitem gpreset ${on ? 'eq' : lk ? 'lock' : 'own'}" data-preset="${pr.id}"><i class="sw" style="background:${pr.sw};border:2px solid #777"></i><b>${pr.name}</b><span>${on ? 'ON YOUR CAR' : lk ? '🔒 BUY COP PAINT + LIGHT BAR' : 'TAP TO TRY IT'}</span><em class="gdesc">${pr.desc || 'Looks only · change anything after'}</em></button>`; }).join('') : (gCat === 'extra' ? gExtraOrder() : CAT[gCat]).map((i) => { if (i.hdr) return `<div class="gslot"><b>${i.hdr}</b><span>${i.sub}</span></div>`; const [st, cls] = status(i); return `<button class="gitem ${cls}" data-id="${i.id}"><i class="sw" style="${swatch(i)}">${i.cat === 'rims' ? rimSvg(i.id) : i.cat === 'tires' ? tireSvg(i.id) : i.cat === 'paint' || i.cat === 'wheels' || i.cat === 'windows' || i.cat === 'heads' || i.cat === 'tails' || i.cat === 'roof' || i.cat === 'spcol' || i.cat === 'underglow' || i.cat === 'caliper' || i.cat === 'kitmat' ? '' : ICON[i.id] || ''}</i><b>${i.name}</b><span>${st}</span>${i.desc ? `<em class="gdesc">${i.desc}</em>` : ''}${i.req && !P.owned.includes(i.id) ? (() => { const r = reqProgress(i); return `<ul class="greq">${r.rows.map((x) => `<li class="${x.have >= x.need ? 'ok' : ''}">${x.have >= x.need ? '✓' : '○'} ${x.label} <small>${x.have}/${x.need}</small></li>`).join('')}</ul><i class="gprog"><i style="width:${Math.round(r.pct * 100)}%"></i></i>`; })() : ''}</button>`; }).join('')}</div>
+      <div class="gitems">${gCat === 'presets' ? myPresetsHtml() + PRESETS.map((pr) => { const on = Object.entries(pr.eq).every(([k, v]) => eqMatch(k, v)), lk = preLocked(pr); return `<button class="gitem gpreset ${on ? 'eq' : lk ? 'lock' : 'own'}" data-preset="${pr.id}"><i class="sw" style="background:${pr.sw};border:2px solid #777"></i><b>${pr.name}</b><span>${on ? 'ON YOUR CAR' : lk ? '🔒 BUY COP PAINT + LIGHT BAR' : 'TAP TO TRY IT'}</span><em class="gdesc">${pr.desc || 'Looks only · change anything after'}</em></button>`; }).join('') : (gCat === 'extra' ? gExtraOrder() : CAT[gCat]).map((i) => { if (i.hdr) return `<div class="gslot"><b>${i.hdr}</b><span>${i.sub}</span></div>`; const [st, cls] = status(i); return `<button class="gitem ${cls}" data-id="${i.id}"><i class="sw" style="${swatch(i)}">${i.cat === 'rims' ? rimSvg(i.id) : i.cat === 'tires' ? tireSvg(i.id) : i.cat === 'paint' || i.cat === 'wheels' || i.cat === 'windows' || i.cat === 'heads' || i.cat === 'tails' || i.cat === 'roof' || i.cat === 'spcol' || i.cat === 'underglow' || i.cat === 'tracks' || i.cat === 'caliper' || i.cat === 'kitmat' ? '' : ICON[i.id] || ''}</i><b>${i.name}</b><span>${st}</span>${i.desc ? `<em class="gdesc">${i.desc}</em>` : ''}${i.req && !P.owned.includes(i.id) ? (() => { const r = reqProgress(i); return `<ul class="greq">${r.rows.map((x) => `<li class="${x.have >= x.need ? 'ok' : ''}">${x.have >= x.need ? '✓' : '○'} ${x.label} <small>${x.have}/${x.need}</small></li>`).join('')}</ul><i class="gprog"><i style="width:${Math.round(r.pct * 100)}%"></i></i>`; })() : ''}</button>`; }).join('')}</div>
       <div class="gfoot">Coins from ROAD, DRAG and RIDE ALONG (×2 on a REAL DRIVE) · REAL DRIVE ONLY parts come from PART BOXES: one every ${BOX_EVERY / 60} min of a real drive · next in ${Math.ceil((BOX_EVERY - (P.ride % BOX_EVERY)) / 6) / 10} min</div>`;
     el.querySelectorAll('.gsize button').forEach((b) => b.addEventListener('click', () => { P.eq.size = +b.dataset.sz; save(); renderGarage(); }));
     { // keep the tab row where she left it, then nudge the picked tab fully into view (no jump back to PAINT)
@@ -13270,6 +13281,6 @@ var qrcode = function() {
  window.ZD_CREDITS={open:()=>card().classList.remove('hidden'),close:()=>card().classList.add('hidden')};
  let n=0;(function t(){if(!(window.ZDKID&&add())&&n++<200)setTimeout(t,100);})();
 })();</script>
-<script src="world/neon-paint.js?v=23"></script>
+<script src="world/neon-paint.js?v=24"></script>
 </body>
 </html>

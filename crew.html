@@ -37,9 +37,9 @@ a.pill{flex:1 1 100%;border-style:dashed}
     <button type="button" data-popt="default" class="on">✨ SIGNATURE PET DANCE</button>
   </div>
 </div>
-<script src="shared/crew-state.js"></script>
-<script src="world/crew-data.js"></script>
-<script src="world/crew.js"></script>
+<script src="shared/crew-state.js?v=24"></script>
+<script src="world/crew-data.js?v=24"></script>
+<script src="world/crew.js?v=24"></script>
 <script>
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 function fit(){const d=Math.min(2,devicePixelRatio||1);cv.width=innerWidth*d;cv.height=innerHeight*d;ctx.setTransform(d,0,0,d,0,0);}
@@ -91,5 +91,36 @@ paint();
 if(/pets=1|sheet=1/.test(qs))document.getElementById('bar').style.display='none';
 function frame(t){const w=innerWidth,h=innerHeight;CREW.preview(ctx,w,h,t||performance.now());paint();requestAnimationFrame(frame);}
 requestAnimationFrame(frame);
+</script>
+<style>
+.zd-top-pause-btn{position:fixed;top:2px;right:4px;z-index:95;width:44px;height:44px;border-radius:12px;border:2px solid #9df2ff;background:rgba(12,6,28,.9);color:#e9fff2;font-size:20px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(62,230,255,.35);padding:0}
+.zd-top-pause-modal{position:fixed;inset:0;z-index:120;background:rgba(6,2,16,.84);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px;font-family:Orbitron,sans-serif}
+.zd-top-pause-modal.open{display:flex}
+.zd-top-pause-card{width:min(360px,92vw);padding:20px;border-radius:20px;border:2px solid #3ee6ff;background:rgba(12,5,28,.96);box-shadow:0 0 28px rgba(62,230,255,.35);display:flex;flex-direction:column;gap:10px;text-align:center}
+.zd-top-pause-title{font-size:20px;font-weight:900;letter-spacing:2px;color:#3ee6ff;text-shadow:0 0 12px #3ee6ff;margin-bottom:4px}
+.zd-top-pause-item{min-height:46px;border-radius:12px;border:2px solid #3ee6ff;background:rgba(20,10,44,.92);color:#e9fff2;font:900 13px/1 Orbitron,sans-serif;letter-spacing:1.2px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.zd-top-pause-item.primary{border-color:#7dff6b;color:#7dff6b;box-shadow:0 0 14px rgba(125,255,107,.3)}
+.zd-top-pause-item.pink{border-color:#ff4fd8;color:#ff4fd8}
+.zd-ds-top,.top{padding-right:58px !important}
+</style>
+<button id="kMenuB" class="zd-top-pause-btn" type="button" aria-label="Pause"><span>⏸</span></button>
+<div id="zdPauseModal" class="zd-top-pause-modal" role="dialog" aria-modal="true" aria-label="Paused">
+  <div class="zd-top-pause-card">
+    <div class="zd-top-pause-title">PAUSED</div>
+    <button type="button" class="zd-top-pause-item primary" id="zdPauseResume">▶ RESUME</button>
+    <a class="zd-top-pause-item" href="jr.html#garage">🚗 GARAGE</a>
+    <a class="zd-top-pause-item" href="world.html">🌆 NEON WORLD</a>
+    <a class="zd-top-pause-item pink" href="jr.html?kmenu=1">⌂ MAIN MENU</a>
+  </div>
+</div>
+<script>
+(function(){
+  var btn=document.getElementById('kMenuB'), mod=document.getElementById('zdPauseModal'), res=document.getElementById('zdPauseResume');
+  if(btn&&mod){
+    btn.addEventListener('click',function(){mod.classList.toggle('open');});
+    if(res)res.addEventListener('click',function(){mod.classList.remove('open');});
+    mod.addEventListener('click',function(e){if(e.target===mod)mod.classList.remove('open');});
+  }
+})();
 </script>
 </body></html>
