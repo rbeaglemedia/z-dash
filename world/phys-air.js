@@ -1,12 +1,9 @@
 'use strict';
 // ===== PHYSICS: AIR (split from shared/physics.js) =====
-// Flight: lift (CL), air NOS, Sky Whip air e-brake, ramp / edge launch with wings out vs down, touchDown(),
+// Flight: lift (CL), air NOS, Sky Whip air e-brake, ramp / edge launch, touchDown(),
 // and the top-level step(dt) loop that delegates to groundStep() (world/phys-ground.js) or airStep().
 function CL(a){const T=TUNE,d=a/D;let c=clamp((d+T.alpha0)/T.alphaL,-.6,T.clMax);if(d>T.alphaStall)c*=Math.max(.35,1-(d-T.alphaStall)/12);return c;}
 // Sky Whip: banked nose-up U-turn in the air. Ground e-brake stays in ebGround(); this owns !P.ground.
-function airTurnMul(T,mag){const v0=T.liftFullSpeed||55,v1=T.maxSpeed||90,k=clamp((P.v-v0)/Math.max(8,v1-v0),0,1);
-  const damp=1-clamp(T.airTurnDampHighSpeed||0,0,0.85)*k,ease=0.55+0.45*clamp(Math.abs(mag||0),0,1);
-  return{damp:damp,ease:ease,yaw:(T.airYawScale==null?1:T.airYawScale)*damp};}
 function ebAir(dt,T,I){
   if(P.ground)return false;
   const ebActive=I.eb||(P.ebK||0)>0.001||(P.donutK||0)>0.001||Math.abs(P.ebSlip||0)>0.002||Math.abs(P.ebRoll||0)>0.002;
@@ -50,11 +47,10 @@ function airStep(dt,T,I,I0,nz,vT,vr,alpha,wf,ge,cbank,g){P.rotOK=false;P.gT=0;
     if(flyNos){const cap=cruise;if(P.v<cap)along+=(T.airNosAccel!=null?T.airNosAccel:18)*clamp((cap-P.v)/15,0.2,1);}
     let nrm=clamp(L*cbank-g*Math.cos(P.gam),-T.maxNz,(P.gam<-0.3&&I.climb>0)?T.maxNz+(T.pullNz-T.maxNz)*clamp((I.climb-0.3)/0.7,0,1):T.maxNz);
     if(flyNos&&P.pitch>=-2*D){const nose=clamp((P.pitch+2*D)/(12*D),0,1),vy=P.v*Math.sin(P.gam),want=6*(T.airNosLiftBoost!=null?T.airNosLiftBoost:1.25)*nose;if(vy<want)nrm+=clamp(want-vy,0,16);}  /* level or nose-up: pull a sink up into a climb */
-    if(P.rampGlide&&P.wings===1){if(P.gam>0)nrm=Math.max(nrm,0);if((P.simT||0)-(P.rampGlideT||0)>1.25)P.rampGlide=0;}
-    if(P.simT-(P.toT||-9)<T.liftT&&!P.rampGlide)nrm=Math.min(nrm,T.liftAccel);
+    if(P.simT-(P.toT||-9)<T.liftT)nrm=Math.min(nrm,T.liftAccel);
     if(P.gam<-T.hpPath*D)P.hpDebt=(P.hpDebt||0)+T.hpDrag*Math.max(0,L*cbank/g-T.hpG)*dt;let pay=0;if(P.hpDebt>0&&P.gam>0){pay=Math.min(P.hpDebt,T.hpPay*dt,Math.max(0,P.v-T.liftFullSpeed*0.6));P.hpDebt-=pay;}if((P.y-P.gy)<3)P.hpDebt=0;P.lift=clamp(L/g,0,1);P.v=clamp(P.v+along*dt-pay,T.minFlySpeed,T.maxSpeed*T.nosBoost*1.1);P.gam=clamp(P.gam+nrm/Math.max(P.v,3)*dt,-T.maxDive*D,1.45);
     if(P.wings&&P.tf>.9&&(P.y-P.gy)<T.floatH&&cbank>.5&&P.v<T.floatV&&(P.floating||-P.v*Math.sin(P.gam)<T.floatEnter)){const k=Math.max(0,(P.y-P.gy))/T.floatH,smax=T.floatSinkLow+(T.floatSink-T.floatSinkLow)*k;P.floating=1;if(P.v>0.5&&P.v*Math.sin(P.gam)<-smax)P.gam=-Math.asin(Math.min(1,smax/P.v));if(P.v<=0.5)P.gam=-1.2;}else P.floating=0;  /* FLOAT ZONE: near the ground with wings open she floats down slowly */
-    if(!ebAir(dt,T,I)){const yawMul=airTurnMul(T,I.lr).yaw;P.yaw+=9.8*Math.tan(clamp(P.roll?P.roll.b0:P.bank,-1.3,1.3))/Math.max(P.v,15)*T.turnK*dt*1.6*yawMul;
+    if(!ebAir(dt,T,I)){P.yaw+=9.8*Math.tan(clamp(P.roll?P.roll.b0:P.bank,-1.3,1.3))/Math.max(P.v,15)*T.turnK*dt*1.6;
     {let dh=P.yaw-P.hd;dh=Math.atan2(Math.sin(dh),Math.cos(dh));P.hd+=dh*Math.min(1,T.slideK*dt);dh=Math.atan2(Math.sin(P.yaw-P.hd),Math.cos(P.yaw-P.hd));if(Math.abs(dh)>T.slipMax*D){P.hd=P.yaw-Math.sign(dh)*T.slipMax*D;dh=Math.sign(dh)*T.slipMax*D;}P.slip=dh;}}}
 function step(dt){P.simT=(P.simT||0)+dt;const T=TUNE,g=9.8;
   if(P._lv!==P.v||P._ly!==P.y||P.gam==null){P.gam=P.ground?0:clamp(P.pitch,-1.3,1.3);P.hd=P.yaw;P.q=0;if(P.wreck){P.wreck=null;showWreck(false);}P.gy=CITY.probe(P.x,P.z,P.y).fl;}  /* state set from outside (tests/teleport): path = nose */
@@ -62,11 +58,11 @@ function step(dt){P.simT=(P.simT||0)+dt;const T=TUNE,g=9.8;
   P.thr=clamp(P.thr+(I.tu?T.thrUp:-T.thrDown)*dt,0,1);
   if(I.hard&&!P.roll&&!(TL.hardT>0))startRoll(I.hard);TL.hardT=I.hard?1:Math.max(0,(TL.hardT||0)-dt*4);
   if(P.roll){P.roll.t+=dt/T.rollTime;const e=P.roll.t>=1?1:(1-Math.cos(Math.PI*P.roll.t))/2;P.bank=P.roll.b0+P.roll.d*2*Math.PI*e;if(P.roll.t>=1){P.bank=P.roll.b0;P.roll=null;P.rolls=(P.rolls||0)+1;}}
-  else if(P.ground||!(I.eb||(P.ebK||0)>0.001||(P.donutK||0)>0.001||Math.abs(P.ebSlip||0)>0.002||Math.abs(P.ebRoll||0)>0.002)){const tb=I.lr*T.maxBank*D;if(I.lr&&!P.ground){const m=airTurnMul(T,I.lr),rate=(T.airBankRate||T.bankRate)*m.damp*m.ease;P.bank+=clamp(tb-P.bank,-rate*D*dt,rate*D*dt);}else P.bank-=P.bank*Math.min(1,T.autoLevel*dt);}  /* Sky Whip banks in ebAir so the normal bank doesn't fight it */
+  else if(P.ground||!(I.eb||(P.ebK||0)>0.001||(P.donutK||0)>0.001||Math.abs(P.ebSlip||0)>0.002||Math.abs(P.ebRoll||0)>0.002)){const tb=I.lr*T.maxBank*D;if(I.lr&&!P.ground)P.bank+=clamp(tb-P.bank,-T.bankRate*D*dt,T.bankRate*D*dt);else P.bank-=P.bank*Math.min(1,T.autoLevel*dt);}  /* Sky Whip banks in ebAir so the normal bank doesn't fight it */
   const vr=Math.max(0,P.v/T.liftFullSpeed),alpha=P.pitch-(P.ground?0:P.gam);P.aoa=alpha;
   // --- pitch with inertia (angular velocity P.q) ---
   if(!P.flip){P.q+=(I.climb*T.pitchRate*D*(!P.ground&&P.gam<0&&vr>1&&I.climb>0?T.pullBoost:1)-P.q)*Math.min(1,T.pitchResp*dt);
-    if(!P.ground){const whip=I.eb||(P.ebK||0)>0.05,rampBall=P.rampArc&&P.wings===0&&!whip,nosLift=P.wings===1&&I.nos&&P.nosTank>0&&I.tu&&I.climb>=-0.2;if(!whip){if(rampBall){const arc=(T.rampWingsDownArc||6)*D,want=P.gam>arc?P.gam:arc;P.q+=((want-P.pitch)*8-P.q*3)*dt;if(Math.abs(I.lr)<0.25)P.bank-=P.bank*Math.min(1,4*dt);}else if(nosLift&&P.pitch>=-2*D){if(P.q<0)P.q*=Math.max(0,1-4*dt);const floor=4*D;if(P.pitch<floor)P.q+=(floor-P.pitch)*2.2*dt;}else P.q+=(-alpha*T.pitchStab*(I.climb<0?T.pushStab*(1-0.85*clamp((-I.climb-0.5)*2,0,1)):(I.climb>0&&vr>0.8?1-(1-T.pullStab)*clamp((I.climb-0.5)*2,0,1):1))*Math.min(4,vr*vr)-(I.climb?0:P.pitch*T.autoLevel*0.3))*dt;}}
+    if(!P.ground){const whip=I.eb||(P.ebK||0)>0.05,nosLift=P.wings===1&&I.nos&&P.nosTank>0&&I.tu&&I.climb>=-0.2;if(!whip){if(nosLift&&P.pitch>=-2*D){if(P.q<0)P.q*=Math.max(0,1-4*dt);const floor=4*D;if(P.pitch<floor)P.q+=(floor-P.pitch)*2.2*dt;}else P.q+=(-alpha*T.pitchStab*(I.climb<0?T.pushStab*(1-0.85*clamp((-I.climb-0.5)*2,0,1)):(I.climb>0&&vr>0.8?1-(1-T.pullStab)*clamp((I.climb-0.5)*2,0,1):1))*Math.min(4,vr*vr)-(I.climb?0:P.pitch*T.autoLevel*0.3))*dt;}}
     else if(!I.climb||P.pitch<0)P.q+=(-P.pitch*T.gSpring-P.q*T.gDamp)*dt;}
   if(false&&!P.ground&&!P.flip&&P.y>8&&((P.pitch>T.flipPitch*D&&P.v<T.flipSpeed)||(alpha>(T.alphaStall+2)*D&&P.v<T.flipSpeed))){P.flip={t:0};P.flips=(P.flips||0)+1;P.rec=1;toast('STALL!');navigator.vibrate&&navigator.vibrate([40,40,80]);}
   if(P.flip){P.flip.t+=dt;P.q=-T.flipRate*D;P.bank-=P.bank*Math.min(1,3*dt);if(P.pitch<=-T.flipDive*D||P.flip.t>T.flipTime){P.flip=null;P.q*=.3;toast('PULL UP!');}}
@@ -92,7 +88,7 @@ function step(dt){P.simT=(P.simT||0)+dt;const T=TUNE,g=9.8;
   const px0=P.x,pz0=P.z,py0=P.y;P.x+=Math.sin(P.hd)*hv*dt;P.z+=Math.cos(P.hd)*hv*dt;if(P.floating&&vy>-T.floatSinkLow&&vy<0.2&&!(P.rebT!=null)){P.vs=-T.floatSinkLow;P.y-=T.floatSinkLow*dt;}else P.y+=vy*dt;
   {const pr=cityMove(px0,pz0,py0,dt),gy=pr.fl;  /* FLY3CITY: roofs + ramps are ground at a height; same touchDown rules */
    if(!P.ground&&P.y<=gy){touchDown(-P.vs);if(P.ground&&!P.wreck&&P.fromSkyDrop){P.fromSkyDrop=false;if(window.HOTDROP)HOTDROP.spawn(P.x,P.z,P.yaw);}if(P.ground&&gy>0.5){const pd=CITY.padAt(P.x,P.z,gy);if(pd&&!pd.hit){pd.hit=1;P.roofs=(P.roofs||0)+1;kToast('ROOFTOP!');}}}
-   else if(P.ground){if(P.ground){P.rampArc=0;P.rampGlide=0;}if(P.y-gy>0.45&&!pr.st){const sl=P.gsl||0;P.ground=false;P.toT=P.simT;P.gam=Math.max(0,sl);P.gT=0;ebAirHandoff();if(sl>0.02){const horiz=P.v,vy0=horiz*Math.tan(Math.max(0,sl));if(P.wings===1){const vy=vy0*(T.rampWingsOutLift!=null?T.rampWingsOutLift:1.18);P.v=Math.hypot(horiz,vy);P.gam=Math.atan2(vy,Math.max(horiz,0.1));P.pitch=Math.max(P.pitch,P.gam,(T.rampWingsOutPitch!=null?T.rampWingsOutPitch:10)*D);P.q=Math.max(P.q,0);P.rampGlide=1;P.rampGlideT=P.simT;}else if(P.wings===0){P.v=Math.hypot(horiz,vy0);P.gam=Math.atan2(vy0,Math.max(horiz,0.1));const arc=(T.rampWingsDownArc||6)*D;P.pitch=Math.max(P.pitch,Math.max(P.gam,arc));P.q=Math.max(P.q,0);P.rampArc=1;}P.vs=P.v*Math.sin(P.gam);P.ramps=(P.ramps||0)+1;toast('RAMP JUMP!');}else toast('OFF THE EDGE!');}
+   else if(P.ground){if(P.y-gy>0.45&&!pr.st){const sl=P.gsl||0;P.ground=false;P.toT=P.simT;P.gam=Math.max(0,sl);P.gT=0;ebAirHandoff();if(sl>0.02){P.pitch=Math.max(P.pitch,sl);P.ramps=(P.ramps||0)+1;toast('RAMP JUMP!');}else toast('OFF THE EDGE!');}
      else{const dd=Math.hypot(P.x-px0,P.z-pz0);P.gsl=dd>1e-4?Math.atan2(gy-P.y,dd):0;P.y=gy;}}}
   P.susV=(P.susV||0)+(-(P.sus||0)*140-(P.susV||0)*8)*dt;P.sus=(P.sus||0)+P.susV*dt;
   fxStep(dt);
