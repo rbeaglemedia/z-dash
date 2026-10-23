@@ -2,21 +2,38 @@
 // ===== CAMERA / PROJECTION =====
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');let W=0,H=0,DPR=1;
 // Desktop PCs fill a huge backing store (often 1080p at devicePixelRatio 2) and the
-// 2D city cannot keep up. Cap that buffer only. Phones and touch devices keep the
-// exact sizing below. W and H stay the canvas logical size (HUD + projection).
+// 2D city cannot keep up. Cap that buffer only. Phones keep the exact sizing below.
+// iPad (touch, including 1180×820 and 1366×1024) is not a desktop PC: hasTouch is
+// true, so isDesktopPC stays false. Its own cap is 1440×1080 at DPR 1, CSS-scaled
+// to the screen. W and H stay the canvas logical size (HUD + projection).
 // Pointer handlers keep using clientX / clientY and getBoundingClientRect, which are
-// CSS pixels, so a smaller buffer does not shift clicks against the DOM buttons.
-// The canvas CSS stays width/height 100%, so the smaller bitmap still fills the window.
+// CSS viewport pixels, so a smaller buffer does not shift look-around or HUD hits.
+// The canvas CSS stays width/height 100% (iPad also sets that size in px).
+let ipadSized=false;
 function resize(){
-  const isDesktopPC=!(('ontouchstart' in window)||(navigator.maxTouchPoints>0))&&innerWidth>1024;
-  if(!isDesktopPC){
+  const hasTouch=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
+  const isDesktopPC=!hasTouch&&innerWidth>1024;
+  const isIPadUA=/iPad/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const shortSide=Math.min(innerWidth,innerHeight),longSide=Math.max(innerWidth,innerHeight);
+  const isIPad=hasTouch&&(isIPadUA||(shortSide>=680&&longSide>=900));
+  if(isIPad){
+    DPR=1;
+    const cap=1440*1080,area=innerWidth*innerHeight||1;
+    const scale=Math.min(1,Math.sqrt(cap/area));
+    W=Math.max(1,Math.round(innerWidth*scale));H=Math.max(1,Math.round(innerHeight*scale));
+    if(W*H>cap){const fit=Math.sqrt(cap/(W*H));W=Math.max(1,Math.floor(W*fit));H=Math.max(1,Math.floor(H*fit));}
+    cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';
+    ipadSized=true;
+  }else if(!isDesktopPC){
     DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+    if(ipadSized){cv.style.width='';cv.style.height='';ipadSized=false;}
   }else{
     DPR=1;
     const cap=1280*720,area=innerWidth*innerHeight||1;
     const scale=Math.min(1,Math.sqrt(cap/area));
     W=Math.round(innerWidth*scale);H=Math.round(innerHeight*scale);
     if(W*H>cap){const fit=Math.sqrt(cap/(W*H));W=Math.max(1,Math.floor(W*fit));H=Math.max(1,Math.floor(H*fit));}
+    if(ipadSized){cv.style.width='';cv.style.height='';ipadSized=false;}
   }
   cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
 }addEventListener('resize',resize);resize();

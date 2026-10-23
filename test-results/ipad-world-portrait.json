@@ -1,0 +1,101 @@
+{
+  "hit": [],
+  "canvas": {
+    "w": 820,
+    "h": 1180,
+    "cssW": "820px",
+    "cssH": "1180px",
+    "ta": "none"
+  },
+  "buttons": [
+    {
+      "id": "brk",
+      "x": 18,
+      "y": 940,
+      "w": 100,
+      "h": 100,
+      "display": "flex",
+      "ta": "none",
+      "callout": "",
+      "keys": 0
+    },
+    {
+      "id": "nos",
+      "x": 15,
+      "y": 1051,
+      "w": 110,
+      "h": 110,
+      "display": "flex",
+      "ta": "none",
+      "callout": "",
+      "keys": 0
+    },
+    {
+      "id": "tup",
+      "x": 694,
+      "y": 1050,
+      "w": 108,
+      "h": 108,
+      "display": "flex",
+      "ta": "none",
+      "callout": "",
+      "keys": 0
+    },
+    {
+      "id": "wng",
+      "x": 702,
+      "y": 936,
+      "w": 100,
+      "h": 100,
+      "display": "flex",
+      "ta": "none",
+      "callout": "",
+      "keys": 0
+    },
+    {
+      "id": "emoteBtn",
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "ta": "none",
+      "callout": "",
+      "keys": 0
+    },
+    {
+      "id": "kMenuB",
+      "x": 740,
+      "y": 12,
+      "w": 64,
+      "h": 56,
+      "display": "flex",
+      "ta": "auto",
+      "callout": "",
+      "keys": 0
+    },
+    {
+      "id": "exitCarBtn",
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "ta": "none",
+      "callout": "",
+      "keys": 0
+    },
+    {
+      "id": "enterBldBtn",
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "ta": "none",
+      "callout": "",
+      "keys": 0
+    }
+  ],
+  "errors": []
+}

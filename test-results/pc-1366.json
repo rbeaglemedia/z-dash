@@ -1,0 +1,122 @@
+{
+  "Z_IS_IPAD": false,
+  "html": "pc-mode",
+  "body": "pc-mode",
+  "isDesktop": true,
+  "dpr": 1,
+  "inner": {
+    "w": 1366,
+    "h": 768
+  },
+  "mtp": 0,
+  "touch": false,
+  "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+  "canvas": {
+    "w": 1280,
+    "h": 720,
+    "cssW": "",
+    "cssH": "",
+    "ta": "none"
+  },
+  "buttons": [
+    {
+      "id": "brk",
+      "x": 18,
+      "y": 532,
+      "w": 104,
+      "h": 100,
+      "display": "flex",
+      "ta": "none",
+      "callout": "",
+      "keys": 1
+    },
+    {
+      "id": "nos",
+      "x": 15,
+      "y": 641,
+      "w": 114,
+      "h": 114,
+      "display": "flex",
+      "ta": "none",
+      "callout": "",
+      "keys": 1
+    },
+    {
+      "id": "tup",
+      "x": 1228,
+      "y": 632,
+      "w": 120,
+      "h": 120,
+      "display": "flex",
+      "ta": "none",
+      "callout": "",
+      "keys": 1
+    },
+    {
+      "id": "wng",
+      "x": 1244,
+      "y": 516,
+      "w": 104,
+      "h": 104,
+      "display": "flex",
+      "ta": "none",
+      "callout": "",
+      "keys": 1
+    },
+    {
+      "id": "emoteBtn",
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "ta": "none",
+      "callout": "",
+      "keys": 1
+    },
+    {
+      "id": "kMenuB",
+      "x": 1288,
+      "y": 8,
+      "w": 68,
+      "h": 52,
+      "display": "flex",
+      "ta": "auto",
+      "callout": "",
+      "keys": 1
+    },
+    {
+      "id": "exitCarBtn",
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "ta": "none",
+      "callout": "",
+      "keys": 1
+    },
+    {
+      "id": "enterBldBtn",
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "ta": "none",
+      "callout": "",
+      "keys": 1
+    }
+  ],
+  "pcKeys": 9,
+  "tiles": 0,
+  "tileNames": [],
+  "grid": null,
+  "main": null,
+  "garage": null,
+  "np": false,
+  "bodyTA": "none",
+  "bodyCallout": "",
+  "bodySelect": "none",
+  "errors": []
+}
