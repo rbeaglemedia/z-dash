@@ -1,0 +1,39 @@
+PC canvas frame-rate check
+Headless Chrome, world.html, 5 frame pairs after 8 warmup frames.
+Same camera: car stopped on the runway (flying=false). Hot Drop beacon at (0, 0, 40) for the hot samples.
+
+node --check world/camera.js world/ground.js world/objectives.js
+PASS
+
+Desktop 1920x1080, deviceScaleFactor 1, hasTouch false
+  before: W=1920 H=1080 DPR=1 canvas=1920x1080 css=1920x1080 pixels=2073600
+          idle ms: 3.70, 2.10, 2.00, 2.00, 6.20  (median 2.10)
+          hot  ms: 2.00, 1.90, 1.80, 1.80, 2.00  (median 1.90)
+          new gradient objects over idle+hot window: 80
+  after:  W=1280 H=720 DPR=1 canvas=1280x720 css=1920x1080 pixels=921600
+          idle ms: 2.00, 2.00, 1.70, 2.00, 1.70  (median 2.00)
+          hot  ms: 2.00, 2.20, 2.20, 1.80, 1.80  (median 2.00)
+          new gradient objects over idle+hot window: 42
+          full-height vertical gradients created across 5 renders x2: 2 (sky + ground reused)
+
+Desktop 1920x1080, deviceScaleFactor 2 (after only)
+  W=1280 H=720 DPR=1 canvas=1280x720 pixels=921600
+  Old formula at this DPR would be canvas=3840x2160 pixels=8294400
+  idle median 130.1 ms on this VM (WebGL context failing each frame; not the --disable-gpu pair above)
+
+Mobile 844x390, deviceScaleFactor 3, hasTouch true
+  before: W=844 H=390 DPR=2 canvas=1688x780 css=844x390
+          idle ms: 2.60, 2.10, 2.10, 2.90, 3.00  (median 2.10)
+          hot  ms: 2.10, 2.10, 2.00, 2.00, 2.10  (median 2.10)
+  after:  W=844 H=390 DPR=2 canvas=1688x780 css=844x390
+          idle ms: 2.10, 1.90, 2.00, 2.00, 2.10  (median 2.00)
+          hot  ms: 1.90, 2.00, 1.90, 1.90, 1.80  (median 1.90)
+  Buffer matches the pre-change formula exactly (dpr = min(devicePixelRatio, 2), W = innerWidth, H = innerHeight).
+  Sky patch mean RGB before [100.8, 69.4, 111.3] after [100.8, 69.4, 111.3] delta 0.
+  Ground patch mean RGB before [222.2, 190.2, 70.0] after [222.2, 190.2, 70.0] delta 0.
+
+Pointer: street look drag of +80 CSS px on the 1920-wide desktop window
+  goal azimuth 0.600 (80 * 0.0075). Measured _gAz 0.600.
+  A handler that scaled by W/innerWidth would have landed on 0.400.
+
+Narrow desktop 1100x700 (area under the cap): W=1100 H=700 DPR=1 canvas=1100x700. No shrink.
