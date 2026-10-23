@@ -5,7 +5,7 @@
    - Other files (manifests, icons): stale-while-revalidate inside a versioned cache.
    - A new deploy changes VERSION/BUILD -> installs at once (skipWaiting), takes over open pages (clients.claim), deletes the
      old cache and tells the pages its BUILD so a stale page can reload itself (only when no game/drive is in progress). */
-const VERSION = 'zdash-f5f4db3cffe9-world26';
+const VERSION = 'zdash-f5f4db3cffe9-world27';
 const BUILD = '1792461369-world26';
 const ASSETS = ["index.html", "jr.html", "manifest.webmanifest", "manifest-jr.webmanifest", "icons/zdash-192.png", "icons/zdash-512.png", "icons/zdash-apple-180.png", "icons/zdash-jr-192.png", "icons/zdash-jr-512.png", "icons/zdash-jr-apple-180.png", "icons/zdash-jr-maskable-512.png", "icons/zdash-maskable-512.png"];
 const NAV_TIMEOUT = 2500;
@@ -21,7 +21,7 @@ const pageKey = (url) => (url.pathname.endsWith('jr.html') ? 'jr.html' : url.pat
 // They are not added to ASSETS and are not stored under the index/jr/fly3/world page keys. Without this
 // branch, pageKey() would treat world-split.html as index.html and overwrite that cached page.
 // activate drops every world-split-* cache except SPLIT_CACHE, and the fetch handler is network-first.
-const SPLIT_CACHE = 'world-split-v26';
+const SPLIT_CACHE = 'world-split-v27';
 const isSplitPath = (url) => { const p = url.pathname; return p.endsWith('/world-split.html') || p.endsWith('/world.html') || p.endsWith('/crew.html') || p.endsWith('/dance-stage.html') || p.endsWith('/garage-hub.html') || p.endsWith('/neon-paint.html') || p.includes('/world/') || p.includes('/shared/'); };
 function fromNetwork(req, key) { // revalidate with the server (bypasses the 10-min HTTP cache on GitHub Pages; an unchanged page is a cheap 304)
   return fetch(new Request(req.url, { cache: 'no-cache', credentials: 'same-origin' })).then((res) => {
