@@ -1539,7 +1539,12 @@
       '#ghh-room .ghh-room-items{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}',
       '#ghh-room .ghh-room-item{border:1.5px solid var(--wall,#3ee6ff);border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.06)}',
       '#ghh-room small{font:700 11px Rajdhani,sans-serif;letter-spacing:1px}',
-      '@media (max-width:700px){.ghh-grid,.ghh-stats{grid-template-columns:1fr}}'
+      '@media (max-width:700px){.ghh-grid,.ghh-stats{grid-template-columns:1fr}}',
+      'html.pc-mode #kHome.ghh-ready{width:min(1120px,calc(100vw - 24px));max-height:92vh;overflow-y:auto;top:4vh;transform:translate(-50%,0);padding:28px 12px 12px;align-items:stretch;box-sizing:border-box}',
+      'html.pc-mode #kHome.ghh-ready #kGamesWrap{max-height:none;overflow:visible}',
+      'html.pc-mode #kHome.ghh-ready .ghh-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}',
+      'html.pc-mode #kHome.ghh-ready .ghh-card{padding:6px 7px}',
+      'html.pc-mode #kHome.ghh-ready .kpzrow button,html.pc-mode #kHome.ghh-ready .ktabs button{min-height:30px;padding:4px 8px;font-size:11px}'
     ].join('');
     document.head.appendChild(s);
   }
