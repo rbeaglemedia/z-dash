@@ -269,7 +269,7 @@ body.kidon #splash, body.kidon #alert, body.kidon #toast, body.kidon #edge, body
 .kcarui { position: absolute; right: 16px; bottom: 14px; }
 .kgarage { position: absolute; top: 0; right: 0; bottom: 0; width: 46%; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(90deg, rgba(8,2,15,0), rgba(18,5,34,.92) 6%); border-left: 2px solid #3a1550; }
 .ghead { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.gcats { display: flex; gap: 4px; flex-wrap: wrap; }
+.gcats { display: flex; gap: 8px; flex-wrap: wrap; }
 .gcats button { font-family: 'Orbitron'; font-weight: 800; font-size: 10px; letter-spacing: 1px; color: #c9b6e6; background: transparent; border: 2px solid #3a1550; border-radius: 12px; padding: 4px 9px; cursor: pointer; }
 .gcats button.on { color: #fff; border-color: #3ee6ff; background: rgba(62,230,255,.15); }
 .gitems { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; align-content: start; }
@@ -520,7 +520,7 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
 /* 3-level Garage / Home drill-down */
 .kgarage .gbackbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .kgarage .gback { flex: none; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 16px; letter-spacing: 1px; color: #12052a; background: #ffe14d; border: 0; border-radius: 12px; padding: 10px 14px; cursor: pointer; box-shadow: 0 0 14px #ffe14d; }
-.kgarage .gcrumbs { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 11px; color: #efe7ff; }
+.kgarage .gcrumbs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 11px; color: #efe7ff; }
 .kgarage .gcrumbs button { background: transparent; border: 0; color: #3ee6ff; font: inherit; cursor: pointer; padding: 4px 2px; }
 .kgarage .gcrumbs button.on { color: #fff; }
 .kgarage .gcrumbs span { opacity: .7; }
@@ -530,7 +530,7 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
 .kgarage .gbig b { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 18px; letter-spacing: .6px; line-height: 1.15; }
 .kgarage .gbig em { font-style: normal; font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 11px; letter-spacing: 1px; color: #ffe14d; }
 .kgarage .gbig small { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14px; line-height: 1.25; color: #ffe7fb; }
-@media (max-height: 380px), (max-width: 900px) { .kgarage .gsecs button { font-size: 8.5px; letter-spacing: 0; padding: 4px 2px; } }
+@media (max-height: 380px), (max-width: 900px) { .kgarage .gsecs button { font-size: 11px; letter-spacing: 0; padding: 4px 6px; } }
 
 /* JR DRIVE: music card under the POWER METER (position/size set from JS to match the meter), big controls, marquee title */
 .npKid.npCard { left: auto; bottom: auto; transform: none; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "art txt" "btn btn" "vol vol"; align-items: center; gap: 6px 8px; box-sizing: border-box; padding: 8px; border: 2px solid #ff4fd8; border-radius: 14px; background: rgba(18,5,34,.85); box-shadow: 0 0 14px rgba(255,79,216,.45), inset 0 0 12px rgba(255,79,216,.12); overflow: hidden; z-index: 5; }
@@ -571,7 +571,7 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
 .kdtutskip.hidden { display: none; }
 .kdiff .ktutbtn { margin-left: 8px; border-color: #ffe14d !important; color: #ffe14d; }
 
-@media (max-width: 900px) { .kgarage .gsecs button { font-size: 8px; } }
+@media (max-width: 900px) { .kgarage .gsecs button { font-size: 11px; } }
 
 .npKid.npCard.hidden { display: none; }
 
@@ -12796,7 +12796,7 @@ var qrcode = function() {
       '.vinyl-badge{font:900 10px Orbitron,sans-serif;font-style:normal;color:#1a0633;background:#ffe14d;border-radius:999px;padding:2px 8px}',
       '.vinyl-dots{display:flex;gap:4px;min-height:14px}',
       '.vinyl-dots i{width:14px;height:14px;border-radius:50%;box-shadow:0 0 8px currentColor;border:1px solid #fff}',
-      '.vinyl-acts{display:flex;flex-wrap:wrap;gap:4px}',
+      '.vinyl-acts{display:flex;flex-wrap:wrap;gap:8px}',
       '.vinyl-acts button,.vinyl-acts a{font:800 10px Orbitron,sans-serif;color:#fff;border:1.5px solid #3ee6ff;border-radius:999px;padding:4px 8px;background:rgba(62,230,255,.12);text-decoration:none;cursor:pointer}',
       '.vinyl-empty{grid-column:1/-1;padding:8px;border:1.5px dashed #3ee6ff;border-radius:12px;color:#efe7ff}',
       '.vinyl-empty p{margin:0 0 8px;font:700 14px/1.35 Rajdhani,sans-serif}',
@@ -12835,8 +12835,8 @@ var qrcode = function() {
       html += '<span class="vinyl-acts">';
       if (on) html += '<button type="button" data-vinyl-unequip="1">UNEQUIP</button>';
       else html += '<button type="button" data-vinyl-equip="' + vinylEsc(item.id) + '">EQUIP</button>';
-      html += '<a data-vinyl-edit="1" href="neon-paint.html?vinyl=' + encodeURIComponent(item.id) + '">EDIT / MODIFY</a>';
-      html += '<button type="button" data-vinyl-del="' + vinylEsc(item.id) + '">DELETE</button>';
+      html += '<a data-vinyl-edit="1" href="neon-paint.html?vinyl=' + encodeURIComponent(item.id) + '" aria-label="Edit ' + vinylEsc(name) + '">EDIT / MODIFY</a>';
+      html += '<button type="button" data-vinyl-del="' + vinylEsc(item.id) + '" aria-label="Delete ' + vinylEsc(name) + '">DELETE</button>';
       html += '</span></article>';
     });
     return html;

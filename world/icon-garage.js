@@ -172,7 +172,7 @@
       '.vinyl-badge{font:900 10px Orbitron,sans-serif;font-style:normal;color:#1a0633;background:#ffe14d;border-radius:999px;padding:2px 8px}',
       '.vinyl-dots{display:flex;gap:4px;min-height:14px}',
       '.vinyl-dots i{width:14px;height:14px;border-radius:50%;box-shadow:0 0 8px currentColor;border:1px solid #fff}',
-      '.vinyl-acts{display:flex;flex-wrap:wrap;gap:4px}',
+      '.vinyl-acts{display:flex;flex-wrap:wrap;gap:8px}',
       '.vinyl-acts button,.vinyl-acts a{font:800 10px Orbitron,sans-serif;color:#fff;border:1.5px solid #3ee6ff;border-radius:999px;padding:4px 8px;background:rgba(62,230,255,.12);text-decoration:none;cursor:pointer}',
       '.vinyl-empty{grid-column:1/-1;padding:8px;border:1.5px dashed #3ee6ff;border-radius:12px;color:#efe7ff}',
       '.vinyl-empty p{margin:0 0 8px;font:700 14px/1.35 Rajdhani,sans-serif}',
@@ -211,8 +211,8 @@
       html += '<span class="vinyl-acts">';
       if (on) html += '<button type="button" data-vinyl-unequip="1">UNEQUIP</button>';
       else html += '<button type="button" data-vinyl-equip="' + vinylEsc(item.id) + '">EQUIP</button>';
-      html += '<a data-vinyl-edit="1" href="neon-paint.html?vinyl=' + encodeURIComponent(item.id) + '">EDIT / MODIFY</a>';
-      html += '<button type="button" data-vinyl-del="' + vinylEsc(item.id) + '">DELETE</button>';
+      html += '<a data-vinyl-edit="1" href="neon-paint.html?vinyl=' + encodeURIComponent(item.id) + '" aria-label="Edit ' + vinylEsc(name) + '">EDIT / MODIFY</a>';
+      html += '<button type="button" data-vinyl-del="' + vinylEsc(item.id) + '" aria-label="Delete ' + vinylEsc(name) + '">DELETE</button>';
       html += '</span></article>';
     });
     return html;
@@ -971,6 +971,7 @@
       game.modes.forEach(function (m) {
         const b = el('button', '', m.label);
         b.type = 'button';
+        b.setAttribute('aria-label', game.title + ' · ' + m.label);
         b.dataset.ghhMode = m.id;
         b.dataset.ghhGame = game.id;
         acts.appendChild(b);
@@ -978,12 +979,14 @@
     } else if (game.onPlay) {
       const b = el('button', '', '▶ PLAY');
       b.type = 'button';
+      b.setAttribute('aria-label', 'Play ' + game.title);
       b.dataset.ghhPlay = game.id;
       acts.appendChild(b);
     }
     if (game.onDrive) {
       const b = el('button', 'ghh-mini', game.driveLabel || (game.doorPurpose === 'wall' ? '📍 VIEW WALL IN CITY' : '📍 DRIVE THERE'));
       b.type = 'button';
+      b.setAttribute('aria-label', (game.driveLabel || (game.doorPurpose === 'wall' ? 'View wall in city' : 'Drive there')) + ' · ' + game.title);
       b.dataset.ghhDrive = game.id;
       acts.appendChild(b);
     }
@@ -1955,7 +1958,7 @@
       '#kHome .ghh-svg{display:inline-flex;width:18px;height:18px;flex:none}',
       '#kHome .ghh-svg svg{width:18px;height:18px;display:block;filter:drop-shadow(0 0 4px currentColor)}',
       '.ghh-kicker{font:900 10px Orbitron,sans-serif;letter-spacing:1.6px;color:#3ee6ff;text-align:center;margin:4px 0}',
-      '.ghh-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;width:100%}',
+      '.ghh-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}',
       '.ghh-card{display:grid;grid-template-columns:24px 1fr;grid-template-areas:"ico text" "acts acts";gap:2px 5px;padding:5px 6px;border-radius:11px;border:1.5px solid var(--ghh,#3ee6ff);background:rgba(10,4,24,.88);box-shadow:0 0 12px color-mix(in srgb,var(--ghh,#3ee6ff) 45%,transparent);min-width:0}',
       '.ghh-card.hero{grid-column:1 / -1;grid-template-columns:32px 1fr}',
       '.ghh-card .ghh-svg{grid-area:ico;width:28px;height:28px;color:var(--ghh,#3ee6ff)}',
@@ -1964,7 +1967,7 @@
       '.ghh-card-text b{display:block;font:900 10px/1.15 Orbitron,sans-serif;color:#fff;letter-spacing:.3px}',
       '.ghh-card-text small{display:block;font:600 9px/1.25 Rajdhani,sans-serif;color:#d7c6ef;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
       '.ghh-card-text em{display:inline-block;margin-top:2px;font:800 8px Orbitron,sans-serif;font-style:normal;color:#12051a;background:var(--ghh,#3ee6ff);border-radius:999px;padding:1px 5px}',
-      '.ghh-acts{grid-area:acts;display:flex;flex-wrap:wrap;gap:4px}',
+      '.ghh-acts{grid-area:acts;display:flex;flex-wrap:wrap;gap:6px}',
       '.ghh-grid button,.ghh-acts button{font:800 9px/1.1 Orbitron,sans-serif;color:#fff;background:rgba(62,230,255,.1);border:1.5px solid rgba(62,230,255,.7);border-radius:999px;padding:4px 7px;min-height:24px;cursor:pointer}',
       '.ghh-mini{border-color:#ffe14d !important;color:#ffe14d !important}',
       '.ghh{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;gap:6px;padding:8px;background:radial-gradient(1200px 400px at 10% -10%,rgba(255,79,216,.2),transparent 50%),radial-gradient(900px 400px at 100% 0%,rgba(62,230,255,.16),transparent 46%),#07010f;color:#fff;font-family:Orbitron,Rajdhani,sans-serif}',
@@ -2009,24 +2012,24 @@
       '#kGarageDrill{order:0;width:100%;flex:0 0 auto;min-height:148px;max-height:min(72vh,420px);overflow:auto;display:flex;flex-direction:column;gap:8px;padding:8px;border-radius:16px;border:2px solid #ff4fd8;background:rgba(10,4,22,.94);box-sizing:border-box}',
       '#kGarageDrill .gbackbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}',
       '#kGarageDrill .gback{flex:none;font:900 16px/1 Orbitron,sans-serif;letter-spacing:1px;color:#12052a;background:#ffe14d;border:0;border-radius:12px;padding:10px 14px;cursor:pointer;box-shadow:0 0 14px #ffe14d}',
-      '#kGarageDrill .gcrumbs{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font:800 11px Orbitron,sans-serif;color:#efe7ff}',
+      '#kGarageDrill .gcrumbs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font:800 11px Orbitron,sans-serif;color:#efe7ff}',
       '#kGarageDrill .gcrumbs button{background:transparent;border:0;color:#3ee6ff;font:inherit;cursor:pointer;padding:4px 2px}',
       '#kGarageDrill .gcrumbs button.on{color:#fff}',
       '#kGarageDrill .glevel{display:flex;flex-direction:column;gap:8px}',
-      '#kGarageDrill .gbig{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;width:100%;border-radius:16px;border:2px solid #3ee6ff;background:rgba(62,230,255,.1);color:#fff;padding:12px;cursor:pointer}',
-      '#kGarageDrill .gbig .gem{font-size:32px;line-height:1}',
-      '#kGarageDrill .gbig b{font:900 16px/1.15 Orbitron,sans-serif;letter-spacing:.5px}',
+      '#kGarageDrill .gbig{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;width:100%;border-radius:14px;border:2px solid #3ee6ff;background:rgba(62,230,255,.1);color:#fff;padding:8px 10px;cursor:pointer}',
+      '#kGarageDrill .gbig .gem{font-size:22px;line-height:1}',
+      '#kGarageDrill .gbig b{font:900 15px/1.15 Orbitron,sans-serif;letter-spacing:.4px}',
       '#kGarageDrill .gbig em{font-style:normal;font:800 11px Orbitron,sans-serif;color:#ffe14d}',
-      '#kGarageDrill .gbig small{font:700 13px/1.25 Rajdhani,sans-serif;color:#efe7ff}',
-      '#kGarageDrill .gcats{display:flex;gap:4px;overflow-x:auto}',
-      '#kGarageDrill .gcats button{flex:0 0 auto;font:800 10px Orbitron,sans-serif;color:#efe7ff;background:transparent;border:2px solid #3a1550;border-radius:12px;padding:6px 8px;cursor:pointer}',
+      '#kGarageDrill .gbig small{font:700 12px/1.25 Rajdhani,sans-serif;color:#efe7ff}',
+      '#kGarageDrill .gcats{display:flex;flex:0 0 auto;gap:8px;overflow-x:auto;align-items:center}',
+      '#kGarageDrill .gcats button{flex:0 0 auto;white-space:nowrap;min-height:32px;font:800 11px Orbitron,sans-serif;color:#efe7ff;background:transparent;border:2px solid #3a1550;border-radius:12px;padding:6px 10px;cursor:pointer}',
       '#kGarageDrill .gcats button.on{color:#fff;border-color:#3ee6ff;background:rgba(62,230,255,.15)}',
       '#kGarageDrill .gitems{display:flex;flex-direction:column;gap:6px}',
       '#kGarageDrill .gitem{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border-radius:12px;border:1.5px solid rgba(62,230,255,.45);background:rgba(255,255,255,.04);color:#fff;padding:8px 10px;cursor:pointer;text-decoration:none}',
       '#kGarageDrill .gitem.eq{border-color:#ffe14d;box-shadow:0 0 10px rgba(255,225,77,.35)}',
       'html.pc-mode #kHome.ghh-ready{width:min(1120px,calc(100vw - 24px));max-height:92vh;overflow-y:auto;top:4vh;transform:translate(-50%,0);padding:28px 12px 12px;align-items:stretch;box-sizing:border-box}',
       'html.pc-mode #kHome.ghh-ready #kGamesWrap{max-height:none;overflow:visible}',
-      'html.pc-mode #kHome.ghh-ready .ghh-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}',
+      'html.pc-mode #kHome.ghh-ready .ghh-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}',
       'html.pc-mode #kHome.ghh-ready .ghh-card{padding:6px 7px}',
       'html.pc-mode #kHome.ghh-ready .kpzrow button,html.pc-mode #kHome.ghh-ready .ktabs button{min-height:30px;padding:4px 8px;font-size:11px}'
     ].join('');
