@@ -2,21 +2,35 @@
 // ===== PHYSICS: GROUND (split from shared/physics.js) =====
 // Ground driving: surfaces via offRoadK() (grass / buildings / roads / runways), NOS + wings-out on the ground,
 // e-brake drifting, particles, NOS tiers, wreck card. step() in world/phys-air.js calls groundStep() when P.ground.
+// Per-surface feel. Road multipliers are all 1 so arcade / street / e-brake stay bit-identical there.
+// Grass drag stays inside offRoadK() (dragMul 1) so it is not applied twice. Roof braking is 1.15x.
+function surfaceFeel(kind){
+  if(kind==='runway')return{d:0.85,a:1.06,g:1.08,b:1,rum:0};
+  if(kind==='roof')return{d:0.95,a:1,g:1.12,b:1.15,rum:0};
+  if(kind==='grass')return{d:1,a:1,g:0.78,b:1,rum:1};
+  return{d:1,a:1,g:1,b:1,rum:0};
+}
 function groundStep(dt,T,I,I0,nz,vT,vr,wf,ge,cbank,g,CL){
     let ebDone=false;
     const street=P.driveMode==='street';
+    const kind=surfaceKindAt(P.x,P.z,P.y);P.surface=kind;const Sf=surfaceFeel(kind);
     if(P.wreck){P.wreck.t+=dt;P.v=Math.max(0,P.v-Math.max(T.wreckFric,P.v*1.2)*dt);if(P.v>2)fxBurst('spark',3);if(P.wreck.t<4)fxBurst('smoke',P.wreck.t<1.5?2:1);if(P.wreck.t>T.wreckCard&&!P.wreck.card){P.wreck.card=1;showWreck(true);}P.ebK=0;P.ebSlip=0;P.donutK=0;P.ebRoll=0;}
     else{const ofr=offRoadK();P.offK=ofr;
       if(I.eb||(P.ebK||0)>0.001||(P.donutK||0)>0.001||Math.abs(P.ebSlip||0)>0.002||Math.abs(P.ebRoll||0)>0.002){ebGround(dt,T,I,ofr,vT);ebDone=true;}
       else if(street){const streetMax=T.streetMaxSpeed||28,thrCurve=I.tu?Math.pow(clamp(P.thr,0,1),1.35):0,vStreet=streetMax*(nz&&I.tu?1.38:thrCurve);
-        if(I.tu&&vStreet>P.v){const accRate=(T.streetAccel||6.4)*ofr*(0.55+0.45*(1-clamp(P.v/streetMax,0,1)));P.v+=accRate*dt;}
-        else{const coastDecel=(T.streetCoastDecel||4.6)+P.v*0.08+T.groundFric*(ofr<1?1+2*(1-ofr):1);P.v=Math.max(0,P.v-coastDecel*dt);}
-        if(I.brk&&!I.eb)P.v=Math.max(0,P.v-(T.streetBrake||15.5)*dt);
+        if(I.tu&&vStreet>P.v){const accRate=(T.streetAccel||6.4)*ofr*Sf.a*(0.55+0.45*(1-clamp(P.v/streetMax,0,1)));P.v+=accRate*dt;}
+        else{const coastDecel=(T.streetCoastDecel||4.6)+P.v*0.08+T.groundFric*(ofr<1?1+2*(1-ofr):1)*Sf.d;P.v=Math.max(0,P.v-coastDecel*dt);}
+        if(I.brk&&!I.eb)P.v=Math.max(0,P.v-(T.streetBrake||15.5)*Sf.b*dt);
         P.v=Math.max(0,P.v-Math.sin(P.pitch)*T.gravityK*dt);}
-      else P.v+=(vT-P.v)*(vT>P.v?T.groundAccel*ofr:T.momentum)*dt-Math.sin(P.pitch)*T.gravityK*dt-(I.brk?T.groundBrake*dt:0)-T.groundFric*(ofr<1?1+2*(1-ofr):1)*dt;}
+      else P.v+=(vT-P.v)*(vT>P.v?T.groundAccel*ofr*Sf.a:T.momentum*Sf.d)*dt-Math.sin(P.pitch)*T.gravityK*dt-(I.brk?T.groundBrake*Sf.b*dt:0)-T.groundFric*(ofr<1?1+2*(1-ofr):1)*Sf.d*dt;
+      if(!ebDone&&I.nos&&(P.nosTank||0)>0){P.v+=(street?9:8)*dt;nosGroundFx(dt);}
+      if(!ebDone&&P.wings===1&&P.v<T.rotateSpeed&&!(kind==='runway'&&I.tu))P.v=Math.max(0,P.v-P.v*0.12*dt);}
     P.gT=(P.gT||0)+dt;
-    if(!ebDone){if(street&&!P.wreck){const streetMax=T.streetMaxSpeed||28;P.v=clamp(P.v,0,streetMax*(nz&&I.tu?1.38:1));P.gam=0;const stScale=Math.min(1,P.v/2.6)*(1-0.28*clamp(P.v/streetMax,0,1));P.yaw+=I.lr*0.6*T.groundSteer*stScale*dt;P.hd=P.yaw;if(P.ebRoll){P.ebRoll*=Math.max(0,1-10*dt);if(Math.abs(P.ebRoll)<1e-3)P.ebRoll=0;}}
-      else{P.v=clamp(P.v,0,T.maxSpeed*T.nosBoost*1.1);P.gam=0;P.yaw+=I.lr*0.6*TUNE.groundSteer*dt*Math.min(1,P.v/5);P.hd=P.yaw;if(P.ebRoll){P.ebRoll*=Math.max(0,1-10*dt);if(Math.abs(P.ebRoll)<1e-3)P.ebRoll=0;}}}
+    if(!ebDone){const yM=Sf.g*(P.wings===1?0.85:1);
+      if(street&&!P.wreck){const streetMax=T.streetMaxSpeed||28;P.v=clamp(P.v,0,streetMax*(nz&&I.tu?1.38:1));P.gam=0;const stScale=Math.min(1,P.v/2.6)*(1-0.28*clamp(P.v/streetMax,0,1));P.yaw+=I.lr*0.6*T.groundSteer*stScale*dt*yM;P.hd=P.yaw;if(P.ebRoll){P.ebRoll*=Math.max(0,1-10*dt);if(Math.abs(P.ebRoll)<1e-3)P.ebRoll=0;}}
+      else{P.v=clamp(P.v,0,T.maxSpeed*T.nosBoost*1.1);P.gam=0;P.yaw+=I.lr*0.6*TUNE.groundSteer*dt*Math.min(1,P.v/5)*yM;P.hd=P.yaw;if(P.ebRoll){P.ebRoll*=Math.max(0,1-10*dt);if(Math.abs(P.ebRoll)<1e-3)P.ebRoll=0;}}}
+    if(Sf.rum&&P.v>4){const amp=22*Math.min(1,P.v/12);P.susV=(P.susV||0)+Math.sin((P.simT||0)*90)*amp*dt;}
+    wingScrape(dt,I);
     const rr=P.v>=T.rotateSpeed&&P.wings;if(rr&&!P.rotOK)toast('PULL UP!');P.rotOK=rr;
     if(rr&&!P.wreck&&!(I.climb<0)&&g*CL(P.pitch)*(vr<1?vr*vr+T.floatLift*vr*(1-vr):vr*vr)*wf*ge*cbank>g){P.ground=false;P.y=P.gy+0.001;P.toT=P.simT;P.slowLaunch=P.v<T.roughSpeed;P.lift0=1;ebAirHandoff();toast(P.slowLaunch?'TOO SLOW!':'LIFT OFF!');}
 }
@@ -26,6 +40,15 @@ const NOS_TIERS=['n-stock','n-big','n-race','n-legend'];function nosTierIdx(){if
 const FX=[];function fxBurst(k,n){const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw);for(let i=0;i<n;i++){const r=brn,sp=k==='spark';
   FX.push({k,x:P.x-fx*1.6+(r()-.5)*1.6,y:sp?.15:.6,z:P.z-fz*1.6+(r()-.5)*1.6,vx:fx*P.v*(sp?.5:.1)+(r()-.5)*(sp?8:2),vy:sp?1+r()*4:1+r()*1.5,vz:fz*P.v*(sp?.5:.1)+(r()-.5)*(sp?8:2),life:sp?.35+r()*.4:1.6+r()*1.2,t:0,s:sp?0:1+r()});}
   if(FX.length>600)FX.splice(0,FX.length-600);}
+// NOS on the ground: exhaust sparks + rear-tire launch puffs. Accel surge lives in groundStep; this is the FX only.
+function nosGroundFx(dt){P._nosFx=(P._nosFx||0)+dt;if(P._nosFx<0.06)return;P._nosFx=0;fxBurst('spark',2);
+  const hx=Math.sin(P.hd||0),hz=Math.cos(P.hd||0);
+  for(let s=-1;s<=1;s+=2){const w=ebWheel(s),r=brn;FX.push({k:'tire',air:0,x:w[0],y:0.2,z:w[2],vx:-hx*2.4+(r()-.5)*1.4,vy:0.7+r()*1.4,vz:-hz*2.4+(r()-.5)*1.4,life:0.32+r()*0.28,t:0,s:0.7+r()*0.6});}
+  if(FX.length>600)FX.splice(0,FX.length-600);}
+// Wings-out ground drift: wingtip scrape when the bank, body roll, or e-brake slip is already high. Does not write ebSlip.
+function wingScrape(dt,I){if(P.wings!==1||!P.ground)return;
+  const hot=Math.abs(P.ebSlip||0)>0.25||Math.abs(P.bank||0)>0.4||Math.abs(P.ebRoll||0)>0.08;
+  if(!hot||Math.abs(I.lr)<0.4)return;P._wingFx=(P._wingFx||0)+dt;if(P._wingFx<0.12)return;P._wingFx=0;fxBurst('spark',3);}
 function fxStep(dt){for(let i=FX.length-1;i>=0;i--){const f=FX[i];f.t+=dt;if(f.t>f.life){FX.splice(i,1);continue;}f.x+=f.vx*dt;f.y+=f.vy*dt;f.z+=f.vz*dt;
   if(f.k==='spark'){f.vy-=9.8*dt;if(f.y<0){f.y=0;f.vy*=-.3;}f.vx*=.98;f.vz*=.98;}else{f.vy*=.99;f.vx*=.97;f.vz*=.97;f.s+=dt*(f.k==='tire'?2.1:2.2);if(f.k==='tire'&&!f.air&&f.y<0.15)f.y=0.15;}}}
 function drawFX(){for(const f of FX){const p=proj(f.x,f.y,f.z);if(!p)continue;const a=1-f.t/f.life,sc=H*0.9/p[2];
