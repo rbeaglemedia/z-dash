@@ -16,6 +16,8 @@ const HKEY='zdash.customdance.v1',PKEY='zdash.petdance.v1',CKEY='zdash.crew.v1';
 let hRaw=null,hSlot=null,pRaw=null,pSlot=null,modeRaw=null,modeVal='signature';
 let hSpin=0,pSpin=0,lastX=null,lastZ=null,strideAcc=0,stepAcc=0;
 const rings=[];
+const petFollow={onFoot:false,x:0,y:0,z:0,yaw:0,vx:0,vz:0,speed:0,phase:0,gait:'idle',jumpY:0,jumpVy:0};
+let footMove=null,footNow=0,footDt=0,footStepped=false,carSpriteDirty=false;
 const DANCE_NAME={fox:'NOVA FOX',cat:'NEON KITTY',dragon:'MINI DRAGON',robo:'CYBER PUP',dog:'CYBER PUP',bunny:'STAR BUNNY'};
 const LOOK={
   girl:{name:'WOMAN',pony:1,hip:.10,shoulder:.15,thigh:.40,shin:.38,torso:.40,neck:.045,head:.125,uarm:.26,farm:.23,armR:.036,legR:.055,
@@ -748,12 +750,52 @@ function drawRing(x,y,z,rad,color,alpha){
     if(!p){on=false;continue;}if(!on){ctx.moveTo(p[0],p[1]);on=true;}else ctx.lineTo(p[0],p[1]);}
   ctx.stroke();ctx.restore();
 }
-function drawWorldWalker(W,dt,now){
-  if(typeof proj!=='function'||typeof ctx==='undefined'||!ctx)return;
-  const move=resolveMove(W,dt),tSec=now/1000,dancing=move.gait==='dance',who=whoNow();
-  st.gait=move.gait;st.who=who;st.pet=activePet();st.type=st.pet;
+function heelOf(W){
+  const fx=Math.sin(W.yaw||0),fz=Math.cos(W.yaw||0),rx=Math.cos(W.yaw||0),rz=-Math.sin(W.yaw||0);
+  return {fx:fx,fz:fz,x:(W.x||0)-rx*0.65-fx*0.52,z:(W.z||0)-rz*0.65-fz*0.52};
+}
+function turnToward(cur,target,rate,dt){
+  let d=Math.atan2(Math.sin(target-cur),Math.cos(target-cur)),max=rate*dt;
+  if(d>max)d=max;else if(d<-max)d=-max;
+  return cur+d;
+}
+function stepPetFollow(W,move,dt){
+  const heel=heelOf(W);
+  if(!petFollow.onFoot||Math.hypot((W.x||0)-petFollow.x,(W.z||0)-petFollow.z)>18){
+    petFollow.x=heel.x;petFollow.z=heel.z;petFollow.y=W.y||0;petFollow.yaw=W.yaw||0;
+    petFollow.vx=0;petFollow.vz=0;petFollow.speed=0;petFollow.onFoot=true;
+  }
+  const dx=heel.x-petFollow.x,dz=heel.z-petFollow.z,dist=Math.hypot(dx,dz);
+  if(dist>0.08||move.speed>0.15){
+    const wantV=dist>0.12?Math.min(9.2,dist*4.5+move.speed*0.92):0;
+    const ux=dist>1e-4?dx/dist:heel.fx,uz=dist>1e-4?dz/dist:heel.fz,k=Math.min(1,18*dt);
+    petFollow.vx+=(ux*wantV-petFollow.vx)*k;
+    petFollow.vz+=(uz*wantV-petFollow.vz)*k;
+    petFollow.x+=petFollow.vx*dt;petFollow.z+=petFollow.vz*dt;
+  }else{petFollow.vx=0;petFollow.vz=0;}
+  petFollow.speed=Math.hypot(petFollow.vx,petFollow.vz);
+  petFollow.yaw=turnToward(petFollow.yaw,petFollow.speed>0.35?Math.atan2(petFollow.vx,petFollow.vz):(W.yaw||0),petFollow.speed>0.35?10:6,dt);
+  petFollow.phase+=Math.max(0.35,petFollow.speed)*dt*(petFollow.speed>4.2?0.62:0.40);
+  petFollow.gait=(W.dancing||move.gait==='dance')?'dance':petFollow.speed>4.2?'run':petFollow.speed>0.22?'walk':'idle';
+  if((W.jumpY||0)>0.08&&petFollow.jumpY<=0.01&&petFollow.jumpVy<=0){petFollow.jumpVy=5.4;petFollow.jumpY=0.04;}
+  petFollow.jumpVy-=17.5*dt;petFollow.jumpY+=petFollow.jumpVy*dt;
+  if(petFollow.jumpY<=0){petFollow.jumpY=0;petFollow.jumpVy=0;}
+  petFollow.y=(W.y||0)+petFollow.jumpY;
+}
+function stepOnFoot(W,dt,now){
+  footMove=resolveMove(W,dt);footNow=now;footDt=dt;
+  const tSec=now/1000,dancing=footMove.gait==='dance';
+  st.gait=footMove.gait;st.who=whoNow();st.pet=activePet();st.type=st.pet;
   tickHuman(dt,tSec,dancing);
-  tickPet(dt,tSec,(dancing||move.gait==='idle')&&optIndex(st.petDanceOpt)>=0);
+  tickPet(dt,tSec,(dancing||footMove.gait==='idle')&&optIndex(st.petDanceOpt)>=0);
+  stepPetFollow(W,footMove,dt);
+  footStepped=true;
+}
+function bustCarSprite(){if(typeof ZV!=='undefined'&&ZV)ZV.lastPx=0;}
+function drawWorldWalker(W,dt,now){
+  if(!footStepped)stepOnFoot(W,dt,now);
+  if(typeof proj!=='function'||typeof ctx==='undefined'||!ctx||!footMove)return;
+  const move=footMove,tSec=(footNow||now)/1000,dancing=move.gait==='dance',who=st.who||whoNow();
   const spec=humanSpec(move.gait,move.phase,tSec,true);
   const yaw=(W.yaw||0)+hSpin,look=LOOK[who]||LOOK.girl;
   if(dancing){const sm=sampleHumanSelected(tSec);st.danceName=sm&&sm.name?sm.name:(st.charDanceOpt==='default'?'CLASSIC GROOVE':'DANCE');}
@@ -761,18 +803,17 @@ function drawWorldWalker(W,dt,now){
   ctx.save();
   try{
     if(move.gait==='run'){
-      stepAcc+=dt;
+      stepAcc+=footDt;
       if(stepAcc>.26){stepAcc=0;const side=rings.length%2?1:-1,rx=Math.cos(yaw),rz=-Math.sin(yaw);
-        rings.push({x:W.x+rx*side*.18,z:W.z+rz*side*.18,t:now,col:look.trim});}
+        rings.push({x:W.x+rx*side*.18,z:W.z+rz*side*.18,t:footNow,col:look.trim});}
     }
-    for(let i=rings.length-1;i>=0;i--){const age=(now-rings[i].t)/1000;if(age>.9){rings.splice(i,1);continue;}drawRing(rings[i].x,(W.y||0)+.03,rings[i].z,.16,rings[i].col,1-age/.9);}
+    for(let i=rings.length-1;i>=0;i--){const age=(footNow-rings[i].t)/1000;if(age>.9){rings.splice(i,1);continue;}drawRing(rings[i].x,(W.y||0)+.03,rings[i].z,.16,rings[i].col,1-age/.9);}
     if(dancing)drawRing(W.x,(W.y||0)+.03,W.z,.5+.14*Math.abs(Math.sin(tSec*Math.PI*4)),look.trim,.7);
     paintFigure(ctx,look,spec,worldProject,yaw,{x:W.x,y:(W.y||0)+(W.jumpY||0),z:W.z});
-    const fy=Math.sin(yaw),fz=Math.cos(yaw),rx=Math.cos(yaw),rz=-Math.sin(yaw);
-    const ax=W.x+rx*.70-fy*.48,az=W.z+rz*.70-fz*.48;
-    const q=groundPetQ(st.pet,move.gait,move.phase,tSec,dancing?{bob:spec.bob}:null);
-    q.yaw=yaw*180/Math.PI+(q.yaw||0);
-    paintPet(ctx,st.pet,q,(x,y,z)=>worldProject(ax+x,(W.y||0)+y,az+z),(D.pet&&D.pet.glow)||'#ffb020');
+    const q=groundPetQ(st.pet,petFollow.gait,petFollow.phase,tSec,petFollow.gait==='dance'?{bob:spec.bob}:null);
+    q.yaw=petFollow.yaw*180/Math.PI+(q.yaw||0);
+    const pScale=1.25,py=(W.y||0)+(petFollow.jumpY||0);
+    paintPet(ctx,st.pet,q,(x,y,z)=>worldProject(petFollow.x+x*pScale,py+y*pScale,petFollow.z+z*pScale),(D.pet&&D.pet.glow)||'#ffb020');
   }finally{ctx.restore();}
 }
 function drawDriver(who){
@@ -786,6 +827,7 @@ function drawDriver(who){
   st.danceName=st.charDanceOpt==='default'?'CLASSIC GROOVE':st.charDanceOpt;
 }
 function update(){
+  footStepped=false;
   const now=(typeof performance!=='undefined'?performance.now():Date.now());
   const dt=Math.min(.05,clock?(now-clock)/1000:0);clock=now;
   syncDanceOpts();
@@ -793,10 +835,14 @@ function update(){
   if(sim)t+=dt;
   const W=window.WALK_MODE;
   if(W&&W.onFoot){
-    if(root)root.visible=false;st.onFoot=true;st.phase='onfoot';st.ready=true;
-    if(!W.insideBuilding)drawWorldWalker(W,sim?dt:0,now);
+    if(root)root.visible=false;
+    if(!st.onFoot)bustCarSprite();
+    st.onFoot=true;st.phase='onfoot';st.ready=true;
+    stepOnFoot(W,sim?dt:0,now);
+    if(!W.insideBuilding&&typeof drawWaterline!=='function')drawWorldWalker(W,0,now);
     return;
   }
+  if(st.onFoot){petFollow.onFoot=false;petFollow.vx=0;petFollow.vz=0;petFollow.speed=0;petFollow.jumpY=0;petFollow.jumpVy=0;carSpriteDirty=true;}
   st.onFoot=false;
   const X=xray();if(!X)return;
   if(!st.built&&!build(X))return;
@@ -812,6 +858,7 @@ function update(){
   }
   drawPet(q,pet.type);
   if(root)root.visible=true;
+  if(carSpriteDirty){bustCarSprite();carSpriteDirty=false;}
   if(st.rigs)pinHead(st.rigs[who].parts.head);
   st.ready=true;
 }
@@ -822,6 +869,15 @@ window.addEventListener&&window.addEventListener('storage',e=>{
 });
 try{new BroadcastChannel('zdash-customdance').onmessage=()=>{hRaw=null;hObjRaw='';};}catch(e){}
 try{new BroadcastChannel('zdash-petdance').onmessage=()=>{pRaw=null;pObjRaw='';};}catch(e){}
+if(typeof drawWaterline==='function'&&!drawWaterline.__crewHooked){
+  const _dw=drawWaterline;
+  drawWaterline=function(){
+    _dw();
+    const W=window.WALK_MODE;
+    if(W&&W.onFoot&&!W.insideBuilding)drawWorldWalker(W,0,footNow||(typeof performance!=='undefined'?performance.now():Date.now()));
+  };
+  drawWaterline.__crewHooked=true;
+}
 window.CREW={
   update,
   preview,
@@ -832,7 +888,7 @@ window.CREW={
   debugSeat(base,tSec){const rec=recordedSample(tSec);return rec?seatRecorded(base||{},rec):null;},
   debugSig(type,u){return sigDance(type,u);},
   getCharDanceOptions,setCharDanceOpt,cycleCharDance,getPetDanceOptions,setPetDanceOpt,syncDanceOpts,
-  get state(){return {phase:st.phase,tk:st.tkOn?+st.tk.toFixed(3):0,hatch:+(st.hatch||0).toFixed(3),type:st.type||(st.pet||D.pet.type),ready:st.ready,fx:AX.fx,fz:AX.fz,axis:AX.ok,head:st.headX!=null?[+st.headX.toFixed(3),+st.headY.toFixed(3),+st.headZ.toFixed(3)]:null,pet:st.petX!=null?[+st.petX.toFixed(3),+st.petY.toFixed(3),+st.petZ.toFixed(3)]:null,petType:st.pet||(D.pet&&D.pet.type)||'fox',char:D.char.glow,hair:D.char.hair,petGlow:D.pet.glow,spot:D.pet.spot,who:st.who||whoNow(),gait:st.gait,dance:st.danceName,charDanceOpt:st.charDanceOpt||'default',petDanceOpt:st.petDanceOpt||'default',onFoot:!!st.onFoot};},
+  get state(){return {phase:st.phase,tk:st.tkOn?+st.tk.toFixed(3):0,hatch:+(st.hatch||0).toFixed(3),type:st.type||(st.pet||D.pet.type),ready:st.ready,fx:AX.fx,fz:AX.fz,axis:AX.ok,head:st.headX!=null?[+st.headX.toFixed(3),+st.headY.toFixed(3),+st.headZ.toFixed(3)]:null,pet:st.petX!=null?[+st.petX.toFixed(3),+st.petY.toFixed(3),+st.petZ.toFixed(3)]:null,petType:st.pet||(D.pet&&D.pet.type)||'fox',char:D.char.glow,hair:D.char.hair,petGlow:D.pet.glow,spot:D.pet.spot,who:st.who||whoNow(),gait:st.gait,dance:st.danceName,charDanceOpt:st.charDanceOpt||'default',petDanceOpt:st.petDanceOpt||'default',onFoot:!!st.onFoot,rootVisible:!!(root&&root.visible),petWorld:st.onFoot?{x:+petFollow.x.toFixed(2),z:+petFollow.z.toFixed(2),yaw:+petFollow.yaw.toFixed(2),speed:+petFollow.speed.toFixed(2),gait:petFollow.gait}:null};},
   reload(){const r=D.reload();charHex='';petHex='';return r;},
   axis(fx,fz){AX.fx=fx;AX.fz=fz==null?fx:fz;AX.ok=true;}
 };
