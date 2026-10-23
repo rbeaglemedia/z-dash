@@ -23,8 +23,8 @@ window.TRAFFIC_TUNE = {
   hopP: 0.4,           // chance a Z catching a tow truck in its lane jumps the bed
   hopLane: 0.5,        // of the ones that do not jump, this fraction changes lanes (the rest follow)
   hopVy: 6.2,          // m/s, scripted launch off the bed (ballistic, no damage)
-  bumpKeep: 0.92,      // player speed multiplier on a bump (never a reset)
-  bumpDrop: 6,         // m/s taken off the player on that same bump
+  bumpKeep: 0.92,      // WANTED bumpTraffic: heavy Z keeps this fraction of speed (never a reset, no speed floor)
+  bumpDrop: 0,         // unused: the old subtract-a-floor stall is gone; wrecks use bumpKeep only
   bumpYaw: 0.045,      // rad, small sideways kick
   spritePx: 160,       // baked once per paint x view; the mesh is not redrawn per car
   bakePerFrame: 1,

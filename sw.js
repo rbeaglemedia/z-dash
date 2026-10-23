@@ -11,17 +11,17 @@ const ASSETS = ["index.html", "jr.html", "manifest.webmanifest", "manifest-jr.we
 const NAV_TIMEOUT = 2500;
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(VERSION).then((c) => c.addAll(ASSETS.map((a) => new Request(a, { cache: 'reload' })))).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith('zdash-') && k !== VERSION).map((k) => caches.delete(k))))
+  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => (k.startsWith('zdash-') && k !== VERSION) || (k.startsWith('world-split-') && k !== SPLIT_CACHE)).map((k) => caches.delete(k))))
     .then(() => self.clients.claim())
     .then(() => self.clients.matchAll({ type: 'window' })).then((cs) => cs.forEach((c) => c.postMessage({ type: 'zd-sw', build: BUILD }))));
 });
 self.addEventListener('message', (e) => { if (e.data === 'zd-build?' && e.source) e.source.postMessage({ type: 'zd-sw', build: BUILD }); });
 const pageKey = (url) => (url.pathname.endsWith('jr.html') ? 'jr.html' : url.pathname.endsWith('fly3.html') ? 'fly3.html' : url.pathname.endsWith('world.html') ? 'world.html' : 'index.html'); // ?passenger / ?code= etc. share one cached copy
-// world-split.html is a hidden page. Its HTML, world/ modules and shared/ assets live in their own cache
-// (name does not start with "zdash-", so the activate cleanup of old zdash-* caches does not touch it).
+// world-split.html is a hidden page. Its HTML, world/ modules and shared/ assets live in their own cache.
 // They are not added to ASSETS and are not stored under the index/jr/fly3/world page keys. Without this
 // branch, pageKey() would treat world-split.html as index.html and overwrite that cached page.
-const SPLIT_CACHE = 'world-split-v9';
+// activate drops every world-split-* cache except SPLIT_CACHE, and the fetch handler is network-first.
+const SPLIT_CACHE = 'world-split-v10';
 const isSplitPath = (url) => { const p = url.pathname; return p.endsWith('/world-split.html') || p.includes('/world/') || p.includes('/shared/'); };
 function fromNetwork(req, key) { // revalidate with the server (bypasses the 10-min HTTP cache on GitHub Pages; an unchanged page is a cheap 304)
   return fetch(new Request(req.url, { cache: 'no-cache', credentials: 'same-origin' })).then((res) => {
@@ -32,11 +32,16 @@ function fromNetwork(req, key) { // revalidate with the server (bypasses the 10-
 self.addEventListener('fetch', (e) => {
   const req = e.request, url = new URL(req.url);
   if (req.method !== 'GET' || url.origin !== self.location.origin) return; // Spotify etc. go straight to the network
-  if (isSplitPath(url)) { // own cache, stale-while-revalidate; live pages keep the handler below
+  if (isSplitPath(url)) { // own cache, NETWORK FIRST (a phone refresh must get the new world/ and shared/ scripts on the first load)
     e.respondWith(caches.open(SPLIT_CACHE).then((c) => c.match(req, { ignoreSearch: true }).then((hit) => {
-      const net = fetch(req).then((res) => { if (res.ok && res.type === 'basic') c.put(req, res.clone()); return res; });
-      if (hit) { e.waitUntil(net.then(() => {}, () => {})); return hit; }
-      return net;
+      let timer;
+      const timeout = new Promise((ok) => { timer = setTimeout(() => ok(hit || null), NAV_TIMEOUT); });
+      const net = fetch(new Request(req.url, { cache: 'no-cache', credentials: 'same-origin' })).then((res) => {
+        clearTimeout(timer);
+        if (res.ok && res.type === 'basic') c.put(req, res.clone());
+        return res.ok ? res : (hit || res);
+      }, () => { clearTimeout(timer); if (hit) return hit; return Promise.reject(new Error('split')); });
+      return Promise.race([net, timeout]).then((res) => res || net);
     })));
     return;
   }

@@ -1,5 +1,5 @@
 'use strict';
-const ZV={yawOff:0,yawSign:1,rollSign:1,win:7,ty:0.6,maxPx:560,res:1,every:1,lowT:0,frame:0};  // sprite window (m across), target height
+const ZV={yawOff:0,yawSign:1,rollSign:1,win:7,ty:0.6,maxPx:560,res:1,every:1,lowT:0,frame:0,cv:null};  // sprite window (m across), target height. cv is the player's own 2D cache (never the live WebGL canvas).
 function drawZ(){if(window.NOZ)return;const X=window.ZD&&ZD.Xray;if(!X||!X.ready||!ZGL.ensure())return;
   ZGL.set(P.tf);if(window.GARAGEZ)GARAGEZ.apply(X);
   const c0=camS(P.x,P.y+ZV.ty,P.z);if(c0[2]<1)return;const sc=scr(c0);ZV.scr=[sc[0]/W,sc[1]/H];const f=H*0.9,px=Math.round(clamp(f/c0[2]*ZV.win,40,ZV.maxPx)/16)*16,rp=Math.max(32,Math.round(px*ZV.res/16)*16);
@@ -7,8 +7,11 @@ function drawZ(){if(window.NOZ)return;const X=window.ZD&&ZD.Xray;if(!X||!X.ready
   const relYaw=Math.atan2(Math.sin(ca-P.yaw),Math.cos(ca-P.yaw)),elev=Math.atan2(dy,hd)-P.pitch*Math.cos(relYaw);
   const dist=ZV.win/(2*Math.tan(13*Math.PI/180));
   ZV.frame++;if(fps<50){ZV.lowT+=1/Math.max(fps,1);if(ZV.lowT>2)ZV.every=2;}else if(fps>58){ZV.lowT=0;ZV.every=1;}   // adaptive: slow GPU -> redraw the car sprite every 2nd frame (same look)
-  if(ZV.frame%ZV.every===0||ZV.lastPx!==rp||X._w!==rp||X._h!==rp)X.render(ctx,0,0,rp,rp,{xray:false,showroom:!(window.GARAGEZ&&GARAGEZ.on),yaw:ZV.yawOff+ZV.yawSign*relYaw,pitch:elev,dist,tx:0,ty:ZV.ty,fov:26,drl:1,noDraw:true,kid:KID,st:{t:performance.now()/1000,throttle:30+P.thr*70}});
-  ZV.lastPx=rp;ctx.save();ctx.translate(sc[0],sc[1]);ctx.rotate((P.bank+(P.ebRoll||0)-cam.roll)*ZV.rollSign);ctx.drawImage(X.canvas,0,0,X.canvas.width,X.canvas.height,-px/2,-px/2,px,px);ctx.restore();
+  if(!ZV.cv){ZV.cv=document.createElement('canvas');ZV.cvg=ZV.cv.getContext('2d',{alpha:true});}
+  if(ZV.frame%ZV.every===0||ZV.lastPx!==rp||X._w!==rp||X._h!==rp){X.render(ctx,0,0,rp,rp,{xray:false,showroom:!(window.GARAGEZ&&GARAGEZ.on),yaw:ZV.yawOff+ZV.yawSign*relYaw,pitch:elev,dist,tx:0,ty:ZV.ty,fov:26,drl:1,noDraw:true,kid:KID,st:{t:performance.now()/1000,throttle:30+P.thr*70}});
+    const src=X.canvas;if(ZV.cv.width!==src.width||ZV.cv.height!==src.height){ZV.cv.width=src.width;ZV.cv.height=src.height;}
+    ZV.cvg.setTransform(1,0,0,1,0,0);ZV.cvg.clearRect(0,0,ZV.cv.width,ZV.cv.height);ZV.cvg.drawImage(src,0,0);}
+  ZV.lastPx=rp;ctx.save();ctx.translate(sc[0],sc[1]);ctx.rotate((P.bank+(P.ebRoll||0)-cam.roll)*ZV.rollSign);ctx.drawImage(ZV.cv,0,0,ZV.cv.width,ZV.cv.height,-px/2,-px/2,px,px);ctx.restore();
   const cb=Math.cos(P.bank),sb=Math.sin(P.bank),cp=Math.cos(P.pitch),sp=Math.sin(P.pitch),cy=Math.cos(P.yaw),sy=Math.sin(P.yaw);
   const T=([x,y,z])=>{let X2=x*cb-y*sb,Y=x*sb+y*cb,Z=z;let Y2=Y*cp+Z*sp,Z2=-Y*sp+Z*cp;return[P.x+X2*cy+Z2*sy,P.y+Y2,P.z-X2*sy+Z2*cy];};
   ctx.globalCompositeOperation='lighter';
