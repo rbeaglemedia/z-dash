@@ -23,11 +23,13 @@ function goFull(){const lk=()=>{try{const o=screen.orientation;if(o&&o.lock&&/^l
 function tiltCenter(){if(TL.a0!=null&&((screenAngle()-TL.a0)%180!==0)){TL.a0=screenAngle();orientFix();TL.calNext=true;TL.sl=0;TL.sf=0;return;}if(TL.have){TL.n0={lr:TL.lr,fb:TL.fb};TL.g0=TL.gv;TL.sl=0;TL.sf=0;TL.calNext=false;}else TL.calNext=true;}
 const tiltOk=()=>!TL.off&&TL.have&&TL.perm!=='denied'&&performance.now()-TL.last<1500;
 // ===== INPUT =====
-function syncWingsBtn(){const b=document.getElementById('wng');if(!b)return;const s=document.getElementById('wngS'),open=!!P.wings;
-  b.classList.toggle('open',open);
-  if(open){if(s)s.textContent='OPEN';b.style.background='';b.style.boxShadow='';b.style.color='';}
-  else if(P.driveMode==='street'){if(s)s.textContent='STREET';b.style.background='radial-gradient(circle at 40% 35%,#d8ffe6,#2fd980 45%,#093822)';b.style.boxShadow='0 0 22px #7dff6b';b.style.color='#042414';}
-  else{if(s)s.textContent='CLOSED';b.style.background='';b.style.boxShadow='';b.style.color='';}}
+function syncWingsBtn(){const b=document.getElementById('wng');if(!b)return;const s=document.getElementById('wngS'),hasP=typeof P!=='undefined',open=!!(hasP&&P.wings),street=!open&&hasP&&P.driveMode==='street';
+  b.classList.toggle('open',open);b.classList.toggle('arcade',!open&&!street);b.classList.toggle('street',street);
+  b.style.background='';b.style.boxShadow='';b.style.color='';
+  if(s)s.textContent=open?'OPEN':street?'STREET':'ARCADE';}
+syncWingsBtn();
+function bootWingsBtn(){try{if(typeof P!=='undefined'&&P.driveMode!=='street'&&P.driveMode!=='arcade')P.driveMode='arcade';syncWingsBtn();}catch(e){}}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',bootWingsBtn);else bootWingsBtn();
 function setWings(on,quiet){P.wings=on?1:0;syncWingsBtn();if(!quiet)toast(on?'WINGS OPEN!':'WINGS CLOSED!');}
 function setDriveMode(mode,quiet){const street=mode==='street';P.driveMode=street?'street':'arcade';
   if(!quiet){if(street){if(P.wings&&P.ground)setWings(0,true);toast('STREET MODE · REALISTIC DRIVE');if(typeof wMsg==='function')wMsg('🛣️ STREET MODE','#7dff6b','realistic speed, easy slow-down & street drift');}
@@ -80,20 +82,40 @@ function bindHold(id){const el=document.getElementById(id);let ptr=null,touchId=
   const tup=e=>{ebTouchAt=performance.now();for(const t of e.changedTouches)if(t.identifier===touchId){touchId=null;up();}};
   el.addEventListener('touchend',tup,{passive:false});el.addEventListener('touchcancel',tup,{passive:false});}
 for(const id of['tup','nos','brk'])bindHold(id);
-// WINGS: a quick tap still opens/closes the wings. A slide or a long hold toggles street / arcade.
-{const b=document.getElementById('wng');let ptr=null,touchId=null,t0=0,x0=0,y0=0,moved=0,didMode=false,timer=0;
-  const arm=(x,y)=>{t0=performance.now();x0=x;y0=y;moved=0;didMode=false;b.classList.add('nfxp');clearTimeout(timer);
-    timer=setTimeout(()=>{if(!didMode&&(ptr!=null||touchId!=null)){didMode=true;toggleDrive();}},380);};
-  const drag=(x,y)=>{const d=Math.hypot(x-x0,y-y0);if(d>moved)moved=d;if(!didMode&&moved>=18){didMode=true;clearTimeout(timer);toggleDrive();}};
-  const release=()=>{clearTimeout(timer);b.classList.remove('nfxp');if(!didMode&&performance.now()-t0<360&&moved<18)setWings(!P.wings);ptr=null;touchId=null;};
+// WINGS: a quick tap (pad never shown, drag under 24px) opens or closes the wings.
+// Slide left at least 36px in unflipped coords (flip180 mapped like the E-BRAKE pad) and #mdpad
+// pops up to the left, naming the mode you will switch to. Slide back onto WINGS to cancel.
+// Release while that pad is showing (it latches the pending switch) calls setDriveMode.
+{const b=document.getElementById('wng');let ptr=null,touchId=null,x0=0,y0=0,fx0=0,moved=0,holding=false,padOn=false,everPad=false;
+  const unflip=clientX=>{const body=b.offsetParent||b.parentElement,br=body.getBoundingClientRect();
+    const flip=!!(document.getElementById('kid')&&document.getElementById('kid').classList.contains('flip180'));
+    let fx=clientX-br.left;if(flip)fx=br.width-fx;return fx;};
+  const syncMd=clientX=>{const pad=document.getElementById('mdpad');if(!pad)return false;let on=false;
+    if(holding&&clientX!=null){const fx=unflip(clientX);
+      if(fx0-fx>=36){const size=b.offsetWidth||84,gap=8,maxLeft=b.offsetLeft-size-gap;
+        let left=fx-size/2;if(left<8)left=8;if(left>maxLeft)left=maxLeft;
+        const toStreet=!(typeof P!=='undefined'&&P.driveMode==='street');
+        const t=document.getElementById('mdpadT'),s=document.getElementById('mdpadS');
+        if(t)t.textContent=toStreet?'STREET':'ARCADE';if(s)s.textContent='MODE';
+        pad.classList.toggle('to-street',toStreet);pad.classList.toggle('to-arcade',!toStreet);
+        pad.style.left=left+'px';pad.style.top=b.offsetTop+'px';pad.style.width=size+'px';pad.style.height=(b.offsetHeight||size)+'px';pad.style.right='auto';pad.style.bottom='auto';
+        on=true;everPad=true;}}
+    padOn=on;pad.classList.toggle('show',on);pad.setAttribute('aria-hidden',on?'false':'true');return on;};
+  const arm=(x,y)=>{holding=true;x0=x;y0=y;fx0=unflip(x);moved=0;padOn=false;everPad=false;b.classList.add('nfxp');syncMd(x);};
+  const drag=(x,y)=>{if(!holding)return;const d=Math.hypot(x-x0,y-y0);if(d>moved)moved=d;syncMd(x);};
+  const release=commit=>{b.classList.remove('nfxp');const latched=!!padOn;holding=false;padOn=false;
+    const pad=document.getElementById('mdpad');if(pad){pad.classList.remove('show');pad.setAttribute('aria-hidden','true');}
+    if(commit&&latched)setDriveMode((typeof P!=='undefined'&&P.driveMode==='street')?'arcade':'street');
+    else if(commit&&!everPad&&moved<24)setWings(!P.wings);
+    ptr=null;touchId=null;};
   b.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();ptr=e.pointerId;try{b.setPointerCapture(e.pointerId);}catch(_){}arm(e.clientX,e.clientY);});
   b.addEventListener('pointermove',e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;drag(e.clientX,e.clientY);});
-  const pup=e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;release();};
+  const pup=e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;release(e.type==='pointerup');};
   b.addEventListener('pointerup',pup);b.addEventListener('pointercancel',pup);
   b.addEventListener('touchstart',e=>{ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}
     for(const t of e.changedTouches)if(touchId==null){touchId=t.identifier;arm(t.clientX,t.clientY);}},{passive:false});
-  b.addEventListener('touchmove',e=>{for(const t of e.changedTouches)if(t.identifier===touchId){ebTouchAt=performance.now();drag(t.clientX,t.clientY);}},{passive:false});
-  const tend=e=>{ebTouchAt=performance.now();for(const t of e.changedTouches)if(t.identifier===touchId)release();};
+  b.addEventListener('touchmove',e=>{for(const t of e.changedTouches)if(t.identifier===touchId){ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}drag(t.clientX,t.clientY);}},{passive:false});
+  const tend=e=>{ebTouchAt=performance.now();const commit=e.type==='touchend';for(const t of e.changedTouches)if(t.identifier===touchId)release(commit);};
   b.addEventListener('touchend',tend,{passive:false});b.addEventListener('touchcancel',tend,{passive:false});}
 // A thumb that starts on the right half of the screen, off the buttons, and slides onto WINGS toggles the mode once.
 {const body=document.querySelector('.kbody');if(body){let id=null,fired=false;
