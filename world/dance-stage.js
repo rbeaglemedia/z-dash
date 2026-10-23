@@ -1,7 +1,8 @@
 /* Ellie's Dance Stage — Z Company Arts
    Standalone page: dance-stage.html
    Neon World: window.DANCE_STAGE opens over the world when a DANCE building is entered.
-   Visual only. No WebAudio. Scores in zdash.dancestage.v1. Mo-cap in zdash.customdance.v1. */
+   Visual only. No WebAudio. Scores in zdash.dancestage.v1.
+   Character mo-cap in zdash.customdance.v1. Pet mo-cap in zdash.petdance.v1. */
 (function () {
   'use strict';
   if (window.DANCE_STAGE && window.DANCE_STAGE.open) return;
@@ -9,6 +10,8 @@
   var LS_STAGE = 'zdash.dancestage.v1';
   var LS_DANCE = 'zdash.customdance.v1';
   var CH_NAME = 'zdash-customdance';
+  var LS_PET = 'zdash.petdance.v1';
+  var CH_PET = 'zdash-petdance';
   var HIT_E = 0.1;
   var STILL_E = 0.045;
   var WAVE_E = 0.08;
@@ -138,14 +141,16 @@
     recordT: 0,
     playT: 0,
     slotName: 'ELLIE MO-CAP #1',
+    petName: 'CYBER PUP #1',
+    petFrames: [],
     faults: [],
     W: 0,
     H: 0
   };
 
   var root, canvas, ctx, video, stream, topEl, titleEl, subEl, footEl, waveBox, waveBtn, waveCap;
-  var chipBtns = {}, slotBtns = [], progBtn, simBtn, slotRow;
-  var mcan, mctx, prevPix, sparks = [], lastT = 0, storeCache = null, danceCh = null, rewarded = false;
+  var chipBtns = {}, slotBtns = [], progBtn, dogBtn, simBtn, slotRow;
+  var mcan, mctx, prevPix, sparks = [], lastT = 0, storeCache = null, danceCh = null, petCache = null, petCh = null, rewarded = false;
   var rafOn = false, layoutCache = null;
 
   function fault(e) {
@@ -179,6 +184,8 @@
       '.zd-ds button.on{color:#12052a;background:linear-gradient(90deg,#ffe14d,#ff9a2e);border-color:#ffe14d;box-shadow:0 0 12px rgba(255,225,77,.45)}',
       '.zd-ds-program{width:100%;border-color:#ff4fd8;background:rgba(255,79,216,.16);letter-spacing:.4px}',
       '.zd-ds-program.on{color:#fff;background:linear-gradient(90deg,#ff4fd8,#3ee6ff);border-color:#fff;box-shadow:0 0 16px rgba(255,79,216,.55)}',
+      '.zd-ds-dog{width:100%;border-color:#ffe14d;background:rgba(255,225,77,.12);letter-spacing:.4px;color:#fff}',
+      '.zd-ds-dog.on{color:#12052a;background:linear-gradient(90deg,#ffe14d,#7dff6b);border-color:#fff;box-shadow:0 0 16px rgba(125,255,107,.55)}',
       '.zd-ds-wavebox{position:absolute;z-index:4;display:flex;align-items:center;gap:6px}',
       '.zd-ds-wavebox[hidden]{display:none !important}',
       '.zd-ds-slots[hidden]{display:none !important}',
@@ -237,6 +244,9 @@
     progBtn = el('button', 'zd-ds-program', 'PROGRAM CHARACTER DANCE (CAMERA MO-CAP)');
     progBtn.type = 'button';
     progBtn.addEventListener('click', enterMocap);
+    dogBtn = el('button', 'zd-ds-dog', 'RECORD DOG / PET DANCE (DOG MO-CAP)');
+    dogBtn.type = 'button';
+    dogBtn.addEventListener('click', onDogClick);
     var row3 = el('div', 'zd-ds-row');
     function act(label, fn) {
       var b = el('button', '', label);
@@ -248,7 +258,10 @@
     act('START ROUTINE', function () { api.startRoutine(state.selected || 'neon-pulse'); });
     act('PROP 5s COUNTDOWN', propCountdown);
     simBtn = act('PRACTICE / SIM DANCER', toggleSim);
-    act('RECORD CHOREO', function () { api.recordChoreo(); });
+    act('RECORD CHOREO', function () {
+      if (isPetish() || state.intent === 'pet') api.recordPetDance();
+      else api.recordChoreo();
+    });
     act('BACK TO NEON WORLD', onBack);
     slotRow = el('div', 'zd-ds-row zd-ds-slots');
     slotRow.hidden = true;
@@ -264,6 +277,12 @@
     var saveB = el('button', '', 'SAVE SLOT');
     saveB.type = 'button';
     saveB.addEventListener('click', function () {
+      if (isPetish() || state.intent === 'pet') {
+        var petFrames = state.petFrames && state.petFrames.length ? state.petFrames : null;
+        if (!petFrames) return;
+        savePetDance(readPetStore().activeSlot || 0, state.petName, petFrames);
+        return;
+      }
       var store = readStore();
       var frames = state.moFrames && state.moFrames.length ? state.moFrames : null;
       if (!frames) return;
@@ -272,6 +291,7 @@
     slotRow.appendChild(saveB);
     footEl.appendChild(row1);
     footEl.appendChild(progBtn);
+    footEl.appendChild(dogBtn);
     footEl.appendChild(row3);
     footEl.appendChild(slotRow);
     root.appendChild(canvas);
@@ -310,14 +330,20 @@
     if ((state.mode === 'countdown' || state.mode === 'countgo') && state.countKind === 'record') return true;
     return false;
   }
+  function isPetish() {
+    if (state.mode === 'pet' || state.mode === 'petrec' || state.mode === 'petplay') return true;
+    if ((state.mode === 'countdown' || state.mode === 'countgo') && state.countKind === 'pet') return true;
+    return false;
+  }
+  function isStudio() { return isMocapish() || isPetish(); }
   function currentBpm() {
     if (isMocapish() || state.routineId === 'freestyle' || state.routineId === 'mocap') return 120;
     var r = ROUTINES[state.routineId] || ROUTINES['neon-pulse'];
     return r.bpm;
   }
   function clockTime() {
-    if (state.mode === 'playback') return state.playT;
-    if (state.mode === 'recording') return state.recordT;
+    if (state.mode === 'playback' || state.mode === 'petplay') return state.playT;
+    if (state.mode === 'recording' || state.mode === 'petrec') return state.recordT;
     if (state.mode === 'routine' || state.mode === 'freestyle') return state.routineT;
     return (performance.now() / 1000) % 64;
   }
@@ -325,28 +351,33 @@
   function updateChrome() {
     if (!titleEl) return;
     var mocap = isMocapish();
-    titleEl.textContent = mocap
-      ? 'Z COMPANY ARTS — PROGRAM CHARACTER DANCE (CAMERA MO-CAP)'
-      : 'Z COMPANY ARTS — NEON DANCE STAGE';
-    if (mocap) subEl.textContent = '8-COUNT LOOP · 8.0 SECONDS · 120 BPM · 80 KEYFRAMES';
+    var pet = isPetish();
+    titleEl.textContent = pet
+      ? 'Z COMPANY ARTS — RECORD DOG / PET DANCE (DOG MO-CAP)'
+      : mocap
+        ? 'Z COMPANY ARTS — PROGRAM CHARACTER DANCE (CAMERA MO-CAP)'
+        : 'Z COMPANY ARTS — NEON DANCE STAGE';
+    if (pet) subEl.textContent = 'PET LOOP · 6.0 SECONDS · 60 KEYFRAMES · CYBER PUP';
+    else if (mocap) subEl.textContent = '8-COUNT LOOP · 8.0 SECONDS · 120 BPM · 80 KEYFRAMES';
     else if (state.mode === 'freestyle') subEl.textContent = 'FREESTYLE MIRROR · NO TIMER · FLOOR CAM';
     else {
       var meta = ROUTINES[state.selected] || ROUTINES['neon-pulse'];
       subEl.textContent = "ELLIE'S FLOOR CAM · " + meta.name + ' · ' + meta.bpm + ' BPM · ' + meta.tag;
     }
     Object.keys(chipBtns).forEach(function (id) {
-      chipBtns[id].classList.toggle('on', !mocap && state.selected === id);
+      chipBtns[id].classList.toggle('on', !mocap && !pet && state.selected === id);
     });
     if (progBtn) progBtn.classList.toggle('on', mocap);
+    if (dogBtn) dogBtn.classList.toggle('on', pet);
     if (simBtn) simBtn.classList.toggle('on', !!state.userSim || (!state.cameraActive && state.simActive));
-    if (slotRow) slotRow.hidden = !mocap;
-    if (waveBox) waveBox.hidden = !(state.mode === 'align' || state.mode === 'mocap');
+    if (slotRow) slotRow.hidden = !(mocap || pet);
+    if (waveBox) waveBox.hidden = !(state.mode === 'align' || state.mode === 'mocap' || state.mode === 'pet');
     refreshSlotLabels();
   }
 
   function refreshSlotLabels() {
     if (!slotBtns.length) return;
-    var store = readStore();
+    var store = (isPetish() || state.intent === 'pet') ? readPetStore() : readStore();
     for (var i = 0; i < 3; i++) {
       var s = store.slots[i];
       slotBtns[i].textContent = s && s.name ? ('SLOT ' + (i + 1) + ' · ' + s.name) : ('SLOT ' + (i + 1));
@@ -375,7 +406,7 @@
     var H = state.H || window.innerHeight || 390;
     var head = topEl ? topEl.offsetHeight || 36 : 36;
     var foot = footEl ? footEl.offsetHeight || 120 : 120;
-    var mocap = isMocapish();
+    var mocap = isStudio();
     var portrait = H > W * 1.02;
     var stage, panel = null;
     if (mocap && !portrait) {
@@ -995,6 +1026,272 @@
       energy: a.energy + (b.energy - a.energy) * f
     };
   }
+
+  /* ---------- pet mo-cap ---------- */
+  function num(v, d) { v = +v; return v === v ? v : d; }
+  function sanitizePet(p, t) {
+    p = p || {};
+    var tt = t == null ? clamp(num(p.t, 0), 0, 1) : clamp(+t, 0, 1);
+    return {
+      t: Math.round(tt * 10000) / 10000,
+      hop: r3(clamp(num(p.hop, 0), 0, 1)),
+      wag: r3(clamp(num(p.wag, 0), -1, 1)),
+      pawL: r3(clamp(num(p.pawL, 0), 0, 1)),
+      pawR: r3(clamp(num(p.pawR, 0), 0, 1)),
+      bow: r3(clamp(num(p.bow, 0), 0, 1)),
+      spin: num(p.spin, 0) >= 0.5 ? 1 : 0,
+      sway: r3(clamp(num(p.sway, 0), -1, 1))
+    };
+  }
+  function petPoseFromZones(z, t) {
+    z = z || emptyEnergy();
+    var UL = +z.UL || 0, UR = +z.UR || 0, ML = +z.ML || 0, MR = +z.MR || 0, LL = +z.LL || 0, LR = +z.LR || 0;
+    var hop = clamp((UL + UR + ML + MR) / 4, 0, 1);
+    var energy = (UL + UR + ML + MR + LL + LR) / 6;
+    var wag = clamp(Math.sin((+t || 0) * Math.PI * 16) * Math.min(1, energy * 1.35), -1, 1);
+    var pawL = clamp(ML * 0.65 + LL * 0.55, 0, 1);
+    var pawR = clamp(MR * 0.65 + LR * 0.55, 0, 1);
+    var up = (UL + UR) / 2;
+    var low = (LL + LR) / 2;
+    var bow = clamp((low - up) * 1.25, 0, 1);
+    var hot = 0;
+    if (UL >= HIT_E) hot++; if (UR >= HIT_E) hot++; if (ML >= HIT_E) hot++;
+    if (MR >= HIT_E) hot++; if (LL >= HIT_E) hot++; if (LR >= HIT_E) hot++;
+    var left = (UL + ML + LL) / 3, right = (UR + MR + LR) / 3;
+    var sway = clamp(right - left, -1, 1);
+    return sanitizePet({ hop: hop, wag: wag, pawL: pawL, pawR: pawR, bow: bow, spin: hot >= 4 ? 1 : 0, sway: sway }, t);
+  }
+  function petStyle(name) {
+    var s = String(name || '').toLowerCase();
+    if (s.indexOf('spin') >= 0) return 'spin';
+    if (s.indexOf('bow') >= 0) return 'bow';
+    if (s.indexOf('paw') >= 0) return 'paw';
+    if (s.indexOf('hop') >= 0) return 'hop';
+    return 'wiggle';
+  }
+  function petPreset(style, t) {
+    var a = t * Math.PI * 2;
+    var hop = 0.25, wag = Math.sin(a * 8), pawL = 0.15, pawR = 0.15, bow = 0.05, spin = 0, sway = Math.sin(a) * 0.35;
+    if (style === 'hop') {
+      hop = clamp(0.45 + 0.55 * Math.abs(Math.sin(a * 3)), 0, 1);
+      wag = Math.sin(a * 8);
+      pawL = 0.25; pawR = 0.25; bow = 0.05;
+      sway = Math.sin(a) * 0.3;
+      spin = t > 0.9 ? 1 : 0;
+    } else if (style === 'bow') {
+      bow = clamp(0.3 + 0.7 * Math.abs(Math.sin(a * 2)), 0, 1);
+      hop = 0.12;
+      wag = Math.sin(a * 6) * 0.75;
+      pawL = 0.6; pawR = 0.6;
+      sway = Math.sin(a) * 0.2;
+      spin = 0;
+    } else if (style === 'paw') {
+      pawL = clamp(0.5 + 0.5 * Math.sin(a * 4), 0, 1);
+      pawR = clamp(0.5 + 0.5 * Math.sin(a * 4 + Math.PI), 0, 1);
+      hop = 0.22 + 0.2 * Math.abs(Math.sin(a * 2));
+      wag = Math.sin(a * 10);
+      bow = 0.12;
+      spin = t > 0.94 ? 1 : 0;
+    } else if (style === 'spin') {
+      spin = Math.sin(a * 2) > 0 ? 1 : 0;
+      hop = 0.58;
+      wag = Math.sin(a * 8);
+      pawL = 0.42; pawR = 0.42;
+      bow = 0.16;
+      sway = Math.sin(a * 2) * 0.8;
+    } else {
+      hop = clamp(0.3 + 0.6 * Math.abs(Math.sin(a * 3)), 0, 1);
+      wag = Math.sin(a * 8);
+      pawL = clamp(0.15 + 0.8 * Math.max(0, Math.sin(a * 4)), 0, 1);
+      pawR = clamp(0.15 + 0.8 * Math.max(0, Math.sin(a * 4 + Math.PI)), 0, 1);
+      bow = (t > 0.22 && t < 0.38) ? 0.88 : 0.06;
+      spin = (t > 0.55 && t < 0.7) || t > 0.92 ? 1 : 0;
+      sway = Math.sin(a);
+    }
+    return { hop: hop, wag: wag, pawL: pawL, pawR: pawR, bow: bow, spin: spin, sway: sway };
+  }
+  function petIndexT(i) {
+    if (i <= 0) return 0;
+    if (i >= 59) return 1;
+    return Math.round((i / 59) * 10000) / 10000;
+  }
+  function toSixty(frames) {
+    var src = Array.isArray(frames) ? frames : [];
+    var out = [];
+    for (var i = 0; i < 60; i++) {
+      var t = i === 0 ? 0 : i === 59 ? 1 : i / 59;
+      var srcP;
+      if (src.length === 60) srcP = src[i];
+      else if (src.length > 1) srcP = src[Math.round(i * (src.length - 1) / 59)];
+      else if (src.length === 1) srcP = src[0];
+      else srcP = petPreset('wiggle', t);
+      var pose = sanitizePet(srcP, t);
+      pose.t = petIndexT(i);
+      out.push(pose);
+    }
+    return out;
+  }
+  function blankPetStore() {
+    return { version: 1, activeSlot: 0, enabled: false, slots: [null, null, null] };
+  }
+  function normalizePetStore(j) {
+    var s = blankPetStore();
+    if (!j || typeof j !== 'object') return s;
+    s.version = 1;
+    s.activeSlot = clamp(j.activeSlot | 0, 0, 2) | 0;
+    var slots = Array.isArray(j.slots) ? j.slots : [];
+    var any = false;
+    for (var i = 0; i < 3; i++) {
+      var slot = slots[i];
+      if (!slot || !slot.frames) { s.slots[i] = null; continue; }
+      s.slots[i] = {
+        name: String(slot.name || ('CYBER PUP #' + (i + 1))).slice(0, 48),
+        duration: 6,
+        updatedAt: +slot.updatedAt || Date.now(),
+        frames: toSixty(slot.frames)
+      };
+      any = true;
+    }
+    s.enabled = any ? (j.enabled !== false) : false;
+    return s;
+  }
+  function readPetStore() {
+    if (petCache) return petCache;
+    try {
+      var raw = localStorage.getItem(LS_PET);
+      petCache = raw ? normalizePetStore(JSON.parse(raw)) : blankPetStore();
+    } catch (e) { petCache = blankPetStore(); }
+    return petCache;
+  }
+  function petChannel() {
+    if (petCh) return petCh;
+    try { petCh = new BroadcastChannel(CH_PET); } catch (e) { petCh = null; }
+    return petCh;
+  }
+  function writePetStore(store) {
+    petCache = normalizePetStore(store);
+    try { localStorage.setItem(LS_PET, JSON.stringify(petCache)); } catch (e) { fault(e); }
+    try {
+      var ch = petChannel();
+      if (ch) ch.postMessage(JSON.parse(JSON.stringify(petCache)));
+    } catch (e) {}
+    refreshSlotLabels();
+    return petCache;
+  }
+  function savePetDance(slotIdx, name, frames) {
+    var store = readPetStore();
+    var idx = clamp(slotIdx | 0, 0, 2) | 0;
+    var nm = String(name || state.petName || ('CYBER PUP #' + (idx + 1))).slice(0, 48);
+    var sixty = toSixty(frames && frames.length ? frames : state.petFrames);
+    store.slots[idx] = { name: nm, duration: 6, updatedAt: Date.now(), frames: sixty };
+    store.activeSlot = idx;
+    store.enabled = true;
+    state.petName = nm;
+    state.petFrames = sixty;
+    writePetStore(store);
+    return JSON.parse(JSON.stringify(petCache));
+  }
+  function petPoseAt(frames, tSec) {
+    if (!frames || !frames.length) return petPoseFromZones(emptyEnergy(), 0);
+    var u = (tSec % 6) / 6;
+    if (u < 0) u += 1;
+    var i = 0;
+    for (var k = 0; k < frames.length - 1; k++) {
+      if (frames[k].t <= u && frames[k + 1].t >= u) { i = k; break; }
+      i = k;
+    }
+    var a = frames[i], b = frames[Math.min(i + 1, frames.length - 1)];
+    var span = (b.t - a.t) || 1;
+    var f = clamp((u - a.t) / span, 0, 1);
+    return sanitizePet({
+      t: u,
+      hop: a.hop + (b.hop - a.hop) * f,
+      wag: a.wag + (b.wag - a.wag) * f,
+      pawL: a.pawL + (b.pawL - a.pawL) * f,
+      pawR: a.pawR + (b.pawR - a.pawR) * f,
+      bow: a.bow + (b.bow - a.bow) * f,
+      spin: (f < 0.5 ? a.spin : b.spin) ? 1 : 0,
+      sway: a.sway + (b.sway - a.sway) * f
+    }, u);
+  }
+  function livePetPose(now) {
+    if (state.mode === 'petplay' && state.petFrames.length) return petPoseAt(state.petFrames, state.playT);
+    if (state.mode === 'petrec') return petPoseFromZones(state.zoneEnergy, clamp(state.recordT / 6, 0, 1));
+    var t = ((now / 1000) % 6) / 6;
+    return sanitizePet(petPreset('wiggle', t), t);
+  }
+  function beginPetRecording() {
+    state.mode = 'petrec';
+    state.routineId = 'pet';
+    state.intent = 'pet';
+    state.countKind = 'pet';
+    state.recordT = 0;
+    state.petFrames = [];
+    state.countGo = 0;
+    updateChrome();
+  }
+  function finishPetRecording() {
+    var name = state.petName || 'CYBER PUP #1';
+    var store = readPetStore();
+    var idx = store.activeSlot || 0;
+    if (!state.petFrames.length) state.petFrames = toSixty([]);
+    savePetDance(idx, name, state.petFrames);
+    state.mode = 'petplay';
+    state.playT = 0;
+    updateChrome();
+  }
+  function stepPetRecording(dt) {
+    state.recordT += dt;
+    while (state.petFrames.length < 60 && state.recordT + 1e-4 >= state.petFrames.length * 0.1) {
+      var i = state.petFrames.length;
+      var t = i === 0 ? 0 : i === 59 ? 1 : i / 59;
+      state.petFrames.push(petPoseFromZones(state.zoneEnergy, t));
+    }
+    if (state.petFrames.length >= 60 || state.recordT >= 6) finishPetRecording();
+  }
+  function enterPet() {
+    if (!state.open) api.open({});
+    state.intent = 'pet';
+    state.routineId = 'pet';
+    state.countKind = 'pet';
+    var store = readPetStore();
+    var slot = store.slots[store.activeSlot] || null;
+    if (slot && slot.frames && slot.frames.length) {
+      state.petFrames = slot.frames;
+      state.petName = slot.name;
+      state.mode = 'petplay';
+      if (!state.playT) state.playT = 0;
+    } else state.mode = 'pet';
+    updateChrome();
+  }
+  function onDogClick() {
+    if (isPetish() && (state.mode === 'pet' || state.mode === 'petplay')) {
+      api.recordPetDance();
+      return;
+    }
+    enterPet();
+  }
+  function selectPetSlot(idx) {
+    var store = readPetStore();
+    store.activeSlot = idx;
+    var slot = store.slots[idx];
+    if (slot && slot.name) state.petName = slot.name;
+    else state.petName = 'CYBER PUP #' + (idx + 1);
+    writePetStore(store);
+    state.intent = 'pet';
+    state.routineId = 'pet';
+    state.countKind = 'pet';
+    if (slot && slot.frames && slot.frames.length) {
+      state.petFrames = slot.frames;
+      state.mode = 'petplay';
+      state.playT = 0;
+    } else {
+      state.petFrames = [];
+      state.mode = 'pet';
+    }
+    updateChrome();
+  }
+
   function beginRecording() {
     state.mode = 'recording';
     state.routineId = 'mocap';
@@ -1039,6 +1336,7 @@
     updateChrome();
   }
   function selectSlot(idx) {
+    if (isPetish() || state.intent === 'pet') return selectPetSlot(idx);
     var store = readStore();
     store.activeSlot = idx;
     var slot = store.slots[idx];
@@ -1056,8 +1354,10 @@
   }
   function propCountdown() {
     if (!state.open) api.open({});
-    state.countKind = (state.intent === 'record' || state.mode === 'mocap' || state.mode === 'playback' || state.mode === 'recording') ? 'record' : 'routine';
-    if (state.countKind === 'record') state.routineId = 'mocap';
+    var pet = isPetish() || state.intent === 'pet';
+    state.countKind = pet ? 'pet' : (state.intent === 'record' || state.mode === 'mocap' || state.mode === 'playback' || state.mode === 'recording') ? 'record' : 'routine';
+    if (state.countKind === 'pet') state.routineId = 'pet';
+    else if (state.countKind === 'record') state.routineId = 'mocap';
     state.mode = 'countdown';
     state.countLeft = 5;
     state.countGo = 0;
@@ -1065,7 +1365,8 @@
     updateChrome();
   }
   function beginAfterCount() {
-    if (state.countKind === 'record') beginRecording();
+    if (state.countKind === 'pet') beginPetRecording();
+    else if (state.countKind === 'record') beginRecording();
     else api.startRoutine(state.selected || 'neon-pulse');
   }
 
@@ -1333,6 +1634,112 @@
     ctx.fillText('Z', 0, -6 * sc);
     ctx.restore();
   }
+  function drawPup(cx, cy, sc, pose, now, alpha) {
+    pose = pose || {};
+    var hop = pose.hop || 0;
+    var wag = pose.wag || 0;
+    var bow = pose.bow || 0;
+    var sway = pose.sway || 0;
+    ctx.save();
+    ctx.globalAlpha = alpha == null ? 1 : alpha;
+    ctx.translate(cx + sway * 26 * sc, cy - hop * 40 * sc);
+    ctx.rotate((pose.spin ? Math.sin(now / 80) * 0.9 : 0) + bow * 0.42);
+    if (pose.spin) {
+      ctx.strokeStyle = 'rgba(255,225,77,.9)';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#ffe14d';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(4 * sc, -8 * sc, 46 * sc, now / 170, now / 170 + 1.7);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(4 * sc, -8 * sc, 34 * sc, -now / 140, -now / 140 + 1.15);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+    ctx.fillStyle = 'rgba(0,0,0,.38)';
+    ctx.beginPath();
+    ctx.ellipse(0, 30 * sc, 34 * sc, 7 * sc, 0, 0, 6.3);
+    ctx.fill();
+    ctx.strokeStyle = '#ff4fd8';
+    ctx.lineWidth = Math.max(2, 4 * sc);
+    ctx.lineCap = 'round';
+    ctx.shadowColor = '#ff4fd8';
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.moveTo(-28 * sc, -2 * sc);
+    ctx.quadraticCurveTo(-44 * sc, (-18 + wag * 22) * sc, -36 * sc, (-24 + wag * 16) * sc);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    function stub(x, lift, col) {
+      ctx.strokeStyle = col;
+      ctx.lineWidth = Math.max(2, 3.2 * sc);
+      ctx.lineCap = 'round';
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.moveTo(x * sc, 8 * sc);
+      ctx.lineTo((x + (lift > 0 ? 2 : 0)) * sc, (22 - lift) * sc);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc((x + (lift > 0 ? 2 : 0)) * sc, (22 - lift) * sc, Math.max(1.6, 2.3 * sc), 0, 6.3);
+      ctx.fill();
+    }
+    stub(-16, 0, '#7dff6b');
+    stub(-6, 0, '#7dff6b');
+    stub(12, (pose.pawL || 0) * 16, '#3ee6ff');
+    stub(22, (pose.pawR || 0) * 16, '#ffe14d');
+    ctx.fillStyle = '#140818';
+    ctx.strokeStyle = '#3ee6ff';
+    ctx.lineWidth = Math.max(1.6, 2.4 * sc);
+    ctx.shadowColor = '#3ee6ff';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.ellipse(-2 * sc, 2 * sc, 30 * sc, 15 * sc, bow * -0.2, 0, 6.3);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(24 * sc, -12 * sc, 12 * sc, 0, 6.3);
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#ff4fd8';
+    ctx.beginPath();
+    ctx.moveTo(16 * sc, -20 * sc);
+    ctx.lineTo(12 * sc, -34 * sc);
+    ctx.lineTo(24 * sc, -22 * sc);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(28 * sc, -22 * sc);
+    ctx.lineTo(34 * sc, -36 * sc);
+    ctx.lineTo(38 * sc, -18 * sc);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#ffe14d';
+    ctx.beginPath();
+    ctx.ellipse(34 * sc, -8 * sc, 6.5 * sc, 4 * sc, 0.2, 0, 6.3);
+    ctx.fill();
+    ctx.fillStyle = '#12051c';
+    ctx.beginPath();
+    ctx.arc(37 * sc, -8 * sc, 1.5 * sc, 0, 6.3);
+    ctx.fill();
+    ctx.fillStyle = '#7dff6b';
+    ctx.shadowColor = '#7dff6b';
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(28 * sc, -14 * sc, Math.max(1.4, 2 * sc), 0, 6.3);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#ffe14d';
+    ctx.font = '800 ' + Math.max(8, 10 * sc) + 'px Orbitron,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Z', -2 * sc, 2 * sc);
+    ctx.restore();
+  }
   function drawStage(L, now) {
     var S = L.stage;
     ctx.save();
@@ -1377,17 +1784,22 @@
     drawFloor(S, now);
     drawEq(S, now);
     if (state.fever && (state.mode === 'routine' || state.mode === 'results')) drawFever(S, now);
-    var showFrame = state.mode === 'align' || state.mode === 'countdown' || state.mode === 'countgo' || state.mode === 'mocap' || state.mode === 'recording';
+    var showFrame = state.mode === 'align' || state.mode === 'countdown' || state.mode === 'countgo' || state.mode === 'mocap' || state.mode === 'recording' || state.mode === 'pet' || state.mode === 'petrec';
     if (showFrame) drawAlign(L);
-    var showFig = !state.cameraActive || state.userSim || state.mode === 'playback' || state.mode === 'recording' || state.mode === 'mocap' || state.mode === 'align' || state.mode === 'countdown';
+    var pet = isPetish();
+    var showFig = !state.cameraActive || state.userSim || state.mode === 'playback' || state.mode === 'recording' || state.mode === 'mocap' || state.mode === 'align' || state.mode === 'countdown' || pet;
     if (state.mode === 'routine' || state.mode === 'freestyle') showFig = !state.cameraActive || state.userSim;
-    if (showFig) {
-      var pose = livePose(now);
+    if (showFig && !pet) {
       var sc = Math.max(0.55, Math.min(S.w, S.h) / 420);
-      drawFigure(L.center.x, L.frame.y + L.frame.h * 0.62, sc, pose, now, state.cameraActive && !state.userSim ? 0.55 : 1);
+      drawFigure(L.center.x, L.frame.y + L.frame.h * 0.62, sc, livePose(now), now, state.cameraActive && !state.userSim ? 0.55 : 1);
     }
     drawPads(L, now);
     drawCues(L, now);
+    if (showFig && pet) {
+      var psc = Math.max(0.55, Math.min(S.w, S.h) / 420);
+      var fade = state.cameraActive && !state.userSim ? 0.85 : 1;
+      drawPup(L.center.x, L.frame.y + L.frame.h * 0.56, psc * 1.25, livePetPose(now), now, fade);
+    }
     ctx.restore();
   }
   function drawTruss(S, now) {
@@ -1522,7 +1934,7 @@
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.restore();
-    if (state.mode === 'align' || state.mode === 'mocap' || state.mode === 'countdown') {
+    if (state.mode === 'align' || state.mode === 'mocap' || state.mode === 'pet' || state.mode === 'countdown') {
       ctx.save();
       ctx.font = '700 11px Orbitron,sans-serif';
       ctx.fillStyle = '#d9fbff';
@@ -1530,7 +1942,10 @@
       ctx.textBaseline = 'top';
       ctx.shadowColor = '#3ee6ff';
       ctx.shadowBlur = 8;
-      wrapText(ctx, 'PROP PHONE DOWN · STEP BACK 6 FT SO YOUR BODY FITS THE NEON FRAME', L.stage.x + L.stage.w / 2, L.head + 18, Math.min(L.stage.w - 24, 640), 13);
+      var hint = (isPetish() || state.countKind === 'pet')
+        ? 'PROP PHONE DOWN · FRAME YOUR DOG OR HOP AND PAW INSIDE THE NEON FRAME'
+        : 'PROP PHONE DOWN · STEP BACK 6 FT SO YOUR BODY FITS THE NEON FRAME';
+      wrapText(ctx, hint, L.stage.x + L.stage.w / 2, L.head + 18, Math.min(L.stage.w - 24, 640), 13);
       ctx.restore();
     }
   }
@@ -1645,6 +2060,7 @@
     ctx.restore();
   }
   function drawBeat(L) {
+    if (isPetish()) return;
     var bpm = currentBpm();
     var phase = clockTime() / (60 / bpm);
     var idx = ((Math.floor(phase) % 8) + 8) % 8;
@@ -1724,14 +2140,15 @@
       n = Math.max(1, Math.ceil(state.countLeft));
       word = String(n);
     } else if (state.mode === 'countgo') {
-      word = state.countKind === 'record' ? 'RECORDING!' : 'DANCE!';
-    } else if (state.mode === 'recording') {
-      word = '';
+      word = (state.countKind === 'record' || state.countKind === 'pet') ? 'RECORDING!' : 'DANCE!';
+    } else if (state.mode === 'recording' || state.mode === 'petrec') {
+      var recN = state.mode === 'petrec' ? state.petFrames.length : state.moFrames.length;
+      var recMax = state.mode === 'petrec' ? 60 : 80;
       ctx.save();
       ctx.font = '800 12px Orbitron,sans-serif';
       ctx.fillStyle = '#ff2a3d';
       ctx.textAlign = 'left';
-      ctx.fillText('REC ' + state.moFrames.length + '/80', L.stage.x + 12, L.head + 34);
+      ctx.fillText('REC ' + recN + '/' + recMax, L.stage.x + 12, L.head + 34);
       ctx.restore();
       return;
     } else return;
@@ -1740,13 +2157,14 @@
     ctx.textBaseline = 'middle';
     ctx.font = '900 ' + (word.length > 3 ? 42 : 84) + 'px Orbitron,sans-serif';
     ctx.fillStyle = '#fff';
-    ctx.shadowColor = state.countKind === 'record' ? '#ff4fd8' : '#3ee6ff';
+    ctx.shadowColor = state.countKind === 'pet' ? '#ffe14d' : state.countKind === 'record' ? '#ff4fd8' : '#3ee6ff';
     ctx.shadowBlur = 18;
     ctx.fillText(word, L.center.x, L.center.y);
     ctx.font = '700 11px Orbitron,sans-serif';
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#ffb3e6';
-    ctx.fillText(state.countKind === 'record' ? '5… 4… 3… 2… 1… RECORDING!' : '5… 4… 3… 2… 1… DANCE!', L.center.x, L.center.y + 58);
+    var phrase = state.countKind === 'pet' ? '5… 4… 3… 2… 1… RECORDING!' : state.countKind === 'record' ? '5… 4… 3… 2… 1… RECORDING!' : '5… 4… 3… 2… 1… DANCE!';
+    ctx.fillText(phrase, L.center.x, L.center.y + 58);
     ctx.restore();
   }
   function drawJudge(L) {
@@ -1808,9 +2226,48 @@
     ctx.fillText('STAGE RANK SAVED', x + w / 2, baseY + 34);
     ctx.restore();
   }
+  function drawPetPanel(P, now) {
+    var pose = livePetPose(now);
+    ctx.save();
+    ctx.fillStyle = 'rgba(10,4,22,.92)';
+    ctx.strokeStyle = '#ffe14d';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#ffe14d';
+    ctx.shadowBlur = 12;
+    roundRect(P.x, P.y, P.w, P.h, 14);
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.font = '800 10px Orbitron,sans-serif';
+    ctx.fillStyle = '#ffe14d';
+    ctx.fillText('CYBER PUP', P.x + 10, P.y + 8);
+    ctx.font = '700 8px Orbitron,sans-serif';
+    ctx.fillStyle = '#ffb3e6';
+    var cap = state.mode === 'petplay' ? ('PLAY · ' + (state.petName || 'CYBER PUP')) : state.mode === 'petrec' ? 'RECORDING DOG' : 'LIVE PUP PREVIEW';
+    ctx.fillText(cap, P.x + 10, P.y + 22);
+    ctx.fillStyle = '#d9fbff';
+    function line(a, yy) { ctx.fillText(a, P.x + 10, yy); }
+    line('HOP ' + pose.hop.toFixed(2) + '   WAG ' + (pose.wag >= 0 ? '+' : '') + pose.wag.toFixed(2), P.y + 36);
+    line('PAW L ' + pose.pawL.toFixed(2) + '   PAW R ' + pose.pawR.toFixed(2), P.y + 48);
+    line('BOW ' + pose.bow.toFixed(2) + '   SWAY ' + (pose.sway >= 0 ? '+' : '') + pose.sway.toFixed(2), P.y + 60);
+    line('SPIN ' + pose.spin, P.y + 72);
+    var kf = 1;
+    if (state.petFrames && state.petFrames.length) {
+      if (state.mode === 'petrec') kf = state.petFrames.length;
+      else kf = Math.min(60, Math.floor(clamp(state.playT / 6, 0, 0.999) * 60) + 1);
+    }
+    ctx.fillStyle = '#7dff6b';
+    line('KF ' + kf + '/60  ·  Z COMPANY ARTS', P.y + 86);
+    var sc = Math.max(0.42, Math.min(P.w / 170, (P.h - 108) / 150));
+    drawPup(P.x + P.w / 2, P.y + Math.min(P.h - 16, 112 + sc * 62), sc, pose, now, 1);
+    ctx.restore();
+  }
   function drawPanel(L, now) {
     var P = L.panel;
     if (!P) return;
+    if (isPetish()) return drawPetPanel(P, now);
     ctx.save();
     ctx.fillStyle = 'rgba(10,4,22,.92)';
     ctx.strokeStyle = '#ff4fd8';
@@ -1872,14 +2329,14 @@
     recomputeEnergy(dt);
     if (window.WALK_MODE && WALK_MODE.nudge) { WALK_MODE.nudge.x = 0; WALK_MODE.nudge.z = 0; }
     wrapInput();
-    if (state.mode === 'align' || state.mode === 'mocap') {
+    if (state.mode === 'align' || state.mode === 'mocap' || state.mode === 'pet') {
       var waveHot = state.wavePtr || state.waveEnergy >= WAVE_E;
       if (waveHot) state.waveHold += dt;
       else state.waveHold = Math.max(0, state.waveHold - dt * 0.85);
       if (state.waveHold >= 1) {
         state.waveHold = 0;
         state.wavePtr = false;
-        state.countKind = state.mode === 'mocap' || state.intent === 'record' ? 'record' : 'routine';
+        state.countKind = (state.mode === 'pet' || state.intent === 'pet') ? 'pet' : (state.mode === 'mocap' || state.intent === 'record') ? 'record' : 'routine';
         state.mode = 'countdown';
         state.countLeft = 5;
         updateChrome();
@@ -1901,6 +2358,11 @@
     } else if (state.mode === 'playback') {
       state.playT += dt;
       if (state.playT >= 8) state.playT -= 8;
+    } else if (state.mode === 'petrec') {
+      stepPetRecording(dt);
+    } else if (state.mode === 'petplay') {
+      state.playT += dt;
+      if (state.playT >= 6) state.playT -= 6;
     }
     if (state.shutter > 0) state.shutter = Math.max(0, state.shutter - dt * 1.5);
     for (var i = sparks.length - 1; i >= 0; i--) {
@@ -2082,6 +2544,42 @@
     },
     getCustomDance: function () {
       return JSON.parse(JSON.stringify(readStore()));
+    },
+    recordPetDance: function () {
+      if (!state.open) api.open({});
+      state.intent = 'pet';
+      state.countKind = 'pet';
+      state.routineId = 'pet';
+      state.mode = 'countdown';
+      state.countLeft = 5;
+      state.countGo = 0;
+      state.waveHold = 0;
+      updateChrome();
+      return true;
+    },
+    getCustomPetDance: function () {
+      return JSON.parse(JSON.stringify(readPetStore()));
+    },
+    simulatePetMoCapRecording: function (presetName) {
+      if (!state.open) api.open({});
+      var name = String(presetName || 'CYBER PUP #1').slice(0, 48);
+      var style = petStyle(name);
+      var frames = [];
+      for (var i = 0; i < 60; i++) {
+        var t = i === 0 ? 0 : i === 59 ? 1 : i / 59;
+        frames.push(sanitizePet(petPreset(style, t), t));
+        frames[i].t = petIndexT(i);
+      }
+      state.intent = 'pet';
+      state.routineId = 'pet';
+      state.countKind = 'pet';
+      state.petFrames = frames;
+      state.petName = name;
+      state.mode = 'petplay';
+      state.playT = 1.75;
+      var saved = savePetDance(readPetStore().activeSlot || 0, name, frames);
+      updateChrome();
+      return saved;
     },
     simulateMoCapRecording: function (presetName) {
       if (!state.open) api.open({});
