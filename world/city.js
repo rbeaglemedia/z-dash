@@ -10,7 +10,7 @@ for(let i=0;i<30;i++){const a=rnd()*Math.PI*2,r=100+rnd()*1200;rings.push({x:Mat
 const CITY=(()=>{let sd=90210;const cr=()=>(sd=(sd*16807)%2147483647)/2147483647;
   const BL=[],BX=[],RAMPS=[],PADS=[],TREES=[],LOTS=[],HOOPS=[],LOOPS=[],PIPES=[],TOWS=[],NEON=['#ff2a3d','#3ee6ff','#ffb020','#ff4fd8','#3ee6ff','#ff2a3d','#7dff6b'],WINC=['#ffd27a','#9ff3ff','#ffb3e6','#fff2c0'];
   const XS0=-560,XS1=560,ZS0=-300,ZS1=2100,RIV={z0:1780,z1:1840,lip:0.8,land:6,wet:3,sink:0.6,step:0.8},HW={x:-450,hw:15},TUN={z0:500,z1:700,x0:-530,x1:-370,bx0:-465,bx1:-435,ceil:10,top:34},
-    PARK={x0:-340,x1:-160,z0:1010,z1:1190},STAD={x:1100,z:400,r:95},TAXI={x0:38,x1:62,z0:-20,z1:1450},DT={x:420,z:1250},TRACK={cx:1000,cz:1100,L:360,R:80,w:22},
+    PARK={x0:-340,x1:-160,z0:1010,z1:1190},STAD={x:830,z:300,r:102},TAXI={x0:38,x1:62,z0:-20,z1:1450},DT={x:420,z:1250},TRACK={cx:1000,cz:1100,L:360,R:80,w:22},
     BRIDGES=[[-14,14],[HW.x-HW.hw,HW.x+HW.hw]],GF=4.5,FLOOR=3.5,SIGNW=['Z-DASH','NEON','DANCE','DRIFT','NOS','ARCADE','PIZZA','JUMP','PIXEL','CAFE','PETS','GARAGE','TURBO','BEATS'];
   // ---- WORLD AS DATA (builder-mode ready): OBJS = placed objects {id,type,x,z,rot,w,d,h,p}; each type has a builder that makes render items + registers its colliders.
   const OBJS=[],HND=new Map();let NID=1,cur=null;
@@ -145,16 +145,15 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   shop(264,324,1160,1224,20,{face:'w',purpose:'DANCE',label:'DANCE & BEATS STUDIO',district:'DOWNTOWN_CORE',sign:'DANCE',c:'#ff4fd8',wc:'#ffb3e6',roof:'ant',antH:16,seed:18});
   shop(364,412,1364,1412,13,{face:'w',purpose:'CAFE',label:'NEON PIZZA & BOBA CAFE',district:'DOWNTOWN_CORE',sign:'PIZZA',c:'#ff2a3d',seed:19});
   shop(464,516,760,824,17,{face:'w',purpose:'ARCADE',label:'RETRO PIXEL ARCADE',district:'SPORTS_EAST',sign:'ARCADE',c:'#3ee6ff',seed:20});
-  shop(464,528,564,624,16,{face:'w',purpose:'SOCCER',label:'STADIUM PRO SHOP',district:'SPORTS_EAST',sign:'TURBO',c:'#ffb020',seed:21});
-  shop(464,528,914,974,16,{face:'s',purpose:'SOCCER',label:'STADIUM PRO SHOP',district:'SPORTS_EAST',sign:'TURBO',c:'#ffb020',seed:22});
+  shop(480,536,198,286,16,{face:'n',purpose:'SOCCER',label:'STADIUM PRO SHOP & ARENA CLUB',district:'SPORTS_EAST',sign:'TURBO',c:'#ffb020',seed:21});
+  shop(480,536,1018,1086,16,{face:'n',purpose:'SOCCER',label:'STADIUM PRO SHOP & ARENA CLUB',district:'SPORTS_EAST',sign:'TURBO',c:'#ffb020',seed:22});
   shop(164,208,1856,1888,15,{face:'n',purpose:'BUILDER',label:'CITY BUILDER ARCHITECT HQ',district:'BUILDER_NORTH',sign:'PIXEL',c:'#7dff6b',seed:23});
   shop(364,408,1856,1886,16,{face:'n',purpose:'BUILDER',label:'CITY BUILDER ARCHITECT HQ',district:'BUILDER_NORTH',sign:'PIXEL',c:'#7dff6b',seed:24});
   placePrefab('ramp_kick',528,409,{p:{spot:'garage'}});
   {let si=0;for(const[x0,x1,z0,z1]of[[260,340,-290,-110],[260,340,310,490],[160,240,310,490],[-540,-472,310,490],[-240,-160,1310,1490]]){LOTS.push({x0,x1,z0,z1,plaza:1});stuntSpot(x0,x1,z0,z1,si++);}}
   placePrefab('tunnel_seg',(TUN.x0+TUN.x1)/2,(TUN.z0+TUN.z1)/2,{w:TUN.x1-TUN.x0,d:TUN.z1-TUN.z0,h:TUN.top,p:{bore:TUN.bx1-TUN.bx0,ceil:TUN.ceil}});
   placePrefab('bridge_seg',0,1810);
-  {const n=16;for(let i=0;i<n;i++){const a=i/n*Math.PI*2,x=STAD.x+Math.cos(a)*STAD.r,z=STAD.z+Math.sin(a)*STAD.r*.8,s=17;tower(x-s,x+s,z-s*.6,z+s*.6,24+(i%2)*4,{kind:'stand',c:'#ff4fd8'});}
-   for(const[a,b]of[[1,1],[1,-1],[-1,1],[-1,-1]])placePrefab('lamp',STAD.x+a*125,STAD.z+b*95);}
+  for(const[a,b]of[[1,1],[1,-1],[-1,1],[-1,-1]])placePrefab('lamp',STAD.x+a*110,STAD.z+b*120);
   // base ramps (unchanged): taxiway, street, highway
   for(const[pf,x,z,w,h,nm]of[['ramp_big',50,790,16,7.5,'taxiway'],['ramp_small',250,350,14,4,'street'],['ramp_big',-450,1630,24,6,'highway']])placePrefab(pf,x,z,{w,h,p:{nm,sz:pf==='ramp_big'?'big':'medium'}});
   // runway-corridor ramps (open land beside the runway, never on the runway / taxiway / x 66-100 off-road lane)
@@ -165,7 +164,7 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   for(const[pf,x,rot]of[['ramp_launch',120,0],['ramp_med',-100,0],['ramp_kick',-40,0],['ramp_med',100,180],['ramp_launch',-120,180],['ramp_kick',60,180],['ramp_med',250,0],['ramp_kick',-250,0],['ramp_med',300,180],['ramp_med',-250,180]]){
     const d=PREFABS[pf].d,z=rot?RIV.z1+RIV.land+2+d/2:RIV.z0-RIV.land-2-d/2;placePrefab(pf,x,z,{rot,p:{nm:'river',hoop:pf!=='ramp_kick'?1:0}});}
   // embankments (hidden) on the grass just outside the city edges; road crests (hidden) on a few streets
-  for(const[x,z,rot]of[[300,-345,180],[-300,-345,180],[600,420,90],[600,1500,90],[-600,960,270],[300,2150,0],[-260,2150,0],[-600,1500,270]])placePrefab('ramp_bank',x,z,{rot});
+  for(const[x,z,rot]of[[300,-345,180],[-300,-345,180],[600,520,90],[600,1500,90],[-600,960,270],[300,2150,0],[-260,2150,0],[-600,1500,270]])placePrefab('ramp_bank',x,z,{rot});
   for(const[x,z,rot]of[[400,300,90],[-300,900,270],[350,1400,0],[-250,300,180],[450,-200,0]])placePrefab('road_crest',x,z,{rot,p:{nm:'crest'}});
   // stunts: half-pipe and loop beside the runway
   zdTowPlace(placePrefab);
@@ -176,6 +175,7 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   // far areas: outline-only skyline blocks around the edges
   for(let i=0;i<34;i++){const a=i/34*Math.PI*2+.07,rx=1000+cr()*300,rz=1500+cr()*350,x=Math.cos(a)*rx,z=900+Math.sin(a)*rz;if(Math.abs(x)<60)continue;const w=40+cr()*60,d=40+cr()*60,h=Math.max(20,ringHit(x-w/2,x+w/2,z-d/2,z+d/2,30+cr()*90));if(h<20)continue;
     if(Math.abs(x-HW.x)<90||Math.hypot(x-TRACK.cx,(z-TRACK.cz)*.6)<300||Math.hypot(x-STAD.x,z-STAD.z)<220)continue;
+    if(x+w/2>555&&x-w/2<920&&z+d/2>185&&z-d/2<415)continue;
     if(x+w/2>BUILDER_ZONE.x0&&x-w/2<BUILDER_ZONE.x1&&z+d/2>BUILDER_ZONE.z0&&z-d/2<BUILDER_ZONE.z1)continue;
     placePrefab('far_outline',x,z,{w,d,h:Math.round(h),p:{c:NEON[i%NEON.length]}});}
   for(let i=0;i<70;i++){const x=PARK.x0+6+cr()*(PARK.x1-PARK.x0-12),z=PARK.z0+6+cr()*(PARK.z1-PARK.z0-12);if(Math.abs(((x+1e4)%100)-50)>38||Math.abs(((z+1e4)%100))<14||Math.abs(((z+1e4)%100))>86)continue;TREES.push([x,z,5+cr()*4]);}
@@ -261,10 +261,10 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
     if(z>=RIV.z0&&z<=RIV.z1)return bridgeK(x)<0?'paved':'water';
     if(Math.abs(x-HW.x)<=HW.hw&&z>=ZS0-400&&z<=ZS1+400)return'paved';
     if(Math.abs(trackDist(x,z))<=TRACK.w/2+1)return'paved';if(Math.abs(z-1100)<=10&&x>=XS1&&x<=TRACK.cx-TRACK.R)return'paved';
+    if(window.SOCCER&&SOCCER.paved&&SOCCER.paved(x,z))return'paved';
     if(Math.hypot(x-STAD.x,(z-STAD.z)/.8)<STAD.r-12)return'park';
     if(x>=XS0-10&&x<=XS1+10&&z>=ZS0-10&&z<=ZS1+10&&Math.abs(x)>=140){if(x>=TUN.x0-5&&x<=TUN.x1+5&&z>=TUN.z0-5&&z<=TUN.z1+5)return'grass';
       if(inR(x,z,PARK)){const sx=((Math.abs(x)-150)%100+100)%100,sz=((z+300)%200+200)%200;return(sx<=10||sx>=90||sz<=10||sz>=190)?'paved':'park';}return'paved';}
-    if(window.SOCCER&&SOCCER.paved&&SOCCER.paved(x,z))return'paved';
     return'grass';}
   const padAt=(x,z,y)=>PADS.find(p=>Math.abs(p.y-y)<1&&inR(x,z,p))||null;
   return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,buildings:BL,BX,roadsX,roadsZ,RAMPS,PADS,TREES,LOTS,HOOPS,RINGS:rings,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,BUILDER_ZONE,DISTRICTS,XS0,XS1,ZS0,ZS1,
