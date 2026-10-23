@@ -34,6 +34,13 @@
   let lastJson = '';
   let ch = null;
   let studio = null;
+  let pauseOn = false;
+  const HOST_AT = {
+    body: [0, 0, 0],
+    doorR: [0.5561, 0.5287, 0.8314],
+    doorL: [0.5561, 0.5287, -0.8335],
+    hatch: [-0.8035, 1.1927, 0.0001]
+  };
   let live = null;
   let liveMirror = null;
   let builtCar = null;
@@ -89,6 +96,10 @@
       pts.push([x, y, z, nx, ny, nz]);
     }
     if (!pts.length || s.brush === 'eraser') return null;
+    if (pts.length === 1) {
+      const p = pts[0];
+      pts.push([p[0] + 0.02, p[1], p[2], p[3], p[4], p[5]]);
+    }
     let size = +s.size;
     if (!(size > 0)) size = 14;
     const color = (typeof s.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(s.color)) ? s.color.toLowerCase() : '#ff4fd8';
@@ -137,7 +148,24 @@
     try { localStorage.setItem(KEY, json); } catch (e) {}
     try { if (ch) ch.postMessage({ tab: TAB, json: json }); } catch (e) {}
   }
+  function thickenStroke(stroke) {
+    if (!stroke || stroke.brush === 'eraser' || !stroke.pts || !stroke.pts.length) return null;
+    if (stroke.pts.length === 1) {
+      const p = stroke.pts[0];
+      stroke.pts.push([p[0] + 0.02, p[1], p[2], p[3], p[4], p[5]]);
+    }
+    return stroke;
+  }
+  function sealLive() {
+    const a = thickenStroke(live);
+    const b = thickenStroke(liveMirror);
+    live = null;
+    liveMirror = null;
+    if (a) slot().strokes.push(a);
+    if (b) slot().strokes.push(b);
+  }
   function save(data) {
+    if ((live || liveMirror) && (!data || data === state)) sealLive();
     state = normalize(data || state);
     if (slot()) slot().updatedAt = Date.now();
     write();
@@ -162,9 +190,44 @@
     armPulse();
   }
 
+  function stanceDy(opts) {
+    const stance = opts && opts.kid && opts.kid.stance;
+    return ({ low: 0.035, slam: 0.07 })[stance] || 0;
+  }
+  function zglOk() {
+    return !!(window.ZGL && window.ZGL.S && window.ZGL.S.ok);
+  }
+  function ensureHosts(X, dy) {
+    if (!X || !X.car) return null;
+    const d = dy || 0;
+    let bag = X._npHosts;
+    const stale = !bag || !bag.body || !bag.doorR || !bag.doorL || !bag.hatch || bag.body.parent !== X.car;
+    if (stale) {
+      const Group = (window.THREE && window.THREE.Group) || X.car.constructor;
+      bag = {};
+      const names = ['body', 'doorR', 'doorL', 'hatch'];
+      for (let i = 0; i < names.length; i++) {
+        const g = new Group();
+        g.name = 'np-host-' + names[i];
+        g.userData = { npHost: true, crew: true };
+        X.car.add(g);
+        bag[names[i]] = g;
+      }
+      X._npHosts = bag;
+    }
+    bag.body.position.set(0, -d, 0);
+    bag.doorR.position.set(HOST_AT.doorR[0], HOST_AT.doorR[1] - d, HOST_AT.doorR[2]);
+    bag.doorL.position.set(HOST_AT.doorL[0], HOST_AT.doorL[1] - d, HOST_AT.doorL[2]);
+    bag.hatch.position.set(HOST_AT.hatch[0], HOST_AT.hatch[1] - d, HOST_AT.hatch[2]);
+    if (bag.body.updateMatrixWorld) bag.body.updateMatrixWorld(true);
+    if (bag.doorR.updateMatrixWorld) bag.doorR.updateMatrixWorld(true);
+    if (bag.doorL.updateMatrixWorld) bag.doorL.updateMatrixWorld(true);
+    if (bag.hatch.updateMatrixWorld) bag.hatch.updateMatrixWorld(true);
+    return bag;
+  }
   function hostFor(X, part) {
     const S = window.ZGL && window.ZGL.S;
-    if (S && (part === 'doorL' || part === 'doorR')) {
+    if (S && S.ok && (part === 'doorL' || part === 'doorR')) {
       if (part === 'doorL' && S.doorL && S.doorL.isObject3D) return S.doorL;
       if (part === 'doorR' && S.doorR && S.doorR.isObject3D) return S.doorR;
       const hinges = S.hingeD || [];
@@ -175,10 +238,13 @@
         if (part === 'doorL' && side < 0) return p;
       }
     }
-    if (part === 'hatch' && S) {
+    if (part === 'hatch' && S && S.ok) {
       if (S.hatchP && S.hatchP.isObject3D) return S.hatchP;
       if (S.hingeH && S.hingeH.isObject3D) return S.hingeH;
     }
+    if (S && S.ok) return X.car;
+    const bag = ensureHosts(X, X._npDy || 0);
+    if (bag && bag[part]) return bag[part];
     return X.car;
   }
   function partOfMesh(mesh) {
@@ -768,10 +834,18 @@
   }
 
   function hookRender(X) {
-    if (!X || !X.render || hooked) return;
+    if (!X || !X.render || X.render._npPaint) return;
     hooked = true;
     origRender = X.render.bind(X);
-    X.render = function (ctx, x, y, w, h, opts) {
+    const wrapped = function (ctx, x, y, w, h, opts) {
+      try {
+        if (!zglOk()) {
+          const fresh = !X._npHosts || !X._npHosts.body || X._npHosts.body.parent !== X.car;
+          X._npDy = stanceDy(opts);
+          ensureHosts(X, X._npDy);
+          if (fresh && hasPaint()) applyToCar(X);
+        }
+      } catch (e) { window.NEON_PAINT._err = String(e && e.message || e); }
       const out = origRender(ctx, x, y, w, h, opts);
       try {
         const glow = paintGlow(X);
@@ -785,6 +859,8 @@
       } catch (e) { window.NEON_PAINT._err = String(e && e.message || e); }
       return out;
     };
+    wrapped._npPaint = 1;
+    X.render = wrapped;
   }
 
   function basis(nx, ny, nz) {
@@ -899,10 +975,6 @@
     if (stroke.pts.length < 700) stroke.pts.push([hit.x, hit.y, hit.z, hit.nx, hit.ny, hit.nz]);
   }
   function commitLive(X) {
-    if (live && live.pts.length > 1) slot().strokes.push(live);
-    if (liveMirror && liveMirror.pts.length > 1) slot().strokes.push(liveMirror);
-    live = null;
-    liveMirror = null;
     save(state);
     setStatus('SAVED TO THE GARAGE');
   }
@@ -942,7 +1014,7 @@
     s.textContent = [
       '#np-studio{position:fixed;inset:0;z-index:80;color:#fff;font-family:Orbitron,sans-serif;background:#07010f;display:flex;flex-direction:column}',
       '#np-studio *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}',
-      '.np-top{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px 6px;flex:none}',
+      '.np-top{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px 58px 4px 6px;flex:none}',
       '.np-top h1{margin:0;font:900 12px Orbitron,sans-serif;letter-spacing:.6px;color:#fff;text-shadow:0 0 8px #ff4fd8}',
       '.np-status{margin-left:auto;font:700 9px Orbitron,sans-serif;color:#ffe14d}',
       '.np-top button,.np-tools button{font:800 8px Orbitron,sans-serif;letter-spacing:.3px;color:#fff;background:rgba(62,230,255,.08);border:1.5px solid rgba(62,230,255,.55);border-radius:999px;padding:4px 7px;cursor:pointer}',
@@ -959,7 +1031,14 @@
       '.np-save{background:linear-gradient(90deg,#ffe14d,#ff9a2e);color:#1a0633;border:0;font:900 12px Orbitron,sans-serif;border-radius:12px;padding:8px;letter-spacing:1px;cursor:pointer}',
       '.np-lab{font:700 8px Orbitron,sans-serif;letter-spacing:1px;color:#3ee6ff;margin:0}',
       '.np-zoom{width:100%;accent-color:#ff4fd8}',
-      '.np-modes{display:flex;gap:6px;padding:6px 6px 0;flex:none}',
+      '.np-modes{display:flex;gap:6px;padding:6px 58px 0 6px;flex:none}',
+      '#np-studio>.np-pauseb{position:absolute;z-index:6;top:2px;right:4px;width:48px;height:48px;padding:0;border:0;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center}',
+      '#np-studio>.np-pauseb span{width:38px;height:38px;line-height:34px;font:900 17px sans-serif;text-align:center;border-radius:11px;background:rgba(8,2,15,.45);border:1.5px solid rgba(62,230,255,.55);color:#fff}',
+      '#np-studio>.np-pauseb.np-open{display:none}',
+      '#npPauseModal{position:absolute;inset:0;z-index:7;background:rgba(8,2,15,.62);display:flex;align-items:center;justify-content:center;padding:12px}',
+      '#npPauseModal[hidden]{display:none !important}',
+      '#npPauseModal .np-pausec{width:min(420px,100%);background:rgba(8,2,15,.94);border:2px solid #3ee6ff;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px;box-shadow:0 0 18px rgba(62,230,255,.35)}',
+      '#npPauseModal .np-pausec>button{font:800 13px Orbitron,sans-serif;letter-spacing:.4px;color:#fff;background:rgba(62,230,255,.1);border:1.5px solid rgba(62,230,255,.7);border-radius:12px;padding:10px 12px;cursor:pointer}',
       '.np-modes button{flex:1;font:900 11px Orbitron,sans-serif;letter-spacing:.4px;padding:8px 6px;border-radius:12px;color:#fff;background:rgba(22,11,40,.9);border:1.5px solid rgba(255,79,216,.65);cursor:pointer}',
       '.np-modes button.on{background:#ff4fd8;color:#1a0633;border-color:#fff;box-shadow:0 0 14px #ff4fd8}',
       '.np-off{display:none !important}'
@@ -1041,7 +1120,47 @@
       '<div class="np-row"><button type="button" data-act="wall-undo">↶ UNDO</button>' +
       '<button type="button" data-act="wall-clear">🗑️ CLEAR WALL</button></div>' +
       '<button type="button" class="np-save" data-act="wall-demo">✨ DEMO GRAFFITI</button>' +
-      '<button type="button" class="np-save" data-act="wall-apply">🏙️ APPLY TO Z COMPANY ARTS BUILDING</button></div></div>';
+      '<button type="button" class="np-save" data-act="wall-apply">🏙️ APPLY TO Z COMPANY ARTS BUILDING</button></div></div>' +
+      '<button id="kMenuB" class="np-pauseb" type="button" data-np-go="pause" aria-label="Pause"><span>⏸</span></button>' +
+      '<div id="npPauseModal" hidden><div class="np-pausec">' +
+      '<button type="button" data-np-go="resume">▶ RESUME</button>' +
+      '<button type="button" data-np-go="garage">🚗 GARAGE</button>' +
+      '<button type="button" data-np-go="world">🌆 NEON WORLD</button>' +
+      '<button type="button" data-np-go="home">⌂ MAIN MENU</button>' +
+      '</div></div>';
+  }
+  function setPause(on) {
+    pauseOn = !!on;
+    if (!studio) return;
+    const modal = studio.querySelector('#npPauseModal');
+    const btn = studio.querySelector('#kMenuB');
+    if (modal) {
+      if (pauseOn) modal.removeAttribute('hidden');
+      else modal.setAttribute('hidden', '');
+    }
+    if (btn) btn.classList.toggle('np-open', pauseOn);
+  }
+  function flushPaint() {
+    try { save(state); } catch (e) {}
+    try { saveWall(); } catch (e) {}
+  }
+  function onPauseGo(go) {
+    if (go === 'pause') { setPause(true); return; }
+    if (go === 'resume') { setPause(false); return; }
+    const urls = { garage: 'jr.html#garage', world: 'world.html', home: 'jr.html?kmenu=1' };
+    if (urls[go]) { flushPaint(); location.assign(urls[go]); }
+  }
+  function parkMenuButton() {
+    const el = document.getElementById('kMenuB');
+    if (!el || (studio && studio.contains(el))) return;
+    el.setAttribute('data-np-park', 'kMenuB');
+    el.id = 'np-park-kMenuB';
+  }
+  function unparkMenuButton() {
+    const el = document.getElementById('np-park-kMenuB');
+    if (!el) return;
+    if (!document.getElementById('kMenuB')) el.id = 'kMenuB';
+    el.removeAttribute('data-np-park');
   }
   function setStatus(text) {
     if (!studio) return;
@@ -1179,6 +1298,8 @@
       const act = t.getAttribute('data-act');
       const canvasMode = t.getAttribute('data-canvas-mode');
       const stencil = t.getAttribute('data-stencil');
+      const go = t.getAttribute('data-np-go');
+      if (go) { onPauseGo(go); return; }
       if (canvasMode) {
         ui.canvas = canvasMode;
         ui.stamp = '';
@@ -1197,8 +1318,14 @@
         ui.yaw = CAMS[cam].yaw; ui.pitch = CAMS[cam].pitch;
         setStatus(t.textContent);
       }
-      if (color) { ui.color = color; ui.stamp = ''; ui.stencil = ''; }
-      if (brush) { ui.style = brush; ui.stamp = ''; ui.stencil = ''; ui.wallLook = false; }
+      if (color) {
+        ui.color = color; ui.stamp = ''; ui.stencil = '';
+        if (ui.canvas === 'car') { ui.mode = 'draw'; setStatus('DRAW ON THE CAR'); }
+      }
+      if (brush) {
+        ui.style = brush; ui.stamp = ''; ui.stencil = ''; ui.wallLook = false;
+        if (ui.canvas === 'car') { ui.mode = 'draw'; setStatus(brush === 'eraser' ? 'ERASE ON THE CAR' : 'DRAW ON THE CAR'); }
+      }
       if (stamp) {
         ui.stamp = ui.stamp === stamp ? '' : stamp;
         if (ui.stamp && ui.style === 'eraser') ui.style = 'neon';
@@ -1215,7 +1342,7 @@
         slot().strokes = slot().strokes.filter(function (s) { return !g || s.group !== g; });
         save(state); setStatus('UNDID');
       }
-      if (act === 'clear') { slot().strokes = []; save(state); setStatus('CLEARED'); }
+      if (act === 'clear') { live = null; liveMirror = null; slot().strokes = []; save(state); setStatus('CLEARED'); }
       if (act === 'save') { save(state); setStatus('SAVED TO THE GARAGE'); }
       if (act === 'slot') { state.activeSlot = +t.getAttribute('data-slot') || 0; save(state); setStatus('SLOT ' + (state.activeSlot + 1)); }
       if (act === 'wall-slot') { wallState.activeSlot = +t.getAttribute('data-slot') || 0; saveWall(); setStatus('Slot ' + (wallState.activeSlot + 1)); }
@@ -1249,6 +1376,7 @@
       return [(e.clientX - b.left) * (canvas.width / b.width), (e.clientY - b.top) * (canvas.height / b.height)];
     }
     canvas.addEventListener('pointerdown', function (e) {
+      if (pauseOn) return;
       pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
       canvas.setPointerCapture(e.pointerId);
       const ids = Object.keys(pointers);
@@ -1319,7 +1447,20 @@
       if (!hit) return;
       if (drag.erase) { eraseNear(X, hit); return; }
       if (!drag.draw || !live) return;
-      if (hit.part !== live.part) return;
+      if (hit.part !== live.part) {
+        const group = live.group;
+        sealLive();
+        const b = brushNow();
+        live = { part: hit.part, brush: b.brush, color: b.color, size: b.size, mirror: ui.mirror, pulse: ui.pulse, group: group, pts: [[hit.x, hit.y, hit.z, hit.nx, hit.ny, hit.nz]] };
+        liveMirror = null;
+        if (ui.mirror) {
+          try {
+            const m = mirrorHit(X, hit);
+            liveMirror = { part: m.part, brush: b.brush, color: b.color, size: b.size, mirror: true, pulse: ui.pulse, group: group, pts: [[m.x, m.y, m.z, m.nx, m.ny, m.nz]] };
+          } catch (err) { liveMirror = null; }
+        }
+        return;
+      }
       pushPoint(live, hit);
       if (liveMirror && ui.mirror) {
         const m = mirrorHit(X, hit);
@@ -2075,6 +2216,7 @@
     opts = opts || {};
     ui.canvas = (opts.canvas === 'wall' || opts.mode === 'wall') ? 'wall' : 'car';
     closeStudio();
+    parkMenuButton();
     state = readStore();
     lastJson = JSON.stringify(state);
     ensureCss();
@@ -2094,8 +2236,10 @@
   function closeStudio() {
     live = null;
     liveMirror = null;
+    pauseOn = false;
     if (studio && studio.parentNode) studio.parentNode.removeChild(studio);
     studio = null;
+    unparkMenuButton();
   }
   function bakeCanvases() {
     const X = carX();
@@ -2126,6 +2270,9 @@
     window.addEventListener('storage', function (e) {
       if (!e.key || e.key === KEY) ingest(e.newValue || '');
       if (e.key === WALL_KEY) ingestWall(e.newValue || '');
+    });
+    window.addEventListener('pagehide', function () {
+      if (live || liveMirror || wallLive || wallLiveMirror) flushPaint();
     });
     hookWorldGraffiti();
     let tries = 0;
