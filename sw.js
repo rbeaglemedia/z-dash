@@ -21,7 +21,7 @@ const pageKey = (url) => (url.pathname.endsWith('jr.html') ? 'jr.html' : url.pat
 // They are not added to ASSETS and are not stored under the index/jr/fly3/world page keys. Without this
 // branch, pageKey() would treat world-split.html as index.html and overwrite that cached page.
 // activate drops every world-split-* cache except SPLIT_CACHE, and the fetch handler is network-first.
-const SPLIT_CACHE = 'world-split-v10';
+const SPLIT_CACHE = 'world-split-v11';
 const isSplitPath = (url) => { const p = url.pathname; return p.endsWith('/world-split.html') || p.includes('/world/') || p.includes('/shared/'); };
 function fromNetwork(req, key) { // revalidate with the server (bypasses the 10-min HTTP cache on GitHub Pages; an unchanged page is a cheap 304)
   return fetch(new Request(req.url, { cache: 'no-cache', credentials: 'same-origin' })).then((res) => {
