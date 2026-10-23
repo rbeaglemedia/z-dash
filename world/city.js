@@ -32,9 +32,9 @@ const CITY=(()=>{let sd=90210;const cr=()=>(sd=(sd*16807)%2147483647)/2147483647
      if(p.y0>0){box(b,{x0,x1,z0,z1,y0:p.y0,y1:h});return;}
      const T=p.tiers||[1];let y=0,ax0=x0,ax1=x1,az0=z0,az1=z1;for(let i=0;i<T.length;i++){const top=i===T.length-1?h:h*T[i];box(b,{x0:ax0,x1:ax1,z0:az0,z1:az1,y0:y,y1:top});y=top;const ix=(ax1-ax0)*(p.inset||.14),iz=(az1-az0)*(p.inset||.14);ax0+=ix;ax1-=ix;az0+=iz;az1-=iz;}
      const t=b.boxes[b.boxes.length-1],rx=(t.x0+t.x1)/2,rz=(t.z0+t.z1)/2,rw=Math.min(t.x1-t.x0,t.z1-t.z0);
-     if(p.purpose){b.purpose=p.purpose;b.purposeLabel=p.purposeLabel||p.purpose;b.district=p.district||'';}
+     if(p.purpose){b.purpose=p.purpose;b.purposeLabel=p.purposeLabel||p.purpose;b.label=b.purposeLabel;b.district=p.district||'';}
      if(b.kind==='b'||b.kind==='landmark'){b.doors=doorsOf(b);b.gf=GF;}
-     if(p.sign)b.deco.push(['sign',p.sign]);
+     if(p.sign){if(p.sign.t&&!p.sign.word)p.sign.word=p.sign.t;b.sign=p.sign;b.deco.push(['sign',p.sign]);}
      if(p.roof==='ant')b.deco.push(['ant',rx+rw*.2,rz,h,p.antH||16]);else if(p.roof==='tank')b.deco.push(['tank',t.x0+rw*.25,t.z0+rw*.25,h]);
      if(p.cable)b.deco.push(['cable',o.x,o.z,h,p.cable]);b.roofBox=t;if(p.pad)TYPES.helipad({id:o.id,x:rx,z:rz,h});},
    helipad(o){const b=BL.slice().reverse().find(q=>q.roofBox&&o.x>=q.roofBox.x0&&o.x<=q.roofBox.x1&&o.z>=q.roofBox.z0&&o.z<=q.roofBox.z1&&Math.abs(q.top-o.h)<.5);if(!b)return;const t=b.roofBox;
@@ -116,7 +116,7 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
     {id:'DOWNTOWN_CORE',label:'Downtown Core',x0:150,x1:450,z0:900,z1:1850},
     {id:'SPORTS_EAST',label:'East Sports & Track',x0:350,x1:560,z0:300,z1:1200},
     {id:'BUILDER_NORTH',label:'Waterfront City Builder',x0:-400,x1:540,z0:1860,z1:2100}];
-  function faceSign(x0,x1,z0,z1,face,word,color){const y=6.4,sh=3.1,span=face==='n'||face==='s'?x1-x0:z1-z0,w=Math.min(16,Math.max(6,span*.62));
+  function faceSign(x0,x1,z0,z1,face,word,color){const y=6.4,sh=3.1,span=face==='n'||face==='s'?x1-x0:z1-z0,long=(word||'').length>10,w=Math.min(long?28:16,Math.max(6,span*(long?.85:.62)));
     if(face==='s')return{x:(x0+x1)/2,z:z0-.3,y,nx:0,nz:-1,w,h:sh,t:word,c:color};
     if(face==='n')return{x:(x0+x1)/2,z:z1+.3,y,nx:0,nz:1,w,h:sh,t:word,c:color};
     if(face==='w')return{x:x0-.3,z:(z0+z1)/2,y,nx:-1,nz:0,w,h:sh,t:word,c:color};
@@ -136,13 +136,13 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   shop(464,512,364,454,15,{face:'w',purpose:'GARAGE',label:'SPEED & TUNING GARAGE',district:'SPORTS_EAST',sign:'GARAGE',c:'#ffb020',seed:9});
   shop(-336,-292,360,408,14,{face:'w',purpose:'NEON_PAINT',label:'ELLIE NEON PAINT STUDIO',district:'ARTS_GARAGE',sign:'NEON',c:'#ff4fd8',seed:10});
   shop(-336,-292,760,808,15,{face:'w',purpose:'NEON_PAINT',label:'ELLIE NEON PAINT STUDIO',district:'PARKSIDE_WEST',sign:'NEON',c:'#ff4fd8',seed:11});
-  shop(-224,-164,360,424,18,{face:'e',purpose:'DANCE',label:'DANCE & BEATS STUDIO',district:'ARTS_GARAGE',sign:'DANCE',c:'#ff4fd8',wc:'#ffb3e6',roof:'ant',antH:14,seed:12});
+  shop(-224,-164,360,424,18,{face:'e',purpose:'DANCE',label:'Z Company Arts',district:'ARTS_GARAGE',sign:'Z COMPANY ARTS',c:'#ff4fd8',wc:'#ffb3e6',roof:'ant',antH:14,seed:12});
   shop(264,320,560,624,18,{face:'w',purpose:'ARCADE',label:'RETRO PIXEL ARCADE',district:'ARTS_GARAGE',sign:'ARCADE',c:'#3ee6ff',seed:13});
   shop(-536,-496,960,1008,12,{face:'w',purpose:'HOME',label:'PLAYER HOUSE & GARAGE',district:'PARKSIDE_WEST',sign:'HOME',c:'#7dff6b',seed:14});
   shop(-536,-496,1164,1212,12,{face:'w',purpose:'PETS',label:'PET RESCUE & CRITTER LOUNGE',district:'PARKSIDE_WEST',sign:'PETS',c:'#7dff6b',seed:15});
   shop(-408,-364,964,1012,13,{face:'e',purpose:'PETS',label:'PET RESCUE & CRITTER LOUNGE',district:'PARKSIDE_WEST',sign:'PETS',c:'#7dff6b',seed:16});
   shop(-336,-292,1314,1362,12,{face:'s',purpose:'CAFE',label:'NEON PIZZA & BOBA CAFE',district:'PARKSIDE_WEST',sign:'PIZZA',c:'#ff2a3d',seed:17});
-  shop(264,324,1160,1224,20,{face:'w',purpose:'DANCE',label:'DANCE & BEATS STUDIO',district:'DOWNTOWN_CORE',sign:'DANCE',c:'#ff4fd8',wc:'#ffb3e6',roof:'ant',antH:16,seed:18});
+  shop(264,324,1160,1224,20,{face:'w',purpose:'DANCE',label:'Z Company Arts',district:'DOWNTOWN_CORE',sign:'Z COMPANY ARTS',c:'#ff4fd8',wc:'#ffb3e6',roof:'ant',antH:16,seed:18});
   shop(364,412,1364,1412,13,{face:'w',purpose:'CAFE',label:'NEON PIZZA & BOBA CAFE',district:'DOWNTOWN_CORE',sign:'PIZZA',c:'#ff2a3d',seed:19});
   shop(464,516,760,824,17,{face:'w',purpose:'ARCADE',label:'RETRO PIXEL ARCADE',district:'SPORTS_EAST',sign:'ARCADE',c:'#3ee6ff',seed:20});
   shop(480,536,198,286,16,{face:'n',purpose:'SOCCER',label:'STADIUM PRO SHOP & ARENA CLUB',district:'SPORTS_EAST',sign:'TURBO',c:'#ffb020',seed:21});
