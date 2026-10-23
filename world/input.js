@@ -26,7 +26,7 @@ const tiltOk=()=>!TL.off&&TL.have&&TL.perm!=='denied'&&performance.now()-TL.last
 function onFootNow(){const W=window.WALK_MODE;return !!(W&&W.onFoot);}
 function canExitCar(){const W=window.WALK_MODE;return !!(W&&!W.onFoot&&typeof W.canGetOut==='function'&&W.canGetOut());}
 function syncWingsBtn(){const b=document.getElementById('wng');if(!b)return;
-  if(onFootNow()||canExitCar()){if(typeof syncOnFootButtons==='function')syncOnFootButtons();return;}
+  if(onFootNow()){if(typeof syncOnFootButtons==='function')syncOnFootButtons();return;}
   const s=document.getElementById('wngS'),hasP=typeof P!=='undefined',open=!!(hasP&&P.wings),street=!open&&hasP&&P.driveMode==='street';
   b.classList.remove('enter-car','exit-car');
   b.classList.toggle('open',open);b.classList.toggle('arcade',!open&&!street);b.classList.toggle('street',street);
@@ -122,7 +122,6 @@ for(const id of['tup','nos','brk'])bindHold(id);
     if(commit&&latched)setDriveMode((typeof P!=='undefined'&&P.driveMode==='street')?'arcade':'street');
     else if(commit&&!everPad&&moved<24){const W=window.WALK_MODE;
       if(W&&W.onFoot&&typeof W.toggleGetOut==='function')W.toggleGetOut();
-      else if(W&&!W.onFoot&&typeof W.canGetOut==='function'&&W.canGetOut()&&typeof W.toggleGetOut==='function')W.toggleGetOut();
       else setWings(!P.wings);}
     if(typeof syncOnFootButtons==='function')syncOnFootButtons();
     ptr=null;touchId=null;};
@@ -136,8 +135,9 @@ for(const id of['tup','nos','brk'])bindHold(id);
   const tend=e=>{ebTouchAt=performance.now();const commit=e.type==='touchend';for(const t of e.changedTouches)if(t.identifier===touchId)release(commit);};
   b.addEventListener('touchend',tend,{passive:false});b.addEventListener('touchcancel',tend,{passive:false});}
 // On foot, the four drive buttons become WALK / RUN / JUMP / ENTER, and a bottom-middle EMOTE wheel appears.
-// Injected here so world-split.html stays untouched. Labels follow WALK_MODE.onFoot and canGetOut().
-const EMOTE_OPTS=[{id:'up',name:'DANCE 1',label:'🕺 DANCE 1'},{id:'right',name:'DANCE 2',label:'🔥 DANCE 2'},{id:'down',name:'PET GROOVE',label:'🐾 PET GROOVE'},{id:'left',name:'HYPE SPIN',label:'⚡ HYPE SPIN'}];
+// Street exit/enter is #exitCarBtn, left of pause, so #wng stays WINGS while driving.
+// Injected here so world-split.html stays untouched.
+const EMOTE_OPTS=[{id:'up',name:'DANCE 1',label:'↑ Dance 1'},{id:'right',name:'DANCE 2',label:'→ Dance 2'},{id:'down',name:'PET GROOVE',label:'↓ Pet Groove'},{id:'left',name:'HYPE SPIN',label:'← Hype Spin'}];
 let footMode='';
 function setBtnFace(el,main,smallText,smallId){if(!el)return;const can=el.querySelector('.nfxcan');
   [...el.childNodes].forEach(n=>{if(n!==can)n.remove();});
@@ -154,10 +154,6 @@ function applyFootMode(mode){const tup=document.getElementById('tup'),nos=docume
     if(wng){wng.classList.remove('open','arcade','street','exit-car');wng.classList.add('enter-car');setBtnFace(wng,'ENTER','CAR','wngS');}
     const pad=document.getElementById('ebpad');if(pad){pad.classList.remove('show');pad.setAttribute('aria-hidden','true');}
     B.tup=0;B.nos=0;B.brk=0;B.ebLatch=0;}
-  else if(mode==='exit'){if(tup){tup.classList.remove('onfoot-walk');if(footMode==='walk')setBtnFace(tup,'THROTTLE','HOLD');}
-    if(nos){nos.classList.remove('onfoot-run');if(footMode==='walk')setBtnFace(nos,'NOS','HOLD');}
-    if(brk){brk.classList.remove('onfoot-jump');if(footMode==='walk')setBtnFace(brk,'AIR','BRAKE');}
-    if(wng){wng.classList.remove('open','arcade','street','enter-car');wng.classList.add('exit-car');setBtnFace(wng,'EXIT','CAR','wngS');}}
   else{if(tup){tup.classList.remove('onfoot-walk');setBtnFace(tup,'THROTTLE','HOLD');}
     if(nos){nos.classList.remove('onfoot-run');setBtnFace(nos,'NOS','HOLD');}
     if(brk){brk.classList.remove('onfoot-jump');setBtnFace(brk,'AIR','BRAKE');}
@@ -165,13 +161,15 @@ function applyFootMode(mode){const tup=document.getElementById('tup'),nos=docume
       const lead=wng.childNodes[0]&&wng.childNodes[0].nodeType===3?wng.childNodes[0].textContent:'';
       if(lead!=='WINGS')setBtnFace(wng,'WINGS','ARCADE','wngS');
       paintDriveWings();}}}
-function syncOnFootButtons(){ensureEmote();const mode=onFootNow()?'walk':canExitCar()?'exit':'drive';
+function syncOnFootButtons(){ensureEmote();ensureExitBtn();const mode=onFootNow()?'walk':'drive';
   const em=document.getElementById('emoteBtn'),wheel=document.getElementById('emoteWheel');
   if(em)em.style.display=mode==='walk'?'flex':'none';
   if(wheel&&mode!=='walk'){wheel.classList.remove('show');wheel.setAttribute('aria-hidden','true');}
   if(mode!==footMode){applyFootMode(mode);footMode=mode;}
+  else if(mode==='drive')paintDriveWings();
   const W=window.WALK_MODE;if(W)W.runMode=!!(mode==='walk'&&B.run&&B.walk);
-  if(mode!=='walk'){B.walk=0;B.run=0;if(!B.brk)B.jump=0;}}
+  if(mode!=='walk'){B.walk=0;B.run=0;if(!B.brk)B.jump=0;}
+  paintExitBtn();}
 window.syncOnFootButtons=syncOnFootButtons;
 function ensureEmote(){if(document.getElementById('emoteBtn'))return;
   const css=document.createElement('style');css.id='emoteCss';css.textContent=''
@@ -184,17 +182,17 @@ function ensureEmote(){if(document.getElementById('emoteBtn'))return;
     +'#nos.onfoot-run{background:radial-gradient(circle at 40% 35%,#fff2a8,#ffb020 45%,#8a3c00);box-shadow:0 0 18px #ffe14d;color:#240c00}'
     +'#brk.onfoot-jump{background:radial-gradient(circle at 40% 35%,#c8fbff,#3ee6ff 45%,#0b6a86);box-shadow:0 0 18px #3ee6ff;color:#04202a}'
     +'#wng.enter-car,#wng.exit-car{background:radial-gradient(circle at 40% 35%,#ffe9ff,#d14dff 45%,#4a0a6a);box-shadow:0 0 18px #e06bff;color:#fff}'
-    +'#emoteWheel{position:fixed;left:50%;bottom:calc(20px + min(46px,11.5vh));transform:translateX(-50%);z-index:24;display:none;width:0;height:0;pointer-events:none}'
+    +'#emoteWheel{position:fixed;left:50%;bottom:calc(20px + min(46px,11.5vh));transform:translateX(-50%);z-index:26;display:none;width:0;height:0;pointer-events:none}'
     +'#emoteWheel.show{display:block}'
     +'#emoteWheel .emoteOpt{position:absolute;white-space:nowrap;padding:6px 10px;border-radius:999px;border:3px solid #fff;background:rgba(20,0,40,.9);color:#fff;font:900 12px Orbitron,sans-serif;box-shadow:0 0 12px #e06bff;transform:translate(-50%,-50%)}'
     +'#emoteWheel .emoteOpt.active{background:#ffe14d;color:#240c00;box-shadow:0 0 18px #ffe14d}'
     +'#emoteWheel .emoteOpt[data-dir="up"]{left:0;top:-74px}#emoteWheel .emoteOpt[data-dir="right"]{left:118px;top:0}'
-    +'#emoteWheel .emoteOpt[data-dir="down"]{left:0;top:74px}#emoteWheel .emoteOpt[data-dir="left"]{left:-118px;top:0}';
+    +'#emoteWheel .emoteOpt[data-dir="down"]{left:0;top:46px}#emoteWheel .emoteOpt[data-dir="left"]{left:-118px;top:0}';
   document.head.appendChild(css);
   const host=document.querySelector('.kbody')||document.body;
   const wheel=document.createElement('div');wheel.id='emoteWheel';wheel.setAttribute('aria-hidden','true');
   wheel.innerHTML=EMOTE_OPTS.map(o=>'<span class="emoteOpt" data-dir="'+o.id+'">'+o.label+'</span>').join('');
-  const btn=document.createElement('button');btn.id='emoteBtn';btn.type='button';btn.innerHTML='EMOTE<small id="emoteS">DRAG ✥</small>';
+  const btn=document.createElement('button');btn.id='emoteBtn';btn.type='button';btn.innerHTML='EMOTE<small id="emoteS">HOLD · DRAG</small>';
   host.appendChild(wheel);host.appendChild(btn);
   let ptr=null,touchId=null,cur='',maxD=0;
   const nameOf=id=>{const o=EMOTE_OPTS.find(x=>x.id===id);return o?o.name:'';};
@@ -204,7 +202,7 @@ function ensureEmote(){if(document.getElementById('emoteBtn'))return;
     if(dist>maxD)maxD=dist;if(dist<24)return '';
     if(Math.abs(dy)>=Math.abs(dx))return dy>=0?'up':'down';return dx>=0?'right':'left';};
   const paint=d=>{cur=d;wheel.querySelectorAll('.emoteOpt').forEach(n=>n.classList.toggle('active',n.getAttribute('data-dir')===d));
-    const s=document.getElementById('emoteS');if(s)s.textContent=d?nameOf(d):'DRAG ✥';};
+    const s=document.getElementById('emoteS');if(s)s.textContent=d?nameOf(d):'HOLD · DRAG';};
   const show=on=>{wheel.classList.toggle('show',on);wheel.setAttribute('aria-hidden',on?'false':'true');btn.classList.toggle('held',on);if(!on)paint('');};
   const fire=()=>{const W=window.WALK_MODE;if(cur){B.emote=cur;if(W&&typeof W.triggerEmote==='function')W.triggerEmote(cur);else if(W&&typeof W.toggleDance==='function')W.toggleDance();}
     else if(maxD<24){if(W&&typeof W.triggerEmote==='function')W.triggerEmote('tap');else if(W&&typeof W.toggleDance==='function')W.toggleDance();}};
@@ -219,5 +217,39 @@ function ensureEmote(){if(document.getElementById('emoteBtn'))return;
   btn.addEventListener('touchmove',e=>{for(const t of e.changedTouches)if(t.identifier===touchId){ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}paint(dirAt(t.clientX,t.clientY));}},{passive:false});
   const tend=e=>{ebTouchAt=performance.now();const commit=e.type==='touchend';for(const t of e.changedTouches)if(t.identifier===touchId)end(commit);};
   btn.addEventListener('touchend',tend,{passive:false});btn.addEventListener('touchcancel',tend,{passive:false});}
+function streetInCar(){return typeof P!=='undefined'&&P.driveMode==='street'&&!onFootNow();}
+function paintExitBtn(){const b=document.getElementById('exitCarBtn');if(!b)return;
+  const show=onFootNow()||streetInCar()||canExitCar();
+  b.style.display=show?'flex':'none';
+  if(!show)return;
+  const want=onFootNow()?'ENTER':'EXIT';
+  const lead=b.childNodes[0]&&b.childNodes[0].nodeType===3?b.childNodes[0].textContent:'';
+  if(lead===want&&b.querySelector('small'))return;
+  b.replaceChildren(document.createTextNode(want));
+  const sm=document.createElement('small');sm.textContent='CAR';b.appendChild(sm);}
+function exitCarTap(){
+  if(!onFootNow()&&typeof P!=='undefined'&&P.ground&&P.v<15)P.v=0;
+  const W=window.WALK_MODE;if(W&&typeof W.toggleGetOut==='function')W.toggleGetOut();
+  if(typeof syncOnFootButtons==='function')syncOnFootButtons();}
+function ensureExitBtn(){if(document.getElementById('exitCarBtn'))return;
+  const css=document.createElement('style');css.id='exitCarCss';css.textContent=''
+    +'#exitCarBtn{position:absolute;top:5px;right:calc(var(--pzr, calc(21vw + 2px)) + 52px);z-index:25;display:none;'
+    +'height:44px;min-width:78px;padding:0 12px;border-radius:14px;border:2.5px solid #fff;margin:0;'
+    +'background:radial-gradient(circle at 40% 32%,#f4fff6,#39ff7a 38%,#ff2bd6 78%);'
+    +'box-shadow:0 0 16px #7dff6b,0 0 12px #ff2bd6;color:#140018;'
+    +'font:900 11px/1.05 Orbitron,sans-serif;letter-spacing:.4px;'
+    +'flex-direction:column;align-items:center;justify-content:center;touch-action:none;user-select:none;cursor:pointer;-webkit-tap-highlight-color:transparent}'
+    +'#exitCarBtn small{font:800 9px/1 Rajdhani,sans-serif;letter-spacing:.6px;margin-top:1px}';
+  document.head.appendChild(css);
+  const host=document.querySelector('.kbody')||document.body;
+  const btn=document.createElement('button');btn.id='exitCarBtn';btn.type='button';btn.setAttribute('aria-label','Exit or enter car');
+  btn.appendChild(document.createTextNode('EXIT'));
+  const sm=document.createElement('small');sm.textContent='CAR';btn.appendChild(sm);
+  const menu=document.getElementById('kMenuB');
+  if(menu&&menu.parentElement===host)host.insertBefore(btn,menu);else host.appendChild(btn);
+  let lock=0;
+  const fire=()=>{const n=performance.now();if(n-lock<280)return;lock=n;exitCarTap();};
+  btn.addEventListener('pointerup',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();fire();});
+  btn.addEventListener('touchend',e=>{ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}fire();},{passive:false});}
 function footLoop(){try{syncOnFootButtons();}catch(e){}requestAnimationFrame(footLoop);}
-if(document.getElementById('wng')){ensureEmote();syncOnFootButtons();requestAnimationFrame(footLoop);}
+if(document.getElementById('wng')){ensureEmote();ensureExitBtn();syncOnFootButtons();requestAnimationFrame(footLoop);}

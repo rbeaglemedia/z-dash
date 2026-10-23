@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Crew</title>
+<style>
+html,body{margin:0;height:100%;background:#07010f;color:#f4ecff;font-family:system-ui,sans-serif}
+canvas{display:block;width:100%;height:100%}
+#bar{position:fixed;left:0;right:0;bottom:0;display:flex;flex-wrap:wrap;gap:6px;padding:8px;z-index:2;background:linear-gradient(transparent,#07010f 28%)}
+.row{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{flex:1 1 100%;font-size:10px;letter-spacing:.12em;font-weight:700;color:#ffb020}
+button,a.pill{flex:1;appearance:none;border:1px solid #ff4ad8;background:#140818;color:#fff;border-radius:999px;font-weight:700;letter-spacing:.06em;font-size:10px;padding:8px 4px;text-align:center;text-decoration:none}
+button.on{background:#ff4ad8;color:#1a0614}
+button.boy{border-color:#3ee6ff}
+button.boy.on{background:#3ee6ff;color:#041018}
+a.pill{flex:1 1 100%;border-style:dashed}
+</style>
+</head><body>
+<canvas id="cv"></canvas>
+<div id="bar">
+  <div class="row">
+    <button type="button" data-g="idle">IDLE</button>
+    <button type="button" data-g="walk" class="on">WALK</button>
+    <button type="button" data-g="run">RUN</button>
+    <button type="button" data-g="dance">DANCE</button>
+    <button type="button" data-w="girl" class="on">WOMAN</button>
+    <button type="button" data-w="boy" class="boy">MAN</button>
+  </div>
+  <div class="row" id="charDances">
+    <span class="tag">💃 CHARACTER DANCE STYLE</span>
+    <button type="button" data-copt="default" class="on">✨ CLASSIC GROOVE</button>
+    <a class="pill" href="char.html">+ RECORD NEW DANCE IN Z COMPANY ARTS</a>
+  </div>
+  <div class="row" id="petDances">
+    <span class="tag">🐾 PET DANCE STYLE</span>
+    <button type="button" data-popt="default" class="on">✨ SIGNATURE PET DANCE</button>
+  </div>
+</div>
+<script src="shared/crew-state.js"></script>
+<script src="world/crew-data.js"></script>
+<script src="world/crew.js"></script>
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+function fit(){const d=Math.min(2,devicePixelRatio||1);cv.width=innerWidth*d;cv.height=innerHeight*d;ctx.setTransform(d,0,0,d,0,0);}
+addEventListener('resize',fit);fit();
+const qs=location.search;
+if(/[?&]gait=/.test(qs)){const g=(/gait=(\w+)/.exec(qs)||[])[1];if(g)CREWSTATE.setGait(g);}
+if(/[?&]who=boy/.test(qs))CREWSTATE.setWho('boy');
+if(/[?&]who=girl/.test(qs))CREWSTATE.setWho('girl');
+function fillRow(id, options, current, key){
+  const row=document.getElementById(id), tag=row.querySelector('.tag'), pill=row.querySelector('a.pill');
+  row.innerHTML='';
+  row.appendChild(tag);
+  options.forEach(o=>{
+    const b=document.createElement('button');
+    b.type='button';b.dataset[key]=o.id;b.textContent=o.label;
+    if(o.id===current)b.className='on';
+    row.appendChild(b);
+  });
+  if(pill)row.appendChild(pill);
+}
+let paintSig='';
+function paint(){
+  document.querySelectorAll('#bar [data-g],[data-w]').forEach(b=>{
+    if(b.dataset.g)b.classList.toggle('on',b.dataset.g===CREWSTATE.gait);
+    if(b.dataset.w)b.classList.toggle('on',b.dataset.w===CREWSTATE.who);
+  });
+  if(!window.CREW)return;
+  const co=CREW.getCharDanceOptions(), po=CREW.getPetDanceOptions();
+  const sig=JSON.stringify(co)+'|'+CREWSTATE.charDanceOpt+'|'+JSON.stringify(po)+'|'+CREWSTATE.petDanceOpt;
+  if(sig===paintSig){
+    document.querySelectorAll('[data-copt]').forEach(b=>b.classList.toggle('on',b.dataset.copt===CREWSTATE.charDanceOpt));
+    document.querySelectorAll('[data-popt]').forEach(b=>b.classList.toggle('on',b.dataset.popt===CREWSTATE.petDanceOpt));
+    return;
+  }
+  paintSig=sig;
+  fillRow('charDances',co,CREWSTATE.charDanceOpt,'copt');
+  fillRow('petDances',po,CREWSTATE.petDanceOpt,'popt');
+}
+document.getElementById('bar').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.g)CREWSTATE.setGait(b.dataset.g);
+  if(b.dataset.w)CREWSTATE.setWho(b.dataset.w);
+  if(b.dataset.copt)CREW.setCharDanceOpt(b.dataset.copt);
+  if(b.dataset.popt)CREW.setPetDanceOpt(b.dataset.popt);
+  paintSig='';
+  paint();
+});
+paint();
+if(/pets=1|sheet=1/.test(qs))document.getElementById('bar').style.display='none';
+function frame(t){const w=innerWidth,h=innerHeight;CREW.preview(ctx,w,h,t||performance.now());paint();requestAnimationFrame(frame);}
+requestAnimationFrame(frame);
+</script>
+</body></html>

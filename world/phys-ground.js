@@ -10,13 +10,24 @@ function surfaceFeel(kind){
   if(kind==='grass')return{d:1,a:1,g:0.78,b:1,rum:1};
   return{d:1,a:1,g:1,b:1,rum:0};
 }
+// Street Mode hard ceiling: 28 m/s, or 38.6 m/s only while NOS is actually burning under throttle.
+function streetMaxV(T,nz,tu){return(T.streetMaxSpeed||28)*(nz&&tu?1.38:1);}
+function streetCeil(T,nz,tu){if(P.driveMode!=='street'||P.wreck)return;const cap=streetMaxV(T,nz,tu);if(P.v>cap)P.v=cap;}
+function streetThrottle(){return!!((typeof B!=='undefined'&&B.tup)||(typeof K!=='undefined'&&K.KeyE));}
+// cityMove (half-pipe, loop, river banks) runs after groundStep and can add speed. Clamp again once it returns.
+function armStreetCeil(){if(armStreetCeil.ok||typeof cityMove!=='function')return;armStreetCeil.ok=1;
+  const orig=cityMove,wrapped=function(px,pz,py,dt){const r=orig(px,pz,py,dt);streetCeil(TUNE,!P.wreck&&!!P.nosBurn,streetThrottle());return r;};
+  wrapped._street=1;cityMove=wrapped;
+  if(typeof step==='function'&&!step._street){const origStep=step,wrappedStep=function(dt){const r=origStep(dt);if(P.ground||P.driveMode==='street')streetCeil(TUNE,!P.wreck&&!!P.nosBurn,streetThrottle());return r;};wrappedStep._street=1;step=wrappedStep;}}
 function groundStep(dt,T,I,I0,nz,vT,vr,wf,ge,cbank,g,CL){
     let ebDone=false;
     const street=P.driveMode==='street';
+    armStreetCeil();
+    if(street&&!P.wreck)streetCeil(T,nz,!!I.tu);
     const kind=surfaceKindAt(P.x,P.z,P.y);P.surface=kind;const Sf=surfaceFeel(kind);
     if(P.wreck){P.wreck.t+=dt;P.v=Math.max(0,P.v-Math.max(T.wreckFric,P.v*1.2)*dt);if(P.v>2)fxBurst('spark',3);if(P.wreck.t<4)fxBurst('smoke',P.wreck.t<1.5?2:1);if(P.wreck.t>T.wreckCard&&!P.wreck.card){P.wreck.card=1;showWreck(true);}P.ebK=0;P.ebSlip=0;P.donutK=0;P.ebRoll=0;}
     else{const ofr=offRoadK();P.offK=ofr;
-      if(I.eb||(P.ebK||0)>0.001||(P.donutK||0)>0.001||Math.abs(P.ebSlip||0)>0.002||Math.abs(P.ebRoll||0)>0.002){ebGround(dt,T,I,ofr,vT);ebDone=true;}
+      if(I.eb||(P.ebK||0)>0.001||(P.donutK||0)>0.001||Math.abs(P.ebSlip||0)>0.002||Math.abs(P.ebRoll||0)>0.002){ebGround(dt,T,I,ofr,vT,nz);ebDone=true;}
       else if(street){const streetMax=T.streetMaxSpeed||28,thrCurve=I.tu?Math.pow(clamp(P.thr,0,1),1.35):0,vStreet=streetMax*(nz&&I.tu?1.38:thrCurve);
         if(I.tu&&vStreet>P.v){const accRate=(T.streetAccel||6.4)*ofr*Sf.a*(0.55+0.45*(1-clamp(P.v/streetMax,0,1)));P.v+=accRate*dt;}
         else{const coastDecel=(T.streetCoastDecel||4.6)+P.v*0.08+T.groundFric*(ofr<1?1+2*(1-ofr):1)*Sf.d;P.v=Math.max(0,P.v-coastDecel*dt);}
@@ -31,6 +42,7 @@ function groundStep(dt,T,I,I0,nz,vT,vr,wf,ge,cbank,g,CL){
       else{P.v=clamp(P.v,0,T.maxSpeed*T.nosBoost*1.1);P.gam=0;P.yaw+=I.lr*0.6*TUNE.groundSteer*dt*Math.min(1,P.v/5)*yM;P.hd=P.yaw;if(P.ebRoll){P.ebRoll*=Math.max(0,1-10*dt);if(Math.abs(P.ebRoll)<1e-3)P.ebRoll=0;}}}
     if(Sf.rum&&P.v>4){const amp=22*Math.min(1,P.v/12);P.susV=(P.susV||0)+Math.sin((P.simT||0)*90)*amp*dt;}
     wingScrape(dt,I);
+    if(street&&!P.wreck)streetCeil(T,nz,!!I.tu);
     const rr=P.v>=T.rotateSpeed&&P.wings;if(rr&&!P.rotOK)toast('PULL UP!');P.rotOK=rr;
     if(rr&&!P.wreck&&!(I.climb<0)&&g*CL(P.pitch)*(vr<1?vr*vr+T.floatLift*vr*(1-vr):vr*vr)*wf*ge*cbank>g){P.ground=false;P.y=P.gy+0.001;P.toT=P.simT;P.slowLaunch=P.v<T.roughSpeed;P.lift0=1;ebAirHandoff();toast(P.slowLaunch?'TOO SLOW!':'LIFT OFF!');}
 }
@@ -86,7 +98,7 @@ function drawSkids(){const life=TUNE.eBrakeSkidLife||3.6,now=P.simT||0;if(!SKID.
       else{ctx.strokeStyle=`rgba(255,120,180,${(0.5*vis).toFixed(3)})`;ctx.lineWidth=w*2.2;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();
         ctx.strokeStyle=`rgba(244,244,250,${(0.95*vis).toFixed(3)})`;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();}}}
   ctx.restore();}
-function ebGround(dt,T,I,ofr,vT){
+function ebGround(dt,T,I,ofr,vT,nz){
   const want=!!I.eb;
   P.ebK=ebDamp(P.ebK||0,want?1:0,want?T.eBrakeIn:T.eBrakeOut,dt);
   P.donutK=ebDamp(P.donutK||0,want&&I.tu?1:0,0.16,dt);
@@ -96,12 +108,16 @@ function ebGround(dt,T,I,ofr,vT){
   const street=P.driveMode==='street';
   const decel=lerp(street?(T.streetEBrakeDecel||10.5):T.eBrakeDecel,street?(T.streetEBrakePivotDecel||13.5):T.eBrakePivotDecel,piv);
   const fric=T.groundFric*(ofr<1?1+2*(1-ofr):1),grav=Math.sin(P.pitch)*T.gravityK;
-  const normal=(vT-P.v)*(vT>P.v?T.groundAccel*ofr:T.momentum)-grav-fric-((!want&&I.brk)?T.groundBrake:0);
+  const streetMax=(T.streetMaxSpeed||28)*((P.surface==='grass')?0.78:1);
+  const vTarget=street?(nz&&I.tu?streetMax*1.38:streetMax*Math.pow(clamp(P.thr,0,1),1.35)):vT;
+  const drive=P.v<vTarget?(T.streetAccel||6.4)*ofr*(0.55+0.45*(1-clamp(P.v/(T.streetMaxSpeed||28),0,1))):-((T.streetCoastDecel||4.6)+P.v*0.08);
+  const normal=street?(drive-grav-fric-((!want&&I.brk)?(T.streetBrake||15.5):0)):((vT-P.v)*(vT>P.v?T.groundAccel*ofr:T.momentum)-grav-fric-((!want&&I.brk)?T.groundBrake:0));
   const coast=-grav-fric-decel;
   const donutV=street?(T.streetEBrakeDonutV||12.5):T.eBrakeDonutV;
   const donut=P.v<donutV?(donutV-P.v)*T.eBrakeDonutSpool:0;
   const acc=lerp(normal,lerp(coast,donut,dk),Math.max(eb,dk));
-  P.v=clamp(P.v+acc*dt,0,T.maxSpeed*T.nosBoost*1.1);P.gam=0;
+  let vNext=P.v+acc*dt;if(street&&acc>0&&vNext>vTarget)vNext=vTarget;
+  P.v=clamp(vNext,0,street?streetMax*(nz&&I.tu?1.38:1):T.maxSpeed*T.nosBoost*1.1);P.gam=0;
   const base=Math.min(1,P.v/5),scale=base+(Math.max(base,T.eBrakePivotYaw)-base)*piv;
   const yawRate=I.lr*0.6*T.groundSteer*scale*lerp(1,T.eBrakeSteer,eb);
   P.hd=(P.hd||0)+yawRate*dt;
@@ -120,3 +136,4 @@ function ebGround(dt,T,I,ofr,vT){
   P.ebRoll=ebDamp(P.ebRoll||0,-sign*roll*D*Math.min(1,Math.abs(I.lr))*eb*(0.45+0.55*Math.min(1,mph/32)),0.1,dt);
   ebMarks(dt);}
 function showWreck(on){const e=document.getElementById('kWreck');if(e)e.classList.toggle('hidden',!on);}
+setTimeout(armStreetCeil,0);

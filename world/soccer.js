@@ -15,8 +15,8 @@ const SOCCER = (() => {
     x0: 0, x1: 0, z0: 0, z1: 0,
     goalW: 0, goalH: 0, goalD: 0, mouth: 0
   };
-  // East of the city limit, on flat grass. Probed clear of walls, ramps, and water
-  // from x 640–960, z 140–460. The spur is the only pavement, and it stops short.
+  // Dome stadium east of the city limit. The z=300 boulevard runs into the west
+  // tunnel and opens on the center line. The shell is an ellipse around the pitch.
   F.x0 = F.cx - F.hw; F.x1 = F.cx + F.hw;
   F.z0 = F.cz - F.hl; F.z1 = F.cz + F.hl;
 
@@ -37,7 +37,7 @@ const SOCCER = (() => {
   const prev = {x: 0, y: 0, z: 0, yaw: 0, ok: false};
   const car = {x: 0, y: 0, z: 0, yaw: 0, vx: 0, vy: 0, vz: 0, yawRate: 0};
 
-  const LINES = new Float32Array(220 * 7);
+  const LINES = new Float32Array(1600 * 7);
   let nLines = 0;
   const A = [0, 0, 0], B = [0, 0, 0];
   const CX = new Float32Array(8), CY = new Float32Array(8), CZ = new Float32Array(8);
@@ -63,9 +63,9 @@ const SOCCER = (() => {
   function layout() {
     nLines = 0;
     const d = S.R * 2;
-    F.goalW = Math.min((F.x1 - F.x0) * 0.46, d * 4.6);
-    F.goalH = d * 2.2;
-    F.goalD = d * 1.55;
+    F.goalW = T.goalW || Math.min((F.x1 - F.x0) * 0.46, d * 8.5);
+    F.goalH = T.goalH || d * 3.8;
+    F.goalD = T.goalD || d * 3.2;
     F.mouth = F.goalW * 0.5 - 0.4;
     const x0 = F.x0, x1 = F.x1, z0 = F.z0, z1 = F.z1, cx = F.cx, cz = F.cz;
     add(x0, YL, z0, x1, YL, z0, 0);
@@ -73,30 +73,35 @@ const SOCCER = (() => {
     add(x1, YL, z1, x0, YL, z1, 0);
     add(x0, YL, z1, x0, YL, z0, 0);
     add(x0, YL, cz, x1, YL, cz, 1);
-    const cr = Math.max(8, d * 2.8);
-    arc(cx, cz, cr, 0, Math.PI * 2, 28, 1);
-    add(cx - 0.7, YL, cz, cx + 0.7, YL, cz, 1);
-    add(cx, YL, cz - 0.7, cx, YL, cz + 0.7, 1);
-    const pbW = Math.min((x1 - x0) * 0.62, F.goalW + d * 3.2);
-    const pbD = Math.min((z1 - z0) * 0.22, Math.max(14, d * 4.4));
-    const gbW = Math.min(pbW - 4, F.goalW + d * 1.4);
-    const gbD = Math.min(pbD * 0.42, Math.max(6, d * 1.8));
+    const cr = Math.min(F.hw * 0.42, Math.max(18, d * 2.8));
+    arc(cx, cz, cr, 0, Math.PI * 2, 32, 1);
+    add(cx - 0.9, YL, cz, cx + 0.9, YL, cz, 1);
+    add(cx, YL, cz - 0.9, cx, YL, cz + 0.9, 1);
+    const pbW = Math.min((x1 - x0) * 0.62, Math.max(F.goalW * 1.7, F.goalW + d * 3.2));
+    const pbD = Math.min((z1 - z0) * 0.22, Math.max(F.goalD * 2.5, d * 4.4));
+    const gbW = Math.min(pbW - 6, F.goalW + 6);
+    const gbD = Math.min(pbD * 0.46, Math.max(F.goalD, d * 1.8));
     box3(cx, pbW, z0, pbD, 1);
     box3(cx, pbW, z1, -pbD, 1);
     box3(cx, gbW, z0, gbD, 1);
     box3(cx, gbW, z1, -gbD, 1);
-    const spot = Math.min(pbD - 2, Math.max(9, d * 3.2));
+    const spot = Math.min(pbD * 0.72, Math.max(16, d * 3.2));
     spotAt(cx, z0 + spot);
     spotAt(cx, z1 - spot);
-    arc(cx, z0 + spot, Math.max(4, d * 1.5), 0.55, Math.PI - 0.55, 10, 1);
-    arc(cx, z1 - spot, Math.max(4, d * 1.5), Math.PI + 0.55, Math.PI * 2 - 0.55, 10, 1);
-    const ca = Math.min(2.2, d * 0.55);
-    arc(x0, z0, ca, 0, Math.PI * 0.5, 5, 1);
-    arc(x1, z0, ca, Math.PI * 0.5, Math.PI, 5, 1);
-    arc(x1, z1, ca, Math.PI, Math.PI * 1.5, 5, 1);
-    arc(x0, z1, ca, Math.PI * 1.5, Math.PI * 2, 5, 1);
+    const sr = Math.max(6, d * 1.8);
+    arc(cx, z0 + spot, sr, 0.55, Math.PI - 0.55, 12, 1);
+    arc(cx, z1 - spot, sr, Math.PI + 0.55, Math.PI * 2 - 0.55, 12, 1);
+    const ca = Math.min(F.hw * 0.08, 6);
+    arc(x0, z0, ca, 0, Math.PI * 0.5, 6, 1);
+    arc(x1, z0, ca, Math.PI * 0.5, Math.PI, 6, 1);
+    arc(x1, z1, ca, Math.PI, Math.PI * 1.5, 6, 1);
+    arc(x0, z1, ca, Math.PI * 1.5, Math.PI * 2, 6, 1);
     goalGeom(z0, -1, 2);
     goalGeom(z1, 1, 3);
+    stadiumGeom();
+    goalN.x = cx; goalN.z = z1; goalN.y = F.goalH * 0.5; goalN.rad = 24;
+    goalS.x = cx; goalS.z = z0; goalS.y = F.goalH * 0.5; goalS.rad = 24;
+    F.nLines = nLines;
     S.y = S.R;
   }
   function box3(cx, w, zLine, depth, g) {
@@ -121,17 +126,130 @@ const SOCCER = (() => {
     add(xL, h * 0.86, zB, xR, h * 0.86, zB, g);
     add(xL, h, zPlane, xL, h * 0.86, zB, g);
     add(xR, h, zPlane, xR, h * 0.86, zB, g);
-    const nets = 4;
+    const nets = 8;
     for (let i = 1; i < nets; i++) {
       const t = i / nets;
       const x = xL + (xR - xL) * t;
-      add(x, 0.15, zPlane, x, 0.15, zB, g);
-      add(x, h * 0.45, zPlane, x, h * 0.4, zB, g);
+      add(x, 0.2, zPlane, x, 0.2, zB, g);
+      add(x, h * 0.48, zPlane, x, h * 0.42, zB, g);
+      add(x, h * 0.9, zPlane, x, h * 0.78, zB, g);
     }
-    for (let i = 1; i <= 3; i++) {
-      const y = h * i / 4;
-      add(xL, y, zPlane, xL, y * 0.86, zB, g);
-      add(xR, y, zPlane, xR, y * 0.86, zB, g);
+    const bands = 5;
+    for (let i = 1; i <= bands; i++) {
+      const y = h * i / (bands + 1);
+      const yb = y * 0.86;
+      add(xL, yb, zB, xR, yb, zB, g);
+      add(xL, y, zPlane, xL, yb, zB, g);
+      add(xR, y, zPlane, xR, yb, zB, g);
+    }
+    const ribs = 6;
+    for (let i = 1; i < ribs; i++) {
+      const t = i / ribs;
+      const x = xL + (xR - xL) * t;
+      add(x, h, zPlane, x, h * 0.86, zB, g);
+    }
+  }
+  function ellipse(cx, cz, rx, rz, y, a0, a1, n, g) {
+    let px = cx + Math.cos(a0) * rx, pz = cz + Math.sin(a0) * rz;
+    for (let i = 1; i <= n; i++) {
+      const a = a0 + (a1 - a0) * i / n;
+      const x = cx + Math.cos(a) * rx, z = cz + Math.sin(a) * rz;
+      add(px, y, pz, x, y, z, g);
+      px = x; pz = z;
+    }
+  }
+  function ring(rx, rz, y, g, gap) {
+    const n = rx > 24 ? 40 : 18;
+    if (gap > 0) ellipse(F.cx, F.cz, rx, rz, y, Math.PI + gap, Math.PI * 3 - gap, n, g);
+    else ellipse(F.cx, F.cz, rx, rz, y, 0, Math.PI * 2, n, g);
+  }
+  function domeXYZ(phi, a, rx, rz, H, out) {
+    const c = Math.cos(phi);
+    out[0] = F.cx + rx * c * Math.cos(a);
+    out[1] = H * Math.sin(phi);
+    out[2] = F.cz + rz * c * Math.sin(a);
+  }
+  // Bowl tiers, geodesic ribs, latitude rings, oculus, and the west tunnel arches.
+  // Groups: 4/9 bowl, 5 ribs, 6 latitudes, 7 oculus, 8 tunnel. Built once.
+  function stadiumGeom() {
+    const rx = T.domeRx, rz = T.domeRz, H = T.domeH;
+    const gap = Math.asin(14 / rz);
+    const s16 = Math.cos(Math.asin(16 / H));
+    ring(rx, rz, 0, 4, gap);
+    ring(rx * 0.975, rz * 0.975, 8, 9, gap);
+    ring(rx * s16, rz * s16, 16, 4, 0);
+    const nR = 24;
+    for (let i = 0; i < nR; i++) {
+      const a = i / nR * Math.PI * 2;
+      const dw = Math.atan2(Math.sin(a - Math.PI), Math.cos(a - Math.PI));
+      if (Math.abs(dw) < gap) continue;
+      const c = Math.cos(a), s = Math.sin(a);
+      const x0 = F.cx + rx * c, z0 = F.cz + rz * s;
+      const x8 = F.cx + rx * 0.975 * c, z8 = F.cz + rz * 0.975 * s;
+      const x16 = F.cx + rx * s16 * c, z16 = F.cz + rz * s16 * s;
+      add(x0, 0, z0, x8, 8, z8, 9);
+      add(x8, 8, z8, x16, 16, z16, 9);
+    }
+    const nM = 12, nP = 14;
+    const phi0 = Math.asin(16 / H), phi1 = Math.PI - phi0;
+    for (let m = 0; m < nM; m++) {
+      const a = m / nM * Math.PI * 2;
+      domeXYZ(phi0, a, rx, rz, H, A);
+      let px = A[0], py = A[1], pz = A[2];
+      for (let i = 1; i <= nP; i++) {
+        domeXYZ(phi0 + (phi1 - phi0) * i / nP, a, rx, rz, H, A);
+        add(px, py, pz, A[0], A[1], A[2], 5);
+        px = A[0]; py = A[1]; pz = A[2];
+      }
+    }
+    const nD = 8;
+    for (let m = 0; m < nM; m++) {
+      const a0 = m / nM * Math.PI * 2, a1 = (m + 1) / nM * Math.PI * 2;
+      for (let i = 0; i < nD; i++) {
+        domeXYZ(phi0 + (phi1 - phi0) * i / nD, a0, rx, rz, H, A);
+        domeXYZ(phi0 + (phi1 - phi0) * (i + 1) / nD, a1, rx, rz, H, B);
+        add(A[0], A[1], A[2], B[0], B[1], B[2], 5);
+      }
+    }
+    const lats = [26, 36, 44];
+    for (let i = 0; i < lats.length; i++) {
+      const y = lats[i], sc = Math.cos(Math.asin(y / H));
+      ring(rx * sc, rz * sc, y, 6, 0);
+    }
+    ring(9, 12, H, 7, 0);
+    const tx0 = T.tunnelX0, tx1 = T.tunnelX1, tz0 = T.tunnelZ0, tz1 = T.tunnelZ1, th = T.tunnelH;
+    for (let x = tx0; x <= tx1 + 0.01; x += 12) {
+      let py = 0, pz = tz0;
+      for (let i = 1; i <= 8; i++) {
+        const t = i / 8, z = tz0 + (tz1 - tz0) * t, y = Math.sin(Math.PI * t) * th;
+        add(x, py, pz, x, y, z, 8);
+        py = y; pz = z;
+      }
+    }
+    add(tx0, th, tz0, tx1, th, tz0, 8);
+    add(tx0, th, tz1, tx1, th, tz1, 8);
+    add(tx0, th * 0.55, T.roadZ, tx1, th * 0.55, T.roadZ, 8);
+    for (let x = T.roadX0 + 4; x < tx1; x += 16) add(x, 0.05, T.roadZ, Math.min(tx1, x + 7), 0.05, T.roadZ, 8);
+  }
+  // Shell height above (x, z). Outside the ellipse there is no roof.
+  function domeHAt(x, z) {
+    const u = (x - F.cx) / T.domeRx, v = (z - F.cz) / T.domeRz;
+    const r2 = u * u + v * v;
+    if (r2 >= 1) return 1e9;
+    return T.domeH * Math.sqrt(1 - r2);
+  }
+  function domeRoof() {
+    const ceil = domeHAt(S.x, S.z);
+    if (!(ceil > S.R + 0.2) || S.y + S.R <= ceil) return;
+    const rx = T.domeRx, rz = T.domeRz, H = T.domeH, y = Math.max(S.y, 0.4);
+    let nx = (S.x - F.cx) / (rx * rx), ny = y / (H * H), nz = (S.z - F.cz) / (rz * rz);
+    const m = Math.hypot(nx, ny, nz) || 1;
+    nx /= m; ny /= m; nz /= m;
+    S.y = ceil - S.R;
+    const vn = S.vx * nx + S.vy * ny + S.vz * nz;
+    if (vn > 0) {
+      const k = (1 + T.bounciness) * vn;
+      S.vx -= nx * k; S.vy -= ny * k; S.vz -= nz * k;
     }
   }
 
@@ -222,6 +340,7 @@ const SOCCER = (() => {
     else if (S.x > F.x1 - R) { S.x = F.x1 - R; if (S.vx > 0) S.vx = -S.vx * e; }
     endWall(-1, e);
     endWall(1, e);
+    domeRoof();
   }
   function endWall(sign, e) {
     const R = S.R;
@@ -398,6 +517,7 @@ const SOCCER = (() => {
       if (LINES[o + 6] !== g) continue;
       seg(LINES[o], LINES[o + 1], LINES[o + 2], LINES[o + 3], LINES[o + 4], LINES[o + 5]);
     }
+    ctx.shadowBlur = 0;
     ctx.strokeStyle = color;
     ctx.lineWidth = width;
     ctx.lineJoin = 'round';
@@ -421,8 +541,8 @@ const SOCCER = (() => {
     }
     return m;
   }
-  function fillQuad(x0, z0, x1, z1, x2, z2, x3, z3, y, color) {
-    const c0 = camS(x0, y, z0), c1 = camS(x1, y, z1), c2 = camS(x2, y, z2), c3 = camS(x3, y, z3);
+  function fillFace(x0, y0, z0, x1, y1, z1, x2, y2, z2, x3, y3, z3, color) {
+    const c0 = camS(x0, y0, z0), c1 = camS(x1, y1, z1), c2 = camS(x2, y2, z2), c3 = camS(x3, y3, z3);
     CX[0] = c0[0]; CY[0] = c0[1]; CZ[0] = c0[2];
     CX[1] = c1[0]; CY[1] = c1[1]; CZ[1] = c1[2];
     CX[2] = c2[0]; CY[2] = c2[1]; CZ[2] = c2[2];
@@ -439,6 +559,9 @@ const SOCCER = (() => {
     ctx.fillStyle = color;
     ctx.fill();
   }
+  function fillQuad(x0, z0, x1, z1, x2, z2, x3, z3, y, color) {
+    fillFace(x0, y, z0, x1, y, z1, x2, y, z2, x3, y, z3, color);
+  }
   function drawRoad() {
     const x0 = T.roadX0, x1 = T.roadX1, z = T.roadZ, w = T.roadHalfW;
     if (!(x1 > x0) || !(w > 0)) return;
@@ -453,15 +576,34 @@ const SOCCER = (() => {
     ctx.stroke();
   }
   function paved(x, z) {
-    return x >= T.roadX0 && x <= T.roadX1 && Math.abs(z - T.roadZ) <= T.roadHalfW;
+    const onRoad = x >= T.roadX0 && x <= F.x0 && Math.abs(z - T.roadZ) <= T.roadHalfW;
+    const onPitch = x >= F.x0 - 8 && x <= F.x1 + 8 && z >= F.z0 - 14 && z <= F.z1 + 14;
+    return onRoad || onPitch;
+  }
+  function drawTunnelFaces() {
+    const x0 = T.tunnelX0, x1 = T.tunnelX1, z0 = T.tunnelZ0, z1 = T.tunnelZ1, h = T.tunnelH;
+    for (let x = x0; x < x1 - 0.1; x += 12) {
+      const b = Math.min(x1, x + 12);
+      fillFace(x, 0, z0, b, 0, z0, b, h, z0, x, h, z0, '#090612');
+      fillFace(x, 0, z1, x, h, z1, b, h, z1, b, 0, z1, '#090612');
+      fillQuad(x, z0, b, z0, b, z1, x, z1, h, '#140a1c');
+    }
   }
   function drawPitch() {
     if (typeof cam === 'undefined') return;
     const dx = F.cx - cam.x, dz = F.cz - cam.z;
-    if (dx * dx + dz * dz > 1050 * 1050) return;
+    if (dx * dx + dz * dz > 1400 * 1400) return;
     drawRoad();
-    const y = 0.035;
-    fillQuad(F.x0, F.z0, F.x1, F.z0, F.x1, F.z1, F.x0, F.z1, y, '#07160f');
+    fillQuad(F.x0 - 14, F.z0 - 14, F.x1 + 14, F.z0 - 14, F.x1 + 14, F.z1 + 14, F.x0 - 14, F.z1 + 14, 0.025, '#0a0612');
+    fillQuad(F.x0, F.z0, F.x1, F.z0, F.x1, F.z1, F.x0, F.z1, 0.04, '#07160f');
+    drawTunnelFaces();
+    ctx.shadowBlur = 0;
+    strokeGroup(4, '#3ee6ff', 2.1);
+    strokeGroup(9, '#ff4fd8', 1.8);
+    strokeGroup(5, 'rgba(125,255,242,.9)', 1.45);
+    strokeGroup(6, 'rgba(244,255,251,.75)', 1.25);
+    strokeGroup(7, '#ffe14d', 2.3);
+    strokeGroup(8, '#7dfff2', 2.15);
     strokeGroup(0, '#3ee6ff', 2.4);
     strokeGroup(1, 'rgba(236,255,248,.82)', 1.35);
   }
@@ -519,8 +661,8 @@ const SOCCER = (() => {
   let scoreW = 196;
   function drawGoalNorth() { strokeGroup(3, '#7dfff2', 2.6); }
   function drawGoalSouth() { strokeGroup(2, '#ff4fd8', 2.6); }
-  const goalN = {x: F.cx, y: 3, z: F.z1, rad: 12, draw: drawGoalNorth};
-  const goalS = {x: F.cx, y: 3, z: F.z0, rad: 12, draw: drawGoalSouth};
+  const goalN = {x: F.cx, y: 6.25, z: F.z1, rad: 24, draw: drawGoalNorth};
+  const goalS = {x: F.cx, y: 6.25, z: F.z0, rad: 24, draw: drawGoalSouth};
   function drawBallItem() {
     if (ballCloser()) return;
     paintBall();
@@ -565,8 +707,17 @@ const SOCCER = (() => {
     ctx.restore();
   }
 
+  function liveTunnel() {
+    if (typeof CITY === 'undefined' || !CITY.live) return;
+    const x0 = T.tunnelX0, x1 = T.tunnelWallX1, h = T.tunnelH;
+    const zL0 = T.tunnelZ0 - 4, zL1 = T.tunnelZ0, zR0 = T.tunnelZ1, zR1 = T.tunnelZ1 + 4;
+    CITY.live({x0: x0, x1: x1, z0: zL0, z1: zL1, y0: 0, y1: h});
+    CITY.live({x0: x0, x1: x1, z0: zR0, z1: zR1, y0: 0, y1: h});
+    CITY.live({x0: x0, x1: x1, z0: zL0, z1: zR1, y0: h, y1: T.tunnelRoof});
+  }
   function install() {
     layout();
+    liveTunnel();
     if (typeof CITY !== 'undefined' && CITY.DYN) {
       ballItem = {x: S.x, y: S.y, z: S.z, rad: S.R + 1, draw: drawBallItem};
       CITY.DYN.push(ballItem, goalN, goalS);
