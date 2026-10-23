@@ -192,6 +192,11 @@ html.ipad-mode #kid[data-tab="garage"] .kmenub{
   height:56px;
 }
 @media (orientation: portrait){
+  html.ipad-mode #kid[data-tab="garage"] .kgz{
+    top:max(12px, env(safe-area-inset-top));
+    bottom:auto;
+    left:max(12px, env(safe-area-inset-left));
+  }
   html.ipad-mode #kid[data-tab="garage"] .kgarage{
     top:48%;
     left:0;
@@ -227,6 +232,8 @@ html.ipad-mode #np-studio .np-colors button{
   flex:0 0 36px;
   width:36px;
   height:36px;
+  min-height:36px;
+  padding:0;
 }
 html.ipad-mode #np-studio > .np-pauseb{
   top:max(10px, env(safe-area-inset-top));

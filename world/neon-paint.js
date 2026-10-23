@@ -302,11 +302,10 @@
       const it = store.items[i];
       const eq = it.id === store.activeId;
       const on = it.id === editingVinylId ? ' on' : '';
-      const mark = eq ? ' ★ EQUIPPED' : '';
       html += '<span class="np-vchip' + (eq ? ' eq' : '') + '">';
-      html += '<button type="button" class="' + on.trim() + '" data-vinyl-act="edit" data-vinyl-id="' + escHtml(it.id) + '">' + escHtml(it.name + mark) + '</button>';
-      html += '<button type="button" data-vinyl-act="equip" data-vinyl-id="' + escHtml(it.id) + '">' + (eq ? 'UNEQUIP' : 'EQUIP') + '</button>';
-      html += '<button type="button" data-vinyl-act="del" data-vinyl-id="' + escHtml(it.id) + '" aria-label="Remove vinyl">✕</button>';
+      html += '<button type="button" class="' + on.trim() + '" data-vinyl-act="edit" data-vinyl-id="' + escHtml(it.id) + '" aria-label="Edit ' + escHtml(it.name) + '">' + escHtml(it.name) + (eq ? ' ★' : '') + '</button>';
+      html += '<button type="button" data-vinyl-act="equip" data-vinyl-id="' + escHtml(it.id) + '" aria-label="' + (eq ? 'Unequip ' : 'Equip ') + escHtml(it.name) + '">' + (eq ? 'UNEQUIP' : 'EQUIP') + '</button>';
+      html += '<button type="button" data-vinyl-act="del" data-vinyl-id="' + escHtml(it.id) + '" aria-label="Remove ' + escHtml(it.name) + '">✕</button>';
       html += '</span>';
     }
     bar.innerHTML = html;
@@ -1494,24 +1493,24 @@
     s.textContent = [
       '#np-studio{position:fixed;inset:0;z-index:80;color:#fff;font-family:Orbitron,sans-serif;background:#07010f;display:flex;flex-direction:column}',
       '#np-studio *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}',
-      '.np-top{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px 58px 4px 6px;flex:none}',
-      '.np-top h1{margin:0;font:900 12px Orbitron,sans-serif;letter-spacing:.6px;color:#fff;text-shadow:0 0 8px #ff4fd8}',
-      '.np-status{margin-left:auto;font:700 9px Orbitron,sans-serif;color:#ffe14d}',
-      '.np-top button,.np-tools button{font:800 8px Orbitron,sans-serif;letter-spacing:.3px;color:#fff;background:rgba(62,230,255,.08);border:1.5px solid rgba(62,230,255,.55);border-radius:999px;padding:4px 7px;cursor:pointer}',
+      '.np-top{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;padding:8px 64px 8px 8px;flex:none;overflow-x:auto}',
+      '.np-top h1{margin:0;font:900 13px Orbitron,sans-serif;letter-spacing:.4px;color:#fff;text-shadow:0 0 8px #ff4fd8;flex:none}',
+      '.np-status{margin-left:auto;font:700 11px Orbitron,sans-serif;color:#ffe14d;flex:none}',
+      '.np-top button,.np-tools button{font:800 11px Orbitron,sans-serif;letter-spacing:.2px;color:#fff;background:rgba(62,230,255,.08);border:1.5px solid rgba(62,230,255,.55);border-radius:999px;padding:6px 8px;min-height:32px;cursor:pointer}',
       '.np-top button.on,.np-tools button.on{background:#ffe14d;color:#1a0633;border-color:#fff;box-shadow:0 0 8px #ffe14d}',
-      '.np-main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 228px}',
+      '.np-main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,260px)}',
       '.np-stage{min-width:0;min-height:0;position:relative;background:radial-gradient(circle at 50% 70%,#1a0a2e,#05020c 70%)}',
       '.np-stage canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}',
       '.np-stage.spin canvas{cursor:grab}',
-      '.np-tools{overflow:auto;min-height:0;padding:6px;display:flex;flex-direction:column;gap:5px;border-left:1px solid rgba(62,230,255,.35);background:rgba(8,2,18,.72)}',
-      '.np-row{display:flex;flex-wrap:wrap;gap:4px}',
-      '.np-row button{flex:1;min-width:0}',
-      '.np-colors button{flex:0 0 24px;width:24px;height:24px;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,.3)}',
-      '.np-stamps button{flex:1 0 21%;font-size:14px;padding:3px 0;border-radius:10px}',
-      '.np-save{background:linear-gradient(90deg,#ffe14d,#ff9a2e);color:#1a0633;border:0;font:900 12px Orbitron,sans-serif;border-radius:12px;padding:8px;letter-spacing:1px;cursor:pointer}',
-      '.np-lab{font:700 8px Orbitron,sans-serif;letter-spacing:1px;color:#3ee6ff;margin:0}',
+      '.np-tools{overflow:auto;min-height:0;padding:8px;display:flex;flex-direction:column;gap:8px;border-left:1px solid rgba(62,230,255,.35);background:rgba(8,2,18,.72)}',
+      '.np-row{display:flex;flex-wrap:wrap;gap:8px}',
+      '.np-row button{flex:1 1 30%;min-width:0;white-space:nowrap}',
+      '.np-colors button{flex:0 0 28px;width:28px;height:28px;min-height:28px;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,.3)}',
+      '.np-stamps button{flex:1 0 18%;font-size:16px;padding:4px 0;border-radius:10px;min-height:36px}',
+      '#np-studio .np-save{background:linear-gradient(90deg,#ffe14d,#ff9a2e);color:#1a0633;border:0;font:900 13px Orbitron,sans-serif;border-radius:12px;padding:8px 10px;letter-spacing:.6px;cursor:pointer;white-space:normal}',
+      '.np-lab{font:700 10px Orbitron,sans-serif;letter-spacing:1px;color:#3ee6ff;margin:0}',
       '.np-zoom{width:100%;accent-color:#ff4fd8}',
-      '.np-modes{display:flex;gap:6px;padding:6px 58px 0 6px;flex:none}',
+      '.np-modes{display:flex;gap:8px;padding:8px 64px 8px 8px;flex:none}',
       '#np-studio>.np-pauseb{position:absolute;z-index:6;top:2px;right:4px;width:48px;height:48px;padding:0;border:0;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center}',
       '#np-studio>.np-pauseb span{width:38px;height:38px;line-height:34px;font:900 17px sans-serif;text-align:center;border-radius:11px;background:rgba(8,2,15,.45);border:1.5px solid rgba(62,230,255,.55);color:#fff}',
       '#np-studio>.np-pauseb.np-open{display:none}',
@@ -1522,10 +1521,10 @@
       '.np-modes button{flex:1;font:900 11px Orbitron,sans-serif;letter-spacing:.4px;padding:8px 6px;border-radius:12px;color:#fff;background:rgba(22,11,40,.9);border:1.5px solid rgba(255,79,216,.65);cursor:pointer}',
       '.np-modes button.on{background:#ff4fd8;color:#1a0633;border-color:#fff;box-shadow:0 0 14px #ff4fd8}',
       '.np-off{display:none !important}',
-      '#np-studio .np-vinyls{display:flex;flex-direction:column;gap:4px}',
-      '#np-studio .np-vchip{display:flex;gap:4px;align-items:center}',
-      '#np-studio .np-vinyls button{font-size:11px;padding:8px;min-height:36px;border-radius:10px}',
-      '#np-studio .np-vchip button[data-vinyl-act="edit"]{flex:1;text-align:left}',
+      '#np-studio .np-vinyls{display:flex;flex-direction:column;gap:8px}',
+      '#np-studio .np-vchip{display:flex;flex-wrap:wrap;gap:8px;align-items:center}',
+      '#np-studio .np-vinyls button{font-size:12px;padding:8px;min-height:36px;border-radius:10px}',
+      '#np-studio .np-vchip button[data-vinyl-act="edit"]{flex:1 1 100%;text-align:left;white-space:normal}',
       '#np-studio .np-vchip button[data-vinyl-act="equip"],#np-studio .np-vchip button[data-vinyl-act="del"]{flex:0 0 auto}',
       '#np-studio .np-vchip.eq button[data-vinyl-act="edit"]{border-color:#ffe14d;box-shadow:0 0 8px #ffe14d}',
       '#np-studio #vinylNameInp{width:100%;min-height:42px;font:800 14px Orbitron,sans-serif;color:#fff;background:#120818;border:2px solid #ffe14d;border-radius:12px;padding:8px 10px;letter-spacing:.3px}'
@@ -1545,8 +1544,8 @@
       return '<button type="button" data-stamp="' + s[0] + '">' + s[1] + '</button>';
     }).join('');
     return '<div class="np-modes">' +
-      '<button type="button" data-canvas-mode="car">🚗 3D CAR PAINT (370Z)</button>' +
-      '<button type="button" data-canvas-mode="wall">🧱 Z COMPANY ARTS GRAFFITI WALL (BUILDING SIGN)</button></div>' +
+      '<button type="button" data-canvas-mode="car" aria-label="3D car paint">🚗 CAR PAINT</button>' +
+      '<button type="button" data-canvas-mode="wall" aria-label="Z Company Arts graffiti wall">🧱 GRAFFITI WALL</button></div>' +
       '<div class="np-top" data-panel="car"><h1>NEON DRAW</h1>' +
       '<button type="button" data-mode="spin" class="on">🔄 SPIN</button>' +
       '<button type="button" data-mode="draw">✏️ DRAW</button>' +
@@ -1565,7 +1564,7 @@
       '<div class="np-tools" data-panel="car">' +
       '<p class="np-lab">VINYLS</p><div class="np-vinyls" id="npVinylBar"></div>' +
       '<p class="np-lab">VINYL NAME</p>' +
-      '<input id="vinylNameInp" type="text" maxlength="28" autocomplete="off" placeholder="NAME YOUR VINYL (e.g. CYBER LIGHTNING)">' +
+      '<input id="vinylNameInp" type="text" maxlength="28" autocomplete="off" placeholder="NAME YOUR VINYL" aria-label="Vinyl name">' +
       '<button type="button" class="np-save" data-act="save">SAVE</button>' +
       '<p class="np-lab">COLOR</p><div class="np-row np-colors">' + colors + '</div>' +
       '<p class="np-lab">BRUSH</p><div class="np-row">' +
@@ -1607,7 +1606,7 @@
       '<div class="np-row"><button type="button" data-act="wall-undo">↶ UNDO</button>' +
       '<button type="button" data-act="wall-clear">🗑️ CLEAR WALL</button></div>' +
       '<button type="button" class="np-save" data-act="wall-demo">✨ DEMO GRAFFITI</button>' +
-      '<button type="button" class="np-save" data-act="wall-apply">🏙️ APPLY TO Z COMPANY ARTS BUILDING</button></div></div>' +
+      '<button type="button" class="np-save" data-act="wall-apply" aria-label="Apply graffiti to the Z Company Arts building">APPLY TO BUILDING</button></div></div>' +
       '<button id="kMenuB" class="np-pauseb" type="button" data-np-go="pause" aria-label="Pause"><span>⏸</span></button>' +
       '<div id="npPauseModal" hidden><div class="np-pausec">' +
       '<button type="button" data-np-go="resume">▶ RESUME</button>' +
