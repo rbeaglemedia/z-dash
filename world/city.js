@@ -17,9 +17,17 @@ const CITY=(()=>{let sd=90210;const cr=()=>(sd=(sd*16807)%2147483647)/2147483647
   const box=(b,o)=>{const q=Object.assign({y0:0},o,{b,oid:cur.id});b.boxes.push(q);BX.push(q);cur.boxes.push(q);return q;};
   const bldg=(o)=>{const b=Object.assign({boxes:[],deco:[],id:BL.length,oid:cur.id},o);BL.push(b);cur.bl.push(b);return b;};
   const ext=(o)=>{const r=((o.rot||0)%180+180)%180===90,w=r?o.d:o.w,d=r?o.w:o.d;return[o.x-w/2,o.x+w/2,o.z-d/2,o.z+d/2];};
-  // door-ready ground floor: door slots (1.4 x 2.4 m) every ~16 m along each street face of the ground box, stored as data for walking later
-  function doorsOf(q){const D=[];for(const[ax,fix,n]of[['x',q.z0,[0,-1]],['x',q.z1,[0,1]],['z',q.x0,[-1,0]],['z',q.x1,[1,0]]]){const a0=ax==='x'?q.x0:q.z0,a1=ax==='x'?q.x1:q.z1,L=a1-a0,k=Math.max(1,Math.floor((L-8)/16));
-      for(let i=0;i<k;i++){const a=a0+(L/(k))*(i+.5);D.push(ax==='x'?[a,fix,n[0],n[1]]:[fix,a,n[0],n[1]]);}}return D;}
+  // Street doors only (1.4 x 2.4 m). The outward normal has to face a real street centerline
+  // 4–20 m in front (highway x=-450 is wider, so 24 m). One door per ~30 m, cap 3, skip faces
+  // shorter than 8 m. Alleys and back walls get none. Data for a future walking mode; drawDoors
+  // still strokes them at the existing distance. Street Mode adds a close-up frame inside 30 m.
+  function opensOnStreet(nx,nz,x,z){if(nz){for(let s=-300;s<=2100;s+=200){if(s>1770&&s<1850)continue;const front=(s-z)*nz;if(front>4&&front<20)return true;}}
+    if(nx){const xs=[150,250,350,450,550,-150,-250,-350,-450,-550];for(let i=0;i<xs.length;i++){const front=(xs[i]-x)*nx,lim=xs[i]===-450?24:20;if(front>4&&front<lim)return true;}}return false;}
+  function doorsOf(q){const D=[],faces=[['x',q.z0,0,-1],['x',q.z1,0,1],['z',q.x0,-1,0],['z',q.x1,1,0]];
+    for(let f=0;f<4;f++){const ax=faces[f][0],fix=faces[f][1],nx=faces[f][2],nz=faces[f][3];
+      const mx=ax==='x'?(q.x0+q.x1)/2:fix,mz=ax==='x'?fix:(q.z0+q.z1)/2;if(!opensOnStreet(nx,nz,mx,mz))continue;
+      const a0=ax==='x'?q.x0:q.z0,a1=ax==='x'?q.x1:q.z1,L=a1-a0;if(L<8)continue;let k=Math.max(1,Math.floor((L-8)/30));if(k>3)k=3;
+      for(let i=0;i<k;i++){const a=a0+(L/k)*(i+.5);D.push(ax==='x'?[a,fix,nx,nz]:[fix,a,nx,nz]);}}return D;}
   const TYPES={
    building(o){const[x0,x1,z0,z1]=ext(o),p=o.p||{},h=o.h,b=bldg({x0,x1,z0,z1,cx:o.x,cz:o.z,c:p.c,wc:p.wc,dash:p.dash||[2,1.6],wseed:p.wseed||0,kind:p.kind||'b',slab:p.y0>0?1:0,top:h,rad:Math.hypot(x1-x0,z1-z0)/2});
      if(p.y0>0){box(b,{x0,x1,z0,z1,y0:p.y0,y1:h});return;}

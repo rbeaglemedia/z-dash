@@ -29,5 +29,8 @@ window.DETAIL_TUNE = {
   trimSimple: 3,       // farther buildings that get only the roof line
   signBudget: 2,
   lightBudget: 6,
-  treeBudget: 8
+  treeBudget: 8,
+  // Street Mode cruise only. These do not scale the distances above.
+  crawl: 12,           // extra close-up while |v| is under this (m/s), on the ground
+  crawlRadius: 30      // extra close-up inside this distance (m)
 };

@@ -74,6 +74,12 @@ function drawLoop(L,d){if(d>CDRAW.dist)return;ctx.beginPath();const n=40;for(con
   if(d<400){ctx.beginPath();for(let i=0;i<n;i+=2){const th=i/n*2*Math.PI,f=L.R*Math.sin(th),y=L.R*(1-Math.cos(th))+.1,lat=L.off*th/(2*Math.PI);pathSeg([L.x+L.ux*f+L.uz*(lat-L.w/2),y,L.z+L.uz*f-L.ux*(lat-L.w/2)],[L.x+L.ux*f+L.uz*(lat+L.w/2),y,L.z+L.uz*f-L.ux*(lat+L.w/2)]);}ctx.strokeStyle='rgba(255,176,32,.35)';ctx.lineWidth=1;ctx.stroke();}}
 function drawHoop(h,d){if(d>700)return;ctx.beginPath();const pts=[];for(let i=0;i<20;i++){const a=i/20*Math.PI*2;pts.push([h.x+h.nz*Math.cos(a)*h.r,h.y+Math.sin(a)*h.r,h.z-h.nx*Math.cos(a)*h.r]);}wpoly(pts);ctx.strokeStyle=h.hit?'#7dff6b':'#ff4fd8';ctx.lineWidth=d<200?3:1.6;ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;}
 {for(const t of CITY.TOWS)CITY.DYN.push({x:t.x,z:t.z,y:1.5,rad:9,draw:d=>drawTow(t,d)});for(const Pp of CITY.PIPES)CITY.DYN.push({x:Pp.cx,z:(Pp.z0+Pp.z1)/2,y:0,rad:70,draw:d=>drawPipe(Pp,d)});for(const L of CITY.LOOPS)CITY.DYN.push({x:L.x+L.ux*0+L.uz*L.off/2,z:L.z,y:L.R,rad:20,draw:d=>drawLoop(L,d)});for(const h of CITY.HOOPS)CITY.DYN.push({x:h.x,z:h.z,y:h.y,rad:8,draw:d=>drawHoop(h,d)});}
+// Street-edge paint stops where a building already blocks that street (same spans traffic uses).
+// The centerline is the road-graph center; the drawn edge sits ±10 m off it. Until detail.js
+// installs clipSpan this draws the full span, same as before.
+let _stAx=0,_stEdge=0;
+function _stDraw(u,v){if(v-u<0.5)return;if(_stAx)pathSeg([u,0.02,_stEdge],[v,0.02,_stEdge]);else pathSeg([_stEdge,0.02,u],[_stEdge,0.02,v]);}
+function streetSpan(axis,center,edge,a0,a1){if(a1<a0){const t=a0;a0=a1;a1=t;}if(a1-a0<0.5)return;_stAx=axis;_stEdge=edge;const clip=window.DETAIL&&DETAIL.clipSpan;if(!clip){_stDraw(a0,a1);return;}clip(axis,center,a0,a1,_stDraw);}
 function drawCityGround(){const cx=cam.x,cz=cam.z,R=CDRAW.dist,C=CITY;ctx.save();
   // river + bridge decks + bank lips
   const nearR=Math.abs(cz-(C.RIV.z0+C.RIV.z1)/2)<R;if(nearR){ctx.beginPath();wpoly([[cx-3000,0,C.RIV.z0],[cx+3000,0,C.RIV.z0],[cx+3000,0,C.RIV.z1],[cx-3000,0,C.RIV.z1]]);ctx.fillStyle='#03132e';ctx.fill();
@@ -90,9 +96,9 @@ function drawCityGround(){const cx=cam.x,cz=cam.z,R=CDRAW.dist,C=CITY;ctx.save()
   ctx.beginPath();for(const l of C.LOTS)if(l.stunt&&Math.hypot((l.x0+l.x1)/2-cx,(l.z0+l.z1)/2-cz)<R*.6)wpoly([[l.x0+1,0.04,l.z0+1],[l.x1-1,0.04,l.z0+1],[l.x1-1,0.04,l.z1-1],[l.x0+1,0.04,l.z1-1]]);ctx.strokeStyle='rgba(125,255,107,.45)';ctx.lineWidth=1.4;ctx.stroke();
   // streets (edges), highway, taxiway, track connector
   ctx.beginPath();const RS=CDRAW.streets,z0=Math.max(C.ZS0,cz-RS),z1=Math.min(C.ZS1,cz+RS),x0=Math.max(C.XS0,cx-RS),x1=Math.min(C.XS1,cx+RS);
-  for(let x=150;x<=C.XS1;x+=100)for(const s of[-1,1]){const X=s*x;if(Math.abs(X-cx)>RS||X===C.HW.x)continue;for(const e of[-10,10]){const zb=Math.max(z0,C.ZS0),ze=Math.min(z1,C.ZS1);if(ze<=zb)continue;if(zb<1700&&ze>1900){pathSeg([X+e,0.02,zb],[X+e,0.02,1700]);pathSeg([X+e,0.02,1900],[X+e,0.02,ze]);}else if(zb<1700||ze>1900)pathSeg([X+e,0.02,Math.max(zb,ze>1900&&zb>=1700?1900:zb)],[X+e,0.02,Math.min(ze,zb<1700&&ze<=1900?1700:ze)]);}}
-  for(let z=C.ZS0;z<=C.ZS1;z+=200){if(Math.abs(z-cz)>RS||(z>=C.RIV.z0-10&&z<=C.RIV.z1+10))continue;for(const e of[-10,10])for(const s of[-1,1]){const a=s>0?140:-C.XS1,b2=s>0?C.XS1:-140,xa=Math.max(a,x0),xb=Math.min(b2,x1);if(xb>xa)pathSeg([xa,0.02,z+e],[xb,0.02,z+e]);}}
-  if(Math.abs(cz-1100)<RS)for(const e of[-10,10])pathSeg([C.XS1,0.02,1100+e],[C.TRACK.cx-C.TRACK.R-C.TRACK.w/2,0.02,1100+e]);
+  for(let x=150;x<=C.XS1;x+=100)for(const s of[-1,1]){const X=s*x;if(Math.abs(X-cx)>RS||X===C.HW.x)continue;for(const e of[-10,10]){const zb=Math.max(z0,C.ZS0),ze=Math.min(z1,C.ZS1);if(ze<=zb)continue;if(zb<1700&&ze>1900){streetSpan(0,X,X+e,zb,1700);streetSpan(0,X,X+e,1900,ze);}else if(zb<1700||ze>1900)streetSpan(0,X,X+e,Math.max(zb,ze>1900&&zb>=1700?1900:zb),Math.min(ze,zb<1700&&ze<=1900?1700:ze));}}
+  for(let z=C.ZS0;z<=C.ZS1;z+=200){if(Math.abs(z-cz)>RS||(z>=C.RIV.z0-10&&z<=C.RIV.z1+10))continue;for(const e of[-10,10])for(const s of[-1,1]){const a=s>0?140:-C.XS1,b2=s>0?C.XS1:-140,xa=Math.max(a,x0),xb=Math.min(b2,x1);if(xb>xa)streetSpan(1,z,z+e,xa,xb);}}
+  if(Math.abs(cz-1100)<RS)for(const e of[-10,10])streetSpan(1,1100,1100+e,C.XS1,C.TRACK.cx-C.TRACK.R-C.TRACK.w/2);
   ctx.strokeStyle='rgba(62,230,255,.35)';ctx.lineWidth=1.2;ctx.stroke();
   ctx.beginPath();for(const e of[-C.HW.hw,C.HW.hw])pathSeg([C.HW.x+e,0.03,Math.max(C.ZS0-400,cz-R)],[C.HW.x+e,0.03,Math.min(C.ZS1+400,cz+R)]);
   for(const e of[C.TAXI.x0,C.TAXI.x1])pathSeg([e,0.03,C.TAXI.z0],[e,0.03,C.TAXI.z1]);ctx.strokeStyle='#ffb020';ctx.lineWidth=1.8;ctx.stroke();

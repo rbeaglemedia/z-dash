@@ -1,6 +1,9 @@
 'use strict';
 // Visual-only night detail for world-split.html. Baked once, drawn with a fixed
 // budget, no per-frame allocation. Does not touch collision, roads, or physics.
+// Baseline layers stay at their tuned distances at every speed, in the air, and
+// in both Arcade and Street mode. Street Mode (P.driveMode === 'street', on the
+// ground, under crawl m/s) only adds a close-up door frame inside crawlRadius.
 (function () {
   if (window.DETAIL || !window.DETAIL_TUNE || typeof CITY === 'undefined' || typeof drawBldg !== 'function') return;
   const T = DETAIL_TUNE;
@@ -9,19 +12,22 @@
     lanes: !!T.lanes, crosswalks: !!T.crosswalks, sidewalks: !!T.sidewalks,
     streetlights: !!T.streetlights, grass: !!T.grass, river: !!T.river, trees: !!T.trees
   };
+  let extraOn = true;
   (function applyUrl() {
     const q = location.search;
     if (/[?&]detail=off(?:&|$)/.test(q) || /[?&]nodetail=1/.test(q)) {
       for (const k in on) on[k] = false;
+      extraOn = false;
       return;
     }
     const m = q.match(/[?&]detail=([^&]+)/);
     if (!m) return;
+    extraOn = false;
     for (const k in on) on[k] = false;
     m[1].split(/[+,\s]+/).forEach((k) => { if (k in on) on[k] = true; });
   })();
 
-  const stat = { faces: 0, trims: 0, signs: 0, lights: 0, trees: 0, roads: 0, river: 0, grass: 0 };
+  const stat = { faces: 0, trims: 0, signs: 0, lights: 0, trees: 0, roads: 0, river: 0, grass: 0, close: 0, cruise: 0 };
   const NEAR_Z = (typeof NEAR === 'number' ? NEAR : 0.5);
   const BL = CITY.BL;
   const COLS = ['#3ee6ff', '#ff4fd8', '#ffb020', '#ff2a3d', '#fff2c0', '#ffd27a'];
@@ -392,10 +398,16 @@
     return false;
   }
 
-  let facesLeft = 0, anyTrim = false, anyWin = false, yCut = -1e9;
+  let facesLeft = 0, anyTrim = false, anyWin = false, yCut = -1e9, cruise = false, closeLeft = 0;
+  function streetCruise() {
+    return extraOn && P.driveMode === 'street' && !!P.ground && Math.abs(P.v || 0) < (T.crawl || 12);
+  }
   function beginFrame() {
     cacheCam();
-    stat.faces = stat.trims = stat.signs = stat.lights = stat.trees = stat.roads = stat.river = stat.grass = 0;
+    cruise = streetCruise();
+    closeLeft = 8;
+    stat.faces = stat.trims = stat.signs = stat.lights = stat.trees = stat.roads = stat.river = stat.grass = stat.close = 0;
+    stat.cruise = cruise ? 1 : 0;
     facesLeft = T.faceBudget | 0;
     anyTrim = false;
     anyWin = false;
@@ -607,11 +619,158 @@
     stat.trims++;
   }
 
+  function closeDoors(b, d) {
+    if (!cruise || closeLeft <= 0 || !b.doors) return;
+    const R = T.crawlRadius || 30;
+    if (d > R + (b.rad || 0) + 2) return;
+    const doors = b.doors, R2 = R * R;
+    ctx.beginPath();
+    let n = 0;
+    for (let i = 0; i < doors.length; i++) {
+      if (closeLeft <= 0) break;
+      const dr = doors[i], x = dr[0], z = dr[1], nx = dr[2], nz = dr[3];
+      const dx = cam.x - x, dz = cam.z - z;
+      if (dx * dx + dz * dz > R2) continue;
+      if (dx * nx + dz * nz <= 0.4) continue;
+      const tx = -nz * 0.85, tz = nx * 0.85, ox = nx * 0.28, oz = nz * 0.28;
+      const x0 = x - tx + ox, z0 = z - tz + oz, x1 = x + tx + ox, z1 = z + tz + oz;
+      seg(x0, 0.05, z0, x1, 0.05, z1);
+      seg(x0, 2.7, z0, x1, 2.7, z1);
+      seg(x0, 0.05, z0, x0, 2.7, z0);
+      seg(x1, 0.05, z1, x1, 2.7, z1);
+      seg(x0, 2.2, z0, x1, 2.2, z1);
+      seg(x + nx * 0.9, 0.05, z + nz * 0.9, x + nx * 2.1, 0.05, z + nz * 2.1);
+      closeLeft--;
+      n++;
+    }
+    if (!n) return;
+    ctx.strokeStyle = '#fff2c0';
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+    stat.close += n;
+  }
+
   const _drawBldg = drawBldg;
   drawBldg = function (b, d) {
     _drawBldg(b, d);
     if (anyTrim) roofPass(b);
+    closeDoors(b, d);
   };
+
+  // Street paint gaps. Built once from the same blocked spans traffic already skips.
+  // kind 'street' only, so highway, tunnel, bridge, and track centerlines stay whole.
+  // Probe steps 4 m, so the gap is padded 6 m or the dashes still enter the wall.
+  const GAPN = 256, GAP_PAD = 6;
+  const GN = [0, 0];
+  const GC = [new Float32Array(GAPN), new Float32Array(GAPN)];
+  const G0 = [new Float32Array(GAPN), new Float32Array(GAPN)];
+  const G1 = [new Float32Array(GAPN), new Float32Array(GAPN)];
+  const GU0 = new Float32Array(24), GU1 = new Float32Array(24);
+  function addGap(axis, c, u0, u1) {
+    if (u1 < u0) { const t = u0; u0 = u1; u1 = t; }
+    const C = GC[axis], A0 = G0[axis], A1 = G1[axis];
+    let n = GN[axis];
+    for (let i = 0; i < n; i++) {
+      if (Math.abs(C[i] - c) > 1.5) continue;
+      if (u1 < A0[i] - 0.5 || u0 > A1[i] + 0.5) continue;
+      if (u0 < A0[i]) A0[i] = u0;
+      if (u1 > A1[i]) A1[i] = u1;
+      let j = i + 1;
+      while (j < n) {
+        if (Math.abs(C[j] - c) <= 1.5 && !(A1[j] < A0[i] - 0.5 || A0[j] > A1[i] + 0.5)) {
+          if (A0[j] < A0[i]) A0[i] = A0[j];
+          if (A1[j] > A1[i]) A1[i] = A1[j];
+          n--;
+          C[j] = C[n]; A0[j] = A0[n]; A1[j] = A1[n];
+        } else j++;
+      }
+      GN[axis] = n;
+      return;
+    }
+    if (n >= GAPN) return;
+    C[n] = c; A0[n] = u0; A1[n] = u1;
+    GN[axis] = n + 1;
+  }
+  function buildGaps() {
+    const roads = CITY.ROADS, edges = roads && roads.edges, nodes = roads && roads.nodes;
+    if (!edges || !nodes) return;
+    for (let ei = 0; ei < edges.length; ei++) {
+      const e = edges[ei];
+      if (!e || e.kind !== 'street' || !e.blockedBy || !e.blockedBy.length) continue;
+      const A = nodes[e.a], B = nodes[e.b];
+      const vert = Math.abs(A.x - B.x) < 1, horiz = Math.abs(A.z - B.z) < 1;
+      if (!vert && !horiz) continue;
+      const ux = (B.x - A.x) / e.len, uz = (B.z - A.z) / e.len;
+      for (let bi = 0; bi < e.blockedBy.length; bi++) {
+        const b = e.blockedBy[bi];
+        if (vert) {
+          const z0 = A.z + uz * b.d0, z1 = A.z + uz * b.d1;
+          addGap(0, A.x, Math.min(z0, z1) - GAP_PAD, Math.max(z0, z1) + GAP_PAD);
+        } else {
+          const x0 = A.x + ux * b.d0, x1 = A.x + ux * b.d1;
+          addGap(1, A.z, Math.min(x0, x1) - GAP_PAD, Math.max(x0, x1) + GAP_PAD);
+        }
+      }
+    }
+  }
+  function clipSpan(axis, c, a0, a1, draw) {
+    if (a1 < a0) { const t = a0; a0 = a1; a1 = t; }
+    if (a1 - a0 < 0.5) return;
+    const n = GN[axis];
+    if (!n) { draw(a0, a1); return; }
+    const C = GC[axis], A0 = G0[axis], A1 = G1[axis];
+    let g = 0;
+    for (let i = 0; i < n; i++) {
+      if (Math.abs(C[i] - c) > 1.5) continue;
+      let u0 = A0[i], u1 = A1[i];
+      if (u1 <= a0 || u0 >= a1) continue;
+      if (u0 < a0) u0 = a0;
+      if (u1 > a1) u1 = a1;
+      if (g < 24) { GU0[g] = u0; GU1[g] = u1; g++; }
+      else {
+        if (u0 < GU0[23]) GU0[23] = u0;
+        if (u1 > GU1[23]) GU1[23] = u1;
+      }
+    }
+    if (!g) { draw(a0, a1); return; }
+    for (let i = 1; i < g; i++) {
+      const u0 = GU0[i], u1 = GU1[i];
+      let j = i;
+      while (j > 0 && GU0[j - 1] > u0) { GU0[j] = GU0[j - 1]; GU1[j] = GU1[j - 1]; j--; }
+      GU0[j] = u0; GU1[j] = u1;
+    }
+    let cursor = a0;
+    for (let i = 0; i < g; i++) {
+      if (GU0[i] > cursor + 0.5) draw(cursor, GU0[i]);
+      if (GU1[i] > cursor) cursor = GU1[i];
+    }
+    if (a1 > cursor + 0.5) draw(cursor, a1);
+  }
+  function inGap(axis, c, u) {
+    const n = GN[axis], C = GC[axis], A0 = G0[axis], A1 = G1[axis];
+    for (let i = 0; i < n; i++) {
+      if (Math.abs(C[i] - c) > 1.5) continue;
+      if (u >= A0[i] && u <= A1[i]) return true;
+    }
+    return false;
+  }
+  buildGaps();
+  let cMode = 0, cX = 0, cZ = 0;
+  function cDraw(u, v) {
+    if (v - u < 0.5) return;
+    if (cMode === 0) seg(cX, 0.05, u, cX, 0.05, v);
+    else seg(u, 0.05, cZ, v, 0.05, cZ);
+  }
+  function clipNS(center, x, z0, z1) {
+    if (z1 - z0 < 0.5) return;
+    cMode = 0; cX = x;
+    clipSpan(0, center, z0, z1, cDraw);
+  }
+  function clipEW(center, z, x0, x1) {
+    if (x1 - x0 < 0.5) return;
+    cMode = 1; cZ = z;
+    clipSpan(1, center, x0, x1, cDraw);
+  }
 
   function snapStreetX(x) {
     const s = x < 0 ? -1 : 1, a = Math.abs(x);
@@ -623,16 +782,16 @@
     const k = Math.round((z + 300) / 200);
     return Math.max(-300, Math.min(2100, -300 + k * 200));
   }
-  function curbNS(x, z0, z1, gap0, gap1) {
-    if (z0 < gap0) seg(x, 0.05, z0, x, 0.05, z1 < gap0 ? z1 : gap0);
-    if (z1 > gap1) seg(x, 0.05, z0 > gap1 ? z0 : gap1, x, 0.05, z1);
+  function curbNS(center, x, z0, z1, gap0, gap1) {
+    if (z0 < gap0) clipNS(center, x, z0, z1 < gap0 ? z1 : gap0);
+    if (z1 > gap1) clipNS(center, x, z0 > gap1 ? z0 : gap1, z1);
   }
-  function spanX(x0, x1, z) {
+  function spanX(center, x0, x1, z) {
     if (x0 >= x1) return;
-    if (x1 <= -140 || x0 >= 140) seg(x0, 0.05, z, x1, 0.05, z);
+    if (x1 <= -140 || x0 >= 140) clipEW(center, z, x0, x1);
     else {
-      if (x0 < -140) seg(x0, 0.05, z, x1 < -140 ? x1 : -140, 0.05, z);
-      if (x1 > 140) seg(x0 > 140 ? x0 : 140, 0.05, z, x1, 0.05, z);
+      if (x0 < -140) clipEW(center, z, x0, x1 < -140 ? x1 : -140);
+      if (x1 > 140) clipEW(center, z, x0 > 140 ? x0 : 140, x1);
     }
   }
   function drawRoads() {
@@ -643,7 +802,7 @@
       ctx.beginPath();
       if (on.lanes) {
         const z0 = cam.z - rd, z1 = cam.z + rd;
-        for (let z = z0; z < z1; z += 14) seg(sx, 0.05, z, sx, 0.05, z + 6);
+        for (let z = z0; z < z1; z += 14) clipNS(sx, sx, z, z + 6);
         ctx.strokeStyle = 'rgba(62,230,255,.7)';
         ctx.lineWidth = 1.4;
         ctx.stroke();
@@ -652,14 +811,14 @@
         const z0 = Math.max(-320, cam.z - rd), z1 = Math.min(2120, cam.z + rd);
         const gap0 = sz - 14, gap1 = sz + 14;
         ctx.beginPath();
-        curbNS(sx + 9.6, z0, z1, gap0, gap1);
-        curbNS(sx - 9.6, z0, z1, gap0, gap1);
+        curbNS(sx, sx + 9.6, z0, z1, gap0, gap1);
+        curbNS(sx, sx - 9.6, z0, z1, gap0, gap1);
         ctx.strokeStyle = 'rgba(255,176,32,.8)';
         ctx.lineWidth = 1.6;
         ctx.stroke();
         ctx.beginPath();
-        curbNS(sx + 12.2, z0, z1, gap0, gap1);
-        curbNS(sx - 12.2, z0, z1, gap0, gap1);
+        curbNS(sx, sx + 12.2, z0, z1, gap0, gap1);
+        curbNS(sx, sx - 12.2, z0, z1, gap0, gap1);
         ctx.strokeStyle = 'rgba(62,230,255,.35)';
         ctx.lineWidth = 1.2;
         ctx.stroke();
@@ -672,7 +831,7 @@
         const x0 = cam.x - rd, x1 = cam.x + rd;
         for (let x = x0; x < x1; x += 14) {
           if (x > -150 && x < 150) continue;
-          seg(x, 0.05, sz, Math.min(x + 6, x1), 0.05, sz);
+          clipEW(sz, sz, x, Math.min(x + 6, x1));
         }
       }
       ctx.strokeStyle = 'rgba(255,79,216,.65)';
@@ -681,20 +840,20 @@
       if (on.sidewalks) {
         const x0 = cam.x - rd, x1 = cam.x + rd, gap0 = sx - 14, gap1 = sx + 14;
         ctx.beginPath();
-        if (x0 < gap0) { spanX(x0, x1 < gap0 ? x1 : gap0, sz + 9.6); spanX(x0, x1 < gap0 ? x1 : gap0, sz - 9.6); }
-        if (x1 > gap1) { spanX(x0 > gap1 ? x0 : gap1, x1, sz + 9.6); spanX(x0 > gap1 ? x0 : gap1, x1, sz - 9.6); }
+        if (x0 < gap0) { spanX(sz, x0, x1 < gap0 ? x1 : gap0, sz + 9.6); spanX(sz, x0, x1 < gap0 ? x1 : gap0, sz - 9.6); }
+        if (x1 > gap1) { spanX(sz, x0 > gap1 ? x0 : gap1, x1, sz + 9.6); spanX(sz, x0 > gap1 ? x0 : gap1, x1, sz - 9.6); }
         ctx.strokeStyle = 'rgba(255,176,32,.8)';
         ctx.lineWidth = 1.6;
         ctx.stroke();
         ctx.beginPath();
-        if (x0 < gap0) { spanX(x0, x1 < gap0 ? x1 : gap0, sz + 12.2); spanX(x0, x1 < gap0 ? x1 : gap0, sz - 12.2); }
-        if (x1 > gap1) { spanX(x0 > gap1 ? x0 : gap1, x1, sz + 12.2); spanX(x0 > gap1 ? x0 : gap1, x1, sz - 12.2); }
+        if (x0 < gap0) { spanX(sz, x0, x1 < gap0 ? x1 : gap0, sz + 12.2); spanX(sz, x0, x1 < gap0 ? x1 : gap0, sz - 12.2); }
+        if (x1 > gap1) { spanX(sz, x0 > gap1 ? x0 : gap1, x1, sz + 12.2); spanX(sz, x0 > gap1 ? x0 : gap1, x1, sz - 12.2); }
         ctx.strokeStyle = 'rgba(62,230,255,.35)';
         ctx.lineWidth = 1.2;
         ctx.stroke();
       }
     }
-    if (on.crosswalks && dist3(sx, 0, sz) < T.crossDist) {
+    if (on.crosswalks && dist3(sx, 0, sz) < T.crossDist && !inGap(0, sx, sz) && !inGap(1, sz, sx)) {
       ctx.beginPath();
       for (let i = 0; i < 4; i++) {
         const o = 10 + i * 2.1;
@@ -917,6 +1076,9 @@
     on: on,
     stat: stat,
     counts: { lights: nL, signs: nS, trees: nT, patches: nP },
-    baked: 1
+    baked: 1,
+    clipSpan: clipSpan,
+    cruise: function () { return cruise; },
+    gaps: function () { return { ns: GN[0], ew: GN[1] }; }
   };
 })();
