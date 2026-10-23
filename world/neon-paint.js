@@ -20,6 +20,10 @@
 //   1. A ribbon mesh lifted 1.8 cm along the surface normal.
 //   2. A 2D neon stroke projected onto the car image after X.render,
 //      so drawZ's copy of X.canvas and the studio both show it.
+//
+// Paint sticks only to exterior BODY / CARBON panels. Glass, lamps,
+// mirrors, the grille, exhaust, wheels, and anything below the sills
+// or above the roof stay in the ray test so they block the stroke.
 (function () {
   const KEY = 'zdash.neonpaint.v1';
   const CH = 'zdash-neonpaint';
@@ -576,40 +580,110 @@
     return 'body';
   }
 
+  // Car-local meters on this 370Z: +x is the nose, +y is up, +z is the right door.
+  // Bounds are the measured body, not a generic vehicle axis set.
+  function isPaintableCarPoint(pt) {
+    const x = pt && (pt.x != null ? +pt.x : +pt[0]);
+    const y = pt && (pt.y != null ? +pt.y : +pt[1]);
+    const z = pt && (pt.z != null ? +pt.z : +pt[2]);
+    if (x !== x || y !== y || z !== z) return false;
+    if (y < 0.24 || y > 1.30) return false;
+    if (Math.abs(z) > 0.93) return false;
+    if (x > 2.02 && Math.abs(z) < 0.55 && y < 0.52) return false;
+    if (x < -1.82 && y < 0.40 && Math.abs(z) < 0.55) return false;
+    const wheels = [[1.27, 0.33, 0.77], [1.27, 0.33, -0.77], [-1.27, 0.34, 0.77], [-1.27, 0.34, -0.77]];
+    for (let i = 0; i < wheels.length; i++) {
+      const dx = x - wheels[i][0], dy = y - wheels[i][1], dz = z - wheels[i][2];
+      if (dx * dx + dy * dy + dz * dz < 0.30 * 0.30) return false;
+    }
+    if (x > 0.05 && x < 0.50 && y > 0.90 && Math.abs(z) > 0.72) return false;
+    if (x > 0.10 && x < 0.62 && y > 0.96 && y < 1.18 && Math.abs(z) < 0.62) return false;
+    if (x > -0.64 && x < 0.18 && y > 0.92 && y < 1.16 && Math.abs(z) > 0.64 && Math.abs(z) < 0.78) return false;
+    if (x > -0.93 && x < -0.80 && y > 0.99 && y < 1.06 && Math.abs(z) > 0.67 && Math.abs(z) < 0.72) return false;
+    if (x < -1.02 && x > -1.54 && y > 1.02 && y < 1.16 && Math.abs(z) < 0.42) return false;
+    if (x > 1.42 && x < 1.90 && y > 0.64 && y < 0.84 && Math.abs(z) > 0.50 && Math.abs(z) < 0.74) return false;
+    if (x < -1.55 && x > -2.02 && y > 0.74 && y < 0.95 && Math.abs(z) > 0.42 && Math.abs(z) < 0.72) return false;
+    return true;
+  }
+  function toCarLocal(X, part, x, y, z) {
+    const p = new X.THREE_Vector3(x, y, z);
+    const host = hostFor(X, part);
+    if (host && host.localToWorld) host.localToWorld(p);
+    if (X.car && X.car.worldToLocal) X.car.worldToLocal(p);
+    return p;
+  }
+  function rayTri(ox, oy, oz, dx, dy, dz, ax, ay, az, bx, by, bz, cx, cy, cz) {
+    const e1x = bx - ax, e1y = by - ay, e1z = bz - az;
+    const e2x = cx - ax, e2y = cy - ay, e2z = cz - az;
+    const px = dy * e2z - dz * e2y;
+    const py = dz * e2x - dx * e2z;
+    const pz = dx * e2y - dy * e2x;
+    const det = e1x * px + e1y * py + e1z * pz;
+    if (det > -1e-8 && det < 1e-8) return null;
+    const invDet = 1 / det;
+    const tx = ox - ax, ty = oy - ay, tz = oz - az;
+    const u = (tx * px + ty * py + tz * pz) * invDet;
+    if (u < -0.001 || u > 1.001) return null;
+    const qx = ty * e1z - tz * e1y;
+    const qy = tz * e1x - tx * e1z;
+    const qz = tx * e1y - ty * e1x;
+    const v = (dx * qx + dy * qy + dz * qz) * invDet;
+    if (v < -0.001 || u + v > 1.001) return null;
+    const t = (e2x * qx + e2y * qy + e2z * qz) * invDet;
+    if (t < 1e-4) return null;
+    return { t: t, u: u, v: v };
+  }
+  function meshPaintRole(o) {
+    const mat = (o.userData && o.userData.mat) || (o.material && o.material.name) || '';
+    const name = o.name || '';
+    if (name === 'Object_4351_BODY_0' || name === 'Object_4554_BODY_0') return 0;
+    if (mat === 'BODY' || mat === 'CARBON') return 1;
+    return 0;
+  }
   function buildSurface(X) {
     try { if (window.ZGL && window.ZGL.ensure) window.ZGL.ensure(); } catch (e) {}
     const V = X.THREE_Vector3;
     if (!V) return null;
     X.car.updateMatrixWorld(true);
-    const tris = [];
+    const groups = { body: [], doorL: [], doorR: [], hatch: [] };
     const meshes = [];
     X.car.traverse(function (o) {
-      if (!o.isMesh || (o.userData && (o.userData.neonPaint || o.userData.crew))) return;
-      const mat = o.userData && o.userData.mat;
-      if (mat !== 'BODY' && mat !== 'CARBON') return;
+      if (!o.isMesh || o.visible === false) return;
+      if (o.userData && (o.userData.neonPaint || o.userData.crew)) return;
+      const matName = (o.userData && o.userData.mat) || (o.material && o.material.name) || '';
+      const glassy = matName === 'GLASS' || matName === 'LIGHT' || matName === 'LIGHTGLASS' || matName === 'REARLIGHT';
+      const matObj = o.material;
+      if (!glassy && matObj && matObj.transparent && matObj.opacity < 0.85) return;
       const geo = o.geometry;
       const pos = geo && geo.attributes && geo.attributes.position;
-      const index = geo && geo.index;
-      if (!pos || !index || !index.count) return;
+      if (!pos || !pos.count) return;
       meshes.push(o);
     });
-    let total = 0;
-    for (let m = 0; m < meshes.length; m++) total += meshes[m].geometry.index.count / 3;
-    const step = Math.max(1, Math.ceil(total / MAX_TRIS));
     const p = new V(), q = new V(), r = new V();
+    let paintN = 0, blockN = 0;
     for (let m = 0; m < meshes.length; m++) {
       const o = meshes[m];
+      const paint = meshPaintRole(o);
+      const mat = (o.userData && o.userData.mat) || (o.material && o.material.name) || '';
+      const pos = o.geometry.attributes.position;
+      const index = o.geometry.index;
+      const nTri = index ? index.count / 3 : Math.floor(pos.count / 3);
+      if (!nTri) continue;
+      let step = 1;
+      if (paint && nTri > MAX_TRIS) step = Math.ceil(nTri / MAX_TRIS);
+      else if (!paint && mat === 'Material.002' && nTri > 80) step = Math.ceil(nTri / 80);
+      else if (!paint && nTri > 2200) step = 2;
       const part = partOfMesh(o);
       const host = hostFor(X, part);
       host.updateMatrixWorld(true);
       const inv = host.matrixWorld.clone();
       if (typeof inv.invert !== 'function') continue;
       inv.invert();
-      const pos = o.geometry.attributes.position;
-      const index = o.geometry.index;
-      const nTri = index.count / 3;
+      const list = groups[part] || groups.body;
       for (let t = 0; t < nTri; t += step) {
-        const a = index.getX(t * 3), b = index.getX(t * 3 + 1), c = index.getX(t * 3 + 2);
+        const a = index ? index.getX(t * 3) : t * 3;
+        const b = index ? index.getX(t * 3 + 1) : t * 3 + 1;
+        const c = index ? index.getX(t * 3 + 2) : t * 3 + 2;
         p.fromBufferAttribute(pos, a).applyMatrix4(o.matrixWorld).applyMatrix4(inv);
         q.fromBufferAttribute(pos, b).applyMatrix4(o.matrixWorld).applyMatrix4(inv);
         r.fromBufferAttribute(pos, c).applyMatrix4(o.matrixWorld).applyMatrix4(inv);
@@ -619,19 +693,19 @@
         const nl = Math.hypot(nx, ny, nz);
         if (nl < 1e-6) continue;
         nx /= nl; ny /= nl; nz /= nl;
-        const area = nl * 0.5;
-        if (area < 1e-5) continue;
-        tris.push({
-          part: part,
+        if (nl * 0.5 < 1e-6) continue;
+        list.push({
+          paint: paint,
           ax: p.x, ay: p.y, az: p.z,
           bx: q.x, by: q.y, bz: q.z,
           cx: r.x, cy: r.y, cz: r.z,
-          nx: nx, ny: ny, nz: nz,
-          mx: (p.x + q.x + r.x) / 3, my: (p.y + q.y + r.y) / 3, mz: (p.z + q.z + r.z) / 3
+          nx: nx, ny: ny, nz: nz
         });
+        if (paint) paintN++; else blockN++;
       }
     }
-    surf = { car: X.car, tris: tris };
+    const tris = groups.body.concat(groups.doorL, groups.doorR, groups.hatch);
+    surf = { car: X.car, groups: groups, tris: tris, paintN: paintN, blockN: blockN };
     return surf;
   }
   function ensureSurface(X) {
@@ -650,84 +724,78 @@
     return { x: n[0] + (p.x + 1) / 2 * n[2], y: py, z: p.z, m: Math.abs(py - uy) };
   }
 
+  const rayScratch = {};
+  function screenRay(X, sx, sy) {
+    const n = X._rect;
+    const cam = X.cam;
+    if (!n || !cam || n[2] < 2 || n[3] < 2) return null;
+    if (!rayScratch.o) {
+      const V = X.THREE_Vector3;
+      const M = X.car.matrixWorld.constructor;
+      rayScratch.o = new V();
+      rayScratch.d = new V();
+      rayScratch.ndc = new V();
+      rayScratch.inv = new M();
+    }
+    const ndcX = ((sx - n[0]) / n[2]) * 2 - 1;
+    const ndcY = -((sy - n[1]) / n[3]) * 2 + 1;
+    rayScratch.ndc.set(ndcX, ndcY, 0.5);
+    if (typeof rayScratch.ndc.unproject === 'function') rayScratch.ndc.unproject(cam);
+    else return null;
+    rayScratch.o.copy(cam.position);
+    rayScratch.d.copy(rayScratch.ndc).sub(rayScratch.o);
+    const len = rayScratch.d.length();
+    if (len < 1e-6) return null;
+    rayScratch.d.multiplyScalar(1 / len);
+    return rayScratch;
+  }
   function pick(X, sx, sy) {
     const bag = ensureSurface(X);
-    if (!bag || !bag.tris.length || !X.cam) return null;
+    if (!bag || !bag.groups || !X.cam) return null;
     X.car.updateMatrixWorld(true);
-    const cam = X.cam.position;
-    const V = X.THREE_Vector3;
-    const w = new V();
+    const ray = screenRay(X, sx, sy);
+    if (!ray) return null;
+    const parts = ['body', 'doorL', 'doorR', 'hatch'];
     let best = null;
-    const tris = bag.tris;
-    const near = [];
-    for (let i = 0; i < tris.length; i++) {
-      const t = tris[i];
-      const host = hostFor(X, t.part);
-      w.set(t.mx, t.my, t.mz);
-      if (host.localToWorld) host.localToWorld(w);
-      const s = projectWorld(X, w.x, w.y, w.z);
-      if (!s) continue;
-      const d = (s.x - sx) * (s.x - sx) + (s.y - sy) * (s.y - sy);
-      if (d > 96 * 96) continue;
-      near.push({ t: t, d: d, sx: s.x, sy: s.y });
-    }
-    near.sort(function (a, b) { return a.d - b.d; });
-    const limit = Math.min(near.length, 14);
-    for (let i = 0; i < limit; i++) {
-      const t = near[i].t;
-      const host = hostFor(X, t.part);
-      function wp(x, y, z) {
-        const v = new V(x, y, z);
-        if (host.localToWorld) host.localToWorld(v);
-        return v;
+    for (let pi = 0; pi < parts.length; pi++) {
+      const part = parts[pi];
+      const tris = bag.groups[part];
+      if (!tris || !tris.length) continue;
+      const host = hostFor(X, part);
+      if (!host || !host.matrixWorld) continue;
+      host.updateMatrixWorld(true);
+      const inv = rayScratch.inv.copy(host.matrixWorld);
+      if (typeof inv.invert !== 'function') continue;
+      inv.invert();
+      const o = rayScratch.o;
+      const origin = rayScratch.ndc;
+      origin.copy(o).applyMatrix4(inv);
+      const dir = rayScratch.d.clone();
+      dir.transformDirection(inv);
+      const ox = origin.x, oy = origin.y, oz = origin.z;
+      const dx = dir.x, dy = dir.y, dz = dir.z;
+      for (let i = 0; i < tris.length; i++) {
+        const tri = tris[i];
+        const hit = rayTri(ox, oy, oz, dx, dy, dz, tri.ax, tri.ay, tri.az, tri.bx, tri.by, tri.bz, tri.cx, tri.cy, tri.cz);
+        if (!hit || (best && hit.t >= best.t)) continue;
+        best = { t: hit.t, u: hit.u, v: hit.v, tri: tri, part: part, dx: dx, dy: dy, dz: dz };
       }
-      const A = wp(t.ax, t.ay, t.az), B = wp(t.bx, t.by, t.bz), C = wp(t.cx, t.cy, t.cz);
-      const As = projectWorld(X, A.x, A.y, A.z);
-      const Bs = projectWorld(X, B.x, B.y, B.z);
-      const Cs = projectWorld(X, C.x, C.y, C.z);
-      if (!As || !Bs || !Cs) continue;
-      const hit = inside(sx, sy, As, Bs, Cs, t);
-      if (!hit) continue;
-      const lx = t.ax * hit.w + t.bx * hit.v + t.cx * hit.u;
-      const ly = t.ay * hit.w + t.by * hit.v + t.cy * hit.u;
-      const lz = t.az * hit.w + t.bz * hit.v + t.cz * hit.u;
-      const n = new V(t.nx, t.ny, t.nz);
-      if (n.transformDirection) n.transformDirection(host.matrixWorld);
-      const wx = A.x * hit.w + B.x * hit.v + C.x * hit.u;
-      const wy = A.y * hit.w + B.y * hit.v + C.y * hit.u;
-      const wz = A.z * hit.w + B.z * hit.v + C.z * hit.u;
-      const vx = cam.x - wx, vy = cam.y - wy, vz = cam.z - wz;
-      const vl = Math.hypot(vx, vy, vz) || 1;
-      let dot = (n.x * vx + n.y * vy + n.z * vz) / vl;
-      let nx = t.nx, ny = t.ny, nz = t.nz;
-      if (dot < 0) { nx = -nx; ny = -ny; nz = -nz; dot = -dot; }
-      if (dot < 0.08) continue;
-      best = { part: t.part, x: lx, y: ly, z: lz, nx: nx, ny: ny, nz: nz, d: near[i].d };
-      break;
     }
-    if (best) return best;
-    if (near.length && near[0].d < 36 * 36) {
-      const t = near[0].t;
-      return { part: t.part, x: t.mx, y: t.my, z: t.mz, nx: t.nx, ny: t.ny, nz: t.nz, d: near[0].d };
+    if (!best) return null;
+    const tri = best.tri;
+    const u = best.u, v = best.v, w = 1 - u - v;
+    const lx = w * tri.ax + u * tri.bx + v * tri.cx;
+    const ly = w * tri.ay + u * tri.by + v * tri.cy;
+    const lz = w * tri.az + u * tri.bz + v * tri.cz;
+    const carP = toCarLocal(X, best.part, lx, ly, lz);
+    if (!tri.paint || !isPaintableCarPoint(carP)) {
+      return { blocked: true, part: best.part, x: lx, y: ly, z: lz };
     }
-    return null;
-  }
-  function inside(px, py, A, B, C, t) {
-    const v0x = C.x - A.x, v0y = C.y - A.y;
-    const v1x = B.x - A.x, v1y = B.y - A.y;
-    const v2x = px - A.x, v2y = py - A.y;
-    const dot00 = v0x * v0x + v0y * v0y;
-    const dot01 = v0x * v1x + v0y * v1y;
-    const dot02 = v0x * v2x + v0y * v2y;
-    const dot11 = v1x * v1x + v1y * v1y;
-    const dot12 = v1x * v2x + v1y * v2y;
-    const den = dot00 * dot11 - dot01 * dot01;
-    if (Math.abs(den) < 1e-4) return null;
-    const u = (dot11 * dot02 - dot01 * dot12) / den;
-    const v = (dot00 * dot12 - dot01 * dot02) / den;
-    const w = 1 - u - v;
-    if (u < -0.04 || v < -0.04 || w < -0.04) return null;
-    return { u: u, v: v, w: w, t: t };
+    let nx = tri.nx, ny = tri.ny, nz = tri.nz;
+    let facing = -(nx * best.dx + ny * best.dy + nz * best.dz);
+    if (facing < 0) { nx = -nx; ny = -ny; nz = -nz; facing = -facing; }
+    if (facing < 0.08) return { blocked: true, part: best.part, x: lx, y: ly, z: lz, graze: true };
+    return { part: best.part, x: lx, y: ly, z: lz, nx: nx, ny: ny, nz: nz, d: best.t };
   }
 
   function mirrorHit(X, hit) {
@@ -876,6 +944,24 @@
     ribbons.push(mesh);
     if (pulse) pulseMeshes.push(mesh);
   }
+  function pointOnPanel(X, part, p) {
+    if (!p || !X) return false;
+    return isPaintableCarPoint(toCarLocal(X, part, p[0], p[1], p[2]));
+  }
+  function paintRuns(X, part, pts) {
+    const runs = [];
+    let cur = [];
+    for (let i = 0; i < pts.length; i++) {
+      if (!pointOnPanel(X, part, pts[i])) {
+        if (cur.length) runs.push(cur);
+        cur = [];
+        continue;
+      }
+      cur.push(pts[i]);
+    }
+    if (cur.length) runs.push(cur);
+    return runs;
+  }
   function applyToCar(X) {
     try {
       if (!X || !X.ready || !X.car || !X.shadow || !X.shadow.material) return false;
@@ -891,15 +977,20 @@
       for (let i = 0; i < strokes.length; i++) {
         const s = strokes[i];
         const host = hostFor(X, s.part);
-        if (s.brush === 'rainbow') {
-          const chunk = 8;
-          for (let k = 0; k < s.pts.length - 1; k += chunk - 1) {
-            const slice = s.pts.slice(k, k + chunk);
-            if (slice.length < 2) continue;
-            const hue = (k / s.pts.length) * 360;
-            addRibbon(X, host, tag(slice, s), 'hsl(' + hue + ',100%,62%)', s.pulse);
-          }
-        } else addRibbon(X, host, tag(s.pts, s), s.color, s.pulse);
+        const runs = paintRuns(X, s.part, s.pts);
+        for (let r = 0; r < runs.length; r++) {
+          const run = runs[r];
+          if (run.length < 2) continue;
+          if (s.brush === 'rainbow') {
+            const chunk = 8;
+            for (let k = 0; k < run.length - 1; k += chunk - 1) {
+              const slice = run.slice(k, k + chunk);
+              if (slice.length < 2) continue;
+              const hue = ((k + r * chunk) / Math.max(1, s.pts.length)) * 360;
+              addRibbon(X, host, tag(slice, s), 'hsl(' + hue + ',100%,62%)', s.pulse);
+            }
+          } else addRibbon(X, host, tag(run, s), s.color, s.pulse);
+        }
       }
       armPulse();
       return true;
@@ -970,6 +1061,7 @@
       const seq = [];
       for (let k = 0; k < s.pts.length; k++) {
         const p = s.pts[k];
+        if (!pointOnPanel(X, s.part, p)) { seq.push(null); continue; }
         const w = new X.THREE_Vector3(p[0], p[1], p[2]);
         if (host.localToWorld) host.localToWorld(w);
         const n = new X.THREE_Vector3(p[3], p[4], p[5]);
@@ -1219,6 +1311,7 @@
     return p;
   }
   function placeStamp(X, hit) {
+    if (!hit || hit.blocked) return;
     const polys = stampPolys(ui.stamp);
     const b = brushNow();
     if (b.brush === 'eraser') return;
@@ -1231,13 +1324,13 @@
         const pts = [];
         for (let k = 0; k < polys[i].length; k++) {
           const u = polys[i][k][0] * scale, v = polys[i][k][1] * scale;
-          pts.push([
-            one.x + B.tx * u + B.bx * v,
-            one.y + B.ty * u + B.by * v,
-            one.z + B.tz * u + B.bz * v,
-            one.nx, one.ny, one.nz
-          ]);
+          const px = one.x + B.tx * u + B.bx * v;
+          const py = one.y + B.ty * u + B.by * v;
+          const pz = one.z + B.tz * u + B.bz * v;
+          if (!pointOnPanel(X, part, [px, py, pz])) continue;
+          pts.push([px, py, pz, one.nx, one.ny, one.nz]);
         }
+        if (pts.length < 2) continue;
         strokes.push({
           part: part, brush: b.brush === 'eraser' ? 'neon' : b.brush, color: b.color,
           size: Math.max(b.size, 14), mirror: false, pulse: ui.pulse, group: group, pts: pts
@@ -1245,28 +1338,31 @@
       }
       return strokes;
     }
+    if (!hit || hit.blocked || !pointOnPanel(X, hit.part, [hit.x, hit.y, hit.z])) return;
     const made = bake(hit, hit.part);
     for (let i = 0; i < made.length; i++) slot().strokes.push(made[i]);
     if (ui.mirror) {
-      const m = mirrorHit(X, hit);
-      const Bm = basis(m.nx, m.ny, m.nz);
-      const alt = bake(m, m.part);
-      for (let i = 0; i < alt.length; i++) {
-        // Rebuild on the mirrored tangent so the sticker sits on that skin.
-        const pts = [];
-        const poly = polys[i % polys.length];
-        for (let k = 0; k < poly.length; k++) {
-          const u = poly[k][0] * scale, v = -poly[k][1] * scale;
-          pts.push([
-            m.x + Bm.tx * u + Bm.bx * v,
-            m.y + Bm.ty * u + Bm.by * v,
-            m.z + Bm.tz * u + Bm.bz * v,
-            m.nx, m.ny, m.nz
-          ]);
+      let m = null;
+      try { m = mirrorHit(X, hit); } catch (err) { m = null; }
+      if (m && pointOnPanel(X, m.part, [m.x, m.y, m.z])) {
+        const Bm = basis(m.nx, m.ny, m.nz);
+        for (let i = 0; i < polys.length; i++) {
+          const pts = [];
+          const poly = polys[i];
+          for (let k = 0; k < poly.length; k++) {
+            const u = poly[k][0] * scale, v = -poly[k][1] * scale;
+            const px = m.x + Bm.tx * u + Bm.bx * v;
+            const py = m.y + Bm.ty * u + Bm.by * v;
+            const pz = m.z + Bm.tz * u + Bm.bz * v;
+            if (!pointOnPanel(X, m.part, [px, py, pz])) continue;
+            pts.push([px, py, pz, m.nx, m.ny, m.nz]);
+          }
+          if (pts.length < 2) continue;
+          slot().strokes.push({
+            part: m.part, brush: b.brush === 'eraser' ? 'neon' : b.brush, color: b.color,
+            size: Math.max(b.size, 14), mirror: true, pulse: ui.pulse, group: group, pts: pts
+          });
         }
-        alt[i].pts = pts;
-        alt[i].part = m.part;
-        slot().strokes.push(alt[i]);
       }
     }
     editorCommit('STICKER SAVED');
@@ -1717,7 +1813,7 @@
     canvas.addEventListener('pointerdown', function (e) {
       if (pauseOn) return;
       pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
-      canvas.setPointerCapture(e.pointerId);
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
       const ids = Object.keys(pointers);
       if (ids.length >= 2) { drag = { pinch: distPointers() }; return; }
       const pt = point(e);
@@ -1726,7 +1822,7 @@
       const X = carX();
       if (!X) return;
       const hit = pick(X, pt[0], pt[1]);
-      if (!hit) { drag = null; return; }
+      if (!hit || hit.blocked) { sealLive(); drag = null; return; }
       if (ui.stamp) { placeStamp(X, hit); drag = { stamp: true }; return; }
       const b = brushNow();
       if (b.brush === 'eraser') { eraseNear(X, hit); drag = { erase: true, x: pt[0], y: pt[1] }; return; }
@@ -1734,8 +1830,11 @@
       live = { part: hit.part, brush: b.brush, color: b.color, size: b.size, mirror: ui.mirror, pulse: ui.pulse, group: group, pts: [[hit.x, hit.y, hit.z, hit.nx, hit.ny, hit.nz]] };
       liveMirror = null;
       if (ui.mirror) {
-        const m = mirrorHit(X, hit);
-        liveMirror = { part: m.part, brush: b.brush, color: b.color, size: b.size, mirror: true, pulse: ui.pulse, group: group, pts: [[m.x, m.y, m.z, m.nx, m.ny, m.nz]] };
+        let m = null;
+        try { m = mirrorHit(X, hit); } catch (err) { m = null; }
+        if (m && pointOnPanel(X, m.part, [m.x, m.y, m.z])) {
+          liveMirror = { part: m.part, brush: b.brush, color: b.color, size: b.size, mirror: true, pulse: ui.pulse, group: group, pts: [[m.x, m.y, m.z, m.nx, m.ny, m.nz]] };
+        }
       }
       drag = { draw: true };
     });
@@ -1783,7 +1882,10 @@
       if (!X) return;
       const pt = point(e);
       const hit = pick(X, pt[0], pt[1]);
-      if (!hit) return;
+      if (!hit || hit.blocked) {
+        if (drag.draw) sealLive();
+        return;
+      }
       if (drag.erase) { eraseNear(X, hit); return; }
       if (!drag.draw || !live) return;
       if (hit.part !== live.part) {
@@ -1795,15 +1897,22 @@
         if (ui.mirror) {
           try {
             const m = mirrorHit(X, hit);
-            liveMirror = { part: m.part, brush: b.brush, color: b.color, size: b.size, mirror: true, pulse: ui.pulse, group: group, pts: [[m.x, m.y, m.z, m.nx, m.ny, m.nz]] };
+            if (m && pointOnPanel(X, m.part, [m.x, m.y, m.z])) {
+              liveMirror = { part: m.part, brush: b.brush, color: b.color, size: b.size, mirror: true, pulse: ui.pulse, group: group, pts: [[m.x, m.y, m.z, m.nx, m.ny, m.nz]] };
+            }
           } catch (err) { liveMirror = null; }
         }
         return;
       }
       pushPoint(live, hit);
       if (liveMirror && ui.mirror) {
-        const m = mirrorHit(X, hit);
-        pushPoint(liveMirror, m);
+        let m = null;
+        try { m = mirrorHit(X, hit); } catch (err) { m = null; }
+        if (!m || !pointOnPanel(X, m.part, [m.x, m.y, m.z])) {
+          const kept = thickenStroke(liveMirror);
+          liveMirror = null;
+          if (kept) slot().strokes.push(kept);
+        } else pushPoint(liveMirror, m);
       }
     });
     function endPtr(e) {
@@ -2748,7 +2857,33 @@
       equipVinyl: equipVinyl,
       saveVinyl: saveVinyl,
       deleteVinyl: deleteVinyl,
-      reload: function () { vinylFollow = 'force'; reloadVinylMeshes(); return getVinyls(); }
+      reload: function () { vinylFollow = 'force'; reloadVinylMeshes(); return getVinyls(); },
+      isPaintableCarPoint: isPaintableCarPoint,
+      _pick: function (sx, sy) {
+        const X = carX();
+        if (!X) return { kind: 'miss' };
+        const hit = pick(X, sx, sy);
+        if (!hit) return { kind: 'miss' };
+        if (hit.blocked) {
+          const b = toCarLocal(X, hit.part, hit.x, hit.y, hit.z);
+          return { kind: 'blocked', part: hit.part, cx: b.x, cy: b.y, cz: b.z };
+        }
+        const c = toCarLocal(X, hit.part, hit.x, hit.y, hit.z);
+        return { kind: 'paint', part: hit.part, x: hit.x, y: hit.y, z: hit.z, cx: c.x, cy: c.y, cz: c.z };
+      },
+      _toCar: function (part, x, y, z) {
+        const X = carX();
+        if (!X) return null;
+        const c = toCarLocal(X, part, x, y, z);
+        return { x: c.x, y: c.y, z: c.z };
+      },
+      _stats: function () {
+        const X = carX();
+        if (!X) return null;
+        ensureSurface(X);
+        if (!surf) return null;
+        return { paint: surf.paintN || 0, block: surf.blockN || 0, tris: surf.tris.length };
+      }
     };
     if (typeof document !== 'undefined') boot();
   }
