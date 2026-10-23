@@ -193,11 +193,26 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
     return G;})();
   const DYN=[];
   const STEP=0.7,WM=0.8,CARH=1.4;
-  const rampH=(q,x,z)=>{let t=clamp([(z-q.z0)/(q.z1-q.z0),(x-q.x0)/(q.x1-q.x0),(q.z1-z)/(q.z1-q.z0),(q.x1-x)/(q.x1-q.x0)][q.dir||0],0,1);if(q.prof==='crest')t=t<.88?t/.88:(1-t)/.12;return q.yb+(q.y1-q.yb)*t;};
+  // Tow ramps keep the one-way wedge. A ground city ramp is a hip you can climb from the front, the back, or either side.
+  // The face in front of the car rises to a lip; once the car passes that lip the floor drops to the base, so the launch clears the 0.45 m jump gap.
+  const rampH=(q,x,z)=>{const uz=(q.z1-q.z0)||1,ux=(q.x1-q.x0)||1,dir=q.dir||0,u=clamp([(z-q.z0)/uz,(x-q.x0)/ux,(q.z1-z)/uz,(q.x1-x)/ux][dir],0,1);
+    if(q.nm==='tow'){let t=u;if(q.prof==='crest')t=u<.88?u/.88:(1-u)/.12;return q.yb+(q.y1-q.yb)*t;}
+    const len=dir%2?ux:uz,width=dir%2?uz:ux,a=dir%2?z:x,a0=dir%2?q.z0:q.x0,a1=dir%2?q.z1:q.x1,rise=q.y1-q.yb;if(!(rise>0))return q.yb||0;
+    const dSide=Math.min(Math.max(0,a-a0),Math.max(0,a1-a)),halfW=Math.max(0.5,width/2),dBack=(1-u)*len,dEnd=Math.min(u*len,dBack);
+    const backRun=Math.min(len*0.25,Math.max(1.6,rise/0.85)),sideBevel=Math.max(0.8,Math.min(width*0.22,halfW));
+    const hd=(typeof P!=='undefined'&&P.hd!=null)?P.hd:(typeof P!=='undefined'?P.yaw||0:0),hx=Math.sin(hd),hz=Math.cos(hd);
+    const fdx=[0,1,0,-1][dir],fdz=[1,0,-1,0][dir],into=hx*fdx+hz*fdz,lat=dir%2?hz:hx,amid=(a0+a1)/2;
+    if(Math.abs(into)>=Math.abs(lat)){
+      if(into>=0)return q.yb+rise*Math.min(u,clamp(dSide/sideBevel,0,1));
+      if(dBack>backRun)return q.yb;
+      return q.yb+rise*Math.min(clamp(dBack/backRun,0,1),clamp(dSide/sideBevel,0,1));}
+    if((a-amid)*lat>0.02)return q.yb;
+    const endRun=Math.min(len*0.25,Math.max(1.6,rise/0.85));
+    return q.yb+rise*Math.min(clamp(dSide/halfW,0,1),clamp(dEnd/endRun,0,1));};
   // probe(x,z,y): floor under her, ceiling above her, a wall she is inside of; st = on a stick surface (half-pipe)
   const LIVE=[];
   function soak(q,x,z,yh,yl,box){const m=q.y0>0||q.ramp?0:WM;if(x<q.x0-m||x>q.x1+m||z<q.z0-m||z>q.z1+m)return;const ins=x>=q.x0&&x<=q.x1&&z>=q.z0&&z<=q.z1;
-    if(q.ramp){const rh=rampH(q,x,z);if(yh>=rh-0.9)box.fl=Math.max(box.fl,rh);else box.wl=box.wl||q;return;}
+    if(q.ramp){const rh=rampH(q,x,z);if(!q.yb||yh>=rh-2.5)box.fl=Math.max(box.fl,rh);else box.wl=box.wl||q;return;}
     if(yh>=q.y1-STEP){if(ins)box.fl=Math.max(box.fl,q.y1);}else if(yl+CARH<=q.y0+0.3){if(ins)box.ce=Math.min(box.ce,q.y0);}else box.wl=box.wl||q;}
   function probe(x,z,y,py){if(py==null)py=y;const yh=Math.max(y,py),yl=Math.min(y,py),g0=gnd(x,z),box={fl:g0[0],ce:1e9,wl:null};const L=HM.get(key(Math.floor(x/CS),Math.floor(z/CS)));if(L)for(const q of L)soak(q,x,z,yh,yl,box);for(let i=0;i<LIVE.length;i++)soak(LIVE[i],x,z,yh,yl,box);
     return{fl:box.fl,ce:box.ce,wl:box.wl,st:g0[1]&&box.fl===g0[0]?1:0};}
