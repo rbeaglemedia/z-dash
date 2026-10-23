@@ -529,21 +529,23 @@ const SOCCER = (() => {
   function hud() {
     if (typeof ctx === 'undefined') return;
     ctx.save();
-    ctx.font = '800 13px Orbitron, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(8,4,18,.72)';
-    if (S.relabel) { scoreW = Math.max(168, ctx.measureText(S.label).width + 28); S.relabel = 0; }
-    const tw = scoreW;
-    const x = W * 0.5 - tw * 0.5, y = H - 36;
-    ctx.beginPath();
-    ctx.roundRect(x, y - 12, tw, 24, 12);
-    ctx.fill();
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = '#3ee6ff';
-    ctx.stroke();
-    ctx.fillStyle = '#f4fffb';
-    ctx.fillText(S.label, W * 0.5, y);
+    if (T.showScore) {
+      ctx.font = '800 13px Orbitron, sans-serif';
+      ctx.fillStyle = 'rgba(8,4,18,.72)';
+      if (S.relabel) { scoreW = Math.max(168, ctx.measureText(S.label).width + 28); S.relabel = 0; }
+      const tw = scoreW;
+      const x = W * 0.5 - tw * 0.5, y = H - 36;
+      ctx.beginPath();
+      ctx.roundRect(x, y - 12, tw, 24, 12);
+      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#3ee6ff';
+      ctx.stroke();
+      ctx.fillStyle = '#f4fffb';
+      ctx.fillText(S.label, W * 0.5, y);
+    }
     if (S.flash > 0) {
       const a = lim(S.flash / 0.28, 0, 1);
       const sc = 1 + Math.max(0, S.flash - 0.85) * 0.9;
