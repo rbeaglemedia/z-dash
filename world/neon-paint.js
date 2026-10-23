@@ -56,6 +56,8 @@
   let groupN = 1;
   const WALL_KEY = 'zdash.wallgraffiti.v1';
   const WALL_CH = 'zdash-wallgraffiti';
+  const VINYL_KEY = 'zdash_vinyls_v1';
+  const NEON_KEY = 'zdash_neon_paint_v1';
   const WALL_W = 22;
   const WALL_H = 14;
   const ARTS_SPOTS = [[-145, 760], [425, 1135]];
@@ -66,6 +68,10 @@
   let wallLiveMirror = null;
   let wallGroup = 1;
   let artsCache = null;
+  let vinylStore = { v: 1, activeId: null, items: [] };
+  let editingVinylId = null;
+  let editorName = '';
+  let vinylFollow = '';
   let grafFrame = 0;
   let grafArmed = false;
   const ui = {
@@ -188,6 +194,307 @@
     if (X) applyToCar(X);
     if (studio) syncUI();
     armPulse();
+  }
+
+  function cloneJson(v) {
+    return JSON.parse(JSON.stringify(v));
+  }
+  function vinylColorsOf(strokes) {
+    const out = [];
+    const list = Array.isArray(strokes) ? strokes : [];
+    for (let i = 0; i < list.length && out.length < 5; i++) {
+      const c = list[i] && typeof list[i].color === 'string' ? list[i].color.toLowerCase() : '';
+      if (!/^#[0-9a-f]{6}$/.test(c) || out.indexOf(c) >= 0) continue;
+      out.push(c);
+    }
+    return out;
+  }
+  function nextVinylNum(items) {
+    let n = 0;
+    for (let i = 0; i < items.length; i++) {
+      const m = /^VINYL #(\d+)$/i.exec((items[i] && items[i].name) || '');
+      if (m) n = Math.max(n, +m[1] || 0);
+    }
+    return n + 1;
+  }
+  function blankVinyls() { return { v: 1, activeId: null, items: [] }; }
+  function normalizeVinylItem(raw) {
+    if (!raw || typeof raw.id !== 'string' || !raw.id) return null;
+    const strokes = Array.isArray(raw.strokes) ? raw.strokes : [];
+    const colors = (Array.isArray(raw.colors) && raw.colors.length) ? raw.colors.slice(0, 5) : vinylColorsOf(strokes);
+    const name = (typeof raw.name === 'string' && raw.name.trim()) ? raw.name.trim().slice(0, 28) : 'VINYL';
+    return { id: raw.id.slice(0, 64), name: name, updatedAt: +raw.updatedAt || 0, strokes: strokes, colors: colors };
+  }
+  function normalizeVinyls(data) {
+    const items = [];
+    const raw = data && Array.isArray(data.items) ? data.items : [];
+    for (let i = 0; i < raw.length; i++) {
+      const it = normalizeVinylItem(raw[i]);
+      if (it) items.push(it);
+    }
+    let active = data && typeof data.activeId === 'string' ? data.activeId : null;
+    if (!active || !items.some(function (it) { return it.id === active; })) active = null;
+    return { v: 1, activeId: active, items: items };
+  }
+  function activeVinylOf(store) {
+    if (!store || !store.activeId) return null;
+    for (let i = 0; i < store.items.length; i++) if (store.items[i].id === store.activeId) return store.items[i];
+    return null;
+  }
+  function syncNeonKey(store) {
+    const active = activeVinylOf(store);
+    try {
+      localStorage.setItem(NEON_KEY, JSON.stringify({ v: 1, strokes: active ? active.strokes : [] }));
+    } catch (e) {}
+  }
+  function fillEditor(strokes) {
+    const cleaned = [];
+    const list = Array.isArray(strokes) ? strokes : [];
+    for (let i = 0; i < list.length && cleaned.length < 400; i++) {
+      const c = cleanStroke(list[i]);
+      if (c) cleaned.push(c);
+    }
+    if (!state || !state.slots) state = blank();
+    state.enabled = true;
+    slot().strokes = cleaned;
+  }
+  function setVinylNameInput(name) {
+    editorName = name || '';
+    if (!studio) return;
+    const el = studio.querySelector('#vinylNameInp');
+    if (el && document.activeElement !== el) el.value = editorName;
+  }
+  function vinylNameFromInput() {
+    if (!studio) return editorName || '';
+    const el = studio.querySelector('#vinylNameInp');
+    return el ? el.value : (editorName || '');
+  }
+  function escHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
+  function paintVinylBar() {
+    if (!studio) return;
+    const bar = studio.querySelector('#npVinylBar');
+    if (!bar) return;
+    const store = vinylStore && Array.isArray(vinylStore.items) ? vinylStore : blankVinyls();
+    let html = '<button type="button" data-vinyl-act="new">+ NEW VINYL</button>';
+    for (let i = 0; i < store.items.length; i++) {
+      const it = store.items[i];
+      const eq = it.id === store.activeId;
+      const on = it.id === editingVinylId ? ' on' : '';
+      const mark = eq ? ' ★ EQUIPPED' : '';
+      html += '<span class="np-vchip' + (eq ? ' eq' : '') + '">';
+      html += '<button type="button" class="' + on.trim() + '" data-vinyl-act="edit" data-vinyl-id="' + escHtml(it.id) + '">' + escHtml(it.name + mark) + '</button>';
+      html += '<button type="button" data-vinyl-act="equip" data-vinyl-id="' + escHtml(it.id) + '">' + (eq ? 'UNEQUIP' : 'EQUIP') + '</button>';
+      html += '<button type="button" data-vinyl-act="del" data-vinyl-id="' + escHtml(it.id) + '" aria-label="Remove vinyl">✕</button>';
+      html += '</span>';
+    }
+    bar.innerHTML = html;
+  }
+  function reloadVinylMeshes() {
+    const follow = vinylFollow;
+    vinylFollow = '';
+    const store = vinylStore && Array.isArray(vinylStore.items) ? vinylStore : blankVinyls();
+    const active = activeVinylOf(store);
+    const keepNew = follow !== 'force' && studio && ui.canvas === 'car' && !editingVinylId && slot().strokes.length;
+    if (keepNew) {
+      paintVinylBar();
+      const X = carX();
+      if (X) applyToCar(X);
+      return;
+    }
+    if (!studio || ui.canvas !== 'car') {
+      fillEditor(active ? active.strokes : []);
+      const X = carX();
+      if (X) applyToCar(X);
+      return;
+    }
+    editingVinylId = active ? active.id : null;
+    editorName = active ? active.name : '';
+    fillEditor(active ? active.strokes : []);
+    setVinylNameInput(editorName);
+    const X = carX();
+    if (X) applyToCar(X);
+    paintVinylBar();
+  }
+  function persistVinyls(store) {
+    vinylStore = normalizeVinyls(store);
+    try { localStorage.setItem(VINYL_KEY, JSON.stringify(vinylStore)); } catch (e) {}
+    syncNeonKey(vinylStore);
+    try { window.dispatchEvent(new CustomEvent('zdash:vinyls-changed')); } catch (e) {}
+    reloadVinylMeshes();
+  }
+  function readVinyls() {
+    let text = null;
+    try { text = localStorage.getItem(VINYL_KEY); } catch (e) { text = null; }
+    if (text == null) {
+      let old = null;
+      try { const raw = localStorage.getItem(NEON_KEY); if (raw) old = JSON.parse(raw); } catch (e) {}
+      const strokes = old && Array.isArray(old.strokes) ? old.strokes : [];
+      if (strokes.length) {
+        vinylStore = {
+          v: 1, activeId: 'vinyl_1',
+          items: [{ id: 'vinyl_1', name: 'VINYL #1', updatedAt: Date.now(), strokes: strokes, colors: vinylColorsOf(strokes) }]
+        };
+        try { localStorage.setItem(VINYL_KEY, JSON.stringify(vinylStore)); } catch (e) {}
+        syncNeonKey(vinylStore);
+        try { window.dispatchEvent(new CustomEvent('zdash:vinyls-changed')); } catch (e) {}
+        return cloneJson(vinylStore);
+      }
+      vinylStore = blankVinyls();
+      return blankVinyls();
+    }
+    try { vinylStore = normalizeVinyls(JSON.parse(text)); } catch (e) { vinylStore = blankVinyls(); }
+    return cloneJson(vinylStore);
+  }
+  function getVinyls() { return readVinyls(); }
+  function getActiveVinyl() {
+    const store = readVinyls();
+    const active = activeVinylOf(store);
+    return active ? cloneJson(active) : null;
+  }
+  function saveVinyl(opts) {
+    opts = opts || {};
+    const store = readVinyls();
+    const strokes = Array.isArray(opts.strokes) ? cloneJson(opts.strokes) : [];
+    const colors = vinylColorsOf(strokes);
+    const hasName = typeof opts.name === 'string';
+    const named = hasName ? opts.name.trim().slice(0, 28) : '';
+    let saved = null;
+    if (opts.id) {
+      for (let i = 0; i < store.items.length; i++) {
+        if (store.items[i].id !== opts.id) continue;
+        const name = named || (hasName ? ('VINYL #' + nextVinylNum(store.items)) : store.items[i].name);
+        store.items[i] = { id: store.items[i].id, name: name, updatedAt: Date.now(), strokes: strokes, colors: colors };
+        store.activeId = store.items[i].id;
+        saved = store.items[i];
+        break;
+      }
+    }
+    if (!saved) {
+      saved = {
+        id: 'vinyl_' + Date.now(),
+        name: named || ('VINYL #' + nextVinylNum(store.items)),
+        updatedAt: Date.now(),
+        strokes: strokes,
+        colors: colors
+      };
+      store.items.push(saved);
+      store.activeId = saved.id;
+    }
+    vinylFollow = 'force';
+    persistVinyls(store);
+    editingVinylId = saved.id;
+    editorName = saved.name;
+    return cloneJson(saved);
+  }
+  function equipVinyl(idOrNull) {
+    const store = readVinyls();
+    let id = (typeof idOrNull === 'string' && idOrNull) ? idOrNull : null;
+    if (id && !store.items.some(function (it) { return it.id === id; })) id = null;
+    store.activeId = id;
+    vinylFollow = 'force';
+    persistVinyls(store);
+    return readVinyls();
+  }
+  function deleteVinyl(id) {
+    const store = readVinyls();
+    const next = [];
+    for (let i = 0; i < store.items.length; i++) if (store.items[i].id !== id) next.push(store.items[i]);
+    store.items = next;
+    if (store.activeId === id) store.activeId = null;
+    if (editingVinylId === id) editingVinylId = null;
+    vinylFollow = 'force';
+    persistVinyls(store);
+    return readVinyls();
+  }
+  function beginCarEditor(which) {
+    const store = readVinyls();
+    let item = null;
+    if (which === 'equipped') item = activeVinylOf(store);
+    else if (which) {
+      for (let i = 0; i < store.items.length; i++) if (store.items[i].id === which) item = store.items[i];
+    }
+    if (item) {
+      editingVinylId = item.id;
+      editorName = item.name;
+      fillEditor(item.strokes);
+    } else {
+      editingVinylId = null;
+      editorName = '';
+      fillEditor([]);
+    }
+  }
+  function adoptEquipped() {
+    const store = readVinyls();
+    const active = activeVinylOf(store);
+    editingVinylId = null;
+    editorName = '';
+    fillEditor(active ? active.strokes : []);
+  }
+  function saveCurrentVinyl() {
+    if (!studio || ui.canvas !== 'car') return null;
+    if (live || liveMirror) sealLive();
+    const strokes = cloneJson(slot().strokes);
+    if (!editingVinylId && !strokes.length) {
+      setStatus('DRAW ON THE CAR FIRST');
+      return null;
+    }
+    const saved = saveVinyl({ id: editingVinylId || undefined, name: vinylNameFromInput(), strokes: strokes });
+    setStatus('SAVED ' + saved.name);
+    return saved;
+  }
+  function editorCommit(status) {
+    if (!studio || ui.canvas !== 'car') return;
+    const X = carX();
+    if (X) applyToCar(X);
+    if (!editingVinylId) {
+      if (status) setStatus(status);
+      paintVinylBar();
+      return;
+    }
+    saveVinyl({ id: editingVinylId, name: vinylNameFromInput(), strokes: cloneJson(slot().strokes) });
+    if (status) setStatus(status);
+  }
+  function startNewVinyl() {
+    if (!studio || ui.canvas !== 'car') return;
+    live = null;
+    liveMirror = null;
+    editingVinylId = null;
+    editorName = '';
+    fillEditor([]);
+    setVinylNameInput('');
+    const el = studio.querySelector('#vinylNameInp');
+    if (el) el.value = '';
+    const X = carX();
+    if (X) applyToCar(X);
+    paintVinylBar();
+    setStatus('NEW VINYL');
+  }
+  function loadVinylIntoEditor(id) {
+    const store = readVinyls();
+    let item = null;
+    for (let i = 0; i < store.items.length; i++) if (store.items[i].id === id) item = store.items[i];
+    if (!item) return;
+    live = null;
+    liveMirror = null;
+    editingVinylId = item.id;
+    editorName = item.name;
+    fillEditor(item.strokes);
+    setVinylNameInput(item.name);
+    const el = studio.querySelector('#vinylNameInp');
+    if (el) el.value = item.name;
+    const X = carX();
+    if (X) applyToCar(X);
+    paintVinylBar();
+    setStatus(item.name);
+  }
+  function fieldTyping(e) {
+    const t = e && e.target;
+    if (!t || !t.tagName) return false;
+    return t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable === true;
   }
 
   function stanceDy(opts) {
@@ -962,8 +1269,7 @@
         slot().strokes.push(alt[i]);
       }
     }
-    save(state);
-    setStatus('STICKER SAVED');
+    editorCommit('STICKER SAVED');
   }
 
   function pushPoint(stroke, hit) {
@@ -974,9 +1280,15 @@
     }
     if (stroke.pts.length < 700) stroke.pts.push([hit.x, hit.y, hit.z, hit.nx, hit.ny, hit.nz]);
   }
-  function commitLive(X) {
-    save(state);
-    setStatus('SAVED TO THE GARAGE');
+  function commitLive() {
+    if (ui.canvas === 'wall') return;
+    sealLive();
+    if (editingVinylId) editorCommit('SAVED ' + (vinylNameFromInput().trim() || editorName || 'VINYL'));
+    else {
+      const X = carX();
+      if (X) applyToCar(X);
+      setStatus(slot().strokes.length ? 'TAP SAVE FOR A NEW VINYL' : 'DRAW ON THE CAR');
+    }
   }
   function eraseNear(X, hit) {
     const host = hostFor(X, hit.part);
@@ -993,7 +1305,7 @@
       if (!close) keep.push(s);
     }
     slot().strokes = keep;
-    save(state);
+    editorCommit('ERASED');
   }
 
   function hookReady() {
@@ -1041,7 +1353,14 @@
       '#npPauseModal .np-pausec>button{font:800 13px Orbitron,sans-serif;letter-spacing:.4px;color:#fff;background:rgba(62,230,255,.1);border:1.5px solid rgba(62,230,255,.7);border-radius:12px;padding:10px 12px;cursor:pointer}',
       '.np-modes button{flex:1;font:900 11px Orbitron,sans-serif;letter-spacing:.4px;padding:8px 6px;border-radius:12px;color:#fff;background:rgba(22,11,40,.9);border:1.5px solid rgba(255,79,216,.65);cursor:pointer}',
       '.np-modes button.on{background:#ff4fd8;color:#1a0633;border-color:#fff;box-shadow:0 0 14px #ff4fd8}',
-      '.np-off{display:none !important}'
+      '.np-off{display:none !important}',
+      '#np-studio .np-vinyls{display:flex;flex-direction:column;gap:4px}',
+      '#np-studio .np-vchip{display:flex;gap:4px;align-items:center}',
+      '#np-studio .np-vinyls button{font-size:11px;padding:8px;min-height:36px;border-radius:10px}',
+      '#np-studio .np-vchip button[data-vinyl-act="edit"]{flex:1;text-align:left}',
+      '#np-studio .np-vchip button[data-vinyl-act="equip"],#np-studio .np-vchip button[data-vinyl-act="del"]{flex:0 0 auto}',
+      '#np-studio .np-vchip.eq button[data-vinyl-act="edit"]{border-color:#ffe14d;box-shadow:0 0 8px #ffe14d}',
+      '#np-studio #vinylNameInp{width:100%;min-height:42px;font:800 14px Orbitron,sans-serif;color:#fff;background:#120818;border:2px solid #ffe14d;border-radius:12px;padding:8px 10px;letter-spacing:.3px}'
     ].join('');
     document.head.appendChild(s);
   }
@@ -1076,6 +1395,10 @@
       '<div class="np-status" id="np-status-wall">DRAW THE SIGN</div></div>' +
       '<div class="np-main"><div class="np-stage spin"><canvas data-canvas="spin"></canvas></div>' +
       '<div class="np-tools" data-panel="car">' +
+      '<p class="np-lab">VINYLS</p><div class="np-vinyls" id="npVinylBar"></div>' +
+      '<p class="np-lab">VINYL NAME</p>' +
+      '<input id="vinylNameInp" type="text" maxlength="28" autocomplete="off" placeholder="NAME YOUR VINYL (e.g. CYBER LIGHTNING)">' +
+      '<button type="button" class="np-save" data-act="save">SAVE</button>' +
       '<p class="np-lab">COLOR</p><div class="np-row np-colors">' + colors + '</div>' +
       '<p class="np-lab">BRUSH</p><div class="np-row">' +
       '<button type="button" data-brush="neon" class="on">TUBE</button>' +
@@ -1087,12 +1410,8 @@
       '<button type="button" data-act="pulse">💓 PULSE</button></div>' +
       '<p class="np-lab">STICKERS</p><div class="np-row np-stamps">' + stampBtns + '</div>' +
       '<p class="np-lab">ZOOM</p><input class="np-zoom" data-act="zoom" type="range" min="70" max="160" value="100">' +
-      '<div class="np-row"><button type="button" data-act="slot" data-slot="0" class="on">1</button>' +
-      '<button type="button" data-act="slot" data-slot="1">2</button>' +
-      '<button type="button" data-act="slot" data-slot="2">3</button></div>' +
       '<div class="np-row"><button type="button" data-act="undo">UNDO</button>' +
-      '<button type="button" data-act="clear">CLEAR</button></div>' +
-      '<button type="button" class="np-save" data-act="save">SAVE</button></div>' +
+      '<button type="button" data-act="clear">CLEAR</button></div></div>' +
       '<div class="np-tools np-off" data-panel="wall">' +
       '<p class="np-lab">COLOR</p><div class="np-row np-colors">' + colors + '</div>' +
       '<p class="np-lab">BRUSH</p><div class="np-row">' +
@@ -1141,7 +1460,7 @@
     if (btn) btn.classList.toggle('np-open', pauseOn);
   }
   function flushPaint() {
-    try { save(state); } catch (e) {}
+    try { if (ui.canvas === 'car') saveCurrentVinyl(); } catch (e) {}
     try { saveWall(); } catch (e) {}
   }
   function onPauseGo(go) {
@@ -1198,6 +1517,7 @@
       if (canvasMode) on = ui.canvas === canvasMode;
       const stencil = b.getAttribute('data-stencil');
       if (stencil) on = ui.stencil === stencil;
+      if (b.getAttribute('data-vinyl-act') === 'edit') on = b.getAttribute('data-vinyl-id') === editingVinylId;
       b.classList.toggle('on', on);
     }
     const panels = studio.querySelectorAll('[data-panel]');
@@ -1206,6 +1526,7 @@
     }
     const stage = studio.querySelector('.np-stage');
     if (stage) stage.classList.toggle('spin', ui.canvas === 'car' && ui.mode === 'spin');
+    if (ui.canvas === 'car') paintVinylBar();
   }
   const CAMS = {
     hood: { yaw: 0.18, pitch: 0.72 },
@@ -1300,6 +1621,16 @@
       const stencil = t.getAttribute('data-stencil');
       const go = t.getAttribute('data-np-go');
       if (go) { onPauseGo(go); return; }
+      const vact = t.getAttribute('data-vinyl-act');
+      if (vact && ui.canvas === 'car') {
+        const vid = t.getAttribute('data-vinyl-id');
+        if (vact === 'new') startNewVinyl();
+        if (vact === 'edit') loadVinylIntoEditor(vid);
+        if (vact === 'equip') equipVinyl(readVinyls().activeId === vid ? null : vid);
+        if (vact === 'del') deleteVinyl(vid);
+        syncUI();
+        return;
+      }
       if (canvasMode) {
         ui.canvas = canvasMode;
         ui.stamp = '';
@@ -1337,14 +1668,13 @@
       if (act === 'mirror') { ui.mirror = !ui.mirror; setStatus(ui.mirror ? 'SYM IS ON' : 'SYM IS OFF'); }
       if (act === 'pulse') { ui.pulse = !ui.pulse; setStatus(ui.pulse ? 'NOS GLOW ON' : 'PULSE OFF'); }
       if (act === 'wings') { ui.wings = !ui.wings; setStatus(ui.wings ? 'WINGS OPEN' : 'WINGS CLOSED'); }
-      if (act === 'undo') {
+      if (act === 'undo' && ui.canvas === 'car') {
         const g = slot().strokes.length ? slot().strokes[slot().strokes.length - 1].group : 0;
         slot().strokes = slot().strokes.filter(function (s) { return !g || s.group !== g; });
-        save(state); setStatus('UNDID');
+        editorCommit('UNDID');
       }
-      if (act === 'clear') { live = null; liveMirror = null; slot().strokes = []; save(state); setStatus('CLEARED'); }
-      if (act === 'save') { save(state); setStatus('SAVED TO THE GARAGE'); }
-      if (act === 'slot') { state.activeSlot = +t.getAttribute('data-slot') || 0; save(state); setStatus('SLOT ' + (state.activeSlot + 1)); }
+      if (act === 'clear' && ui.canvas === 'car') { live = null; liveMirror = null; slot().strokes = []; editorCommit('CLEARED'); }
+      if (act === 'save' && ui.canvas === 'car') saveCurrentVinyl();
       if (act === 'wall-slot') { wallState.activeSlot = +t.getAttribute('data-slot') || 0; saveWall(); setStatus('Slot ' + (wallState.activeSlot + 1)); }
       if (act === 'wall-undo') {
         const g = wallSlot().strokes.length ? wallSlot().strokes[wallSlot().strokes.length - 1].group : 0;
@@ -1369,6 +1699,15 @@
     });
     const zoom = root.querySelector('[data-act="zoom"]');
     if (zoom) zoom.addEventListener('input', function () { ui.zoom = (+zoom.value || 100) / 100; });
+    const nameInp = root.querySelector('#vinylNameInp');
+    if (nameInp) nameInp.addEventListener('change', function () {
+      editorName = nameInp.value;
+      if (ui.canvas === 'car' && editingVinylId) editorCommit('NAMED ' + (nameInp.value.trim() || editorName));
+    });
+    root.addEventListener('keydown', function (e) {
+      if (fieldTyping(e)) return;
+      if (ui.canvas !== 'car') return;
+    });
     const yawSlide = root.querySelector('[data-act="wall-yaw"]');
     if (yawSlide) yawSlide.addEventListener('input', function () { ui.wallYaw = (+yawSlide.value || 0) * Math.PI / 180; });
     function point(e) {
@@ -2306,7 +2645,7 @@
     ui.canvas = (opts.canvas === 'wall' || opts.mode === 'wall') ? 'wall' : 'car';
     closeStudio();
     parkMenuButton();
-    state = readStore();
+    if (ui.canvas === 'car') beginCarEditor(opts.vinyl || '');
     lastJson = JSON.stringify(state);
     ensureCss();
     const root = document.createElement('div');
@@ -2314,12 +2653,19 @@
     root.innerHTML = studioHTML();
     document.body.appendChild(root);
     studio = root;
+    const nameEl = root.querySelector('#vinylNameInp');
+    if (nameEl) nameEl.value = ui.canvas === 'car' ? editorName : '';
     bind(root);
     syncUI();
     setStatus(ui.canvas === 'wall' ? 'DRAW THE Z COMPANY ARTS WALL' : 'LOADING THE 370Z');
     if (!loopOn) frameStudio();
     const wait = setInterval(function () {
-      if (ui.canvas === 'wall' || hookReady()) { clearInterval(wait); if (ui.canvas !== 'wall') setStatus(ui.mode === 'draw' ? 'DRAW ON THE CAR' : 'DRAG TO SPIN'); }
+      if (ui.canvas === 'wall') { clearInterval(wait); return; }
+      if (!hookReady()) return;
+      const X = carX();
+      if (X) applyToCar(X);
+      clearInterval(wait);
+      setStatus(ui.mode === 'draw' ? 'DRAW ON THE CAR' : 'DRAG TO SPIN');
     }, 200);
   }
   function closeStudio() {
@@ -2336,7 +2682,7 @@
     return { strokes: slot().strokes.length };
   }
   function boot() {
-    state = readStore();
+    adoptEquipped();
     lastJson = JSON.stringify(state);
     try {
       ch = new BroadcastChannel(CH);
@@ -2359,7 +2705,15 @@
     window.addEventListener('storage', function (e) {
       if (!e.key || e.key === KEY) ingest(e.newValue || '');
       if (e.key === WALL_KEY) ingestWall(e.newValue || '');
+      if (e.key === VINYL_KEY) {
+        try { vinylStore = normalizeVinyls(e.newValue ? JSON.parse(e.newValue) : blankVinyls()); } catch (err) { return; }
+        vinylFollow = 'force';
+        reloadVinylMeshes();
+      }
     });
+    document.addEventListener('keydown', function (e) {
+      if (fieldTyping(e)) return;
+    }, true);
     window.addEventListener('pagehide', function () {
       if (live || liveMirror || wallLive || wallLiveMirror) flushPaint();
     });
@@ -2388,7 +2742,13 @@
       openStudio: openStudio,
       closeStudio: closeStudio,
       drawBuildingGraffiti: drawBuildingGraffiti,
-      drawAllWallGraffiti: drawAllWallGraffiti
+      drawAllWallGraffiti: drawAllWallGraffiti,
+      getVinyls: getVinyls,
+      getActiveVinyl: getActiveVinyl,
+      equipVinyl: equipVinyl,
+      saveVinyl: saveVinyl,
+      deleteVinyl: deleteVinyl,
+      reload: function () { vinylFollow = 'force'; reloadVinylMeshes(); return getVinyls(); }
     };
     if (typeof document !== 'undefined') boot();
   }
