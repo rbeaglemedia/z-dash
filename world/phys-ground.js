@@ -52,11 +52,8 @@ const NOS_TIERS=['n-stock','n-big','n-race','n-legend'];function nosTierIdx(){if
 const FX=[];function fxBurst(k,n){const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw);for(let i=0;i<n;i++){const r=brn,sp=k==='spark';
   FX.push({k,x:P.x-fx*1.6+(r()-.5)*1.6,y:sp?.15:.6,z:P.z-fz*1.6+(r()-.5)*1.6,vx:fx*P.v*(sp?.5:.1)+(r()-.5)*(sp?8:2),vy:sp?1+r()*4:1+r()*1.5,vz:fz*P.v*(sp?.5:.1)+(r()-.5)*(sp?8:2),life:sp?.35+r()*.4:1.6+r()*1.2,t:0,s:sp?0:1+r()});}
   if(FX.length>600)FX.splice(0,FX.length-600);}
-// NOS on the ground: exhaust sparks + rear-tire launch puffs. Accel surge lives in groundStep; this is the FX only.
-function nosGroundFx(dt){P._nosFx=(P._nosFx||0)+dt;if(P._nosFx<0.06)return;P._nosFx=0;fxBurst('spark',2);
-  const hx=Math.sin(P.hd||0),hz=Math.cos(P.hd||0);
-  for(let s=-1;s<=1;s+=2){const w=ebWheel(s),r=brn;FX.push({k:'tire',air:0,x:w[0],y:0.2,z:w[2],vx:-hx*2.4+(r()-.5)*1.4,vy:0.7+r()*1.4,vz:-hz*2.4+(r()-.5)*1.4,life:0.32+r()*0.28,t:0,s:0.7+r()*0.6});}
-  if(FX.length>600)FX.splice(0,FX.length-600);}
+// NOS on the ground: exhaust sparks only. Accel surge lives in groundStep. No tire circles — the chase cam drives through them and they fill the screen.
+function nosGroundFx(dt){P._nosFx=(P._nosFx||0)+dt;if(P._nosFx<0.06)return;P._nosFx=0;fxBurst('spark',2);}
 // Wings-out ground drift: wingtip scrape when the bank, body roll, or e-brake slip is already high. Does not write ebSlip.
 function wingScrape(dt,I){if(P.wings!==1||!P.ground)return;
   const hot=Math.abs(P.ebSlip||0)>0.25||Math.abs(P.bank||0)>0.4||Math.abs(P.ebRoll||0)>0.08;
@@ -65,8 +62,8 @@ function fxStep(dt){for(let i=FX.length-1;i>=0;i--){const f=FX[i];f.t+=dt;if(f.t
   if(f.k==='spark'){f.vy-=9.8*dt;if(f.y<0){f.y=0;f.vy*=-.3;}f.vx*=.98;f.vz*=.98;}else{f.vy*=.99;f.vx*=.97;f.vz*=.97;f.s+=dt*(f.k==='tire'?2.1:2.2);if(f.k==='tire'&&!f.air&&f.y<0.15)f.y=0.15;}}}
 function drawFX(){for(const f of FX){const p=proj(f.x,f.y,f.z);if(!p)continue;const a=1-f.t/f.life,sc=H*0.9/p[2];
   if(f.k==='spark'){const q=proj(f.x-f.vx*.03,f.y-f.vy*.03,f.z-f.vz*.03);if(!q)continue;ctx.strokeStyle=`rgba(255,${180+Math.round(60*a)},60,${a})`;ctx.lineWidth=Math.max(1.5,sc*.06);ctx.shadowColor='#ffb020';ctx.shadowBlur=8;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();ctx.shadowBlur=0;}
-  else if(f.k==='tire'){ctx.fillStyle=f.air?`rgba(130,235,255,${(0.38*a).toFixed(3)})`:`rgba(226,228,234,${.42*a})`;ctx.beginPath();ctx.arc(p[0],p[1],Math.max(3,sc*f.s*0.72),0,7);ctx.fill();}
-  else{ctx.fillStyle=`rgba(18,14,22,${.75*a})`;ctx.strokeStyle=`rgba(120,110,130,${.35*a})`;ctx.lineWidth=1;ctx.beginPath();ctx.arc(p[0],p[1],Math.max(3,sc*f.s*.8),0,7);ctx.fill();ctx.stroke();}}}
+  else if(f.k==='tire')continue;
+  else{if(p[2]<4)continue;ctx.fillStyle=`rgba(18,14,22,${.75*a})`;ctx.strokeStyle=`rgba(120,110,130,${.35*a})`;ctx.lineWidth=1;ctx.beginPath();ctx.arc(p[0],p[1],Math.min(18,Math.max(3,sc*f.s*.8)),0,7);ctx.fill();ctx.stroke();}}}
 // Ground e-brake: loose rear, tighter path, drift angle. Plain ground brake never comes through here.
 function ebDamp(cur,to,tau,dt){return cur+(to-cur)*(1-Math.exp(-dt/Math.max(0.03,tau)));}
 function ebAirHandoff(){
@@ -80,14 +77,9 @@ function ebWheel(side){
   const X2=lx*cb-ly*sb,Y=lx*sb+ly*cb,Y2=Y*cp+lz*sp,Z2=-Y*sp+lz*cp;
   return[P.x+X2*cy+Z2*sy,P.y+Y2,P.z-X2*sy+Z2*cy];}
 const SKID={L:[],R:[]};
-function ebMarks(dt){const T=TUNE,eb=P.ebK||0;if(eb<0.08||P.v<0.8)return;const now=P.simT||0,maxStep=P.ground?0.28:0.45;
+function ebMarks(dt){const eb=P.ebK||0;if(eb<0.08||P.v<0.8)return;const now=P.simT||0,maxStep=P.ground?0.28:0.45;
   for(const side of[-1,1]){const w=ebWheel(side),arr=side<0?SKID.L:SKID.R,last=arr[arr.length-1];
-    if(!last||Math.hypot(w[0]-last.x,w[2]-last.z)>maxStep){arr.push({x:w[0],y:w[1],z:w[2],t:now,air:P.ground?0:1});if(arr.length>640)arr.shift();}}
-  const mph=P.v*2.236936,rate=(T.eBrakeSmoke||12)*(0.4+0.6*Math.min(1,mph/30))*(1+(P.donutK||0)*((T.eBrakeDonutSmoke||2.4)-1));
-  P._ebFx=(P._ebFx||0)+rate*dt;const n=Math.min(8,P._ebFx|0);P._ebFx-=n;if(!n)return;
-  const hx=Math.sin(P.hd),hz=Math.cos(P.hd),air=!P.ground;
-  for(let i=0;i<n;i++){const w=ebWheel(i&1?1:-1),r=brn;FX.push({k:'tire',air:air?1:0,x:w[0],y:air?w[1]:0.22,z:w[2],vx:-hx*Math.min(P.v,12)*0.12+(r()-.5)*1.4,vy:0.8+r()*1.6,vz:-hz*Math.min(P.v,12)*0.12+(r()-.5)*1.4,life:0.55+r()*0.55,t:0,s:0.8+r()*((P.donutK||0)>0.5?1.6:0.9)});}
-  if(FX.length>600)FX.splice(0,FX.length-600);}
+    if(!last||Math.hypot(w[0]-last.x,w[2]-last.z)>maxStep){arr.push({x:w[0],y:w[1],z:w[2],t:now,air:P.ground?0:1});if(arr.length>640)arr.shift();}}}
 function drawSkids(){const life=TUNE.eBrakeSkidLife||3.6,now=P.simT||0;if(!SKID.L.length&&!SKID.R.length)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
   for(const arr of[SKID.L,SKID.R]){while(arr.length&&now-arr[0].t>life)arr.shift();
     for(let i=1;i<arr.length;i++){const a=arr[i-1],b=arr[i];const maxSeg=(a.air||b.air)?8.5:2.8;if(Math.hypot(b.x-a.x,b.z-a.z)>maxSeg)continue;const al=clamp(1-(now-b.t)/life,0,1);if(al<=0.02)continue;const vis=Math.pow(al,0.4);
