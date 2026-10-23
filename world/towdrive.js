@@ -3,8 +3,9 @@
 // Speed is towFrac (half) of a Z roll from TRAFFIC_TUNE. The tilted bed and the
 // cab-guard plate stay the shapes towtruck.js built; only their place on the road changes.
 // A Z that catches a truck in its lane sometimes hops the bed (scripted arc). The rest
-// follow or change lanes. physics.js is not edited: the moving ramp still launches the
-// player, and the truck's speed is added onto that launch here.
+// follow or change lanes. physics.js is not edited. At the bed lip the truck hands the
+// player a forward + upward launch: closed wings stay a stunt jump, open wings get a
+// small extra pop so the wings can take over.
 const TOWDRIVE = (() => {
   const T = window.TRAFFIC_TUNE;
   const OFF = /[?&]notow=1/.test(location.search);
@@ -180,35 +181,72 @@ const TOWDRIVE = (() => {
     const u = tr.u, dx = x - tr.x, dz = z - tr.z;
     return {along: dx * u[0] + dz * u[1], lat: dx * u[1] - dz * u[0]};
   }
-  function onBed(tr) {
-    if (!P.ground || P.wreck || P.loop || !tr.u) return false;
-    const loc = localOf(tr, P.x, P.z);
-    const rear = -tr.L / 2 - 0.5, lip = -tr.L / 2 + tr.bed + 0.35;
-    if (loc.along < rear || loc.along > lip || Math.abs(loc.lat) > tr.w / 2 + 0.45) return false;
-    return (P.y || 0) < tr.h + 1.8;
-  }
+  // Moving bed: keep the player's speed up the deck, add the truck's forward speed,
+  // and make sure the lip still throws them up. Wings closed = that stunt arc.
+  // Wings open = the same handoff plus a short upward assist so lift can catch.
   function boost(tr) {
-    const vx = Math.sin(P.hd || 0) * P.v * Math.cos(P.gam || 0) + tr.u[0] * tr.v;
-    const vz = Math.cos(P.hd || 0) * P.v * Math.cos(P.gam || 0) + tr.u[1] * tr.v;
-    const vy = P.v * Math.sin(P.gam || 0);
-    const vh = Math.hypot(vx, vz) || 0.01;
-    P.v = Math.min(90, Math.hypot(vh, vy));
-    P.hd = P.yaw = Math.atan2(vx, vz);
-    P.gam = Math.atan2(vy, vh);
-    if (P.pitch < (P.gam || 0)) P.pitch = P.gam;
+    const slope = Math.atan2(tr.h || 2.6, Math.max(1.5, tr.bed || 8));
+    const ux = tr.u[0], uz = tr.u[1];
+    const hd = P.hd || P.yaw || 0;
+    const wings = !!P.wings && (P.tf || 0) > 0.2;
+    const gNow = P.ground ? 0 : (P.gam || 0);
+    const spd = P.v || 0;
+    const vh = spd * Math.cos(gNow);
+    let vy = spd * Math.sin(gNow);
+    let vx = Math.sin(hd) * vh + ux * (tr.v || 0);
+    let vz = Math.cos(hd) * vh + uz * (tr.v || 0);
+    const relAlong = Math.sin(hd) * vh * ux + Math.cos(hd) * vh * uz;
+    const climb = Math.max(0, relAlong);
+    const gam = wings ? Math.min(1, slope + 0.18) : slope;
+    const need = climb * Math.sin(gam);
+    if (P.ground) {
+      vx += ux * (climb * Math.cos(slope) - climb);
+      vz += uz * (climb * Math.cos(slope) - climb);
+      vy = need;
+    } else if (vy < need) vy = need;
+    if (wings) vy += Math.min(3, 1.15 + climb * 0.045);
+    const wasGround = !!P.ground;
+    const vhOut = Math.hypot(vx, vz) || 0.01;
+    P.ground = false;
+    P.v = Math.min(90, Math.hypot(vhOut, vy));
+    P.gam = Math.atan2(vy, vhOut);
+    P.hd = Math.atan2(vx, vz);
+    P.yaw = P.hd;
+    if ((P.pitch || 0) < P.gam) P.pitch = P.gam;
+    P.toT = P.simT || 0;
+    P.gT = 0;
+    P.x += ux * 0.85; P.z += uz * 0.85;
+    P.y = Math.max(P.y || 0, (tr.h || 2) + 0.35);
+    if (wasGround) { P.ramps = (P.ramps || 0) + 1; if (typeof toast === 'function') toast('RAMP JUMP!'); }
+  }
+  let lipOid = 0;
+  function overBed(tr, past) {
+    if (P.wreck || P.loop || !tr || !tr.u) return null;
+    const loc = localOf(tr, P.x, P.z);
+    const rear = -tr.L / 2 - 0.55, lip = -tr.L / 2 + tr.bed;
+    if (loc.along < rear || loc.along > lip + (past || 0.4)) return null;
+    if (Math.abs(loc.lat) > tr.w / 2 + 0.55) return null;
+    const deck = (tr.h || 0) * Math.max(0, Math.min(1, (loc.along + tr.L / 2) / Math.max(0.5, tr.bed)));
+    if ((P.y || 0) > deck + 2.5) return null;
+    return loc;
   }
   function carry() {
     if (rideT) {
-      P.x += rideT.dx; P.z += rideT.dz;
-      if (!onBed(rideT)) {
-        if (!P.ground && !P.wreck) {
-          const loc = localOf(rideT, P.x, P.z);
-          if (loc.along > -rideT.L / 2 + rideT.bed - 2) boost(rideT);
-        }
-        rideT = null;
+      const tr = rideT, loc = localOf(tr, P.x, P.z), lip = -tr.L / 2 + tr.bed;
+      const nearLip = Math.abs(loc.lat) < tr.w / 2 + 0.8 && (P.y || 0) < (tr.h || 2) + 3 && loc.along >= lip - 0.35 && loc.along < lip + 3;
+      const on = overBed(tr, 1.2);
+      if (nearLip) { boost(tr); lipOid = tr.oid; rideT = null; }
+      else if (on) { P.x += tr.dx; P.z += tr.dz; }
+      else rideT = null;
+    }
+    if (P.ground && (P.y || 0) < 0.85) lipOid = 0;
+    if (!rideT && P.ground && !P.wreck) {
+      for (let i = 0; i < trucks.length; i++) {
+        const tr = trucks[i];
+        if (lipOid && tr.oid === lipOid) continue;
+        if (overBed(tr, 0)) { rideT = tr; break; }
       }
     }
-    if (!rideT) { for (let i = 0; i < trucks.length; i++) if (onBed(trucks[i])) { rideT = trucks[i]; break; } }
     if (P.ground && !P.wreck) {
       for (let i = 0; i < trucks.length; i++) {
         const tr = trucks[i];
