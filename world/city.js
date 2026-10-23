@@ -34,7 +34,7 @@ const CITY=(()=>{let sd=90210;const cr=()=>(sd=(sd*16807)%2147483647)/2147483647
      const t=b.boxes[b.boxes.length-1],rx=(t.x0+t.x1)/2,rz=(t.z0+t.z1)/2,rw=Math.min(t.x1-t.x0,t.z1-t.z0);
      if(p.purpose){b.purpose=p.purpose;b.purposeLabel=p.purposeLabel||p.purpose;b.label=b.purposeLabel;b.district=p.district||'';}
      if(b.kind==='b'||b.kind==='landmark'){b.doors=doorsOf(b);b.gf=GF;}
-     if(p.sign){if(p.sign.t&&!p.sign.word)p.sign.word=p.sign.t;b.sign=p.sign;b.deco.push(['sign',p.sign]);}
+     if(p.sign){if(p.sign.t&&!p.sign.word)p.sign.word=p.sign.t;b.sign=p.sign;b.deco.push(['sign',p.sign]);mountSign(b);}
      if(p.roof==='ant')b.deco.push(['ant',rx+rw*.2,rz,h,p.antH||16]);else if(p.roof==='tank')b.deco.push(['tank',t.x0+rw*.25,t.z0+rw*.25,h]);
      if(p.cable)b.deco.push(['cable',o.x,o.z,h,p.cable]);b.roofBox=t;if(p.pad)TYPES.helipad({id:o.id,x:rx,z:rz,h});},
    helipad(o){const b=BL.slice().reverse().find(q=>q.roofBox&&o.x>=q.roofBox.x0&&o.x<=q.roofBox.x1&&o.z>=q.roofBox.z0&&o.z<=q.roofBox.z1&&Math.abs(q.top-o.h)<.5);if(!b)return;const t=b.roofBox;
@@ -89,9 +89,19 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   function placePrefab(name,x,z,ov){const f=PREFABS[name];ov=ov||{};const o={id:ov.id||NID++,prefab:name,type:f.type,x,z,rot:ov.rot||0,w:ov.w!=null?ov.w:f.w,d:ov.d!=null?ov.d:f.d,h:ov.h!=null?ov.h:f.h,p:Object.assign({},f.p,ov.p||{})};if(o.id>=NID)NID=o.id+1;OBJS.push(o);build(o);return o;}
   const ringHit=(x0,x1,z0,z1,h)=>{let lim=h;for(const r of rings){const dx=Math.max(x0-r.x,0,r.x-x1),dz=Math.max(z0-r.z,0,r.z-z1);if(Math.hypot(dx,dz)<r.r+12&&h>r.y-r.r-15)lim=Math.min(lim,r.y-r.r-20);}return lim;};
   // a street-facing neon sign on the ground-floor band or just above it
-  function signFor(x0,x1,z0,z1,h){const f=Math.floor(cr()*4),c=NEON[Math.floor(cr()*NEON.length)],t=SIGNW[Math.floor(cr()*SIGNW.length)],y=Math.min(h-2.5,GF+2.6+cr()*4),sh=3;
-    if(f<2){const L=x1-x0,w=Math.min(18,L*.45),s=f?1:-1;return{x:(x0+x1)/2+(cr()-.5)*(L-w)*.6,z:s>0?z1+.25:z0-.25,y,nx:0,nz:s,w,h:sh,t,c};}
-    const L=z1-z0,w=Math.min(18,L*.45),s=f===3?1:-1;return{x:s>0?x1+.25:x0-.25,z:(z0+z1)/2+(cr()-.5)*(L-w)*.6,y,nx:s,nz:0,w,h:sh,t,c};}
+  function signFor(x0,x1,z0,z1,h){const f=Math.floor(cr()*4),c=NEON[Math.floor(cr()*NEON.length)],t=SIGNW[Math.floor(cr()*SIGNW.length)],yJ=cr(),slide=cr();void yJ;void slide;
+    const span=f<2?x1-x0:z1-z0,w=Math.min(span*.76,Math.min(18,Math.max(4.2,span*.45))),y0=Math.max(5.2,h-4.8),y1=Math.min(h-.4,Math.max(8.2,h-1.4)),y=(y0+y1)/2;
+    if(f<2){const s=f?1:-1;return{x:(x0+x1)/2,z:s>0?z1+.12:z0-.12,y,y0,y1,nx:0,nz:s,w,h:Math.max(.8,y1-y0),t,c};}
+    const s=f===3?1:-1;return{x:s>0?x1+.12:x0-.12,z:(z0+z1)/2,y,y0,y1,nx:s,nz:0,w,h:Math.max(.8,y1-y0),t,c};}
+  // Street sign sits on the real wall that exists at that height (stepped towers use the tier, not the air beside it).
+  function mountSign(b){const g=b.sign;if(!g||!b.boxes||!b.boxes.length)return;const H=b.top||b.boxes[b.boxes.length-1].y1,nx=g.nx||0,nz=g.nz||0;
+    let y1=Math.min(H-.35,Math.max(8.2,H-1.4)),y0=Math.max(5.2,H-4.8);if(y0>y1-2.2)y0=Math.max(3.2,y1-2.8);let y=(y0+y1)/2,host=null,wall=null;
+    for(const q of b.boxes){if((q.y0||0)>y+0.05||q.y1<y-0.05)continue;const w=nx<0?q.x0:nx>0?q.x1:nz<0?q.z0:q.z1;
+      if(wall==null||(nx<0||nz<0?w<wall:w>wall)){wall=w;host=q;}}
+    if(!host){host=b.boxes[0];y1=Math.min(y1,(host.y1||H)-.35);y0=Math.max(3.2,Math.min(y0,y1-2.2));y=(y0+y1)/2;wall=nx<0?host.x0:nx>0?host.x1:nz<0?host.z0:host.z1;}
+    const span=Math.max(4,nx?host.z1-host.z0:host.x1-host.x0),cap=span*.76;g.w=Math.min(g.w||cap,cap);g.w=Math.max(3.2,g.w);
+    g.y0=y0;g.y1=y1;g.y=(y0+y1)/2;g.h=y1-y0;g.top=H;g.mounted=1;g.span=span;g.nx=nx;g.nz=nz;
+    if(nx){g.x=wall+nx*.12;g.z=(host.z0+host.z1)/2;}else{g.z=wall+nz*.12;g.x=(host.x0+host.x1)/2;}}
   // procedural generator: rolls the random look, then places a building (+ helipad) object
   function tower(x0,x1,z0,z1,h,f){f=f||{};const n=f.tiers||(h>60?2:1),T=[];let y=0;for(let i=0;i<n-1;i++){y=i===0?(f.t1||(.55+cr()*.15)):y+(1-y)*.6;T.push(y);}T.push(1);
     const p={c:f.c||NEON[Math.floor(cr()*NEON.length)],wc:f.wc||WINC[Math.floor(cr()*4)],dash:f.dash||(cr()<.5?[2,1.6]:[4.5,2.5]),wseed:f.wseed!=null?f.wseed:Math.floor(cr()*997),kind:f.kind||'b',tiers:T,inset:f.inset!=null?f.inset:.1+cr()*.06};
@@ -116,13 +126,14 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
     {id:'DOWNTOWN_CORE',label:'Downtown Core',x0:150,x1:450,z0:900,z1:1850},
     {id:'SPORTS_EAST',label:'East Sports & Track',x0:350,x1:560,z0:300,z1:1200},
     {id:'BUILDER_NORTH',label:'Waterfront City Builder',x0:-400,x1:540,z0:1860,z1:2100}];
-  function faceSign(x0,x1,z0,z1,face,word,color){const y=6.4,sh=3.1,span=face==='n'||face==='s'?x1-x0:z1-z0,long=(word||'').length>10,w=Math.min(long?28:16,Math.max(6,span*(long?.85:.62)));
-    if(face==='s')return{x:(x0+x1)/2,z:z0-.3,y,nx:0,nz:-1,w,h:sh,t:word,c:color};
-    if(face==='n')return{x:(x0+x1)/2,z:z1+.3,y,nx:0,nz:1,w,h:sh,t:word,c:color};
-    if(face==='w')return{x:x0-.3,z:(z0+z1)/2,y,nx:-1,nz:0,w,h:sh,t:word,c:color};
-    return{x:x1+.3,z:(z0+z1)/2,y,nx:1,nz:0,w,h:sh,t:word,c:color};}
+  function faceSign(x0,x1,z0,z1,h,face,word,color){const span=face==='n'||face==='s'?x1-x0:z1-z0,long=(word||'').length>10,cap=span*.76,want=long?Math.min(span*.72,28):Math.min(16,Math.max(6,span*.55)),w=Math.max(4.2,Math.min(cap,want));
+    const y0=Math.max(5.2,h-4.8),y1=Math.max(y0+2.2,Math.min(h-.35,Math.max(8.2,h-1.4))),y=(y0+y1)/2,off=.12,base={y,y0,y1,w,h:y1-y0,t:word,word,c:color};
+    if(face==='s')return Object.assign(base,{x:(x0+x1)/2,z:z0-off,nx:0,nz:-1});
+    if(face==='n')return Object.assign(base,{x:(x0+x1)/2,z:z1+off,nx:0,nz:1});
+    if(face==='w')return Object.assign(base,{x:x0-off,z:(z0+z1)/2,nx:-1,nz:0});
+    return Object.assign(base,{x:x1+off,z:(z0+z1)/2,nx:1,nz:0});}
   // Curated blocks. The five FORCE lots keep their rooftop heights (26, 62, 18, 34, and the 239 m sky tower) so pad landings still match.
-  function shop(x0,x1,z0,z1,h,spec){const sign=faceSign(x0,x1,z0,z1,spec.face,spec.sign,spec.c);
+  function shop(x0,x1,z0,z1,h,spec){const sign=faceSign(x0,x1,z0,z1,h,spec.face,spec.sign,spec.c);
     if(spec.landmark){placePrefab('tower_landmark',(x0+x1)/2,(z0+z1)/2,{w:x1-x0,d:z1-z0,h,p:{purpose:spec.purpose,purposeLabel:spec.label,district:spec.district,sign,c:spec.c,pad:1}});return;}
     tower(x0,x1,z0,z1,h,{pad:spec.pad?1:0,tiers:1,c:spec.c,wc:spec.wc||'#fff2c0',dash:h>=24?[2,1.6]:[4.5,2.5],wseed:spec.seed,inset:.1,noRoof:1,roof:spec.roof,antH:spec.antH,purpose:spec.purpose,purposeLabel:spec.label,district:spec.district,sign,kind:'b'});}
   shop(168,232,118,282,26,{pad:1,face:'s',purpose:'GARAGE',label:'SPEED & TUNING GARAGE',district:'SPAWN_SOUTH',sign:'GARAGE',c:'#ffb020',seed:1});
@@ -188,6 +199,33 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   function gnd(x,z){for(const Pp of PIPES)if(x>Pp.x0&&x<Pp.x1&&z>=Pp.z0&&z<=Pp.z1)return[pipeY(Pp,x),1];return[riverY(x,z),0];}
   // --- spatial hash (50 m cells), rebuilt on add/remove ---
   const CS=50,HM=new Map(),key=(i,j)=>i*100003+j;
+  // Side or rear car access. Garages are recessed into the ground floor; cafes and pet shops get a short apron instead.
+  function parkBlocked(x,z,self){if(x>555&&x<920&&z>185&&z<415)return true;for(const r of RAMPS)if(x>r.x0&&x<r.x1&&z>r.z0&&z<r.z1)return true;for(const o of BL){if(o===self||!o.boxes)continue;const q=o.boxes[0];if(q&&x>q.x0&&x<q.x1&&z>q.z0&&z<q.z1&&q.y1>2)return true;}return false;}
+  function placeParking(){const BW=10,BD=9,LD=8;
+    for(const b of BL){if((b.kind!=='b'&&b.kind!=='landmark')||!b.purpose||!b.boxes||!b.boxes[0])continue;const q=b.boxes[0],sn=b.sign||{nx:0,nz:-1},lot=b.purpose==='CAFE'||b.purpose==='PETS';
+      let back=[-sn.nx||0,-sn.nz||0];if(!back[0]&&!back[1])back=[0,1];
+      const faces=[back,[back[1],-back[0]],[-back[1],back[0]]];
+      const dep=([nx,nz])=>nx?q.x1-q.x0:q.z1-q.z0,wid=([nx,nz])=>nx?q.z1-q.z0:q.x1-q.x0;
+      let pick=null,score=-1;
+      for(const f of faces){const[nx,nz]=f;if(nx===sn.nx&&nz===sn.nz)continue;if(wid(f)<BW+1)continue;if(!lot&&dep(f)<BD+4)continue;
+        const wall=nx<0?q.x0:nx>0?q.x1:nz<0?q.z0:q.z1,along0=nx?q.z0:q.x0,along1=nx?q.z1:q.x1,mid0=(along0+along1)/2;
+        for(const off of[0,-7,7,-14,14,-20,20]){const mid=mid0+off;if(mid-BW/2<along0+0.6||mid+BW/2>along1-0.6)continue;
+          const ax=(nx?wall+nx*7:mid),az=(nz?wall+nz*7:mid);if(parkBlocked(ax,az,b))continue;
+          const room=lot?8:12;let s=room;if(nx===back[0]&&nz===back[1])s+=6;if(s>score){score=s;pick={nx,nz,wall,mid};}}
+        if(pick&&score>=18)break;}
+      if(!pick){const[nx,nz]=back,wall=nx<0?q.x0:nx>0?q.x1:nz<0?q.z0:q.z1,mid=nx?(q.z0+q.z1)/2:(q.x0+q.x1)/2;pick={nx,nz,wall,mid};}
+      const{nx,nz,wall,mid}=pick,depth=lot?LD:BD;let x0,x1,z0,z1;
+      if(nx){z0=mid-BW/2;z1=mid+BW/2;if(lot){x0=nx>0?wall:wall-depth;x1=nx>0?wall+depth:wall;}else{x0=nx>0?wall-depth:wall;x1=nx>0?wall:wall+depth;}}
+      else{x0=mid-BW/2;x1=mid+BW/2;if(lot){z0=nz>0?wall:wall-depth;z1=nz>0?wall+depth:wall;}else{z0=nz>0?wall-depth:wall;z1=nz>0?wall:wall+depth;}}
+      const stallIn=lot?depth*.5:depth-1.7,sx=nx?(lot?wall+nx*stallIn:wall-nx*stallIn):mid,sz=nz?(lot?wall+nz*stallIn:wall-nz*stallIn):mid;
+      const doorX=nx?(lot?wall:wall-nx*depth):mid,doorZ=nz?(lot?wall:wall-nz*depth):mid;
+      const p=b.parking={type:lot?'lot':'garage',x:sx,z:sz,x0,x1,z0,z1,nx,nz,h:lot?0:4.4,doorX,doorZ,label:(b.purposeLabel||b.label||b.purpose)+(lot?' Lot':' Garage')};
+      if(!b.doors)b.doors=[];b.doors.push([doorX,doorZ,nx,nz,p.type]);
+      if(lot)continue;
+      const th=0.45,y1=4.4;const slab=(o)=>{const s=Object.assign({y0:0,y1,bay:1,b,oid:b.oid},o);BX.push(s);return s;};
+      if(nx){slab({x0:nx>0?x0-th:x1,x1:nx>0?x0:x1+th,z0,z1});slab({x0,x1,z0:z0-th,z1:z0});slab({x0,x1,z0:z1,z1:z1+th});}
+      else{slab({z0:nz>0?z0-th:z1,z1:nz>0?z0:z1+th,x0,x1});slab({z0,z1,x0:x0-th,x1:x0});slab({z0,z1,x0:x1,x1:x1+th});}}}
+  placeParking();
   function rehash(){HM.clear();for(const q of BX.concat(RAMPS)){for(let i=Math.floor((q.x0-2)/CS);i<=Math.floor((q.x1+2)/CS);i++)for(let j=Math.floor((q.z0-2)/CS);j<=Math.floor((q.z1+2)/CS);j++){const k=key(i,j);if(!HM.has(k))HM.set(k,[]);HM.get(k).push(q);}}}rehash();
   function add(o){if(o.prefab){o=placePrefab(o.prefab,o.x,o.z,o);rehash();ROADS.updateBlocked();return o.id;}o=Object.assign({id:NID++,rot:0,p:{}},o);if(o.id>=NID)NID=o.id+1;OBJS.push(o);build(o);rehash();ROADS.updateBlocked();return o.id;}
   function remove(id){const h=HND.get(id);if(!h)return false;const rm=(A,L)=>{for(const x of L){const i=A.indexOf(x);if(i>=0)A.splice(i,1);}};rm(BX,h.boxes);rm(BL,h.bl);rm(RAMPS,h.ramps);rm(PADS,h.pads);rm(LOOPS,h.loops);rm(PIPES,h.pipes);for(let i=HOOPS.length-1;i>=0;i--)if(HOOPS[i].oid===id)HOOPS.splice(i,1);
@@ -238,6 +276,7 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   const LIVE=[];
   function soak(q,x,z,yh,yl,box){const m=q.y0>0||q.ramp?0:WM;if(x<q.x0-m||x>q.x1+m||z<q.z0-m||z>q.z1+m)return;const ins=x>=q.x0&&x<=q.x1&&z>=q.z0&&z<=q.z1;
     if(q.ramp){const rh=rampH(q,x,z);if(!q.yb||yh>=rh-2.5)box.fl=Math.max(box.fl,rh);else box.wl=box.wl||q;return;}
+    const pk=q.b&&q.b.parking;if(pk&&pk.type==='garage'&&!q.bay&&q.y1>5&&(q.y0||0)<1){const g=garageZone(pk,x,z,yh);if(g){if(g===2)box.ce=Math.min(box.ce,pk.h||4.4);return;}}
     if(yh>=q.y1-STEP){if(ins)box.fl=Math.max(box.fl,q.y1);}else if(yl+CARH<=q.y0+0.3){if(ins)box.ce=Math.min(box.ce,q.y0);}else box.wl=box.wl||q;}
   function probe(x,z,y,py){if(py==null)py=y;const yh=Math.max(y,py),yl=Math.min(y,py),g0=gnd(x,z),box={fl:g0[0],ce:1e9,wl:null};const L=HM.get(key(Math.floor(x/CS),Math.floor(z/CS)));if(L)for(const q of L)soak(q,x,z,yh,yl,box);for(let i=0;i<LIVE.length;i++)soak(LIVE[i],x,z,yh,yl,box);
     return{fl:box.fl,ce:box.ce,wl:box.wl,st:g0[1]&&box.fl===g0[0]?1:0};}
@@ -267,7 +306,8 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
       if(inR(x,z,PARK)){const sx=((Math.abs(x)-150)%100+100)%100,sz=((z+300)%200+200)%200;return(sx<=10||sx>=90||sz<=10||sz>=190)?'paved':'park';}return'paved';}
     return'grass';}
   const padAt=(x,z,y)=>PADS.find(p=>Math.abs(p.y-y)<1&&inR(x,z,p))||null;
-  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,buildings:BL,BX,roadsX,roadsZ,RAMPS,PADS,TREES,LOTS,HOOPS,RINGS:rings,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,BUILDER_ZONE,DISTRICTS,XS0,XS1,ZS0,ZS1,
+  function hit(x,z,r,y){const pr=probe(x,z,y==null?0:y);if(!pr.wl)return null;const pk=pr.wl.b&&pr.wl.b.parking;if(pk&&pk.type==='garage'&&!pr.wl.bay&&garageZone(pk,x,z,y||0,r||0)===2)return null;return pr.wl;}
+  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,hit,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,buildings:BL,BX,roadsX,roadsZ,RAMPS,PADS,TREES,LOTS,HOOPS,RINGS:rings,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,BUILDER_ZONE,DISTRICTS,XS0,XS1,ZS0,ZS1,
     probe,gnd,riverY,pipeY,rampH,trackPts,trackDist,surfaceAt,padAt,inTunnel:(x,z)=>x>TUN.bx0&&x<TUN.bx1&&z>TUN.z0&&z<TUN.z1};})();
 const surfaceAt=CITY.surfaceAt;
 // walls: glancing scrapes along the tangent (keeps tangential speed, sparks), square hits bounce 2.5–4.5 m/s off the normal, airborne grazes deflect outward. Pushed out of q: no reset, no trap.
@@ -299,8 +339,14 @@ function loopStep(dt){const o=P.loop,L=o.L,g=9.8;let y=L.R*(1-Math.cos(o.th)),v=
   if(done){P.loop=null;P.y=0;P.pitch=0;if(done>0){P.loops=(P.loops||0)+1;L.n++;toast('LOOP!');}else{P.v=Math.max(2,Math.min(P.v,o.v0));toast('TOO SLOW!');}}
   P.gy=P.y;return{fl:P.y,ce:1e9,wl:null,st:1};}
 // after the move: walls, tunnel ceiling (gentle cap, never a crash), floor height under her (roofs / ramps / bank lips / pipes are ground), river drag, hoops, loop entry
+// Open garage mouth below 4.2 m: 2 = inside the bay, 1 = the apron in front of the mouth. Back and side bumper slabs stay solid.
+function garageZone(p,x,z,y,r){if(!p||p.type!=='garage'||(y||0)>=4.2)return 0;const out=1.35+(r||0),inn=0.7,side=0.55;let x0=p.x0,x1=p.x1,z0=p.z0,z1=p.z1;
+  if(p.nx<0){x0-=out;x1+=inn;}else if(p.nx>0){x1+=out;x0-=inn;}else{x0-=side;x1+=side;}
+  if(p.nz<0){z0-=out;z1+=inn;}else if(p.nz>0){z1+=out;z0-=inn;}else{z0-=side;z1+=side;}
+  if(x<x0||x>x1||z<z0||z>z1)return 0;return(x>=p.x0&&x<=p.x1&&z>=p.z0&&z<=p.z1)?2:1;}
+function hit(x,z,r,y){return CITY.hit(x,z,r,y);}
 function cityMove(px,pz,py,dt){dt=dt||1/30;if(P.loop)return loopStep(dt);
-  let pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl){cityWall(pr.wl,px,pz);pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl){P.x=px;P.z=pz;pr=CITY.probe(P.x,P.z,P.y,py);}}
+  let pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl&&!hit(P.x,P.z,0.8,Math.max(P.y||0,py||0)))pr={fl:pr.fl,ce:pr.ce,wl:null,st:pr.st};if(pr.wl){cityWall(pr.wl,px,pz);pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl&&!hit(P.x,P.z,0.8,P.y||0))pr={fl:pr.fl,ce:pr.ce,wl:null,st:pr.st};if(pr.wl){P.x=px;P.z=pz;pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl&&!hit(P.x,P.z,0.8,P.y||0))pr={fl:pr.fl,ce:pr.ce,wl:null,st:pr.st};}}
   if(pr.ce<1e9&&P.y+1.4>pr.ce){P.y=Math.max(pr.fl,pr.ce-1.4);if(!P.ground){P.gam=Math.min(P.gam,0);P.pitch=Math.min(P.pitch,2*D);}P.ceil=(P.ceil||0)+1;}
   // half-pipe: speed follows the height she climbs or drops (energy); runs out going up = rolls back down
   if(P.ground&&pr.st&&P._pg!=null){const dy=pr.fl-P._pg,v2=P.v*P.v-2*9.8*dy;if(v2<=0.25&&dy>0){P.v=0.4;P.yaw+=Math.PI;P.hd=P.yaw;P.pipeTurns=(P.pipeTurns||0)+1;}else P.v=Math.sqrt(Math.max(0.16,v2));}
