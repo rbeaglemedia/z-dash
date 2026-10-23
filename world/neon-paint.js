@@ -21,6 +21,8 @@
 //   2. A 2D neon stroke projected onto the car image after X.render,
 //      so drawZ's copy of X.canvas and the studio both show it.
 (function () {
+  var adultFile = (location.pathname || '').toLowerCase().split('/').pop();
+  if (adultFile === '' || adultFile === 'index.html') return;
   const KEY = 'zdash.neonpaint.v1';
   const CH = 'zdash-neonpaint';
   const TAB = Math.random().toString(36).slice(2);
