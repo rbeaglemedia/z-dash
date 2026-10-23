@@ -720,6 +720,15 @@ body:not(.kidon) #kFpsRow { display: none; }
     document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') reg.update().catch(function () {}); }); // home-screen app brought back
     setInterval(function () { reg.update().catch(function () {}); }, 30 * 60 * 1000); }).catch(function (e) { console.warn('SW', e); }); });
 })();</script>
+<script>try{if(!(('ontouchstart' in window)||(navigator.maxTouchPoints>0))&&innerWidth>1024)document.documentElement.classList.add('pc-mode');}catch(e){}</script>
+<style id="pcMenuCss">
+html.pc-mode .kmain{max-height:100vh;overflow-y:auto;justify-content:flex-start;padding:10px 20px 16px;box-sizing:border-box}
+html.pc-mode .ktilesm{grid-template-columns:repeat(5,minmax(0,1fr));grid-auto-rows:minmax(96px,auto);max-height:92vh;overflow-y:auto;align-content:start;width:min(1120px,100%)}
+html.pc-mode .ktile{overflow:visible;min-height:96px}
+html.pc-mode #kStart{overflow:auto}
+html.pc-mode #kStart .kstb{bottom:max(24px,4vh);z-index:2}
+html.pc-mode .khome:not(.kmain){top:4vh;transform:translate(-50%,0);max-height:92vh;overflow-y:auto;width:min(1120px,calc(100vw - 24px))}
+</style>
 </head>
 <body>
 <div id="wakeWarn" class="wakewarn hidden" title="The screen may turn off: tap to retry keeping it on">☾ SCREEN MAY SLEEP</div>

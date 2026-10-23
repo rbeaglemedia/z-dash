@@ -1,0 +1,30 @@
+PC menu, HUD placement, FPS readout, and shortcut labels.
+Desktop = no touch and innerWidth > 1024. Mobile path was not restyled.
+
+node --check world/input.js world/hud.js world/icon-garage.js : pass
+
+Headless Chrome (one browser), world.html:
+
+1920x1080 hasTouch false
+  pc-mode, 15 game cards inside the pause panel (scroll 422 / client 422, panel inside the window)
+  START button inside the start card
+  shortcuts: THROTTLE [W / ↑], BRAKE [S / ↓], NOS [SHIFT], WINGS [F · G MODE], EXIT [C], ENTER BUILDING [E], pause [ESC]
+  keys: G arcade->street, W sets throttle and streetThrottle, S sets brake only, Space sets e-brake only and releases it, Esc and P toggle pause
+  AIR/BRAKE label swap keeps [S / ↓]
+  on foot: WALK [W / ↑], RUN [SHIFT + W], JUMP [SPACE], ENTER [C], EMOTE [1-4], digit 1 fires emote up
+  no button overlap among brake, nos, wings, throttle, fps, pause, exit, enter
+
+1366x768, 1536x864, 1280x720
+  same: 15 cards fully inside the panel, START visible, shortcuts present, no overlap
+
+844x390 hasTouch true, deviceScaleFactor 2
+  pc-mode false, pc-key count 0, no #pcFps
+  canvas buffer W=844 H=390 (phone sizing, not the desktop cap)
+  WINGS still placed by the phone path (inline top)
+  button text BRAKE / NOS HOLD with no shortcut footer
+
+jr.html?kmenu=1 and index.html?kmenu=1 at 1366x768
+  pc-mode, 15 main-menu tiles, none outside the viewport
+  grid scrollHeight equals clientHeight (693)
+
+Headless frame time is tens of ms, so the live readout showed about 22 FPS. The node is the real smoothed counter (N FPS).
