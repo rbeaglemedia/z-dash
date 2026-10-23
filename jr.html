@@ -12566,10 +12566,11 @@ var qrcode = function() {
       publishInp(clamp(s.x + padX + dragX, -1, 1), clamp(s.y + padY + dragY, -1, 1));
       return;
     }
-    if (K.tab === 'road' && R.phase === 'play' && !R.air && !R.onRamp && steer !== 0) {
-      R.target = steer * XMAX; R.tilt = steer * 24.2; R.touch = performance.now();
+    if (K.tab === 'road' && R.phase === 'play' && !R.air && !R.onRamp) {
+      const live = s.x !== 0 || s.y !== 0 || padX !== 0 || padY !== 0;
+      if (live || PCST.was) { R.target = clamp(steer * XMAX, -XMAX, XMAX); R.tilt = steer * 24.2; R.touch = performance.now(); PCST.was = live; }
     }
-    const shown = (K.tab === 'road' && R.phase === 'play' && steer === 0) ? clamp(R.target / XMAX, -1, 1) : steer;
+    const shown = (K.tab === 'road' && R.phase === 'play' && s.x === 0 && padX === 0) ? clamp(R.target / XMAX, -1, 1) : steer;
     publishInp(shown, pitch);
   }
   function tiltIn() { // combined air input, each axis -1..1

@@ -1,0 +1,93 @@
+
+== world.html
+base {"inp":{"steer":0,"pitch":0,"tiltX":0,"tiltY":0,"dotX":0,"dotY":0},"tcmd":[0,0],"dot":{"x":"0.000","y":"0.000"},"lbl":"CENTER","pc":true,"touch":false,"tl":{"have":false,"off":false,"perm":"granted"},"ground":true,"wings":0,"bank":0,"keys":9}
+PASS world.html pc-mode 
+PASS world.html center {"steer":0,"pitch":0,"tiltX":0,"tiltY":0,"dotX":0,"dotY":0}
+KeyD {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0} {"x":"1.000","y":"0.000"} 100% RIGHT [1,0]
+PASS world.html KeyD steer +1 {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0}
+PASS world.html KeyD dot {"x":"1.000","y":"0.000"}
+PASS world.html KeyD label 100% RIGHT
+release D {"steer":0,"pitch":0,"tiltX":0,"tiltY":0,"dotX":0,"dotY":0} CENTER
+PASS world.html release steer 0 {"steer":0,"pitch":0,"tiltX":0,"tiltY":0,"dotX":0,"dotY":0}
+PASS world.html release label CENTER
+KeyA {"steer":-1,"pitch":0,"tiltX":-1,"tiltY":0,"dotX":-49,"dotY":0} {"x":"-1.000","y":"0.000"} 100% LEFT
+PASS world.html KeyA steer -1 {"steer":-1,"pitch":0,"tiltX":-1,"tiltY":0,"dotX":-49,"dotY":0}
+PASS world.html KeyA label 100% LEFT
+PASS world.html ArrowRight +1 {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0}
+PASS world.html ArrowLeft -1 {"steer":-1,"pitch":0,"tiltX":-1,"tiltY":0,"dotX":-49,"dotY":0}
+air KeyS {"steer":0,"pitch":1,"tiltX":0,"tiltY":1,"dotX":0,"dotY":20} false 1 TILT 100% UP
+PASS world.html air nose-up +1 {"steer":0,"pitch":1,"tiltX":0,"tiltY":1,"dotX":0,"dotY":20}
+PASS world.html air up label TILT 100% UP
+air ArrowUp {"steer":0,"pitch":-1,"tiltX":0,"tiltY":-1,"dotX":0,"dotY":-20} TILT 100% DOWN
+PASS world.html air nose-down -1 {"steer":0,"pitch":-1,"tiltX":0,"tiltY":-1,"dotX":0,"dotY":-20}
+air roll {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0} bank 0.44998858047637214
+PASS world.html air roll +1 {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0}
+PASS world.html air bank follows 0.44998858047637214
+held samples [0.34320000000298023,-0.3271999999955296,-0.9871999999955297,-1,-1,-1]
+PASS world.html stays at -1 while held [0.34320000000298023,-0.3271999999955296,-0.9871999999955297,-1,-1,-1]
+PASS world.html no script errors 
+
+== world-split.html
+base {"inp":{"steer":0,"pitch":0,"tiltX":0,"tiltY":0,"dotX":0,"dotY":0},"tcmd":[0,0],"dot":{"x":"0.000","y":"0.000"},"lbl":"CENTER","pc":true,"touch":false,"tl":{"have":false,"off":false,"perm":"granted"},"ground":true,"wings":0,"bank":0,"keys":9}
+PASS world-split.html pc-mode 
+PASS world-split.html center {"steer":0,"pitch":0,"tiltX":0,"tiltY":0,"dotX":0,"dotY":0}
+KeyD {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0} {"x":"1.000","y":"0.000"} 100% RIGHT [1,0]
+PASS world-split.html KeyD steer +1 {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0}
+PASS world-split.html KeyD dot {"x":"1.000","y":"0.000"}
+PASS world-split.html KeyD label 100% RIGHT
+release D {"steer":0,"pitch":0,"tiltX":0,"tiltY":0,"dotX":0,"dotY":0} CENTER
+PASS world-split.html release steer 0 {"steer":0,"pitch":0,"tiltX":0,"tiltY":0,"dotX":0,"dotY":0}
+PASS world-split.html release label CENTER
+KeyA {"steer":-1,"pitch":0,"tiltX":-1,"tiltY":0,"dotX":-49,"dotY":0} {"x":"-1.000","y":"0.000"} 100% LEFT
+PASS world-split.html KeyA steer -1 {"steer":-1,"pitch":0,"tiltX":-1,"tiltY":0,"dotX":-49,"dotY":0}
+PASS world-split.html KeyA label 100% LEFT
+PASS world-split.html ArrowRight +1 {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0}
+PASS world-split.html ArrowLeft -1 {"steer":-1,"pitch":0,"tiltX":-1,"tiltY":0,"dotX":-49,"dotY":0}
+air KeyS {"steer":0,"pitch":1,"tiltX":0,"tiltY":1,"dotX":0,"dotY":20} false 1 TILT 100% UP
+PASS world-split.html air nose-up +1 {"steer":0,"pitch":1,"tiltX":0,"tiltY":1,"dotX":0,"dotY":20}
+PASS world-split.html air up label TILT 100% UP
+air ArrowUp {"steer":0,"pitch":-1,"tiltX":0,"tiltY":-1,"dotX":0,"dotY":-20} TILT 100% DOWN
+PASS world-split.html air nose-down -1 {"steer":0,"pitch":-1,"tiltX":0,"tiltY":-1,"dotX":0,"dotY":-20}
+air roll {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0} bank 0.6215048810955547
+PASS world-split.html air roll +1 {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0}
+PASS world-split.html air bank follows 0.6215048810955547
+held samples [0.22799999999999995,-0.452,-1,-1,-1,-1]
+PASS world-split.html stays at -1 while held [0.22799999999999995,-0.452,-1,-1,-1,-1]
+PASS world-split.html no script errors 
+
+== fly3.html
+fly3 KeyD {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0} {"x":"1.000","y":"0.000"} 100% RIGHT false
+PASS fly3 KeyD +1 {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0}
+PASS fly3 release 0 {"steer":0,"pitch":0,"tiltX":0,"tiltY":0,"dotX":0,"dotY":0}
+PASS fly3 ArrowLeft -1 {"steer":-1,"pitch":0,"tiltX":-1,"tiltY":0,"dotX":-49,"dotY":0}
+fly3 KeyW {"steer":0,"pitch":-1,"tiltX":0,"tiltY":-1,"dotX":0,"dotY":-20} TILT 100% DOWN
+PASS fly3 nose-down -1 {"steer":0,"pitch":-1,"tiltX":0,"tiltY":-1,"dotX":0,"dotY":-20}
+PASS fly3 nose-up +1 {"steer":0,"pitch":1,"tiltX":0,"tiltY":1,"dotX":0,"dotY":20}
+PASS fly3 no script errors 
+
+== jr.html
+jr state {"tab":"road","phase":"play","pc":true,"air":false}
+PASS jr pc-mode road {"tab":"road","phase":"play","pc":true,"air":false}
+jr KeyD {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0} target 1.5
+PASS jr KeyD steer +1 {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0}
+PASS jr KeyD full lane 1.5
+jr release {"steer":0,"pitch":0,"tiltX":0,"tiltY":0,"dotX":0,"dotY":0} 0
+PASS jr release 0 {"steer":0,"pitch":0,"tiltX":0,"tiltY":0,"dotX":0,"dotY":0} target 0
+PASS jr ArrowLeft -1 {"steer":-1,"pitch":0,"tiltX":-1,"tiltY":0,"dotX":-49,"dotY":0} -1.5
+jr air S {"steer":0,"pitch":1,"tiltX":0,"tiltY":1,"dotX":0,"dotY":20} {"lr":0,"fb":-1}
+PASS jr air nose-up +1 {"steer":0,"pitch":1,"tiltX":0,"tiltY":1,"dotX":0,"dotY":20} {"lr":0,"fb":-1}
+jr air A {"steer":-1,"pitch":0,"tiltX":-1,"tiltY":0,"dotX":-49,"dotY":0} -1
+PASS jr air roll -1 {"steer":-1,"pitch":0,"tiltX":-1,"tiltY":0,"dotX":-49,"dotY":0} lr -1
+jr drag right {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0} 1
+PASS jr drag right +1 lane {"steer":1,"pitch":0,"tiltX":1,"tiltY":0,"dotX":49,"dotY":0} lane 1
+jr drag left {"steer":-1,"pitch":0,"tiltX":-1,"tiltY":0,"dotX":-49,"dotY":0} -2
+PASS jr drag left -1 far lane {"steer":-1,"pitch":0,"tiltX":-1,"tiltY":0,"dotX":-49,"dotY":0} lane -2
+PASS jr drag release 0 {"steer":0,"pitch":0,"tiltX":0,"tiltY":0,"dotX":0,"dotY":0}
+PASS jr no script errors 
+
+== mobile world
+mobile {"pc":false,"keys":0,"dot":false,"touch":true}
+PASS mobile no pc-mode {"pc":false,"keys":0,"dot":false,"touch":true}
+PASS mobile no syntax errors 
+
+FAILS 0
