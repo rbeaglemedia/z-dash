@@ -1986,32 +1986,136 @@
     const want = Math.min(dx, dz) * 1.55;
     const height = Math.min(14, bh * 0.55);
     const y0 = 3.2;
-    const faces = [
-      { nx: 1, nz: 0, len: dz, cx: b.x1, cz: (b.z0 + b.z1) / 2, tx: 0, tz: 1 },
-      { nx: -1, nz: 0, len: dz, cx: b.x0, cz: (b.z0 + b.z1) / 2, tx: 0, tz: -1 },
-      { nx: 0, nz: 1, len: dx, cx: (b.x0 + b.x1) / 2, cz: b.z1, tx: -1, tz: 0 },
-      { nx: 0, nz: -1, len: dx, cx: (b.x0 + b.x1) / 2, cz: b.z0, tx: 1, tz: 0 }
-    ];
-    const cam = worldCam();
-    let best = null, score = -1e9;
-    for (let i = 0; i < faces.length; i++) {
-      const f = faces[i];
-      const dot = cam ? ((cam.x - f.cx) * f.nx + (cam.z - f.cz) * f.nz) : f.len;
-      if (cam && dot <= 1) continue;
-      const s = dot + f.len * 0.15;
-      if (s > score) { score = s; best = f; }
+    const sign = b.sign || {};
+    let nx = 0, nz = 0;
+    if (b.face === 'w' || b.face === 'e' || b.face === 'n' || b.face === 's') {
+      nx = b.face === 'e' ? 1 : (b.face === 'w' ? -1 : 0);
+      nz = b.face === 'n' ? 1 : (b.face === 's' ? -1 : 0);
+    } else if (sign.nx || sign.nz) {
+      nx = sign.nx || 0;
+      nz = sign.nz || 0;
+    } else if (dz >= dx) {
+      nx = -1;
+    } else {
+      nz = -1;
     }
-    if (!best) best = faces[0];
-    best.width = Math.min(want, best.len * 0.92);
-    best.height = Math.min(height, Math.max(2.4, (b.h || b.top || WALL_H) - 3.5));
-    best.y0 = y0;
-    best.out = 0.16;
-    return best;
+    const nlen = Math.hypot(nx, nz) || 1;
+    nx /= nlen;
+    nz /= nlen;
+    let cx, cz, tx, tz, span;
+    if (Math.abs(nx) >= Math.abs(nz)) {
+      cx = nx > 0 ? b.x1 : b.x0;
+      cz = ((b.z0 != null ? b.z0 : 0) + (b.z1 != null ? b.z1 : 0)) / 2;
+      tx = 0;
+      tz = nx > 0 ? 1 : -1;
+      span = dz;
+    } else {
+      cx = ((b.x0 != null ? b.x0 : 0) + (b.x1 != null ? b.x1 : 0)) / 2;
+      cz = nz > 0 ? b.z1 : b.z0;
+      tx = nz > 0 ? -1 : 1;
+      tz = 0;
+      span = dx;
+    }
+    return {
+      nx: nx, nz: nz, tx: tx, tz: tz, cx: cx, cz: cz,
+      width: Math.min(want, span * 0.92),
+      height: Math.min(height, Math.max(2.4, bh - 3.5)),
+      y0: y0,
+      out: 0.04
+    };
+  }
+  // Stored strokes use u in -1..+1 and v in 0..1. The wall quad is 0..1.
+  function muralUV(u, v) {
+    return [clamp((u + 1) * 0.5, 0, 1), clamp(v, 0, 1)];
+  }
+  function muralPoint01(f, su, sv) {
+    const u = clamp(su, 0, 1);
+    const v = clamp(sv, 0, 1);
+    const along = (u - 0.5) * f.width;
+    const up = f.y0 + v * f.height;
+    return [f.cx + f.nx * f.out + f.tx * along, up, f.cz + f.nz * f.out + f.tz * along];
   }
   function muralPoint(f, u, v) {
-    const along = u * f.width * 0.5;
-    const up = f.y0 + clamp(v, 0, 1) * f.height;
-    return [f.cx + f.nx * f.out + f.tx * along, up, f.cz + f.nz * f.out + f.tz * along];
+    const uv = muralUV(u, v);
+    return muralPoint01(f, uv[0], uv[1]);
+  }
+  function grafNear() { return (typeof NEAR === 'number') ? NEAR : 0.5; }
+  function grafCam(x, y, z) {
+    if (typeof camS !== 'function') return null;
+    return camS(x, y, z);
+  }
+  function grafScr(c) {
+    if (typeof scr === 'function') return scr(c);
+    const Hp = (typeof H === 'number') ? H : 390;
+    const Wp = (typeof W === 'number') ? W : 844;
+    const f = Hp * 0.9;
+    return [Wp / 2 + c[0] * f / c[2], Hp / 2 - c[1] * f / c[2], c[2]];
+  }
+  function grafClipPoly(camPts) {
+    const near = grafNear();
+    const o = [];
+    for (let i = 0; i < camPts.length; i++) {
+      const a = camPts[i], b = camPts[(i + 1) % camPts.length];
+      const ai = a[2] >= near, bi = b[2] >= near;
+      if (ai) o.push(a);
+      if (ai !== bi) {
+        const t = (near - a[2]) / (b[2] - a[2]);
+        o.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, near]);
+      }
+    }
+    return o;
+  }
+  function grafClipSeg(a, b) {
+    const near = grafNear();
+    if (a[2] < near && b[2] < near) return null;
+    if (a[2] >= near && b[2] >= near) return [a, b];
+    const t = (near - a[2]) / (b[2] - a[2]);
+    const m = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, near];
+    return a[2] < near ? [m, b] : [a, m];
+  }
+  function grafProjectPoly(worldPts) {
+    const camPts = [];
+    for (let i = 0; i < worldPts.length; i++) {
+      const p = worldPts[i];
+      const c = grafCam(p[0], p[1], p[2]);
+      if (!c) return null;
+      camPts.push(c);
+    }
+    const clipped = grafClipPoly(camPts);
+    if (clipped.length < 3) return null;
+    const s = [];
+    for (let i = 0; i < clipped.length; i++) {
+      if (clipped[i][2] < grafNear() - 1e-6) return null;
+      const q = grafScr(clipped[i]);
+      if (!isFinite(q[0]) || !isFinite(q[1])) return null;
+      s.push(q);
+    }
+    return s;
+  }
+  function grafTrace(ctx, s) {
+    ctx.beginPath();
+    ctx.moveTo(s[0][0], s[0][1]);
+    for (let i = 1; i < s.length; i++) ctx.lineTo(s[i][0], s[i][1]);
+    ctx.closePath();
+  }
+  function grafSegScreen(p, q) {
+    const a = grafCam(p[0], p[1], p[2]);
+    const b = grafCam(q[0], q[1], q[2]);
+    if (!a || !b) return null;
+    const seg = grafClipSeg(a, b);
+    if (!seg) return null;
+    const sa = grafScr(seg[0]);
+    const sb = grafScr(seg[1]);
+    if (!isFinite(sa[0]) || !isFinite(sa[1]) || !isFinite(sb[0]) || !isFinite(sb[1])) return null;
+    return { a: sa, b: sb, z: (seg[0][2] + seg[1][2]) * 0.5 };
+  }
+  function grafWorldPoly(f, u0, v0, u1, v1) {
+    return [
+      muralPoint01(f, u0, v0),
+      muralPoint01(f, u1, v0),
+      muralPoint01(f, u1, v1),
+      muralPoint01(f, u0, v1)
+    ];
   }
   function drawBuildingGraffiti(ctx, b) {
     try {
@@ -2039,56 +2143,55 @@
     grafArmed = false;
   }
   function paintMural(ctx, b) {
-    const project = (typeof proj === 'function') ? proj : (window.R && window.R.proj);
-    if (!project) return;
+    if (typeof camS !== 'function') return;
     const f = muralFrame(b);
+    const eye = worldCam();
+    const wx = f.cx + f.nx * f.out;
+    const wy = f.y0 + f.height * 0.5;
+    const wz = f.cz + f.nz * f.out;
+    if (eye) {
+      const facing = (eye.x - wx) * f.nx + (eye.y - wy) * 0 + (eye.z - wz) * f.nz;
+      if (!(facing > 0)) return;
+    }
+    const wall = grafProjectPoly(grafWorldPoly(f, 0, 0, 1, 1));
+    if (!wall) return;
     const strokes = wallShowing();
+    const Hp = (typeof H === 'number') ? H : 390;
     ctx.save();
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    function quad(u0, v0, u1, v1) {
-      const p = [muralPoint(f, u0, v0), muralPoint(f, u1, v0), muralPoint(f, u1, v1), muralPoint(f, u0, v1)];
-      const s = [];
-      for (let i = 0; i < 4; i++) {
-        const q = project(p[i][0], p[i][1], p[i][2]);
-        if (!q) return null;
-        s.push(q);
-      }
-      ctx.beginPath();
-      ctx.moveTo(s[0][0], s[0][1]);
-      for (let i = 1; i < 4; i++) ctx.lineTo(s[i][0], s[i][1]);
-      ctx.closePath();
-      return s;
-    }
-    if (quad(-1.04, -0.03, 1.04, 1.04)) {
-      ctx.fillStyle = 'rgba(22, 11, 40, 0.88)';
-      ctx.fill();
-    }
+    grafTrace(ctx, wall);
+    ctx.clip();
+    ctx.fillStyle = 'rgba(22, 11, 40, 0.88)';
+    ctx.fill();
     ctx.beginPath();
     for (let i = 0; i <= 14; i++) {
-      const u = -1 + i / 7;
-      const a = project.apply(null, muralPoint(f, u, 0));
-      const c = project.apply(null, muralPoint(f, u, 1));
-      if (a && c) { ctx.moveTo(a[0], a[1]); ctx.lineTo(c[0], c[1]); }
+      const u = i / 14;
+      const seg = grafSegScreen(muralPoint01(f, u, 0), muralPoint01(f, u, 1));
+      if (!seg) continue;
+      ctx.moveTo(seg.a[0], seg.a[1]);
+      ctx.lineTo(seg.b[0], seg.b[1]);
     }
     for (let i = 0; i <= 10; i++) {
       const v = i / 10;
-      const a = project.apply(null, muralPoint(f, -1, v));
-      const c = project.apply(null, muralPoint(f, 1, v));
-      if (a && c) { ctx.moveTo(a[0], a[1]); ctx.lineTo(c[0], c[1]); }
+      const seg = grafSegScreen(muralPoint01(f, 0, v), muralPoint01(f, 1, v));
+      if (!seg) continue;
+      ctx.moveTo(seg.a[0], seg.a[1]);
+      ctx.lineTo(seg.b[0], seg.b[1]);
     }
     ctx.strokeStyle = 'rgba(120, 70, 180, 0.45)';
     ctx.lineWidth = 1;
     ctx.stroke();
-    if (quad(-1.02, -0.02, 1.02, 1.02)) {
-      ctx.strokeStyle = '#ff4fd8';
-      ctx.lineWidth = 2.4;
-      ctx.shadowColor = '#ff4fd8';
-      ctx.shadowBlur = 10;
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-    }
-    if (quad(-0.98, 0.9, 0.98, 1.0)) {
+    grafTrace(ctx, wall);
+    ctx.strokeStyle = '#ff4fd8';
+    ctx.lineWidth = 2.4;
+    ctx.shadowColor = '#ff4fd8';
+    ctx.shadowBlur = 10;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    const band = grafProjectPoly(grafWorldPoly(f, 0.01, 0.9, 0.99, 1));
+    if (band) {
+      grafTrace(ctx, band);
       ctx.fillStyle = 'rgba(6, 2, 16, 0.8)';
       ctx.fill();
       ctx.strokeStyle = '#3ee6ff';
@@ -2098,22 +2201,17 @@
       ctx.stroke();
       ctx.shadowBlur = 0;
     }
-    const mid = project.apply(null, muralPoint(f, 0, 0.95));
-    const leftPt = project.apply(null, muralPoint(f, -0.92, 0.95));
-    const rightPt = project.apply(null, muralPoint(f, 0.92, 0.95));
-    const edgeL = project.apply(null, muralPoint(f, -0.96, 0.95));
-    const edgeR = project.apply(null, muralPoint(f, 0.96, 0.95));
-    const bandA = project.apply(null, muralPoint(f, 0, 0.9));
-    const bandB = project.apply(null, muralPoint(f, 0, 1));
-    if (mid && leftPt && rightPt && edgeL && edgeR) {
-      const span = Math.hypot(edgeR[0] - edgeL[0], edgeR[1] - edgeL[1]);
-      const thick = (bandA && bandB) ? Math.hypot(bandB[0] - bandA[0], bandB[1] - bandA[1]) : span * 0.08;
+    const base = grafSegScreen(muralPoint01(f, 0.04, 0.95), muralPoint01(f, 0.96, 0.95));
+    const rise = grafSegScreen(muralPoint01(f, 0.5, 0.9), muralPoint01(f, 0.5, 1));
+    if (base) {
+      const span = Math.hypot(base.b[0] - base.a[0], base.b[1] - base.a[1]);
+      const thick = rise ? Math.hypot(rise.b[0] - rise.a[0], rise.b[1] - rise.a[1]) : span * 0.08;
       const fs = Math.max(8, thick * 0.62);
-      if (span > 16 && fs >= 8) {
-        const ang = Math.atan2(rightPt[1] - leftPt[1], rightPt[0] - leftPt[0]);
+      if (span > 16) {
+        const ang = Math.atan2(base.b[1] - base.a[1], base.b[0] - base.a[0]);
         const label = "🎨 Z COMPANY ARTS — ELLIE'S GRAFFITI WALL";
         ctx.save();
-        ctx.translate(mid[0], mid[1]);
+        ctx.translate((base.a[0] + base.b[0]) * 0.5, (base.a[1] + base.b[1]) * 0.5);
         ctx.rotate(ang);
         ctx.font = '900 ' + fs.toFixed(1) + 'px Orbitron, sans-serif';
         ctx.textAlign = 'center';
@@ -2129,33 +2227,24 @@
     }
     for (let i = 0; i < strokes.length; i++) {
       const s = strokes[i];
-      const seq = [];
-      let depth = 40;
-      for (let k = 0; k < s.points.length; k++) {
-        const wpt = muralPoint(f, s.points[k][0], s.points[k][1]);
-        const q = project(wpt[0], wpt[1], wpt[2]);
-        if (q && q[2]) depth = q[2];
-        seq.push(q);
-      }
-      const Hpx = (typeof H === 'number' ? H : 390);
-      const px = (Hpx * 0.9) / Math.max(8, depth);
+      const pts = s.points || [];
+      if (!pts.length) continue;
       const mul = s.brush === 'spray' ? 1.8 : (s.brush === 'ribbon' ? 1.35 : (s.brush === 'line' ? 0.7 : 1));
-      const lw = Math.max(2.2, (s.size || 16) / 34 * f.height * px * 0.22 * mul);
       const color = s.brush === 'rainbow' ? 'hsl(' + ((i * 36) % 360) + ',100%,64%)' : s.color;
-      const runs = [];
-      let cur = [];
-      for (let k = 0; k < seq.length; k++) {
-        if (!seq[k]) { if (cur.length) runs.push(cur); cur = []; continue; }
-        cur.push(seq[k]);
+      const world = [];
+      for (let k = 0; k < pts.length; k++) world.push(muralPoint(f, pts[k][0], pts[k][1]));
+      if (world.length === 1) {
+        const p = world[0];
+        world.push([p[0] + f.tx * 0.04, p[1], p[2] + f.tz * 0.04]);
       }
-      if (cur.length) runs.push(cur);
-      for (let r = 0; r < runs.length; r++) {
-        const run = runs[r];
+      for (let k = 1; k < world.length; k++) {
+        const seg = grafSegScreen(world[k - 1], world[k]);
+        if (!seg) continue;
+        const px = (Hp * 0.9) / Math.max(8, seg.z);
+        const lw = Math.max(2.2, (s.size || 16) / 34 * f.height * px * 0.22 * mul);
         ctx.beginPath();
-        for (let k = 0; k < run.length; k++) {
-          if (k) ctx.lineTo(run[k][0], run[k][1]); else ctx.moveTo(run[k][0], run[k][1]);
-        }
-        if (run.length === 1) ctx.lineTo(run[0][0] + 0.6, run[0][1]);
+        ctx.moveTo(seg.a[0], seg.a[1]);
+        ctx.lineTo(seg.b[0], seg.b[1]);
         ctx.strokeStyle = color;
         ctx.shadowColor = color;
         ctx.globalAlpha = s.brush === 'spray' ? 0.5 : 0.95;
