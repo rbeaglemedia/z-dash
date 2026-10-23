@@ -1643,7 +1643,7 @@
     ctx.save();
     ctx.globalAlpha = alpha == null ? 1 : alpha;
     ctx.translate(cx + sway * 26 * sc, cy - hop * 40 * sc);
-    ctx.rotate((pose.spin ? Math.sin(now / 80) * 0.9 : 0) + bow * 0.42);
+    ctx.rotate((pose.spin ? Math.sin(now / 80) * 0.55 : 0) + bow * 0.42);
     if (pose.spin) {
       ctx.strokeStyle = 'rgba(255,225,77,.9)';
       ctx.lineWidth = 2;
@@ -1798,7 +1798,7 @@
     if (showFig && pet) {
       var psc = Math.max(0.55, Math.min(S.w, S.h) / 420);
       var fade = state.cameraActive && !state.userSim ? 0.85 : 1;
-      drawPup(L.center.x, L.frame.y + L.frame.h * 0.56, psc * 1.25, livePetPose(now), now, fade);
+      drawPup(L.center.x, L.center.y - 4, psc * 1.15, livePetPose(now), now, fade);
     }
     ctx.restore();
   }
