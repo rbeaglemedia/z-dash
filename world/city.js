@@ -17,15 +17,22 @@ const CITY=(()=>{let sd=90210;const cr=()=>(sd=(sd*16807)%2147483647)/2147483647
   const box=(b,o)=>{const q=Object.assign({y0:0},o,{b,oid:cur.id});b.boxes.push(q);BX.push(q);cur.boxes.push(q);return q;};
   const bldg=(o)=>{const b=Object.assign({boxes:[],deco:[],id:BL.length,oid:cur.id},o);BL.push(b);cur.bl.push(b);return b;};
   const ext=(o)=>{const r=((o.rot||0)%180+180)%180===90,w=r?o.d:o.w,d=r?o.w:o.d;return[o.x-w/2,o.x+w/2,o.z-d/2,o.z+d/2];};
-  // door-ready ground floor: door slots (1.4 x 2.4 m) every ~16 m along each street face of the ground box, stored as data for walking later
-  function doorsOf(q){const D=[];for(const[ax,fix,n]of[['x',q.z0,[0,-1]],['x',q.z1,[0,1]],['z',q.x0,[-1,0]],['z',q.x1,[1,0]]]){const a0=ax==='x'?q.x0:q.z0,a1=ax==='x'?q.x1:q.z1,L=a1-a0,k=Math.max(1,Math.floor((L-8)/16));
-      for(let i=0;i<k;i++){const a=a0+(L/(k))*(i+.5);D.push(ax==='x'?[a,fix,n[0],n[1]]:[fix,a,n[0],n[1]]);}}return D;}
+  // 20 m streets (highway excluded). A face borders one when it sits just outside that curb, not in an alley.
+  const roadsX=[],roadsZ=[];for(let x=150;x<=XS1;x+=100){roadsX.push(x);if(-x!==HW.x)roadsX.push(-x);}
+  for(let z=ZS0;z<=ZS1;z+=200)if(!(z>RIV.z0-10&&z<RIV.z1+10))roadsZ.push(z);
+  // door slots on street faces only: about one per 30 m, at most 3 a face. No street face = one door on the south wall.
+  function doorsOf(b){const q=b.boxes?b.boxes[0]:b,D=[],CURB=10,TOL=8,ov=(a0,a1,b0,b1)=>a1>b0+0.5&&a0<b1-0.5;
+    const onSt=(ax,fix,a0,a1)=>{if(ax==='z'){if(!ov(a0,a1,ZS0,1700)&&!ov(a0,a1,1900,ZS1))return false;for(const sx of roadsX){const w=sx-CURB,e=sx+CURB;if((fix<=w&&w-fix<=TOL)||(fix>=e&&fix-e<=TOL))return true;}}
+      else{if(!ov(a0,a1,-XS1,-150)&&!ov(a0,a1,150,XS1))return false;for(const sz of roadsZ){const s=sz-CURB,n=sz+CURB;if((fix<=s&&s-fix<=TOL)||(fix>=n&&fix-n<=TOL))return true;}}return false;};
+    let any=0;for(const[ax,fix,n]of[['x',q.z0,[0,-1]],['x',q.z1,[0,1]],['z',q.x0,[-1,0]],['z',q.x1,[1,0]]]){const a0=ax==='x'?q.x0:q.z0,a1=ax==='x'?q.x1:q.z1,L=a1-a0;if(L<2||!onSt(ax,fix,a0,a1))continue;any=1;const k=Math.min(3,Math.max(1,Math.floor(L/30)||1));
+      for(let i=0;i<k;i++){const a=a0+(L/k)*(i+.5);D.push(ax==='x'?[a,fix,n[0],n[1]]:[fix,a,n[0],n[1]]);}}
+    if(!any)D.push([(q.x0+q.x1)/2,q.z0,0,-1]);return D;}
   const TYPES={
    building(o){const[x0,x1,z0,z1]=ext(o),p=o.p||{},h=o.h,b=bldg({x0,x1,z0,z1,cx:o.x,cz:o.z,c:p.c,wc:p.wc,dash:p.dash||[2,1.6],wseed:p.wseed||0,kind:p.kind||'b',slab:p.y0>0?1:0,top:h,rad:Math.hypot(x1-x0,z1-z0)/2});
      if(p.y0>0){box(b,{x0,x1,z0,z1,y0:p.y0,y1:h});return;}
      const T=p.tiers||[1];let y=0,ax0=x0,ax1=x1,az0=z0,az1=z1;for(let i=0;i<T.length;i++){const top=i===T.length-1?h:h*T[i];box(b,{x0:ax0,x1:ax1,z0:az0,z1:az1,y0:y,y1:top});y=top;const ix=(ax1-ax0)*(p.inset||.14),iz=(az1-az0)*(p.inset||.14);ax0+=ix;ax1-=ix;az0+=iz;az1-=iz;}
      const t=b.boxes[b.boxes.length-1],rx=(t.x0+t.x1)/2,rz=(t.z0+t.z1)/2,rw=Math.min(t.x1-t.x0,t.z1-t.z0);
-     if(b.kind==='b'||b.kind==='landmark'){b.doors=doorsOf(b.boxes[0]);b.gf=GF;}
+     if(b.kind==='b'||b.kind==='landmark'){b.doors=doorsOf(b);b.gf=GF;}
      if(p.sign)b.deco.push(['sign',p.sign]);
      if(p.roof==='ant')b.deco.push(['ant',rx+rw*.2,rz,h,p.antH||16]);else if(p.roof==='tank')b.deco.push(['tank',t.x0+rw*.25,t.z0+rw*.25,h]);
      if(p.cable)b.deco.push(['cable',o.x,o.z,h,p.cable]);b.roofBox=t;if(p.pad)TYPES.helipad({id:o.id,x:rx,z:rz,h});},
@@ -220,7 +227,7 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
     if(window.SOCCER&&SOCCER.paved&&SOCCER.paved(x,z))return'paved';
     return'grass';}
   const padAt=(x,z,y)=>PADS.find(p=>Math.abs(p.y-y)<1&&inR(x,z,p))||null;
-  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,BX,RAMPS,PADS,TREES,LOTS,HOOPS,RINGS:rings,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,XS0,XS1,ZS0,ZS1,
+  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,buildings:BL,BX,roadsX,roadsZ,RAMPS,PADS,TREES,LOTS,HOOPS,RINGS:rings,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,XS0,XS1,ZS0,ZS1,
     probe,gnd,riverY,pipeY,rampH,trackPts,trackDist,surfaceAt,padAt,inTunnel:(x,z)=>x>TUN.bx0&&x<TUN.bx1&&z>TUN.z0&&z<TUN.z1};})();
 const surfaceAt=CITY.surfaceAt;
 // walls: glancing scrapes along the tangent (keeps tangential speed, sparks), square hits bounce 2.5–4.5 m/s off the normal, airborne grazes deflect outward. Pushed out of q: no reset, no trap.
