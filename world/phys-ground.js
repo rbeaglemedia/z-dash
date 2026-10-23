@@ -34,7 +34,7 @@ function groundStep(dt,T,I,I0,nz,vT,vr,wf,ge,cbank,g,CL){
         if(I.brk&&!I.eb)P.v=Math.max(0,P.v-(T.streetBrake||15.5)*Sf.b*dt);
         P.v=Math.max(0,P.v-Math.sin(P.pitch)*T.gravityK*dt);}
       else P.v+=(vT-P.v)*(vT>P.v?T.groundAccel*ofr*Sf.a:T.momentum*Sf.d)*dt-Math.sin(P.pitch)*T.gravityK*dt-(I.brk?T.groundBrake*Sf.b*dt:0)-T.groundFric*(ofr<1?1+2*(1-ofr):1)*Sf.d*dt;
-      if(!ebDone&&I.nos&&(P.nosTank||0)>0){P.v+=(street?9:8)*dt;nosGroundFx(dt);}
+      if(!ebDone&&I.nos&&(P.nosTank||0)>0)P.v+=(street?9:8)*dt;
       if(!ebDone&&P.wings===1&&P.v<T.rotateSpeed&&!(kind==='runway'&&I.tu))P.v=Math.max(0,P.v-P.v*0.12*dt);}
     P.gT=(P.gT||0)+dt;
     if(!ebDone){const yM=Sf.g*(P.wings===1?0.85:1);
@@ -52,8 +52,6 @@ const NOS_TIERS=['n-stock','n-big','n-race','n-legend'];function nosTierIdx(){if
 const FX=[];function fxBurst(k,n){const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw);for(let i=0;i<n;i++){const r=brn,sp=k==='spark';
   FX.push({k,x:P.x-fx*1.6+(r()-.5)*1.6,y:sp?.15:.6,z:P.z-fz*1.6+(r()-.5)*1.6,vx:fx*P.v*(sp?.5:.1)+(r()-.5)*(sp?8:2),vy:sp?1+r()*4:1+r()*1.5,vz:fz*P.v*(sp?.5:.1)+(r()-.5)*(sp?8:2),life:sp?.35+r()*.4:1.6+r()*1.2,t:0,s:sp?0:1+r()});}
   if(FX.length>600)FX.splice(0,FX.length-600);}
-// NOS on the ground: exhaust sparks only. Accel surge lives in groundStep. No tire circles — the chase cam drives through them and they fill the screen.
-function nosGroundFx(dt){P._nosFx=(P._nosFx||0)+dt;if(P._nosFx<0.06)return;P._nosFx=0;fxBurst('spark',2);}
 // Wings-out ground drift: wingtip scrape when the bank, body roll, or e-brake slip is already high. Does not write ebSlip.
 function wingScrape(dt,I){if(P.wings!==1||!P.ground)return;
   const hot=Math.abs(P.ebSlip||0)>0.25||Math.abs(P.bank||0)>0.4||Math.abs(P.ebRoll||0)>0.08;
