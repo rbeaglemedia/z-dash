@@ -47,14 +47,25 @@ function zIconBake(){if(ZICON.cv)return;const paint=miniIconPaint(),N=160,cv=doc
   trace([[-.18,2.20],[.18,2.20],[.12,2.08],[-.12,2.08]]);c.closePath();c.fillStyle=ink;c.fill();
   ZICON.cv=cv;ZICON.paint=paint;}
 function miniHex(hex,a){const n=parseInt(String(hex||'').replace('#',''),16);if(!Number.isFinite(n))return`rgba(62,230,255,${a})`;return`rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
-// Pitch and spur live in the baked layer (shared/soccer-tune.js). Bounds grow only if that pitch sits outside the city frame.
-function miniFitPitch(){const T=window.SOCCER_TUNE;if(!T||MINI.fit)return;MINI.fit=1;const pad=24,x0=Math.min(T.roadX0,T.fieldCx-T.fieldHw)-pad,x1=Math.max(T.roadX1,T.fieldCx+T.fieldHw)+pad,z0=T.fieldCz-T.fieldHl-pad,z1=T.fieldCz+T.fieldHl+pad;if(x0<MINI.X0)MINI.X0=x0;if(x1>MINI.X1)MINI.X1=x1;if(z0<MINI.Z0)MINI.Z0=z0;if(z1>MINI.Z1)MINI.Z1=z1;}
-function miniPitch(c,X,Y,S){const T=window.SOCCER_TUNE;if(!T)return;const F=window.SOCCER&&SOCCER.field,x0=T.fieldCx-T.fieldHw,x1=T.fieldCx+T.fieldHw,z0=T.fieldCz-T.fieldHl,z1=T.fieldCz+T.fieldHl,gw=(F&&F.goalW)||Math.min((x1-x0)*.46,16),gd=(F&&F.goalD)||5,gx0=T.fieldCx-gw/2,gx1=T.fieldCx+gw/2;
-  c.fillStyle='rgba(62,230,255,.55)';c.fillRect(X(T.roadX0),Y(T.roadZ+T.roadHalfW),(T.roadX1-T.roadX0)*S,T.roadHalfW*2*S);
-  c.fillStyle='rgba(7,40,28,.92)';c.fillRect(X(x0),Y(z1),(x1-x0)*S,(z1-z0)*S);c.strokeStyle='#3ee6ff';c.lineWidth=1.7;c.strokeRect(X(x0),Y(z1),(x1-x0)*S,(z1-z0)*S);
-  c.beginPath();c.moveTo(X(x0),Y(T.fieldCz));c.lineTo(X(x1),Y(T.fieldCz));c.stroke();
-  const goal=(z,sign,col)=>{c.beginPath();c.moveTo(X(gx0),Y(z));c.lineTo(X(gx0),Y(z+sign*gd));c.lineTo(X(gx1),Y(z+sign*gd));c.lineTo(X(gx1),Y(z));c.strokeStyle=col;c.lineWidth=1.8;c.stroke();};
-  goal(z0,-1,'#ff4fd8');goal(z1,1,'#7dfff2');}
+// Giant dome. Live SOCCER.field wins once it is the big pitch (hw ≥ 40). Until then the approved 104×160 dome at (830, 300) is the fallback. Drawn each frame, not baked, so the ball can move.
+function miniField(){const live=(typeof SOCCER!=='undefined'&&SOCCER.field)||null,D={cx:830,cz:300,hw:52,hl:80,x0:778,x1:882,z0:220,z1:380};
+  const src=live&&isFinite(live.cx)&&isFinite(live.hw)&&live.hw>=40?live:D,cx=src.cx,cz=src.cz,hw=src.hw||52,hl=src.hl||80;
+  return {cx,cz,hw,hl,x0:isFinite(src.x0)?src.x0:cx-hw,x1:isFinite(src.x1)?src.x1:cx+hw,z0:isFinite(src.z0)?src.z0:cz-hl,z1:isFinite(src.z1)?src.z1:cz+hl,goalW:src.goalW,goalD:src.goalD,domeRx:src.domeRx||src.domeHw,domeRz:src.domeRz||src.domeHl,roadX0:isFinite(src.roadX0)?src.roadX0:560,tunW:src.tunW||src.roadW};}
+function miniFitPitch(){if(MINI.fit)return;MINI.fit=1;const F=miniField(),pad=24,rx=F.domeRx||F.hw+24,rz=F.domeRz||F.hl+20,x0=Math.min(F.roadX0,F.cx-rx)-pad,x1=Math.max(F.x1,F.cx+rx)+pad,z0=F.cz-rz-pad,z1=F.cz+rz+pad;if(x0<MINI.X0)MINI.X0=x0;if(x1>MINI.X1)MINI.X1=x1;if(z0<MINI.Z0)MINI.Z0=z0;if(z1>MINI.Z1)MINI.Z1=z1;}
+function miniDome(ppm){const F=miniField(),cx=(F.cx-P.x)*ppm,cy=-(F.cz-P.z)*ppm,rx=(F.domeRx||F.hw+24)*ppm,rz=(F.domeRz||F.hl+20)*ppm;
+  ctx.save();ctx.lineJoin='round';
+  ctx.beginPath();ctx.ellipse(cx,cy,Math.max(rx,1),Math.max(rz,1),0,0,7);ctx.lineWidth=2;ctx.strokeStyle='#7dfff2';ctx.shadowColor='#3ee6ff';ctx.shadowBlur=7;ctx.stroke();
+  ctx.beginPath();ctx.ellipse(cx,cy,Math.max(rx*.9,1),Math.max(rz*.9,1),0,0,7);ctx.lineWidth=1.15;ctx.strokeStyle='#3ee6ff';ctx.stroke();ctx.shadowBlur=0;
+  const half=(F.tunW>2?F.tunW:16)/2,tx=(F.roadX0-P.x)*ppm,ty=-(F.cz+half-P.z)*ppm,tw=Math.max(0,F.x0-F.roadX0)*ppm,th=half*2*ppm;
+  ctx.fillStyle='rgba(10,28,48,.82)';ctx.fillRect(tx,ty,tw,th);ctx.setLineDash([5,3]);ctx.strokeStyle='#ffb020';ctx.lineWidth=1.4;ctx.strokeRect(tx,ty,tw,th);ctx.setLineDash([]);
+  const px=(F.x0-P.x)*ppm,py=-(F.z1-P.z)*ppm,pw=(F.x1-F.x0)*ppm,ph=(F.z1-F.z0)*ppm;
+  ctx.fillStyle='rgba(7,48,32,.9)';ctx.fillRect(px,py,pw,ph);ctx.strokeStyle='#3ee6ff';ctx.lineWidth=1.7;ctx.strokeRect(px,py,pw,ph);
+  ctx.beginPath();ctx.moveTo(px,cy);ctx.lineTo(px+pw,cy);ctx.stroke();
+  const gw=F.goalW>4?F.goalW:Math.min((F.x1-F.x0)*.34,36),gd=F.goalD>1?F.goalD:10,gx0=F.cx-gw/2,gx1=F.cx+gw/2;
+  const goal=(z,sign,col)=>{ctx.beginPath();ctx.moveTo((gx0-P.x)*ppm,-(z-P.z)*ppm);ctx.lineTo((gx0-P.x)*ppm,-(z+sign*gd-P.z)*ppm);ctx.lineTo((gx1-P.x)*ppm,-(z+sign*gd-P.z)*ppm);ctx.lineTo((gx1-P.x)*ppm,-(z-P.z)*ppm);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();};
+  goal(F.z0,-1,'#ff4fd8');goal(F.z1,1,'#7dfff2');
+  const st=typeof SOCCER!=='undefined'&&SOCCER.state;if(st&&isFinite(st.x)&&isFinite(st.z)){ctx.beginPath();ctx.arc((st.x-P.x)*ppm,-(st.z-P.z)*ppm,3,0,7);ctx.fillStyle='#f4f7fb';ctx.fill();ctx.lineWidth=1.3;ctx.strokeStyle='#141414';ctx.stroke();}
+  ctx.restore();}
 function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;miniFitPitch();const S=MINI.S,w=Math.ceil((MINI.X1-MINI.X0)*S),h=Math.ceil((MINI.Z1-MINI.Z0)*S),cv=document.createElement('canvas');cv.width=w;cv.height=h;const c=cv.getContext('2d'),X=x=>(x-MINI.X0)*S,Y=z=>(MINI.Z1-z)*S,C=CITY;
   c.fillStyle='#070314';c.fillRect(0,0,w,h);
   c.fillStyle='rgba(8,40,90,.95)';c.fillRect(0,Y(C.RIV.z1),w,(C.RIV.z1-C.RIV.z0)*S);
@@ -68,7 +79,6 @@ function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;miniFitPitch();
   const z0=-40,z1=1500;c.fillStyle='rgba(62,230,255,.5)';c.fillRect(X(-15),Y(z1),30*S,(z1-z0)*S);c.strokeStyle='#e9fbff';c.lineWidth=2;c.strokeRect(X(-15),Y(z1),30*S,(z1-z0)*S);
   c.strokeStyle='rgba(255,255,255,.92)';c.lineWidth=1.1;c.beginPath();for(let z=0;z<z1;z+=70){c.moveTo(X(0),Y(z));c.lineTo(X(0),Y(Math.min(z1,z+28)));}c.stroke();
   c.fillStyle='#ff9a2e';for(const r of C.RAMPS){if(r.hid||r.yb>0||r.nm==='tow')continue;c.fillRect(X((r.x0+r.x1)/2)-1.3,Y((r.z0+r.z1)/2)-1.3,2.6,2.6);}
-  miniPitch(c,X,Y,S);
   MINI.cv=cv;}
 let miniSpan=0;
 const ZICON_W=.45; // visible car width ÷ sprite. Street width uses this.
@@ -93,12 +103,56 @@ function poiBake(){if(POI.plane)return;const N=128,disc=(glow,edge)=>{const cv=d
   const hc=disc('#ffe14d','#3ee6ff');hc.save();hc.beginPath();hc.arc(64,64,48,0,7);hc.clip();star(hc,14,34);hc.fillStyle='#ffe14d';hc.strokeStyle='#fff';hc.lineJoin='round';hc.lineWidth=4;hc.fill();hc.stroke();star(hc,6,15);hc.fillStyle='#fff8d4';hc.fill();hc.restore();
   POI.hotdrop=hc.canvas;}
 function miniSpot(lx,lz,co,si,ppm,hx,hy){const dx=lx-P.x,dz=lz-P.z;let sx=(dx*co-dz*si)*ppm,sy=(-dx*si-dz*co)*ppm,out=Math.abs(sx)>hx||Math.abs(sy)>hy;if(out){const t=1/Math.max(Math.abs(sx)/hx,Math.abs(sy)/hy);sx*=t;sy*=t;}return[sx,sy,out];}
+// window.HOTDROP is the live beacon. P.hotDrop / P.hotDropNosT are the same countdown if physics stamps them on the car.
+function miniHot(){const H=window.HOTDROP,nos=P&&+P.hotDropNosT>0?+P.hotDropNosT:0,ph=P&&P.hotDrop;
+  if(H&&((H.active&&H.tLeft>0)||H.overchargeT>0))return nos>0&&!(H.overchargeT>0)?{active:H.active,x:H.x,z:H.z,tLeft:H.tLeft,maxT:H.maxT||25,overchargeT:nos}:H;
+  if(ph&&typeof ph==='object'){const tLeft=ph.tLeft!=null?+ph.tLeft:+ph.t||0,over=ph.overchargeT>0?+ph.overchargeT:nos,active=ph.active!=null?!!ph.active:tLeft>0;if(active||over>0)return{active,x:+ph.x||0,z:+ph.z||0,tLeft,maxT:ph.maxT||25,overchargeT:over};}
+  if(typeof ph==='number'&&ph>0)return{active:true,x:P.x,z:P.z,tLeft:ph,maxT:25,overchargeT:nos};
+  if(nos>0)return{active:false,x:P.x,z:P.z,tLeft:0,maxT:25,overchargeT:nos};
+  return H||null;}
 function miniPois(cx,cy,mw,mh,yaw,ppm){poiBake();const T=miniTune(),px=T.poiPx||20,pad=12,hx=mw/2-pad,hy=mh/2-pad,co=Math.cos(yaw),si=Math.sin(yaw);
-  const marks=[[0,730,POI.plane,-yaw],[(window.SOCCER_TUNE&&SOCCER_TUNE.fieldCx)||790,(window.SOCCER_TUNE&&SOCCER_TUNE.fieldCz)||300,POI.ball,0]];
+  const Fd=miniField(),marks=[[0,730,POI.plane,-yaw],[Fd.cx,Fd.cz,POI.ball,0]];
   for(const[lx,lz,spr,rot]of marks){const[sx,sy,out]=miniSpot(lx,lz,co,si,ppm,hx,hy);
     ctx.save();ctx.globalAlpha=out?.85:1;ctx.translate(cx+sx,cy+sy);if(rot)ctx.rotate(rot);ctx.imageSmoothingEnabled=true;ctx.drawImage(spr,-px/2,-px/2,px,px);ctx.restore();}
-  const H=window.HOTDROP;if(H&&H.active){const[sx,sy,out]=miniSpot(H.x,H.z,co,si,ppm,hx,hy),pulse=1+(T.hotPulse||.16)*Math.sin(performance.now()/(T.hotMs||110)),d=px*pulse;
+  const H=miniHot();if(H&&H.active){const[sx,sy,out]=miniSpot(H.x,H.z,co,si,ppm,hx,hy),pulse=1+(T.hotPulse||.16)*Math.sin(performance.now()/(T.hotMs||110)),d=px*pulse;
     ctx.save();ctx.globalAlpha=out?.85:1;ctx.translate(cx+sx,cy+sy);ctx.beginPath();ctx.arc(0,0,d*.62,0,7);ctx.lineWidth=2;ctx.strokeStyle=H_YEL;ctx.shadowColor=H_YEL;ctx.shadowBlur=12;ctx.stroke();ctx.shadowBlur=0;ctx.imageSmoothingEnabled=true;ctx.drawImage(POI.hotdrop,-d/2,-d/2,d,d);ctx.restore();}}
+function miniZoneBox(){const C=typeof CITY!=='undefined'?CITY:null,Z=C&&C.BUILDER_ZONE;return Z&&isFinite(Z.x0)?Z:{x0:-400,x1:540,z0:1860,z1:2100,label:'BUILDER'};}
+function miniZone(ppm){const Z=miniZoneBox(),w=(Z.x1-Z.x0)*ppm,h=(Z.z1-Z.z0)*ppm,x=(Z.x0-P.x)*ppm,y=-(Z.z1-P.z)*ppm;
+  ctx.save();ctx.setLineDash([6,4]);ctx.lineWidth=1.8;ctx.strokeStyle='#7dff6b';ctx.shadowColor='#7dff6b';ctx.shadowBlur=6;ctx.strokeRect(x,y,w,h);
+  ctx.lineWidth=1.15;ctx.strokeStyle='#3ee6ff';ctx.shadowColor='#3ee6ff';ctx.strokeRect(x+1.1,y+1.1,Math.max(0,w-2.2),Math.max(0,h-2.2));ctx.restore();}
+function miniZoneLabel(cx,cy,mw,mh,yaw,ppm){const Z=miniZoneBox(),pad=14,hx=mw/2-pad,hy=mh/2-pad,[sx,sy,out]=miniSpot((Z.x0+Z.x1)/2,(Z.z0+Z.z1)/2,Math.cos(yaw),Math.sin(yaw),ppm,hx,hy);
+  ctx.save();ctx.globalAlpha=out?.85:1;ctx.translate(cx+sx,cy+sy);hT(ctx,String(Z.label||'BUILDER'),0,3,9,'#e9fbff','center',H_FONT,800,4);ctx.restore();}
+function miniIsPurp(b){return !!(b&&b.purpose&&(b.kind==='b'||b.kind==='landmark'));}
+function miniTag(b){const p=b.purpose,raw=typeof p==='string'?p:(p.tag||p.short||p.label||p.name||'');const s=String(raw||'').trim();return s?s.slice(0,10):'';}
+function miniPurp(ppm,lim){if(typeof CITY==='undefined'||!CITY.BL)return;for(const b of CITY.BL){if(!miniIsPurp(b))continue;const mx=(b.x0+b.x1)/2,mz=(b.z0+b.z1)/2;if(Math.abs(mx-P.x)>lim||Math.abs(mz-P.z)>lim)continue;
+  const x=(b.x0-P.x)*ppm,y=-(b.z1-P.z)*ppm,w=(b.x1-b.x0)*ppm,h=(b.z1-b.z0)*ppm,col=b.c||'#3ee6ff';
+  ctx.save();ctx.strokeStyle=col;ctx.shadowColor=col;ctx.shadowBlur=4;ctx.lineWidth=1.8;ctx.strokeRect(x,y,w,h);ctx.shadowBlur=0;ctx.fillStyle='#f7fbff';ctx.beginPath();ctx.arc(x+w/2,y+h/2,Math.max(1.5,Math.min(3,Math.min(w,h)*.22)),0,7);ctx.fill();ctx.restore();}}
+function miniGap(b,x,z){const dx=x<b.x0?b.x0-x:x>b.x1?x-b.x1:0,dz=z<b.z0?b.z0-z:z>b.z1?z-b.z1:0;return Math.hypot(dx,dz);}
+function miniActor(){const foot=typeof WALK_MODE!=='undefined'&&WALK_MODE.onFoot;return {x:foot?+WALK_MODE.x:P.x,z:foot?+WALK_MODE.z:P.z,close:!!(foot||P.driveMode==='street')};}
+// Real b.parking wins. Otherwise a small side (east) or rear (south) bay while the player is within 260 m.
+function miniParkOf(b){const p=b&&b.parking;if(p&&isFinite(p.x0)&&isFinite(p.x1)&&isFinite(p.z0)&&isFinite(p.z1))return p;
+  const a=miniActor();if(miniGap(b,a.x,a.z)>260)return null;const mx=(b.x0+b.x1)/2,mz=(b.z0+b.z1)/2,bay=Math.min(16,Math.max(9,Math.min(b.x1-b.x0,b.z1-b.z0)*.4)),depth=8;
+  if((b.id|0)%2)return {type:'lot',x0:mx-bay/2,x1:mx+bay/2,z0:b.z0-depth,z1:b.z0,doorX:mx,doorZ:b.z0-depth*.5};
+  return {type:'garage',x0:b.x1,x1:b.x1+depth,z0:mz-bay/2,z1:mz+bay/2,doorX:b.x1+depth*.5,doorZ:mz};}
+function miniPark(ppm,lim){if(typeof CITY==='undefined'||!CITY.BL)return;for(const b of CITY.BL){if(!miniIsPurp(b))continue;const pk=miniParkOf(b);if(!pk)continue;
+  const x0=Math.min(pk.x0,pk.x1),x1=Math.max(pk.x0,pk.x1),z0=Math.min(pk.z0,pk.z1),z1=Math.max(pk.z0,pk.z1),mx=(x0+x1)/2,mz=(z0+z1)/2;if(Math.abs(mx-P.x)>lim||Math.abs(mz-P.z)>lim)continue;
+  ctx.save();ctx.fillStyle='rgba(125,255,107,.42)';ctx.fillRect((x0-P.x)*ppm,-(z1-P.z)*ppm,(x1-x0)*ppm,(z1-z0)*ppm);ctx.strokeStyle=H_CYAN;ctx.lineWidth=1.5;ctx.strokeRect((x0-P.x)*ppm,-(z1-P.z)*ppm,(x1-x0)*ppm,(z1-z0)*ppm);ctx.restore();}}
+function miniParkBadges(cx,cy,mw,mh,yaw,ppm){const a=miniActor();if(!a.close||typeof CITY==='undefined'||!CITY.BL)return;const pad=12,hx=mw/2-pad,hy=mh/2-pad,co=Math.cos(yaw),si=Math.sin(yaw);
+  for(const b of CITY.BL){if(!miniIsPurp(b))continue;const pk=miniParkOf(b);if(!pk)continue;const bx=isFinite(pk.doorX)?pk.doorX:(pk.x0+pk.x1)/2,bz=isFinite(pk.doorZ)?pk.doorZ:(pk.z0+pk.z1)/2;if(Math.hypot(bx-a.x,bz-a.z)>180)continue;
+    const[sx,sy,out]=miniSpot(bx,bz,co,si,ppm,hx,hy);ctx.save();ctx.globalAlpha=out?.85:1;ctx.translate(cx+sx,cy+sy);ctx.beginPath();ctx.arc(0,0,6.5,0,7);ctx.fillStyle='rgba(8,4,20,.94)';ctx.fill();ctx.strokeStyle=H_CYAN;ctx.lineWidth=1.4;ctx.stroke();hT(ctx,'P',0,3,9,H_LIME,'center',H_FONT,900,3);ctx.restore();}}
+function miniNearPurp(){const foot=typeof WALK_MODE!=='undefined'&&WALK_MODE.onFoot,street=P.driveMode==='street';if(!foot&&!street||typeof CITY==='undefined'||!CITY.BL)return null;
+  const x=foot?WALK_MODE.x:P.x,z=foot?WALK_MODE.z:P.z;let best=null,bd=60,door=null;
+  for(const b of CITY.BL){if(!miniIsPurp(b))continue;const dx=x<b.x0?b.x0-x:x>b.x1?x-b.x1:0,dz=z<b.z0?b.z0-z:z>b.z1?z-b.z1:0,d=Math.hypot(dx,dz);if(d>=bd)continue;bd=d;best=b;door=null;
+    if(b.doors){let dd=60;for(const dr of b.doors){const ad=Math.hypot((dr[0]||0)-x,(dr[1]||0)-z);if(ad<dd){dd=ad;door={x:dr[0],z:dr[1]};}}}}
+  return best?{b:best,door}:null;}
+function miniMark(cx,cy,x,y,draw){ctx.save();ctx.translate(cx+x,cy+y);draw();ctx.restore();}
+function miniDoor(cx,cy,door,co,si,ppm,hx,hy){if(!door||!isFinite(door.x)||!isFinite(door.z))return;const[dx,dy,dout]=miniSpot(door.x,door.z,co,si,ppm,hx,hy);
+  ctx.save();ctx.globalAlpha=dout?.85:1;ctx.translate(cx+dx,cy+dy);ctx.rotate(Math.PI/4);ctx.strokeStyle=H_YEL;ctx.shadowColor=H_YEL;ctx.shadowBlur=6;ctx.lineWidth=1.6;ctx.strokeRect(-3.2,-3.2,6.4,6.4);ctx.restore();}
+function miniFoot(cx,cy,mw,mh,yaw,ppm){const pad=12,hx=mw/2-pad,hy=mh/2-pad,co=Math.cos(yaw),si=Math.sin(yaw),foot=typeof WALK_MODE!=='undefined'&&WALK_MODE.onFoot,near=miniNearPurp();
+  if(near){const b=near.b,tag=miniTag(b),[sx,sy]=miniSpot((b.x0+b.x1)/2,(b.z0+b.z1)/2,co,si,ppm,hx,hy);if(tag)miniMark(cx,cy,sx,sy,()=>hT(ctx,tag,0,-7,8,b.c||H_LIME,'center',H_FONT,800,3));if(!(foot&&WALK_MODE.door))miniDoor(cx,cy,near.door,co,si,ppm,hx,hy);}
+  if(!foot)return;const[sx,sy,out]=miniSpot(WALK_MODE.x,WALK_MODE.z,co,si,ppm,hx,hy),pulse=1+.22*Math.sin(performance.now()/130);
+  ctx.save();ctx.globalAlpha=out?.85:1;ctx.translate(cx+sx,cy+sy);ctx.beginPath();ctx.arc(0,0,7*pulse,0,7);ctx.strokeStyle=H_LIME;ctx.shadowColor=H_LIME;ctx.shadowBlur=10;ctx.lineWidth=1.7;ctx.stroke();ctx.beginPath();ctx.arc(0,0,2.8,0,7);ctx.fillStyle='#f4fbff';ctx.shadowBlur=0;ctx.fill();ctx.restore();
+  miniDoor(cx,cy,WALK_MODE.door,co,si,ppm,hx,hy);}
 // North on screen after the map is rotated by -yaw. yaw 0 faces +z, and +yaw turns toward +x.
 function miniNorth(mx,my,mw,mh,yaw){const dx=-Math.sin(yaw),dy=-Math.cos(yaw),r=12,cx=mx+mw/2,cy=my+mh/2,hx=mw/2-r-3,hy=mh/2-r-3,x=cx+dx*hx,y=cy+dy*hy;
   ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fillStyle='rgba(8,4,20,.92)';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=H_CYAN;ctx.shadowColor=H_CYAN;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
@@ -107,8 +161,8 @@ function miniNorth(mx,my,mw,mh,yaw){const dx=-Math.sin(yaw),dy=-Math.cos(yaw),r=
 function drawMini(mx,my,mw,mh,dt){try{miniBake();}catch(e){MINI.cv=MINI.cv||null;}
   const span=miniZoom(dt),yaw=P.yaw||0,cx=mx+mw/2,cy=my+mh/2;
   ctx.save();hrr(ctx,mx,my,mw,mh,14);ctx.clip();ctx.fillStyle='rgba(7,3,20,.94)';ctx.fillRect(mx-1,my-1,mw+2,mh+2);
-  if(MINI.cv){const ppm=mw/span,dw=(MINI.X1-MINI.X0)*ppm,dh=(MINI.Z1-MINI.Z0)*ppm;ctx.save();ctx.translate(cx,cy);ctx.rotate(-yaw);ctx.imageSmoothingEnabled=true;ctx.drawImage(MINI.cv,(MINI.X0-P.x)*ppm,-(MINI.Z1-P.z)*ppm,dw,dh);if(window.CITY&&CITY.TOWS){ctx.fillStyle='#ffe14d';const lim=span*.75;for(const t of CITY.TOWS){const ex=t.x-P.x,ez=t.z-P.z;if(Math.abs(ex)>lim||Math.abs(ez)>lim)continue;ctx.beginPath();ctx.arc(ex*ppm,-ez*ppm,2.4,0,7);ctx.fill();}}ctx.restore();miniPois(cx,cy,mw,mh,yaw,ppm);}
-  zIconBake();const d=miniIconPx(mw,span);ctx.imageSmoothingEnabled=true;ctx.drawImage(ZICON.cv,cx-d/2,cy-d/2,d,d);ctx.restore();
+  if(MINI.cv){const ppm=mw/span,dw=(MINI.X1-MINI.X0)*ppm,dh=(MINI.Z1-MINI.Z0)*ppm;ctx.save();ctx.translate(cx,cy);ctx.rotate(-yaw);ctx.imageSmoothingEnabled=true;ctx.drawImage(MINI.cv,(MINI.X0-P.x)*ppm,-(MINI.Z1-P.z)*ppm,dw,dh);if(window.CITY&&CITY.TOWS){ctx.fillStyle='#ffe14d';const lim=span*.75;for(const t of CITY.TOWS){const ex=t.x-P.x,ez=t.z-P.z;if(Math.abs(ex)>lim||Math.abs(ez)>lim)continue;ctx.beginPath();ctx.arc(ex*ppm,-ez*ppm,2.4,0,7);ctx.fill();}}miniZone(ppm);miniPurp(ppm,span*.9);miniPark(ppm,Math.max(span*.9,260));miniDome(ppm);ctx.restore();miniPois(cx,cy,mw,mh,yaw,ppm);miniZoneLabel(cx,cy,mw,mh,yaw,ppm);}
+  zIconBake();const d=miniIconPx(mw,span);ctx.imageSmoothingEnabled=true;ctx.drawImage(ZICON.cv,cx-d/2,cy-d/2,d,d);miniFoot(cx,cy,mw,mh,yaw,mw/span);miniParkBadges(cx,cy,mw,mh,yaw,mw/span);ctx.restore();
   hrr(ctx,mx,my,mw,mh,14);ctx.lineWidth=2.5;ctx.strokeStyle=H_CYAN;ctx.shadowColor=H_CYAN;ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;miniNorth(mx,my,mw,mh,yaw);}
 // WINGS sits under the right-hand ALT stack. Same size; THROTTLE is left on its CSS anchor.
 let wingKey='';function placeWings(s,bottomHud){const wng=document.getElementById('wng'),thr=document.getElementById('tup');if(!wng)return;const key=W+'x'+H+'x'+bottomHud;if(key===wingKey)return;const gap=6;let top=Math.round(bottomHud*s+gap),wh=wng.offsetHeight||84;if(thr){const thrTop=thr.offsetTop;if(top+wh>thrTop-gap)top=thrTop-gap-wh;}if(top<bottomHud*s+2&&thr){wng.style.right=(20+(thr.offsetWidth||112)+10)+'px';top=Math.round(Math.max(bottomHud*s+gap,thr.offsetTop));}else wng.style.right='20px';wng.style.top=Math.round(top)+'px';wng.style.bottom='auto';wingKey=key;}
@@ -129,7 +183,7 @@ function drawHud(dt){const t=performance.now()/1000,w=W,h=H,s=clamp(h/378,.72,1.
       hT(ctx,ok?'PULL UP!  ▲ TILT TOWARD YOU':!P.wings?(P.v>=TU.rotateSpeed?'OPEN WINGS TO LAUNCH!':'WINGS CLOSED · NO LIFT · TAP WINGS'):P.v<1?`HOLD THROTTLE · ROTATE AT ${Math.round(TU.rotateSpeed*2.237)} MPH`:'BUILD SPEED TO THE GREEN MARK',Wd/2,by+20+(ok?2:0),ok?13:10,ok?H_YEL:'#bfd6ff','center',ok?H_FONT:H_TXT,900,ok?10:4);}
     else hT(ctx,P.stall?'LOW SPEED · NOSE DOWN OR MORE THROTTLE':P.y<15&&P.v*3.6<40?'SLOW & NOSE UP · AIR BRAKE · BUTTER IT!':'DIVE = SPEED · CLIMB = HEIGHT',Wd/2,by+14,10,P.stall?H_ORNG:'#bfd6ff','center',H_TXT,800,4);}
   // Hot Drop pill sits under the tilt prompt. Overcharge uses the same slot while the NOS reward is live.
-  {const H=window.HOTDROP,over=H&&H.overchargeT>0,hot=H&&H.active&&H.tLeft>0;if(over||hot){const pw=184,ph=22,px=Wd/2-pw/2,py=98,col=over?H_LIME:H_YEL,frac=over?clamp(H.overchargeT/15,0,1):clamp(H.tLeft/(H.maxT||25),0,1);
+  {const H=miniHot(),over=H&&H.overchargeT>0,hot=H&&H.active&&H.tLeft>0;if(over||hot){const pw=184,ph=22,px=Wd/2-pw/2,py=98,col=over?H_LIME:H_YEL,frac=over?clamp(H.overchargeT/15,0,1):clamp(H.tLeft/(H.maxT||25),0,1);
     const label=over?`🔥 OVERCHARGE NOS · ${Math.ceil(H.overchargeT)}S`:`⚡ HOT DROP · ${Math.ceil(H.tLeft)}S · ${Math.round(Math.hypot(H.x-P.x,H.z-P.z))}M`;
     ctx.save();hrr(ctx,px,py,pw,ph,11);ctx.fillStyle='rgba(8,4,20,.92)';ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle=H_CYAN;ctx.shadowColor=col;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
     hT(ctx,label,Wd/2,py+14,10,col,'center',H_FONT,800,3);

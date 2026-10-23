@@ -27,7 +27,17 @@ window.TRAFFIC_TUNE = {
   bumpDrop: 0,         // unused: the old subtract-a-floor stall is gone; wrecks use bumpKeep only
   bumpYaw: 0.045,      // rad, small sideways kick
   spritePx: 160,       // baked once per paint x view; the mesh is not redrawn per car
-  bakePerFrame: 1,
+  bakePerFrame: 2,     // two new pitch/yaw views a frame; cache holds the finer grid
+  cacheMax: 140,       // paint x 24 yaw steps x pitch buckets
+  yawStep: Math.PI / 12, // 15° sprite yaw (was 22.5°)
+  cornerFrac: 0.58,    // cornering speed as a fraction of the car's cruise roll
+  cornerDist: 18,      // metres before a turn where the car starts braking
+  accel: 5.5,          // m/s² back up to cruise after the corner
+  brake: 6.8,          // m/s² easing into a corner or a car ahead
+  blendMin: 0.65,      // seconds, smooth turn / lane-change
+  blendMax: 0.85,
+  arcLead: 4.5,        // metres before the crossing where the corner arc begins
+  rampGrab: 3.5,       // metres, a street ramp close enough to climb on purpose
   // ZTR.PAINTS, hex from the Garage catalog (same paints level 4 rolls)
   paints: [
     {id:'cyan', paint:'#1aa6c8', glow:'#3ee6ff', grid:'#9b5cff'},
