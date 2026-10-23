@@ -29,7 +29,7 @@ function groundStep(dt,T,I,I0,nz,vT,vr,wf,ge,cbank,g,CL){
     if(!ebDone){const yM=Sf.g*(P.wings===1?0.85:1);
       if(street&&!P.wreck){const streetMax=T.streetMaxSpeed||28;P.v=clamp(P.v,0,streetMax*(nz&&I.tu?1.38:1));P.gam=0;const stScale=Math.min(1,P.v/2.6)*(1-0.28*clamp(P.v/streetMax,0,1));P.yaw+=I.lr*0.6*T.groundSteer*stScale*dt*yM;P.hd=P.yaw;if(P.ebRoll){P.ebRoll*=Math.max(0,1-10*dt);if(Math.abs(P.ebRoll)<1e-3)P.ebRoll=0;}}
       else{P.v=clamp(P.v,0,T.maxSpeed*T.nosBoost*1.1);P.gam=0;P.yaw+=I.lr*0.6*TUNE.groundSteer*dt*Math.min(1,P.v/5)*yM;P.hd=P.yaw;if(P.ebRoll){P.ebRoll*=Math.max(0,1-10*dt);if(Math.abs(P.ebRoll)<1e-3)P.ebRoll=0;}}}
-    if(Sf.rum&&P.v>4){const amp=70*Math.min(1,P.v/12);P.susV=(P.susV||0)+Math.sin((P.simT||0)*90)*amp*dt;}
+    if(Sf.rum&&P.v>4){const amp=22*Math.min(1,P.v/12);P.susV=(P.susV||0)+Math.sin((P.simT||0)*90)*amp*dt;}
     wingScrape(dt,I);
     const rr=P.v>=T.rotateSpeed&&P.wings;if(rr&&!P.rotOK)toast('PULL UP!');P.rotOK=rr;
     if(rr&&!P.wreck&&!(I.climb<0)&&g*CL(P.pitch)*(vr<1?vr*vr+T.floatLift*vr*(1-vr):vr*vr)*wf*ge*cbank>g){P.ground=false;P.y=P.gy+0.001;P.toT=P.simT;P.slowLaunch=P.v<T.roughSpeed;P.lift0=1;ebAirHandoff();toast(P.slowLaunch?'TOO SLOW!':'LIFT OFF!');}
