@@ -45,7 +45,7 @@ window.HOTDROP={active:false,x:0,z:0,y:0,r:16,tLeft:0,maxT:25,overchargeT:0,clai
     ctx.restore();
   }};
 function hotDropSpot(fromX,fromZ,yaw){
-  const R=window.CITY&&CITY.ROADS,fx=Math.sin(yaw),fz=Math.cos(yaw);
+  const R=(typeof CITY!=='undefined'&&CITY.ROADS)?CITY.ROADS:null,fx=Math.sin(yaw),fz=Math.cos(yaw);
   const score=(x,z,kind,id)=>{if(kind==='tunnel'||kind==='track')return null;const dx=x-fromX,dz=z-fromZ,dist=Math.hypot(dx,dz);if(dist<200||dist>340)return null;
     const ahead=(dx*fx+dz*fz)/dist,street=kind==='street'?80:(kind==='highway'||kind==='bridge'?18:8);
     return street+ahead*50+12*(1-Math.abs(dist-270)/70)-(id||0)*1e-6;};
