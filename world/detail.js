@@ -1,9 +1,9 @@
 'use strict';
 // Visual-only night detail for world-split.html. Baked once, drawn with a fixed
 // budget, no per-frame allocation. Does not touch collision, roads, or physics.
-// Baseline layers stay at their tuned distances at every speed, in the air, and
-// in both Arcade and Street mode. Street Mode (P.driveMode === 'street', on the
-// ground, under crawl m/s) only adds a close-up door frame inside crawlRadius.
+// Three bands: crawl (ground, under crawlSpeedMax) is close-up inside
+// crawlDetailDist; street (ground, up to streetSpeedMax) is the 60fps set;
+// rotate and airborne draw nothing. Roof trim and rooftop shapes stay off.
 (function () {
   if (window.DETAIL || !window.DETAIL_TUNE || typeof CITY === 'undefined' || typeof drawBldg !== 'function') return;
   const T = DETAIL_TUNE;
@@ -27,7 +27,7 @@
     m[1].split(/[+,\s]+/).forEach((k) => { if (k in on) on[k] = true; });
   })();
 
-  const stat = { faces: 0, trims: 0, signs: 0, lights: 0, trees: 0, roads: 0, river: 0, grass: 0, close: 0, cruise: 0, winSegs: 0 };
+  const stat = { faces: 0, trims: 0, signs: 0, lights: 0, trees: 0, roads: 0, river: 0, grass: 0, close: 0, cruise: 0, winSegs: 0, segs: 0, band: 2 };
   const NEAR_Z = (typeof NEAR === 'number' ? NEAR : 0.5);
   const BL = CITY.BL;
   const COLS = ['#3ee6ff', '#ff4fd8', '#ffb020', '#ff2a3d', '#fff2c0', '#ffd27a'];
@@ -59,6 +59,7 @@
     return Math.sqrt(dx * dx + dy * dy + dz * dz);
   }
   function seg(x1, y1, z1, x2, y2, z2) {
+    stat.segs++;
     const aok = camPoint(x1, y1, z1, A);
     const bok = camPoint(x2, y2, z2, B);
     if (!aok && !bok) return;
@@ -170,6 +171,7 @@
 
   const MAXL = 900, CELL = 100, OX = -800, OZ = -500, NX = 20, NZ = 32;
   const LX = new Float32Array(MAXL), LZ = new Float32Array(MAXL), LY = new Float32Array(MAXL);
+  const LSKIP = new Uint8Array(MAXL);
   const LHEAD = new Int32Array(NX * NZ), LNEXT = new Int32Array(MAXL);
   LHEAD.fill(-1);
   let nL = 0;
@@ -365,10 +367,26 @@
   }
 
   let facesLeft = 0, anyTrim = false, anyWin = false, yCut = -1e9;
-  function beginFrame() {
+  let mode = 2, active = false;
+  function detailDraw() {
     cacheCam();
-    stat.faces = stat.trims = stat.signs = stat.lights = stat.trees = stat.roads = stat.river = stat.grass = stat.winSegs = 0;
-    stat.cruise = (extraOn && P.driveMode === 'street' && !!P.ground && Math.abs(P.v || 0) < (T.crawl || 12)) ? 1 : 0;
+    stat.faces = stat.trims = stat.signs = stat.lights = stat.trees = stat.roads = stat.river = stat.grass = stat.winSegs = stat.segs = 0;
+    const v = Math.abs(P.v || 0);
+    const crawlMax = T.crawlSpeedMax != null ? T.crawlSpeedMax : 12;
+    const streetMax = T.streetSpeedMax != null ? T.streetSpeedMax : 48;
+    if (!extraOn || !P.ground || v >= streetMax) {
+      mode = 2;
+      active = false;
+      stat.band = 2;
+      stat.cruise = 0;
+      anyTrim = false;
+      anyWin = false;
+      return;
+    }
+    mode = v < crawlMax ? 0 : 1;
+    active = true;
+    stat.band = mode;
+    stat.cruise = mode === 0 ? 1 : 0;
     const cap = (T.maxWindowFaces != null ? T.maxWindowFaces : T.faceBudget) | 0;
     facesLeft = cap > 6 ? 6 : (cap > 0 ? cap : 4);
     anyTrim = false;
@@ -380,7 +398,8 @@
     resetPick(winId, winD);
     resetPick(fullId, fullD);
     resetPick(simpId, simpD);
-    const near = Math.min(48, T.nearDist || T.near || 48), mid = T.mid;
+    const near = mode === 0 ? (T.crawlDetailDist || 30) : (T.streetWinDist || T.near || 40);
+    const mid = T.mid;
     for (let i = 0; i < BL.length; i++) {
       const b = BL[i];
       if (b.top < yCut || skipKind(b)) continue;
@@ -547,6 +566,7 @@
   const _drawBldg = drawBldg;
   drawBldg = function (b, d) {
     _drawBldg(b, d);
+    if (!active) return;
     if (anyWin) windowPass(b);
     if (anyTrim) roofPass(b);
   };
@@ -648,7 +668,52 @@
     }
     return false;
   }
+  const FEET = 160;
+  const FX0 = new Float32Array(FEET), FX1 = new Float32Array(FEET), FZ0 = new Float32Array(FEET), FZ1 = new Float32Array(FEET);
+  let nF = 0;
+  const STREET_X = [150, 250, 350, 450, 550, -150, -250, -350, -450, -550];
+  function inFoot(x, z) {
+    for (let i = 0; i < nF; i++) {
+      if (x > FX0[i] && x < FX1[i] && z > FZ0[i] && z < FZ1[i]) return true;
+    }
+    return false;
+  }
+  function buildFeet() {
+    const ids = Object.create(null);
+    const edges = CITY.ROADS && CITY.ROADS.edges;
+    if (!edges) return;
+    for (let i = 0; i < edges.length; i++) {
+      const e = edges[i];
+      if (!e || !e.blockedBy) continue;
+      for (let k = 0; k < e.blockedBy.length; k++) {
+        const b = e.blockedBy[k];
+        if (b && b.oid != null) ids[b.oid] = 1;
+      }
+    }
+    const list = CITY.buildings || CITY.BL || [];
+    for (let i = 0; i < list.length; i++) {
+      const b = list[i];
+      if (!ids[b.oid] || !b.boxes) continue;
+      for (let qi = 0; qi < b.boxes.length; qi++) {
+        const q = b.boxes[qi];
+        if ((q.y0 || 0) > 1.2 || q.y1 <= 1) continue;
+        if (nF < FEET) {
+          FX0[nF] = q.x0; FX1[nF] = q.x1; FZ0[nF] = q.z0; FZ1[nF] = q.z1; nF++;
+        }
+        for (let s = 0; s < STREET_X.length; s++) {
+          const x = STREET_X[s];
+          if (q.x0 < x && q.x1 > x) addGap(0, x, q.z0, q.z1);
+        }
+        for (let z = -300; z <= 2100; z += 200) {
+          if (z > 1760 && z < 1860) continue;
+          if (q.z0 < z && q.z1 > z) addGap(1, z, q.x0, q.x1);
+        }
+      }
+    }
+    for (let i = 0; i < nL; i++) if (inFoot(LX[i], LZ[i])) LSKIP[i] = 1;
+  }
   buildGaps();
+  buildFeet();
   let cMode = 0, cX = 0, cZ = 0;
   function cDraw(u, v) {
     if (v - u < 0.5) return;
@@ -689,14 +754,16 @@
     }
   }
   function drawRoads() {
-    if (!on.lanes && !on.crosswalks && !on.sidewalks) return;
+    if (!active || (!on.lanes && !on.crosswalks && !on.sidewalks)) return;
     const sx = snapStreetX(cam.x), sz = snapStreetZ(cam.z);
-    const rd = T.roadDist;
+    const close = mode === 0;
+    const rd = close ? (T.crawlDetailDist || 30) : (T.streetDist || T.roadDist || 70);
+    const step = close ? 8 : 14, dash = close ? 4 : 6;
     if (dist3(sx, 0, cam.z) < rd + 30 && (on.lanes || on.sidewalks)) {
       ctx.beginPath();
       if (on.lanes) {
         const z0 = cam.z - rd, z1 = cam.z + rd;
-        for (let z = z0; z < z1; z += 14) clipNS(sx, sx, z, z + 6);
+        for (let z = z0; z < z1; z += step) clipNS(sx, sx, z, z + dash);
         ctx.strokeStyle = 'rgba(62,230,255,.7)';
         ctx.lineWidth = 1.4;
         ctx.stroke();
@@ -723,9 +790,9 @@
       ctx.beginPath();
       if (on.lanes) {
         const x0 = cam.x - rd, x1 = cam.x + rd;
-        for (let x = x0; x < x1; x += 14) {
+        for (let x = x0; x < x1; x += step) {
           if (x > -150 && x < 150) continue;
-          clipEW(sz, sz, x, Math.min(x + 6, x1));
+          clipEW(sz, sz, x, Math.min(x + dash, x1));
         }
       }
       ctx.strokeStyle = 'rgba(255,79,216,.65)';
@@ -747,14 +814,15 @@
         ctx.stroke();
       }
     }
-    if (on.crosswalks && dist3(sx, 0, sz) < T.crossDist && !inGap(0, sx, sz) && !inGap(1, sz, sx)) {
+    const crossD = close ? (T.crawlDetailDist || 30) : (T.streetDist || T.crossDist || 70);
+    if (on.crosswalks && dist3(sx, 0, sz) < crossD) {
       ctx.beginPath();
       for (let i = 0; i < 4; i++) {
         const o = 10 + i * 2.1;
-        seg(sx - 8, 0.06, sz - o, sx + 8, 0.06, sz - o);
-        seg(sx - 8, 0.06, sz + o, sx + 8, 0.06, sz + o);
-        seg(sx - o, 0.06, sz - 8, sx - o, 0.06, sz + 8);
-        seg(sx + o, 0.06, sz - 8, sx + o, 0.06, sz + 8);
+        clipEW(sz, sz - o, sx - 8, sx + 8);
+        clipEW(sz, sz + o, sx - 8, sx + 8);
+        clipNS(sx, sx - o, sz - 8, sz + 8);
+        clipNS(sx, sx + o, sz - 8, sz + 8);
       }
       ctx.strokeStyle = 'rgba(255,242,192,.8)';
       ctx.lineWidth = 1.6;
@@ -764,10 +832,11 @@
   }
   const GP = new Float32Array(12);
   function drawGrass() {
-    if (!on.grass || !nP) return;
+    if (!active || !on.grass || !nP) return;
     for (let i = 0; i < nP; i++) {
       const x0 = PX0[i], z0 = PZ0[i], x1 = PX1[i], z1 = PZ1[i];
-      if (dist3((x0 + x1) / 2, 0, (z0 + z1) / 2) > T.grassDist) continue;
+      const grassD = mode === 0 ? (T.crawlDetailDist || 30) : T.grassDist;
+      if (dist3((x0 + x1) / 2, 0, (z0 + z1) / 2) > grassD) continue;
       GP[0] = x0; GP[1] = 0.04; GP[2] = z0;
       GP[3] = x1; GP[4] = 0.04; GP[5] = z0;
       GP[6] = x1; GP[7] = 0.04; GP[8] = z1;
@@ -798,9 +867,10 @@
     }
   }
   function drawRiver() {
-    if (!on.river || !CITY.RIV) return;
+    if (!active || !on.river || !CITY.RIV) return;
     const R = CITY.RIV, zc = (R.z0 + R.z1) / 2;
-    if (dist3(cam.x, 0, zc) > T.riverDist) return;
+    const riverD = mode === 0 ? (T.crawlDetailDist || 30) : T.riverDist;
+    if (dist3(cam.x, 0, zc) > riverD) return;
     const xLo = cam.x - 80, xHi = cam.x + 80;
     ctx.beginPath();
     for (let k = 0; k < 5; k++) {
@@ -826,8 +896,9 @@
 
   const _drawCityGround = drawCityGround;
   drawCityGround = function () {
-    beginFrame();
+    detailDraw();
     _drawCityGround();
+    if (!active) return;
     if (on.lanes || on.crosswalks || on.sidewalks || on.grass || on.river) {
       drawRoads();
       drawGrass();
@@ -885,6 +956,7 @@
     }
   }
   function takeLight(e, max2, limit) {
+    if (LSKIP[e]) return;
     const dx = LX[e] - cam.x, dy = LY[e] - cam.y, dz = LZ[e] - cam.z;
     const d2 = dx * dx + dy * dy + dz * dz;
     if (d2 < max2) insertTop(limit, e, d2);
@@ -903,6 +975,7 @@
     ctx.drawImage(img, SA[0] - w * 0.5, SA[1] - h, w, h);
   }
   function drawLamp(i) {
+    if (LSKIP[i] || inFoot(LX[i], LZ[i])) return;
     blit(lampImg, LX[i], LY[i], LZ[i], 7.4);
     stat.lights++;
   }
@@ -916,8 +989,9 @@
     const x = SX[i], y = SgY[i], z = SZ[i];
     if (!camPoint(x, y, z, A)) return;
     screenOf(A, SA);
-    const w = Math.min(168, FOV / A[2] * SW[i]);
-    if (w < 16) return;
+    const capPx = mode === 0 ? 280 : 120;
+    const w = Math.min(capPx, FOV / A[2] * SW[i]);
+    if (w < (mode === 0 ? 18 : 12)) return;
     const h = w * (64 / 256);
     ctx.drawImage(signImgs[STX[i]], SA[0] - w * 0.5, SA[1] - h * 0.5, w, h);
     stat.signs++;
@@ -926,27 +1000,31 @@
   const _cityItems = cityItems;
   cityItems = function (items) {
     _cityItems(items);
+    if (!active) return;
     slotUse = 0;
-    if (on.streetlights && nL && cam.y < T.lightDist + 30) {
+    const lampD = mode === 0 ? (T.crawlDetailDist || 30) : (T.streetDist || T.lightDist || 70);
+    if (on.streetlights && nL && cam.y < lampD + 30) {
       const lim = T.lightBudget | 0;
-      scanIdx(LHEAD, LNEXT, cam.x, cam.z, lim, T.lightDist, takeLight);
+      scanIdx(LHEAD, LNEXT, cam.x, cam.z, lim, lampD, takeLight);
       for (let i = 0; i < lim; i++) if (pickI[i] >= 0) {
         const e = pickI[i];
         const dx = LX[e] - cam.x, dz = LZ[e] - cam.z;
         pushSlot(items, dx * dx + dz * dz, 1, e);
       }
     }
-    if (on.trees && nT && cam.y < T.treeDist + 30) {
+    const treeD = mode === 0 ? (T.crawlDetailDist || 30) : T.treeDist;
+    if (on.trees && nT && cam.y < treeD + 30) {
       const lim = T.treeBudget | 0;
-      scanIdx(THEAD, TNEXT, cam.x, cam.z, lim, T.treeDist, takeTree);
+      scanIdx(THEAD, TNEXT, cam.x, cam.z, lim, treeD, takeTree);
       for (let i = 0; i < lim; i++) if (pickI[i] >= 0) {
         const e = pickI[i];
         const dx = TX[e] - cam.x, dz = TZ[e] - cam.z;
         pushSlot(items, dx * dx + dz * dz, 2, e);
       }
     }
-    if (on.signs && nS && cam.y < T.signDist + 40) {
-      const lim = T.signBudget | 0, max2 = T.signDist * T.signDist;
+    const signD = mode === 0 ? (T.crawlDetailDist || 30) : (T.streetDist || T.signDist || 70);
+    if (on.signs && nS && cam.y < signD + 40) {
+      const lim = T.signBudget | 0, max2 = signD * signD;
       resetTop(lim);
       for (let i = 0; i < nS; i++) {
         const dx = SX[i] - cam.x, dy = SgY[i] - cam.y, dz = SZ[i] - cam.z;
@@ -967,9 +1045,12 @@
     tune: T,
     on: on,
     stat: stat,
+    draw: detailDraw,
     counts: { lights: nL, signs: nS, trees: nT, patches: nP },
     baked: 1,
     clipSpan: clipSpan,
+    inFoot: inFoot,
+    band: function () { return mode === 0 ? 'crawl' : mode === 1 ? 'street' : 'off'; },
     cruise: function () { return stat.cruise === 1; },
     wallSlots: function (u0, u1) {
       const n = fillSlots(u0, u1), o = [];
