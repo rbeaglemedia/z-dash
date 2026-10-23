@@ -114,16 +114,16 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
     if(x1-x0<30||z1-z0<30)continue;
     if(x1>TUN.x0-5&&x0<TUN.x1+5&&z1>TUN.z0-5&&z0<TUN.z1+5)continue;
     const inPark=x1>PARK.x0&&x0<PARK.x1&&z1>PARK.z0&&z0<PARK.z1;LOTS.push({x0,x1,z0,z1,park:inPark});if(inPark)continue;
-    const F=FORCE[lx+','+lz],m=4;
+    const F=FORCE[lx+','+lz],m=8;
     if(F){if(F[1]===2){const cz=(z0+z1)/2;placePrefab('tower_landmark',(x0+x1)/2,cz,{w:x1-x0-10,d:70});tower(x0+5,x1-5,z0+m,cz-45,44,{});tower(x0+5,x1-5,cz+45,z1-m,16,{});}
       else tower(x0+m,x1-m,z0+m,z1-m,F[0],{pad:1,c:'#7dff6b',tiers:1});continue;}
     const dd=Math.hypot((x0+x1)/2-DT.x,(z0+z1)/2-DT.z),hM=10+62*Math.exp(-((dd/480)**2)),p=cr();
-    if(p<.13&&x1-x0>=60){LOTS[LOTS.length-1].plaza=1;stuntSpot(x0,x1,z0,z1,nSpot++);continue;}
+    if(p<.18&&x1-x0>=60){LOTS[LOTS.length-1].plaza=1;stuntSpot(x0,x1,z0,z1,nSpot++);continue;}
     const padBlk=z1-z0>=150&&cr()<.22;
     // ROOFTOP: a pad block takes the neighbouring lot too (one long, wide, low deck across the side street) so landings have room to stop
     if(padBlk){const nx=lx>0?lx+100:lx-100,k=nx+','+lz;const gx0=lx>0?lx+80:nx+80,gx1=gx0+20,CR=[[400,300],[-300,900],[350,1400],[-250,300],[450,-200]];if(!FORCE[k]&&okLot(nx,nx+80,z0,z1)&&!CR.some(([cx,cz])=>cx>gx0-12&&cx<gx1+12&&cz>z0-20&&cz<z1+20)){MERGED.add(k);const L=LOTS[LOTS.length-1];if(lx>0)x1=nx+80;else x0=nx;L.x0=x0;L.x1=x1;tower(x0+m,x1-m,z0+m,z1-m,Math.round(8+cr()*8),{pad:1,tiers:1});continue;}}
-    const fp=[],alleys=[],q2=cr(),nb=padBlk?1:z1-z0<120?(q2<.5?1:2):q2<.15?1:q2<.4?2:q2<.7?3:4;
-    {const cuts=[];for(let i=1;i<nb;i++)cuts.push(z0+(z1-z0)*(i/nb+(cr()-.5)*.12/nb));let za=z0+m;for(const c of cuts){fp.push([x0+m,x1-m,za,c-6]);alleys.push(c);za=c+6;}fp.push([x0+m,x1-m,za,z1-m]);}
+    const fp=[],alleys=[],q2=cr(),nb=padBlk?1:z1-z0<140?1:(q2<0.65?1:2);
+    {const cuts=[];for(let i=1;i<nb;i++)cuts.push(z0+(z1-z0)*(i/nb+(cr()-.5)*.12/nb));let za=z0+m;for(const c of cuts){fp.push([x0+m,x1-m,za,c-14]);alleys.push(c);za=c+14;}fp.push([x0+m,x1-m,za,z1-m]);}
     for(const[a,b,c,d]of fp){let h=Math.min(90,8+cr()*hM);h=Math.max(8,ringHit(a,b,c,d,h));if(padBlk)h=Math.min(h,10+cr()*18);const L=d-c,pad=padBlk;
       tower(a,b,c,d,Math.round(h),pad?{pad:1,tiers:1}:{});
       if(!pad&&h<=16&&L>=44&&cr()<.3)placePrefab('roof_slope',(a+b)/2,(c+d)/2,{rot:cr()<.5?0:180,p:{yb:Math.round(h)}});}
