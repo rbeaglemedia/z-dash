@@ -1,0 +1,13 @@
+Street Mode window check, world-split.html, 844x390, SwiftShader.
+Commit under test is the split-detail head that merges origin/main 3650f9d
+and anchors window bays to the building.
+
+Static slots (same after moving the camera +12/+14 m and -12/-12 m):
+  z: 1135.80, 1178.05, 1220.30, 1262.55
+  x: 373.30, 390.55, 407.80, 425.05
+driveMode street, cruise true, page errors none.
+Window faces 2, winSegs 96 (4 bays x 3 rows x 4 edges x 2 faces).
+near 48, maxWindowFaces 4.
+Lane clip at x=-250 does not paint the blocked span -286..-206.
+Street FPS samples: 60, 60, 60, 60, 60 (median 60).
+detail=off FPS samples: 60, 60, 60, 60, 60 (median 60).
