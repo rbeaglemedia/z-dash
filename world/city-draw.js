@@ -31,15 +31,22 @@ function drawDeco(b,d){for(const k of b.deco){
   else if(k[0]==='tank'&&d<700){const[,x,z,y]=k;ctx.beginPath();const r=3,h=5;wpoly([[x-r,y+2,z],[x+r,y+2,z],[x+r,y+2+h,z],[x-r,y+2+h,z]]);pathSeg([x-r*.7,y,z],[x-r*.7,y+2,z]);pathSeg([x+r*.7,y,z],[x+r*.7,y+2,z]);ctx.fillStyle='#120a18';ctx.fill();ctx.strokeStyle='#ffb020';ctx.lineWidth=1.2;ctx.stroke();}
   else if(k[0]==='cable'){const[,x,z,y]=k;ctx.beginPath();for(const dz of[-30,-15,15,30])pathSeg([x,y,z],[x,0.5,z+dz*1.0]);pathSeg([x,y,z],[x,0.5,z-60]);pathSeg([x,y,z],[x,0.5,z+60]);ctx.strokeStyle='#ffb020';ctx.lineWidth=1.3;ctx.stroke();}
   else if(k[0]==='lamp'){const[,x,z,y]=k;const p=proj(x,y+1,z);if(p){ctx.fillStyle='#fff2c0';ctx.shadowBlur=0;ctx.beginPath();ctx.arc(p[0],p[1],Math.max(2,H*3/p[2]),0,7);ctx.fill();}}}}
-// doors stay visible out to 150 m in both modes. Street Mode, on the ground under 12 m/s and within 30 m, adds a filled panel.
+// doors stay visible out to 150 m in both modes. A ground-floor awning shows when crawling in Street Mode or walking up to a purposeful door.
+function drawAwning(b){let door=b.doors[0];for(const dr of b.doors){const[x,z,nx,nz]=dr;if((cam.x-x)*nx+(cam.z-z)*nz>0){door=dr;break;}}
+  const[x,z,nx,nz]=door,tx=-nz,tz=nx,hw=1.7,out=.8,mw=1.15;
+  const wL=[x-tx*hw,2.65,z-tz*hw],wR=[x+tx*hw,2.65,z+tz*hw],lL=[x-tx*hw+nx*out,2.9,z-tz*hw+nz*out],lR=[x+tx*hw+nx*out,2.9,z+tz*hw+nz*out];
+  const g0=[x-tx*mw+nx*.06,.04,z-tz*mw+nz*.06],g1=[x+tx*mw+nx*.06,.04,z+tz*mw+nz*.06],g2=[x+tx*mw+nx*out,.04,z+tz*mw+nz*out],g3=[x-tx*mw+nx*out,.04,z-tz*mw+nz*out];
+  ctx.beginPath();wpoly([wL,wR,lR,lL]);wpoly([g0,g1,g2,g3]);ctx.fillStyle=b.c;ctx.globalAlpha=.82;ctx.fill();ctx.globalAlpha=1;
+  ctx.strokeStyle=b.c;ctx.lineWidth=1.5;ctx.shadowBlur=0;ctx.stroke();}
 function drawDoors(b,d){if(!b.doors||d>150)return;const q=b.boxes[0];ctx.beginPath();
   if(cam.x<q.x0)pathSeg([q.x0-.2,GFH,q.z0],[q.x0-.2,GFH,q.z1]);else if(cam.x>q.x1)pathSeg([q.x1+.2,GFH,q.z0],[q.x1+.2,GFH,q.z1]);if(cam.z<q.z0)pathSeg([q.x0,GFH,q.z0-.2],[q.x1,GFH,q.z0-.2]);else if(cam.z>q.z1)pathSeg([q.x0,GFH,q.z1+.2],[q.x1,GFH,q.z1+.2]);
   ctx.strokeStyle=b.c;ctx.globalAlpha=.55;ctx.lineWidth=1.2;ctx.stroke();ctx.globalAlpha=1;
-  const close=P.driveMode==='street'&&P.ground&&Math.abs(P.v)<12&&d<30,panels=[];ctx.beginPath();
+  const close=(P.driveMode==='street'&&P.ground&&Math.abs(P.v)<12&&d<42)||(typeof WALK_MODE!=='undefined'&&WALK_MODE.onFoot&&d<48),panels=[];ctx.beginPath();
   for(const[x,z,nx,nz]of b.doors){if((cam.x-x)*nx+(cam.z-z)*nz<=0)continue;const tx=-nz*.7,tz=nx*.7,ox=nx*.15,oz=nz*.15,rect=[[x-tx+ox,0,z-tz+oz],[x-tx+ox,2.4,z-tz+oz],[x+tx+ox,2.4,z+tz+oz],[x+tx+ox,0,z+tz+oz]];pathLine(rect);if(close)panels.push(rect);}
   ctx.strokeStyle=b.wc;ctx.lineWidth=d<60?2:1.3;ctx.stroke();
-  if(!panels.length)return;drawDoors.extra=(drawDoors.extra||0)+panels.length;ctx.beginPath();for(const rect of panels)wpoly(rect);ctx.fillStyle='#14081c';ctx.fill();
-  ctx.beginPath();for(const rect of panels){pathSeg(rect[1],rect[2]);const mx=(rect[0][0]*3+rect[3][0])/4,mz=(rect[0][2]*3+rect[3][2])/4;pathSeg([mx,0.9,mz],[mx,1.35,mz]);}ctx.strokeStyle='#ffe14d';ctx.lineWidth=2.2;ctx.stroke();}
+  if(panels.length){drawDoors.extra=(drawDoors.extra||0)+panels.length;ctx.beginPath();for(const rect of panels)wpoly(rect);ctx.fillStyle='#14081c';ctx.fill();
+    ctx.beginPath();for(const rect of panels){pathSeg(rect[1],rect[2]);const mx=(rect[0][0]*3+rect[3][0])/4,mz=(rect[0][2]*3+rect[3][2])/4;pathSeg([mx,0.9,mz],[mx,1.35,mz]);}ctx.strokeStyle='#ffe14d';ctx.lineWidth=2.2;ctx.stroke();}
+  if(close&&b.purpose)drawAwning(b);}
 // far buildings (> CDRAW.far) and outline blocks: one cheap whole box per building box (every wall that faces the camera, plus the roof).
 // Same faces as the near draw, batched into one fill and one stroke per colour, so nothing pops in as a single wall.
 const FARB=new Map();let FARF=null,FARD=0,FARN=0;function farFlush(){if(FARF){ctx.fillStyle='#0a0612';ctx.fill(FARF);FARF=null;}if(!FARB.size){FARN=0;return;}const d0=FARN||FARD;ctx.lineWidth=d0<400?1.8:1.2;ctx.globalAlpha=clamp(1.5-d0/CDRAW.dist,.25,1);for(const[c,p]of FARB){ctx.strokeStyle=c;ctx.stroke(p);}ctx.globalAlpha=1;FARB.clear();FARN=0;}
@@ -106,6 +113,10 @@ function drawCityGround(){const cx=cam.x,cz=cam.z,R=CDRAW.dist,C=CITY;ctx.save()
   ctx.beginPath();for(const e of[-C.HW.hw,C.HW.hw])pathSeg([C.HW.x+e,0.03,Math.max(C.ZS0-400,cz-R)],[C.HW.x+e,0.03,Math.min(C.ZS1+400,cz+R)]);
   for(const e of[C.TAXI.x0,C.TAXI.x1])pathSeg([e,0.03,C.TAXI.z0],[e,0.03,C.TAXI.z1]);ctx.strokeStyle='#ffb020';ctx.lineWidth=1.8;ctx.stroke();
   if(Math.abs(cx-C.HW.x)<700){ctx.beginPath();for(let z=Math.floor((cz-500)/24)*24;z<cz+700;z+=24)for(const e of[-5,5])pathSeg([C.HW.x+e,0.03,z],[C.HW.x+e,0.03,z+10]);ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=1.2;ctx.stroke();}
+  // City Builder sandbox: one cyan-emerald grid, only while the zone is inside the draw distance.
+  const ZN=C.BUILDER_ZONE;if(ZN){const dx=cx<ZN.x0?ZN.x0-cx:cx>ZN.x1?cx-ZN.x1:0,dz=cz<ZN.z0?ZN.z0-cz:cz>ZN.z1?cz-ZN.z1:0;
+    if(Math.hypot(dx,dz)<R){ctx.beginPath();const step=20;for(let x=ZN.x0;x<=ZN.x1+.1;x+=step)pathSeg([x,.05,ZN.z0],[x,.05,ZN.z1]);for(let z=ZN.z0;z<=ZN.z1+.1;z+=step)pathSeg([ZN.x0,.05,z],[ZN.x1,.05,z]);
+      ctx.strokeStyle='rgba(94,246,200,.42)';ctx.lineWidth=1.15;ctx.shadowBlur=0;ctx.stroke();}}
   drawRamps(cx,cz,R);
   ctx.restore();}
 // in the river: the water line covers the bottom of the car
