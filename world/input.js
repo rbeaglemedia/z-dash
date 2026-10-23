@@ -12,7 +12,7 @@ function installPcCss(){if(document.getElementById('pcModeCss'))return;const css
   +'html.pc-mode #kMenuB,html.pc-mode #kid[data-tab] #kMenuB{position:fixed;left:auto !important;right:10px !important;top:8px !important;bottom:auto !important;transform:none !important;width:68px;height:auto;min-height:52px;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center}'
   +'html.pc-mode #kMenuB.hidden,html.pc-mode #kMenuB.kopen{display:none !important}'
   +'html.pc-mode #exitCarBtn{position:fixed !important;top:8px !important;right:86px !important;left:auto !important;height:52px;min-width:96px;z-index:40}'
-  +'html.pc-mode #enterBldBtn{position:fixed !important;top:8px !important;left:max(300px,23vw) !important;right:auto !important;height:52px;z-index:40}'
+  +'html.pc-mode #enterBldBtn{position:fixed !important;top:8px !important;left:max(300px,23vw) !important;right:auto !important;height:52px;z-index:95}'
   +'html.pc-mode #pcFps{position:fixed;top:10px;left:calc(50% + 150px);z-index:40;min-width:92px;height:42px;display:flex;align-items:center;justify-content:center;padding:0 12px;border-radius:12px;border:2px solid #3ee6ff;background:rgba(8,4,20,.9);color:#fff;font:900 18px/1 Orbitron,sans-serif;letter-spacing:1px;box-shadow:0 0 16px rgba(62,230,255,.6);pointer-events:none;text-shadow:0 0 8px #3ee6ff}'
   +'html.pc-mode .pc-key{display:block;font:800 10px/1.1 Rajdhani,sans-serif !important;letter-spacing:.3px;margin-top:3px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);pointer-events:none;white-space:nowrap}'
   +'html.pc-mode #exitCarBtn .pc-key,html.pc-mode #enterBldBtn .pc-key{color:#140018;text-shadow:none;font-size:9px !important}'
@@ -324,6 +324,8 @@ function paintEnterFace(b,inside){
 }
 function syncEnterBldBtn(){ensureEnterBldBtn();installSafeEnter();
   const b=document.getElementById('enterBldBtn');if(!b)return;
+  const kh=document.getElementById('kHome'),ko=document.getElementById('kOver');
+  if((kh&&!kh.classList.contains('hidden'))||(ko&&!ko.classList.contains('hidden'))){b.style.display='none';return;}
   const W=window.WALK_MODE;
   if(W&&W.insideBuilding){b.style.display='flex';paintEnterFace(b,true);return;}
   const show=!!(W&&buildingSpot(W));
