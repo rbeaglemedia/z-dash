@@ -1645,7 +1645,7 @@
     const X = window.ZD && window.ZD.Xray;
     if (canvas && X && X.ready && X.car) {
       const rect = canvas.getBoundingClientRect();
-      const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+      const dpr = window.Z_IS_IPAD ? 1 : Math.min(1.5, window.devicePixelRatio || 1);
       const w = Math.max(2, Math.round(rect.width * dpr));
       const h = Math.max(2, Math.round(rect.height * dpr));
       if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
@@ -2135,7 +2135,7 @@
     return null;
   }
   function drawWallCanvas(canvas) {
-    const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+    const dpr = window.Z_IS_IPAD ? 1 : Math.min(1.5, window.devicePixelRatio || 1);
     const rect = canvas.getBoundingClientRect();
     const w = Math.max(2, Math.round(rect.width * dpr));
     const h = Math.max(2, Math.round(rect.height * dpr));

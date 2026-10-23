@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="robots" content="noindex,nofollow"><title>Neon World</title><link rel="stylesheet" href="shared/fonts/orbitron.css"><style>
+<!DOCTYPE html><html lang="en"><head><script src="shared/ipad.js?v=27"></script><script>try{if(!(('ontouchstart' in window)||(navigator.maxTouchPoints>0))&&innerWidth>1024)document.documentElement.classList.add('pc-mode');}catch(e){}</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="robots" content="noindex,nofollow"><title>Neon World</title><link rel="stylesheet" href="shared/fonts/orbitron.css"><link rel="stylesheet" href="shared/ipad.css?v=27"><style>
 :root { --red:#ff2a3d; --red2:#ff5a66; --bg:#050506; --txt:#e9e3e4; --mute:#8a7a7d; --cyan:#3ee6ff; --amber:#ffb020; }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:#000;color:var(--txt);font-family:'Orbitron',sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:none}
@@ -178,6 +178,15 @@ html,body{margin:0;height:100%;background:#000;color:var(--txt);font-family:'Orb
 
 .kid.flip180 .kbody{transform:rotate(180deg)}
 #kToast.ktoast{top:112px}  /* below the tilt gauge + runway hint */
+html.pc-mode .kover{align-items:flex-start;justify-content:center;padding:16px 18px 24px;overflow-y:auto}
+html.pc-mode .kcard.kcard2{height:auto;max-height:92vh;width:min(1080px,calc(100vw - 36px));overflow:hidden}
+html.pc-mode .kcard2>.kact,html.pc-mode .kcard2>.khow{min-height:0;max-height:92vh;overflow:hidden}
+html.pc-mode .kcard2 .kact{overflow:hidden;padding:10px 12px}
+html.pc-mode .kcard2 .kopts,html.pc-mode .kcard2 .khow{overflow-y:auto}
+html.pc-mode .kcard2 .kstart{flex:none}
+html.pc-mode .kcard2 .kact h2{font-size:24px}
+html.pc-mode .kcard2 .kline{font-size:14px}
+html.pc-mode .khome{top:4vh;transform:translate(-50%,0);max-height:92vh;overflow-y:auto;width:min(1120px,calc(100vw - 24px))}
 </style></head><body>
 <div id="kid" class="kid" data-tab="wanted"><div class="kbody">
 <canvas id="c"></canvas>
@@ -203,75 +212,75 @@ html,body{margin:0;height:100%;background:#000;color:var(--txt);font-family:'Orb
 <div class="kline"><span class="ki">💨</span><span>Hold NOS for a burst. The bottle drains while held and refills on its own.</span></div>
 <div class="kline"><span class="ki">🧈</span><span>Land soft: slow down, nose a little up, AIR BRAKE. Float it in under 6 mph for a <em>BUTTER LANDING!</em></span></div>
 <div class="kline"><span class="ki">🛞</span><span>On the ground, hold AIR BRAKE to slow in a straight line. Slide that finger right and an <em>E-BRAKE</em> pad pops up under it. Lift or slide back off the pad and it vanishes. Hold THROTTLE with it to spin donuts.</span></div>
-<div class="kline small">Desktop: hold E = throttle · F = wings · arrows/WASD · double-tap ←/→ or Z/C = barrel roll · Shift = NOS · Space = air brake · drag right off AIR BRAKE = E-BRAKE pad</div>
+<div class="kline small">Desktop: W/↑ throttle · S/↓ brake · Space e-brake · Shift NOS · F wings · G arcade/street · E building · C car · Esc pause · A/D steer</div>
 </div></div></div>
 <div id="kWreck" class="kover hidden"><div class="kcard"><div class="kact"><h2>WRECKED!</h2><div class="kready">Way too hard! Come in slow, nose a little up, and use AIR BRAKE.</div></div><div class="kstart"><button id="kWrR" class="kbig">↺ BACK TO RUNWAY</button><button id="kWrH" class="kbig" style="margin-top:10px;filter:hue-rotate(160deg)">⌂ HOME</button></div></div></div>
 <div id="kToast" class="ktoast hidden"></div>
 </div></div>
 
-<script src="shared/assets/370z-glb.js?v=25"></script>
-<script src="shared/assets/traffic/sedan.js?v=25"></script>
-<script src="shared/assets/traffic/hatchback.js?v=25"></script>
-<script src="shared/assets/traffic/van.js?v=25"></script>
-<script src="shared/assets/traffic/pickup.js?v=25"></script>
-<script src="shared/assets/traffic/suv.js?v=25"></script>
-<script src="shared/assets/traffic/police.js?v=25"></script>
-<script src="shared/assets/traffic/k-sedan.js?v=25"></script>
-<script src="shared/assets/traffic/k-sedan-sports.js?v=25"></script>
-<script src="shared/assets/traffic/k-hatchback-sports.js?v=25"></script>
-<script src="shared/assets/traffic/k-suv.js?v=25"></script>
-<script src="shared/assets/traffic/k-suv-luxury.js?v=25"></script>
-<script src="shared/assets/traffic/k-van.js?v=25"></script>
-<script src="shared/assets/traffic/k-taxi.js?v=25"></script>
-<script src="shared/assets/traffic/k-truck.js?v=25"></script>
-<script src="shared/assets/traffic/k-truck-flat.js?v=25"></script>
-<script src="shared/assets/traffic/k-delivery.js?v=25"></script>
-<script src="shared/assets/traffic/k-delivery-flat.js?v=25"></script>
-<script src="shared/assets/traffic/k-ambulance.js?v=25"></script>
-<script src="shared/assets/traffic/k-firetruck.js?v=25"></script>
-<script src="shared/assets/traffic/k-garbage-truck.js?v=25"></script>
-<script src="shared/assets/traffic/k-race.js?v=25"></script>
-<script src="shared/assets/traffic/k-race-future.js?v=25"></script>
-<script src="shared/assets/traffic/colormap.js?v=25"></script>
-<script src="shared/zd-embed.js?v=25"></script>
-<script src="shared/unlock.js?v=25"></script>
-<script src="shared/car-hinge.js?v=25"></script>
-<script src="shared/tune.js?v=25"></script>
-<script src="world/input.js?v=25"></script>
-<script src="shared/steering.js?v=25"></script>
-<script src="world/state.js?v=25"></script>
-<script src="world/camera.js?v=25"></script>
-<script src="shared/car-wire.js?v=25"></script>
-<script src="world/garage.js?v=25"></script>
-<script src="world/garagez.js?v=25"></script>
-<script src="shared/car-draw.js?v=25"></script>
-<script src="shared/minimap-tune.js?v=25"></script>
-<script src="world/hud.js?v=25"></script>
-<script src="world/phys-ground.js?v=25"></script>
-<script src="world/phys-air.js?v=25"></script>
-<script src="world/towtruck.js?v=25"></script>
-<script src="world/city.js?v=25"></script>
-<script src="world/ground.js?v=25"></script>
-<script src="world/ramps.js?v=25"></script>
-<script src="world/city-draw.js?v=25"></script>
-<script src="shared/detail-tune.js?v=25"></script>
-<script src="world/detail.js?v=25"></script>
-<script src="world/landings.js?v=25"></script>
-<script src="world/flight.js?v=25"></script>
-<script src="world/icon-garage.js?v=25"></script>
-<script src="world/house.js?v=25"></script>
-<script src="world/objectives.js?v=25"></script>
-<script src="world/sound.js?v=25"></script>
-<script src="shared/traffic-tune.js?v=25"></script>
-<script src="world/traffic.js?v=25"></script>
-<script src="world/towdrive.js?v=25"></script>
-<script src="shared/crew-state.js?v=25"></script>
-<script src="world/crew-data.js?v=25"></script>
-<script src="world/crew.js?v=25"></script>
-<script src="shared/soccer-tune.js?v=25"></script>
-<script src="world/soccer.js?v=25"></script>
-<script src="world/dance-stage.js?v=25"></script>
-<script src="world/neon-paint.js?v=25"></script>
-<script src="world/boot.js?v=25"></script>
-<script src="shared/car-model.js?v=25"></script>
+<script src="shared/assets/370z-glb.js?v=26"></script>
+<script src="shared/assets/traffic/sedan.js?v=26"></script>
+<script src="shared/assets/traffic/hatchback.js?v=26"></script>
+<script src="shared/assets/traffic/van.js?v=26"></script>
+<script src="shared/assets/traffic/pickup.js?v=26"></script>
+<script src="shared/assets/traffic/suv.js?v=26"></script>
+<script src="shared/assets/traffic/police.js?v=26"></script>
+<script src="shared/assets/traffic/k-sedan.js?v=26"></script>
+<script src="shared/assets/traffic/k-sedan-sports.js?v=26"></script>
+<script src="shared/assets/traffic/k-hatchback-sports.js?v=26"></script>
+<script src="shared/assets/traffic/k-suv.js?v=26"></script>
+<script src="shared/assets/traffic/k-suv-luxury.js?v=26"></script>
+<script src="shared/assets/traffic/k-van.js?v=26"></script>
+<script src="shared/assets/traffic/k-taxi.js?v=26"></script>
+<script src="shared/assets/traffic/k-truck.js?v=26"></script>
+<script src="shared/assets/traffic/k-truck-flat.js?v=26"></script>
+<script src="shared/assets/traffic/k-delivery.js?v=26"></script>
+<script src="shared/assets/traffic/k-delivery-flat.js?v=26"></script>
+<script src="shared/assets/traffic/k-ambulance.js?v=26"></script>
+<script src="shared/assets/traffic/k-firetruck.js?v=26"></script>
+<script src="shared/assets/traffic/k-garbage-truck.js?v=26"></script>
+<script src="shared/assets/traffic/k-race.js?v=26"></script>
+<script src="shared/assets/traffic/k-race-future.js?v=26"></script>
+<script src="shared/assets/traffic/colormap.js?v=26"></script>
+<script src="shared/zd-embed.js?v=26"></script>
+<script src="shared/unlock.js?v=26"></script>
+<script src="shared/car-hinge.js?v=26"></script>
+<script src="shared/tune.js?v=26"></script>
+<script src="world/input.js?v=27"></script>
+<script src="shared/steering.js?v=26"></script>
+<script src="world/state.js?v=26"></script>
+<script src="world/camera.js?v=27"></script>
+<script src="shared/car-wire.js?v=26"></script>
+<script src="world/garage.js?v=26"></script>
+<script src="world/garagez.js?v=26"></script>
+<script src="shared/car-draw.js?v=26"></script>
+<script src="shared/minimap-tune.js?v=26"></script>
+<script src="world/hud.js?v=27"></script>
+<script src="world/phys-ground.js?v=26"></script>
+<script src="world/phys-air.js?v=26"></script>
+<script src="world/towtruck.js?v=26"></script>
+<script src="world/city.js?v=26"></script>
+<script src="world/ground.js?v=26"></script>
+<script src="world/ramps.js?v=26"></script>
+<script src="world/city-draw.js?v=26"></script>
+<script src="shared/detail-tune.js?v=26"></script>
+<script src="world/detail.js?v=26"></script>
+<script src="world/landings.js?v=26"></script>
+<script src="world/flight.js?v=26"></script>
+<script src="world/icon-garage.js?v=26"></script>
+<script src="world/house.js?v=26"></script>
+<script src="world/objectives.js?v=26"></script>
+<script src="world/sound.js?v=26"></script>
+<script src="shared/traffic-tune.js?v=26"></script>
+<script src="world/traffic.js?v=26"></script>
+<script src="world/towdrive.js?v=26"></script>
+<script src="shared/crew-state.js?v=26"></script>
+<script src="world/crew-data.js?v=26"></script>
+<script src="world/crew.js?v=26"></script>
+<script src="shared/soccer-tune.js?v=26"></script>
+<script src="world/soccer.js?v=26"></script>
+<script src="world/dance-stage.js?v=27"></script>
+<script src="world/neon-paint.js?v=27"></script>
+<script src="world/boot.js?v=26"></script>
+<script src="shared/car-model.js?v=26"></script>
 </body></html>

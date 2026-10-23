@@ -555,7 +555,7 @@
 
   function resize() {
     if (!root || !state.open) return;
-    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    var dpr = window.Z_IS_IPAD ? 1 : Math.min(2, window.devicePixelRatio || 1);
     var w = root.clientWidth || window.innerWidth || 1;
     var h = root.clientHeight || window.innerHeight || 1;
     var pw = Math.max(1, Math.round(w * dpr));
@@ -3433,7 +3433,7 @@
     var L = computeLayout();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    var dpr = window.Z_IS_IPAD ? 1 : Math.min(2, window.devicePixelRatio || 1);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = '#07010f';
     ctx.fillRect(0, 0, state.W, state.H);

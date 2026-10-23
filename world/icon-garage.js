@@ -2006,7 +2006,7 @@
       '#ghh-room .ghh-room-item{border:1.5px solid var(--wall,#3ee6ff);border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.06)}',
       '#ghh-room small{font:700 11px Rajdhani,sans-serif;letter-spacing:1px}',
       '@media (max-width:700px){.ghh-grid,.ghh-stats{grid-template-columns:1fr}}',
-      '#kGarageDrill{order:0;width:100%;max-height:54vh;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:8px;border-radius:16px;border:2px solid #ff4fd8;background:rgba(10,4,22,.94);box-sizing:border-box}',
+      '#kGarageDrill{order:0;width:100%;flex:0 0 auto;min-height:148px;max-height:min(72vh,420px);overflow:auto;display:flex;flex-direction:column;gap:8px;padding:8px;border-radius:16px;border:2px solid #ff4fd8;background:rgba(10,4,22,.94);box-sizing:border-box}',
       '#kGarageDrill .gbackbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}',
       '#kGarageDrill .gback{flex:none;font:900 16px/1 Orbitron,sans-serif;letter-spacing:1px;color:#12052a;background:#ffe14d;border:0;border-radius:12px;padding:10px 14px;cursor:pointer;box-shadow:0 0 14px #ffe14d}',
       '#kGarageDrill .gcrumbs{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font:800 11px Orbitron,sans-serif;color:#efe7ff}',
@@ -2023,7 +2023,12 @@
       '#kGarageDrill .gcats button.on{color:#fff;border-color:#3ee6ff;background:rgba(62,230,255,.15)}',
       '#kGarageDrill .gitems{display:flex;flex-direction:column;gap:6px}',
       '#kGarageDrill .gitem{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border-radius:12px;border:1.5px solid rgba(62,230,255,.45);background:rgba(255,255,255,.04);color:#fff;padding:8px 10px;cursor:pointer;text-decoration:none}',
-      '#kGarageDrill .gitem.eq{border-color:#ffe14d;box-shadow:0 0 10px rgba(255,225,77,.35)}'
+      '#kGarageDrill .gitem.eq{border-color:#ffe14d;box-shadow:0 0 10px rgba(255,225,77,.35)}',
+      'html.pc-mode #kHome.ghh-ready{width:min(1120px,calc(100vw - 24px));max-height:92vh;overflow-y:auto;top:4vh;transform:translate(-50%,0);padding:28px 12px 12px;align-items:stretch;box-sizing:border-box}',
+      'html.pc-mode #kHome.ghh-ready #kGamesWrap{max-height:none;overflow:visible}',
+      'html.pc-mode #kHome.ghh-ready .ghh-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}',
+      'html.pc-mode #kHome.ghh-ready .ghh-card{padding:6px 7px}',
+      'html.pc-mode #kHome.ghh-ready .kpzrow button,html.pc-mode #kHome.ghh-ready .ktabs button{min-height:30px;padding:4px 8px;font-size:11px}'
     ].join('');
     document.head.appendChild(s);
   }

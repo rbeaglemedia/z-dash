@@ -1,4 +1,41 @@
 'use strict';
+// isDesktopPC is strictly !hasTouch && innerWidth > 1024.
+// hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0).
+// An iPad Pro at 1180×820 or 1366×1024 has maxTouchPoints > 1, so hasTouch is
+// true and this stays false. iPad layout is body.ipad-mode, never pc-mode.
+function isDesktopPC(){return !(('ontouchstart' in window)||(navigator.maxTouchPoints>0))&&innerWidth>1024;}
+window.isDesktopPC=isDesktopPC;
+const PC_FOOT_IDS={tup:'walkFwdBtn',nos:'walkRunBtn',brk:'walkJumpBtn',exitCarBtn:'walkExitBtn',emoteBtn:'walkEmoteBtn'};
+function syncPcMode(){const on=isDesktopPC();document.documentElement.classList.toggle('pc-mode',on);if(document.body)document.body.classList.toggle('pc-mode',on);if(typeof stampAllPcKeys==='function')stampAllPcKeys();}
+function installPcCss(){if(document.getElementById('pcModeCss'))return;const css=document.createElement('style');css.id='pcModeCss';css.textContent=''
+  +'html.pc-mode #nos{left:18px;right:auto;bottom:16px;width:108px;height:108px}'
+  +'html.pc-mode #brk.kfbrk{left:18px;right:auto;bottom:136px;width:104px;height:100px}'
+  +'html.pc-mode #tup{right:18px;left:auto;bottom:16px;width:120px;height:120px}'
+  +'html.pc-mode #wng.kfwng{right:18px;left:auto;top:auto !important;bottom:148px !important;width:104px;height:104px}'
+  +'html.pc-mode #kMenuB,html.pc-mode #kid[data-tab] #kMenuB{position:fixed;left:auto !important;right:10px !important;top:8px !important;bottom:auto !important;transform:none !important;width:68px;height:auto;min-height:52px;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center}'
+  +'html.pc-mode #kMenuB.hidden,html.pc-mode #kMenuB.kopen{display:none !important}'
+  +'html.pc-mode #exitCarBtn{position:fixed !important;top:8px !important;right:86px !important;left:auto !important;height:52px;min-width:96px;z-index:40}'
+  +'html.pc-mode #enterBldBtn{position:fixed !important;top:8px !important;left:max(300px,23vw) !important;right:auto !important;height:52px;z-index:95}'
+  +'html.pc-mode #pcFps{position:fixed;top:10px;left:calc(50% + 150px);z-index:40;min-width:92px;height:42px;display:flex;align-items:center;justify-content:center;padding:0 12px;border-radius:12px;border:2px solid #3ee6ff;background:rgba(8,4,20,.9);color:#fff;font:900 18px/1 Orbitron,sans-serif;letter-spacing:1px;box-shadow:0 0 16px rgba(62,230,255,.6);pointer-events:none;text-shadow:0 0 8px #3ee6ff}'
+  +'html.pc-mode .pc-key{display:block;font:800 10px/1.1 Rajdhani,sans-serif !important;letter-spacing:.3px;margin-top:3px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);pointer-events:none;white-space:nowrap}'
+  +'html.pc-mode #exitCarBtn .pc-key,html.pc-mode #enterBldBtn .pc-key{color:#140018;text-shadow:none;font-size:9px !important}'
+  +'html.pc-mode #kMenuB .pc-key{color:#bff6ff;text-shadow:0 0 6px #3ee6ff;font-size:9px !important;margin-top:0}'
+  +'html:not(.pc-mode) .pc-key{display:none !important}';
+  document.head.appendChild(css);}
+installPcCss();syncPcMode();addEventListener('resize',syncPcMode);
+function pcKeyFor(el){if(!el)return '';const foot=onFootNow();
+  switch(el.id){case 'tup':return '[W / ↑]';case 'nos':return foot?'[SHIFT + W]':'[SHIFT]';case 'brk':return foot?'[SPACE]':'[S / ↓]';
+    case 'wng':return foot?'[C]':'[F · G MODE]';case 'ebpad':return '[SPACE]';case 'exitCarBtn':return '[C]';case 'enterBldBtn':return '[E]';
+    case 'kMenuB':return '[ESC]';case 'emoteBtn':return '[1-4]';default:return '';}}
+function stampPcKey(el){if(!el)return;let k=el.querySelector(':scope > small.pc-key');
+  if(!isDesktopPC()||window.Z_IS_IPAD){if(k)k.remove();return;}
+  const text=pcKeyFor(el);if(!text){if(k)k.remove();return;}
+  if(!k){k=document.createElement('small');k.className='pc-key';}
+  if(k.textContent!==text)k.textContent=text;
+  if(el.lastChild!==k)el.appendChild(k);
+  const footId=PC_FOOT_IDS[el.id];
+  if(footId){if(onFootNow()){if(k.id!==footId)k.id=footId;}else if(k.id===footId)k.removeAttribute('id');}}
+function stampAllPcKeys(){for(const id of ['tup','nos','brk','wng','ebpad','exitCarBtn','enterBldBtn','kMenuB','emoteBtn'])stampPcKey(document.getElementById(id));}
 // ===== TILT (same approach as jr.html TL) =====
 const TL={have:false,perm:(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==='function')?'ask':'auto',lr:0,fb:0,n0:{lr:0,fb:0},calNext:true,last:0};
 function screenAngle(){if(window.ORIENT_OVERRIDE!=null)return window.ORIENT_OVERRIDE;let a=screen.orientation&&typeof screen.orientation.angle==='number'?screen.orientation.angle:(window.orientation||0);return((Math.round(a/90)*90)%360+360)%360;}
@@ -42,7 +79,7 @@ function setDriveMode(mode,quiet){const street=mode==='street';P.driveMode=stree
   syncWingsBtn();}
 window.setDriveMode=setDriveMode;
 function toggleDrive(){setDriveMode(P.driveMode==='street'?'arcade':'street');}
-addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='KeyF'&&flying)setWings(!P.wings);if(e.code==='KeyV'||e.code==='KeyM')toggleDrive();});
+addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='KeyF'&&flying)setWings(!P.wings);if(e.code==='KeyV'||e.code==='KeyM'||(e.code==='KeyG'&&isDesktopPC()))toggleDrive();});
 function startRoll(d){return;/* Bob: no barrel rolls */if(!flying||P.ground||P.roll||P.flip)return;P.roll={d,t:0,b0:clamp(P.bank,-TUNE.maxBank*D,TUNE.maxBank*D)};toast('BARREL ROLL!');}
 {const tap={};addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='KeyZ')startRoll(-1);if(e.code==='KeyC')startRoll(1);const d=(e.code==='ArrowLeft'||e.code==='KeyA')?-1:(e.code==='ArrowRight'||e.code==='KeyD')?1:0;if(!d)return;const n=performance.now();if(n-(tap[d]||0)<300){startRoll(d);tap[d]=0;}else tap[d]=n;});}
 const K={};addEventListener('keydown',e=>{K[e.code]=1;if(e.code.startsWith('Arrow')||e.code==='Space')e.preventDefault();});addEventListener('keyup',e=>{K[e.code]=0;});
@@ -141,10 +178,12 @@ for(const id of['tup','nos','brk'])bindHold(id);
 // Injected here so world-split.html stays untouched.
 const EMOTE_OPTS=[{id:'up',name:'DANCE 1',label:'↑ Dance 1'},{id:'right',name:'DANCE 2',label:'→ Dance 2'},{id:'down',name:'PET GROOVE',label:'↓ Pet Groove'},{id:'left',name:'HYPE SPIN',label:'← Hype Spin'}];
 let footMode='';
-function setBtnFace(el,main,smallText,smallId){if(!el)return;const can=el.querySelector('.nfxcan');
-  [...el.childNodes].forEach(n=>{if(n!==can)n.remove();});
+function setBtnFace(el,main,smallText,smallId){if(!el)return;const can=el.querySelector('.nfxcan');const keep=el.querySelector(':scope > small.pc-key');
+  [...el.childNodes].forEach(n=>{if(n!==can&&n!==keep)n.remove();});
   const sm=document.createElement('small');if(smallId)sm.id=smallId;sm.textContent=smallText;
-  el.insertBefore(document.createTextNode(main),can||null);el.insertBefore(sm,can||null);}
+  el.insertBefore(document.createTextNode(main),el.firstChild);
+  el.insertBefore(sm,el.firstChild.nextSibling);
+  stampPcKey(el);}
 function paintDriveWings(){const b=document.getElementById('wng');if(!b)return;const s=document.getElementById('wngS'),hasP=typeof P!=='undefined',open=!!(hasP&&P.wings),street=!open&&hasP&&P.driveMode==='street';
   b.classList.remove('enter-car','exit-car');b.classList.toggle('open',open);b.classList.toggle('arcade',!open&&!street);b.classList.toggle('street',street);
   b.style.background='';b.style.boxShadow='';b.style.color='';if(s)s.textContent=open?'OPEN':street?'STREET':'ARCADE';}
@@ -173,7 +212,8 @@ function syncOnFootButtons(){ensureEmote();ensureExitBtn();const mode=onFootNow(
   if(mode!=='walk'){B.walk=0;B.run=0;if(!B.brk)B.jump=0;}
   paintExitBtn();
   syncEnterBldBtn();
-  syncBrakeLabel();}
+  syncBrakeLabel();
+  stampAllPcKeys();}
 window.syncOnFootButtons=syncOnFootButtons;
 window.syncOnFootUI=syncOnFootButtons;
 function ensureEmote(){if(document.getElementById('emoteBtn'))return;
@@ -197,7 +237,7 @@ function ensureEmote(){if(document.getElementById('emoteBtn'))return;
   const host=document.querySelector('.kbody')||document.body;
   const wheel=document.createElement('div');wheel.id='emoteWheel';wheel.setAttribute('aria-hidden','true');
   wheel.innerHTML=EMOTE_OPTS.map(o=>'<span class="emoteOpt" data-dir="'+o.id+'">'+o.label+'</span>').join('');
-  const btn=document.createElement('button');btn.id='emoteBtn';btn.type='button';btn.innerHTML='EMOTE<small id="emoteS">HOLD · DRAG</small>';
+  const btn=document.createElement('button');btn.id='emoteBtn';btn.type='button';btn.innerHTML='EMOTE<small id="emoteS">HOLD · DRAG</small>';stampPcKey(btn);
   host.appendChild(wheel);host.appendChild(btn);
   let ptr=null,touchId=null,cur='',maxD=0;
   const nameOf=id=>{const o=EMOTE_OPTS.find(x=>x.id===id);return o?o.name:'';};
@@ -226,12 +266,13 @@ function streetInCar(){return typeof P!=='undefined'&&P.driveMode==='street'&&!o
 function paintExitBtn(){const b=document.getElementById('exitCarBtn');if(!b)return;
   const show=onFootNow()||streetInCar()||canExitCar();
   b.style.display=show?'flex':'none';
-  if(!show)return;
-  const want=onFootNow()?'ENTER':'EXIT';
-  const lead=b.childNodes[0]&&b.childNodes[0].nodeType===3?b.childNodes[0].textContent:'';
-  if(lead===want&&b.querySelector('small'))return;
-  b.replaceChildren(document.createTextNode(want));
-  const sm=document.createElement('small');sm.textContent='CAR';b.appendChild(sm);}
+  if(show){const want=onFootNow()?'ENTER':'EXIT';
+    const lead=b.childNodes[0]&&b.childNodes[0].nodeType===3?b.childNodes[0].textContent:'';
+    const sub=b.querySelector('small:not(.pc-key)');
+    if(!(lead===want&&sub)){const keep=b.querySelector(':scope > small.pc-key');
+      b.replaceChildren(document.createTextNode(want));
+      const sm=document.createElement('small');sm.textContent='CAR';b.appendChild(sm);if(keep)b.appendChild(keep);}}
+  stampPcKey(b);}
 function exitCarTap(){
   if(!onFootNow()&&typeof P!=='undefined'&&P.ground&&P.v<15)P.v=0;
   const W=window.WALK_MODE;if(W&&typeof W.toggleGetOut==='function')W.toggleGetOut();
@@ -278,12 +319,16 @@ function paintEnterFace(b,inside){
   const want=inside?'🚪 EXIT':'🚪 ENTER';
   b.classList.toggle('is-inside',inside);
   const lead=b.childNodes[0]&&b.childNodes[0].nodeType===3?b.childNodes[0].textContent:'';
-  if(lead===want&&b.querySelector('small')&&b.querySelector('small').textContent==='BUILDING')return;
-  b.replaceChildren(document.createTextNode(want));
-  const sm=document.createElement('small');sm.textContent='BUILDING';b.appendChild(sm);
+  const sub=b.querySelector('small:not(.pc-key)');
+  if(!(lead===want&&sub&&sub.textContent==='BUILDING')){const keep=b.querySelector(':scope > small.pc-key');
+    b.replaceChildren(document.createTextNode(want));
+    const sm=document.createElement('small');sm.textContent='BUILDING';b.appendChild(sm);if(keep)b.appendChild(keep);}
+  stampPcKey(b);
 }
 function syncEnterBldBtn(){ensureEnterBldBtn();installSafeEnter();
   const b=document.getElementById('enterBldBtn');if(!b)return;
+  const kh=document.getElementById('kHome'),ko=document.getElementById('kOver');
+  if((kh&&!kh.classList.contains('hidden'))||(ko&&!ko.classList.contains('hidden'))){b.style.display='none';return;}
   const W=window.WALK_MODE;
   if(W&&W.insideBuilding){b.style.display='flex';paintEnterFace(b,true);return;}
   const show=!!(W&&buildingSpot(W));
@@ -357,11 +402,43 @@ function ensureEnterBldBtn(){if(document.getElementById('enterBldBtn'))return;
   btn.addEventListener('click',e=>{if(performance.now()-ebTouchAt<700)return;e.preventDefault();fire();});}
 let brkAir=false;
 function syncBrakeLabel(){const el=document.getElementById('brk');if(!el)return;
-  if(onFootNow()){brkAir=null;return;}
+  if(onFootNow()){brkAir=null;stampPcKey(el);return;}
   const air=typeof P!=='undefined'&&P.y>0.15;
-  if(brkAir===air)return;
-  brkAir=air;
-  if(air)setBtnFace(el,'AIR','BRAKE');
-  else{const can=el.querySelector('.nfxcan');[...el.childNodes].forEach(n=>{if(n!==can)n.remove();});el.insertBefore(document.createTextNode('BRAKE'),can||null);}}
+  if(brkAir!==air){brkAir=air;
+    if(air)setBtnFace(el,'AIR','BRAKE');
+    else{const can=el.querySelector('.nfxcan'),keep=el.querySelector(':scope > small.pc-key');[...el.childNodes].forEach(n=>{if(n!==can&&n!==keep)n.remove();});el.insertBefore(document.createTextNode('BRAKE'),el.firstChild);}}
+  stampPcKey(el);}
 function footLoop(){try{syncOnFootButtons();}catch(e){}requestAnimationFrame(footLoop);}
 if(document.getElementById('wng')){ensureEmote();ensureExitBtn();ensureEnterBldBtn();syncOnFootButtons();requestAnimationFrame(footLoop);}
+// PC keyboard: W/↑ throttle, S/↓ brake, Space e-brake, G mode, C car, Esc/P pause, 1-4 emotes.
+// F wings and Shift NOS already exist. Labels stay off touch screens.
+addEventListener('keydown',e=>{
+  if(!isDesktopPC()||e.repeat)return;
+  const tag=e.target&&e.target.tagName;if(tag==='INPUT'||tag==='TEXTAREA'||(e.target&&e.target.isContentEditable))return;
+  if(e.code==='KeyC'){if(onFootNow()||streetInCar()||canExitCar()){e.preventDefault();exitCarTap();}return;}
+  if(e.code==='Escape'||e.code==='KeyP'){
+    if(window.GARAGE_HOME_HUB&&GARAGE_HOME_HUB.isOpen)return;
+    const home=document.getElementById('kHome');if(!home||typeof kPause!=='function')return;
+    e.preventDefault();kPause(!!home.classList.contains('hidden'));return;}
+  if(!onFootNow()||!/^Digit[1-4]$/.test(e.code))return;
+  const id=['up','right','down','left'][Number(e.code.slice(5))-1];
+  const W=window.WALK_MODE;if(!W)return;
+  if(typeof W.triggerEmote==='function')W.triggerEmote(id);else if(typeof W.toggleDance==='function')W.toggleDance();
+});
+function installPcKeys(){if(installPcKeys.done||typeof window.input!=='function')return;installPcKeys.done=1;
+  const base=window.input;
+  window.input=function(){const pc=isDesktopPC(),foot=onFootNow();let heldSpace=0;
+    if(pc&&!foot&&K.Space){heldSpace=1;K.Space=0;}
+    const r=base();
+    if(heldSpace)K.Space=1;
+    if(!pc||foot){if(B._pcSpace){B._pcSpace=0;if(!B.brk)B.ebLatch=0;}return r;}
+    if(K.KeyW||K.ArrowUp)r.tu=1;
+    if(K.KeyS||K.ArrowDown)r.brk=1;
+    if(K.Space){r.eb=1;B.ebLatch=1;B._pcSpace=1;}
+    else if(B._pcSpace){B._pcSpace=0;if(!B.brk)B.ebLatch=0;r.eb=B.ebLatch?1:0;}
+    return r;};
+  if(typeof window.streetThrottle==='function'&&!window.streetThrottle._pc){const orig=window.streetThrottle;
+    const wrapped=function(){return orig()||(isDesktopPC()&&!onFootNow()&&!!(K.KeyW||K.ArrowUp));};
+    wrapped._pc=1;window.streetThrottle=wrapped;}}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',installPcKeys);else installPcKeys();
+addEventListener('load',installPcKeys);

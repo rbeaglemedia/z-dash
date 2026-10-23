@@ -1,0 +1,15 @@
+{
+  "note": "Headless Chrome checks for the iPad layout. Phone 844×390 and desktop 1366×768 stay off ipad-mode.",
+  "passed": [
+    "ipad 1180×820 detect, DPR 1 canvas 1180×820 (967,600 px), no PC key labels, thumb buttons 96–110px in the side zones, DOM top bar does not overlap, touch-action manipulation on body and none on brake",
+    "ipad portrait 820×1180 canvas 820×1180, no DOM overlap",
+    "ipad 1024×768 canvas capped and CSS-sized",
+    "phone 844×390 untouched: not iPad, canvas 1688×780 at DPR 2, phone button anchors",
+    "desktop 1366×768 untouched: pc-mode, isDesktopPC true, canvas 1280×720, PC key labels present",
+    "main menu 1180×820 and 1024×768: 5×3, 15 tiles, no scroll",
+    "main menu portrait 820×1180: 3×5, no scroll",
+    "garage 1180×820 side panel 420px; portrait 768×1024 panel stacked from mid-screen",
+    "neon paint 1180×820 and 1024×768: pause clear of tool buttons, 36px swatches, tools beside the stage",
+    "dance stage and crew: ipad-mode, pause clear of toolbars, nothing clipped"
+  ]
+}
