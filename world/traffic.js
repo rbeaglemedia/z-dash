@@ -144,7 +144,7 @@ const TRAFFIC = (() => {
     for (let i = 0; i < T.dotCap; i++) cars.push(blank(false));
   }
   function blank(sim) {
-    const c = {sim, on:false, lane:null, s:0, v:0, v0:0, yaw:0, x:0, z:0, y:0, pi:0, turn:null, rollS:-1, blend:0, blend0:0, bx:0, bz:0, by:0, utT:0, was:false, tick:0, hit:false, hitT:0, fade:1, vx:0, vy:0, vz:0, spin:0, roll:0, vroll:0};
+    const c = {sim, on:false, lane:null, s:0, v:0, v0:0, yaw:0, x:0, z:0, y:0, pi:0, turn:null, rollS:-1, blend:0, blend0:0, bx:0, bz:0, by:0, utT:0, was:false, tick:0, hit:false, hitT:0, fade:1, vx:0, vy:0, vz:0, spin:0, roll:0, vroll:0, braking:false, yawRate:0, accel:0, bodyRoll:0, pitch:0, slip:0, suspY:0, suspV:0, ground:true, gy:0, airVx:0, airVz:0, arc:null, rampSeen:0, rampYes:false};
     c.slot = {draw:() => drawOne(c)};
     return c;
   }
@@ -187,8 +187,12 @@ const TRAFFIC = (() => {
     if (!sp) { c.on = false; return; }
     c.on = true; c.lane = sp.L; c.s = sp.s; c.x = sp.x; c.z = sp.z; c.yaw = sp.L.yaw; c.y = c.sim ? groundY(sp.x, sp.z) : 0;
     c.pi = (rnd() * T.paints.length) | 0; c.v0 = rollSpeed(sp.L.kind); c.v = c.v0;
-    c.turn = null; c.rollS = -1; c.blend = 0; c.was = false; c.utT = 0;
+    c.turn = null; c.rollS = -1; c.blend = 0; c.was = false; c.utT = 0; c.arc = null;
+    c.braking = false; c.yawRate = 0; c.accel = 0; c.bodyRoll = 0; c.pitch = 0; c.slip = 0;
+    c.suspY = 0; c.suspV = 0; c.ground = true; c.gy = c.y; c.airVx = 0; c.airVz = 0;
+    c.rampSeen = 0; c.rampYes = false;
   }
+  function blendDur() { return (T.blendMin || 0.65) + rnd() * ((T.blendMax || 0.85) - (T.blendMin || 0.65)); }
   function switchTo(c, lane, s) {
     s = lim(s, 0.4, lane.len - 0.4);
     if (blocked(lane, s)) { respawn(c); return; }
@@ -196,7 +200,8 @@ const TRAFFIC = (() => {
     const jump = Math.hypot(c.x - p[0], c.z - p[1]);
     const mx = (c.x + p[0]) / 2, mz = (c.z + p[1]) / 2;
     if (jump < 16 && jump > 0.4 && !solidAt(mx, mz) && !runway(mx, mz)) {
-      c.bx = c.x; c.bz = c.z; c.by = c.yaw; c.blend0 = 0.28; c.blend = 0.28;
+      const dur = blendDur();
+      c.bx = c.x; c.bz = c.z; c.by = c.yaw; c.blend0 = dur; c.blend = dur;
     } else c.blend = 0;
     c.lane = lane; c.s = s; c.turn = null; c.rollS = -1;
     place(c);
@@ -213,35 +218,223 @@ const TRAFFIC = (() => {
   }
   function place(c) {
     const p = c.lane.at(c.s), yaw = c.lane.yaw;
-    if (c.blend > 0) {
-      const k = c.blend / c.blend0;
-      c.x = p[0] + (c.bx - p[0]) * k; c.z = p[1] + (c.bz - p[1]) * k;
-      c.yaw = yaw + angDiff(c.by, yaw) * k;
+    if (c.blend > 0 && c.blend0 > 0) {
+      const u = 1 - c.blend / c.blend0, e = u * u * (3 - 2 * u);
+      c.x = c.bx + (p[0] - c.bx) * e; c.z = c.bz + (p[1] - c.bz) * e;
+      c.yaw = c.by + angDiff(yaw, c.by) * e;
     } else { c.x = p[0]; c.z = p[1]; c.yaw = yaw; }
   }
   function crowd(c) {
     const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw);
     let hold = null, hd = T.gap;
+    const see = o => {
+      if (!o || o.x == null) return;
+      const dx = o.x - c.x, dz = o.z - c.z, d = Math.hypot(dx, dz);
+      if (d > 0.05 && d < hd && dx * fx + dz * fz > 0.4) { hd = d; hold = o; }
+    };
     for (const o of cars) {
       if (o === c || !o.on || !o.sim) continue;
-      const dx = o.x - c.x, dz = o.z - c.z, d = Math.hypot(dx, dz);
-      if (d < hd && dx * fx + dz * fz > 0.4) { hd = d; hold = o; }
+      see(o);
     }
+    const trucks = window.TOWDRIVE && TOWDRIVE.trucks;
+    if (trucks) for (let i = 0; i < trucks.length; i++) see(trucks[i]);
     return hold ? {o:hold, d:hd} : null;
   }
+  function noteBrake(c) {
+    c.braking = false;
+    const h = crowd(c);
+    if (h) {
+      const cap = h.d < T.carL + 1.2 ? 1.5 : (h.o.v == null ? c.v : h.o.v);
+      if (cap < c.v - 0.35) c.braking = true;
+    }
+    const ds = c.turn ? c.turn.s - c.s : 99;
+    if (c.arc || (c.turn && ds < (T.cornerDist || 18) && ds > -2)) {
+      if (c.v > (T.cornerFrac || 0.58) * c.v0 + 0.4) c.braking = true;
+    }
+    return h;
+  }
+  function pace(c, dt) {
+    let target = c.v0;
+    const h = noteBrake(c);
+    if (h) {
+      const cap = h.d < T.carL + 1.2 ? 1.5 : (h.o.v == null ? c.v : h.o.v);
+      if (cap < target) target = cap;
+    }
+    const ds = c.turn ? c.turn.s - c.s : 99;
+    if (c.arc || (c.turn && ds < (T.cornerDist || 18) && ds > -2)) {
+      const corner = (T.cornerFrac || 0.58) * c.v0;
+      if (corner < target) target = corner;
+    }
+    if (c.v < target) c.v = Math.min(target, c.v + (T.accel || 5.5) * dt);
+    else c.v = Math.max(target, c.v - (T.brake || 6.8) * dt);
+    if (c.v < 0.4) c.v = 0.4;
+  }
+  function beginArc(c) {
+    const dest = c.turn && c.turn.to;
+    if (!dest) return false;
+    const s2 = lim((c.turn.s2 || 0) + 4.2, 0.8, dest.len - 0.8);
+    if (blocked(dest, s2)) return false;
+    const p0 = [c.x, c.z];
+    const p2 = dest.at(s2);
+    const apex = c.lane.at(lim(c.turn.s, 0.2, c.lane.len - 0.2));
+    const ctrl = [2 * apex[0] - 0.5 * (p0[0] + p2[0]), 2 * apex[1] - 0.5 * (p0[1] + p2[1])];
+    const dur = blendDur();
+    c.arc = {p0, p2, ctrl, yaw0:c.yaw, yaw2:dest.yaw, t:0, dur, lane:dest, s2};
+    c.blend0 = dur; c.blend = dur;
+    return true;
+  }
+  function stepArc(c, dt) {
+    const a = c.arc;
+    a.t += dt;
+    const u = lim(a.t / a.dur, 0, 1), e = u * u * (3 - 2 * u), o = 1 - e;
+    c.x = o * o * a.p0[0] + 2 * o * e * a.ctrl[0] + e * e * a.p2[0];
+    c.z = o * o * a.p0[1] + 2 * o * e * a.ctrl[1] + e * e * a.p2[1];
+    c.yaw = a.yaw0 + angDiff(a.yaw2, a.yaw0) * e;
+    c.s = Math.min(c.lane.len - 0.2, c.s + c.v * dt * 0.45);
+    if (u < 1) return;
+    c.lane = a.lane; c.s = a.s2; c.yaw = a.lane.yaw; c.turn = null; c.rollS = -1; c.arc = null; c.blend = 0;
+  }
+  function sameCard(yaw, dir) {
+    const d = [0, Math.PI / 2, Math.PI, -Math.PI / 2][dir] || 0;
+    return Math.abs(angDiff(yaw, d)) < 0.55;
+  }
+  function rampHere(c) {
+    const R = CITY.RAMPS;
+    if (!R || !R.length) return null;
+    const grab = T.rampGrab || 3.5;
+    const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw);
+    const ax = c.x + fx * 6, az = c.z + fz * 6;
+    let best = null, bd = grab;
+    for (let i = 0; i < R.length; i++) {
+      const q = R[i];
+      if (!q || q.hid || q.nm === 'tow') continue;
+      if (!sameCard(c.yaw, q.dir || 0)) continue;
+      const near = (x, z) => {
+        const cx = lim(x, q.x0, q.x1), cz = lim(z, q.z0, q.z1);
+        return Math.hypot(x - cx, z - cz);
+      };
+      const d = Math.min(near(c.x, c.z), near(ax, az));
+      if (d < bd) { bd = d; best = q; }
+    }
+    return best;
+  }
+  function rampSeek(c, dt) {
+    if (c.ground === false || c.arc || c.hop) return;
+    const q = rampHere(c);
+    if (!q) { c.rampSeen = 0; return; }
+    const id = q.oid != null ? q.oid : (q.x0 + ',' + q.z0);
+    if (c.rampSeen !== id) { c.rampSeen = id; c.rampYes = rnd() < 0.62; }
+    if (!c.rampYes) return;
+    let tx, tz;
+    if ((q.dir || 0) % 2 === 0) { tx = (q.x0 + q.x1) / 2; tz = lim(c.z + Math.cos(c.yaw) * 2.2, q.z0, q.z1); }
+    else { tz = (q.z0 + q.z1) / 2; tx = lim(c.x + Math.sin(c.yaw) * 2.2, q.x0, q.x1); }
+    const k = Math.min(1, dt * 3.6);
+    c.x += (tx - c.x) * k; c.z += (tz - c.z) * k;
+  }
+  function susp(c, dt) {
+    const y = c.suspY || 0, v = c.suspV || 0;
+    c.suspV = v + (-y * 42 - v * 7.5) * dt;
+    c.suspY = lim(y + c.suspV * dt, -0.42, 0.12);
+  }
+  function puff(c) {
+    for (let i = 0; i < 4; i++) {
+      sparks.push({
+        x: c.x + (rnd() - 0.5) * 1.4, y: (c.gy || 0) + 0.12, z: c.z + (rnd() - 0.5) * 1.4,
+        vx: (rnd() - 0.5) * 3, vy: 0.5 + rnd() * 1.1, vz: (rnd() - 0.5) * 3,
+        col: i % 2 ? '#d8d2e6' : '#ffffff', life: 0.32 + rnd() * 0.15, t: 0
+      });
+    }
+  }
+  function body(c, dt, prevYaw, prevV) {
+    const raw = angDiff(c.yaw, prevYaw) / Math.max(0.001, dt);
+    c.yawRate = (c.yawRate || 0) + (raw - (c.yawRate || 0)) * Math.min(1, dt * 8);
+    c.accel = (c.v - prevV) / Math.max(0.001, dt);
+    const camTurnTilt = lim(angDiff(c.yaw, (typeof cam !== 'undefined' && cam && cam.yaw) || c.yaw) * 0.015, -0.03, 0.03);
+    const targetRoll = lim(-c.yawRate * 0.095 + camTurnTilt, -0.16, 0.16);
+    c.bodyRoll = (c.bodyRoll || 0) + (targetRoll - (c.bodyRoll || 0)) * Math.min(1, dt * 8);
+    c.slip = lim(c.yawRate * 0.08, -0.14, 0.14);
+  }
+  function vertSim(c, dt, prevX, prevZ) {
+    const stepDist = Math.hypot(c.x - prevX, c.z - prevZ);
+    const pr = CITY.probe(c.x, c.z, (c.y || 0) + 1.6);
+    const gy = Math.max(0, pr.fl || 0);
+    const prevGy = c.gy == null ? gy : c.gy;
+    const hopping = c.hop && c.hop.phase === 'air';
+    if (c.ground !== false && !hopping) {
+      const slope = lim((gy - prevGy) / Math.max(0.12, stepDist), -0.40, 0.48);
+      c.pitch = (c.pitch || 0) + (slope - (c.pitch || 0)) * Math.min(1, dt * 14);
+      if (slope > 0.04) c.vy = Math.max(c.vy || 0, c.v * Math.sin(slope));
+      const lip = (c.y - gy > 0.32) || (prevGy > 0.5 && gy < prevGy - 0.35);
+      if (lip) {
+        c.ground = false;
+        c.vy = Math.max(c.vy || 0, 2.4 + c.v * Math.sin(Math.max(0.14, c.pitch || 0.18)));
+        c.v = Math.max(c.v, 14);
+        c.airVx = Math.sin(c.yaw) * c.v; c.airVz = Math.cos(c.yaw) * c.v;
+      } else {
+        c.y = gy; c.ground = true;
+        if (slope <= 0.04) {
+          c.vy = 0;
+          const dive = lim((c.accel || 0) * 0.012, -0.05, 0.05);
+          c.pitch += (dive - c.pitch) * Math.min(1, dt * 8);
+        }
+      }
+    } else if (!hopping) {
+      c.y += (c.vy || 0) * dt;
+      c.vy = (c.vy || 0) - 13.5 * dt;
+      const airPitch = lim(Math.atan2(c.vy, Math.max(5, c.v)) * 0.85, -0.30, 0.36);
+      c.pitch += (airPitch - (c.pitch || 0)) * Math.min(1, dt * 8);
+      c.bodyRoll = (c.bodyRoll || 0) * Math.max(0, 1 - 3 * dt);
+      if (c.y <= gy && c.vy <= 0) {
+        const drop = c.vy;
+        c.y = gy; c.ground = true;
+        c.suspV = lim(drop * 0.22, -2.4, -0.5);
+        c.vy = 0;
+        if (drop < -2.2) puff(c);
+      }
+    }
+    c.gy = gy;
+    susp(c, dt);
+  }
+  function afterTow(c, dt, prevX, prevZ, prevY, prevYaw, prevV) {
+    const dy = c.y - prevY, ds = Math.hypot(c.x - prevX, c.z - prevZ);
+    const pit = lim(Math.atan2(dy, Math.max(0.15, ds)), -0.32, 0.38);
+    c.pitch = (c.pitch || 0) + (pit - (c.pitch || 0)) * Math.min(1, dt * 10);
+    c.gy = groundY(c.x, c.z);
+    const air = c.hop && c.hop.phase === 'air';
+    if (air) {
+      c.ground = false;
+      const vy = dy / Math.max(0.001, dt);
+      c.vy = vy;
+      const airPitch = lim(Math.atan2(vy, Math.max(5, c.v)) * 0.85, -0.30, 0.36);
+      c.pitch += (airPitch - c.pitch) * Math.min(1, dt * 8);
+      c.bodyRoll = (c.bodyRoll || 0) * Math.max(0, 1 - 3 * dt);
+    } else if (!c.hop && prevY > 0.2) {
+      c.ground = true;
+      c.y = Math.max(c.gy || 0, 0);
+      c.suspV = -1.15;
+      c.vy = 0;
+      puff(c);
+    } else c.ground = true;
+    susp(c, dt);
+    body(c, dt, prevYaw, prevV);
+  }
   function advance(c, dt) {
-    if (c.sim && window.TOWDRIVE && TOWDRIVE.ride(c, dt)) return;
+    const prevX = c.x, prevZ = c.z, prevY = c.y || 0, prevYaw = c.yaw || 0, prevV = c.v || 0;
+    if (c.sim) noteBrake(c);
+    if (c.sim && window.TOWDRIVE && TOWDRIVE.ride(c, dt)) {
+      afterTow(c, dt, prevX, prevZ, prevY, prevYaw, prevV);
+      return;
+    }
     const L = c.lane;
     if (!L) { respawn(c); return; }
     if (c.utT > 0) c.utT -= dt;
-    let target = c.v0;
-    if (c.sim) {
-      const h = crowd(c);
-      if (h) target = Math.min(target, h.d < T.carL + 1.2 ? 1.5 : h.o.v);
+    if (c.sim) pace(c, dt);
+    else {
+      let target = c.v0;
+      c.v += (target - c.v) * Math.min(1, dt * 2);
+      if (c.v < 0.4) c.v = 0.4;
     }
-    c.v += (target - c.v) * Math.min(1, dt * 2);
-    if (c.v < 0.4) c.v = 0.4;
-    if (!c.turn) {
+    if (!c.turn && !c.arc) {
       let near = null;
       for (const t of L.turns) {
         if (t.s < c.s + 0.8) continue;
@@ -255,8 +448,20 @@ const TRAFFIC = (() => {
         if (rnd() < T.turnP) c.turn = near[(rnd() * near.length) | 0];
       }
     }
+    if (c.sim && c.turn && !c.arc && c.turn.s - c.s <= (T.arcLead || 4.5)) {
+      if (!beginArc(c) && c.s + c.v * dt >= c.turn.s - 0.15) {
+        switchTo(c, c.turn.to, c.turn.s2);
+        vertSim(c, dt, prevX, prevZ); body(c, dt, prevYaw, prevV);
+        return;
+      }
+    }
+    if (c.arc) {
+      stepArc(c, dt);
+      if (c.sim) { rampSeek(c, dt); vertSim(c, dt, prevX, prevZ); body(c, dt, prevYaw, prevV); }
+      return;
+    }
     const step = c.v * dt;
-    if (c.turn && c.s + step >= c.turn.s) { switchTo(c, c.turn.to, c.turn.s2); return; }
+    if (!c.sim && c.turn && c.s + step >= c.turn.s) { switchTo(c, c.turn.to, c.turn.s2); return; }
     if (blockedAhead(L, c.s + step)) { if (c.utT > 0) respawn(c); else doUturn(c); return; }
     c.s += step;
     if (c.s >= L.len - 0.15) {
@@ -268,14 +473,16 @@ const TRAFFIC = (() => {
         else if (c.utT > 0) respawn(c);
         else doUturn(c);
       }
+      if (c.sim) { vertSim(c, dt, prevX, prevZ); body(c, dt, prevYaw, prevV); }
       return;
     }
     place(c);
     if (c.blend > 0) c.blend = Math.max(0, c.blend - dt);
+    if (c.sim) rampSeek(c, dt);
     if (c.sim || (c.tick++ % 18) === 0) {
-      if (runway(c.x, c.z) || solidAt(c.x, c.z)) { if (c.utT > 0) respawn(c); else doUturn(c); return; }
-      if (c.sim) c.y = groundY(c.x, c.z);
+      if (c.ground !== false && (runway(c.x, c.z) || solidAt(c.x, c.z))) { if (c.utT > 0) respawn(c); else doUturn(c); return; }
     }
+    if (c.sim) { vertSim(c, dt, prevX, prevZ); body(c, dt, prevYaw, prevV); }
   }
   function horiz(c) { return Math.hypot(c.x - P.x, c.z - P.z); }
   function maintain() {
@@ -357,10 +564,12 @@ const TRAFFIC = (() => {
   function viewKey(c) {
     const dx = cam.x - c.x, dz = cam.z - c.z, dy = cam.y - (c.y + 0.6);
     const hd = Math.hypot(dx, dz) || 0.001;
-    const rel = Math.atan2(Math.sin(Math.atan2(dx, dz) - c.yaw), Math.cos(Math.atan2(dx, dz) - c.yaw));
-    const elev = Math.atan2(dy, hd);
-    let yb = Math.round(rel / (Math.PI / 8));
-    yb = ((yb + 8) % 16 + 16) % 16 - 8;
+    const visYaw = c.yaw + (c.slip || 0);
+    const rel = Math.atan2(Math.sin(Math.atan2(dx, dz) - visYaw), Math.cos(Math.atan2(dx, dz) - visYaw));
+    const elev = Math.atan2(dy, hd) - (c.pitch || 0) * 0.9;
+    const step = T.yawStep || (Math.PI / 12);
+    let yb = Math.round(rel / step);
+    yb = ((yb + 12) % 24 + 24) % 24 - 12;
     const eb = lim(Math.round(elev / 0.35), -1, 5);
     return c.pi + ':' + yb + ':' + eb;
   }
@@ -506,7 +715,7 @@ const TRAFFIC = (() => {
     if (R.getSize) R.getSize(box);
     try {
       applyPaint(TRAFFIC._clone, pi);
-      const yaw = yb * (Math.PI / 8), elev = eb * 0.35;
+      const yaw = yb * (T.yawStep || Math.PI / 12), elev = eb * 0.35;
       const dist = 7 / (2 * Math.tan(13 * Math.PI / 180)), ty = 0.6;
       const camT = TRAFFIC._cam;
       camT.fov = 26; camT.aspect = 1; camT.near = 0.05; camT.far = 80;
@@ -527,7 +736,7 @@ const TRAFFIC = (() => {
       const cv = document.createElement('canvas');
       cv.width = px; cv.height = px;
       cv.getContext('2d', {alpha:true}).drawImage(src, 0, 0, src.width, src.height, 0, 0, px, px);
-      if (cache.size > 72) cache.clear();
+      if (cache.size > (T.cacheMax || 140)) cache.clear();
       cache.set(key, cv); bakes++;
       return true;
     } catch (e) { bakeErr = String(e); return false; }
@@ -542,13 +751,65 @@ const TRAFFIC = (() => {
       X._w = 0; X._h = 0;
     }
   }
+  function shadow(c) {
+    const gy = c.gy || 0, hAir = Math.max(0, (c.y || 0) - gy);
+    const p = proj(c.x, gy + 0.04, c.z);
+    if (!p) return;
+    const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), rx = Math.cos(c.yaw), rz = -Math.sin(c.yaw);
+    const a = proj(c.x + fx * 1.7, gy + 0.04, c.z + fz * 1.7);
+    const b = proj(c.x + rx * 0.72, gy + 0.04, c.z + rz * 0.72);
+    if (!a || !b) return;
+    const spread = 1 + hAir * 0.35, fade = lim(0.42 - hAir * 0.045, 0.08, 0.42);
+    const ang = Math.atan2(a[1] - p[1], a[0] - p[0]);
+    const len = Math.hypot(a[0] - p[0], a[1] - p[1]) * spread;
+    const wid = Math.hypot(b[0] - p[0], b[1] - p[1]) * spread;
+    ctx.save();
+    ctx.translate(p[0], p[1]);
+    ctx.rotate(ang);
+    ctx.fillStyle = 'rgba(0,0,0,' + fade + ')';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, Math.max(2, len), Math.max(1.4, wid), 0, 0, 6.3);
+    ctx.fill();
+    ctx.restore();
+  }
+  function dress(c) {
+    const hard = Math.abs(c.yawRate || 0) > 0.35;
+    if (!c.braking && !hard) return;
+    const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), rx = Math.cos(c.yaw), rz = -Math.sin(c.yaw);
+    const y = (c.y || 0) + (c.suspY || 0) + 0.42;
+    ctx.save();
+    if (c.braking || hard) {
+      for (const s of [-0.55, 0.55]) {
+        const p = proj(c.x - fx * 2.05 + rx * s * 0.7, y, c.z - fz * 2.05 + rz * s * 0.7);
+        if (!p) continue;
+        const rad = Math.max(1.6, H * 0.9 / p[2] * 0.16);
+        ctx.globalAlpha = 0.9;
+        ctx.fillStyle = '#ff2a3d';
+        ctx.beginPath(); ctx.arc(p[0], p[1], rad, 0, 6.3); ctx.fill();
+      }
+    }
+    if (hard) {
+      ctx.strokeStyle = 'rgba(180,180,190,.55)';
+      ctx.lineWidth = 2;
+      for (const s of [-0.7, 0.7]) {
+        const a = proj(c.x - fx * 1.3 + rx * s, (c.gy || 0) + 0.05, c.z - fz * 1.3 + rz * s);
+        const b = proj(c.x - fx * 3.1 + rx * s, (c.gy || 0) + 0.05, c.z - fz * 3.1 + rz * s);
+        if (!a || !b) continue;
+        ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
   function blit(cv, c) {
-    const c0 = camS(c.x, c.y + 0.6, c.z);
+    const yDraw = (c.y || 0) + (c.suspY || 0);
+    const c0 = camS(c.x, yDraw + 0.6, c.z);
     if (!c0 || c0[2] < (typeof NEAR === 'number' ? NEAR : 0.5)) return false;
     const sc = scr(c0), px = H * 0.9 / c0[2] * 7;
+    const squash = 1 - (c.pitch || 0) * 0.10;
     ctx.save();
     ctx.translate(sc[0], sc[1]);
-    ctx.rotate(c.roll || 0);
+    ctx.rotate((c.roll || 0) + (c.bodyRoll || 0));
+    ctx.scale(1, squash);
     ctx.drawImage(cv, -px / 2, -px / 2, px, px);
     ctx.restore();
     return true;
@@ -605,12 +866,14 @@ const TRAFFIC = (() => {
     if (dist > T.dotDist) return;
     ctx.save();
     ctx.globalAlpha = c.fade == null ? 1 : c.fade;
+    if (c.sim && dist < T.boxDist) shadow(c);
     if (c.hit || dist < T.fullDist) {
       const cv = cache.get(c._key);
-      if (cv && blit(cv, c)) { ctx.restore(); return; }
+      if (cv && blit(cv, c)) { if (c.sim && !c.hit) dress(c); ctx.restore(); return; }
       drawBox(c); lights(c, dist);
     } else if (dist < T.boxDist) { drawBox(c); lights(c, dist); }
     else lights(c, dist);
+    if (c.sim && !c.hit) dress(c);
     ctx.restore();
   }
 
