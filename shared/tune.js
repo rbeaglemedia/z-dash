@@ -107,6 +107,19 @@ const PRESETS = { wings: {
   groundAccel: 0.24,                          // ground spool rate toward throttle speed (lower = longer run-up)
   groundPitchMax: 3,                          // deg of nose-up allowed while rolling below rotateSpeed
   bounce: 0.45,                               // bounce strength on a hard hit
-  startAlt: 120, startSpeed: 55, startThrottle: 0.6 } };
+  startAlt: 120, startSpeed: 55, startThrottle: 0.6,
+  // --- air E-BRAKE ("Sky Whip" aerial U-turn / air drift) ---
+  eBrakeAirSteer: 3.1,                        // mid-air whip yaw-rate multiplier (~180 deg U-turn in ~1.1 s)
+  eBrakeAirPivotYaw: 0.65,                    // minimum yaw scale at low airspeed so slow air U-turns always finish
+  eBrakeAirDecel: 12.0,                       // m/s^2 speed bleed while whipping broadside in the air
+  eBrakeAirFloorV: 14.0,                      // minimum airspeed (m/s, ~31 mph) kept during an air e-brake so she never stalls to 0 mid-whip
+  eBrakeAirDonutV: 20.0,                      // throttle + air e-brake holds ~45 mph for a continuous banked 360 sky-spin
+  eBrakeAirSlipMax: 58,                       // deg nose leads flight path in the air (wider than 42 deg ground drift so the Z + wings whip broadside)
+  eBrakeAirDonutSlip: 54,                     // deg slip during throttle + air e-brake spin
+  eBrakeAirBank: 38,                          // deg bank into the whip turn (looks distinctly aerial, not flat like pavement)
+  eBrakeAirRoll: 12,                          // deg extra visual body roll into the whip
+  eBrakeAirFlarePitch: 11,                    // deg nose-up flare kick while whipping around in the air
+  eBrakeAirSinkMax: 1.8                       // m/s max sink rate while air e-braking (air-cushion flare so a U-turn doesn't drop like a rock)
+} };
 const TUNE = Object.assign({}, PRESETS.wings);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), D=Math.PI/180;

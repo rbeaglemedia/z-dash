@@ -33,13 +33,14 @@ const B={tup:0,nos:0,brk:0,brkDx:0,brkX:null,ebLatch:0};
 // Each button keeps its own pointer and its own touch so AIR BRAKE and THROTTLE can be held together.
 // Touch is handled on touch events (two fingers). Mouse/pen use pointer events. A touch does not also
 // take the mouse-compat pointer that some browsers fire afterwards.
-// AIR BRAKE stays labeled AIR BRAKE. Past the drag threshold, on the ground, a separate E-BRAKE pad
-// pops up under the finger, to the right of the button. It is live only while the finger is on it.
+// AIR BRAKE stays labeled AIR BRAKE. Past the drag threshold, on the ground or in the air, a separate
+// E-BRAKE pad pops up under the finger, to the right of the button. It is live only while the finger
+// is on it. KeyB latches too, so desktop and tests can hold the Sky Whip. An outside B.ebLatch = 1 sticks.
 let ebTouchAt=0;
 function syncEb(){const el=document.getElementById('brk'),pad=document.getElementById('ebpad');
-  const ground=typeof P!=='undefined'&&!!P.ground;
+  const canEb=typeof P!=='undefined'&&!P.wreck;
   let on=false;
-  if(el&&pad&&B.brk&&ground&&B.brkX!=null&&B.brkDx>=(TUNE.eBrakeDrag||40)){
+  if(el&&pad&&B.brk&&canEb&&B.brkX!=null&&B.brkDx>=(TUNE.eBrakeDrag||40)){
     const body=el.offsetParent||el.parentElement,br=body.getBoundingClientRect();
     const flip=!!(document.getElementById('kid')&&document.getElementById('kid').classList.contains('flip180'));
     let fx=B.brkX-br.left;if(flip)fx=br.width-fx;
@@ -49,7 +50,9 @@ function syncEb(){const el=document.getElementById('brk'),pad=document.getElemen
     let left=fx-size/2;if(left<minLeft)left=minLeft;if(left>maxLeft)left=maxLeft;
     on=fx>=left-1;
     if(on){pad.style.left=left+'px';pad.style.top=el.offsetTop+'px';pad.style.width=size+'px';pad.style.height=(el.offsetHeight||size)+'px';pad.style.right='auto';pad.style.bottom='auto';}}
-  B.ebLatch=on?1:0;
+  if(B.brk)B.ebLatch=on?1:0;
+  if(canEb&&K.KeyB){B.ebLatch=1;B._ebKey=1;}
+  else if(B._ebKey){B._ebKey=0;if(!B.brk)B.ebLatch=0;}
   if(pad){pad.classList.toggle('show',on);pad.setAttribute('aria-hidden',on?'false':'true');}}
 function bindHold(id){const el=document.getElementById(id);let ptr=null,touchId=null,x0=0;
   const down=x=>{B[id]=1;el.classList.add('on','nfxp');if(id==='brk'){x0=x;B.brkX=x;B.brkDx=0;syncEb();}};
