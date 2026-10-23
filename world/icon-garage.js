@@ -7,6 +7,235 @@
 (function () {
   if (window.GARAGE_HOME_HUB) return;
 
+  const VINYL_KEY = 'zdash_vinyls_v1';
+  const VINYL_PAINT_KEY = 'zdash_neon_paint_v1';
+  let vinylRendering = false;
+  function vinylEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function vinylName(item, idx) {
+    const n = item && typeof item.name === 'string' ? item.name.trim() : '';
+    return n || ('VINYL #' + (idx + 1));
+  }
+  function vinylBlank() { return { v: 1, activeId: null, items: [] }; }
+  function vinylNormalize(data) {
+    const src = data && Array.isArray(data.items) ? data.items : [];
+    const items = [];
+    for (let i = 0; i < src.length; i++) {
+      const it = src[i];
+      if (!it || typeof it !== 'object') continue;
+      const row = {
+        id: String(it.id || ('vinyl_' + (i + 1))),
+        name: typeof it.name === 'string' ? it.name : '',
+        updatedAt: +it.updatedAt || 0,
+        strokes: Array.isArray(it.strokes) ? it.strokes : []
+      };
+      if (Array.isArray(it.colors)) row.colors = it.colors.slice();
+      items.push(row);
+    }
+    let activeId = data && data.activeId != null && data.activeId !== '' ? String(data.activeId) : null;
+    if (activeId && !items.some((it) => it.id === activeId)) activeId = null;
+    return { v: 1, activeId: activeId, items: items };
+  }
+  function vinylRead() {
+    const NP = window.NEON_PAINT;
+    if (NP && typeof NP.getVinyls === 'function') {
+      try {
+        const got = NP.getVinyls();
+        if (got && typeof got === 'object') return vinylNormalize(got);
+      } catch (e) {}
+    }
+    let raw = null;
+    try { raw = localStorage.getItem(VINYL_KEY); } catch (e) {}
+    if (raw == null) {
+      let legacy = null;
+      try { legacy = localStorage.getItem(VINYL_PAINT_KEY); } catch (e) {}
+      if (legacy) {
+        try {
+          const o = JSON.parse(legacy);
+          const strokes = o && Array.isArray(o.strokes) ? o.strokes : [];
+          if (strokes.length > 0) {
+            const migrated = { v: 1, activeId: 'vinyl_1', items: [{ id: 'vinyl_1', name: 'VINYL #1', updatedAt: Date.now(), strokes: strokes }] };
+            try { localStorage.setItem(VINYL_KEY, JSON.stringify(migrated)); } catch (e) {}
+            return vinylNormalize(migrated);
+          }
+        } catch (e) {}
+      }
+      return vinylBlank();
+    }
+    try { return vinylNormalize(JSON.parse(raw)); } catch (e) { return vinylBlank(); }
+  }
+  function vinylWrite(state) {
+    const next = vinylNormalize(state);
+    try { localStorage.setItem(VINYL_KEY, JSON.stringify(next)); } catch (e) {}
+    return next;
+  }
+  function vinylMirrorCar(strokes) {
+    const list = strokes || [];
+    try { localStorage.setItem(VINYL_PAINT_KEY, JSON.stringify({ v: 1, strokes: list })); } catch (e) {}
+    const NP = window.NEON_PAINT;
+    if (NP && typeof NP.reload === 'function') {
+      try { NP.reload(); } catch (e) {}
+      return;
+    }
+    if (NP && typeof NP.save === 'function') {
+      try {
+        const cur = typeof NP.load === 'function' ? NP.load() : null;
+        const base = cur && cur.slots ? cur : { version: 1, enabled: true, activeSlot: 0, slots: [0, 1, 2].map((i) => ({ name: 'SLOT ' + (i + 1), strokes: [], updatedAt: 0 })) };
+        base.enabled = true;
+        base.activeSlot = 0;
+        base.slots[0] = Object.assign({}, base.slots[0] || {}, { strokes: list, updatedAt: Date.now() });
+        NP.save(base);
+      } catch (e) {}
+    } else if (NP && typeof NP.applyToCar === 'function' && window.ZD && ZD.Xray) {
+      try { NP.applyToCar(ZD.Xray); } catch (e) {}
+    }
+  }
+  function vinylPing() {
+    try { window.dispatchEvent(new CustomEvent('zdash:vinyls-changed')); } catch (e) {}
+  }
+  function vinylRefresh() {
+    if (vinylRendering) return;
+    vinylRendering = true;
+    try {
+      const g = document.getElementById('kGarage');
+      if (g && typeof gCat !== 'undefined' && gCat === 'vinyls' && typeof renderGarage === 'function') renderGarage();
+    } catch (e) {}
+    try { if (typeof refreshWorldVinyls === 'function') refreshWorldVinyls(); } catch (e) {}
+    vinylRendering = false;
+  }
+  function equipVinyl(idOrNull) {
+    const NP = window.NEON_PAINT;
+    if (NP && typeof NP.equipVinyl === 'function') {
+      try { NP.equipVinyl(idOrNull); } catch (e) {}
+      try { if (typeof NP.reload === 'function') NP.reload(); } catch (e) {}
+      vinylPing();
+      vinylRefresh();
+      return vinylRead();
+    }
+    const state = vinylRead();
+    const id = idOrNull ? String(idOrNull) : null;
+    const active = id ? state.items.filter((it) => it.id === id)[0] : null;
+    state.activeId = active ? active.id : null;
+    vinylWrite(state);
+    vinylMirrorCar(active ? (active.strokes || []) : []);
+    vinylPing();
+    vinylRefresh();
+    return vinylRead();
+  }
+  function deleteVinyl(id) {
+    const NP = window.NEON_PAINT;
+    if (NP && typeof NP.deleteVinyl === 'function') {
+      try { NP.deleteVinyl(id); } catch (e) {}
+      try { if (typeof NP.reload === 'function') NP.reload(); } catch (e) {}
+      vinylPing();
+      vinylRefresh();
+      return vinylRead();
+    }
+    const state = vinylRead();
+    const sid = String(id);
+    const was = state.activeId === sid;
+    state.items = state.items.filter((it) => it.id !== sid);
+    if (was) state.activeId = null;
+    vinylWrite(state);
+    if (was) vinylMirrorCar([]);
+    vinylPing();
+    vinylRefresh();
+    return vinylRead();
+  }
+  function vinylColors(item) {
+    const out = [];
+    const add = (c) => {
+      if (typeof c !== 'string') return;
+      const hex = c.trim();
+      if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex)) return;
+      const low = hex.toLowerCase();
+      if (out.indexOf(low) < 0) out.push(low);
+    };
+    if (item && Array.isArray(item.colors)) item.colors.forEach(add);
+    if (item && Array.isArray(item.strokes)) item.strokes.forEach((s) => { if (s) add(s.color); });
+    return out.slice(0, 8);
+  }
+  function vinylCss() {
+    if (document.getElementById('vinyl-css')) return;
+    const s = document.createElement('style');
+    s.id = 'vinyl-css';
+    s.textContent = [
+      '.gitems:has(.vinyl-card),.gitems:has(.vinyl-empty),.gitems:has(.vinyl-status){grid-template-columns:1fr}',
+      '.vinyl-status{grid-column:1/-1;margin:0 0 4px;text-align:center;font:900 15px/1.2 Orbitron,sans-serif;letter-spacing:.8px;color:#ffe14d;text-shadow:0 0 10px #ffe14d}',
+      '.vinyl-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:6px}',
+      '.vinyl-actions .gitem{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-decoration:none}',
+      '.vinyl-card{grid-column:1/-1;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px 12px}',
+      '.vinyl-name{display:block;font:900 18px/1.15 Orbitron,sans-serif;letter-spacing:.7px;color:#fff;text-shadow:0 0 10px #ff4fd8}',
+      '.vinyl-card.eq .vinyl-name{color:#ffe14d;text-shadow:0 0 10px #ffe14d}',
+      '.vinyl-meta{font:800 11px Orbitron,sans-serif;letter-spacing:1px;color:#c9b6e6}',
+      '.vinyl-badge{font:900 10px Orbitron,sans-serif;font-style:normal;color:#1a0633;background:#ffe14d;border-radius:999px;padding:2px 8px}',
+      '.vinyl-dots{display:flex;gap:4px;min-height:14px}',
+      '.vinyl-dots i{width:14px;height:14px;border-radius:50%;box-shadow:0 0 8px currentColor;border:1px solid #fff}',
+      '.vinyl-acts{display:flex;flex-wrap:wrap;gap:4px}',
+      '.vinyl-acts button,.vinyl-acts a{font:800 10px Orbitron,sans-serif;color:#fff;border:1.5px solid #3ee6ff;border-radius:999px;padding:4px 8px;background:rgba(62,230,255,.12);text-decoration:none;cursor:pointer}',
+      '.vinyl-empty{grid-column:1/-1;padding:8px;border:1.5px dashed #3ee6ff;border-radius:12px;color:#efe7ff}',
+      '.vinyl-empty p{margin:0 0 8px;font:700 14px/1.35 Rajdhani,sans-serif}',
+      '.vinyl-secs{display:flex;gap:4px;margin:4px 0}',
+      '.vinyl-secs button{flex:1;border-radius:12px;border:1.5px solid rgba(62,230,255,.55);background:rgba(255,255,255,.04);color:#fff;font:800 11px Orbitron,sans-serif;padding:6px;cursor:pointer}',
+      '.vinyl-secs button.on{border-color:#ff4fd8;background:rgba(255,79,216,.22);box-shadow:0 0 10px rgba(255,79,216,.45)}'
+    ].join('');
+    document.head.appendChild(s);
+  }
+  function vinylsHtml() {
+    vinylCss();
+    const state = vinylRead();
+    const activeIdx = state.items.findIndex((it) => it.id === state.activeId);
+    const active = activeIdx >= 0 ? state.items[activeIdx] : null;
+    const status = active ? ('EQUIPPED: ' + vinylName(active, activeIdx)) : 'NO VINYL ON THE CAR';
+    const noneOn = state.activeId == null;
+    let html = '<div class="vinyl-status">' + vinylEsc(status) + '</div>';
+    html += '<div class="vinyl-actions">';
+    html += '<a class="gitem" href="neon-paint.html"><b class="vinyl-name">+ NEW VINYL IN 3D CAR PAINT</b><span class="vinyl-meta">BLANK CAR · SAVE ADDS IT HERE</span></a>';
+    html += '<button type="button" class="gitem' + (noneOn ? ' eq' : '') + '" data-vinyl-clear="1"><b>REMOVE FROM CAR (NO VINYL)</b>' + (noneOn ? '<em class="vinyl-badge">EQUIPPED</em>' : '<span class="vinyl-meta">TAP TO UNEQUIP</span>') + '</button>';
+    html += '</div>';
+    if (!state.items.length) {
+      html += '<div class="vinyl-empty"><p>Any design you save in 3D Car Paint shows up here as a collectible vinyl. You can remove one, and only one can be on the car. Studio Graffiti Wall drawings stay on the wall.</p><a class="gitem" href="neon-paint.html"><b class="vinyl-name">OPEN 3D CAR PAINT</b></a></div>';
+      return html;
+    }
+    state.items.forEach((item, idx) => {
+      const on = item.id === state.activeId;
+      const name = vinylName(item, idx);
+      const n = Array.isArray(item.strokes) ? item.strokes.length : 0;
+      const dots = vinylColors(item).map((c) => '<i style="background:' + c + ';color:' + c + '"></i>').join('');
+      html += '<article class="gitem vinyl-card' + (on ? ' eq' : '') + '" data-vinyl-card="' + vinylEsc(item.id) + '">';
+      html += '<b class="vinyl-name">' + vinylEsc(name) + '</b>';
+      html += '<span class="vinyl-meta">' + n + ' STROKES</span>';
+      html += '<span class="vinyl-dots">' + dots + '</span>';
+      if (on) html += '<em class="vinyl-badge">EQUIPPED</em>';
+      html += '<span class="vinyl-acts">';
+      if (on) html += '<button type="button" data-vinyl-unequip="1">UNEQUIP</button>';
+      else html += '<button type="button" data-vinyl-equip="' + vinylEsc(item.id) + '">EQUIP</button>';
+      html += '<a data-vinyl-edit="1" href="neon-paint.html?vinyl=' + encodeURIComponent(item.id) + '">EDIT / MODIFY</a>';
+      html += '<button type="button" data-vinyl-del="' + vinylEsc(item.id) + '">DELETE</button>';
+      html += '</span></article>';
+    });
+    return html;
+  }
+  function bindVinyls(root) {
+    if (!root) return;
+    root.querySelectorAll('[data-vinyl-card]').forEach((card) => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('button,a')) return;
+        equipVinyl(card.getAttribute('data-vinyl-card'));
+      });
+    });
+    root.querySelectorAll('[data-vinyl-equip]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); equipVinyl(b.getAttribute('data-vinyl-equip')); }));
+    root.querySelectorAll('[data-vinyl-unequip],[data-vinyl-clear]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); equipVinyl(null); }));
+    root.querySelectorAll('[data-vinyl-del]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); deleteVinyl(b.getAttribute('data-vinyl-del')); }));
+    root.querySelectorAll('[data-vinyl-edit]').forEach((a) => a.addEventListener('click', (e) => { e.stopPropagation(); }));
+  }
+  window.addEventListener('zdash:vinyls-changed', () => { vinylRefresh(); });
+  window.addEventListener('storage', (e) => {
+    if (!e || (e.key !== VINYL_KEY && e.key !== VINYL_PAINT_KEY)) return;
+    vinylRefresh();
+  });
+
   const KID_KEY = 'zdash.kid.v1';
   const CREW_KEY = 'zdash.crew.v1';
   const CHAR_KEY = 'zdash.char.v1';
@@ -953,7 +1182,239 @@
     grid.setAttribute('data-ghh-grid', 'all');
     wrap.appendChild(grid);
     home.insertBefore(wrap, anchor);
+    mountWorldGarage();
   }
+  var wNav = { lvl: 1, root: null, broad: null, sub: null };
+  var WDRILL = {
+    roots: [
+      { id: 'garage', emoji: '🏎️', title: 'GARAGE', kicker: 'CAR CUSTOMIZER', blurb: 'Customize your 370Z — Paint, Vinyls, Wheels, Aero, Lights, NOS, Presets.' },
+      { id: 'home', emoji: '🏠', title: 'HOME', kicker: 'HOUSE & CREW', blurb: 'Customize your Home interior — Wall Neon, Furniture, Pet Bed, Neon Sign — and your Companion Pet / Character.' }
+    ],
+    broad: {
+      garage: [
+        { id: 'paintvinyl', emoji: '🎨', title: 'PAINT & VINYLS', blurb: 'Body Paint, Roof & Hood, Custom Car Vinyls, Presets', subs: [['paint', '🎨 BODY'], ['roof', '🏁 ROOF & HOOD'], ['vinyls', '✨ VINYLS'], ['presets', '⭐ PRESETS']] },
+        { id: 'wheels', emoji: '🛞', title: 'WHEELS & STANCE', blurb: 'Rims, Tire Lettering, Brake Calipers, Stance / Lowered', subs: [['rims', '🛞 RIMS'], ['wheels', '🎨 RIM COLOR'], ['tires', '🔤 TIRE LETTERING'], ['caliper', '🔴 BRAKE CALIPERS'], ['stance', '⬇️ STANCE / LOWERED'], ['camber', '📐 CAMBER']] },
+        { id: 'aero', emoji: '🪽', title: 'AERO & WINGS', blurb: 'Spoiler, Flight Wings, Front Splitter, Louvers, Scissor Doors', subs: [['spoiler', '🪽 SPOILER'], ['spcol', '🎨 SPOILER COLOR'], ['wings', '✈️ FLIGHT WINGS'], ['lip', '📐 FRONT SPLITTER'], ['skirts', '▯ SIDE SKIRTS'], ['diffuser', '▽ DIFFUSER'], ['kitmat', '✦ KIT FINISH'], ['tips', '◉ EXHAUST'], ['doors', '🚪 DOORS']] },
+        { id: 'lights', emoji: '💡', title: 'LIGHTS & FX', blurb: 'Headlights, Underglow, Window Tint, Track Marks, Horn', subs: [['heads', '💡 HEADLIGHTS'], ['tails', '🔴 TAILLIGHTS'], ['underglow', '🌈 UNDERGLOW'], ['windows', '🪟 WINDOW TINT'], ['tracks', '〰️ TRACK MARKS'], ['horn', '📣 HORN']] },
+        { id: 'perf', emoji: '🔥', title: 'PERFORMANCE & NOS', blurb: 'NOS Flame Color, Boost / Upgrade', subs: [['nos', '🔥 NOS FLAME'], ['boost', '⚡ BOOST / UPGRADE']] }
+      ],
+      home: [
+        { id: 'living', emoji: '🛋️', title: 'LIVING ROOM & DECOR', blurb: 'Wall Neon Color, Cyber Furniture, Glowing Pet Bed, Custom Neon Sign', subs: [['wall', '🌈 WALL NEON'], ['furniture', '🛋️ CYBER FURNITURE'], ['petbed', '🛏️ GLOWING PET BED'], ['sign', '✨ NEON SIGN']] },
+        { id: 'crew', emoji: '🐾', title: 'PETS & CREW', blurb: 'Companion Pet, Character Outfit, Enter Home / Crew Studio', subs: [['pet', '🐾 COMPANION PET'], ['character', '👤 CHARACTER OUTFIT'], ['enter', '🚪 ENTER HOME']] },
+        { id: 'studio', emoji: '🎨', title: 'STUDIO & PAINT APPS', blurb: '3D Car Paint, Z Company Arts Graffiti Wall, Dance Stage', subs: [['paintapp', '🎨 3D CAR PAINT'], ['wallapp', '🧱 GRAFFITI WALL'], ['danceapp', '💃 DANCE STAGE']] }
+      ]
+    }
+  };
+  function wBroad(root, id) {
+    const list = (WDRILL.broad[root] || []);
+    for (let i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+  function wFind(id) {
+    const roots = ['garage', 'home'];
+    for (let r = 0; r < roots.length; r++) {
+      const list = WDRILL.broad[roots[r]];
+      for (let i = 0; i < list.length; i++) {
+        if (list[i].id === id) return { root: roots[r], broad: id, sub: list[i].subs[0][0] };
+        for (let s = 0; s < list[i].subs.length; s++) {
+          if (list[i].subs[s][0] === id) return { root: roots[r], broad: list[i].id, sub: id };
+        }
+      }
+    }
+    return null;
+  }
+  function wCrumb() {
+    if (!wNav || wNav.lvl < 2) return '';
+    const root = WDRILL.roots.filter(function (r) { return r.id === wNav.root; })[0];
+    const broad = wNav.lvl >= 3 ? wBroad(wNav.root, wNav.broad) : null;
+    let html = '<div class="gbackbar"><button type="button" class="gback" data-gback="1">← BACK</button><span class="gcrumbs">';
+    html += '<button type="button" data-gcrumb="1">🏠 HOME &amp; GARAGE</button>';
+    if (root) html += '<span>›</span><button type="button" data-gcrumb="2" data-groot="' + root.id + '"' + (wNav.lvl === 2 ? ' class="on"' : '') + '>' + root.emoji + ' ' + root.title + '</button>';
+    if (broad) html += '<span>›</span><button type="button" data-gcrumb="3" class="on">' + broad.emoji + ' ' + broad.title + '</button>';
+    return html + '</span></div>';
+  }
+  function wPills() {
+    const b = wBroad(wNav.root, wNav.broad);
+    if (!b) return '';
+    return '<div class="gcats">' + b.subs.map(function (pair) {
+      return '<button type="button" data-c="' + pair[0] + '" class="' + (pair[0] === wNav.sub ? 'on' : '') + '">' + pair[1] + '</button>';
+    }).join('') + '</div>';
+  }
+  function wOpt(on, attrs, name, sub) {
+    return '<button type="button" class="gitem' + (on ? ' eq' : '') + '" ' + attrs + '><b>' + name + '</b>' + (sub ? '<span>' + sub + '</span>' : '') + (on ? '<em class="vinyl-badge">EQUIPPED</em>' : '') + '</button>';
+  }
+  function wJr(sub) {
+    try { sessionStorage.setItem('zd.gopen', sub); } catch (e) {}
+    location.assign('jr.html#garage');
+  }
+  function worldItemsHtml() {
+    const sub = wNav.sub;
+    if (sub === 'vinyls') return vinylsHtml();
+    if (sub === 'presets') {
+      return PRESETS.map(function (p) {
+        return '<button type="button" class="gitem" data-wpreset="' + p.id + '"><b>' + p.name + '</b><span>TAP TO TRY IT</span></button>';
+      }).join('');
+    }
+    if (CATS[sub]) {
+      const eq = readEq();
+      return (CATS[sub] || []).map(function (item) {
+        const on = eq[sub] === item.id;
+        const ok = unlocked(item);
+        return wOpt(on, 'data-weq="' + sub + '" data-wval="' + item.id + '"', (ok ? '' : '🔒 ') + item.name, on ? 'ON YOUR Z' : 'TAP TO USE');
+      }).join('');
+    }
+    if (wNav.root === 'home') return worldHomeHtml();
+    return '<button type="button" class="gitem" data-wjr="' + sub + '"><b>OPEN IN 3D GARAGE</b><span>Change this on your 370Z</span></button>';
+  }
+  function worldHomeHtml() {
+    const sub = wNav.sub;
+    const house = readHouse();
+    const crew = crewNow();
+    if (sub === 'wall') return HOUSE_WALLS.map(function (w) { return wOpt(house.wall === w.id, 'data-hwall="' + w.id + '"', w.name, 'WALL NEON COLOR'); }).join('');
+    if (sub === 'furniture') return HOUSE_ITEMS.filter(function (it) { return it.id !== 'petBed'; }).map(function (it) {
+      return wOpt(!!house[it.id], 'data-hitem="' + it.id + '"', it.name, house[it.id] ? 'ON · TAP TO TAKE OFF' : 'TAP TO ADD');
+    }).join('');
+    if (sub === 'petbed') return wOpt(!!house.petBed, 'data-hitem="petBed"', '🛏️ GLOWING PET BED', house.petBed ? 'ON · TAP TO TAKE OFF' : 'TAP TO ADD');
+    if (sub === 'sign') return HOUSE_SIGNS.map(function (s) { return wOpt(house.sign === s.id, 'data-hsign="' + s.id + '"', s.name, 'CUSTOM NEON SIGN'); }).join('');
+    if (sub === 'pet') return CREW_PETS.map(function (p) { return wOpt((crew.pet || 'fox') === p[0], 'data-cpet="' + p[0] + '"', '🐾 ' + p[1], 'COMPANION PET'); }).join('');
+    if (sub === 'character') return CREW_CHARS.map(function (p) { return wOpt((crew.character || 'woman') === p[0], 'data-cchar="' + p[0] + '"', '👤 ' + p[1], 'CHARACTER OUTFIT'); }).join('');
+    if (sub === 'enter') return '<a class="gitem vinyl-card" href="crew.html"><b class="vinyl-name">🚪 ENTER HOME / CREW STUDIO</b></a>';
+    if (sub === 'paintapp') return '<a class="gitem vinyl-card" href="neon-paint.html"><b class="vinyl-name">🎨 3D CAR PAINT</b></a>';
+    if (sub === 'wallapp') return '<a class="gitem vinyl-card" href="neon-paint.html?mode=wall"><b class="vinyl-name">🧱 Z COMPANY ARTS GRAFFITI WALL</b></a>';
+    if (sub === 'danceapp') return '<a class="gitem vinyl-card" href="dance-stage.html"><b class="vinyl-name">💃 DANCE STAGE</b></a>';
+    return '';
+  }
+  function worldDrillHtml() {
+    if (!wNav || wNav.lvl <= 1) {
+      return '<div class="glevel">' + WDRILL.roots.map(function (r) {
+        return '<button type="button" class="gbig" data-groot="' + r.id + '"><span class="gem">' + r.emoji + '</span><b>' + r.emoji + ' ' + r.title + '</b><em>' + r.kicker + '</em><small>' + r.blurb + '</small></button>';
+      }).join('') + '</div>';
+    }
+    if (wNav.lvl === 2) {
+      const list = WDRILL.broad[wNav.root] || [];
+      return wCrumb() + '<div class="glevel">' + list.map(function (b) {
+        return '<button type="button" class="gbig" data-gbroad="' + b.id + '"><span class="gem">' + b.emoji + '</span><b>' + b.emoji + ' ' + b.title + '</b><small>' + b.blurb + '</small></button>';
+      }).join('') + '</div>';
+    }
+    return wCrumb() + wPills() + '<div class="gitems" id="kVinylBody">' + worldItemsHtml() + '</div>';
+  }
+  function wOpenBroad(root, id) {
+    const b = wBroad(root, id);
+    if (!b) return;
+    wNav = { lvl: 3, root: root, broad: id, sub: b.subs[0][0] };
+    refreshWorldGarage();
+  }
+  function refreshWorldGarage() {
+    const host = document.getElementById('kGarageDrill');
+    if (!host || !wNav) return;
+    host.innerHTML = worldDrillHtml();
+    host.querySelectorAll('[data-gback]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        if (wNav.lvl >= 3) wNav = { lvl: 2, root: wNav.root, broad: null, sub: null };
+        else wNav = { lvl: 1, root: null, broad: null, sub: null };
+        refreshWorldGarage();
+      });
+    });
+    host.querySelectorAll('[data-gcrumb]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        const lv = +b.dataset.gcrumb;
+        if (lv >= 3) return;
+        if (lv <= 1) wNav = { lvl: 1, root: null, broad: null, sub: null };
+        else wNav = { lvl: 2, root: b.dataset.groot || wNav.root, broad: null, sub: null };
+        refreshWorldGarage();
+      });
+    });
+    host.querySelectorAll('.glevel [data-groot]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        wNav = { lvl: 2, root: b.dataset.groot, broad: null, sub: null };
+        refreshWorldGarage();
+      });
+    });
+    host.querySelectorAll('[data-gbroad]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        wOpenBroad(wNav.root, b.dataset.gbroad);
+      });
+    });
+    host.querySelectorAll('.gcats button').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        wNav = { lvl: 3, root: wNav.root, broad: wNav.broad, sub: b.dataset.c };
+        refreshWorldGarage();
+      });
+    });
+    host.querySelectorAll('[data-weq]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        onEq(b.dataset.weq, b.dataset.wval);
+        refreshWorldGarage();
+      });
+    });
+    host.querySelectorAll('[data-wpreset]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        onPreset(b.dataset.wpreset);
+        refreshWorldGarage();
+      });
+    });
+    host.querySelectorAll('[data-wjr]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        wJr(b.dataset.wjr);
+      });
+    });
+    host.querySelectorAll('[data-hwall]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); saveHouse({ wall: b.dataset.hwall }); refreshWorldGarage(); });
+    });
+    host.querySelectorAll('[data-hsign]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); saveHouse({ sign: b.dataset.hsign }); refreshWorldGarage(); });
+    });
+    host.querySelectorAll('[data-hitem]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        const house = readHouse();
+        const patch = {};
+        patch[b.dataset.hitem] = !house[b.dataset.hitem];
+        saveHouse(patch);
+        refreshWorldGarage();
+      });
+    });
+    host.querySelectorAll('[data-cpet]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); saveCrew({ pet: b.dataset.cpet }); refreshWorldGarage(); });
+    });
+    host.querySelectorAll('[data-cchar]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); saveCrew({ character: b.dataset.cchar }); refreshWorldGarage(); });
+    });
+    const body = document.getElementById('kVinylBody');
+    if (body && wNav.sub === 'vinyls') bindVinyls(body);
+  }
+  function refreshWorldVinyls() { refreshWorldGarage(); }
+  function mountWorldGarage() {
+    const home = document.getElementById('kHome');
+    if (!home || document.getElementById('kGarageDrill')) return;
+    const sec = el('section', 'ghh-block');
+    sec.id = 'kGarageDrill';
+    sec.appendChild(el('div', 'ghh-kicker', 'HOME & GARAGE'));
+    const anchor = document.getElementById('kGamesWrap') || home.firstChild;
+    home.insertBefore(sec, anchor);
+    refreshWorldGarage();
+  }
+  function openGarage(which) {
+    const w = String(which || '').toLowerCase();
+    if (!w || w === 'root' || w === 'level1') wNav = { lvl: 1, root: null, broad: null, sub: null };
+    else if (w === 'home' || w === 'garage') wNav = { lvl: 2, root: w, broad: null, sub: null };
+    else {
+      const hit = wFind(w);
+      if (hit) wNav = { lvl: 3, root: hit.root, broad: hit.broad, sub: hit.sub };
+      else wNav = { lvl: 1, root: null, broad: null, sub: null };
+    }
+    try { if (typeof kPause === 'function') kPause(true); } catch (e) {}
+    refreshWorldGarage();
+  }
+  window.openGarage = openGarage;
 
   function picks(parent, list, currentId, attr, extra) {
     const row = el('div', 'ghh-picks');
@@ -1111,6 +1572,11 @@
     });
     body.appendChild(presets);
     catRow(body, 'paint', 'PAINT');
+    body.appendChild(el('h3', '', 'VINYLS'));
+    const vinylBox = el('div', 'gitems');
+    vinylBox.innerHTML = vinylsHtml();
+    bindVinyls(vinylBox);
+    body.appendChild(vinylBox);
     catRow(body, 'wheels', 'WHEEL COLOR');
     catRow(body, 'spoiler', 'SPOILER');
     catRow(body, 'windows', 'WINDOWS');
@@ -1540,11 +2006,38 @@
       '#ghh-room .ghh-room-item{border:1.5px solid var(--wall,#3ee6ff);border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.06)}',
       '#ghh-room small{font:700 11px Rajdhani,sans-serif;letter-spacing:1px}',
       '@media (max-width:700px){.ghh-grid,.ghh-stats{grid-template-columns:1fr}}',
-      'html.pc-mode #kHome.ghh-ready{width:min(1120px,calc(100vw - 24px));max-height:92vh;overflow-y:auto;top:4vh;transform:translate(-50%,0);padding:28px 12px 12px;align-items:stretch;box-sizing:border-box}',
+      '#kGarageDrill{order:0;width:100%;max-height:54vh;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:8px;border-radius:16px;border:2px solid #ff4fd8;background:rgba(10,4,22,.94);box-sizing:border-box}',
+      '#kGarageDrill .gbackbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}',
+      '#kGarageDrill .gback{flex:none;font:900 16px/1 Orbitron,sans-serif;letter-spacing:1px;color:#12052a;background:#ffe14d;border:0;border-radius:12px;padding:10px 14px;cursor:pointer;box-shadow:0 0 14px #ffe14d}',
+      '#kGarageDrill .gcrumbs{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font:800 11px Orbitron,sans-serif;color:#efe7ff}',
+      '#kGarageDrill .gcrumbs button{background:transparent;border:0;color:#3ee6ff;font:inherit;cursor:pointer;padding:4px 2px}',
+      '#kGarageDrill .gcrumbs button.on{color:#fff}',
+      '#kGarageDrill .glevel{display:flex;flex-direction:column;gap:8px}',
+      '#kGarageDrill .gbig{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;width:100%;border-radius:16px;border:2px solid #3ee6ff;background:rgba(62,230,255,.1);color:#fff;padding:12px;cursor:pointer;box-sizing:border-box}',
+      '#kGarageDrill .gbig .gem{font-size:32px;line-height:1}',
+      '#kGarageDrill .gbig b{font:900 16px/1.15 Orbitron,sans-serif;letter-spacing:.5px}',
+      '#kGarageDrill .gbig em{font-style:normal;font:800 11px Orbitron,sans-serif;color:#ffe14d}',
+      '#kGarageDrill .gbig small{font:700 13px/1.25 Rajdhani,sans-serif;color:#efe7ff}',
+      '#kGarageDrill .gcats{display:flex;gap:4px;overflow-x:auto}',
+      '#kGarageDrill .gcats button{flex:0 0 auto;font:800 10px Orbitron,sans-serif;color:#efe7ff;background:transparent;border:2px solid #3a1550;border-radius:12px;padding:6px 8px;cursor:pointer}',
+      '#kGarageDrill .gcats button.on{color:#fff;border-color:#3ee6ff;background:rgba(62,230,255,.15)}',
+      '#kGarageDrill .gitems{display:flex;flex-direction:column;gap:6px}',
+      '#kGarageDrill .gitem{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border-radius:12px;border:1.5px solid rgba(62,230,255,.45);background:rgba(255,255,255,.04);color:#fff;padding:8px 10px;cursor:pointer;text-decoration:none;box-sizing:border-box}',
+      '#kGarageDrill .gitem.eq{border-color:#ffe14d;box-shadow:0 0 10px rgba(255,225,77,.35)}',
+      'html.pc-mode #kHome.ghh-ready{width:min(1120px,calc(100vw - 24px));max-height:92vh;overflow-y:auto;top:4vh;transform:translate(-50%,0);padding:24px 12px 10px;gap:6px;align-items:stretch;box-sizing:border-box}',
       'html.pc-mode #kHome.ghh-ready #kGamesWrap{max-height:none;overflow:visible}',
-      'html.pc-mode #kHome.ghh-ready .ghh-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}',
-      'html.pc-mode #kHome.ghh-ready .ghh-card{padding:6px 7px}',
-      'html.pc-mode #kHome.ghh-ready .kpzrow button,html.pc-mode #kHome.ghh-ready .ktabs button{min-height:30px;padding:4px 8px;font-size:11px}'
+      'html.pc-mode #kHome.ghh-ready .ghh-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}',
+      'html.pc-mode #kHome.ghh-ready .ghh-card{padding:5px 7px}',
+      'html.pc-mode #kHome.ghh-ready .kpzrow button,html.pc-mode #kHome.ghh-ready .ktabs button{min-height:28px;padding:4px 8px;font-size:11px}',
+      'html.pc-mode #kHome.ghh-ready #kGarageDrill,html.ipad-mode #kHome.ghh-ready #kGarageDrill{padding:6px 8px;gap:4px;max-height:24vh}',
+      'html.pc-mode #kHome.ghh-ready #kGarageDrill .gback,html.ipad-mode #kHome.ghh-ready #kGarageDrill .gback{font-size:12px;padding:6px 10px;border-radius:9px}',
+      'html.pc-mode #kHome.ghh-ready #kGarageDrill .glevel,html.ipad-mode #kHome.ghh-ready #kGarageDrill .glevel{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:6px}',
+      'html.pc-mode #kHome.ghh-ready #kGarageDrill .gbig,html.ipad-mode #kHome.ghh-ready #kGarageDrill .gbig{padding:6px 10px;gap:2px;border-radius:12px}',
+      'html.pc-mode #kHome.ghh-ready #kGarageDrill .gbig .gem,html.ipad-mode #kHome.ghh-ready #kGarageDrill .gbig .gem{font-size:16px}',
+      'html.pc-mode #kHome.ghh-ready #kGarageDrill .gbig b,html.ipad-mode #kHome.ghh-ready #kGarageDrill .gbig b{font-size:11px}',
+      'html.pc-mode #kHome.ghh-ready #kGarageDrill .gbig em,html.ipad-mode #kHome.ghh-ready #kGarageDrill .gbig em{font-size:9px}',
+      'html.pc-mode #kHome.ghh-ready #kGarageDrill .gbig small,html.ipad-mode #kHome.ghh-ready #kGarageDrill .gbig small{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}',
+      'html.pc-mode #kHome.ghh-ready #kGarageDrill .gitems,html.ipad-mode #kHome.ghh-ready #kGarageDrill .gitems{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:5px}'
     ].join('');
     document.head.appendChild(s);
   }

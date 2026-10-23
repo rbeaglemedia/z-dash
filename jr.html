@@ -525,6 +525,20 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
 .kgarage .gsecs button { flex: 1 1 0; min-width: 0; font-family: 'Orbitron'; font-weight: 900; font-size: 10px; letter-spacing: .5px; line-height: 1.05; color: #e9dcff; background: rgba(155,92,255,.08); border: 2px solid #4a1d66; border-radius: 10px; padding: 5px 3px; cursor: pointer; white-space: normal; overflow-wrap: normal; word-break: keep-all; }
 .kgarage .gsecs button.on { color: #fff; border-color: #ff4fd8; background: rgba(255,79,216,.18); box-shadow: 0 0 10px rgba(255,79,216,.35); }
 .kgarage .gsecs + .gcats button { font-size: 9px; padding: 3px 9px; }
+
+/* 3-level Garage / Home drill-down */
+.kgarage .gbackbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.kgarage .gback { flex: none; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 16px; letter-spacing: 1px; color: #12052a; background: #ffe14d; border: 0; border-radius: 12px; padding: 10px 14px; cursor: pointer; box-shadow: 0 0 14px #ffe14d; }
+.kgarage .gcrumbs { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 11px; color: #efe7ff; }
+.kgarage .gcrumbs button { background: transparent; border: 0; color: #3ee6ff; font: inherit; cursor: pointer; padding: 4px 2px; }
+.kgarage .gcrumbs button.on { color: #fff; }
+.kgarage .gcrumbs span { opacity: .7; }
+.kgarage .glevel { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.kgarage .gbig { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; width: 100%; border-radius: 16px; border: 2px solid #ff4fd8; background: rgba(255,79,216,.14); color: #fff; padding: 14px 14px 12px; cursor: pointer; box-shadow: 0 0 16px rgba(255,79,216,.28); }
+.kgarage .gbig .gem { font-size: 34px; line-height: 1; }
+.kgarage .gbig b { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 18px; letter-spacing: .6px; line-height: 1.15; }
+.kgarage .gbig em { font-style: normal; font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 11px; letter-spacing: 1px; color: #ffe14d; }
+.kgarage .gbig small { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14px; line-height: 1.25; color: #ffe7fb; }
 @media (max-height: 380px), (max-width: 900px) { .kgarage .gsecs button { font-size: 8.5px; letter-spacing: 0; padding: 4px 2px; } }
 
 /* JR DRIVE: music card under the POWER METER (position/size set from JS to match the meter), big controls, marquee title */
@@ -13009,6 +13023,7 @@ var qrcode = function() {
   const GSECS = [
     { id: 'presets', name: 'PRESETS', subs: [['presets', 'STYLE PRESETS']] },
     { id: 'paint', name: 'PAINT', subs: [['paint', 'BODY'], ['roof', 'ROOF & HOOD']] },
+    { id: 'vinyls', name: 'VINYLS', n: 'VINYLS', subs: [['vinyls', 'CAR VINYLS']] },
     { id: 'glass', name: 'GLASS & LIGHTS', subs: [['windows', 'WINDOWS'], ['heads', 'HEADLIGHTS'], ['tails', 'TAILLIGHTS'], ['underglow', 'UNDERGLOW']] },
     { id: 'wheels', name: 'WHEELS', subs: [['rims', 'DESIGN & SIZE'], ['wheels', 'RIM COLOR'], ['tires', 'TIRES'], ['caliper', 'CALIPERS'], ['stance', 'STANCE'], ['camber', 'CAMBER'], ['tracks', 'TRACK MARKS']] },
     { id: 'aero', name: 'AERO & BODY', subs: [['spoiler', 'SPOILER'], ['spcol', 'SPOILER COLOR'], ['wings', 'WINGS'], ['lip', 'FRONT LIP'], ['skirts', 'SIDE SKIRTS'], ['diffuser', 'DIFFUSER'], ['kitmat', 'KIT FINISH'], ['tips', 'EXHAUST']] },
@@ -13016,9 +13031,9 @@ var qrcode = function() {
     { id: 'nos', name: 'NOS', subs: [['nos', 'NOS TANK']] },
   ];
   const secOf = (cat) => GSECS.find((g) => g.subs.some(([c]) => c === cat)) || GSECS[0];
-  let gCat = (CAT[P.gCat] || P.gCat === 'presets') && P.gCat ? P.gCat : 'paint';
+  let gCat = (CAT[P.gCat] || P.gCat === 'presets' || P.gCat === 'vinyls') && P.gCat ? P.gCat : 'paint';
   const gScroll = Object.assign({}, P.gScroll || {}); // per-list scrollTop
-  function gPick(cat) { if (!CAT[cat] && cat !== 'presets') return; const it = $('#kGarage .gitems'); if (it) gScroll[gCat] = it.scrollTop; gCat = cat; P.gCat = cat; P.gSub = Object.assign({}, P.gSub, { [secOf(cat).id]: cat }); P.gScroll = gScroll; save(); renderGarage(); }
+  function gPick(cat) { if (!gEnterCat(cat)) return; save(); renderGarage(); }
   function gSection(id) { const g = GSECS.find((x) => x.id === id); if (!g) return; const last = (P.gSub || {})[id]; gPick(g.subs.some(([c]) => c === last) ? last : g.subs[0][0]); }
   const STAT = { easyWins: () => (P.dragWinsBy || {}).easy || 0, hardOnly: () => (P.dragWinsBy || {}).hard || 0, roadLv: () => P.roadLvMax || 1, medWins: () => (P.dragWinsBy || {}).medium || 0, hardWins: () => ((P.dragWinsBy || {}).hard || 0) + ((P.dragWinsBy || {}).expert || 0), dragWins: () => P.dragWins || 0, dragPerfect: () => P.dragPerfect || 0, realBoxes: () => P.realBoxes || 0 };
   const gateRows = (req) => (req || []).map(([k, n, label]) => ({ label, have: Math.min(n, STAT[k]()), need: n }));
@@ -13066,14 +13081,472 @@ var qrcode = function() {
   let gLastCat = null; const items0 = () => $('#kGarage .gitems');
   function gExtraOrder() { const n = Object.keys(P.eq.extras || {}).length, out = [{ hdr: `EXTRAS · ${n} ON`, sub: xStack() ? 'one per spot: same spot swaps, different spots stack' : 'one extra at a time · unlock STACK ATTACK to wear one in every spot' }, CAT.extra.find((i) => i.id === 'x-stack'), CAT.extra.find((i) => i.id === 'none-x')];
     for (const [sl, name, sub] of XSLOTS) { const items = CAT.extra.filter((i) => i.slot === sl); if (items.length) out.push({ hdr: name, sub }, ...items); } return out; }
+
+  const VINYL_KEY = 'zdash_vinyls_v1';
+  const VINYL_PAINT_KEY = 'zdash_neon_paint_v1';
+  let vinylRendering = false;
+  function vinylEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function vinylName(item, idx) {
+    const n = item && typeof item.name === 'string' ? item.name.trim() : '';
+    return n || ('VINYL #' + (idx + 1));
+  }
+  function vinylBlank() { return { v: 1, activeId: null, items: [] }; }
+  function vinylNormalize(data) {
+    const src = data && Array.isArray(data.items) ? data.items : [];
+    const items = [];
+    for (let i = 0; i < src.length; i++) {
+      const it = src[i];
+      if (!it || typeof it !== 'object') continue;
+      const row = {
+        id: String(it.id || ('vinyl_' + (i + 1))),
+        name: typeof it.name === 'string' ? it.name : '',
+        updatedAt: +it.updatedAt || 0,
+        strokes: Array.isArray(it.strokes) ? it.strokes : []
+      };
+      if (Array.isArray(it.colors)) row.colors = it.colors.slice();
+      items.push(row);
+    }
+    let activeId = data && data.activeId != null && data.activeId !== '' ? String(data.activeId) : null;
+    if (activeId && !items.some((it) => it.id === activeId)) activeId = null;
+    return { v: 1, activeId: activeId, items: items };
+  }
+  function vinylRead() {
+    const NP = window.NEON_PAINT;
+    if (NP && typeof NP.getVinyls === 'function') {
+      try {
+        const got = NP.getVinyls();
+        if (got && typeof got === 'object') return vinylNormalize(got);
+      } catch (e) {}
+    }
+    let raw = null;
+    try { raw = localStorage.getItem(VINYL_KEY); } catch (e) {}
+    if (raw == null) {
+      let legacy = null;
+      try { legacy = localStorage.getItem(VINYL_PAINT_KEY); } catch (e) {}
+      if (legacy) {
+        try {
+          const o = JSON.parse(legacy);
+          const strokes = o && Array.isArray(o.strokes) ? o.strokes : [];
+          if (strokes.length > 0) {
+            const migrated = { v: 1, activeId: 'vinyl_1', items: [{ id: 'vinyl_1', name: 'VINYL #1', updatedAt: Date.now(), strokes: strokes }] };
+            try { localStorage.setItem(VINYL_KEY, JSON.stringify(migrated)); } catch (e) {}
+            return vinylNormalize(migrated);
+          }
+        } catch (e) {}
+      }
+      return vinylBlank();
+    }
+    try { return vinylNormalize(JSON.parse(raw)); } catch (e) { return vinylBlank(); }
+  }
+  function vinylWrite(state) {
+    const next = vinylNormalize(state);
+    try { localStorage.setItem(VINYL_KEY, JSON.stringify(next)); } catch (e) {}
+    return next;
+  }
+  function vinylMirrorCar(strokes) {
+    const list = strokes || [];
+    try { localStorage.setItem(VINYL_PAINT_KEY, JSON.stringify({ v: 1, strokes: list })); } catch (e) {}
+    const NP = window.NEON_PAINT;
+    if (NP && typeof NP.reload === 'function') {
+      try { NP.reload(); } catch (e) {}
+      return;
+    }
+    if (NP && typeof NP.save === 'function') {
+      try {
+        const cur = typeof NP.load === 'function' ? NP.load() : null;
+        const base = cur && cur.slots ? cur : { version: 1, enabled: true, activeSlot: 0, slots: [0, 1, 2].map((i) => ({ name: 'SLOT ' + (i + 1), strokes: [], updatedAt: 0 })) };
+        base.enabled = true;
+        base.activeSlot = 0;
+        base.slots[0] = Object.assign({}, base.slots[0] || {}, { strokes: list, updatedAt: Date.now() });
+        NP.save(base);
+      } catch (e) {}
+    } else if (NP && typeof NP.applyToCar === 'function' && window.ZD && ZD.Xray) {
+      try { NP.applyToCar(ZD.Xray); } catch (e) {}
+    }
+  }
+  function vinylPing() {
+    try { window.dispatchEvent(new CustomEvent('zdash:vinyls-changed')); } catch (e) {}
+  }
+  function vinylRefresh() {
+    if (vinylRendering) return;
+    vinylRendering = true;
+    try {
+      const g = document.getElementById('kGarage');
+      if (g && typeof gCat !== 'undefined' && gCat === 'vinyls' && typeof renderGarage === 'function') renderGarage();
+    } catch (e) {}
+    try { if (typeof refreshWorldVinyls === 'function') refreshWorldVinyls(); } catch (e) {}
+    vinylRendering = false;
+  }
+  function equipVinyl(idOrNull) {
+    const NP = window.NEON_PAINT;
+    if (NP && typeof NP.equipVinyl === 'function') {
+      try { NP.equipVinyl(idOrNull); } catch (e) {}
+      try { if (typeof NP.reload === 'function') NP.reload(); } catch (e) {}
+      vinylPing();
+      vinylRefresh();
+      return vinylRead();
+    }
+    const state = vinylRead();
+    const id = idOrNull ? String(idOrNull) : null;
+    const active = id ? state.items.filter((it) => it.id === id)[0] : null;
+    state.activeId = active ? active.id : null;
+    vinylWrite(state);
+    vinylMirrorCar(active ? (active.strokes || []) : []);
+    vinylPing();
+    vinylRefresh();
+    return vinylRead();
+  }
+  function deleteVinyl(id) {
+    const NP = window.NEON_PAINT;
+    if (NP && typeof NP.deleteVinyl === 'function') {
+      try { NP.deleteVinyl(id); } catch (e) {}
+      try { if (typeof NP.reload === 'function') NP.reload(); } catch (e) {}
+      vinylPing();
+      vinylRefresh();
+      return vinylRead();
+    }
+    const state = vinylRead();
+    const sid = String(id);
+    const was = state.activeId === sid;
+    state.items = state.items.filter((it) => it.id !== sid);
+    if (was) state.activeId = null;
+    vinylWrite(state);
+    if (was) vinylMirrorCar([]);
+    vinylPing();
+    vinylRefresh();
+    return vinylRead();
+  }
+  function vinylColors(item) {
+    const out = [];
+    const add = (c) => {
+      if (typeof c !== 'string') return;
+      const hex = c.trim();
+      if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex)) return;
+      const low = hex.toLowerCase();
+      if (out.indexOf(low) < 0) out.push(low);
+    };
+    if (item && Array.isArray(item.colors)) item.colors.forEach(add);
+    if (item && Array.isArray(item.strokes)) item.strokes.forEach((s) => { if (s) add(s.color); });
+    return out.slice(0, 8);
+  }
+  function vinylCss() {
+    if (document.getElementById('vinyl-css')) return;
+    const s = document.createElement('style');
+    s.id = 'vinyl-css';
+    s.textContent = [
+      '.gitems:has(.vinyl-card),.gitems:has(.vinyl-empty),.gitems:has(.vinyl-status){grid-template-columns:1fr}',
+      '.vinyl-status{grid-column:1/-1;margin:0 0 4px;text-align:center;font:900 15px/1.2 Orbitron,sans-serif;letter-spacing:.8px;color:#ffe14d;text-shadow:0 0 10px #ffe14d}',
+      '.vinyl-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:6px}',
+      '.vinyl-actions .gitem{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-decoration:none}',
+      '.vinyl-card{grid-column:1/-1;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px 12px}',
+      '.vinyl-name{display:block;font:900 18px/1.15 Orbitron,sans-serif;letter-spacing:.7px;color:#fff;text-shadow:0 0 10px #ff4fd8}',
+      '.vinyl-card.eq .vinyl-name{color:#ffe14d;text-shadow:0 0 10px #ffe14d}',
+      '.vinyl-meta{font:800 11px Orbitron,sans-serif;letter-spacing:1px;color:#c9b6e6}',
+      '.vinyl-badge{font:900 10px Orbitron,sans-serif;font-style:normal;color:#1a0633;background:#ffe14d;border-radius:999px;padding:2px 8px}',
+      '.vinyl-dots{display:flex;gap:4px;min-height:14px}',
+      '.vinyl-dots i{width:14px;height:14px;border-radius:50%;box-shadow:0 0 8px currentColor;border:1px solid #fff}',
+      '.vinyl-acts{display:flex;flex-wrap:wrap;gap:4px}',
+      '.vinyl-acts button,.vinyl-acts a{font:800 10px Orbitron,sans-serif;color:#fff;border:1.5px solid #3ee6ff;border-radius:999px;padding:4px 8px;background:rgba(62,230,255,.12);text-decoration:none;cursor:pointer}',
+      '.vinyl-empty{grid-column:1/-1;padding:8px;border:1.5px dashed #3ee6ff;border-radius:12px;color:#efe7ff}',
+      '.vinyl-empty p{margin:0 0 8px;font:700 14px/1.35 Rajdhani,sans-serif}',
+      '.vinyl-secs{display:flex;gap:4px;margin:4px 0}',
+      '.vinyl-secs button{flex:1;border-radius:12px;border:1.5px solid rgba(62,230,255,.55);background:rgba(255,255,255,.04);color:#fff;font:800 11px Orbitron,sans-serif;padding:6px;cursor:pointer}',
+      '.vinyl-secs button.on{border-color:#ff4fd8;background:rgba(255,79,216,.22);box-shadow:0 0 10px rgba(255,79,216,.45)}'
+    ].join('');
+    document.head.appendChild(s);
+  }
+  function vinylsHtml() {
+    vinylCss();
+    const state = vinylRead();
+    const activeIdx = state.items.findIndex((it) => it.id === state.activeId);
+    const active = activeIdx >= 0 ? state.items[activeIdx] : null;
+    const status = active ? ('EQUIPPED: ' + vinylName(active, activeIdx)) : 'NO VINYL ON THE CAR';
+    const noneOn = state.activeId == null;
+    let html = '<div class="vinyl-status">' + vinylEsc(status) + '</div>';
+    html += '<div class="vinyl-actions">';
+    html += '<a class="gitem" href="neon-paint.html"><b class="vinyl-name">+ NEW VINYL IN 3D CAR PAINT</b><span class="vinyl-meta">BLANK CAR · SAVE ADDS IT HERE</span></a>';
+    html += '<button type="button" class="gitem' + (noneOn ? ' eq' : '') + '" data-vinyl-clear="1"><b>REMOVE FROM CAR (NO VINYL)</b>' + (noneOn ? '<em class="vinyl-badge">EQUIPPED</em>' : '<span class="vinyl-meta">TAP TO UNEQUIP</span>') + '</button>';
+    html += '</div>';
+    if (!state.items.length) {
+      html += '<div class="vinyl-empty"><p>Any design you save in 3D Car Paint shows up here as a collectible vinyl. You can remove one, and only one can be on the car. Studio Graffiti Wall drawings stay on the wall.</p><a class="gitem" href="neon-paint.html"><b class="vinyl-name">OPEN 3D CAR PAINT</b></a></div>';
+      return html;
+    }
+    state.items.forEach((item, idx) => {
+      const on = item.id === state.activeId;
+      const name = vinylName(item, idx);
+      const n = Array.isArray(item.strokes) ? item.strokes.length : 0;
+      const dots = vinylColors(item).map((c) => '<i style="background:' + c + ';color:' + c + '"></i>').join('');
+      html += '<article class="gitem vinyl-card' + (on ? ' eq' : '') + '" data-vinyl-card="' + vinylEsc(item.id) + '">';
+      html += '<b class="vinyl-name">' + vinylEsc(name) + '</b>';
+      html += '<span class="vinyl-meta">' + n + ' STROKES</span>';
+      html += '<span class="vinyl-dots">' + dots + '</span>';
+      if (on) html += '<em class="vinyl-badge">EQUIPPED</em>';
+      html += '<span class="vinyl-acts">';
+      if (on) html += '<button type="button" data-vinyl-unequip="1">UNEQUIP</button>';
+      else html += '<button type="button" data-vinyl-equip="' + vinylEsc(item.id) + '">EQUIP</button>';
+      html += '<a data-vinyl-edit="1" href="neon-paint.html?vinyl=' + encodeURIComponent(item.id) + '">EDIT / MODIFY</a>';
+      html += '<button type="button" data-vinyl-del="' + vinylEsc(item.id) + '">DELETE</button>';
+      html += '</span></article>';
+    });
+    return html;
+  }
+  function bindVinyls(root) {
+    if (!root) return;
+    root.querySelectorAll('[data-vinyl-card]').forEach((card) => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('button,a')) return;
+        equipVinyl(card.getAttribute('data-vinyl-card'));
+      });
+    });
+    root.querySelectorAll('[data-vinyl-equip]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); equipVinyl(b.getAttribute('data-vinyl-equip')); }));
+    root.querySelectorAll('[data-vinyl-unequip],[data-vinyl-clear]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); equipVinyl(null); }));
+    root.querySelectorAll('[data-vinyl-del]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); deleteVinyl(b.getAttribute('data-vinyl-del')); }));
+    root.querySelectorAll('[data-vinyl-edit]').forEach((a) => a.addEventListener('click', (e) => { e.stopPropagation(); }));
+  }
+  window.addEventListener('zdash:vinyls-changed', () => { vinylRefresh(); });
+  window.addEventListener('storage', (e) => {
+    if (!e || (e.key !== VINYL_KEY && e.key !== VINYL_PAINT_KEY)) return;
+    vinylRefresh();
+  });
+    const GDRILL = {
+    roots: [
+      { id: 'garage', emoji: '🏎️', title: 'GARAGE', kicker: 'CAR CUSTOMIZER', blurb: 'Customize your 370Z — Paint, Vinyls, Wheels, Aero, Lights, NOS, Presets.' },
+      { id: 'home', emoji: '🏠', title: 'HOME', kicker: 'HOUSE & CREW', blurb: 'Customize your Home interior — Wall Neon, Furniture, Pet Bed, Neon Sign — and your Companion Pet / Character.' }
+    ],
+    broad: {
+      garage: [
+        { id: 'paintvinyl', emoji: '🎨', title: 'PAINT & VINYLS', blurb: 'Body Paint, Roof & Hood, Custom Car Vinyls, Presets', subs: [['paint', '🎨 BODY'], ['roof', '🏁 ROOF & HOOD'], ['vinyls', '✨ VINYLS'], ['presets', '⭐ PRESETS']] },
+        { id: 'wheels', emoji: '🛞', title: 'WHEELS & STANCE', blurb: 'Rims, Tire Lettering, Brake Calipers, Stance / Lowered', subs: [['rims', '🛞 RIMS'], ['wheels', '🎨 RIM COLOR'], ['tires', '🔤 TIRE LETTERING'], ['caliper', '🔴 BRAKE CALIPERS'], ['stance', '⬇️ STANCE / LOWERED'], ['camber', '📐 CAMBER']] },
+        { id: 'aero', emoji: '🪽', title: 'AERO & WINGS', blurb: 'Spoiler, Flight Wings, Front Splitter, Louvers, Scissor Doors', subs: [['spoiler', '🪽 SPOILER'], ['spcol', '🎨 SPOILER COLOR'], ['wings', '✈️ FLIGHT WINGS'], ['lip', '📐 FRONT SPLITTER'], ['skirts', '▯ SIDE SKIRTS'], ['diffuser', '▽ DIFFUSER'], ['kitmat', '✦ KIT FINISH'], ['tips', '◉ EXHAUST'], ['doors', '🚪 DOORS']] },
+        { id: 'lights', emoji: '💡', title: 'LIGHTS & FX', blurb: 'Headlights, Underglow, Window Tint, Track Marks, Horn', subs: [['heads', '💡 HEADLIGHTS'], ['tails', '🔴 TAILLIGHTS'], ['underglow', '🌈 UNDERGLOW'], ['windows', '🪟 WINDOW TINT'], ['tracks', '〰️ TRACK MARKS'], ['horn', '📣 HORN']] },
+        { id: 'perf', emoji: '🔥', title: 'PERFORMANCE & NOS', blurb: 'NOS Flame Color, Boost / Upgrade', subs: [['nos', '🔥 NOS FLAME'], ['boost', '⚡ BOOST / UPGRADE']] }
+      ],
+      home: [
+        { id: 'living', emoji: '🛋️', title: 'LIVING ROOM & DECOR', blurb: 'Wall Neon Color, Cyber Furniture, Glowing Pet Bed, Custom Neon Sign', subs: [['wall', '🌈 WALL NEON'], ['furniture', '🛋️ CYBER FURNITURE'], ['petbed', '🛏️ GLOWING PET BED'], ['sign', '✨ NEON SIGN']] },
+        { id: 'crew', emoji: '🐾', title: 'PETS & CREW', blurb: 'Companion Pet, Character Outfit, Enter Home / Crew Studio', subs: [['pet', '🐾 COMPANION PET'], ['character', '👤 CHARACTER OUTFIT'], ['enter', '🚪 ENTER HOME']] },
+        { id: 'studio', emoji: '🎨', title: 'STUDIO & PAINT APPS', blurb: '3D Car Paint, Z Company Arts Graffiti Wall, Dance Stage', subs: [['paintapp', '🎨 3D CAR PAINT'], ['wallapp', '🧱 GRAFFITI WALL'], ['danceapp', '💃 DANCE STAGE']] }
+      ]
+    }
+  };
+  let gNav = { lvl: 1, root: null, broad: null, sub: null };
+  const GHOUSE_KEY = 'zdash.house.v1';
+  const GCREW_KEY = 'zdash.crew.v1';
+  const GHOUSE_WALLS = [['neon-grid', 'NEON GRID', '#3ee6ff'], ['bubblegum', 'BUBBLEGUM', '#ff4fd8'], ['midnight', 'MIDNIGHT', '#9b5cff'], ['lime-loft', 'LIME LOFT', '#7dff6b']];
+  const GHOUSE_SIGNS = [['ellie', "ELLIE'S Z"], ['arts', 'Z COMPANY ARTS'], ['home', 'WELCOME HOME'], ['glow', 'NEON DREAMS']];
+  const GHOUSE_FURN = [['sofa', '🛋 SOFA'], ['arcade', '🕹 ARCADE'], ['danceFloor', '💃 DANCE FLOOR']];
+  const GCREW_CHARS = [['woman', 'Neon Woman'], ['man', 'Neon Man'], ['none', 'None']];
+  const GCREW_PETS = [['dog', 'Cyber Pup Dog'], ['cat', 'Neon Kitty Cat'], ['bunny', 'Star Bunny'], ['dragon', 'Mini Dragon'], ['fox', 'Nova Fox'], ['none', 'None']];
+  function gReadJson(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      const o = JSON.parse(raw);
+      return o && typeof o === 'object' && !Array.isArray(o) ? o : null;
+    } catch (e) { return null; }
+  }
+  function gHouse() {
+    const file = gReadJson(GHOUSE_KEY) || {};
+    const wall = GHOUSE_WALLS.some((w) => w[0] === file.wall) ? file.wall : 'neon-grid';
+    const sign = GHOUSE_SIGNS.some((w) => w[0] === file.sign) ? file.sign : 'ellie';
+    const flag = (k, d) => typeof file[k] === 'boolean' ? file[k] : d;
+    return { wall: wall, sign: sign, sofa: flag('sofa', true), arcade: flag('arcade', true), petBed: flag('petBed', true), danceFloor: flag('danceFloor', true) };
+  }
+  function gSaveHouse(patch) {
+    const next = Object.assign({ v: 1 }, gHouse(), patch || {});
+    next.items = { sofa: !!next.sofa, arcade: !!next.arcade, petBed: !!next.petBed, danceFloor: !!next.danceFloor };
+    try { localStorage.setItem(GHOUSE_KEY, JSON.stringify(next)); } catch (e) {}
+    try {
+      const raw = localStorage.getItem('zdash.kid.v1');
+      if (raw) {
+        const sv = JSON.parse(raw);
+        if (sv && typeof sv === 'object' && !Array.isArray(sv)) {
+          const prev = sv.house && typeof sv.house === 'object' && !Array.isArray(sv.house) ? sv.house : {};
+          sv.house = Object.assign({}, prev, next);
+          localStorage.setItem('zdash.kid.v1', JSON.stringify(sv));
+        }
+      }
+    } catch (e) {}
+    return next;
+  }
+  function gCrew() { return gReadJson(GCREW_KEY) || {}; }
+  function gSaveCrew(patch) {
+    const next = Object.assign({ v: 1 }, gCrew(), patch || {});
+    try { localStorage.setItem(GCREW_KEY, JSON.stringify(next)); } catch (e) {}
+    return next;
+  }
+  function gBroad(root, id) {
+    const list = GDRILL.broad[root] || [];
+    for (let i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+  function gSpec(cat) {
+    const id = String(cat || '');
+    const roots = ['garage', 'home'];
+    for (let r = 0; r < roots.length; r++) {
+      const list = GDRILL.broad[roots[r]];
+      for (let i = 0; i < list.length; i++) {
+        const b = list[i];
+        for (let s = 0; s < b.subs.length; s++) {
+          if (b.subs[s][0] !== id) continue;
+          if (roots[r] === 'home') return { root: 'home', broad: b.id, sub: id, view: gCat, saveCat: P.gCat || 'paint' };
+          let view = id, saveCat = id;
+          if (id === 'horn' || id === 'doors') { view = id; saveCat = 'extra'; }
+          else if (id === 'boost') { view = 'boost'; saveCat = 'nos'; }
+          else if (!(CAT[id] || id === 'presets' || id === 'vinyls')) return null;
+          return { root: 'garage', broad: b.id, sub: id, view: view, saveCat: saveCat };
+        }
+      }
+    }
+    return null;
+  }
+  function gEnterCat(cat) {
+    const spec = gSpec(cat);
+    if (!spec || spec.root !== 'garage') return false;
+    const it = $('#kGarage .gitems');
+    if (it) gScroll[gCat] = it.scrollTop;
+    gCat = spec.view;
+    gNav = { lvl: 3, root: 'garage', broad: spec.broad, sub: spec.sub };
+    P.gCat = spec.saveCat;
+    P.gSub = Object.assign({}, P.gSub || {}, { [spec.broad]: spec.sub });
+    P.gScroll = gScroll;
+    return true;
+  }
+  function gItemList() {
+    if (gNav.sub === 'horn') return (CAT.extra || []).filter((i) => i.id === 'horn' || i.id === 'none-x');
+    if (gNav.sub === 'doors') return (CAT.extra || []).filter((i) => i.slot === 'door' || i.id === 'none-x');
+    if (gNav.sub === 'boost' || gCat === 'boost') return CAT.nos || [];
+    if (gCat === 'extra') return gExtraOrder();
+    return CAT[gCat] || [];
+  }
+  function gBack() {
+    if (gNav.lvl >= 3) gNav = { lvl: 2, root: gNav.root, broad: null, sub: null };
+    else gNav = { lvl: 1, root: null, broad: null, sub: null };
+    renderGarage();
+  }
+  function gCrumbGo(level, rootId) {
+    if (level <= 1) gNav = { lvl: 1, root: null, broad: null, sub: null };
+    else gNav = { lvl: 2, root: rootId || gNav.root, broad: null, sub: null };
+    renderGarage();
+  }
+  function gOpenBroad(root, broadId) {
+    const b = gBroad(root, broadId);
+    if (!b) return;
+    const sub = b.subs[0][0];
+    if (root === 'garage') { if (!gEnterCat(sub)) return; }
+    else gNav = { lvl: 3, root: 'home', broad: broadId, sub: sub };
+    renderGarage();
+  }
+  function gCrumbHtml() {
+    if (!gNav || gNav.lvl < 2) return '';
+    const root = GDRILL.roots.filter((r) => r.id === gNav.root)[0];
+    const broad = gNav.lvl >= 3 ? gBroad(gNav.root, gNav.broad) : null;
+    let html = '<div class="gbackbar"><button type="button" class="gback" data-gback="1">← BACK</button><span class="gcrumbs">';
+    html += '<button type="button" data-gcrumb="1">🏠 HOME &amp; GARAGE</button>';
+    if (root) html += '<span>›</span><button type="button" data-gcrumb="2" data-groot="' + root.id + '"' + (gNav.lvl === 2 ? ' class="on"' : '') + '>' + root.emoji + ' ' + root.title + '</button>';
+    if (broad) html += '<span>›</span><button type="button" data-gcrumb="3" class="on">' + broad.emoji + ' ' + broad.title + '</button>';
+    html += '</span></div>';
+    return html;
+  }
+  function gSubPills() {
+    const b = gBroad(gNav.root, gNav.broad);
+    if (!b) return '';
+    return '<div class="gcats">' + b.subs.map(([c, n]) => '<button type="button" data-c="' + c + '" class="' + (c === gNav.sub ? 'on' : '') + '">' + n + '</button>').join('') + '</div>';
+  }
+  function gDrillChrome() { return gCrumbHtml() + gSubPills(); }
+  function gOpt(on, attrs, name, sub) {
+    return '<button type="button" class="gitem' + (on ? ' eq' : '') + '" ' + attrs + '><b>' + name + '</b>' + (sub ? '<span>' + sub + '</span>' : '') + (on ? '<em class="vinyl-badge">EQUIPPED</em>' : '') + '</button>';
+  }
+  function homeLevelHtml() {
+    const sub = gNav.sub;
+    const house = gHouse();
+    const crew = gCrew();
+    if (sub === 'wall') return GHOUSE_WALLS.map((w) => gOpt(house.wall === w[0], 'data-hwall="' + w[0] + '"', w[1], 'WALL NEON COLOR')).join('');
+    if (sub === 'furniture') return GHOUSE_FURN.map((it) => gOpt(!!house[it[0]], 'data-hitem="' + it[0] + '"', it[1], house[it[0]] ? 'ON · TAP TO TAKE OFF' : 'TAP TO ADD')).join('');
+    if (sub === 'petbed') return gOpt(!!house.petBed, 'data-hitem="petBed"', '🛏️ GLOWING PET BED', house.petBed ? 'ON · TAP TO TAKE OFF' : 'TAP TO ADD');
+    if (sub === 'sign') return GHOUSE_SIGNS.map((s) => gOpt(house.sign === s[0], 'data-hsign="' + s[0] + '"', s[1], 'CUSTOM NEON SIGN')).join('');
+    if (sub === 'pet') return GCREW_PETS.map((p) => gOpt((crew.pet || 'fox') === p[0], 'data-cpet="' + p[0] + '"', '🐾 ' + p[1], 'COMPANION PET')).join('');
+    if (sub === 'character') return GCREW_CHARS.map((p) => gOpt((crew.character || 'woman') === p[0], 'data-cchar="' + p[0] + '"', '👤 ' + p[1], 'CHARACTER OUTFIT')).join('');
+    if (sub === 'enter') return '<a class="gitem" href="crew.html"><b class="vinyl-name">🚪 ENTER HOME / CREW STUDIO</b><span class="vinyl-meta">COMPANION PET AND CHARACTER</span></a><a class="gitem" href="world.html"><b class="vinyl-name">🏠 WALK INTO NEON WORLD</b><span class="vinyl-meta">HOME BUILDINGS USE THIS DECOR</span></a>';
+    if (sub === 'paintapp') return '<a class="gitem" href="neon-paint.html"><b class="vinyl-name">🎨 3D CAR PAINT</b><span class="vinyl-meta">PAINT THE 370Z · SAVED VINYLS SHOW UP IN GARAGE</span></a>';
+    if (sub === 'wallapp') return '<a class="gitem" href="neon-paint.html?mode=wall"><b class="vinyl-name">🧱 Z COMPANY ARTS GRAFFITI WALL</b><span class="vinyl-meta">WALL ART STAYS ON THE WALL</span></a>';
+    if (sub === 'danceapp') return '<a class="gitem" href="dance-stage.html"><b class="vinyl-name">💃 DANCE STAGE</b><span class="vinyl-meta">RECORD A CHARACTER OR PET DANCE</span></a>';
+    return '';
+  }
+  function bindHome(el) {
+    el.querySelectorAll('[data-hwall]').forEach((b) => b.addEventListener('click', () => { gSaveHouse({ wall: b.dataset.hwall }); renderGarage(); }));
+    el.querySelectorAll('[data-hsign]').forEach((b) => b.addEventListener('click', () => { gSaveHouse({ sign: b.dataset.hsign }); renderGarage(); }));
+    el.querySelectorAll('[data-hitem]').forEach((b) => b.addEventListener('click', () => { const k = b.dataset.hitem; const h = gHouse(); const p = {}; p[k] = !h[k]; gSaveHouse(p); renderGarage(); }));
+    el.querySelectorAll('[data-cpet]').forEach((b) => b.addEventListener('click', () => { gSaveCrew({ pet: b.dataset.cpet }); renderGarage(); }));
+    el.querySelectorAll('[data-cchar]').forEach((b) => b.addEventListener('click', () => { gSaveCrew({ character: b.dataset.cchar }); renderGarage(); }));
+  }
+  function bindNav(el) {
+    if (!el) return;
+    el.querySelectorAll('[data-gback]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); gBack(); }));
+    el.querySelectorAll('[data-gcrumb]').forEach((b) => b.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const lv = +b.dataset.gcrumb;
+      if (lv >= 3) return;
+      gCrumbGo(lv, b.dataset.groot);
+    }));
+    el.querySelectorAll('.glevel [data-groot]').forEach((b) => b.addEventListener('click', () => { gNav = { lvl: 2, root: b.dataset.groot, broad: null, sub: null }; renderGarage(); }));
+    el.querySelectorAll('[data-gbroad]').forEach((b) => b.addEventListener('click', () => gOpenBroad(gNav.root, b.dataset.gbroad)));
+  }
+  function gHeadHtml() {
+    return `<div class="ghead"><span class="kcount kcoin">● ${P.coins}</span><span class="kcount kstar">★ ${P.stars}</span>
+        <button id="gBox" class="kpill ${P.boxes ? 'hot' : ''}" ${P.boxes ? '' : 'disabled'}>OPEN PART BOX (${P.boxes})</button><button id="gName" class="kpill">RENAME</button></div>`;
+  }
+  function renderGarageNav() {
+    const el = $('#kGarage');
+    let body = '';
+    if (gNav.lvl <= 1) {
+      body = '<div class="glevel">' + GDRILL.roots.map((r) => '<button type="button" class="gbig" data-groot="' + r.id + '"><span class="gem">' + r.emoji + '</span><b>' + r.emoji + ' ' + r.title + '</b><em>' + r.kicker + '</em><small>' + r.blurb + '</small></button>').join('') + '</div>';
+    } else if (gNav.lvl === 2) {
+      const list = GDRILL.broad[gNav.root] || [];
+      body = '<div class="glevel">' + list.map((b) => '<button type="button" class="gbig" data-gbroad="' + b.id + '"><span class="gem">' + b.emoji + '</span><b>' + b.emoji + ' ' + b.title + '</b><small>' + b.blurb + '</small></button>').join('') + '</div>';
+    } else body = gSubPills() + '<div class="gitems">' + homeLevelHtml() + '</div>';
+    el.innerHTML = gHeadHtml() + gCrumbHtml() + body;
+    bindNav(el);
+    if (gNav.lvl === 3 && gNav.root === 'home') {
+      el.querySelectorAll('.gcats button').forEach((b) => b.addEventListener('click', () => { gNav = { lvl: 3, root: 'home', broad: gNav.broad, sub: b.dataset.c }; renderGarage(); }));
+      bindHome(el);
+    }
+    const box = $('#gBox'); if (box) box.addEventListener('click', openBox);
+    const gn = $('#gName'); if (gn) gn.addEventListener('click', () => { const n = prompt('Name your car:', P.name); if (n && n.trim()) { P.name = n.trim().toUpperCase().slice(0, 14); save(); renderGarage(); } });
+  }
+  function openGarage(which) {
+    const w = String(which || '').toLowerCase();
+    if (!w || w === 'root' || w === 'level1') gNav = { lvl: 1, root: null, broad: null, sub: null };
+    else if (w === 'home' || w === 'garage') gNav = { lvl: 2, root: w, broad: null, sub: null };
+    else if (gSpec(w)) { if (gSpec(w).root === 'home') gNav = { lvl: 3, root: 'home', broad: gSpec(w).broad, sub: gSpec(w).sub }; else gEnterCat(w); }
+    else if (gBroad('garage', w)) gOpenBroad('garage', w);
+    else if (gBroad('home', w)) gOpenBroad('home', w);
+    else gNav = { lvl: 1, root: null, broad: null, sub: null };
+    try {
+      if (typeof K !== 'undefined' && K && K.tab !== 'garage' && typeof setTab === 'function') { setTab('garage'); return; }
+    } catch (e) {}
+    if (w && gBroad('garage', w)) return;
+    if (w && gBroad('home', w)) return;
+    renderGarage();
+  }
+  function gConsumeOpen() {
+    let which = '';
+    try { which = new URLSearchParams(location.search).get('gopen') || ''; } catch (e) {}
+    if (!which) { try { which = sessionStorage.getItem('zd.gopen') || ''; sessionStorage.removeItem('zd.gopen'); } catch (e) {} }
+    if (which) openGarage(which);
+  }
+  window.openGarage = openGarage;
+
+
   function renderGarage() {
+    if (gNav.lvl < 3 || gNav.root === 'home') { renderGarageNav(); return; }
     const el = $('#kGarage'), oc = el.querySelector('.gcats'), oi = el.querySelector('.gitems'), keepL = oc ? oc.scrollLeft : 0, keepT = oi ? oi.scrollTop : 0, secChanged = gLastCat != null && secOf(gLastCat) !== secOf(gCat), catChanged = gLastCat !== gCat; gLastCat = gCat;
     el.innerHTML = `<div class="ghead"><span class="kcount kcoin">● ${P.coins}</span><span class="kcount kstar">★ ${P.stars}</span>
         <button id="gBox" class="kpill ${P.boxes ? 'hot' : ''}" ${P.boxes ? '' : 'disabled'}>OPEN PART BOX (${P.boxes})</button><button id="gName" class="kpill">RENAME</button></div>
-      <div class="gsecs">${GSECS.map((g) => `<button data-s="${g.id}" class="${g === secOf(gCat) ? 'on' : ''}">${g.name}</button>`).join('')}</div>
-      ${secOf(gCat).subs.length > 1 ? `<div class="gcats">${secOf(gCat).subs.map(([c, n]) => `<button data-c="${c}" class="${c === gCat ? 'on' : ''}">${n}</button>`).join('')}</div>` : ''}
+      ${gDrillChrome()}
       ${gCat === 'rims' ? `<div class="gsize">SIZE ${[17, 18, 19, 20].map((z) => `<button data-sz="${z}" class="${(P.eq.size || 19) === z ? 'on' : ''}">${z}"</button>`).join('')}<span>bigger wheel = thinner tyre</span></div>` : ''}
-      <div class="gitems">${gCat === 'presets' ? myPresetsHtml() + PRESETS.map((pr) => { const on = Object.entries(pr.eq).every(([k, v]) => eqMatch(k, v)), lk = preLocked(pr); return `<button class="gitem gpreset ${on ? 'eq' : lk ? 'lock' : 'own'}" data-preset="${pr.id}"><i class="sw" style="background:${pr.sw};border:2px solid #777"></i><b>${pr.name}</b><span>${on ? 'ON YOUR CAR' : lk ? '🔒 BUY COP PAINT + LIGHT BAR' : 'TAP TO TRY IT'}</span><em class="gdesc">${pr.desc || 'Looks only · change anything after'}</em></button>`; }).join('') : (gCat === 'extra' ? gExtraOrder() : CAT[gCat]).map((i) => { if (i.hdr) return `<div class="gslot"><b>${i.hdr}</b><span>${i.sub}</span></div>`; const [st, cls] = status(i); return `<button class="gitem ${cls}" data-id="${i.id}"><i class="sw" style="${swatch(i)}">${i.cat === 'rims' ? rimSvg(i.id) : i.cat === 'tires' ? tireSvg(i.id) : i.cat === 'paint' || i.cat === 'wheels' || i.cat === 'windows' || i.cat === 'heads' || i.cat === 'tails' || i.cat === 'roof' || i.cat === 'spcol' || i.cat === 'underglow' || i.cat === 'tracks' || i.cat === 'caliper' || i.cat === 'kitmat' ? '' : ICON[i.id] || ''}</i><b>${i.name}</b><span>${st}</span>${i.desc ? `<em class="gdesc">${i.desc}</em>` : ''}${i.req && !P.owned.includes(i.id) ? (() => { const r = reqProgress(i); return `<ul class="greq">${r.rows.map((x) => `<li class="${x.have >= x.need ? 'ok' : ''}">${x.have >= x.need ? '✓' : '○'} ${x.label} <small>${x.have}/${x.need}</small></li>`).join('')}</ul><i class="gprog"><i style="width:${Math.round(r.pct * 100)}%"></i></i>`; })() : ''}</button>`; }).join('')}</div>
+      <div class="gitems">${gCat === 'vinyls' ? vinylsHtml() : gCat === 'presets' ? myPresetsHtml() + PRESETS.map((pr) => { const on = Object.entries(pr.eq).every(([k, v]) => eqMatch(k, v)), lk = preLocked(pr); return `<button class="gitem gpreset ${on ? 'eq' : lk ? 'lock' : 'own'}" data-preset="${pr.id}"><i class="sw" style="background:${pr.sw};border:2px solid #777"></i><b>${pr.name}</b><span>${on ? 'ON YOUR CAR' : lk ? '🔒 BUY COP PAINT + LIGHT BAR' : 'TAP TO TRY IT'}</span><em class="gdesc">${pr.desc || 'Looks only · change anything after'}</em></button>`; }).join('') : gItemList().map((i) => { if (i.hdr) return `<div class="gslot"><b>${i.hdr}</b><span>${i.sub}</span></div>`; const [st, cls] = status(i); return `<button class="gitem ${cls}" data-id="${i.id}"><i class="sw" style="${swatch(i)}">${i.cat === 'rims' ? rimSvg(i.id) : i.cat === 'tires' ? tireSvg(i.id) : i.cat === 'paint' || i.cat === 'wheels' || i.cat === 'windows' || i.cat === 'heads' || i.cat === 'tails' || i.cat === 'roof' || i.cat === 'spcol' || i.cat === 'underglow' || i.cat === 'tracks' || i.cat === 'caliper' || i.cat === 'kitmat' ? '' : ICON[i.id] || ''}</i><b>${i.name}</b><span>${st}</span>${i.desc ? `<em class="gdesc">${i.desc}</em>` : ''}${i.req && !P.owned.includes(i.id) ? (() => { const r = reqProgress(i); return `<ul class="greq">${r.rows.map((x) => `<li class="${x.have >= x.need ? 'ok' : ''}">${x.have >= x.need ? '✓' : '○'} ${x.label} <small>${x.have}/${x.need}</small></li>`).join('')}</ul><i class="gprog"><i style="width:${Math.round(r.pct * 100)}%"></i></i>`; })() : ''}</button>`; }).join('')}</div>
       <div class="gfoot">Coins from ROAD, DRAG and RIDE ALONG (×2 on a REAL DRIVE) · REAL DRIVE ONLY parts come from PART BOXES: one every ${BOX_EVERY / 60} min of a real drive · next in ${Math.ceil((BOX_EVERY - (P.ride % BOX_EVERY)) / 6) / 10} min</div>`;
     el.querySelectorAll('.gsize button').forEach((b) => b.addEventListener('click', () => { P.eq.size = +b.dataset.sz; save(); renderGarage(); }));
     { // keep the tab row where she left it, then nudge the picked tab fully into view (no jump back to PAINT)
@@ -13084,6 +13557,7 @@ var qrcode = function() {
     }
     el.querySelectorAll('.gcats button').forEach((b) => b.addEventListener('click', () => gPick(b.dataset.c)));
     el.querySelectorAll('.gsecs button').forEach((b) => b.addEventListener('click', () => gSection(b.dataset.s)));
+    bindNav(el);
     if (items0()) items0().addEventListener('scroll', () => { gScroll[gCat] = items0().scrollTop; P.gScroll = gScroll; }, { passive: true });
     el.querySelectorAll('.gitem[data-preset]').forEach((b) => b.addEventListener('click', () => { const pr = PRESETS.find((x) => x.id === b.dataset.preset); if (preLocked(pr)) { toast('Buy COP BLACK & WHITE paint + COP LIGHT BAR to unlock'); return; } Object.assign(P.eq, pr.eq); P.eq.extras = {}; const sl0 = xSlot(pr.eq.extra); if (sl0) P.eq.extras[sl0] = pr.eq.extra; xSync(); toast(`${pr.name} LOOK ON!`); save(); renderGarage(); }));
     bindMyPresets(el);
@@ -13097,6 +13571,7 @@ var qrcode = function() {
       else if (cls === 'lock') toast(i.how === 'box' ? 'REAL DRIVE ONLY: find it in a PART BOX on a real drive with Dad!' : i.how ? `Get a RIDE ALONG combo of ×${i.how.split(':')[1]} to unlock!` : `Need ${i.cost - P.coins} more coins`);
       save(); renderGarage();
     }));
+    bindVinyls(el);
     const box = $('#gBox'); if (box) box.addEventListener('click', openBox);
     $('#gName').addEventListener('click', () => { const n = prompt('Name your car:', P.name); if (n && n.trim()) { P.name = n.trim().toUpperCase().slice(0, 14); save(); renderGarage(); } });
   }
@@ -13105,7 +13580,7 @@ var qrcode = function() {
     P.realBoxes = (P.realBoxes || 0) + 1; // part boxes only come from real drives
     const pool = ALL.filter((i) => !P.owned.includes(i.id) && !i.req && (i.how === 'box' || (i.cost > 0)));
     if (!pool.length) { P.coins += 50; toast('You own EVERYTHING! +50 coins'); }
-    else { const ex = pool.filter((i) => i.how === 'box'), from = ex.length && Math.random() < 0.7 ? ex : pool, pick = from[Math.floor(Math.random() * from.length)]; P.owned.push(pick.id); if (pick.cat === 'extra') { const x = Object.assign({}, P.eq.extras || {}); x[pick.slot] = pick.id; P.eq.extras = x; xSync(); } else P.eq[pick.cat] = pick.id; gCat = P.gCat = pick.cat; P.gSub = Object.assign({}, P.gSub, { [secOf(pick.cat).id]: pick.cat }); toast(`PART BOX: ${pick.name}!`, 3200); }
+    else { const ex = pool.filter((i) => i.how === 'box'), from = ex.length && Math.random() < 0.7 ? ex : pool, pick = from[Math.floor(Math.random() * from.length)]; P.owned.push(pick.id); if (pick.cat === 'extra') { const x = Object.assign({}, P.eq.extras || {}); x[pick.slot] = pick.id; P.eq.extras = x; xSync(); } else P.eq[pick.cat] = pick.id; gEnterCat(pick.cat); toast(`PART BOX: ${pick.name}!`, 3200); }
     fireworks(innerWidth * 0.54, innerHeight, 4); save(); renderGarage();
   }
 
@@ -13258,7 +13733,7 @@ var qrcode = function() {
     if (!h && !menu) return;
     const s = document.getElementById('kStart'); if (s) s.remove(); try { K.kStart = false; } catch (e) {}
     if (!K.on) setOn(true, false);
-    if (h) { setTab(h); kMenuShow(false); try { hideOver(); } catch (e) {} return; }
+    if (h) { setTab(h); kMenuShow(false); try { hideOver(); } catch (e) {} if (h === 'garage') gConsumeOpen(); return; }
     setTab('drive'); kMenuShow(true); try { hideOver(); } catch (e) {}
   }
   window.addEventListener('hashchange', applyKidRoute);
