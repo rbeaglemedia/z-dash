@@ -36,7 +36,6 @@ function setDriveMode(mode,quiet){const street=mode==='street';P.driveMode=stree
     else{toast('ARCADE MODE · FULL POWER');if(typeof wMsg==='function')wMsg('⚡ ARCADE MODE','#3ee6ff','full power & instant launch');}}
   syncWingsBtn();}
 window.setDriveMode=setDriveMode;
-function hitWng(x,y){const w=document.getElementById('wng');if(!w)return false;const r=w.getBoundingClientRect(),m=12;return x>=r.left-m&&x<=r.right+m&&y>=r.top-m&&y<=r.bottom+m;}
 function toggleDrive(){setDriveMode(P.driveMode==='street'?'arcade':'street');}
 addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='KeyF'&&flying)setWings(!P.wings);if(e.code==='KeyV'||e.code==='KeyM')toggleDrive();});
 function startRoll(d){return;/* Bob: no barrel rolls */if(!flying||P.ground||P.roll||P.flip)return;P.roll={d,t:0,b0:clamp(P.bank,-TUNE.maxBank*D,TUNE.maxBank*D)};toast('BARREL ROLL!');}
@@ -69,9 +68,8 @@ function syncEb(){const el=document.getElementById('brk'),pad=document.getElemen
   if(pad){pad.classList.toggle('show',on);pad.setAttribute('aria-hidden',on?'false':'true');}}
 function bindHold(id){const el=document.getElementById(id);let ptr=null,touchId=null,x0=0;
   const down=x=>{B[id]=1;el.classList.add('on','nfxp');if(id==='brk'){x0=x;B.brkX=x;B.brkDx=0;syncEb();}};
-  const move=(x,y)=>{if(id==='brk'&&B.brk){B.brkX=x;B.brkDx=x-x0;syncEb();}
-    if(id==='tup'&&B.tup&&!el._slidWng&&hitWng(x,y)){el._slidWng=true;toggleDrive();}};
-  const up=()=>{B[id]=0;el.classList.remove('on','nfxp');if(id==='brk'){B.brkDx=0;B.brkX=null;B.ebLatch=0;syncEb();}if(id==='tup')el._slidWng=false;};
+  const move=(x)=>{if(id==='brk'&&B.brk){B.brkX=x;B.brkDx=x-x0;syncEb();}};
+  const up=()=>{B[id]=0;el.classList.remove('on','nfxp');if(id==='brk'){B.brkDx=0;B.brkX=null;B.ebLatch=0;syncEb();}};
   el.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();ptr=e.pointerId;try{el.setPointerCapture(e.pointerId);}catch(_){}down(e.clientX);});
   el.addEventListener('pointermove',e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;move(e.clientX,e.clientY);});
   const pup=e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;ptr=null;up();};
@@ -117,17 +115,3 @@ for(const id of['tup','nos','brk'])bindHold(id);
   b.addEventListener('touchmove',e=>{for(const t of e.changedTouches)if(t.identifier===touchId){ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}drag(t.clientX,t.clientY);}},{passive:false});
   const tend=e=>{ebTouchAt=performance.now();const commit=e.type==='touchend';for(const t of e.changedTouches)if(t.identifier===touchId)release(commit);};
   b.addEventListener('touchend',tend,{passive:false});b.addEventListener('touchcancel',tend,{passive:false});}
-// A thumb that starts on the right half of the screen, off the buttons, and slides onto WINGS toggles the mode once.
-{const body=document.querySelector('.kbody');if(body){let id=null,fired=false;
-  const onBtn=(x,y)=>{for(const el of['wng','tup','nos','brk','ebpad']){const n=document.getElementById(el);if(!n)continue;const r=n.getBoundingClientRect();if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)return true;}return false;};
-  const start=(x,y,k)=>{const r=body.getBoundingClientRect();if(x<r.left+r.width/2||onBtn(x,y))return;id=k;fired=false;};
-  const move=(x,y,k)=>{if(id!==k||fired)return;if(hitWng(x,y)){fired=true;toggleDrive();}};
-  const end=k=>{if(id===k)id=null;};
-  body.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;start(e.clientX,e.clientY,e.pointerId);});
-  body.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;move(e.clientX,e.clientY,e.pointerId);});
-  body.addEventListener('pointerup',e=>{if(e.pointerType!=='touch')end(e.pointerId);});
-  body.addEventListener('pointercancel',e=>{if(e.pointerType!=='touch')end(e.pointerId);});
-  body.addEventListener('touchstart',e=>{ebTouchAt=performance.now();for(const t of e.changedTouches)if(id==null)start(t.clientX,t.clientY,'t'+t.identifier);},{passive:true});
-  body.addEventListener('touchmove',e=>{for(const t of e.changedTouches)move(t.clientX,t.clientY,'t'+t.identifier);},{passive:true});
-  const bend=e=>{for(const t of e.changedTouches)end('t'+t.identifier);};
-  body.addEventListener('touchend',bend);body.addEventListener('touchcancel',bend);}}
