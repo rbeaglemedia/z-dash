@@ -1,7 +1,25 @@
 'use strict';
 // ===== CAMERA / PROJECTION =====
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');let W=0,H=0,DPR=1;
-function resize(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}addEventListener('resize',resize);resize();
+// Desktop PCs fill a huge backing store (often 1080p at devicePixelRatio 2) and the
+// 2D city cannot keep up. Cap that buffer only. Phones and touch devices keep the
+// exact sizing below. W and H stay the canvas logical size (HUD + projection).
+// Pointer handlers keep using clientX / clientY and getBoundingClientRect, which are
+// CSS pixels, so a smaller buffer does not shift clicks against the DOM buttons.
+// The canvas CSS stays width/height 100%, so the smaller bitmap still fills the window.
+function resize(){
+  const isDesktopPC=!(('ontouchstart' in window)||(navigator.maxTouchPoints>0))&&innerWidth>1024;
+  if(!isDesktopPC){
+    DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+  }else{
+    DPR=1;
+    const cap=1280*720,area=innerWidth*innerHeight||1;
+    const scale=Math.min(1,Math.sqrt(cap/area));
+    W=Math.round(innerWidth*scale);H=Math.round(innerHeight*scale);
+    if(W*H>cap){const fit=Math.sqrt(cap/(W*H));W=Math.max(1,Math.floor(W*fit));H=Math.max(1,Math.floor(H*fit));}
+  }
+  cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
+}addEventListener('resize',resize);resize();
 const cam={x:0,y:0,z:0,yaw:0,pitch:0,roll:0};
 // Flight pull-up damping. boot.js aims the chase cam with the raw nose pitch, which
 // drops the camera under the car on a sharp climb and shoves the city off the bottom.

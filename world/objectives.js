@@ -22,12 +22,18 @@ window.HOTDROP={active:false,x:0,z:0,y:0,r:16,tLeft:0,maxT:25,overchargeT:0,clai
   draw(){
     if(!this.active)return;
     const t=(performance.now()||0)/1000,x=this.x,y=this.y,z=this.z;
-    ctx.save();ctx.lineCap='round';ctx.shadowColor='#ffe14d';ctx.shadowBlur=16;
+    ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowBlur=0;
     for(let i=0;i<8;i++){const a=t*1.35+i*Math.PI/4,rad=0.7+((i%3)===0?1.5:0.35);
       const ox=Math.cos(a)*rad,oz=Math.sin(a)*rad,col=i%2?'#3ee6ff':'#ffe14d';
       line([x+ox,y,z+oz],[x+ox,y+140,z+oz],col,i%2?2.2:3.4);}
     line([x,y,z],[x,y+140,z],'#fff6c2',1.6);
     const pulse=0.86+0.16*Math.sin(t*5),R=(this.r||16)*pulse,spin=t*1.7,N=32;
+    // One crisp halo around the outer ring. shadowBlur on every beam and segment
+    // was a full-canvas Gaussian on desktop Chrome for each of the 80+ strokes.
+    ctx.beginPath();let pen=false;
+    for(let i=0;i<=N;i++){const a=spin+i/N*Math.PI*2,p=proj(x+Math.cos(a)*R,y+0.35,z+Math.sin(a)*R);
+      if(!p){pen=false;continue;}if(pen)ctx.lineTo(p[0],p[1]);else{ctx.moveTo(p[0],p[1]);pen=true;}}
+    ctx.strokeStyle='rgba(255,225,77,.5)';ctx.lineWidth=16;ctx.stroke();
     let prev=null;
     for(let i=0;i<=N;i++){const a=spin+i/N*Math.PI*2,p=[x+Math.cos(a)*R,y+0.35,z+Math.sin(a)*R];
       if(prev)line(prev,p,i%2?'#ffe14d':'#3ee6ff',3.2);prev=p;}
