@@ -1,0 +1,187 @@
+{
+ "sha": "245b7b46d2f2e43cc6221a3dd326702c22aea529",
+ "nosave": {
+  "0": {
+   "stance": null,
+   "paint": "#1aa6c8",
+   "roof": null,
+   "wings": null,
+   "bumper": null,
+   "tf": 0,
+   "body": {
+    "n": 9,
+    "min": 0.1503,
+    "max": 1.0631
+   },
+   "hatchGlass": {
+    "n": 3,
+    "min": 0.895,
+    "max": 1.1939
+   },
+   "hatchCarbon": {
+    "n": 2,
+    "min": 0.8308,
+    "max": 1.1975
+   },
+   "roofCarbon": {
+    "n": 4,
+    "min": 0.6739,
+    "max": 1.2741
+   }
+  },
+  "0.62": {
+   "stance": null,
+   "paint": "#1aa6c8",
+   "roof": null,
+   "wings": null,
+   "bumper": null,
+   "tf": 0.62,
+   "body": {
+    "n": 9,
+    "min": 0.1503,
+    "max": 1.0631
+   },
+   "hatchGlass": {
+    "n": 3,
+    "min": 0.3638,
+    "max": 1.9323
+   },
+   "hatchCarbon": {
+    "n": 2,
+    "min": 1.0771,
+    "max": 2.3959
+   },
+   "roofCarbon": {
+    "n": 4,
+    "min": 0.6739,
+    "max": 1.2741
+   }
+  }
+ },
+ "stock": {
+  "measure": {
+   "closed": {
+    "stance": "stock",
+    "paint": "#121318",
+    "roof": "#3ee6ff",
+    "wings": null,
+    "bumper": null,
+    "tf": 0,
+    "body": {
+     "n": 9,
+     "min": 0.1503,
+     "max": 1.0631
+    },
+    "hatchGlass": {
+     "n": 3,
+     "min": 0.895,
+     "max": 1.1939
+    },
+    "hatchCarbon": {
+     "n": 2,
+     "min": 0.8308,
+     "max": 1.1975
+    },
+    "roofCarbon": {
+     "n": 4,
+     "min": 0.6739,
+     "max": 1.2741
+    }
+   },
+   "opening": {
+    "stance": "stock",
+    "paint": "#121318",
+    "roof": "#3ee6ff",
+    "wings": null,
+    "bumper": null,
+    "tf": 0.62,
+    "body": {
+     "n": 9,
+     "min": 0.1503,
+     "max": 1.0631
+    },
+    "hatchGlass": {
+     "n": 3,
+     "min": 0.3638,
+     "max": 1.9323
+    },
+    "hatchCarbon": {
+     "n": 2,
+     "min": 1.0771,
+     "max": 2.3959
+    },
+    "roofCarbon": {
+     "n": 4,
+     "min": 0.6739,
+     "max": 1.2741
+    }
+   }
+  },
+  "deltas_over_8mm": [],
+  "errors": []
+ },
+ "slam": {
+  "measure": {
+   "closed": {
+    "stance": "stock",
+    "paint": "#121318",
+    "roof": "#3ee6ff",
+    "wings": null,
+    "bumper": null,
+    "tf": 0,
+    "body": {
+     "n": 9,
+     "min": 0.1503,
+     "max": 1.0631
+    },
+    "hatchGlass": {
+     "n": 3,
+     "min": 0.895,
+     "max": 1.1939
+    },
+    "hatchCarbon": {
+     "n": 2,
+     "min": 0.8308,
+     "max": 1.1975
+    },
+    "roofCarbon": {
+     "n": 4,
+     "min": 0.6739,
+     "max": 1.2741
+    }
+   },
+   "opening": {
+    "stance": "stock",
+    "paint": "#121318",
+    "roof": "#3ee6ff",
+    "wings": null,
+    "bumper": null,
+    "tf": 0.62,
+    "body": {
+     "n": 9,
+     "min": 0.1503,
+     "max": 1.0631
+    },
+    "hatchGlass": {
+     "n": 3,
+     "min": 0.3638,
+     "max": 1.9323
+    },
+    "hatchCarbon": {
+     "n": 2,
+     "min": 1.0771,
+     "max": 2.3959
+    },
+    "roofCarbon": {
+     "n": 4,
+     "min": 0.6739,
+     "max": 1.2741
+    }
+   }
+  },
+  "deltas_over_8mm": [],
+  "errors": []
+ },
+ "worst_m": 0,
+ "pass": true
+}

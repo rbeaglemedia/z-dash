@@ -63,37 +63,57 @@ function towRollback(parts,o){
   mk(D,o.deckCol||'#3a2a52');mk(Rl,o.railCol||'#ffb020');mk(Fr,o.frameCol||'#1a1024');
   return out;}
 
-// TOW3: draws the stock tow truck with its own small WebGL renderer, using the game camera (camS/proj), then blits it into the 2D frame at the truck's depth slot.
-const TOW3={ok:false,fail:false,dist:320,n:0,
+// TOW3: one isolated WebGL bake of the rollback (48 yaw × 3 pitch), then the temp
+// renderer is destroyed. Gameplay blits a 2D cell — no live WebGL context and no per-frame R.render.
+const TOW3={ok:false,fail:false,baked:false,sheets:null,dist:320,n:0,R:null,
   on(d){return this.ok&&d<this.dist;},
   init(){if(this.ok||this.fail)return this.ok;const X=window.ZD&&ZD.Xray;if(!X||!X.ready)return false;const tr=X.loadTraffic();if(!tr.ready||!tr.models['k-truck-flat'])return false;
+    let R=null;
     try{let Mesh=null,Std=null,Basic=null;const seek=o=>{if(o.isMesh){Mesh=Mesh||o.constructor;const m=o.material;if(m&&m.type==='MeshStandardMaterial')Std=Std||m.constructor;if(m&&m.type==='MeshBasicMaterial')Basic=Basic||m.constructor;}};
       X.scene.traverse(seek);tr.scene.traverse(seek);Basic=Basic||(tr.outline&&tr.outline.constructor);if(!Mesh||!Std||!Basic){this.fail=true;return false;}
-      const cv=document.createElement('canvas'),R=new X.renderer.constructor({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:false});R.setPixelRatio(1);R.setClearColor(0,0);
+      const YN=48,PITCHES=[-0.08,-0.30,-0.62],CW=160,CH=112;
+      const cv=document.createElement('canvas');
+      R=new X.renderer.constructor({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true,premultipliedAlpha:false});
+      R.setPixelRatio(1);R.setSize(CW,CH,false);R.setClearColor(0x000000,0);
       const sc=new X.scene.constructor();tr.scene.children.forEach(c=>{if(c.isLight)sc.add(c.clone());});const grp=new X.car.constructor();sc.add(grp);
-      const T0=(CITY.TOWS||[])[0]||{},T={L:14,bed:8.68,cab:5.32,w:3.6,h:2.6,ch:T0.ch||3.12,split:.1,deck:.9,full:1,rearA:.8};const parts=towRollback(tr.models['k-truck-flat'],T);this.parts=parts;
-      const C=X.cam.constructor,cam3=new C(58,1,.3,700);const AMB='#ffb020',TO='#ff6a1a';
-      const col=(c,k)=>{const m=new Std({color:c,emissive:c,emissiveIntensity:k});return m;};
-      this.ol=[];for(const p of parts){let m;if(p.map){m=new Std({map:p.map,emissive:TO,emissiveIntensity:.55});m.color.set(TO).lerp(m.color.clone().set('#ffffff'),.5);}else m=col(p.color,p.color==='#ffb020'?.35:.12);
-        grp.add(new Mesh(p.geo,m));const o=new Mesh(p.geo,new Basic({color:p.map?TO:AMB,side:1,polygonOffset:true,polygonOffsetFactor:3,polygonOffsetUnits:3}));o.scale.setScalar(1.02);grp.add(o);this.ol.push(o);}
-      Object.assign(this,{cv,R,sc,grp,cam3,T,M4:X.cam.matrix.constructor,tris:parts.reduce((a,p)=>a+p.geo.attributes.position.count/3,0)});this.ok=true;}catch(e){this.fail=true;this.err=String(e);}return this.ok;},
+      const T0=(CITY.TOWS||[])[0]||{},T={L:14,bed:8.68,cab:5.32,w:3.6,h:2.6,ch:T0.ch||3.12,split:.1,deck:.9,full:1,rearA:.8};const parts=towRollback(tr.models['k-truck-flat'],T);
+      const C=X.cam.constructor,cam3=new C(58,CW/CH,0.3,400);const AMB='#ffb020',TO='#ff6a1a';
+      const col=(c,k)=>new Std({color:c,emissive:c,emissiveIntensity:k});
+      const ol=[];for(const p of parts){let m;if(p.map){m=new Std({map:p.map,emissive:TO,emissiveIntensity:.55});m.color.set(TO).lerp(m.color.clone().set('#ffffff'),.5);}else m=col(p.color,p.color==='#ffb020'?.35:.12);
+        grp.add(new Mesh(p.geo,m));const o=new Mesh(p.geo,new Basic({color:p.map?TO:AMB,side:1,polygonOffset:true,polygonOffsetFactor:3,polygonOffsetUnits:3}));o.scale.setScalar(1.02);grp.add(o);ol.push(o);}
+      grp.position.set(0,0,0);grp.rotation.set(0,Math.PI/2,0);grp.updateMatrixWorld(true);
+      const sheetHi=document.createElement('canvas'),sheetLo=document.createElement('canvas');
+      sheetHi.width=sheetLo.width=YN*CW;sheetHi.height=sheetLo.height=PITCHES.length*CH;
+      const gh=sheetHi.getContext('2d'),gl2=sheetLo.getContext('2d');
+      const frameH=14,frameW=frameH*(CW/CH),look=1.35,dist=frameH*0.9;
+      const M4=X.cam.matrix.constructor;
+      const camSLocal=(camL,x,y,z)=>{let dx=x-camL.x,dy=y-camL.y,dz=z-camL.z;const cy=Math.cos(camL.yaw),sy=Math.sin(camL.yaw);let X1=dx*cy-dz*sy,Z=dx*sy+dz*cy;const cp=Math.cos(-camL.pitch),sp=Math.sin(-camL.pitch);let Y=dy*cp-Z*sp;Z=dy*sp+Z*cp;return[X1,Y,Z];};
+      const aim=(rel,pitch)=>{const el=-pitch,hd=dist*Math.cos(el),camL={x:Math.sin(rel)*hd,y:look+Math.sin(el)*dist,z:Math.cos(rel)*hd,roll:0};
+        const dx=-camL.x,dy=look-camL.y,dz=-camL.z;camL.yaw=Math.atan2(dx,dz);camL.pitch=Math.atan2(-dy,Math.hypot(dx,dz));
+        const o=[camL.x,camL.y,camL.z],ax=[camSLocal(camL,o[0]+1,o[1],o[2]),camSLocal(camL,o[0],o[1]+1,o[2]),camSLocal(camL,o[0],o[1],o[2]+1)];
+        const r=[ax[0][0],ax[1][0],-ax[2][0]],up=[ax[0][1],ax[1][1],-ax[2][1]],fw=[ax[0][2],ax[1][2],-ax[2][2]];
+        const m=new M4().set(r[0],up[0],-fw[0],0, r[1],up[1],-fw[1],0, r[2],up[2],-fw[2],0, 0,0,0,1);
+        cam3.position.set(o[0],o[1],-o[2]);cam3.quaternion.setFromRotationMatrix(m);cam3.fov=2*Math.atan(.5/.9)*180/Math.PI;cam3.aspect=CW/CH;cam3.near=0.3;cam3.far=400;cam3.updateProjectionMatrix();cam3.updateMatrixWorld();};
+      R.setScissorTest(false);if(R.setViewport)R.setViewport(0,0,CW,CH);
+      for(let pi=0;pi<PITCHES.length;pi++)for(let yi=0;yi<YN;yi++){aim(yi*(Math.PI*2/YN),PITCHES[pi]);
+        ol.forEach(q=>q.visible=true);R.clear();R.render(sc,cam3);gh.drawImage(cv,0,0,CW,CH,yi*CW,pi*CH,CW,CH);
+        ol.forEach(q=>q.visible=false);R.clear();R.render(sc,cam3);gl2.drawImage(cv,0,0,CW,CH,yi*CW,pi*CH,CW,CH);}
+      try{R.dispose();R.forceContextLoss();}catch(e2){}
+      R=null;
+      Object.assign(this,{T,tris:parts.reduce((a,p)=>a+p.geo.attributes.position.count/3,0),yaws:YN,pitches:PITCHES,cw:CW,ch:CH,frameW,frameH,look,
+        sheets:{hi:sheetHi,lo:sheetLo,yaws:YN,pitches:PITCHES.slice(),cw:CW,ch:CH},baked:true,ok:true,R:null,cv:null});
+    }catch(e){this.fail=true;this.err=String(e);try{if(R){R.dispose();R.forceContextLoss();}}catch(e2){}this.R=null;}
+    return this.ok;},
   draw(t,d){if(d>=this.dist||!this.init())return false;const T=this.T,u=t.u,s=[u[1],-u[0]];
-    // screen box of the truck (8 corners)
-    let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,behind=0,front=0;for(const a of[-T.L/2,T.L/2])for(const l of[-T.w/2-.3,T.w/2+.3])for(const y of[0,Math.max(T.h+1.2,T.ch+.4)]){const c=camS(t.x+u[0]*a+s[0]*l,y,t.z+u[1]*a+s[1]*l);if(c[2]<NEAR){behind++;continue;}front++;const q=scr(c);x0=Math.min(x0,q[0]);x1=Math.max(x1,q[0]);y0=Math.min(y0,q[1]);y1=Math.max(y1,q[1]);}
-    if(!front)return true;if(behind){x0=0;y0=0;x1=W;y1=H;}x0=Math.max(0,Math.floor(x0)-4);y0=Math.max(0,Math.floor(y0)-4);x1=Math.min(W,Math.ceil(x1)+4);y1=Math.min(H,Math.ceil(y1)+4);if(x1-x0<2||y1-y0<2)return true;
-    const low=!!(ZD.perf&&ZD.perf.low),res=low?.75:Math.min(DPR,1.25),cw=Math.round(W*res),ch=Math.round(H*res);
-    if(this.cv.width!==cw||this.cv.height!==ch)this.R.setSize(cw,ch,false);
-    // camera = the game camera (world z mirrored into three's right-handed frame)
-    const o=[cam.x,cam.y,cam.z],ax=[camS(o[0]+1,o[1],o[2]),camS(o[0],o[1]+1,o[2]),camS(o[0],o[1],o[2]+1)],c3=this.cam3;
-    const m=new this.M4().set(ax[0][0],ax[0][1],-ax[0][2],0, ax[1][0],ax[1][1],-ax[1][2],0, -ax[2][0],-ax[2][1],ax[2][2],0, 0,0,0,1);
-    // rows above are the world axes in camera space; three wants camera axes in world space = transpose, with z mirrored (rows/cols 3 negated, camera looks down -z)
-    const r=[ax[0][0],ax[1][0],-ax[2][0]],up=[ax[0][1],ax[1][1],-ax[2][1]],fw=[ax[0][2],ax[1][2],-ax[2][2]];
-    m.set(r[0],up[0],-fw[0],0, r[1],up[1],-fw[1],0, r[2],up[2],-fw[2],0, 0,0,0,1);
-    c3.position.set(o[0],o[1],-o[2]);c3.quaternion.setFromRotationMatrix(m);c3.fov=2*Math.atan(.5/.9)*180/Math.PI;c3.aspect=W/H;c3.updateProjectionMatrix();c3.updateMatrixWorld();
-    const g=this.grp;g.position.set(t.x,0,-t.z);g.rotation.set(0,Math.atan2(u[1],u[0]),0);this.ol.forEach(q=>q.visible=!low);
-    const R=this.R,sx=Math.floor(x0*res),sy=Math.floor(y0*res),sw=Math.ceil((x1-x0)*res),sh=Math.ceil((y1-y0)*res);
-    R.setScissorTest(true);R.setScissor(sx,ch-sy-sh,sw,sh);R.setViewport(0,0,cw,ch);R.clear();R.render(this.sc,c3);R.setScissorTest(false);this.n++;
-    ctx.drawImage(this.cv,sx,sy,sw,sh,x0,y0,(x1-x0),(y1-y0));
+    const p=proj(t.x,this.look,t.z);if(!p)return true;
+    const truckYaw=Math.atan2(u[0],u[1]);
+    let rel=Math.atan2(cam.x-t.x,cam.z-t.z)-truckYaw;rel=Math.atan2(Math.sin(rel),Math.cos(rel));
+    const YN=this.yaws,step=Math.PI*2/YN;let yi=Math.round(rel/step);yi=((yi%YN)+YN)%YN;
+    const hd=Math.hypot(cam.x-t.x,cam.z-t.z)||0.001,elev=Math.atan2(this.look-cam.y,hd);
+    let pi=0,bd=1e9;for(let i=0;i<this.pitches.length;i++){const dd=Math.abs(elev-this.pitches[i]);if(dd<bd){bd=dd;pi=i;}}
+    const low=!!(ZD.perf&&ZD.perf.low),sheet=low?this.sheets.lo:this.sheets.hi;
+    const sw=H*0.9/p[2]*this.frameW,sh=H*0.9/p[2]*this.frameH;
+    ctx.save();ctx.imageSmoothingEnabled=true;ctx.drawImage(sheet,yi*this.cw,pi*this.ch,this.cw,this.ch,p[0]-sw/2,p[1]-sh/2,sw,sh);ctx.restore();this.n++;
     // 2D game dressing on top: pink lip + green chevrons on the deck, flashing beacon, TOW sign
     const P=(a,l,y)=>[t.x+u[0]*a+s[0]*l,y,t.z+u[1]*a+s[1]*l],hw=T.w/2,A0=-T.L/2,Ab=A0+T.bed,tt=performance.now()/1000;ctx.save();
     if(d<200){ctx.beginPath();pathSeg(P(Ab-.3,-hw*.9,T.h+.04),P(Ab-.3,hw*.9,T.h+.04));ctx.strokeStyle='#ff4fd8';ctx.lineWidth=3;ctx.stroke();

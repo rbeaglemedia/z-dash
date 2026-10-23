@@ -13,7 +13,7 @@ const TOASTC={'PULL UP!':[H_YEL,'tilt the top of the phone toward you'],'LIFT OF
 let ktT=0;function kToast(s,ms=1600){const el=document.getElementById('kToast');el.textContent=s;el.classList.remove('hidden','fade');clearTimeout(ktT);ktT=setTimeout(()=>el.classList.add('hidden'),ms);}
 function toast(s){const c=TOASTC[s];if(c)wMsg(s,c[0],c[1]);else kToast(s);}
 let vShown=0,vS=0,vT=0,hudStackBottom=168;
-// North-up minimap. City is baked once; each frame blits that image and a pre-drawn 370Z icon.
+// Heading-up minimap. City is baked once; each frame rotates that image by -yaw and blits it once. The Z icon stays pointing up.
 const MINI={X0:-1500,Z0:-900,X1:1900,Z1:2900,S:0.34,cv:null};
 // Garage Z (world/garage.js) reads localStorage 'zdash.kid.v1' -> eq.paint (and wheels, windows, rims, tires, stance, spoiler, spcol).
 // The player model is always the 370Z; the save does not swap the car. No save leaves KID.paint at the default cyan #1aa6c8.
@@ -47,7 +47,15 @@ function zIconBake(){if(ZICON.cv)return;const paint=miniIconPaint(),N=160,cv=doc
   trace([[-.18,2.20],[.18,2.20],[.12,2.08],[-.12,2.08]]);c.closePath();c.fillStyle=ink;c.fill();
   ZICON.cv=cv;ZICON.paint=paint;}
 function miniHex(hex,a){const n=parseInt(String(hex||'').replace('#',''),16);if(!Number.isFinite(n))return`rgba(62,230,255,${a})`;return`rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
-function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;const S=MINI.S,w=Math.ceil((MINI.X1-MINI.X0)*S),h=Math.ceil((MINI.Z1-MINI.Z0)*S),cv=document.createElement('canvas');cv.width=w;cv.height=h;const c=cv.getContext('2d'),X=x=>(x-MINI.X0)*S,Y=z=>(MINI.Z1-z)*S,C=CITY;
+// Pitch and spur live in the baked layer (shared/soccer-tune.js). Bounds grow only if that pitch sits outside the city frame.
+function miniFitPitch(){const T=window.SOCCER_TUNE;if(!T||MINI.fit)return;MINI.fit=1;const pad=24,x0=Math.min(T.roadX0,T.fieldCx-T.fieldHw)-pad,x1=Math.max(T.roadX1,T.fieldCx+T.fieldHw)+pad,z0=T.fieldCz-T.fieldHl-pad,z1=T.fieldCz+T.fieldHl+pad;if(x0<MINI.X0)MINI.X0=x0;if(x1>MINI.X1)MINI.X1=x1;if(z0<MINI.Z0)MINI.Z0=z0;if(z1>MINI.Z1)MINI.Z1=z1;}
+function miniPitch(c,X,Y,S){const T=window.SOCCER_TUNE;if(!T)return;const F=window.SOCCER&&SOCCER.field,x0=T.fieldCx-T.fieldHw,x1=T.fieldCx+T.fieldHw,z0=T.fieldCz-T.fieldHl,z1=T.fieldCz+T.fieldHl,gw=(F&&F.goalW)||Math.min((x1-x0)*.46,16),gd=(F&&F.goalD)||5,gx0=T.fieldCx-gw/2,gx1=T.fieldCx+gw/2;
+  c.fillStyle='rgba(62,230,255,.55)';c.fillRect(X(T.roadX0),Y(T.roadZ+T.roadHalfW),(T.roadX1-T.roadX0)*S,T.roadHalfW*2*S);
+  c.fillStyle='rgba(7,40,28,.92)';c.fillRect(X(x0),Y(z1),(x1-x0)*S,(z1-z0)*S);c.strokeStyle='#3ee6ff';c.lineWidth=1.7;c.strokeRect(X(x0),Y(z1),(x1-x0)*S,(z1-z0)*S);
+  c.beginPath();c.moveTo(X(x0),Y(T.fieldCz));c.lineTo(X(x1),Y(T.fieldCz));c.stroke();
+  const goal=(z,sign,col)=>{c.beginPath();c.moveTo(X(gx0),Y(z));c.lineTo(X(gx0),Y(z+sign*gd));c.lineTo(X(gx1),Y(z+sign*gd));c.lineTo(X(gx1),Y(z));c.strokeStyle=col;c.lineWidth=1.8;c.stroke();};
+  goal(z0,-1,'#ff4fd8');goal(z1,1,'#7dfff2');}
+function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;miniFitPitch();const S=MINI.S,w=Math.ceil((MINI.X1-MINI.X0)*S),h=Math.ceil((MINI.Z1-MINI.Z0)*S),cv=document.createElement('canvas');cv.width=w;cv.height=h;const c=cv.getContext('2d'),X=x=>(x-MINI.X0)*S,Y=z=>(MINI.Z1-z)*S,C=CITY;
   c.fillStyle='#070314';c.fillRect(0,0,w,h);
   c.fillStyle='rgba(8,40,90,.95)';c.fillRect(0,Y(C.RIV.z1),w,(C.RIV.z1-C.RIV.z0)*S);
   c.fillStyle='rgba(10,60,30,.85)';c.fillRect(X(C.PARK.x0),Y(C.PARK.z1),(C.PARK.x1-C.PARK.x0)*S,(C.PARK.z1-C.PARK.z0)*S);
@@ -60,19 +68,54 @@ function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;const S=MINI.S,
   const z0=-40,z1=1500;c.fillStyle='rgba(62,230,255,.5)';c.fillRect(X(-15),Y(z1),30*S,(z1-z0)*S);c.strokeStyle='#e9fbff';c.lineWidth=2;c.strokeRect(X(-15),Y(z1),30*S,(z1-z0)*S);
   c.strokeStyle='rgba(255,255,255,.92)';c.lineWidth=1.1;c.beginPath();for(let z=0;z<z1;z+=70){c.moveTo(X(0),Y(z));c.lineTo(X(0),Y(Math.min(z1,z+28)));}c.stroke();
   c.fillStyle='#ff9a2e';for(const r of C.RAMPS){if(r.hid||r.yb>0||r.nm==='tow')continue;c.fillRect(X((r.x0+r.x1)/2)-1.3,Y((r.z0+r.z1)/2)-1.3,2.6,2.6);}
+  miniPitch(c,X,Y,S);
   MINI.cv=cv;}
-function drawMini(mx,my,mw,mh){try{miniBake();}catch(e){MINI.cv=MINI.cv||null;}
+let miniSpan=0;
+const ZICON_W=.45; // visible car width ÷ sprite. Street width uses this.
+function miniTune(){return window.MINIMAP_TUNE||{spanClose:300,spanFar:3400,altClose:24,altFar:240,ease:.8,street:20,iconMin:20,poiPx:20,hotPulse:.16,hotMs:110};}
+function miniZoom(dt){const T=miniTune(),y=Math.max(0,P.y||0),den=(T.altFar||240)-(T.altClose||24),u=den>0?clamp((y-(T.altClose||24))/den,0,1):0,e=u*u*(3-2*u),target=(T.spanClose||300)+((T.spanFar||3400)-(T.spanClose||300))*e;
+  if(!miniSpan){miniSpan=target;return miniSpan;}
+  const k=1-Math.exp(-Math.min(Math.max(dt,0),.1)/Math.max(.05,T.ease||.8));miniSpan+=(target-miniSpan)*k;return miniSpan;}
+function miniIconPx(mw,span){const T=miniTune(),px=(T.street||20)/span*mw;return Math.max(T.iconMin||20,px/ZICON_W);}
+const POI={plane:null,ball:null,hotdrop:null};
+function poiBake(){if(POI.plane)return;const N=128,disc=(glow,edge)=>{const cv=document.createElement('canvas');cv.width=cv.height=N;const c=cv.getContext('2d');c.beginPath();c.arc(64,64,54,0,7);c.fillStyle='rgba(8,4,20,0.92)';c.fill();c.lineWidth=7;c.strokeStyle=glow;c.shadowColor=glow;c.shadowBlur=14;c.stroke();c.shadowBlur=0;c.lineWidth=3;c.strokeStyle=edge;c.stroke();return c;};
+  const star=(c,r0,r1)=>{c.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rad=i%2?r0:r1,x=64+Math.cos(a)*rad,y=64+Math.sin(a)*rad;i?c.lineTo(x,y):c.moveTo(x,y);}c.closePath();};
+  const pc=disc('#3ee6ff','#e9fbff');pc.save();pc.beginPath();pc.arc(64,64,50,0,7);pc.clip();pc.fillStyle='#f4fbff';pc.strokeStyle='#3ee6ff';pc.lineJoin='round';pc.lineWidth=5;
+  pc.beginPath();pc.moveTo(64,18);pc.quadraticCurveTo(76,46,73,86);pc.lineTo(68,108);pc.quadraticCurveTo(64,114,60,108);pc.lineTo(55,86);pc.quadraticCurveTo(52,46,64,18);pc.closePath();pc.fill();pc.stroke();
+  pc.beginPath();pc.moveTo(60,48);pc.lineTo(16,78);pc.lineTo(22,90);pc.lineTo(58,70);pc.lineTo(70,70);pc.lineTo(106,90);pc.lineTo(112,78);pc.lineTo(68,48);pc.closePath();pc.fill();pc.stroke();
+  pc.beginPath();pc.moveTo(57,92);pc.lineTo(34,108);pc.lineTo(40,116);pc.lineTo(64,104);pc.lineTo(88,116);pc.lineTo(94,108);pc.lineTo(71,92);pc.closePath();pc.fill();pc.stroke();pc.restore();
+  POI.plane=pc.canvas;
+  const bc=disc('#7dff6b','#3ee6ff');bc.beginPath();bc.arc(64,64,36,0,7);bc.fillStyle='#f7f7f7';bc.fill();bc.lineWidth=4;bc.strokeStyle='#141414';bc.stroke();
+  bc.beginPath();for(let i=0;i<5;i++){const a=-Math.PI/2+i*Math.PI*2/5,x=64+Math.cos(a)*16,y=64+Math.sin(a)*16;i?bc.lineTo(x,y):bc.moveTo(x,y);}bc.closePath();bc.fillStyle='#141414';bc.fill();
+  bc.lineWidth=4;bc.strokeStyle='#141414';for(let i=0;i<5;i++){const a=-Math.PI/2+i*Math.PI*2/5,b=a+Math.PI/5;bc.beginPath();bc.moveTo(64+Math.cos(a)*16,64+Math.sin(a)*16);bc.quadraticCurveTo(64+Math.cos(b)*26,64+Math.sin(b)*26,64+Math.cos(a)*34,64+Math.sin(a)*34);bc.stroke();}
+  bc.beginPath();for(let i=0;i<5;i++){const a=-Math.PI/2+i*Math.PI*2/5+Math.PI/5,x=64+Math.cos(a)*30,y=64+Math.sin(a)*30;i?bc.lineTo(x,y):bc.moveTo(x,y);}bc.closePath();bc.lineWidth=3;bc.stroke();
+  POI.ball=bc.canvas;
+  const hc=disc('#ffe14d','#3ee6ff');hc.save();hc.beginPath();hc.arc(64,64,48,0,7);hc.clip();star(hc,14,34);hc.fillStyle='#ffe14d';hc.strokeStyle='#fff';hc.lineJoin='round';hc.lineWidth=4;hc.fill();hc.stroke();star(hc,6,15);hc.fillStyle='#fff8d4';hc.fill();hc.restore();
+  POI.hotdrop=hc.canvas;}
+function miniSpot(lx,lz,co,si,ppm,hx,hy){const dx=lx-P.x,dz=lz-P.z;let sx=(dx*co-dz*si)*ppm,sy=(-dx*si-dz*co)*ppm,out=Math.abs(sx)>hx||Math.abs(sy)>hy;if(out){const t=1/Math.max(Math.abs(sx)/hx,Math.abs(sy)/hy);sx*=t;sy*=t;}return[sx,sy,out];}
+function miniPois(cx,cy,mw,mh,yaw,ppm){poiBake();const T=miniTune(),px=T.poiPx||20,pad=12,hx=mw/2-pad,hy=mh/2-pad,co=Math.cos(yaw),si=Math.sin(yaw);
+  const marks=[[0,730,POI.plane,-yaw],[(window.SOCCER_TUNE&&SOCCER_TUNE.fieldCx)||790,(window.SOCCER_TUNE&&SOCCER_TUNE.fieldCz)||300,POI.ball,0]];
+  for(const[lx,lz,spr,rot]of marks){const[sx,sy,out]=miniSpot(lx,lz,co,si,ppm,hx,hy);
+    ctx.save();ctx.globalAlpha=out?.85:1;ctx.translate(cx+sx,cy+sy);if(rot)ctx.rotate(rot);ctx.imageSmoothingEnabled=true;ctx.drawImage(spr,-px/2,-px/2,px,px);ctx.restore();}
+  const H=window.HOTDROP;if(H&&H.active){const[sx,sy,out]=miniSpot(H.x,H.z,co,si,ppm,hx,hy),pulse=1+(T.hotPulse||.16)*Math.sin(performance.now()/(T.hotMs||110)),d=px*pulse;
+    ctx.save();ctx.globalAlpha=out?.85:1;ctx.translate(cx+sx,cy+sy);ctx.beginPath();ctx.arc(0,0,d*.62,0,7);ctx.lineWidth=2;ctx.strokeStyle=H_YEL;ctx.shadowColor=H_YEL;ctx.shadowBlur=12;ctx.stroke();ctx.shadowBlur=0;ctx.imageSmoothingEnabled=true;ctx.drawImage(POI.hotdrop,-d/2,-d/2,d,d);ctx.restore();}}
+// North on screen after the map is rotated by -yaw. yaw 0 faces +z, and +yaw turns toward +x.
+function miniNorth(mx,my,mw,mh,yaw){const dx=-Math.sin(yaw),dy=-Math.cos(yaw),r=12,cx=mx+mw/2,cy=my+mh/2,hx=mw/2-r-3,hy=mh/2-r-3,x=cx+dx*hx,y=cy+dy*hy;
+  ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fillStyle='rgba(8,4,20,.92)';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=H_CYAN;ctx.shadowColor=H_CYAN;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
+  ctx.beginPath();ctx.moveTo(x+dx*(r-1),y+dy*(r-1));ctx.lineTo(x+dx*(r+4),y+dy*(r+4));ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.stroke();
+  hT(ctx,'N',x,y+5,14,'#fff','center',H_FONT,900);}
+function drawMini(mx,my,mw,mh,dt){try{miniBake();}catch(e){MINI.cv=MINI.cv||null;}
+  const span=miniZoom(dt),yaw=P.yaw||0,cx=mx+mw/2,cy=my+mh/2;
   ctx.save();hrr(ctx,mx,my,mw,mh,14);ctx.clip();ctx.fillStyle='rgba(7,3,20,.94)';ctx.fillRect(mx-1,my-1,mw+2,mh+2);
-  if(MINI.cv){const ppm=mw/680,cx=mx+mw/2,cy=my+mh/2,dw=(MINI.X1-MINI.X0)*ppm,dh=(MINI.Z1-MINI.Z0)*ppm;ctx.drawImage(MINI.cv,cx+(MINI.X0-P.x)*ppm,cy-(MINI.Z1-P.z)*ppm,dw,dh);
-    ctx.fillStyle='#ffe14d';for(const t of CITY.TOWS){const sx=cx+(t.x-P.x)*ppm,sy=cy-(t.z-P.z)*ppm;if(sx<mx-6||sx>mx+mw+6||sy<my-6||sy>my+mh+6)continue;ctx.beginPath();ctx.arc(sx,sy,2.4,0,7);ctx.fill();}}
-  ctx.translate(mx+mw/2,my+mh/2);ctx.rotate(P.yaw||0);zIconBake();const d=40;ctx.imageSmoothingEnabled=true;ctx.drawImage(ZICON.cv,-d/2,-d/2,d,d);ctx.restore();
-  hrr(ctx,mx,my,mw,mh,14);ctx.lineWidth=2.5;ctx.strokeStyle=H_CYAN;ctx.shadowColor=H_CYAN;ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;hT(ctx,'N',mx+mw/2,my+12,9,H_CYAN,'center',H_TXT,800);}
+  if(MINI.cv){const ppm=mw/span,dw=(MINI.X1-MINI.X0)*ppm,dh=(MINI.Z1-MINI.Z0)*ppm;ctx.save();ctx.translate(cx,cy);ctx.rotate(-yaw);ctx.imageSmoothingEnabled=true;ctx.drawImage(MINI.cv,(MINI.X0-P.x)*ppm,-(MINI.Z1-P.z)*ppm,dw,dh);if(window.CITY&&CITY.TOWS){ctx.fillStyle='#ffe14d';const lim=span*.75;for(const t of CITY.TOWS){const ex=t.x-P.x,ez=t.z-P.z;if(Math.abs(ex)>lim||Math.abs(ez)>lim)continue;ctx.beginPath();ctx.arc(ex*ppm,-ez*ppm,2.4,0,7);ctx.fill();}}ctx.restore();miniPois(cx,cy,mw,mh,yaw,ppm);}
+  zIconBake();const d=miniIconPx(mw,span);ctx.imageSmoothingEnabled=true;ctx.drawImage(ZICON.cv,cx-d/2,cy-d/2,d,d);ctx.restore();
+  hrr(ctx,mx,my,mw,mh,14);ctx.lineWidth=2.5;ctx.strokeStyle=H_CYAN;ctx.shadowColor=H_CYAN;ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;miniNorth(mx,my,mw,mh,yaw);}
 // WINGS sits under the right-hand ALT stack. Same size; THROTTLE is left on its CSS anchor.
 let wingKey='';function placeWings(s,bottomHud){const wng=document.getElementById('wng'),thr=document.getElementById('tup');if(!wng)return;const key=W+'x'+H+'x'+bottomHud;if(key===wingKey)return;const gap=6;let top=Math.round(bottomHud*s+gap),wh=wng.offsetHeight||84;if(thr){const thrTop=thr.offsetTop;if(top+wh>thrTop-gap)top=thrTop-gap-wh;}if(top<bottomHud*s+2&&thr){wng.style.right=(20+(thr.offsetWidth||112)+10)+'px';top=Math.round(Math.max(bottomHud*s+gap,thr.offsetTop));}else wng.style.right='20px';wng.style.top=Math.round(top)+'px';wng.style.bottom='auto';wingKey=key;}
 function drawHud(dt){const t=performance.now()/1000,w=W,h=H,s=clamp(h/378,.72,1.35);ctx.save();ctx.scale(s,s);const Wd=w/s,Hh=h/s,TU=TUNE;
   vS+=(P.v*2.237-vS)*(1-Math.exp(-dt/.3));vT+=dt;if(vT>.14){vT=0;const r=Math.round(vS);if(Math.abs(vS-vShown)>.75||r===0)vShown=r;}
   // TOP LEFT: minimap in the slot the ALT/THR panel used on main (x 12, y 10, 196×134)
-  {const mapW=Math.min(196,Math.max(96,Wd/2-79));drawMini(12,10,mapW,134);}
+  {const mapW=Math.min(196,Math.max(96,Wd/2-79));drawMini(12,10,mapW,134,dt);}
   // TOP CENTRE: ROTATE speed cue (WANTED's level / ramp bar)
   {const gw=118,gh=58,gx=Wd/2-gw/2,gy=6,cm=window.TCMD||[0,0],ok=P.ground&&P.rotOK,cx=gx+gw/2,cy=gy+gh/2,on=typeof tiltOk==='function'&&tiltOk();
     ctx.save();ctx.beginPath();ctx.roundRect(gx,gy,gw,gh,12);ctx.fillStyle='rgba(10,5,24,.82)';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=on?H_CYAN:'#55507a';ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=6;ctx.stroke();
@@ -85,6 +128,12 @@ function drawHud(dt){const t=performance.now()/1000,w=W,h=H,s=clamp(h/378,.72,1.
     const by=gy+gh+5,bw=gw;if(P.ground){const mxv=TU.rotateSpeed*1.25,fr=v=>clamp(v/mxv,0,1);ctx.fillStyle='rgba(255,255,255,.14)';hrr(ctx,gx,by,bw,5,2.5);ctx.fill();ctx.fillStyle=ok?(Math.floor(t*6)%2?'#fff':H_YEL):H_CYAN;if(P.v>.3){hrr(ctx,gx,by,Math.max(5,bw*fr(P.v)),5,2.5);ctx.fill();}ctx.fillStyle=H_LIME;ctx.fillRect(gx+bw*fr(TU.rotateSpeed)-1.5,by-3,3,11);
       hT(ctx,ok?'PULL UP!  ▲ TILT TOWARD YOU':!P.wings?(P.v>=TU.rotateSpeed?'OPEN WINGS TO LAUNCH!':'WINGS CLOSED · NO LIFT · TAP WINGS'):P.v<1?`HOLD THROTTLE · ROTATE AT ${Math.round(TU.rotateSpeed*2.237)} MPH`:'BUILD SPEED TO THE GREEN MARK',Wd/2,by+20+(ok?2:0),ok?13:10,ok?H_YEL:'#bfd6ff','center',ok?H_FONT:H_TXT,900,ok?10:4);}
     else hT(ctx,P.stall?'LOW SPEED · NOSE DOWN OR MORE THROTTLE':P.y<15&&P.v*3.6<40?'SLOW & NOSE UP · AIR BRAKE · BUTTER IT!':'DIVE = SPEED · CLIMB = HEIGHT',Wd/2,by+14,10,P.stall?H_ORNG:'#bfd6ff','center',H_TXT,800,4);}
+  // Hot Drop pill sits under the tilt prompt. Overcharge uses the same slot while the NOS reward is live.
+  {const H=window.HOTDROP,over=H&&H.overchargeT>0,hot=H&&H.active&&H.tLeft>0;if(over||hot){const pw=184,ph=22,px=Wd/2-pw/2,py=98,col=over?H_LIME:H_YEL,frac=over?clamp(H.overchargeT/15,0,1):clamp(H.tLeft/(H.maxT||25),0,1);
+    const label=over?`🔥 OVERCHARGE NOS · ${Math.ceil(H.overchargeT)}S`:`⚡ HOT DROP · ${Math.ceil(H.tLeft)}S · ${Math.round(Math.hypot(H.x-P.x,H.z-P.z))}M`;
+    ctx.save();hrr(ctx,px,py,pw,ph,11);ctx.fillStyle='rgba(8,4,20,.92)';ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle=H_CYAN;ctx.shadowColor=col;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
+    hT(ctx,label,Wd/2,py+14,10,col,'center',H_FONT,800,3);
+    ctx.fillStyle='rgba(255,255,255,.14)';ctx.fillRect(px+10,py+ph-4,pw-20,2);ctx.fillStyle=col;ctx.shadowColor=col;ctx.shadowBlur=6;ctx.fillRect(px+10,py+ph-4,Math.max(2,(pw-20)*frac),2);ctx.shadowBlur=0;ctx.restore();}}
   // RIGHT: MPH dial, then the smaller ALT/THR + STATUS stack directly under it. N2O gauge stays off (bottle is on the NOS button).
   {const rx=Wd-16;ctx.save();const g=ctx.createLinearGradient(Wd-200,0,Wd,0);g.addColorStop(0,'rgba(8,3,20,0)');g.addColorStop(1,'rgba(8,3,20,.6)');ctx.fillStyle=g;ctx.fillRect(Wd-200,8,200,60);ctx.restore();
     {const cx=rx-128,cy=46,r=26,MAX=TU.maxSpeed*TU.nosBoost*2.237,v=clamp(vS,0,MAX),a0=Math.PI*.8,a1=Math.PI*2.2,A=m=>a0+(a1-a0)*(m/MAX);ctx.save();ctx.lineCap='round';ctx.lineWidth=5;ctx.strokeStyle='rgba(255,255,255,.14)';ctx.beginPath();ctx.arc(cx,cy,r,a0,a1);ctx.stroke();

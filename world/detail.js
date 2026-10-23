@@ -27,7 +27,7 @@
     m[1].split(/[+,\s]+/).forEach((k) => { if (k in on) on[k] = true; });
   })();
 
-  const stat = { faces: 0, trims: 0, signs: 0, lights: 0, trees: 0, roads: 0, river: 0, grass: 0, close: 0, cruise: 0 };
+  const stat = { faces: 0, trims: 0, signs: 0, lights: 0, trees: 0, roads: 0, river: 0, grass: 0, close: 0, cruise: 0, winSegs: 0 };
   const NEAR_Z = (typeof NEAR === 'number' ? NEAR : 0.5);
   const BL = CITY.BL;
   const COLS = ['#3ee6ff', '#ff4fd8', '#ffb020', '#ff2a3d', '#fff2c0', '#ffd27a'];
@@ -86,40 +86,12 @@
   function clean() {
     ctx.setLineDash([]);
     ctx.globalAlpha = 1;
-    ctx.shadowBlur = 0;
     ctx.imageSmoothingEnabled = true;
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.lineWidth = 1;
     ctx.fillStyle = '#0a0612';
   }
 
-  function makeTile(seed) {
-    const c = document.createElement('canvas');
-    c.width = 96; c.height = 120;
-    const g = c.getContext('2d');
-    g.fillStyle = '#0a0612';
-    g.fillRect(0, 0, 96, 120);
-    const lit = [1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1];
-    for (let i = 0; i < 15; i++) {
-      const col = (i + seed) % 3, row = (i / 3) | 0;
-      const x = col * 32 + 5, y = row * 24 + 5;
-      if (!lit[(i + seed) % 15]) {
-        g.strokeStyle = 'rgba(90,70,110,.45)';
-        g.strokeRect(x + 0.5, y + 0.5, 20, 12);
-        continue;
-      }
-      const color = COLS[(i * 3 + seed) % COLS.length];
-      g.fillStyle = color;
-      g.globalAlpha = 0.28;
-      g.fillRect(x, y, 20, 12);
-      g.globalAlpha = 1;
-      g.strokeStyle = color;
-      g.lineWidth = 1.5;
-      g.strokeRect(x + 0.5, y + 0.5, 19, 11);
-    }
-    g.globalAlpha = 1;
-    return c;
-  }
   function makeSign(text, color) {
     const c = document.createElement('canvas');
     c.width = 256; c.height = 64;
@@ -188,14 +160,8 @@
     return c;
   }
 
-  const tiles = [], patterns = [], signImgs = [];
+  const signImgs = [];
   let lampImg = null, treeImg = null;
-  if (on.windows) {
-    for (let i = 0; i < 4; i++) {
-      tiles.push(makeTile(i));
-      patterns.push(ctx.createPattern(tiles[i], 'repeat'));
-    }
-  }
   if (on.signs) {
     for (let i = 0; i < WORDS.length; i++) signImgs.push(makeSign(WORDS[i], COLS[i % COLS.length]));
   }
@@ -398,17 +364,13 @@
     return false;
   }
 
-  let facesLeft = 0, anyTrim = false, anyWin = false, yCut = -1e9, cruise = false, closeLeft = 0;
-  function streetCruise() {
-    return extraOn && P.driveMode === 'street' && !!P.ground && Math.abs(P.v || 0) < (T.crawl || 12);
-  }
+  let facesLeft = 0, anyTrim = false, anyWin = false, yCut = -1e9;
   function beginFrame() {
     cacheCam();
-    cruise = streetCruise();
-    closeLeft = 8;
-    stat.faces = stat.trims = stat.signs = stat.lights = stat.trees = stat.roads = stat.river = stat.grass = stat.close = 0;
-    stat.cruise = cruise ? 1 : 0;
-    facesLeft = T.faceBudget | 0;
+    stat.faces = stat.trims = stat.signs = stat.lights = stat.trees = stat.roads = stat.river = stat.grass = stat.winSegs = 0;
+    stat.cruise = (extraOn && P.driveMode === 'street' && !!P.ground && Math.abs(P.v || 0) < (T.crawl || 12)) ? 1 : 0;
+    const cap = (T.maxWindowFaces != null ? T.maxWindowFaces : T.faceBudget) | 0;
+    facesLeft = cap > 6 ? 6 : (cap > 0 ? cap : 4);
     anyTrim = false;
     anyWin = false;
     yCut = cam.y - T.mid;
@@ -418,7 +380,7 @@
     resetPick(winId, winD);
     resetPick(fullId, fullD);
     resetPick(simpId, simpD);
-    const near = T.near, mid = T.mid;
+    const near = Math.min(48, T.nearDist || T.near || 48), mid = T.mid;
     for (let i = 0; i < BL.length; i++) {
       const b = BL[i];
       if (b.top < yCut || skipKind(b)) continue;
@@ -432,112 +394,75 @@
     anyTrim = fullId[0] >= 0 || simpId[0] >= 0;
   }
 
-  // Camera depth. Linear in x and in z, so a wall's in-front part is one interval.
-  function camDepth(x, y, z) {
-    const dx = x - cam.x, dy = y - cam.y, dz = z - cam.z;
-    return dy * SP + (dx * SY + dz * CY) * CP;
+  // Window bays are fixed on the wall. Slots come from the building span only,
+  // never from cam.x / cam.z, so driving does not slide or pop the frames.
+  const WSLOT = new Float32Array(4);
+  const WIN_W = 1.65, WIN_H = 1.2;
+  function fillSlots(u0, u1) {
+    const lo = u0 + 1.5, hi = u1 - 1.5, span = hi - lo;
+    if (span < 2.4) return 0;
+    let n = (span / 5.5) | 0;
+    if (n < 1) n = 1;
+    if (n > 4) n = 4;
+    const step = span / n;
+    for (let i = 0; i < n; i++) WSLOT[i] = lo + step * (i + 0.5) - WIN_W * 0.5;
+    return n;
   }
-  const SPAN = new Float32Array(2);
-  // mode 0: vary z, fixed is x. mode 1: vary x, fixed is z.
-  // Writes the in-front subspan (capped) into SPAN. Near edge stays at least 4.5m
-  // in front so the quad cannot blow up against the near plane.
-  function frontSpan(mode, fixed, y0, y1, u0, u1) {
-    const k = mode ? SY * CP : CY * CP;
-    const ZMIN = 4.5, CAP = 12;
-    function base(y) {
-      if (mode) return (y - cam.y) * SP + (fixed - cam.z) * CY * CP - cam.x * k;
-      return (y - cam.y) * SP + (fixed - cam.x) * SY * CP - cam.z * k;
-    }
-    const b0 = base(y0), b1 = base(y1);
-    let lo = u0, hi = u1;
-    if (k > -1e-4 && k < 1e-4) {
-      const mid = (u0 + u1) * 0.5;
-      if (b0 + mid * k < ZMIN || b1 + mid * k < ZMIN) return false;
+  function emitWin(varyZ, plane, yb, u) {
+    const yt = yb + WIN_H, uu = u + WIN_W;
+    if (varyZ) {
+      seg(plane, yb, u, plane, yb, uu);
+      seg(plane, yb, uu, plane, yt, uu);
+      seg(plane, yt, uu, plane, yt, u);
+      seg(plane, yt, u, plane, yb, u);
     } else {
-      const t0 = (ZMIN - b0) / k, t1 = (ZMIN - b1) / k;
-      if (k > 0) {
-        const t = t0 > t1 ? t0 : t1;
-        if (t > lo) lo = t;
-      } else {
-        const t = t0 < t1 ? t0 : t1;
-        if (t < hi) hi = t;
+      seg(u, yb, plane, uu, yb, plane);
+      seg(uu, yb, plane, uu, yt, plane);
+      seg(uu, yt, plane, u, yt, plane);
+      seg(u, yt, plane, u, yb, plane);
+    }
+    stat.winSegs += 4;
+  }
+  function paintFace(varyZ, plane, y0, y1, u0, u1) {
+    if (facesLeft <= 0) return false;
+    const n = fillSlots(u0, u1);
+    if (!n) return false;
+    let any = false;
+    for (let r = 0; r < 3; r++) {
+      const yb = y0 + 0.45 + r * ((y1 - y0) / 3);
+      if (yb + WIN_H > y1) break;
+      for (let i = 0; i < n; i++) {
+        const u = WSLOT[i];
+        if (u < u0 + 0.35 || u + WIN_W > u1 - 0.35) continue;
+        emitWin(varyZ, plane, yb, u);
+        any = true;
       }
     }
-    if (!(hi - lo >= 1.6)) return false;
-    if (hi - lo > CAP) {
-      if (k > 1e-4) hi = lo + CAP;
-      else if (k < -1e-4) lo = hi - CAP;
-      else {
-        const uCam = mode ? cam.x : cam.z;
-        let mid = uCam < lo ? lo : uCam > hi ? hi : uCam;
-        lo = mid - CAP * 0.5;
-        hi = mid + CAP * 0.5;
-        if (lo < u0) { hi += u0 - lo; lo = u0; }
-        if (hi > u1) { lo -= hi - u1; hi = u1; }
-        if (lo < u0) lo = u0;
-      }
-    }
-    SPAN[0] = lo;
-    SPAN[1] = hi;
-    return true;
+    if (any) { facesLeft--; stat.faces++; }
+    return any;
   }
-
-  function stampPattern(pat, x0, y0, z0, x1, y1, z1, x2, y2, z2, metersW, metersH) {
-    if (facesLeft <= 0 || !pat) return false;
-    if (!camPoint(x0, y0, z0, A)) return false;
-    screenOf(A, SA);
-    const az = A[2];
-    if (!camPoint(x1, y1, z1, A)) return false;
-    screenOf(A, SB);
-    const bx = SB[0], by = SB[1];
-    if (!camPoint(x2, y2, z2, B)) return false;
-    const cx = W / 2 + B[0] * FOV / B[2], cy = H / 2 - B[1] * FOV / B[2];
-    const dw = Math.hypot(bx - SA[0], by - SA[1]), dh = Math.hypot(cx - SA[0], cy - SA[1]);
-    if (dw < 18 || dh < 22 || dw > 1200 || dh > 860 || az < 3.5) return false;
-    const lw = Math.max(8, metersW * 8), lh = Math.max(8, metersH * 8);
-    ctx.setTransform(DPR * (bx - SA[0]) / lw, DPR * (by - SA[1]) / lw, DPR * (cx - SA[0]) / lh, DPR * (cy - SA[1]) / lh, DPR * SA[0], DPR * SA[1]);
-    ctx.globalAlpha = 0.92;
-    ctx.imageSmoothingEnabled = false;
-    ctx.fillStyle = pat;
-    ctx.fillRect(0, 0, lw, lh);
-    facesLeft--;
-    stat.faces++;
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.globalAlpha = 1;
-    ctx.imageSmoothingEnabled = true;
-    ctx.fillStyle = '#0a0612';
-    return true;
-  }
-
-  const _winRows = winRows;
-  winRows = function (b, q, d) {
-    if (!anyWin || facesLeft <= 0 || !listed(winId, b.id) || !patterns.length) return _winRows(b, q, d);
-    const y0 = q.y0 > 0 ? q.y0 + 0.5 : q.y0 + 4.7;
-    const y1 = q.y1 - 0.45;
-    if (y1 - y0 < 2) return _winRows(b, q, d);
-    // Only the lower floors. A full tower face fills thousands of pixels and
-    // fails the screen-size guard, so the grid never appeared.
-    const yTop = y1 < y0 + 11 ? y1 : y0 + 11;
+  function windowPass(b) {
+    if (!on.windows || !anyWin || facesLeft <= 0 || !listed(winId, b.id) || !b.boxes || !b.boxes.length) return;
+    const q = b.boxes[0];
+    const y0 = q.y0 > 0 ? q.y0 + 0.8 : q.y0 + 5.1;
+    const y1 = Math.min(q.y1 - 0.5, y0 + 9.2);
+    if (y1 - y0 < 2.2) return;
     const x0 = q.x0, x1 = q.x1, z0 = q.z0, z1 = q.z1;
-    if (x1 - x0 < 3 || z1 - z0 < 3) return _winRows(b, q, d);
-    const zin0 = z0 + 0.55, zin1 = z1 - 0.55, xin0 = x0 + 0.55, xin1 = x1 - 0.55;
-    if (zin1 - zin0 < 1.5 || xin1 - xin0 < 1.5) return _winRows(b, q, d);
-    const pat = patterns[(b.wseed || 0) % patterns.length];
-    // Stamp only the short span that is in front of the camera. A full facade
-    // runs behind the chase cam, and stampPattern rejects any corner past the near plane.
-    if (cam.x < x0 && frontSpan(0, x0, y0, yTop, zin0, zin1)) {
-      stampPattern(pat, x0, yTop, SPAN[0], x0, yTop, SPAN[1], x0, y0, SPAN[0], SPAN[1] - SPAN[0], yTop - y0);
-    } else if (cam.x > x1 && frontSpan(0, x1, y0, yTop, zin0, zin1)) {
-      stampPattern(pat, x1, yTop, SPAN[1], x1, yTop, SPAN[0], x1, y0, SPAN[1], SPAN[1] - SPAN[0], yTop - y0);
-    }
-    if (facesLeft > 0 && cam.z < z0 && frontSpan(1, z0, y0, yTop, xin0, xin1)) {
-      stampPattern(pat, SPAN[1], yTop, z0, SPAN[0], yTop, z0, SPAN[1], y0, z0, SPAN[1] - SPAN[0], yTop - y0);
-    } else if (facesLeft > 0 && cam.z > z1 && frontSpan(1, z1, y0, yTop, xin0, xin1)) {
-      stampPattern(pat, SPAN[0], yTop, z1, SPAN[1], yTop, z1, SPAN[0], y0, z1, SPAN[1] - SPAN[0], yTop - y0);
-    }
-    // Dashes stay. The grid paints under them, so a missed stamp still looks like the old city.
-    return _winRows(b, q, d);
-  };
+    if (x1 - x0 < 3 || z1 - z0 < 3) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 0.95;
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = COLS[(b.wseed || 0) % COLS.length];
+    let drew = false;
+    if (cam.x < x0 - 0.4) { if (paintFace(true, x0 - 0.12, y0, y1, z0, z1)) drew = true; }
+    else if (cam.x > x1 + 0.4) { if (paintFace(true, x1 + 0.12, y0, y1, z0, z1)) drew = true; }
+    if (cam.z < z0 - 0.4) { if (paintFace(false, z0 - 0.12, y0, y1, x0, x1)) drew = true; }
+    else if (cam.z > z1 + 0.4) { if (paintFace(false, z1 + 0.12, y0, y1, x0, x1)) drew = true; }
+    if (drew) ctx.stroke();
+    ctx.restore();
+  }
 
   function post(x, z, s, y, y2) {
     seg(x, y2, z, x + s, y2, z);
@@ -619,42 +544,11 @@
     stat.trims++;
   }
 
-  function closeDoors(b, d) {
-    if (!cruise || closeLeft <= 0 || !b.doors) return;
-    const R = T.crawlRadius || 30;
-    if (d > R + (b.rad || 0) + 2) return;
-    const doors = b.doors, R2 = R * R;
-    ctx.beginPath();
-    let n = 0;
-    for (let i = 0; i < doors.length; i++) {
-      if (closeLeft <= 0) break;
-      const dr = doors[i], x = dr[0], z = dr[1], nx = dr[2], nz = dr[3];
-      const dx = cam.x - x, dz = cam.z - z;
-      if (dx * dx + dz * dz > R2) continue;
-      if (dx * nx + dz * nz <= 0.4) continue;
-      const tx = -nz * 0.85, tz = nx * 0.85, ox = nx * 0.28, oz = nz * 0.28;
-      const x0 = x - tx + ox, z0 = z - tz + oz, x1 = x + tx + ox, z1 = z + tz + oz;
-      seg(x0, 0.05, z0, x1, 0.05, z1);
-      seg(x0, 2.7, z0, x1, 2.7, z1);
-      seg(x0, 0.05, z0, x0, 2.7, z0);
-      seg(x1, 0.05, z1, x1, 2.7, z1);
-      seg(x0, 2.2, z0, x1, 2.2, z1);
-      seg(x + nx * 0.9, 0.05, z + nz * 0.9, x + nx * 2.1, 0.05, z + nz * 2.1);
-      closeLeft--;
-      n++;
-    }
-    if (!n) return;
-    ctx.strokeStyle = '#fff2c0';
-    ctx.lineWidth = 1.8;
-    ctx.stroke();
-    stat.close += n;
-  }
-
   const _drawBldg = drawBldg;
   drawBldg = function (b, d) {
     _drawBldg(b, d);
+    if (anyWin) windowPass(b);
     if (anyTrim) roofPass(b);
-    closeDoors(b, d);
   };
 
   // Street paint gaps. Built once from the same blocked spans traffic already skips.
@@ -907,24 +801,22 @@
     if (!on.river || !CITY.RIV) return;
     const R = CITY.RIV, zc = (R.z0 + R.z1) / 2;
     if (dist3(cam.x, 0, zc) > T.riverDist) return;
-    const x0 = cam.x - 80, slide = ((P.simT || 0) * 8) % 20;
+    const xLo = cam.x - 80, xHi = cam.x + 80;
     ctx.beginPath();
     for (let k = 0; k < 5; k++) {
       const z = R.z0 + 5 + k * ((R.z1 - R.z0 - 10) / 4);
-      const o = (slide + k * 11) % 20;
-      seg(x0 + o, 0.04, z, x0 + o + 9, 0.04, z);
-      seg(x0 + o + 28, 0.04, z, x0 + o + 40, 0.04, z);
-      seg(x0 + o + 56, 0.04, z, x0 + o + 66, 0.04, z);
-      seg(x0 + o + 86, 0.04, z, x0 + o + 98, 0.04, z);
-      seg(x0 + o + 118, 0.04, z, x0 + o + 128, 0.04, z);
+      const shift = (k * 11) % 20;
+      const xStart = Math.ceil((xLo - shift) / 20) * 20 + shift;
+      for (let x = xStart; x < xHi; x += 20) seg(x, 0.04, z, x + 9, 0.04, z);
     }
     ctx.strokeStyle = 'rgba(255,79,216,.5)';
     ctx.lineWidth = 1.25;
     ctx.stroke();
     ctx.beginPath();
+    const a = Math.floor((cam.x - 60) / 40) * 40, b = Math.ceil((cam.x + 60) / 40) * 40;
     for (let k = 0; k < 3; k++) {
       const z = R.z0 + 8 + k * 16;
-      seg(cam.x - 60, 0.045, z, cam.x + 60, 0.045, z);
+      seg(a, 0.045, z, b, 0.045, z);
     }
     ctx.strokeStyle = 'rgba(255,176,32,.32)';
     ctx.lineWidth = 1;
@@ -1078,7 +970,12 @@
     counts: { lights: nL, signs: nS, trees: nT, patches: nP },
     baked: 1,
     clipSpan: clipSpan,
-    cruise: function () { return cruise; },
+    cruise: function () { return stat.cruise === 1; },
+    wallSlots: function (u0, u1) {
+      const n = fillSlots(u0, u1), o = [];
+      for (let i = 0; i < n; i++) o.push(WSLOT[i]);
+      return o;
+    },
     gaps: function () { return { ns: GN[0], ew: GN[1] }; }
   };
 })();
