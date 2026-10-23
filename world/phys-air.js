@@ -78,7 +78,7 @@ function step(dt){P.simT=(P.simT||0)+dt;const T=TUNE,g=9.8;
   const hv=P.v*Math.cos(P.ground?0:P.gam),vy=P.ground?0:P.v*Math.sin(P.gam);P.vs=vy;
   const px0=P.x,pz0=P.z,py0=P.y;P.x+=Math.sin(P.hd)*hv*dt;P.z+=Math.cos(P.hd)*hv*dt;if(P.floating&&vy>-T.floatSinkLow&&vy<0.2&&!(P.rebT!=null)){P.vs=-T.floatSinkLow;P.y-=T.floatSinkLow*dt;}else P.y+=vy*dt;
   {const pr=cityMove(px0,pz0,py0,dt),gy=pr.fl;  /* FLY3CITY: roofs + ramps are ground at a height; same touchDown rules */
-   if(!P.ground&&P.y<=gy){touchDown(-P.vs);if(P.ground&&gy>0.5){const pd=CITY.padAt(P.x,P.z,gy);if(pd&&!pd.hit){pd.hit=1;P.roofs=(P.roofs||0)+1;kToast('ROOFTOP!');}}}
+   if(!P.ground&&P.y<=gy){touchDown(-P.vs);if(P.ground&&!P.wreck&&P.fromSkyDrop){P.fromSkyDrop=false;if(window.HOTDROP)HOTDROP.spawn(P.x,P.z,P.yaw);}if(P.ground&&gy>0.5){const pd=CITY.padAt(P.x,P.z,gy);if(pd&&!pd.hit){pd.hit=1;P.roofs=(P.roofs||0)+1;kToast('ROOFTOP!');}}}
    else if(P.ground){if(P.y-gy>0.45&&!pr.st){const sl=P.gsl||0;P.ground=false;P.toT=P.simT;P.gam=Math.max(0,sl);P.gT=0;ebAirHandoff();if(sl>0.02){P.pitch=Math.max(P.pitch,sl);P.ramps=(P.ramps||0)+1;toast('RAMP JUMP!');}else toast('OFF THE EDGE!');}
      else{const dd=Math.hypot(P.x-px0,P.z-pz0);P.gsl=dd>1e-4?Math.atan2(gy-P.y,dd):0;P.y=gy;}}}
   P.susV=(P.susV||0)+(-(P.sus||0)*140-(P.susV||0)*8)*dt;P.sus=(P.sus||0)+P.susV*dt;
@@ -86,7 +86,7 @@ function step(dt){P.simT=(P.simT||0)+dt;const T=TUNE,g=9.8;
   wheelA-=(P.ground||P.tf<1?P.v:P.v*.2)*dt/ZDM.wr;
   const tfT=P.wings?1:0,pt=P.tf;P.tf=clamp(P.tf+Math.sign(tfT-P.tf)*dt/T.transformTime,0,1);if(pt===1&&P.tf<1)toast('WINGS IN');if(pt===0&&P.tf>0)toast('WINGS OUT!');
   if(P.y>3000){P.gam=Math.min(P.gam,0);P.pitch=Math.min(P.pitch,0);}
-  P._lv=P.v;P._ly=P.y;}
+  P._lv=P.v;P._ly=P.y;if(window.HOTDROP)HOTDROP.update(dt);}
 function touchDown(s){const T=TUNE,pd=P.pitch/D,cb=Math.cos(P.bank);const ebLand=()=>{if((P.ebK||0)>0.05)P.yaw=(P.hd||0)+(P.ebSlip||0);else P.hd=P.yaw;};P.y=P.gy;P.butter=false;P.floating=0;if(P.toT!=null&&P.simT-P.toT<T.liftT&&s<=T.softSink){P.ground=true;P.gam=0;ebLand();P.susV=0;return;}if(P.rebT!=null&&P.simT-P.rebT<2&&s<T.bumpSink){P.ground=true;P.gam=0;ebLand();P.rebT=null;P.susV=-s*.4;P.bank=0;P.pitch=Math.max(P.pitch,-T.dipDeg*D);if(s>4)fxBurst('spark',8);return;}P.rebT=null;{const pa=Math.asin(Math.min(1,s/Math.max(P.v,1)))/D;if(s>T.softSink&&pa<T.skimDeg&&P.v>T.skimSpeed&&Math.cos(P.bank)>0.3&&!(P.wings&&P._climb<0)){P.v*=T.skimKeep;const vy=Math.min(T.skimMax,T.skimK*s);P.ground=false;P.y=P.gy+0.02;P.gam=Math.asin(vy/P.v);P.pitch=Math.max(P.pitch,P.gam+3*D);P.q=Math.max(P.q,0);P.rebT=null;P.skims=(P.skims||0)+1;P.susV=-s*.3;fxBurst('spark',8);toast('SKIM!');navigator.vibrate&&navigator.vibrate(30);return;}}const paR=Math.asin(Math.min(1,s/Math.max(P.v,0.01))),ik=T.impactKeep*Math.pow(Math.cos(clamp(paR,0,Math.PI/2)),T.impactExp);P.impactPath=paR/D;P.impactKeep=ik;P.ground=true;P.gam=0;ebLand();P.landSink=s;
   if(cb<0||(P.v>=T.crashSlowV?(paR/D>T.crashPathDeg||pd<-T.crashNoseDeg):s>T.crashSink)){P.hards=(P.hards||0)+1;P.landKmh=P.v*3.6;P.v*=ik;P.bank=0;P.roll=null;P.flip=null;P.pitch=-T.dipDeg*D;P.q=0;P.susV=-s*.5;ebLand();{const vy=Math.min(T.hardRebMax,T.hardRebK*s);if(vy>0.8){P.ground=false;P.y=P.gy+0.02;P.gam=Math.atan2(vy,Math.max(P.v,0.1));P.v=Math.hypot(P.v,vy);P.rebT=P.simT;P.rebV=vy;}else P.ground=true;}fxBurst('spark',30);fxBurst('smoke',6);toast('HARD HIT!');navigator.vibrate&&navigator.vibrate([120,60,200]);return;}
   P.bank=0;
