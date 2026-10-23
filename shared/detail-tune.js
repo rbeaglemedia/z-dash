@@ -42,5 +42,8 @@ window.DETAIL_TUNE = {
   storefronts: true,
   storefrontMaxSpeed: 12,
   storefrontDist: 48,
-  storefrontMaxSegs: 260
+  storefrontMaxSegs: 260,
+  // Tier 3 eye-level detail. Drawn only while WALK_MODE.onFoot.
+  onFootDetailEnabled: true,
+  onFootDetailDist: 38
 };

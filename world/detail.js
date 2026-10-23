@@ -4,6 +4,7 @@
 // Three bands: crawl (ground, under crawlSpeedMax) is close-up inside
 // crawlDetailDist; street (ground, up to streetSpeedMax) is the 60fps set;
 // rotate and airborne draw nothing. Roof trim and rooftop shapes stay off.
+// On-foot eye-level lines (b._footSegs) draw only while WALK_MODE.onFoot.
 (function () {
   if (window.DETAIL || !window.DETAIL_TUNE || typeof CITY === 'undefined' || typeof drawBldg !== 'function') return;
   const T = DETAIL_TUNE;
@@ -27,7 +28,7 @@
     m[1].split(/[+,\s]+/).forEach((k) => { if (k in on) on[k] = true; });
   })();
 
-  const stat = { faces: 0, trims: 0, signs: 0, lights: 0, trees: 0, roads: 0, river: 0, grass: 0, close: 0, cruise: 0, winSegs: 0, segs: 0, band: 2, storefronts: 0 };
+  const stat = { faces: 0, trims: 0, signs: 0, lights: 0, trees: 0, roads: 0, river: 0, grass: 0, close: 0, cruise: 0, winSegs: 0, segs: 0, band: 2, storefronts: 0, onFoot: 0, footSegs: 0 };
   const NEAR_Z = (typeof NEAR === 'number' ? NEAR : 0.5);
   const BL = CITY.BL;
   const COLS = ['#3ee6ff', '#ff4fd8', '#ffb020', '#ff2a3d', '#fff2c0', '#ffd27a'];
@@ -370,7 +371,7 @@
   let mode = 2, active = false;
   function detailDraw() {
     cacheCam();
-    stat.faces = stat.trims = stat.signs = stat.lights = stat.trees = stat.roads = stat.river = stat.grass = stat.winSegs = stat.segs = stat.storefronts = 0;
+    stat.faces = stat.trims = stat.signs = stat.lights = stat.trees = stat.roads = stat.river = stat.grass = stat.winSegs = stat.segs = stat.storefronts = stat.onFoot = stat.footSegs = 0;
     const v = Math.abs(P.v || 0);
     const crawlMax = T.crawlSpeedMax != null ? T.crawlSpeedMax : 12;
     const streetMax = T.streetSpeedMax != null ? T.streetSpeedMax : 48;
@@ -834,6 +835,539 @@
     stat.storefronts = drew;
   }
 
+  // Tier 3: eye-level micro-detail. Baked once per shop into b._footSegs, and only
+  // while someone is actually on foot. Driving never scans buildings or allocates.
+  const FOOTCAP = 176;
+  const FOOT_N = 4;
+  const footId = new Int16Array(FOOT_N);
+  const footD = new Float32Array(FOOT_N);
+  const footSeen = new Uint8Array(FOOT_N);
+  function fput(rec, col, x1, y1, z1, x2, y2, z2) {
+    if (rec.n >= FOOTCAP) return;
+    const o = rec.n * 6, a = rec.xyz;
+    a[o] = x1; a[o + 1] = y1; a[o + 2] = z1;
+    a[o + 3] = x2; a[o + 4] = y2; a[o + 5] = z2;
+    rec.col[rec.n++] = col;
+  }
+  function footBasis(b) {
+    const d = b.doors && b.doors[0];
+    if (!d || !b.boxes || !b.boxes.length) return null;
+    let nx = d[2] || 0, nz = d[3] || 0;
+    const len = Math.hypot(nx, nz) || 1;
+    nx /= len; nz /= len;
+    const tx = -nz, tz = nx, q = b.boxes[0];
+    let s0, s1;
+    if (nz < -0.5) { s0 = q.x0 - d[0]; s1 = q.x1 - d[0]; }
+    else if (nz > 0.5) { s0 = d[0] - q.x1; s1 = d[0] - q.x0; }
+    else if (nx < -0.5) { s0 = d[1] - q.z1; s1 = d[1] - q.z0; }
+    else { s0 = q.z0 - d[1]; s1 = q.z1 - d[1]; }
+    if (s0 > s1) { const t = s0; s0 = s1; s1 = t; }
+    if (s0 < -8) s0 = -8;
+    if (s1 > 8) s1 = 8;
+    if (s1 - s0 < 2.4) return null;
+    return { x: d[0], z: d[1], nx: nx, nz: nz, tx: tx, tz: tz, s0: s0, s1: s1 };
+  }
+  function fl(rec, B, col, s1, o1, y1, s2, o2, y2) {
+    fput(rec, col,
+      B.x + B.tx * s1 + B.nx * o1, y1, B.z + B.tz * s1 + B.nz * o1,
+      B.x + B.tx * s2 + B.nx * o2, y2, B.z + B.tz * s2 + B.nz * o2);
+  }
+  function frect(rec, B, col, s0, o, y0, s1, o1, y1) {
+    fl(rec, B, col, s0, o, y0, s1, o1, y0);
+    fl(rec, B, col, s1, o1, y0, s1, o1, y1);
+    fl(rec, B, col, s1, o1, y1, s0, o, y1);
+    fl(rec, B, col, s0, o, y1, s0, o, y0);
+  }
+  function fflat(rec, B, col, s0, o0, s1, o1, y) {
+    fl(rec, B, col, s0, o0, y, s1, o0, y);
+    fl(rec, B, col, s1, o0, y, s1, o1, y);
+    fl(rec, B, col, s1, o1, y, s0, o1, y);
+    fl(rec, B, col, s0, o1, y, s0, o0, y);
+  }
+  function fbox(rec, B, col, s0, o0, y0, s1, o1, y1) {
+    frect(rec, B, col, s0, o0, y0, s1, o0, y1);
+    frect(rec, B, col, s0, o1, y0, s1, o1, y1);
+    fl(rec, B, col, s0, o0, y0, s0, o1, y0);
+    fl(rec, B, col, s1, o0, y0, s1, o1, y0);
+    fl(rec, B, col, s0, o0, y1, s0, o1, y1);
+    fl(rec, B, col, s1, o0, y1, s1, o1, y1);
+  }
+  function diaWall(rec, B, col, sc, oc, yc, rs, ry) {
+    fl(rec, B, col, sc - rs, oc, yc, sc, oc, yc + ry);
+    fl(rec, B, col, sc, oc, yc + ry, sc + rs, oc, yc);
+    fl(rec, B, col, sc + rs, oc, yc, sc, oc, yc - ry);
+    fl(rec, B, col, sc, oc, yc - ry, sc - rs, oc, yc);
+  }
+  function diaFace(rec, B, col, s, oc, yc, ro, ry) {
+    fl(rec, B, col, s, oc - ro, yc, s, oc, yc + ry);
+    fl(rec, B, col, s, oc, yc + ry, s, oc + ro, yc);
+    fl(rec, B, col, s, oc + ro, yc, s, oc, yc - ry);
+    fl(rec, B, col, s, oc, yc - ry, s, oc - ro, yc);
+  }
+  function ringFlat(rec, B, col, sc, oc, y, rad, n) {
+    let ps = sc + rad, po = oc;
+    for (let i = 1; i <= n; i++) {
+      const a = i / n * Math.PI * 2;
+      const ss = sc + Math.cos(a) * rad, oo = oc + Math.sin(a) * rad;
+      fl(rec, B, col, ps, po, y, ss, oo, y);
+      ps = ss; po = oo;
+    }
+  }
+  function ringWall(rec, B, col, sc, oc, yc, rad, n) {
+    let ps = sc + rad, py = yc;
+    for (let i = 1; i <= n; i++) {
+      const a = i / n * Math.PI * 2;
+      const ss = sc + Math.cos(a) * rad, yy = yc + Math.sin(a) * rad;
+      fl(rec, B, col, ps, oc, py, ss, oc, yy);
+      ps = ss; py = yy;
+    }
+  }
+  function bakeApron(rec, B) {
+    const y = 0.04, curb = 0.08;
+    fl(rec, B, 0, B.s0, 0.2, y, B.s1, 0.2, y);
+    fl(rec, B, 0, B.s0, 1.8, y, B.s1, 1.8, y);
+    fl(rec, B, 2, B.s0, 3.6, curb, B.s1, 3.6, curb);
+    fl(rec, B, 2, B.s0, 3.6, 0.03, B.s1, 3.6, 0.03);
+    fl(rec, B, 0, B.s0, 0.2, y, B.s0, 3.6, curb);
+    fl(rec, B, 0, B.s1, 0.2, y, B.s1, 3.6, curb);
+    for (let u = Math.ceil((B.s0 + 0.05) / 4) * 4; u < B.s1 - 0.05; u += 4) {
+      if (u > -1.35 && u < 1.35) continue;
+      fl(rec, B, 0, u, 0.2, y, u, 3.6, curb);
+    }
+  }
+  function bakeMat(rec, B) {
+    const y = 0.075;
+    fflat(rec, B, 1, -1.3, 0.35, 1.3, 1.95, y);
+    fflat(rec, B, 2, -1.02, 0.58, 1.02, 1.68, 0.082);
+    fl(rec, B, 1, -0.72, 1.52, y, 0, 0.62, y);
+    fl(rec, B, 1, 0.72, 1.52, y, 0, 0.62, y);
+    fl(rec, B, 2, -0.38, 1.28, y, 0, 0.82, y);
+    fl(rec, B, 2, 0.38, 1.28, y, 0, 0.82, y);
+    fl(rec, B, 1, -0.7, 0.12, 0.08, 0.7, 0.12, 0.08);
+  }
+  function parkXZ(b) {
+    const p = b.parking;
+    if (!p) return null;
+    if (typeof p.x === 'number' && typeof p.z === 'number') return [p.x, p.z];
+    const door = p.door || p;
+    if (door && typeof door.length === 'number' && door.length >= 2 && typeof door[0] === 'number' && typeof door[1] === 'number') return [door[0], door[1]];
+    if (b.doors && b.doors[1]) return [b.doors[1][0], b.doors[1][1]];
+    return null;
+  }
+  function bakePark(rec, B, b) {
+    const p = parkXZ(b);
+    if (!p) return;
+    const dx = p[0] - B.x, dz = p[1] - B.z;
+    const ps = dx * B.tx + dz * B.tz;
+    const po = dx * B.nx + dz * B.nz;
+    const y = 0.06, o = 2.55;
+    fl(rec, B, 1, 0, 1.95, y, 0, o, y);
+    fl(rec, B, 1, 0, o, y, ps, o, y);
+    fl(rec, B, 2, ps, o, y, ps, po > o ? o : (po < 0.2 ? 0.2 : po), y);
+    fl(rec, B, 1, -0.35, o, y, 0.35, o, y);
+  }
+  function flank(B, sign) {
+    const edge = sign < 0 ? B.s0 + 0.75 : B.s1 - 0.75;
+    let s = 4.8 * sign;
+    if (sign < 0 && s < edge) s = edge;
+    if (sign > 0 && s > edge) s = edge;
+    if (Math.abs(s) < 2.05) return 0;
+    return s;
+  }
+  function bakePlanter(rec, B, s, lamp) {
+    const s0 = s - 0.38, s1 = s + 0.38, o0 = 0.72, o1 = 1.48;
+    fl(rec, B, 0, s0, o0, 0.02, s0, o0, 0.58);
+    fl(rec, B, 0, s1, o0, 0.02, s1, o0, 0.58);
+    fl(rec, B, 0, s0, o1, 0.02, s0, o1, 0.58);
+    fl(rec, B, 0, s1, o1, 0.02, s1, o1, 0.58);
+    fflat(rec, B, 0, s0, o0, s1, o1, 0.58);
+    if (lamp) return;
+    fl(rec, B, 2, s, 1.1, 0.58, s - 0.45, 0.62, 2.15);
+    fl(rec, B, 2, s, 1.1, 0.58, s + 0.42, 0.68, 2.05);
+    fl(rec, B, 1, s, 1.1, 0.58, s, 1.62, 2.25);
+    fl(rec, B, 2, s, 1.1, 0.58, s - 0.22, 1.35, 1.72);
+    fl(rec, B, 1, s, 1.1, 0.58, s + 0.2, 1.28, 1.78);
+  }
+  function bakeLamp(rec, B, s) {
+    fl(rec, B, 3, s, 1.1, 0.58, s, 1.1, 3.2);
+    fl(rec, B, 3, s, 1.1, 3.2, s, 0.32, 3.02);
+    fl(rec, B, 2, s, 0.32, 3.02, s, 0.32, 2.48);
+    frect(rec, B, 4, s - 0.22, 0.32, 2.28, s + 0.22, 0.32, 2.72);
+    fl(rec, B, 2, s - 0.12, 0.32, 2.38, s + 0.12, 0.32, 2.62);
+  }
+  function bladeS(B) {
+    if (B.s1 >= 3.4) return 2.8;
+    if (-B.s0 >= 3.4) return -2.8;
+    if (B.s1 >= -B.s0 && B.s1 > 2.1) return B.s1 - 0.45;
+    if (-B.s0 > 2.1) return B.s0 + 0.45;
+    return 0;
+  }
+  function bayOf(B, bs) {
+    const left = -B.s0, right = B.s1;
+    const onRight = bs >= 0;
+    let sign;
+    if (onRight && left > 2.3) sign = -1;
+    else if (!onRight && right > 2.3) sign = 1;
+    else if (left >= right) sign = -1;
+    else sign = 1;
+    const room = sign < 0 ? left : right;
+    const inner = 1.7;
+    const outer = Math.min(room - 0.4, 4.35);
+    if (outer < inner + 1.3) return null;
+    if (sign < 0) return { s0: -outer, s1: -inner };
+    return { s0: inner, s1: outer };
+  }
+  function bladeMark(rec, B, s, purpose) {
+    diaFace(rec, B, 2, s, 1.0, 4.1, 0.5, 0.5);
+    if (purpose === 'DANCE') {
+      fl(rec, B, 1, s, 0.68, 4.1, s, 1.32, 4.1);
+      fl(rec, B, 1, s, 1.0, 3.72, s, 1.0, 4.48);
+    } else if (purpose === 'CAFE') {
+      fl(rec, B, 3, s, 0.72, 3.82, s, 1.0, 4.32);
+      fl(rec, B, 3, s, 1.28, 3.82, s, 1.0, 4.32);
+    } else if (purpose === 'HOME') {
+      fl(rec, B, 4, s, 0.7, 3.85, s, 1.0, 4.38);
+      fl(rec, B, 4, s, 1.3, 3.85, s, 1.0, 4.38);
+    } else if (purpose === 'GARAGE' || purpose === 'SHOWROOM') {
+      fl(rec, B, 5, s, 0.7, 3.78, s, 1.3, 4.05);
+      fl(rec, B, 5, s, 0.7, 4.32, s, 1.3, 4.05);
+    } else if (purpose === 'PETS') {
+      fl(rec, B, 1, s, 0.75, 3.95, s, 1.0, 4.35);
+      fl(rec, B, 1, s, 1.25, 3.95, s, 1.0, 4.35);
+    } else if (purpose === 'ARCADE') {
+      fl(rec, B, 0, s, 1.0, 3.75, s, 1.0, 4.35);
+      fl(rec, B, 0, s, 0.78, 3.78, s, 1.22, 3.78);
+    } else if (purpose === 'NEON_PAINT') {
+      fl(rec, B, 1, s, 0.72, 3.78, s, 1.05, 4.4);
+      fl(rec, B, 0, s, 1.28, 3.78, s, 0.95, 4.4);
+    } else if (purpose === 'NOS') {
+      fl(rec, B, 5, s, 0.82, 3.75, s, 0.95, 4.4);
+      fl(rec, B, 5, s, 1.18, 3.75, s, 1.05, 4.4);
+    } else if (purpose === 'SKY_DROP') {
+      fl(rec, B, 0, s, 0.72, 4.32, s, 1.0, 3.75);
+      fl(rec, B, 0, s, 1.28, 4.32, s, 1.0, 3.75);
+    } else if (purpose === 'SOCCER') {
+      fl(rec, B, 4, s, 0.72, 4.28, s, 1.28, 4.28);
+      fl(rec, B, 4, s, 0.78, 3.75, s, 0.78, 4.28);
+    } else if (purpose === 'BUILDER') {
+      fl(rec, B, 3, s, 0.72, 3.85, s, 1.28, 3.85);
+      fl(rec, B, 3, s, 0.72, 4.25, s, 1.28, 4.25);
+    } else {
+      fl(rec, B, 1, s, 0.75, 3.8, s, 1.25, 4.4);
+      fl(rec, B, 1, s, 1.25, 3.8, s, 0.75, 4.4);
+    }
+  }
+  function bakeBlade(rec, B, purpose) {
+    const s = bladeS(B);
+    if (!s) return 0;
+    const side = s > 0 ? 1 : -1;
+    const s0 = s - 0.06 * side, s1 = s + 0.06 * side;
+    fl(rec, B, 3, s, 0.02, 3.48, s, 0.5, 3.48);
+    fl(rec, B, 3, s, 0.02, 4.72, s, 0.5, 4.72);
+    fbox(rec, B, 0, Math.min(s0, s1), 0.15, 3.4, Math.max(s0, s1), 1.85, 4.8);
+    bladeMark(rec, B, s0, purpose);
+    return s;
+  }
+  function footDance(rec, B, bay) {
+    const s0 = bay.s0, s1 = bay.s1, mid = (s0 + s1) * 0.5;
+    frect(rec, B, 1, s0, -1.12, 0.4, s1, -1.12, 3.15);
+    fl(rec, B, 1, mid, -1.12, 0.4, mid, -1.12, 3.15);
+    fl(rec, B, 2, s0, -0.42, 1.1, s1, -0.42, 1.1);
+    fl(rec, B, 2, s0 + 0.12, -0.42, 1.1, s0 + 0.12, -0.16, 0.78);
+    fl(rec, B, 2, s1 - 0.12, -0.42, 1.1, s1 - 0.12, -0.16, 0.78);
+    fl(rec, B, 0, s0, -0.32, 3.12, s1, -0.32, 3.12);
+    fl(rec, B, 0, s0, -1.02, 3.12, s1, -1.02, 3.12);
+    fl(rec, B, 0, s0, -0.32, 3.12, s0, -1.02, 3.12);
+    fl(rec, B, 0, s1, -0.32, 3.12, s1, -1.02, 3.12);
+    fl(rec, B, 0, mid, -0.32, 3.12, mid, -1.02, 3.12);
+    for (let i = 0; i < 4; i++) {
+      const s = s0 + (s1 - s0) * (i + 0.5) / 4;
+      fl(rec, B, 3, s, -0.68, 3.12, s - 0.16, -0.46, 2.32);
+      fl(rec, B, 3, s, -0.68, 3.12, s + 0.16, -0.46, 2.32);
+    }
+    const w = Math.min(0.48, (s1 - s0) * 0.2);
+    frect(rec, B, 5, s0, -0.38, 0.18, s0 + w, -0.38, 1.02);
+    frect(rec, B, 5, s1 - w, -0.38, 0.18, s1, -0.38, 1.02);
+    fl(rec, B, 5, s0, -0.38, 1.02, s0, -0.72, 1.02);
+    fl(rec, B, 5, s0 + w, -0.38, 1.02, s0 + w, -0.72, 1.02);
+  }
+  function footCafe(rec, B, bay) {
+    const s0 = bay.s0, s1 = bay.s1, span = s1 - s0, cs = s0 + span * 0.46;
+    fl(rec, B, 4, s0, -0.32, 1.02, cs, -0.32, 1.02);
+    fl(rec, B, 4, s0, -0.78, 1.02, cs, -0.78, 1.02);
+    fl(rec, B, 4, s0, -0.32, 0.4, s0, -0.32, 1.02);
+    fl(rec, B, 4, cs, -0.32, 0.4, cs, -0.32, 1.02);
+    const e0 = s0 + 0.12, e1 = s0 + span * 0.3;
+    frect(rec, B, 3, e0, -0.5, 1.02, e1, -0.5, 1.7);
+    fl(rec, B, 2, (e0 + e1) * 0.5, -0.5, 1.7, (e0 + e1) * 0.5, -0.5, 2.08);
+    fl(rec, B, 5, e1, -0.5, 1.32, e1 + 0.26, -0.5, 1.18);
+    frect(rec, B, 4, s0, -0.18, 1.92, cs, -0.18, 2.95);
+    fl(rec, B, 1, s0 + 0.08, -0.18, 2.18, cs - 0.08, -0.18, 2.18);
+    fl(rec, B, 1, s0 + 0.08, -0.18, 2.44, cs - 0.08, -0.18, 2.44);
+    fl(rec, B, 1, s0 + 0.08, -0.18, 2.7, cs - 0.08, -0.18, 2.7);
+    const t0 = s0 + span * 0.52, t1 = s1 - 0.08;
+    fflat(rec, B, 0, t0, -0.42, t1, -1.02, 0.76);
+    fl(rec, B, 0, t0 + 0.1, -0.52, 0.22, t0 + 0.1, -0.52, 0.76);
+    fl(rec, B, 0, t1 - 0.1, -0.92, 0.22, t1 - 0.1, -0.92, 0.76);
+    fl(rec, B, 2, t0 + 0.02, -0.52, 0.5, t0 + 0.24, -0.52, 0.5);
+    fl(rec, B, 2, t1 - 0.24, -0.92, 0.5, t1 - 0.02, -0.92, 0.5);
+    const pc = (t0 + t1) * 0.5;
+    fl(rec, B, 2, pc - 0.22, -0.68, 2.65, pc - 0.22, -0.68, 1.62);
+    fl(rec, B, 2, pc + 0.22, -0.68, 2.65, pc + 0.22, -0.68, 1.62);
+    fl(rec, B, 3, pc - 0.4, -0.68, 1.55, pc - 0.22, -0.68, 1.88);
+    fl(rec, B, 3, pc - 0.04, -0.68, 1.55, pc - 0.22, -0.68, 1.88);
+    fl(rec, B, 3, pc + 0.04, -0.68, 1.55, pc + 0.22, -0.68, 1.88);
+    fl(rec, B, 3, pc + 0.4, -0.68, 1.55, pc + 0.22, -0.68, 1.88);
+  }
+  function footPets(rec, B, bay) {
+    const s0 = bay.s0, s1 = bay.s1, mid = (s0 + s1) * 0.5;
+    const rad = Math.min(0.62, (s1 - s0) * 0.22);
+    ringFlat(rec, B, 1, mid, -0.72, 0.1, rad, 8);
+    ringFlat(rec, B, 4, mid, -0.72, 0.16, rad * 0.55, 8);
+    ringWall(rec, B, 0, s0 + (s1 - s0) * 0.22, -0.7, 1.25, 0.48, 8);
+    const bs = s1 - (s1 - s0) * 0.24;
+    fl(rec, B, 2, bs - 0.42, -0.48, 0.32, bs + 0.42, -0.48, 0.32);
+    fl(rec, B, 2, bs - 0.42, -0.48, 0.08, bs - 0.42, -0.48, 0.32);
+    fl(rec, B, 2, bs + 0.42, -0.48, 0.08, bs + 0.42, -0.48, 0.32);
+    ringFlat(rec, B, 0, bs - 0.2, -0.48, 0.4, 0.14, 6);
+    ringFlat(rec, B, 1, bs + 0.2, -0.48, 0.4, 0.14, 6);
+    fl(rec, B, 2, s0 + 0.2, -0.3, 2.7, s0 + 0.2, -0.3, 2.15);
+    diaWall(rec, B, 2, s0 + 0.2, -0.3, 1.95, 0.16, 0.16);
+    fl(rec, B, 1, s1 - 0.15, -0.3, 2.55, s1 - 0.15, -0.3, 2.05);
+    diaWall(rec, B, 1, s1 - 0.15, -0.3, 1.85, 0.16, 0.16);
+  }
+  function footGarage(rec, B, bay) {
+    const s0 = bay.s0, s1 = bay.s1, span = s1 - s0;
+    const c1 = s0 + span * 0.42;
+    frect(rec, B, 5, s0, -0.4, 0.2, c1, -0.4, 1.55);
+    for (let i = 1; i <= 5; i++) {
+      const y = 0.2 + (1.35 * i) / 6;
+      fl(rec, B, 5, s0, -0.4, y, c1, -0.4, y);
+    }
+    fl(rec, B, 3, s0, -0.4, 1.55, s0, -0.75, 1.55);
+    fl(rec, B, 3, c1, -0.4, 1.55, c1, -0.75, 1.55);
+    const rail = s0 + span * 0.08;
+    fl(rec, B, 0, rail, -0.22, 2.55, s1, -0.22, 2.55);
+    for (let i = 0; i < 4; i++) {
+      const s = rail + (s1 - rail) * (i + 0.5) / 4;
+      diaWall(rec, B, 2, s, -0.22, 2.05, 0.2, 0.26);
+    }
+    const lp = s0 + span * 0.15;
+    fl(rec, B, 0, lp, -0.85, 0.2, lp, -0.85, 2.35);
+    fl(rec, B, 0, lp + span * 0.55, -0.85, 0.2, lp + span * 0.55, -0.85, 2.35);
+    fl(rec, B, 3, lp, -0.85, 2.15, lp + span * 0.55, -0.85, 2.15);
+    fl(rec, B, 3, lp, -0.85, 1.15, lp + 0.35, -0.45, 1.15);
+    const ps = s1 - 0.28;
+    frect(rec, B, 4, ps - 0.22, -0.35, 0.9, ps + 0.22, -0.35, 1.45);
+    fl(rec, B, 2, ps, -0.35, 1.45, ps, -0.35, 1.85);
+  }
+  function footPaint(rec, B, bay) {
+    const span = bay.s1 - bay.s0, s0 = bay.s0, s1 = bay.s0 + span * 0.52, o = -0.48;
+    fl(rec, B, 0, s0, o, 0.45, s0, o, 2.55);
+    fl(rec, B, 0, s1, o, 0.45, s1, o, 2.55);
+    const cans = [5, 1, 0, 2];
+    for (let r = 0; r < 3; r++) {
+      const y = 0.72 + r * 0.68;
+      fl(rec, B, 4, s0, o, y, s1, o, y);
+      for (let c = 0; c < 4; c++) {
+        const s = s0 + (s1 - s0) * (c + 0.5) / 4;
+        fl(rec, B, cans[c], s, o, y, s, o, y + 0.4);
+      }
+    }
+    const ws = bay.s1 - span * 0.22;
+    ringWall(rec, B, 1, ws, -0.32, 2.15, 0.46, 8);
+    fl(rec, B, 2, ws - 0.22, -0.32, 2.15, ws + 0.22, -0.32, 2.15);
+    fl(rec, B, 0, ws, -0.32, 1.92, ws, -0.32, 2.38);
+    const es = (bay.s0 + bay.s1) * 0.5;
+    fl(rec, B, 3, es, -0.95, 0.28, es + 0.12, -0.28, 2.35);
+    fl(rec, B, 3, es + 0.62, -0.95, 0.28, es + 0.42, -0.28, 2.35);
+    fl(rec, B, 2, es - 0.02, -0.38, 2.05, es + 0.58, -0.22, 2.42);
+  }
+  function footArcade(rec, B, bay) {
+    const s0 = bay.s0, span = bay.s1 - bay.s0;
+    for (let i = 0; i < 3; i++) {
+      const a = s0 + span * (0.04 + i * 0.3);
+      const b1 = a + span * 0.24;
+      const col = i === 1 ? 1 : (i === 2 ? 0 : 5);
+      frect(rec, B, col, a, -0.4, 0.35, b1, -0.4, 2.15);
+      fl(rec, B, 4, a + span * 0.04, -0.4, 1.2, b1 - span * 0.04, -0.4, 1.2);
+      fl(rec, B, 4, a + span * 0.04, -0.4, 1.95, b1 - span * 0.04, -0.4, 1.95);
+      fl(rec, B, 2, a, -0.4, 0.95, a, -0.82, 0.8);
+      fl(rec, B, 2, b1, -0.4, 0.95, b1, -0.82, 0.8);
+      fl(rec, B, 2, a, -0.82, 0.8, b1, -0.82, 0.8);
+      fl(rec, B, 1, (a + b1) * 0.5, -0.82, 0.8, (a + b1) * 0.5, -0.82, 1.08);
+    }
+    const t = bay.s1 - span * 0.06;
+    frect(rec, B, 3, t - span * 0.1, -0.34, 0.4, t, -0.34, 1.22);
+  }
+  function footHome(rec, B, bay) {
+    const s0 = bay.s0, s1 = bay.s1;
+    const ls = s0 + (s1 - s0) * 0.16;
+    fl(rec, B, 3, ls, -0.65, 0.15, ls, -0.65, 1.85);
+    diaWall(rec, B, 2, ls, -0.65, 2.05, 0.22, 0.2);
+    frect(rec, B, 1, s0, -0.38, 0.32, s1, -0.38, 0.92);
+    fl(rec, B, 1, s1 - (s1 - s0) * 0.28, -0.38, 0.42, s1 - (s1 - s0) * 0.28, -1.1, 0.42);
+    fl(rec, B, 1, s1, -0.38, 0.32, s1, -1.1, 0.32);
+    fl(rec, B, 1, s1 - (s1 - s0) * 0.28, -1.1, 0.32, s1, -1.1, 0.32);
+    frect(rec, B, 4, s0 + 0.15, -0.18, 1.7, s0 + (s1 - s0) * 0.55, -0.18, 2.55);
+    function sconce(s) {
+      if (s < B.s0 + 0.35 || s > B.s1 - 0.35) return;
+      fl(rec, B, 3, s, 0.08, 1.55, s, 0.28, 1.9);
+      diaFace(rec, B, 2, s, 0.36, 2.0, 0.14, 0.2);
+    }
+    sconce(-1.15);
+    sconce(1.15);
+  }
+  function footNos(rec, B, bay) {
+    const s0 = bay.s0, s1 = bay.s1, y = 1.5, o = -0.42;
+    fl(rec, B, 0, s0, o, y, s1, o, y);
+    fl(rec, B, 0, s0, o, y, s0, o - 0.4, y + 0.65);
+    fl(rec, B, 5, s1, o, y, s1, o - 0.3, y - 0.4);
+    for (let i = 0; i < 3; i++) {
+      const s = s0 + (s1 - s0) * (i + 0.5) / 3;
+      diaWall(rec, B, 2, s, o, y + 0.55, 0.26, 0.26);
+      fl(rec, B, 1, s, o, y + 0.55, s + 0.14, o, y + 0.74);
+      fl(rec, B, 0, s, o, y, s, o, y + 0.28);
+    }
+  }
+  function footSky(rec, B, bay) {
+    const s = (bay.s0 + bay.s1) * 0.5, o = -0.5, y = 1.75;
+    ringWall(rec, B, 0, s, o, y, 0.82, 8);
+    ringWall(rec, B, 2, s, o, y, 0.4, 8);
+    for (let i = 0; i < 4; i++) {
+      const a = i * Math.PI / 2 + 0.35;
+      fl(rec, B, 1, s + Math.cos(a) * 0.16, o, y + Math.sin(a) * 0.16, s + Math.cos(a) * 0.76, o, y + Math.sin(a) * 0.76);
+    }
+  }
+  function footBuilder(rec, B, bay) {
+    const s0 = bay.s0 + 0.1, s1 = bay.s1 - 0.1, o0 = -0.32, o1 = -1.0, y = 0.9;
+    fflat(rec, B, 0, s0, o0, s1, o1, y);
+    fl(rec, B, 0, s0, o0, 0.2, s0, o0, y);
+    fl(rec, B, 0, s1, o0, 0.2, s1, o0, y);
+    fl(rec, B, 0, s0, o1, 0.2, s0, o1, y);
+    fl(rec, B, 0, s1, o1, 0.2, s1, o1, y);
+    for (let i = 1; i <= 2; i++) {
+      const s = s0 + (s1 - s0) * i / 3;
+      const o = o0 + (o1 - o0) * i / 3;
+      fl(rec, B, 2, s, o0, y + 0.02, s, o1, y + 0.02);
+      fl(rec, B, 2, s0, o, y + 0.02, s1, o, y + 0.02);
+    }
+    const posts = [0.18, 0.22, 0.72, 0.28, 0.32, 0.68, 0.78, 0.62];
+    for (let i = 0; i < 4; i++) {
+      const s = s0 + (s1 - s0) * posts[i * 2];
+      const o = o0 + (o1 - o0) * posts[i * 2 + 1];
+      fl(rec, B, 1, s, o, y, s, o, y + 0.32 + (i % 2) * 0.22);
+    }
+  }
+  function footSoccer(rec, B, bay) {
+    const span = bay.s1 - bay.s0, s0 = bay.s0, s1 = bay.s0 + span * 0.58, o = -0.42;
+    frect(rec, B, 4, s0, o, 0.28, s1, o, 1.65);
+    fl(rec, B, 0, s0, o, 0.28, s1, o - 0.65, 1.65);
+    fl(rec, B, 0, s1, o, 0.28, s0, o - 0.65, 1.65);
+    fl(rec, B, 0, s0, o - 0.65, 0.28, s1, o - 0.65, 0.28);
+    fl(rec, B, 0, s0, o - 0.65, 1.65, s1, o - 0.65, 1.65);
+    const s = bay.s1 - span * 0.16;
+    fl(rec, B, 2, s, -0.48, 0.22, s, -0.48, 0.82);
+    fl(rec, B, 2, s - 0.2, -0.48, 0.82, s, -0.48, 1.22);
+    fl(rec, B, 2, s + 0.2, -0.48, 0.82, s, -0.48, 1.22);
+    fl(rec, B, 2, s - 0.2, -0.48, 0.82, s + 0.2, -0.48, 0.82);
+    fl(rec, B, 3, s - 0.26, -0.48, 0.2, s + 0.26, -0.48, 0.2);
+    fl(rec, B, 2, s - 0.2, -0.48, 1.02, s - 0.34, -0.48, 0.9);
+    fl(rec, B, 2, s + 0.2, -0.48, 1.02, s + 0.34, -0.48, 0.9);
+  }
+  function bakeInterior(rec, B, purpose, bs) {
+    const bay = bayOf(B, bs);
+    if (!bay) return;
+    if (purpose === 'DANCE') footDance(rec, B, bay);
+    else if (purpose === 'CAFE') footCafe(rec, B, bay);
+    else if (purpose === 'PETS') footPets(rec, B, bay);
+    else if (purpose === 'GARAGE' || purpose === 'SHOWROOM') footGarage(rec, B, bay);
+    else if (purpose === 'NEON_PAINT') footPaint(rec, B, bay);
+    else if (purpose === 'ARCADE') footArcade(rec, B, bay);
+    else if (purpose === 'HOME') footHome(rec, B, bay);
+    else if (purpose === 'NOS') footNos(rec, B, bay);
+    else if (purpose === 'SKY_DROP') footSky(rec, B, bay);
+    else if (purpose === 'BUILDER') footBuilder(rec, B, bay);
+    else if (purpose === 'SOCCER') footSoccer(rec, B, bay);
+    else footHome(rec, B, bay);
+  }
+  function bakeFoot(b) {
+    if (b._footSegs) return b._footSegs;
+    const B = footBasis(b);
+    const rec = { n: 0, xyz: new Float32Array(FOOTCAP * 6), col: new Uint8Array(FOOTCAP) };
+    if (!B) { b._footSegs = rec; return rec; }
+    const purpose = purposeOf(b);
+    bakeApron(rec, B);
+    bakeMat(rec, B);
+    bakePark(rec, B, b);
+    const sl = flank(B, -1), sr = flank(B, 1);
+    if (sl) bakePlanter(rec, B, sl, false);
+    if (sr) { bakePlanter(rec, B, sr, true); bakeLamp(rec, B, sr); }
+    const bs = bakeBlade(rec, B, purpose);
+    bakeInterior(rec, B, purpose, bs);
+    b._footSegs = rec;
+    return rec;
+  }
+  function xzDist(b, wx, wz) {
+    const x = wx < b.x0 ? b.x0 : wx > b.x1 ? b.x1 : wx;
+    const z = wz < b.z0 ? b.z0 : wz > b.z1 ? b.z1 : wz;
+    const dx = x - wx, dz = z - wz;
+    return Math.sqrt(dx * dx + dz * dz);
+  }
+  function onFootPass(c) {
+    stat.onFoot = 0;
+    stat.footSegs = 0;
+    if (!extraOn || T.onFootDetailEnabled === false) return;
+    if (typeof WALK_MODE === 'undefined' || !WALK_MODE || !WALK_MODE.onFoot) return;
+    const wx = WALK_MODE.wx != null ? +WALK_MODE.wx : +WALK_MODE.x;
+    const wz = WALK_MODE.wz != null ? +WALK_MODE.wz : +WALK_MODE.z;
+    if (wx !== wx || wz !== wz) return;
+    const dist = T.onFootDetailDist || 38;
+    for (let i = 0; i < FOOT_N; i++) { footId[i] = -1; footD[i] = 1e9; footSeen[i] = 0; }
+    for (let i = 0; i < BL.length; i++) {
+      const b = BL[i];
+      if (!shopOk(b) || !b.doors || !b.doors.length) continue;
+      const d = xzDist(b, wx, wz);
+      if (d > dist || d >= footD[FOOT_N - 1]) continue;
+      let j = FOOT_N - 1;
+      while (j > 0 && d < footD[j - 1]) { footD[j] = footD[j - 1]; footId[j] = footId[j - 1]; j--; }
+      footD[j] = d; footId[j] = i;
+    }
+    let left = 480, drew = 0, segs = 0;
+    const g = c || ctx;
+    g.save();
+    g.setLineDash([]);
+    g.globalAlpha = 1;
+    g.lineWidth = 2.15;
+    for (let col = 0; col < SFCOL.length; col++) {
+      g.beginPath();
+      let any = false;
+      for (let k = 0; k < FOOT_N && left > 0; k++) {
+        const bi = footId[k];
+        if (bi < 0) continue;
+        const rec = bakeFoot(BL[bi]);
+        const xyz = rec.xyz;
+        for (let s = 0; s < rec.n && left > 0; s++) {
+          if (rec.col[s] !== col) continue;
+          const o = s * 6;
+          seg(xyz[o], xyz[o + 1], xyz[o + 2], xyz[o + 3], xyz[o + 4], xyz[o + 5]);
+          any = true;
+          left--;
+          segs++;
+        }
+        if (rec.n && !footSeen[k]) { footSeen[k] = 1; drew++; }
+      }
+      if (any) { g.strokeStyle = SFCOL[col]; g.stroke(); }
+    }
+    g.restore();
+    stat.onFoot = drew;
+    stat.footSegs = segs;
+  }
+  function pass(c) {
+    storefrontPass(cam.x, cam.z);
+    if (typeof WALK_MODE !== 'undefined' && WALK_MODE && WALK_MODE.onFoot) onFootPass(c || ctx);
+  }
+
   const _drawBldg = drawBldg;
   drawBldg = function (b, d) {
     _drawBldg(b, d);
@@ -1169,7 +1703,7 @@
   drawCityGround = function () {
     detailDraw();
     _drawCityGround();
-    storefrontPass(cam.x, cam.z);
+    pass(ctx);
     if (!active) return;
     if (on.lanes || on.crosswalks || on.sidewalks || on.grass || on.river) {
       drawRoads();
@@ -1178,6 +1712,16 @@
       clean();
     }
   };
+
+  // Building faces fill after the ground pass, which hides anything on that wall.
+  // Stroke the on-foot layer again once the fills are down, before the HUD.
+  if (typeof drawHud === 'function') {
+    const _drawHud = drawHud;
+    drawHud = function (dt) {
+      if (typeof WALK_MODE !== 'undefined' && WALK_MODE && WALK_MODE.onFoot) onFootPass(ctx);
+      _drawHud(dt);
+    };
+  }
 
   const SLOTN = 20;
   const slots = new Array(SLOTN);
@@ -1318,6 +1862,7 @@
     on: on,
     stat: stat,
     draw: detailDraw,
+    pass: pass,
     stats: function () { return stat; },
     counts: { lights: nL, signs: nS, trees: nT, patches: nP },
     baked: 1,
