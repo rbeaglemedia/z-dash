@@ -169,8 +169,10 @@ function syncOnFootButtons(){ensureEmote();ensureExitBtn();const mode=onFootNow(
   else if(mode==='drive')paintDriveWings();
   const W=window.WALK_MODE;if(W)W.runMode=!!(mode==='walk'&&B.run&&B.walk);
   if(mode!=='walk'){B.walk=0;B.run=0;if(!B.brk)B.jump=0;}
-  paintExitBtn();}
+  paintExitBtn();
+  syncEnterBldBtn();}
 window.syncOnFootButtons=syncOnFootButtons;
+window.syncOnFootUI=syncOnFootButtons;
 function ensureEmote(){if(document.getElementById('emoteBtn'))return;
   const css=document.createElement('style');css.id='emoteCss';css.textContent=''
     +'#emoteBtn{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:25;display:none;width:min(92px,23vh);height:min(92px,23vh);border-radius:50%;border:4px solid #fff;margin:0;padding:0;'
@@ -251,5 +253,102 @@ function ensureExitBtn(){if(document.getElementById('exitCarBtn'))return;
   const fire=()=>{const n=performance.now();if(n-lock<280)return;lock=n;exitCarTap();};
   btn.addEventListener('pointerup',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();fire();});
   btn.addEventListener('touchend',e=>{ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}fire();},{passive:false});}
+function buildingSpot(W){
+  if(!W)return false;
+  if(typeof W.canEnterBuilding==='function')return !!W.canEnterBuilding();
+  const hasP=typeof P!=='undefined'&&!!P;
+  const grounded=hasP&&P.ground&&!P.wreck;
+  const garageOk=!!(W.onFoot||(grounded&&P.v<10));
+  let park=W.parking||null;
+  if(!park&&garageOk&&typeof W.activeParking==='function'&&hasP)park=W.activeParking(P.x,P.z);
+  if(park&&garageOk)return true;
+  const doorLim=W.onFoot?10:12;
+  const doorOk=!!(W.onFoot||(grounded&&P.v<8));
+  let door=W.door;
+  if(!(door&&door.dist<=doorLim)&&doorOk&&typeof W.nearestDoor==='function')door=W.nearestDoor(12);
+  if(!(door&&door.dist<=doorLim&&doorOk))return false;
+  const x=W.onFoot?W.x:(hasP?P.x:0),z=W.onFoot?W.z:(hasP?P.z:0);
+  return (x-(door.x||0))*(door.nx||0)+(z-(door.z||0))*(door.nz||0)>=-2;
+}
+function paintEnterFace(b,inside){
+  const want=inside?'🚪 EXIT':'🚪 ENTER';
+  b.classList.toggle('is-inside',inside);
+  const lead=b.childNodes[0]&&b.childNodes[0].nodeType===3?b.childNodes[0].textContent:'';
+  if(lead===want&&b.querySelector('small')&&b.querySelector('small').textContent==='BUILDING')return;
+  b.replaceChildren(document.createTextNode(want));
+  const sm=document.createElement('small');sm.textContent='BUILDING';b.appendChild(sm);
+}
+function syncEnterBldBtn(){ensureEnterBldBtn();installSafeEnter();
+  const b=document.getElementById('enterBldBtn');if(!b)return;
+  const W=window.WALK_MODE;
+  if(W&&W.insideBuilding){b.style.display='flex';paintEnterFace(b,true);return;}
+  const show=!!(W&&buildingSpot(W));
+  b.style.display=show?'flex':'none';
+  if(show)paintEnterFace(b,false);else b.classList.remove('is-inside');
+}
+window.syncEnterBldBtn=syncEnterBldBtn;
+// Garage hub installs enterDoor as a getter, then the dance stage assigns a wrapper
+// back through that setter. The two wrappers call each other. Put a plain function
+// on the object so a later wrap captures this one and the tap can enter.
+function safeEnterDoor(){
+  const W=(this&&typeof this.nearestDoor==='function')?this:window.WALK_MODE;
+  if(!W||typeof P==='undefined')return false;
+  if(!W.onFoot&&typeof W._holdParking==='function')W._holdParking();
+  const park=!W.onFoot&&W.parking;
+  let door=W.onFoot&&W.door&&(W.door.dist<WALK_PILL_M||W.door.garage)?W.door:null;
+  if(!door&&park)door=park.door;
+  if(!door&&typeof W.nearestDoor==='function')door=W.nearestDoor(WALK_PILL_M);
+  if(!door)return false;
+  if(!park&&!(door.dist<WALK_PILL_M))return false;
+  if(!W.onFoot&&door.purpose!=='SKY_DROP'&&!park)return false;
+  W.door=door;
+  try{walkAct(door);}catch(e){return false;}
+  if(typeof WALK_INDOOR!=='undefined'&&WALK_INDOOR[door.purpose]){W.insideBuilding=true;W.insideDoor=door;if(typeof walkShowInterior==='function')walkShowInterior(door);}
+  else{W.insideBuilding=false;W.insideDoor=null;if(typeof walkHideInterior==='function')walkHideInterior();}
+  if(typeof walkSyncPill==='function')walkSyncPill();
+  if(typeof walkSyncGait==='function')walkSyncGait();
+  if(typeof walkSyncDyn==='function')walkSyncDyn();
+  return true;
+}
+function installSafeEnter(){
+  const W=window.WALK_MODE;if(!W||W.__enterSafe)return;
+  const desc=Object.getOwnPropertyDescriptor(W,'enterDoor');
+  if(desc&&desc.get){
+    safeEnterDoor._bld=1;
+    Object.defineProperty(W,'enterDoor',{configurable:true,enumerable:true,writable:true,value:safeEnterDoor});
+  }
+  W.__enterSafe=1;
+}
+function enterBldTap(){
+  installSafeEnter();
+  const W=window.WALK_MODE;if(!W)return;
+  if(W.insideBuilding){
+    if(window.DANCE_STAGE&&typeof window.DANCE_STAGE.close==='function'){try{window.DANCE_STAGE.close();}catch(e){}}
+    if(window.NEON_PAINT&&typeof window.NEON_PAINT.closeStudio==='function'){try{window.NEON_PAINT.closeStudio();}catch(e){}}
+    if(typeof W.stepBackOutside==='function')W.stepBackOutside();
+  }else if(buildingSpot(W)&&typeof W.enterDoor==='function')W.enterDoor();
+  if(typeof syncOnFootButtons==='function')syncOnFootButtons();
+}
+function ensureEnterBldBtn(){if(document.getElementById('enterBldBtn'))return;
+  const css=document.createElement('style');css.id='enterBldCss';css.textContent=''
+    +'#enterBldBtn{position:fixed;top:5px;right:calc(50% + 66px);z-index:95;display:none;'
+    +'height:44px;min-width:98px;padding:3px 12px;border-radius:14px;border:2.5px solid #fff;margin:0;'
+    +'background:radial-gradient(circle at 40% 32%,#f4fff6,#39ff7a 38%,#ff2bd6 78%);'
+    +'box-shadow:0 0 16px #7dff6b,0 0 12px #ff2bd6;color:#140018;'
+    +'font:900 11px/1.05 Orbitron,sans-serif;letter-spacing:.4px;'
+    +'flex-direction:column;align-items:center;justify-content:center;touch-action:none;user-select:none;cursor:pointer;-webkit-tap-highlight-color:transparent}'
+    +'#enterBldBtn small{font:800 9px/1 Rajdhani,sans-serif;letter-spacing:.6px;margin-top:1px}'
+    +'#enterBldBtn.is-inside{border-color:#ff4fd8;background:radial-gradient(circle at 40% 32%,#ffe9ff,#ff4fd8 46%,#ffb020 82%);'
+    +'box-shadow:0 0 18px #ff4fd8,0 0 10px #ffb020;color:#240014}';
+  document.head.appendChild(css);
+  const host=document.querySelector('.kbody')||document.body;
+  const btn=document.createElement('button');btn.id='enterBldBtn';btn.type='button';btn.setAttribute('aria-label','Enter or exit building');
+  btn.appendChild(document.createTextNode('🚪 ENTER'));
+  const sm=document.createElement('small');sm.textContent='BUILDING';btn.appendChild(sm);
+  host.appendChild(btn);
+  let lock=0;
+  const fire=()=>{const n=performance.now();if(n-lock<280)return;lock=n;enterBldTap();};
+  btn.addEventListener('pointerup',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();fire();});
+  btn.addEventListener('touchend',e=>{ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}fire();},{passive:false});}
 function footLoop(){try{syncOnFootButtons();}catch(e){}requestAnimationFrame(footLoop);}
-if(document.getElementById('wng')){ensureEmote();ensureExitBtn();syncOnFootButtons();requestAnimationFrame(footLoop);}
+if(document.getElementById('wng')){ensureEmote();ensureExitBtn();ensureEnterBldBtn();syncOnFootButtons();requestAnimationFrame(footLoop);}
