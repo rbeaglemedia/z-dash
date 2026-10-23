@@ -25,6 +25,8 @@
 // mirrors, the grille, exhaust, wheels, and anything below the sills
 // or above the roof stay in the ray test so they block the stroke.
 (function () {
+  var adultFile = (location.pathname || '').toLowerCase().split('/').pop();
+  if (adultFile === '' || adultFile === 'index.html') return;
   const KEY = 'zdash.neonpaint.v1';
   const CH = 'zdash-neonpaint';
   const TAB = Math.random().toString(36).slice(2);
