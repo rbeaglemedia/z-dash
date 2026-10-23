@@ -20,5 +20,6 @@ window.SOCCER_TUNE = {
   roadX0: 550,
   roadX1: 680,
   roadZ: 300,
-  roadHalfW: 10
+  roadHalfW: 10,
+  showScore: false    // score pill stays off until the scoreboard comes back. GOAL! still flashes.
 };
