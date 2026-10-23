@@ -767,7 +767,7 @@ function drawWorldWalker(W,dt,now){
     }
     for(let i=rings.length-1;i>=0;i--){const age=(now-rings[i].t)/1000;if(age>.9){rings.splice(i,1);continue;}drawRing(rings[i].x,(W.y||0)+.03,rings[i].z,.16,rings[i].col,1-age/.9);}
     if(dancing)drawRing(W.x,(W.y||0)+.03,W.z,.5+.14*Math.abs(Math.sin(tSec*Math.PI*4)),look.trim,.7);
-    paintFigure(ctx,look,spec,worldProject,yaw,{x:W.x,y:W.y||0,z:W.z});
+    paintFigure(ctx,look,spec,worldProject,yaw,{x:W.x,y:(W.y||0)+(W.jumpY||0),z:W.z});
     const fy=Math.sin(yaw),fz=Math.cos(yaw),rx=Math.cos(yaw),rz=-Math.sin(yaw);
     const ax=W.x+rx*.70-fy*.48,az=W.z+rz*.70-fz*.48;
     const q=groundPetQ(st.pet,move.gait,move.phase,tSec,dancing?{bob:spec.bob}:null);

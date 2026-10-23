@@ -42,9 +42,12 @@ function airStep(dt,T,I,I0,nz,vT,vr,alpha,wf,ge,cbank,g){P.rotOK=false;P.gT=0;
     let L=g*cl*dq*lk*ge*(P.gam<0&&I.climb>0&&vr>0.95?1+T.pullLift*I.climb*clamp(-P.gam*5,0,1):1)*(I.climb>0.5&&vr>0.8?1+T.pullLift2*clamp((I.climb-0.5)*2,0,1)*clamp((vr-0.8)*5,0,1):1);
     const flyNos=!P.ground&&P.wings===1&&I.nos&&P.nosTank>0&&I.tu;
     if(flyNos)L*=(T.airNosLiftBoost!=null?T.airNosLiftBoost:1.25);
-    const drag=T.ovK*Math.max(0,P.v-T.ovV)**2+T.cd*P.v*P.v+T.cdi*cl*cl*dq*g*lk+T.bankDrag*(P.gam<0?T.diveBankDrag:1)*(1/Math.max(.3,Math.abs(cbank))-1)+T.slipDrag*g*Math.abs(slip)*Math.min(4,vr*vr);
-    let along=(I.tu?T.airThrust*P.thr:0)+(nz&&I.tu?T.airNos:0)-drag-g*Math.sin(P.gam)*(P.gam>0?T.climbG:T.diveG)-(I.brk?T.airBrake*Math.max(0,Math.cos(P.gam)):0)+Math.min(drag+T.swoopMax,T.swoopK*Math.max(0,L*cbank/g-Math.cos(P.gam))*clamp(vr-0.8,0,1)*(P.gam<T.swoopGam*D?1:0));  /* swoop: pulling out of a dive at speed carries energy */  /* air brake can't hold her up in a vertical fall */
-    if(flyNos){const cap=T.maxSpeed*1.18;if(P.v<cap)along+=(T.airNosAccel!=null?T.airNosAccel:18)*clamp((cap-P.v)/15,0.2,1);}
+    const cruise=T.airCruiseMax||65,levelK=clamp((P.gam+3*D)/(6*D),0,1);
+    let drag=T.ovK*Math.max(0,P.v-T.ovV)**2+T.cd*P.v*P.v+T.cdi*cl*cl*dq*g*lk+T.bankDrag*(P.gam<0?T.diveBankDrag:1)*(1/Math.max(.3,Math.abs(cbank))-1)+T.slipDrag*g*Math.abs(slip)*Math.min(4,vr*vr);
+    if(P.v>cruise)drag+=(P.v-cruise)*(T.airCruiseDrag||0.38)*levelK;  /* level or climbing only; a dive (gam < -3°) keeps every bit of falling speed */
+    const push=P.v<cruise;
+    let along=((push&&I.tu)?T.airThrust*P.thr:0)+((push&&nz&&I.tu)?T.airNos:0)-drag-g*Math.sin(P.gam)*(P.gam>0?T.climbG:T.diveG)-(I.brk?T.airBrake*Math.max(0,Math.cos(P.gam)):0)+Math.min(drag+T.swoopMax,T.swoopK*Math.max(0,L*cbank/g-Math.cos(P.gam))*clamp(vr-0.8,0,1)*(P.gam<T.swoopGam*D?1:0));  /* swoop: pulling out of a dive at speed carries energy */  /* air brake can't hold her up in a vertical fall */
+    if(flyNos){const cap=cruise;if(P.v<cap)along+=(T.airNosAccel!=null?T.airNosAccel:18)*clamp((cap-P.v)/15,0.2,1);}
     let nrm=clamp(L*cbank-g*Math.cos(P.gam),-T.maxNz,(P.gam<-0.3&&I.climb>0)?T.maxNz+(T.pullNz-T.maxNz)*clamp((I.climb-0.3)/0.7,0,1):T.maxNz);
     if(flyNos&&P.pitch>=-2*D){const nose=clamp((P.pitch+2*D)/(12*D),0,1),vy=P.v*Math.sin(P.gam),want=6*(T.airNosLiftBoost!=null?T.airNosLiftBoost:1.25)*nose;if(vy<want)nrm+=clamp(want-vy,0,16);}  /* level or nose-up: pull a sink up into a climb */
     if(P.rampGlide&&P.wings===1){if(P.gam>0)nrm=Math.max(nrm,0);if((P.simT||0)-(P.rampGlideT||0)>1.25)P.rampGlide=0;}

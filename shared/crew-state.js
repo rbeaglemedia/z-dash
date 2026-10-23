@@ -76,5 +76,5 @@ S.setGait=function(g){S.gait=(g==='walk'||g==='run'||g==='dance')?g:'idle';S.dan
 S.setCharDanceOpt=function(opt){if(window.CREW&&CREW.setCharDanceOpt)return CREW.setCharDanceOpt(opt);S.charDanceOpt=normOpt(opt);save();return S.charDanceOpt;};
 S.setPetDanceOpt=function(opt){if(window.CREW&&CREW.setPetDanceOpt)return CREW.setPetDanceOpt(opt);S.petDanceOpt=normOpt(opt);save();return S.petDanceOpt;};
 S.dance=dance;S.sample=sample;S.petClip=petDance;S.samplePet=samplePet;S.refresh=refresh;
-window.CREWSTATE=S;
+window.CREWSTATE=S;window.CREW_STATE=S;
 })();
