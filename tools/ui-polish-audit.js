@@ -9,6 +9,8 @@
  *   3. text clipping and font sizes under 9px on buttons and pills
  *   4. clutter: control count, duplicate labels, touch gaps under 6px
  *   5. PNG screenshots (and a contact sheet when Pillow is available)
+ *   6. adult index.html never loads Kid App scripts or storage, and the
+ *      Kid Z launcher stays clickable above the CONNECT LIVE landing screen
  *
  * Usage:
  *   node tools/ui-polish-audit.js --out /opt/cursor/artifacts/ui-polish/before
@@ -49,6 +51,117 @@ const PC_LAP = ['pc-1366x768'];
 const PC_BOTH = ['pc-1366x768', 'pc-1920x1080'];
 const IPAD_VP = ['ipad-1180x820', 'ipad-1024x768', 'ipad-820x1180'];
 const ALL_VP = PHONE_BOTH.concat(IPAD_VP, PC_BOTH);
+
+const KID_KEYS = ['zdash_paint3d_v1', 'zdash_vinyls_v1', 'zdash_garage_v1', 'zdash_neon_paint_v1', 'zdash.neonpaint'];
+
+const KID_SEED = `
+try {
+  var expect = {
+    'zdash_paint3d_v1': '{"v":1,"paint":"#ff00ff"}',
+    'zdash_vinyls_v1': '{"v":1,"activeId":"v_cyber","items":[{"id":"v_cyber","name":"CYBER LIGHTNING","strokes":[{"color":"#ff4fd8"}]}]}',
+    'zdash_garage_v1': '{"v":1,"spoiler":"gtwing"}',
+    'zdash_neon_paint_v1': '{"v":1,"strokes":[{"color":"#ff4fd8"}]}',
+    'zdash.neonpaint.v1': '{"version":1,"enabled":true}'
+  };
+  window.__zdKidExpect = expect;
+  Object.keys(expect).forEach(function (k) { localStorage.setItem(k, expect[k]); });
+} catch (e) {}
+`;
+
+const ADULT_PROBE = `
+(async function () {
+  const issues = [];
+  function bad(kind, msg) { issues.push({ severity: 'error', kind: kind, msg: msg }); }
+  const banned = ['neon-paint.js', 'icon-garage.js', 'tablet-opt.js'];
+  const urls = performance.getEntriesByType('resource').map(function (r) { return r.name; })
+    .concat([].map.call(document.scripts, function (s) { return s.src || ''; }))
+    .concat([].map.call(document.querySelectorAll('link[rel=stylesheet]'), function (s) { return s.href || ''; }));
+  urls.forEach(function (url) {
+    if (!url) return;
+    if (banned.some(function (b) { return url.indexOf(b) >= 0; }) || /\\/world\\/(garage|garagez|boot|icon-garage|neon-paint)/.test(url)) {
+      bad('kid-script', 'adult index.html loaded a Kid App file: ' + url);
+    }
+  });
+  if (window.NEON_PAINT) bad('kid-script', 'window.NEON_PAINT is loaded on adult index.html');
+  if (window.GARAGEZ) bad('kid-script', 'window.GARAGEZ is loaded on adult index.html');
+  if (window.GARAGE_HOME_HUB) bad('kid-script', 'garage hub is loaded on adult index.html');
+  const expect = window.__zdKidExpect || {};
+  Object.keys(expect).forEach(function (k) {
+    var now = null;
+    try { now = localStorage.getItem(k); } catch (e) { bad('kid-storage', 'could not read ' + k); return; }
+    if (now !== expect[k]) bad('kid-storage', 'adult index.html changed kid storage ' + k);
+  });
+  const btn = document.getElementById('btnNeonZ');
+  const splash = document.getElementById('splash');
+  const obd = document.getElementById('btnObd2');
+  const demo = document.getElementById('btnDemo');
+  if (!btn || !splash || !obd || !demo) {
+    bad('kid-launcher', 'landing screen is missing the Kid Z launcher or CONNECT LIVE / START DEMO');
+  } else {
+    const ss = getComputedStyle(splash);
+    const splashOpen = !splash.classList.contains('gone') && ss.display !== 'none' && parseFloat(ss.opacity) > 0.5 && ss.visibility !== 'hidden';
+    if (!splashOpen) bad('kid-launcher', 'CONNECT LIVE / START DEMO landing is not open');
+    const br = btn.getBoundingClientRect();
+    const bs = getComputedStyle(btn);
+    if (bs.display === 'none' || bs.visibility === 'hidden' || parseFloat(bs.opacity) < 0.5 || br.width < 40 || br.height < 40) {
+      bad('kid-launcher', 'Kid Z launcher is not clearly visible');
+    }
+    const x = br.left + br.width / 2, y = br.top + br.height / 2;
+    const top = document.elementFromPoint(x, y);
+    if (!top || (top !== btn && !btn.contains(top))) {
+      bad('kid-launcher', 'Kid Z launcher is covered. elementFromPoint hit ' + (top ? (top.id || top.tagName) : 'nothing'));
+    }
+    const bz = parseInt(bs.zIndex, 10) || 0;
+    const canvas = document.getElementById('cv-splash');
+    const start = document.getElementById('startBtns');
+    const cz = canvas ? (parseInt(getComputedStyle(canvas).zIndex, 10) || 0) : 0;
+    const sz = start ? (parseInt(getComputedStyle(start).zIndex, 10) || 0) : 0;
+    if (!(bz > cz && bz > sz)) bad('kid-launcher', 'Kid Z launcher z-index ' + bz + ' is not above the landing overlay (canvas ' + cz + ', start ' + sz + ')');
+    [obd, demo].forEach(function (el) {
+      const r = el.getBoundingClientRect();
+      const st = getComputedStyle(el);
+      if (st.display === 'none' || st.visibility === 'hidden' || r.width < 20) bad('kid-launcher', (el.id || 'start button') + ' is not visible on the landing screen');
+    });
+  }
+  const t0 = Date.now();
+  while (!(window.ZD && ZD.Xray && ZD.Xray.ready && ZD.Xray.car) && Date.now() - t0 < 8000) {
+    await new Promise(function (r) { setTimeout(r, 100); });
+  }
+  const X = window.ZD && ZD.Xray;
+  if (!X || !X.ready || !X.car) bad('kid-paint', 'adult wireframe was not ready to check for kid paint');
+  else {
+    if (X.render && X.render._npPaint) bad('kid-paint', 'kid paint hooked the adult wireframe render');
+    const hits = [];
+    X.car.traverse(function (o) {
+      const ud = o.userData || {};
+      if (ud.neonPaint || ud.crew || (o.name && /np-ribbon|vinyl|sticker/i.test(o.name))) hits.push(o.name || 'mesh');
+    });
+    if (hits.length) bad('kid-paint', 'kid paint, vinyls, or stickers are on the adult wireframe: ' + hits.slice(0, 6).join(', '));
+  }
+  return issues;
+})()
+`;
+
+function scanAdultIndex() {
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const issues = [];
+  const tagRe = /<(script|link)\b[^>]*>/gi;
+  let m;
+  while ((m = tagRe.exec(html))) {
+    const tag = m[0];
+    const kind = m[1].toLowerCase();
+    if (kind === 'link' && !/\brel\s*=\s*["']stylesheet["']/i.test(tag)) continue;
+    const src = ((tag.match(/\b(?:src|href)\s*=\s*["']([^"']+)["']/i) || [])[1] || '').split('?')[0];
+    if (!src) continue;
+    if (/(?:^|\/)(?:neon-paint\.js|icon-garage\.js|tablet-opt\.js)$/.test(src) || /(?:^|\/)world\//.test(src) || /tablet-opt/.test(src)) {
+      issues.push({ severity: 'error', kind: 'kid-script', msg: 'adult index.html loads a Kid App file: ' + src });
+    }
+  }
+  for (const key of KID_KEYS) {
+    if (html.includes(key)) issues.push({ severity: 'error', kind: 'kid-storage', msg: 'adult index.html references Kid App storage ' + key });
+  }
+  return issues;
+}
 
 const VINYL_SEED = `
 try {
@@ -503,6 +616,12 @@ function inject(code) {
 
 const SCREENS = [
   {
+    id: 'adult-landing', title: 'Adult landing — Kid Z launcher, no kid paint',
+    url: '/index.html', viewports: ALL_VP,
+    budget: 8, wait: '#btnObd2', settle: 500,
+    seedScript: KID_SEED, probe: ADULT_PROBE
+  },
+  {
     id: 'jr-menu', title: 'JR main 15-tile menu',
     url: '/jr.html?kmenu=1', viewports: PHONE_BOTH.concat(PC_BOTH),
     budget: 18, wait: '#kTilesM .ktile', settle: 700
@@ -545,9 +664,8 @@ const SCREENS = [
   },
   {
     id: 'ix-l3v', title: 'Index garage Level 3 VINYLS',
-    url: '/index.html?gopen=vinyls#garage', viewports: ALL_VP, seed: true,
-    budget: 28, wait: '#kid[data-tab="garage"] .gcats [data-c="vinyls"].on', settle: 800,
-    after: '.vinyl-card'
+    url: '/index.html?gopen=vinyls#garage', viewports: ALL_VP,
+    budget: 28, wait: '#kid[data-tab="garage"] .gcats [data-c="vinyls"].on', settle: 800
   },
   {
     id: 'neon-car', title: 'Neon paint — 3D car, vinyl name, saved vinyls',
@@ -687,8 +805,9 @@ async function runScreen(cdp, base, screen, vp, outDir) {
   });
   await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: !!vp.hasTouch, maxTouchPoints: vp.hasTouch ? 5 : 1 });
   let seedId = null;
-  if (screen.seed) {
-    const added = await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: VINYL_SEED });
+  const seedSource = screen.seedScript || (screen.seed ? VINYL_SEED : null);
+  if (seedSource) {
+    const added = await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: seedSource });
     seedId = added.identifier;
   }
   const loaded = new Promise((res) => {
@@ -747,6 +866,15 @@ async function runScreen(cdp, base, screen, vp, outDir) {
     throw new Error('audit threw: ' + JSON.stringify(ev.exceptionDetails).slice(0, 500));
   }
   const result = ev.result && ev.result.value;
+  if (result && screen.probe) {
+    const probed = await cdp.send('Runtime.evaluate', { expression: screen.probe, awaitPromise: true, returnByValue: true });
+    if (!result.issues) result.issues = [];
+    if (probed.exceptionDetails) {
+      result.issues.push({ severity: 'error', kind: 'kid-probe', msg: 'adult isolation probe failed' });
+    } else if (Array.isArray(probed.result && probed.result.value)) {
+      result.issues.push.apply(result.issues, probed.result.value);
+    }
+  }
   const png = await cdp.send('Page.captureScreenshot', { format: 'png', fromSurface: true });
   const file = path.join(shotDir, screen.id + '__' + vp.name + '.png');
   fs.writeFileSync(file, Buffer.from(png.data, 'base64'));
@@ -856,6 +984,22 @@ async function main() {
     await cdp.send('Runtime.enable');
     const screens = SCREENS.filter(s => !args.only || args.only.includes(s.id));
     const rows = [];
+    if (!args.only || args.only.includes('adult-source')) {
+      const sourceIssues = scanAdultIndex();
+      rows.push({
+        id: 'adult-source',
+        title: 'Adult index.html source has no Kid App scripts or storage',
+        url: '/index.html',
+        viewport: 'source',
+        size: [0, 0],
+        ready: sourceIssues.length === 0,
+        errors: sourceIssues.filter(i => i.severity === 'error').length,
+        warns: sourceIssues.filter(i => i.severity === 'warn').length,
+        screenshot: '',
+        audit: { issues: sourceIssues, controls: 0 }
+      });
+      console.log('audit adult-source e=' + sourceIssues.length);
+    }
     for (const screen of screens) {
       for (const name of screen.viewports) {
         const vp = Object.assign({ name }, VIEWPORTS[name]);

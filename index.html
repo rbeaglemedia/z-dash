@@ -52,6 +52,10 @@ html, body { margin: 0; height: 100%; background: #000; color: var(--txt); font-
 #splash { position: fixed; inset: 0; background: #000; z-index: 50; transition: opacity .6s; } .neonz { position: absolute; z-index: 3; top: calc(env(safe-area-inset-top, 0px) + 10px); right: calc(env(safe-area-inset-right, 0px) + 10px); width: 46px; height: 46px; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: rgba(0,0,0,.6); border: 1px solid #ff2a3d; border-radius: 6px; color: #ff2a8a; border-color: #ff2a8a; cursor: pointer; box-shadow: 0 0 10px rgba(255,42,138,.5), inset 0 0 8px rgba(255,42,138,.25); animation: neonzhue 9s linear infinite; will-change: filter; } @keyframes neonzhue { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } } @media (prefers-reduced-motion: reduce) { .neonz { animation: none; } } .neonz b { font: 900 26px/1 'Orbitron', sans-serif; text-shadow: 0 0 6px #ff2a8a, 0 0 14px #ff2a8a; }
 #splash.gone { opacity: 0; pointer-events: none; }
 #splash canvas, .overlay canvas { width: 100%; height: 100%; display: block; }
+#cv-splash { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+#startBtns { z-index: 4; }
+#btnNeonZ.neonz { z-index: 40; width: 72px; height: 72px; animation: none; filter: none; background: rgba(40,0,28,.94); border: 2px solid #ff4fd8; box-shadow: 0 0 18px #ff4fd8, 0 0 0 1px #fff; }
+#btnNeonZ .kzlab { display: block; margin-top: 1px; font: 900 11px/1 'Orbitron', sans-serif; letter-spacing: 1.5px; color: #fff; text-shadow: 0 0 6px #ff4fd8; }
 .overlay { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.92); display: flex; align-items: center; justify-content: center; }
 .overlay.hidden { display: none; }
 #poweroff .hint { position: absolute; bottom: 14px; width: 100%; text-align: center; font-size: 11px; letter-spacing: 4px; color: var(--mute); }
@@ -823,7 +827,7 @@ html.pc-mode .khome:not(.kmain){top:4vh;transform:translate(-50%,0);max-height:9
 
   <!-- connect splash: front view, headlights flash amber once on link -->
   <div id="edge"></div>
-  <div id="splash"><canvas id="cv-splash"></canvas><button id="btnNeonZ" type="button" class="neonz" onclick="location.href='jr.html?kstart'" title="NEON Z: the kids' game (Z-DASH JR)" aria-label="Open NEON Z, the kids' game"><b>Z</b></button>
+  <div id="splash"><canvas id="cv-splash"></canvas><button id="btnNeonZ" type="button" class="neonz" onclick="location.href='jr.html?kstart'" title="NEON Z: the kids' game (Z-DASH JR)" aria-label="Open NEON Z, the kids' game"><b>Z</b><span class="kzlab">KID</span></button>
     <div id="startBtns">
       <div class="mainbtns">
         <button id="btnObd2" class="demo">⚡ CONNECT LIVE</button>
@@ -12631,8 +12635,7 @@ var qrcode = function() {
   function gExtraOrder() { const n = Object.keys(P.eq.extras || {}).length, out = [{ hdr: `EXTRAS · ${n} ON`, sub: xStack() ? 'one per spot: same spot swaps, different spots stack' : 'one extra at a time · unlock STACK ATTACK to wear one in every spot' }, CAT.extra.find((i) => i.id === 'x-stack'), CAT.extra.find((i) => i.id === 'none-x')];
     for (const [sl, name, sub] of XSLOTS) { const items = CAT.extra.filter((i) => i.slot === sl); if (items.length) out.push({ hdr: name, sub }, ...items); } return out; }
 
-  const VINYL_KEY = 'zdash_vinyls_v1';
-  const VINYL_PAINT_KEY = 'zdash_neon_paint_v1';
+  // Adult Z-DASH keeps its own wireframe. Kid paint, vinyls and garage saves stay in the kid game.
   let vinylRendering = false;
   function vinylEsc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -12661,60 +12664,9 @@ var qrcode = function() {
     if (activeId && !items.some((it) => it.id === activeId)) activeId = null;
     return { v: 1, activeId: activeId, items: items };
   }
-  function vinylRead() {
-    const NP = window.NEON_PAINT;
-    if (NP && typeof NP.getVinyls === 'function') {
-      try {
-        const got = NP.getVinyls();
-        if (got && typeof got === 'object') return vinylNormalize(got);
-      } catch (e) {}
-    }
-    let raw = null;
-    try { raw = localStorage.getItem(VINYL_KEY); } catch (e) {}
-    if (raw == null) {
-      let legacy = null;
-      try { legacy = localStorage.getItem(VINYL_PAINT_KEY); } catch (e) {}
-      if (legacy) {
-        try {
-          const o = JSON.parse(legacy);
-          const strokes = o && Array.isArray(o.strokes) ? o.strokes : [];
-          if (strokes.length > 0) {
-            const migrated = { v: 1, activeId: 'vinyl_1', items: [{ id: 'vinyl_1', name: 'VINYL #1', updatedAt: Date.now(), strokes: strokes }] };
-            try { localStorage.setItem(VINYL_KEY, JSON.stringify(migrated)); } catch (e) {}
-            return vinylNormalize(migrated);
-          }
-        } catch (e) {}
-      }
-      return vinylBlank();
-    }
-    try { return vinylNormalize(JSON.parse(raw)); } catch (e) { return vinylBlank(); }
-  }
-  function vinylWrite(state) {
-    const next = vinylNormalize(state);
-    try { localStorage.setItem(VINYL_KEY, JSON.stringify(next)); } catch (e) {}
-    return next;
-  }
-  function vinylMirrorCar(strokes) {
-    const list = strokes || [];
-    try { localStorage.setItem(VINYL_PAINT_KEY, JSON.stringify({ v: 1, strokes: list })); } catch (e) {}
-    const NP = window.NEON_PAINT;
-    if (NP && typeof NP.reload === 'function') {
-      try { NP.reload(); } catch (e) {}
-      return;
-    }
-    if (NP && typeof NP.save === 'function') {
-      try {
-        const cur = typeof NP.load === 'function' ? NP.load() : null;
-        const base = cur && cur.slots ? cur : { version: 1, enabled: true, activeSlot: 0, slots: [0, 1, 2].map((i) => ({ name: 'SLOT ' + (i + 1), strokes: [], updatedAt: 0 })) };
-        base.enabled = true;
-        base.activeSlot = 0;
-        base.slots[0] = Object.assign({}, base.slots[0] || {}, { strokes: list, updatedAt: Date.now() });
-        NP.save(base);
-      } catch (e) {}
-    } else if (NP && typeof NP.applyToCar === 'function' && window.ZD && ZD.Xray) {
-      try { NP.applyToCar(ZD.Xray); } catch (e) {}
-    }
-  }
+  function vinylRead() { return vinylBlank(); }
+  function vinylWrite(state) { return vinylNormalize(state); }
+  function vinylMirrorCar() {}
   function vinylPing() {
     try { window.dispatchEvent(new CustomEvent('zdash:vinyls-changed')); } catch (e) {}
   }
@@ -12728,45 +12680,8 @@ var qrcode = function() {
     try { if (typeof refreshWorldVinyls === 'function') refreshWorldVinyls(); } catch (e) {}
     vinylRendering = false;
   }
-  function equipVinyl(idOrNull) {
-    const NP = window.NEON_PAINT;
-    if (NP && typeof NP.equipVinyl === 'function') {
-      try { NP.equipVinyl(idOrNull); } catch (e) {}
-      try { if (typeof NP.reload === 'function') NP.reload(); } catch (e) {}
-      vinylPing();
-      vinylRefresh();
-      return vinylRead();
-    }
-    const state = vinylRead();
-    const id = idOrNull ? String(idOrNull) : null;
-    const active = id ? state.items.filter((it) => it.id === id)[0] : null;
-    state.activeId = active ? active.id : null;
-    vinylWrite(state);
-    vinylMirrorCar(active ? (active.strokes || []) : []);
-    vinylPing();
-    vinylRefresh();
-    return vinylRead();
-  }
-  function deleteVinyl(id) {
-    const NP = window.NEON_PAINT;
-    if (NP && typeof NP.deleteVinyl === 'function') {
-      try { NP.deleteVinyl(id); } catch (e) {}
-      try { if (typeof NP.reload === 'function') NP.reload(); } catch (e) {}
-      vinylPing();
-      vinylRefresh();
-      return vinylRead();
-    }
-    const state = vinylRead();
-    const sid = String(id);
-    const was = state.activeId === sid;
-    state.items = state.items.filter((it) => it.id !== sid);
-    if (was) state.activeId = null;
-    vinylWrite(state);
-    if (was) vinylMirrorCar([]);
-    vinylPing();
-    vinylRefresh();
-    return vinylRead();
-  }
+  function equipVinyl() { return vinylBlank(); }
+  function deleteVinyl() { return vinylBlank(); }
   function vinylColors(item) {
     const out = [];
     const add = (c) => {
@@ -12855,10 +12770,6 @@ var qrcode = function() {
     root.querySelectorAll('[data-vinyl-edit]').forEach((a) => a.addEventListener('click', (e) => { e.stopPropagation(); }));
   }
   window.addEventListener('zdash:vinyls-changed', () => { vinylRefresh(); });
-  window.addEventListener('storage', (e) => {
-    if (!e || (e.key !== VINYL_KEY && e.key !== VINYL_PAINT_KEY)) return;
-    vinylRefresh();
-  });
     const GDRILL = {
     roots: [
       { id: 'garage', emoji: '🏎️', title: 'GARAGE', kicker: 'CAR CUSTOMIZER', blurb: 'Customize your 370Z — Paint, Vinyls, Wheels, Aero, Lights, NOS, Presets.' },
@@ -13318,6 +13229,5 @@ var qrcode = function() {
 })();
 
 </script>
-<script src="world/neon-paint.js?v=26"></script>
 </body>
 </html>
