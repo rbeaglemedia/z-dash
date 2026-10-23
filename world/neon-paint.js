@@ -25,8 +25,19 @@
 // mirrors, the grille, exhaust, wheels, and anything below the sills
 // or above the roof stay in the ray test so they block the stroke.
 (function () {
-  var adultFile = (location.pathname || '').toLowerCase().split('/').pop();
-  if (adultFile === '' || adultFile === 'index.html') return;
+  // Adult Z-DASH stays stock. This painter must not hook, patch, or draw
+  // on index.html, even when vinyls or garage saves share the same domain.
+  var npPath = '';
+  try { npPath = String(location.pathname || ''); } catch (e) { npPath = ''; }
+  var npFile = npPath.split('/').pop().toLowerCase();
+  var npKidPage = npFile === 'jr.html' || npFile === 'world.html' || npFile === 'world-split.html' || npFile === 'neon-paint.html';
+  var npAdultPath = npPath === '/' || npPath === '' || npFile === 'index.html';
+  var npAdultUi = false;
+  try {
+    npAdultUi = !!(document.getElementById('connectBtn') || document.getElementById('btnObd2') || document.getElementById('btnDemo'));
+  } catch (e2) { npAdultUi = false; }
+  if (npAdultPath || (npAdultUi && !npKidPage)) return;
+
   const KEY = 'zdash.neonpaint.v1';
   const CH = 'zdash-neonpaint';
   const TAB = Math.random().toString(36).slice(2);
@@ -51,6 +62,7 @@
   let liveMirror = null;
   let builtCar = null;
   let ribbons = [];
+  let paintMounted = false;
   let pulseMeshes = [];
   let pulseLoop = false;
   let surf = null;
@@ -300,6 +312,8 @@
     bar.innerHTML = html;
   }
   function reloadVinylMeshes() {
+    live = null;
+    liveMirror = null;
     const follow = vinylFollow;
     vinylFollow = '';
     const store = vinylStore && Array.isArray(vinylStore.items) ? vinylStore : blankVinyls();
@@ -510,19 +524,35 @@
   function zglOk() {
     return !!(window.ZGL && window.ZGL.S && window.ZGL.S.ok);
   }
+  function blankGroup(X) {
+    const Ctor = (window.THREE && window.THREE.Group) || (X.car && X.car.constructor);
+    if (!Ctor) return null;
+    let g = null;
+    try { g = new Ctor(); } catch (e) { return null; }
+    // A car factory would already have meshes. Never parent that onto the real 370Z.
+    if (!g || g.isMesh || (g.geometry && g.geometry.attributes)) return null;
+    if (g.children && g.children.length) return null;
+    return g;
+  }
   function ensureHosts(X, dy) {
     if (!X || !X.car) return null;
     const d = dy || 0;
     let bag = X._npHosts;
     const stale = !bag || !bag.body || !bag.doorR || !bag.doorL || !bag.hatch || bag.body.parent !== X.car;
     if (stale) {
-      const Group = (window.THREE && window.THREE.Group) || X.car.constructor;
       bag = {};
       const names = ['body', 'doorR', 'doorL', 'hatch'];
       for (let i = 0; i < names.length; i++) {
-        const g = new Group();
+        const g = blankGroup(X);
+        if (!g) {
+          for (let j = 0; j < i; j++) {
+            const made = bag[names[j]];
+            if (made && made.parent) made.parent.remove(made);
+          }
+          return X._npHosts || null;
+        }
         g.name = 'np-host-' + names[i];
-        g.userData = { npHost: true, crew: true };
+        g.userData = { npHost: true };
         X.car.add(g);
         bag[names[i]] = g;
       }
@@ -862,6 +892,36 @@
     for (let i = 0; i < ribbons.length; i++) dropMesh(ribbons[i]);
     ribbons.length = 0;
     pulseMeshes.length = 0;
+    paintMounted = false;
+    const X = carX();
+    if (!X || !X.car) return;
+    const stray = [];
+    X.car.traverse(function (o) {
+      if (!o || o === X.car) return;
+      if ((o.userData && o.userData.neonPaint) || o.name === 'np-ribbon') stray.push(o);
+    });
+    for (let i = 0; i < stray.length; i++) dropMesh(stray[i]);
+  }
+  function releaseHosts(X) {
+    if (!X) return;
+    const bag = X._npHosts;
+    if (bag) {
+      const names = ['body', 'doorR', 'doorL', 'hatch'];
+      for (let i = 0; i < names.length; i++) {
+        const g = bag[names[i]];
+        if (!g) continue;
+        while (g.children && g.children.length) dropMesh(g.children[0]);
+        if (g.parent) g.parent.remove(g);
+      }
+      X._npHosts = null;
+    }
+    if (surf && surf.car === X.car) surf = null;
+    if (scratch) {
+      if (scratch.parentNode) scratch.parentNode.removeChild(scratch);
+      scratch.width = 0;
+      scratch.height = 0;
+      scratch = null;
+    }
   }
   function makeGeo(X, pos, index) {
     const Geo = X.shadow.geometry.constructor;
@@ -944,6 +1004,7 @@
     mesh.receiveShadow = false;
     host.add(mesh);
     ribbons.push(mesh);
+    paintMounted = true;
     if (pulse) pulseMeshes.push(mesh);
   }
   function pointOnPanel(X, part, p) {
@@ -967,15 +1028,19 @@
   function applyToCar(X) {
     try {
       if (!X || !X.ready || !X.car || !X.shadow || !X.shadow.material) return false;
-      try { if (window.ZGL && window.ZGL.ensure) window.ZGL.ensure(); } catch (e) {}
-      if (window.GARAGEZ && window.GARAGEZ.apply) { try { window.GARAGEZ.apply(X); } catch (e) {} }
-      ensureSurface(X);
       hookRender(X);
       if (builtCar !== X.car) {
         clearRibbons();
         builtCar = X.car;
       } else clearRibbons();
       const strokes = state.enabled ? slot().strokes : [];
+      if (!strokes.length) {
+        releaseHosts(X);
+        return true;
+      }
+      try { if (window.ZGL && window.ZGL.ensure) window.ZGL.ensure(); } catch (e) {}
+      if (window.GARAGEZ && window.GARAGEZ.apply) { try { window.GARAGEZ.apply(X); } catch (e) {} }
+      ensureSurface(X);
       for (let i = 0; i < strokes.length; i++) {
         const s = strokes[i];
         const host = hostFor(X, s.part);
@@ -1041,6 +1106,7 @@
     if (!strokes.length) return;
     const src = X.canvas;
     if (!scratch) scratch = document.createElement('canvas');
+    if (scratch.parentNode) scratch.parentNode.removeChild(scratch);
     if (scratch.width !== src.width || scratch.height !== src.height) {
       scratch.width = src.width;
       scratch.height = src.height;
@@ -1241,10 +1307,15 @@
     const wrapped = function (ctx, x, y, w, h, opts) {
       try {
         if (!zglOk()) {
-          const fresh = !X._npHosts || !X._npHosts.body || X._npHosts.body.parent !== X.car;
           X._npDy = stanceDy(opts);
-          ensureHosts(X, X._npDy);
-          if (fresh && hasPaint()) applyToCar(X);
+          if (hasPaint()) {
+            const fresh = !X._npHosts || !X._npHosts.body || X._npHosts.body.parent !== X.car;
+            ensureHosts(X, X._npDy);
+            if (fresh) applyToCar(X);
+          } else if (!live && !liveMirror && (X._npHosts || paintMounted)) {
+            clearRibbons();
+            releaseHosts(X);
+          }
         }
       } catch (e) { window.NEON_PAINT._err = String(e && e.message || e); }
       const out = origRender(ctx, x, y, w, h, opts);
@@ -1411,7 +1482,6 @@
     if (!X) return false;
     hookRender(X);
     if (hasPaint()) applyToCar(X);
-    else ensureSurface(X);
     return true;
   }
 
