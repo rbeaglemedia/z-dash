@@ -339,7 +339,18 @@ const TRAFFIC = (() => {
     if (!paint) return false;
     const yaw = yb * (Math.PI / 8), elev = eb * 0.35;
     const dist = 7 / (2 * Math.tan(13 * Math.PI / 180));
+    const g0 = window.ZGL && ZGL.S ? ZGL.S.g : 0;
+    const cr = X.car && X.car.getObjectByName ? X.car.getObjectByName('crew') : null;
+    const crV = cr ? cr.visible : false;
+    const lv0 = X._gzLv || 0;
     try {
+      if (window.ZGL && ZGL.ensure()) ZGL.set(0);
+      if (cr) cr.visible = false;
+      if (lv0 && X.car) {
+        const z0 = m => { if (m && m.uniforms && m.uniforms.zLiv) m.uniforms.zLiv.value = 0; };
+        z0(X.solid); z0(X.shell);
+        X.car.traverse(m => { if (m.isMesh) (Array.isArray(m.material) ? m.material : [m.material]).forEach(z0); });
+      }
       X.render(ctx, 0, 0, T.spritePx, T.spritePx, {
         xray:false, showroom:true, yaw, pitch:elev, dist, tx:0, ty:0.6, fov:26, drl:1, noDraw:true,
         kid:paint, st:{t:performance.now() / 1000, throttle:45, wheelAng:0}
@@ -353,6 +364,12 @@ const TRAFFIC = (() => {
       cache.set(key, cv); bakes++;
       return true;
     } catch (e) { bakeErr = String(e); return false; }
+    finally {
+      if (window.ZGL && ZGL.S && ZGL.S.ok) ZGL.set(g0);
+      if (cr) cr.visible = crV;
+      if (lv0) X._gzSig = null;
+      if (typeof ZV !== 'undefined') ZV.lastPx = 0;
+    }
   }
   function blit(cv, c) {
     const c0 = camS(c.x, c.y + 0.6, c.z);

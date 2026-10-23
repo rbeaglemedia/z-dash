@@ -3,8 +3,8 @@
 // All cars are the one loaded Nissan 370Z. Distances are metres. Speeds are m/s.
 // Level 4 wTraffic rolls 13 + random * 6. Highway adds highwayAdd on top of that roll.
 window.TRAFFIC_TUNE = {
-  simCap: 24,          // simulated cars near the player (collision, spacing)
-  dotCap: 36,          // extra cheap far cars (lights only, no collision)
+  simCap: 12,          // simulated cars near the player (collision, spacing)
+  dotCap: 18,          // extra cheap far cars (lights only, no collision)
   fullDist: 150,       // full 370Z model
   boxDist: 400,        // simple car + glowing lights
   dotDist: 800,        // headlight / taillight dots; nothing past this

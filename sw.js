@@ -21,7 +21,7 @@ const pageKey = (url) => (url.pathname.endsWith('jr.html') ? 'jr.html' : url.pat
 // (name does not start with "zdash-", so the activate cleanup of old zdash-* caches does not touch it).
 // They are not added to ASSETS and are not stored under the index/jr/fly3/world page keys. Without this
 // branch, pageKey() would treat world-split.html as index.html and overwrite that cached page.
-const SPLIT_CACHE = 'world-split-v7';
+const SPLIT_CACHE = 'world-split-v8';
 const isSplitPath = (url) => { const p = url.pathname; return p.endsWith('/world-split.html') || p.includes('/world/') || p.includes('/shared/'); };
 function fromNetwork(req, key) { // revalidate with the server (bypasses the 10-min HTTP cache on GitHub Pages; an unchanged page is a cheap 304)
   return fetch(new Request(req.url, { cache: 'no-cache', credentials: 'same-origin' })).then((res) => {

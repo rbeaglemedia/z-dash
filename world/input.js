@@ -5,8 +5,8 @@ function screenAngle(){if(window.ORIENT_OVERRIDE!=null)return window.ORIENT_OVER
 function tiltRead(e){if(e.beta==null)return;TL.gv=gravScreen(e.beta,e.gamma||0,TL.a0!=null?TL.a0:screenAngle());const a=TL.a0!=null?TL.a0:screenAngle(),b=e.beta,g=e.gamma||0;const [lr,fb]=a===90?[b,g]:a===270?[-b,-g]:a===180?[-g,b]:[g,-b];
   TL.lr=clamp(lr,-90,90);TL.fb=clamp(fb,-90,90);TL.have=true;TL.last=performance.now();if(TL.perm!=='denied')TL.perm='granted';if(TL.calNext){TL.calNext=false;TL.n0={lr:TL.lr,fb:TL.fb};TL.g0=TL.gv;TL.sl=0;TL.sf=0;}}
 addEventListener('deviceorientation',tiltRead);
-function orientFix(){try{const k=document.getElementById('kid');if(TL.a0==null){k&&k.classList.remove('flip180');return;}const d=((screenAngle()-TL.a0)%360+360)%360;k&&k.classList.toggle('flip180',d===180);}catch(e){}}
-addEventListener('orientationchange',orientFix);try{screen.orientation&&screen.orientation.addEventListener&&screen.orientation.addEventListener('change',orientFix);}catch(e){}
+function orientFix(){try{const k=document.getElementById('kid');if(TL.a0==null){k&&k.classList.remove('flip180');return;}const a=screenAngle(),d=((a-TL.a0)%360+360)%360;if(d===90||d===270){TL.a0=a;TL.calNext=true;TL.sl=0;TL.sf=0;k&&k.classList.remove('flip180');return;}k&&k.classList.toggle('flip180',d===180);}catch(e){}}
+addEventListener('orientationchange',orientFix);addEventListener('resize',orientFix);try{screen.orientation&&screen.orientation.addEventListener&&screen.orientation.addEventListener('change',orientFix);}catch(e){}
 async function allowTilt(){if(TL.perm==='ask'){try{const r=await DeviceOrientationEvent.requestPermission();TL.perm=r==='granted'?'granted':'denied';}catch(e){TL.perm='denied';}}}
 /* gravity unit vector in the SCREEN frame (from the device rotation; alpha not needed) */
 function gravScreen(b,g,a){const B=b*D,G=g*D,x=Math.cos(B)*Math.sin(G),y=-Math.sin(B),z=-Math.cos(B)*Math.cos(G);
@@ -20,7 +20,7 @@ function goFull(){const lk=()=>{try{const o=screen.orientation;if(o&&o.lock&&/^l
   try{const d=document.documentElement,fs=document.fullscreenElement||document.webkitFullscreenElement;if(fs){lk();return;}
     const r=d.requestFullscreen?d.requestFullscreen({navigationUI:'hide'}):d.webkitRequestFullscreen?d.webkitRequestFullscreen():null;
     if(r&&r.then)r.then(lk,lk);else lk();}catch(e){lk();}}
-function tiltCenter(){if(TL.have){TL.n0={lr:TL.lr,fb:TL.fb};TL.g0=TL.gv;TL.sl=0;TL.sf=0;TL.calNext=false;}else TL.calNext=true;}
+function tiltCenter(){if(TL.a0!=null&&((screenAngle()-TL.a0)%180!==0)){TL.a0=screenAngle();orientFix();TL.calNext=true;TL.sl=0;TL.sf=0;return;}if(TL.have){TL.n0={lr:TL.lr,fb:TL.fb};TL.g0=TL.gv;TL.sl=0;TL.sf=0;TL.calNext=false;}else TL.calNext=true;}
 const tiltOk=()=>!TL.off&&TL.have&&TL.perm!=='denied'&&performance.now()-TL.last<1500;
 // ===== INPUT =====
 function setWings(on,quiet){P.wings=on?1:0;const b=document.getElementById('wng');if(b){b.classList.toggle('open',!!on);document.getElementById('wngS').textContent=on?'OPEN':'CLOSED';}if(!quiet)toast(on?'WINGS OPEN!':'WINGS CLOSED!');}

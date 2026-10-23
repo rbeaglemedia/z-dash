@@ -7,7 +7,7 @@ function drawZ(){if(window.NOZ)return;const X=window.ZD&&ZD.Xray;if(!X||!X.ready
   const relYaw=Math.atan2(Math.sin(ca-P.yaw),Math.cos(ca-P.yaw)),elev=Math.atan2(dy,hd)-P.pitch*Math.cos(relYaw);
   const dist=ZV.win/(2*Math.tan(13*Math.PI/180));
   ZV.frame++;if(fps<50){ZV.lowT+=1/Math.max(fps,1);if(ZV.lowT>2)ZV.every=2;}else if(fps>58){ZV.lowT=0;ZV.every=1;}   // adaptive: slow GPU -> redraw the car sprite every 2nd frame (same look)
-  if(ZV.frame%ZV.every===0||ZV.lastPx!==rp)X.render(ctx,0,0,rp,rp,{xray:false,showroom:!(window.GARAGEZ&&GARAGEZ.on),yaw:ZV.yawOff+ZV.yawSign*relYaw,pitch:elev,dist,tx:0,ty:ZV.ty,fov:26,drl:1,noDraw:true,kid:KID,st:{t:performance.now()/1000,throttle:30+P.thr*70}});
+  if(ZV.frame%ZV.every===0||ZV.lastPx!==rp||X._w!==rp||X._h!==rp)X.render(ctx,0,0,rp,rp,{xray:false,showroom:!(window.GARAGEZ&&GARAGEZ.on),yaw:ZV.yawOff+ZV.yawSign*relYaw,pitch:elev,dist,tx:0,ty:ZV.ty,fov:26,drl:1,noDraw:true,kid:KID,st:{t:performance.now()/1000,throttle:30+P.thr*70}});
   ZV.lastPx=rp;ctx.save();ctx.translate(sc[0],sc[1]);ctx.rotate((P.bank+(P.ebRoll||0)-cam.roll)*ZV.rollSign);ctx.drawImage(X.canvas,0,0,X.canvas.width,X.canvas.height,-px/2,-px/2,px,px);ctx.restore();
   const cb=Math.cos(P.bank),sb=Math.sin(P.bank),cp=Math.cos(P.pitch),sp=Math.sin(P.pitch),cy=Math.cos(P.yaw),sy=Math.sin(P.yaw);
   const T=([x,y,z])=>{let X2=x*cb-y*sb,Y=x*sb+y*cb,Z=z;let Y2=Y*cp+Z*sp,Z2=-Y*sp+Z*cp;return[P.x+X2*cy+Z2*sy,P.y+Y2,P.z-X2*sy+Z2*cy];};
