@@ -1,0 +1,822 @@
+sha ae95574f7826d83c896a63b2a12f3fef535b26fe
+=== smoke ===
+/workspace/world.html {"kinds": {"b": 144, "landmark": 1, "hill": 3, "pylon": 23, "stand": 16, "bill": 11, "outline": 26}, "bl": 224, "ramps": 133, "rs": {"small_hidden": 41, "small_marked": 29, "big_marked": 13, "medium_marked": 24, "medium_hidden": 26}, "pads": [[9, 55], [26, 23], [18, 23], [15, 55], [10, 55], [62, 23], [16, 55], [9, 55], [9, 55], [27, 23], [12, 23], [9, 23], [34, 23], [9, 55], [11, 55], [23, 23], [10, 20], [13, 20], [12, 20], [11, 20], [11, 20], [14, 23], [14, 23], [239, 11], [14, 20]], "hoops": 28, "roads": [391, 373], "tallest": 239, "ringsInside": 0, "blocked": 20} []
+/workspace/world-split.html {"kinds": {"b": 144, "landmark": 1, "hill": 3, "pylon": 23, "stand": 16, "bill": 11, "outline": 26}, "bl": 224, "ramps": 133, "rs": {"small_hidden": 41, "small_marked": 29, "big_marked": 13, "medium_marked": 24, "medium_hidden": 26}, "pads": [[9, 55], [26, 23], [18, 23], [15, 55], [10, 55], [62, 23], [16, 55], [9, 55], [9, 55], [27, 23], [12, 23], [9, 23], [34, 23], [9, 55], [11, 55], [23, 23], [10, 20], [13, 20], [12, 20], [11, 20], [11, 20], [14, 23], [14, 23], [239, 11], [14, 20]], "hoops": 28, "roads": [391, 373], "tallest": 239, "ringsInside": 0, "blocked": 20} []
+SMOKE PASS
+smoke_rc:0
+=== split-behavior ===
+{
+  "errs": [],
+  "traffic": {
+    "beforeLanes": 810,
+    "lanes": 810,
+    "alive": 60,
+    "sim": 24,
+    "runErr": "",
+    "audit": {
+      "n": 60,
+      "onRunway": 0,
+      "inSolid": 0,
+      "offLane": 0
+    }
+  },
+  "ebrake": {
+    "eb": {
+      "v": 14.454800339999467,
+      "ebK": 0.9999999422225148,
+      "hd": -4.063502778335981,
+      "dHd": 4.063502778335981,
+      "ebKAfter": 0.20447661848369753
+    },
+    "coast": {
+      "v": 13.974587656653545,
+      "ebK": 0
+    },
+    "engaged": true,
+    "released": true,
+    "turned": true
+  },
+  "takeoff": {
+    "frames": 136,
+    "y": 1,
+    "v": 49.1
+  },
+  "landing": {
+    "frames": 61,
+    "y": 0,
+    "v": 4.66,
+    "lands": 0,
+    "hards": 0
+  },
+  "detail": true,
+  "pageerror": []
+}
+SPLIT_BEHAVIOR PASS
+behavior_rc:0
+=== fly3gtatest ===
+{"takeoff_s": 4.13, "turn": {"deg_per_s": 22.5, "bank_deg": 68, "cam_roll": 0, "alt_change": -3.0}, "barrel_roll": {"started": false, "max_bank_deg": 1, "completed": 0, "end_bank_deg": -1, "alt_change": -3.0, "cam_roll": 0}, "roll_key_C": false, "stall_flip": {"flip_after_s": null, "min_pitch_deg": 0, "flips": null, "recovered": false, "alt_at_recovery": 258, "v_at_recovery": 47.2, "ground": false}, "fast_climb_no_flip": true, "sim_vs_wall_note": "times are SIM seconds", "errors": [], "fps": 30}
+fly3gtatest_rc:0
+=== fly3test ===
+{"turn_dyaw": 2.5255202731900877, "climb_dy": -14.544604446929505, "dive_dy": -6.983415750000233, "dive_dv": 2.1386899772812953, "nos_dv": 4.98859441582551, "nos_off_throttle": {"dv_vs_no_nos": 0.015, "nos_visual_on": true, "bottle_drained": 0.36, "PASS_no_boost": true}, "coast_5s_thr0_v": 73.71157570729699, "coast_alt": 249.82534181504653, "softstall": false, "softstall_pitch_deg": -57.57412486782573, "softstall_vs": -41.27091918131503, "slow_land": {"tf": 1, "ground": true, "y": 0, "v": 0, "wreck": false, "landKmh": 3.270435262460721, "bounced": 0}, "takeoff_from_stop": {"tf": 1, "lifted_off": true, "y": 0.06287196004378517, "v": 35.92895997206794, "note": "momentum build: holding full pull 9 s may stall/wreck after liftoff; pass = lifted off"}, "fast_steep_bounced": 0, "fast_shallow_bounced": 0, "fast_shallow_ground": false, "ground_30ms_pullback": {"ground": true, "v": 19.5, "y": 0}, "liftoff": {"secs": 3.77, "v_at_liftoff_kmh": 179}, "liftoff_nos": {"secs": 1.97, "v_at_liftoff_kmh": 187}, "air_below_rotate": {"vs": -7.64, "dy": -6.3}, "ground_release_coast": {"v_after": 23.0, "sim_s": 4.0, "thr": 0}, "thr_hold_then_release": {"after_hold": 1, "after_release": 0.44}, "runway_start": {"g": true, "v": 0, "y": 0}, "fps": 30.920334667151938, "errors": []}
+fly3test_rc:0
+=== fly3land ===
+{
+ "slow_float_stop": {
+  "before_live": {
+   "kind": "TOUCHDOWN",
+   "max_frame_jump": {
+    "y_m": 0.026,
+    "pitch_deg": 0.35,
+    "roll_deg": 0.91,
+    "pos_step_m": 0.722
+   },
+   "end_mph": 0,
+   "end_z": 392
+  },
+  "live_rerun_end": [
+   0,
+   392
+  ],
+  "after_world": {
+   "kind": "TOUCHDOWN",
+   "max_frame_jump": {
+    "y_m": 0.026,
+    "pitch_deg": 0.18,
+    "roll_deg": 0.32,
+    "pos_step_m": 0.721
+   },
+   "end_mph": 0,
+   "end_z": 391.9
+  }
+ },
+ "rough": {
+  "before_live": {
+   "kind": "TOUCHDOWN",
+   "max_frame_jump": {
+    "y_m": 0.282,
+    "pitch_deg": 15.14,
+    "roll_deg": 1.2,
+    "pos_step_m": 1.543
+   },
+   "end_mph": 42,
+   "end_z": 568.1
+  },
+  "live_rerun_end": [
+   42,
+   568.1
+  ],
+  "after_world": {
+   "kind": "TOUCHDOWN",
+   "max_frame_jump": {
+    "y_m": 0.27,
+    "pitch_deg": 3.96,
+    "roll_deg": 0.28,
+    "pos_step_m": 1.543
+   },
+   "end_mph": 42,
+   "end_z": 568.1
+  }
+ },
+ "rough_stop": {
+  "before_live": {
+   "kind": "ROUGH",
+   "max_frame_jump": {
+    "y_m": 0.27,
+    "pitch_deg": 4.75,
+    "roll_deg": 2.36,
+    "pos_step_m": 1.07
+   },
+   "end_mph": 0,
+   "end_z": 345.9
+  },
+  "live_rerun_end": [
+   0,
+   345.9
+  ],
+  "after_world": {
+   "kind": "ROUGH",
+   "max_frame_jump": {
+    "y_m": 0.269,
+    "pitch_deg": 1.33,
+    "roll_deg": 0.96,
+    "pos_step_m": 1.07
+   },
+   "end_mph": 0,
+   "end_z": 345.9
+  }
+ },
+ "hard_hit": {
+  "before_live": {
+   "kind": "HARD HIT",
+   "max_frame_jump": {
+    "y_m": 1.939,
+    "pitch_deg": 65.91,
+    "roll_deg": 0.25,
+    "pos_step_m": 0.719
+   },
+   "end_mph": 10,
+   "end_z": 382.7
+  },
+  "live_rerun_end": [
+   10,
+   382.7
+  ],
+  "after_world": {
+   "kind": "HARD HIT",
+   "max_frame_jump": {
+    "y_m": 1.939,
+    "pitch_deg": 17.09,
+    "roll_deg": 0.03,
+    "pos_step_m": 0.719
+   },
+   "end_mph": 10,
+   "end_z": 382.6
+  }
+ },
+ "banked_rough_stop": {
+  "before_live": {
+   "kind": "TOUCHDOWN",
+   "max_frame_jump": {
+    "y_m": 0.273,
+    "pitch_deg": 15.12,
+    "roll_deg": 4.83,
+    "pos_step_m": 1.379
+   },
+   "end_mph": 0,
+   "end_z": 426
+  },
+  "live_rerun_end": [
+   0,
+   426
+  ],
+  "after_world": {
+   "kind": "TOUCHDOWN",
+   "max_frame_jump": {
+    "y_m": 0.274,
+    "pitch_deg": 3.95,
+    "roll_deg": 1.38,
+    "pos_step_m": 1.379
+   },
+   "end_mph": 0,
+   "end_z": 425.5
+  }
+ },
+ "slow_rough_stop": {
+  "before_live": {
+   "kind": "ROUGH",
+   "max_frame_jump": {
+    "y_m": 0.36,
+    "pitch_deg": 8.98,
+    "roll_deg": 9.45,
+    "pos_step_m": 0.681
+   },
+   "end_mph": 0,
+   "end_z": 324
+  },
+  "live_rerun_end": [
+   0,
+   324
+  ],
+  "after_world": {
+   "kind": "ROUGH",
+   "max_frame_jump": {
+    "y_m": 0.26,
+    "pitch_deg": 2.38,
+    "roll_deg": 2.35,
+    "pos_step_m": 0.681
+   },
+   "end_mph": 0,
+   "end_z": 324
+  }
+ }
+}
+ERRORS []
+FAILS -
+ALL PASS
+fly3land_rc:0
+=== fly3approach ===
+{"approach": [{"careful": {"landed_soft": false, "kmh": 21, "bounces": 0, "bumps": 0, "msg": "ROUGH LANDING!"}}, {"too_fast": {"landed_soft": true, "kmh": 172.0, "bounces": 0, "bumps": 0, "msg": "TOUCHDOWN"}}], "errors": []}
+fly3approach_rc:0
+=== fly3stuck ===
+{"rough_slow": {"landing": "other", "end": [113, false, 19.2, 1.05, true, null], "to_rotate_s": 0.6, "takeoff_s": 1.83, "landings_counted": 1}, "rough_slow_tiltdown": {"landing": "other", "end": [164, false, 11.6, 1.06, false, null], "to_rotate_s": 0.6, "takeoff_s": 5.27, "landings_counted": 2}, "hard_hit": {"landing": "HARD HIT", "end": [114, false, 21.6, 1.05, true, null], "to_rotate_s": 2.5, "takeoff_s": 3.73, "landings_counted": 2}, "hard_hit_tiltdown": {"landing": "HARD HIT", "end": [144, false, 14.6, 1.06, false, null], "to_rotate_s": 2.47, "takeoff_s": 5.33, "landings_counted": 2}, "rough_far_world": {"landing": "other", "end": [109, false, 18.7, 1.05, true, null], "to_rotate_s": 0.9, "takeoff_s": 2.13, "landings_counted": 3}, "rough_fast_pull_now": {"landing": "other", "end": [128, false, 16.2, 1.05, true, null], "to_rotate_s": 0, "takeoff_s": 1.2, "landings_counted": 4}, "bob_steep_hit": {"hit_mph": 163, "kick_m": 0.25, "takeoff_s": 5.23, "floating": 0}, "back_to_runway": {"takeoff_s": 4.7, "floating_after_reset": 0}}
+{"rough_slow": true, "rough_slow_tiltdown": true, "hard_hit": true, "hard_hit_tiltdown": true, "rough_far_world": true, "rough_fast_pull_now": true, "bob_steep_hit": true, "back_to_runway": true, "landing_kinds": true, "no_errors": true}
+ALL PASS
+fly3stuck_rc:0
+=== world2test ===
+{
+ "rooftop": {
+  "base": {
+   "trials": 120,
+   "ok": 98,
+   "hard": 0,
+   "missed": 4,
+   "fell_off": 18,
+   "rate": 0.817,
+   "roofs": 24,
+   "avgRoof_m2": 17773,
+   "avgTop": 16.6
+  },
+  "new": {
+   "trials": 120,
+   "ok": 98,
+   "hard": 0,
+   "missed": 4,
+   "fell_off": 18,
+   "rate": 0.817,
+   "roofs": 24,
+   "avgRoof_m2": 17773,
+   "avgTop": 16.6
+  },
+  "ratio": 1.0,
+  "fail_rate_ratio": 1.0
+ },
+ "rooftopEasier_ok": false,
+ "slow": {
+  "vBefore": 9,
+  "bankLaunch": true,
+  "minY": -0.6,
+  "waterSecs": 6.4,
+  "inWaterAvg_mps": 8.6,
+  "out": {
+   "t": 10.4,
+   "v": 17.4,
+   "y": 0,
+   "inWaterAvg": 8.6
+  },
+  "after3s": {
+   "v": 39.2,
+   "y": 0
+  },
+  "hards": 0,
+  "walls": 0,
+  "splash": 1,
+  "wreck": false
+ },
+ "fast": {
+  "vBefore": 23.8,
+  "bankLaunch": true,
+  "minY": -0.6,
+  "waterSecs": 3.2,
+  "inWaterAvg_mps": 9.1,
+  "out": {
+   "t": 5.9,
+   "v": 17.5,
+   "y": 0,
+   "inWaterAvg": 9.1
+  },
+  "after3s": {
+   "v": 38.9,
+   "y": 0
+  },
+  "hards": 0,
+  "walls": 0,
+  "splash": 1,
+  "wreck": false
+ },
+ "loop_fast": {
+  "entryMps": 36.6,
+  "loops": 1,
+  "maxY": 24,
+  "frames": 69,
+  "endV": 63.1,
+  "endYawDeg": 0,
+  "endX": -71,
+  "endZ": 1899,
+  "hards": 0,
+  "walls": 0,
+  "ground": false
+ },
+ "loop_slow": {
+  "entryMps": 13.6,
+  "loops": 0,
+  "maxY": 9.4,
+  "frames": 112,
+  "endV": 0.2,
+  "endYawDeg": 180,
+  "endX": -80,
+  "endZ": 1393.1,
+  "hards": 0,
+  "walls": 0,
+  "ground": true
+ },
+ "pipe_along": {
+  "maxY": 0,
+  "maxDyFrame": 0,
+  "airFrames": 0,
+  "turns": 0,
+  "hards": 0,
+  "walls": 0,
+  "end": {
+   "x": -95,
+   "z": 494,
+   "v": 65.8
+  }
+ },
+ "pipe_slow": {
+  "maxY": 1.25,
+  "maxDyFrame": 0.05,
+  "airFrames": 0,
+  "turns": 1,
+  "hards": 0,
+  "walls": 0,
+  "end": {
+   "x": -94.1,
+   "z": 260,
+   "v": 1.1
+  }
+ },
+ "pipe_fast": {
+  "maxY": 5,
+  "maxDyFrame": 2.28,
+  "airFrames": 0,
+  "turns": 0,
+  "hards": 0,
+  "walls": 0,
+  "end": {
+   "x": -144.7,
+   "z": 260,
+   "v": 42.8
+  }
+ },
+ "pipe_geo": {
+  "x0": -127,
+  "x1": -63,
+  "z0": 200,
+  "z1": 320,
+  "H": 5
+ },
+ "ramps": {
+  "n": 133,
+  "kinds": {
+   "small_hidden": 36,
+   "small_marked": 23,
+   "big_marked": 13,
+   "medium_marked": 24,
+   "medium_hidden_roof": 18,
+   "medium_hidden": 8,
+   "small_hidden_crest": 5,
+   "small_marked_roof": 6
+  },
+  "fails": []
+ },
+ "bank": {
+  "res": {
+   "south": [
+    {
+     "x": -650,
+     "launched": true,
+     "atZ": 1781.2,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": -550,
+     "launched": true,
+     "atZ": 1780.6,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": -350,
+     "launched": true,
+     "atZ": 1780.6,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": -150,
+     "launched": true,
+     "atZ": 1780.6,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": -75,
+     "launched": true,
+     "atZ": 1781.2,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 30,
+     "launched": true,
+     "atZ": 1781.2,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 85,
+     "launched": true,
+     "atZ": 1781.2,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 150,
+     "launched": true,
+     "atZ": 1780.6,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 350,
+     "launched": true,
+     "atZ": 1780.6,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 450,
+     "launched": true,
+     "atZ": 1780.6,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 650,
+     "launched": true,
+     "atZ": 1781.2,
+     "walls": 0,
+     "hards": 0
+    }
+   ],
+   "north": [
+    {
+     "x": -650,
+     "launched": true,
+     "atZ": 1838.8,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": -350,
+     "launched": true,
+     "atZ": 1839.4,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": -200,
+     "launched": true,
+     "atZ": 1839.4,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": -60,
+     "launched": true,
+     "atZ": 1838.8,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 30,
+     "launched": true,
+     "atZ": 1838.8,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 180,
+     "launched": true,
+     "atZ": 1839.4,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 250,
+     "launched": true,
+     "atZ": 1839.4,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 450,
+     "launched": true,
+     "atZ": 1839.4,
+     "walls": 0,
+     "hards": 0
+    },
+    {
+     "x": 650,
+     "launched": true,
+     "atZ": 1838.8,
+     "walls": 0,
+     "hards": 0
+    }
+   ]
+  },
+  "launched": 20,
+  "total": 20
+ },
+ "parallel": [
+  {
+   "nm": "south_slope",
+   "z": 1777,
+   "endX": 722,
+   "airFrames": 0,
+   "maxDyFrame": 0.033,
+   "walls": 0,
+   "hards": 0,
+   "minV": 29.8,
+   "maxDrift": 0,
+   "inWater": false
+  },
+  {
+   "nm": "south_crest",
+   "z": 1779.7,
+   "endX": 722,
+   "airFrames": 0,
+   "maxDyFrame": 0.063,
+   "walls": 0,
+   "hards": 0,
+   "minV": 29.8,
+   "maxDrift": 0,
+   "inWater": false
+  },
+  {
+   "nm": "north_slope",
+   "z": 1843,
+   "endX": 722,
+   "airFrames": 0,
+   "maxDyFrame": 0.033,
+   "walls": 0,
+   "hards": 0,
+   "minV": 29.8,
+   "maxDrift": 0,
+   "inWater": false
+  },
+  {
+   "nm": "north_crest",
+   "z": 1840.3,
+   "endX": 722,
+   "airFrames": 0,
+   "maxDyFrame": 0.063,
+   "walls": 0,
+   "hards": 0,
+   "minV": 29.8,
+   "maxDrift": 0,
+   "inWater": false
+  }
+ ],
+ "rampsOnRoads": [
+  {
+   "oid": 289,
+   "edge": 150,
+   "kind": "street"
+  },
+  {
+   "oid": 289,
+   "edge": 151,
+   "kind": "street"
+  },
+  {
+   "oid": 290,
+   "edge": 68,
+   "kind": "street"
+  },
+  {
+   "oid": 290,
+   "edge": 68,
+   "kind": "street"
+  },
+  {
+   "oid": 291,
+   "edge": 108,
+   "kind": "street"
+  },
+  {
+   "oid": 291,
+   "edge": 109,
+   "kind": "street"
+  },
+  {
+   "oid": 292,
+   "edge": 78,
+   "kind": "street"
+  },
+  {
+   "oid": 292,
+   "edge": 79,
+   "kind": "street"
+  },
+  {
+   "oid": 293,
+   "edge": 138,
+   "kind": "street"
+  },
+  {
+   "oid": 293,
+   "edge": 139,
+   "kind": "street"
+  },
+  {
+   "oid": 294,
+   "edge": 6,
+   "kind": "street"
+  },
+  {
+   "oid": 294,
+   "edge": 6,
+   "kind": "street"
+  }
+ ],
+ "roadsBlocked": [
+  {
+   "id": 76,
+   "kind": "street",
+   "by": [
+    37
+   ]
+  },
+  {
+   "id": 77,
+   "kind": "street",
+   "by": [
+    37
+   ]
+  },
+  {
+   "id": 86,
+   "kind": "street",
+   "by": [
+    48
+   ]
+  },
+  {
+   "id": 87,
+   "kind": "street",
+   "by": [
+    48
+   ]
+  },
+  {
+   "id": 142,
+   "kind": "street",
+   "by": [
+    1
+   ]
+  },
+  {
+   "id": 143,
+   "kind": "street",
+   "by": [
+    1
+   ]
+  },
+  {
+   "id": 156,
+   "kind": "street",
+   "by": [
+    24
+   ]
+  },
+  {
+   "id": 157,
+   "kind": "street",
+   "by": [
+    24
+   ]
+  },
+  {
+   "id": 168,
+   "kind": "street",
+   "by": [
+    65
+   ]
+  },
+  {
+   "id": 169,
+   "kind": "street",
+   "by": [
+    65
+   ]
+  },
+  {
+   "id": 170,
+   "kind": "street",
+   "by": [
+    66
+   ]
+  },
+  {
+   "id": 171,
+   "kind": "street",
+   "by": [
+    66
+   ]
+  },
+  {
+   "id": 194,
+   "kind": "street",
+   "by": [
+    113
+   ]
+  },
+  {
+   "id": 195,
+   "kind": "street",
+   "by": [
+    113
+   ]
+  },
+  {
+   "id": 198,
+   "kind": "street",
+   "by": [
+    116
+   ]
+  },
+  {
+   "id": 199,
+   "kind": "street",
+   "by": [
+    116
+   ]
+  },
+  {
+   "id": 262,
+   "kind": "street",
+   "by": [
+    228
+   ]
+  },
+  {
+   "id": 263,
+   "kind": "street",
+   "by": [
+    228
+   ]
+  },
+  {
+   "id": 270,
+   "kind": "street",
+   "by": [
+    228
+   ]
+  },
+  {
+   "id": 271,
+   "kind": "street",
+   "by": [
+    228
+   ]
+  }
+ ],
+ "hoops": 28,
+ "loops": 1,
+ "pipes": 1,
+ "track": 36,
+ "riverSlowsSinksRecovers_ok": true,
+ "loopTraversable_ok": true,
+ "halfPipeTraversable_ok": true,
+ "everyRampLaunches_ok": true,
+ "bankLaunchesEverywhere_ok": true,
+ "bankParallelSmooth_ok": true,
+ "rampsOffRoads_ok": false,
+ "noErrors_ok": true
+}
+ERRORS []
+FAILS rooftopEasier rampsOffRoads
+FAIL
+world2test_rc:0

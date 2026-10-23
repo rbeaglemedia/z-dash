@@ -1,0 +1,17 @@
+Functional checks ran on commit ae95574f7826d83c896a63b2a12f3fef535b26fe.
+Full stdout is functional.log.
+
+smoke (world.html and world-split.html): PASS. Same city counts, no page errors.
+split behavior on world-split.html: PASS. Traffic 810 lanes, 60 cars, none on the runway or in solids. E-brake reached ebK 1.0, heading swung, then ebK fell after release. Takeoff left the ground in 136 frames. Landing returned to the ground in 61 frames. Detail flags: windows on, roofTrim off, shapes off.
+
+fly3gtatest (takeoff, world.html): PASS rc 0. takeoff_s 4.13, errors [].
+fly3test (takeoff and flight, world.html): PASS rc 0. liftoff 3.77s, errors [].
+fly3land (landings, world.html): PASS. ALL PASS, rc 0.
+fly3approach (landing, world.html): PASS rc 0. errors [].
+fly3stuck (takeoff after a landing, world.html): PASS. ALL PASS, rc 0.
+
+world2test (world.html vs the same checkout): printed FAIL. Process exit was 0 because that script does not exit non-zero.
+Fails: rooftopEasier, rampsOffRoads.
+rooftopEasier requires the new world to miss rooftops at under 55% of the base rate. Base and new are the same world.html (this branch does not change it), both 98/120, so the ratio is 1.
+rampsOffRoads is false because the current city data has ramps on road edges. city.js is unchanged on this branch, so that result is the city that is already on main.
+Every other world2 check passed (river, loop, half-pipe, every ramp launches, bank launches, no page errors).
