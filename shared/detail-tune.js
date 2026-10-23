@@ -4,7 +4,7 @@
 // Palette is the existing night neon set: black/dark base, cyan, pink, gold/orange, purple.
 // Park green (#062a12 / #7dff6b) is the green the city already uses for the park and trees.
 window.DETAIL_TUNE = {
-  windows: true,       // lit window grids, baked canvas tiles, nearest faces only
+  windows: true,       // 3D window frames on the nearest walls; never a screen-space stamp
   roofTrim: false,     // dropped: roof-edge stroke held downtown at ~26fps vs ~60 with it off
   signs: true,         // a few baked neon signs
   shapes: false,       // dropped: corner posts / ridges / crowns held downtown at ~31fps vs ~60
@@ -24,7 +24,7 @@ window.DETAIL_TUNE = {
   grassDist: 110,
   riverDist: 150,
   signDist: 110,
-  faceBudget: 4,       // window-grid stamps per frame
+  faceBudget: 4,       // nearest wall faces that get a 3D window grid
   trimFull: 4,         // buildings that get a full roof + shape
   trimSimple: 3,       // farther buildings that get only the roof line
   signBudget: 2,

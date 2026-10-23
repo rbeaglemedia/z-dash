@@ -87,33 +87,6 @@
     ctx.fillStyle = '#0a0612';
   }
 
-  function makeTile(seed) {
-    const c = document.createElement('canvas');
-    c.width = 96; c.height = 120;
-    const g = c.getContext('2d');
-    g.fillStyle = '#0a0612';
-    g.fillRect(0, 0, 96, 120);
-    const lit = [1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1];
-    for (let i = 0; i < 15; i++) {
-      const col = (i + seed) % 3, row = (i / 3) | 0;
-      const x = col * 32 + 5, y = row * 24 + 5;
-      if (!lit[(i + seed) % 15]) {
-        g.strokeStyle = 'rgba(90,70,110,.45)';
-        g.strokeRect(x + 0.5, y + 0.5, 20, 12);
-        continue;
-      }
-      const color = COLS[(i * 3 + seed) % COLS.length];
-      g.fillStyle = color;
-      g.globalAlpha = 0.28;
-      g.fillRect(x, y, 20, 12);
-      g.globalAlpha = 1;
-      g.strokeStyle = color;
-      g.lineWidth = 1.5;
-      g.strokeRect(x + 0.5, y + 0.5, 19, 11);
-    }
-    g.globalAlpha = 1;
-    return c;
-  }
   function makeSign(text, color) {
     const c = document.createElement('canvas');
     c.width = 256; c.height = 64;
@@ -182,14 +155,8 @@
     return c;
   }
 
-  const tiles = [], patterns = [], signImgs = [];
+  const signImgs = [];
   let lampImg = null, treeImg = null;
-  if (on.windows) {
-    for (let i = 0; i < 4; i++) {
-      tiles.push(makeTile(i));
-      patterns.push(ctx.createPattern(tiles[i], 'repeat'));
-    }
-  }
   if (on.signs) {
     for (let i = 0; i < WORDS.length; i++) signImgs.push(makeSign(WORDS[i], COLS[i % COLS.length]));
   }
@@ -420,112 +387,59 @@
     anyTrim = fullId[0] >= 0 || simpId[0] >= 0;
   }
 
-  // Camera depth. Linear in x and in z, so a wall's in-front part is one interval.
-  function camDepth(x, y, z) {
-    const dx = x - cam.x, dy = y - cam.y, dz = z - cam.z;
-    return dy * SP + (dx * SY + dz * CY) * CP;
-  }
-  const SPAN = new Float32Array(2);
-  // mode 0: vary z, fixed is x. mode 1: vary x, fixed is z.
-  // Writes the in-front subspan (capped) into SPAN. Near edge stays at least 4.5m
-  // in front so the quad cannot blow up against the near plane.
-  function frontSpan(mode, fixed, y0, y1, u0, u1) {
-    const k = mode ? SY * CP : CY * CP;
-    const ZMIN = 4.5, CAP = 12;
-    function base(y) {
-      if (mode) return (y - cam.y) * SP + (fixed - cam.z) * CY * CP - cam.x * k;
-      return (y - cam.y) * SP + (fixed - cam.x) * SY * CP - cam.z * k;
-    }
-    const b0 = base(y0), b1 = base(y1);
-    let lo = u0, hi = u1;
-    if (k > -1e-4 && k < 1e-4) {
-      const mid = (u0 + u1) * 0.5;
-      if (b0 + mid * k < ZMIN || b1 + mid * k < ZMIN) return false;
-    } else {
-      const t0 = (ZMIN - b0) / k, t1 = (ZMIN - b1) / k;
-      if (k > 0) {
-        const t = t0 > t1 ? t0 : t1;
-        if (t > lo) lo = t;
-      } else {
-        const t = t0 < t1 ? t0 : t1;
-        if (t < hi) hi = t;
-      }
-    }
-    if (!(hi - lo >= 1.6)) return false;
-    if (hi - lo > CAP) {
-      if (k > 1e-4) hi = lo + CAP;
-      else if (k < -1e-4) lo = hi - CAP;
-      else {
-        const uCam = mode ? cam.x : cam.z;
-        let mid = uCam < lo ? lo : uCam > hi ? hi : uCam;
-        lo = mid - CAP * 0.5;
-        hi = mid + CAP * 0.5;
-        if (lo < u0) { hi += u0 - lo; lo = u0; }
-        if (hi > u1) { lo -= hi - u1; hi = u1; }
-        if (lo < u0) lo = u0;
-      }
-    }
-    SPAN[0] = lo;
-    SPAN[1] = hi;
-    return true;
-  }
-
-  function stampPattern(pat, x0, y0, z0, x1, y1, z1, x2, y2, z2, metersW, metersH) {
-    if (facesLeft <= 0 || !pat) return false;
-    if (!camPoint(x0, y0, z0, A)) return false;
-    screenOf(A, SA);
-    const az = A[2];
-    if (!camPoint(x1, y1, z1, A)) return false;
-    screenOf(A, SB);
-    const bx = SB[0], by = SB[1];
-    if (!camPoint(x2, y2, z2, B)) return false;
-    const cx = W / 2 + B[0] * FOV / B[2], cy = H / 2 - B[1] * FOV / B[2];
-    const dw = Math.hypot(bx - SA[0], by - SA[1]), dh = Math.hypot(cx - SA[0], cy - SA[1]);
-    if (dw < 18 || dh < 22 || dw > 1200 || dh > 860 || az < 3.5) return false;
-    const lw = Math.max(8, metersW * 8), lh = Math.max(8, metersH * 8);
-    ctx.setTransform(DPR * (bx - SA[0]) / lw, DPR * (by - SA[1]) / lw, DPR * (cx - SA[0]) / lh, DPR * (cy - SA[1]) / lh, DPR * SA[0], DPR * SA[1]);
-    ctx.globalAlpha = 0.92;
-    ctx.imageSmoothingEnabled = false;
-    ctx.fillStyle = pat;
-    ctx.fillRect(0, 0, lw, lh);
-    facesLeft--;
-    stat.faces++;
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.globalAlpha = 1;
-    ctx.imageSmoothingEnabled = true;
-    ctx.fillStyle = '#0a0612';
-    return true;
-  }
-
-  const _winRows = winRows;
-  winRows = function (b, q, d) {
-    if (!anyWin || facesLeft <= 0 || !listed(winId, b.id) || !patterns.length) return _winRows(b, q, d);
-    const y0 = q.y0 > 0 ? q.y0 + 0.5 : q.y0 + 4.7;
-    const y1 = q.y1 - 0.45;
-    if (y1 - y0 < 2) return _winRows(b, q, d);
-    // Only the lower floors. A full tower face fills thousands of pixels and
-    // fails the screen-size guard, so the grid never appeared.
-    const yTop = y1 < y0 + 11 ? y1 : y0 + 11;
+  // Window frames sit on the wall and are clipped in 3D by seg(). A 2D affine
+  // fillRect is only a parallelogram, so a grazing wall forced the far edge to
+  // the near edge's pixel height and the dark grid spilled onto the road.
+  function windowPass(b) {
+    if (!on.windows || !anyWin || facesLeft <= 0 || !listed(winId, b.id) || !b.boxes || !b.boxes.length) return;
+    const q = b.boxes[0];
+    const y0 = q.y0 > 0 ? q.y0 + 0.8 : q.y0 + 5.1;
+    const y1 = Math.min(q.y1 - 0.5, y0 + 9.2);
+    if (y1 - y0 < 2.2) return;
     const x0 = q.x0, x1 = q.x1, z0 = q.z0, z1 = q.z1;
-    if (x1 - x0 < 3 || z1 - z0 < 3) return _winRows(b, q, d);
-    const zin0 = z0 + 0.55, zin1 = z1 - 0.55, xin0 = x0 + 0.55, xin1 = x1 - 0.55;
-    if (zin1 - zin0 < 1.5 || xin1 - xin0 < 1.5) return _winRows(b, q, d);
-    const pat = patterns[(b.wseed || 0) % patterns.length];
-    // Stamp only the short span that is in front of the camera. A full facade
-    // runs behind the chase cam, and stampPattern rejects any corner past the near plane.
-    if (cam.x < x0 && frontSpan(0, x0, y0, yTop, zin0, zin1)) {
-      stampPattern(pat, x0, yTop, SPAN[0], x0, yTop, SPAN[1], x0, y0, SPAN[0], SPAN[1] - SPAN[0], yTop - y0);
-    } else if (cam.x > x1 && frontSpan(0, x1, y0, yTop, zin0, zin1)) {
-      stampPattern(pat, x1, yTop, SPAN[1], x1, yTop, SPAN[0], x1, y0, SPAN[1], SPAN[1] - SPAN[0], yTop - y0);
+    if (x1 - x0 < 3 || z1 - z0 < 3) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 0.95;
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = COLS[(b.wseed || 0) % COLS.length];
+    let drew = false;
+    function rect(ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz) {
+      seg(ax, ay, az, bx, by, bz);
+      seg(bx, by, bz, cx, cy, cz);
+      seg(cx, cy, cz, dx, dy, dz);
+      seg(dx, dy, dz, ax, ay, az);
     }
-    if (facesLeft > 0 && cam.z < z0 && frontSpan(1, z0, y0, yTop, xin0, xin1)) {
-      stampPattern(pat, SPAN[1], yTop, z0, SPAN[0], yTop, z0, SPAN[1], y0, z0, SPAN[1] - SPAN[0], yTop - y0);
-    } else if (facesLeft > 0 && cam.z > z1 && frontSpan(1, z1, y0, yTop, xin0, xin1)) {
-      stampPattern(pat, SPAN[0], yTop, z1, SPAN[1], yTop, z1, SPAN[0], y0, z1, SPAN[1] - SPAN[0], yTop - y0);
+    function grid(varyZ, plane) {
+      if (facesLeft <= 0) return;
+      const u0 = varyZ ? z0 : x0, u1 = varyZ ? z1 : x1, uCam = varyZ ? cam.z : cam.x;
+      const a = Math.max(u0 + 0.5, uCam - 11), c = Math.min(u1 - 0.5, uCam + 11);
+      if (c - a < 2.4) return;
+      const n = Math.max(1, Math.min(4, Math.floor((c - a) / 3.6)));
+      const ww = 1.65, wh = 1.2, rows = 3;
+      let any = false;
+      for (let r = 0; r < rows; r++) {
+        const yb = y0 + 0.45 + r * ((y1 - y0) / rows);
+        if (yb + wh > y1) break;
+        for (let i = 0; i < n; i++) {
+          const u = a + (c - a) * (i + 0.5) / n - ww * 0.5;
+          if (u < u0 + 0.35 || u + ww > u1 - 0.35) continue;
+          if (varyZ) rect(plane, yb, u, plane, yb, u + ww, plane, yb + wh, u + ww, plane, yb + wh, u);
+          else rect(u, yb, plane, u + ww, yb, plane, u + ww, yb + wh, plane, u, yb + wh, plane);
+          any = true;
+        }
+      }
+      if (any) { drew = true; facesLeft--; stat.faces++; }
     }
-    // Dashes stay. The grid paints under them, so a missed stamp still looks like the old city.
-    return _winRows(b, q, d);
-  };
+    if (cam.x < x0 - 0.4) grid(true, x0 - 0.12);
+    else if (cam.x > x1 + 0.4) grid(true, x1 + 0.12);
+    if (cam.z < z0 - 0.4) grid(false, z0 - 0.12);
+    else if (cam.z > z1 + 0.4) grid(false, z1 + 0.12);
+    if (drew) ctx.stroke();
+    ctx.restore();
+  }
 
   function post(x, z, s, y, y2) {
     seg(x, y2, z, x + s, y2, z);
@@ -610,6 +524,7 @@
   const _drawBldg = drawBldg;
   drawBldg = function (b, d) {
     _drawBldg(b, d);
+    if (anyWin) windowPass(b);
     if (anyTrim) roofPass(b);
   };
 
