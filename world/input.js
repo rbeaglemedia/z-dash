@@ -50,9 +50,11 @@ const B={tup:0,nos:0,brk:0,brkDx:0,brkX:null,ebLatch:0,walk:0,run:0,jump:0,emote
 // Each button keeps its own pointer and its own touch so AIR BRAKE and THROTTLE can be held together.
 // Touch is handled on touch events (two fingers). Mouse/pen use pointer events. A touch does not also
 // take the mouse-compat pointer that some browsers fire afterwards.
-// AIR BRAKE stays labeled AIR BRAKE. Past the drag threshold, on the ground or in the air, a separate
-// E-BRAKE pad pops up under the finger, to the right of the button. It is live only while the finger
-// is on it. KeyB latches too, so desktop and tests can hold the Sky Whip. An outside B.ebLatch = 1 sticks.
+// On the ground the button reads BRAKE. In the air (P.y > 0.15) it reads AIR BRAKE.
+// The label is rewritten only when that ground/air state changes. Past the drag threshold,
+// on the ground or in the air, a separate E-BRAKE pad pops up under the finger, to the right
+// of the button. It is live only while the finger is on it. KeyB latches too, so desktop and
+// tests can hold the Sky Whip. An outside B.ebLatch = 1 sticks.
 let ebTouchAt=0;
 function syncEb(){const el=document.getElementById('brk'),pad=document.getElementById('ebpad');
   const canEb=typeof P!=='undefined'&&!P.wreck;
@@ -156,7 +158,7 @@ function applyFootMode(mode){const tup=document.getElementById('tup'),nos=docume
     B.tup=0;B.nos=0;B.brk=0;B.ebLatch=0;}
   else{if(tup){tup.classList.remove('onfoot-walk');setBtnFace(tup,'THROTTLE','HOLD');}
     if(nos){nos.classList.remove('onfoot-run');setBtnFace(nos,'NOS','HOLD');}
-    if(brk){brk.classList.remove('onfoot-jump');setBtnFace(brk,'AIR','BRAKE');}
+    if(brk){brk.classList.remove('onfoot-jump');brkAir=null;}
     if(wng){wng.classList.remove('enter-car','exit-car');
       const lead=wng.childNodes[0]&&wng.childNodes[0].nodeType===3?wng.childNodes[0].textContent:'';
       if(lead!=='WINGS')setBtnFace(wng,'WINGS','ARCADE','wngS');
@@ -170,7 +172,8 @@ function syncOnFootButtons(){ensureEmote();ensureExitBtn();const mode=onFootNow(
   const W=window.WALK_MODE;if(W)W.runMode=!!(mode==='walk'&&B.run&&B.walk);
   if(mode!=='walk'){B.walk=0;B.run=0;if(!B.brk)B.jump=0;}
   paintExitBtn();
-  syncEnterBldBtn();}
+  syncEnterBldBtn();
+  syncBrakeLabel();}
 window.syncOnFootButtons=syncOnFootButtons;
 window.syncOnFootUI=syncOnFootButtons;
 function ensureEmote(){if(document.getElementById('emoteBtn'))return;
@@ -350,5 +353,13 @@ function ensureEnterBldBtn(){if(document.getElementById('enterBldBtn'))return;
   const fire=()=>{const n=performance.now();if(n-lock<280)return;lock=n;enterBldTap();};
   btn.addEventListener('pointerup',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();fire();});
   btn.addEventListener('touchend',e=>{ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}fire();},{passive:false});}
+let brkAir=false;
+function syncBrakeLabel(){const el=document.getElementById('brk');if(!el)return;
+  if(onFootNow()){brkAir=null;return;}
+  const air=typeof P!=='undefined'&&P.y>0.15;
+  if(brkAir===air)return;
+  brkAir=air;
+  if(air)setBtnFace(el,'AIR','BRAKE');
+  else{const can=el.querySelector('.nfxcan');[...el.childNodes].forEach(n=>{if(n!==can)n.remove();});el.insertBefore(document.createTextNode('BRAKE'),can||null);}}
 function footLoop(){try{syncOnFootButtons();}catch(e){}requestAnimationFrame(footLoop);}
 if(document.getElementById('wng')){ensureEmote();ensureExitBtn();ensureEnterBldBtn();syncOnFootButtons();requestAnimationFrame(footLoop);}
