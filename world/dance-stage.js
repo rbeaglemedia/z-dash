@@ -101,8 +101,18 @@
   var state = {
     open: false,
     mode: 'align',
+    tab: 'stage',
     intent: 'routine',
     countKind: 'routine',
+    countMax: 5,
+    liveMirror: true,
+    improve: false,
+    improveKind: 'char',
+    improvePhase: 'idle',
+    improveIndex: 0,
+    improvePlay: false,
+    improveRecT: 0,
+    improveCount: 0,
     selected: 'neon-pulse',
     routineId: 'neon-pulse',
     score: 0,
@@ -150,9 +160,13 @@
     H: 0
   };
 
-  var root, canvas, ctx, video, stream, topEl, titleEl, subEl, footEl, waveBox, waveBtn, waveCap;
+  var root, canvas, ctx, video, stream, topEl, footEl, waveBox, waveBtn, waveCap;
+  var backBtn, improveBtn, startBtn, freeBtn, recCharBtn, recPetBtn;
+  var tabBtns = {}, stageRow, charRow, petRow, pillChar, pillPet, pillCharClassic, pillCharMine, pillPetClassic, pillPetMine;
+  var improveEl, improveTop, improveBot, improveTitle, improveLeftCap, improveRightCap, improveKf, replayBtn, saveTuneBtn, closeImproveBtn;
   var chipBtns = {}, slotBtns = [], progBtn, dogBtn, simBtn, slotRow, classicBtn;
-  var mcan, mctx, prevPix, sparks = [], lastT = 0, storeCache = null, danceCh = null, petCache = null, petCh = null, crewCh = null, rewarded = false;
+  var mcan, mctx, snapCan, snapCtx, prevPix, sparks = [], lastT = 0, storeCache = null, danceCh = null, petCache = null, petCh = null, crewCh = null, rewarded = false;
+  var takeFrames = [];
   var rafOn = false, layoutCache = null;
 
   function fault(e) {
@@ -177,12 +191,30 @@
       '.zd-ds.zd-ds-on{display:block}',
       '.zd-ds canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}',
       '.zd-ds-vid{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}',
-      '.zd-ds-top{position:absolute;top:0;left:0;right:0;z-index:3;text-align:center;pointer-events:none;padding:5px 12px 2px;background:linear-gradient(rgba(5,0,16,.9),rgba(5,0,16,.28) 72%,transparent)}',
-      '.zd-ds-mark{font:800 clamp(10px,1.65vw,14px)/1.25 Orbitron,sans-serif;letter-spacing:.6px;color:#fff;text-shadow:0 0 10px #3ee6ff,0 0 18px #ff4fd8}',
-      '.zd-ds-sub{margin-top:2px;font:700 9px/1.25 Orbitron,sans-serif;letter-spacing:.7px;color:#ffb3e6;text-shadow:0 0 8px rgba(255,79,216,.85)}',
-      '.zd-ds-foot{position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;flex-direction:column;gap:4px;padding:4px 8px calc(6px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(5,0,16,.94) 26%)}',
-      '.zd-ds-row{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}',
-      '.zd-ds button{font-family:Orbitron,sans-serif;font-weight:800;font-size:10px;letter-spacing:.35px;color:#fff;background:rgba(62,230,255,.1);border:1.5px solid rgba(62,230,255,.85);border-radius:999px;padding:5px 8px;cursor:pointer}',
+      '.zd-ds-top{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;gap:6px;pointer-events:auto;padding:3px 8px;background:linear-gradient(rgba(5,0,16,.94),rgba(5,0,16,.72))}',
+      '.zd-ds-top[hidden],.zd-ds-foot[hidden]{display:none !important}',
+      '.zd-ds-tabs{display:flex;flex:1;gap:4px;justify-content:center;min-width:0}',
+      '.zd-ds-tab,.zd-ds-back,.zd-ds-util{font-size:10px;padding:3px 7px;white-space:nowrap}',
+      '.zd-ds-util{margin-left:auto;white-space:nowrap;border-color:#ff4fd8 !important;background:rgba(255,79,216,.16) !important}',
+      '.zd-ds-foot{position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;justify-content:center;align-items:center;gap:8px;padding:4px 10px calc(6px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(5,0,16,.94) 30%)}',
+      '.zd-ds-row{display:flex;flex-wrap:nowrap;gap:8px;justify-content:center;align-items:center}',
+      '.zd-ds-row[hidden]{display:none !important}',
+      '.zd-ds button{font-family:Orbitron,sans-serif;font-weight:800;font-size:11px;letter-spacing:.3px;color:#fff;background:rgba(62,230,255,.1);border:1.5px solid rgba(62,230,255,.85);border-radius:999px;padding:4px 9px;cursor:pointer}',
+      '.zd-ds-big{font-size:13px !important;padding:7px 18px !important;min-width:200px}',
+      '.zd-ds-pill{display:flex;border:1.5px solid rgba(255,225,77,.85);border-radius:999px;overflow:hidden}',
+      '.zd-ds-pill[hidden]{display:none !important}',
+      '.zd-ds-pill button{border:0;border-radius:0;background:transparent;padding:7px 12px;font-size:11px}',
+      '.zd-ds-improve{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;pointer-events:none;background:transparent}',
+      '.zd-ds-improve[hidden]{display:none !important}',
+      '.zd-ds-improve-top,.zd-ds-improve-bot{pointer-events:auto}',
+      '.zd-ds-improve-top{padding:6px 10px 4px;background:linear-gradient(rgba(5,0,16,.96),rgba(5,0,16,.78));text-align:center}',
+      '.zd-ds-improve-title{font:800 12px/1.3 Orbitron,sans-serif;color:#fff;text-shadow:0 0 10px #ff4fd8,0 0 14px #3ee6ff}',
+      '.zd-ds-improve-caps{display:flex;gap:8px;margin-top:4px}',
+      '.zd-ds-improve-caps span{flex:1;font:800 12px/1.2 Orbitron,sans-serif;letter-spacing:.3px}',
+      '.zd-ds-improve-caps .l{color:#3ee6ff;text-shadow:0 0 8px #3ee6ff}',
+      '.zd-ds-improve-caps .r{color:#ff4fd8;text-shadow:0 0 8px #ff4fd8}',
+      '.zd-ds-improve-kf{margin-top:2px;font:700 10px/1.2 Orbitron,sans-serif;color:#ffe14d}',
+      '.zd-ds-improve-bot{margin-top:auto;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:6px 8px calc(8px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(5,0,16,.96) 28%)}',
       '.zd-ds button.on{color:#12052a;background:linear-gradient(90deg,#ffe14d,#ff9a2e);border-color:#ffe14d;box-shadow:0 0 12px rgba(255,225,77,.45)}',
       '.zd-ds-program{width:100%;border-color:#ff4fd8;background:rgba(255,79,216,.16);letter-spacing:.4px}',
       '.zd-ds-program.on{color:#fff;background:linear-gradient(90deg,#ff4fd8,#3ee6ff);border-color:#fff;box-shadow:0 0 16px rgba(255,79,216,.55)}',
@@ -218,10 +250,23 @@
     video.muted = true;
     video.autoplay = true;
     topEl = el('div', 'zd-ds-top');
-    titleEl = el('div', 'zd-ds-mark', 'Z COMPANY ARTS — NEON DANCE STAGE');
-    subEl = el('div', 'zd-ds-sub', "ELLIE'S FLOOR CAM");
-    topEl.appendChild(titleEl);
-    topEl.appendChild(subEl);
+    backBtn = el('button', 'zd-ds-back', '← BACK');
+    backBtn.type = 'button';
+    backBtn.addEventListener('click', onBack);
+    var tabs = el('div', 'zd-ds-tabs');
+    [['stage', '💃 DANCE STAGE'], ['char', '🕺 RECORD MY DANCE'], ['pet', '🐾 RECORD MY PET']].forEach(function (pair) {
+      var b = el('button', 'zd-ds-tab', pair[1]);
+      b.type = 'button';
+      b.addEventListener('click', function () { selectTab(pair[0]); });
+      tabBtns[pair[0]] = b;
+      tabs.appendChild(b);
+    });
+    improveBtn = el('button', 'zd-ds-util', '📹 RECORD TO IMPROVE APP');
+    improveBtn.type = 'button';
+    improveBtn.addEventListener('click', function () { openImprove(state.tab === 'pet' ? 'pet' : 'char'); });
+    topEl.appendChild(backBtn);
+    topEl.appendChild(tabs);
+    topEl.appendChild(improveBtn);
     waveBox = el('div', 'zd-ds-wavebox');
     waveCap = el('div', 'zd-ds-wavecap', 'WAVE HAND HERE FOR 1s TO START HANDS-FREE');
     waveBtn = el('button', 'zd-ds-wave', '');
@@ -230,83 +275,89 @@
     waveBox.appendChild(waveCap);
     waveBox.appendChild(waveBtn);
     footEl = el('div', 'zd-ds-foot');
-    var row1 = el('div', 'zd-ds-row');
-    var tracks = [
-      ['neon-pulse', 'NEON PULSE'],
-      ['cyber-stage', 'CYBER STAGE'],
-      ['pro-choreo', 'PRO CHOREO'],
-      ['freestyle', 'FREESTYLE']
-    ];
-    tracks.forEach(function (pair) {
-      var b = el('button', '', pair[1]);
-      b.type = 'button';
-      b.setAttribute('data-id', pair[0]);
-      b.addEventListener('click', function () { api.startRoutine(pair[0]); });
-      chipBtns[pair[0]] = b;
-      row1.appendChild(b);
+    stageRow = el('div', 'zd-ds-row');
+    startBtn = el('button', 'zd-ds-big', '▶ START DANCE');
+    startBtn.type = 'button';
+    startBtn.addEventListener('click', function () { api.startRoutine(state.selected || 'neon-pulse'); });
+    freeBtn = el('button', 'zd-ds-big', '✨ FREE DANCE');
+    freeBtn.type = 'button';
+    freeBtn.addEventListener('click', toggleFreeDance);
+    stageRow.appendChild(startBtn);
+    stageRow.appendChild(freeBtn);
+    charRow = el('div', 'zd-ds-row');
+    charRow.hidden = true;
+    recCharBtn = el('button', 'zd-ds-big', '🔴 RECORD MY DANCE (8s)');
+    recCharBtn.type = 'button';
+    recCharBtn.addEventListener('click', function () { armCountdown('record', 3); });
+    pillChar = el('div', 'zd-ds-pill');
+    pillChar.hidden = true;
+    pillCharClassic = el('button', '', '✨ Classic Dance');
+    pillCharClassic.type = 'button';
+    pillCharClassic.addEventListener('click', function () { pickClassic(); });
+    pillCharMine = el('button', '', '🎬 My Recorded Dance');
+    pillCharMine.type = 'button';
+    pillCharMine.addEventListener('click', function () { showRecorded('char'); });
+    pillChar.appendChild(pillCharClassic);
+    pillChar.appendChild(pillCharMine);
+    charRow.appendChild(recCharBtn);
+    charRow.appendChild(pillChar);
+    petRow = el('div', 'zd-ds-row');
+    petRow.hidden = true;
+    recPetBtn = el('button', 'zd-ds-big', '🔴 RECORD MY PET (6s)');
+    recPetBtn.type = 'button';
+    recPetBtn.addEventListener('click', function () { armCountdown('pet', 3); });
+    pillPet = el('div', 'zd-ds-pill');
+    pillPet.hidden = true;
+    pillPetClassic = el('button', '', '✨ Signature Pet Dance');
+    pillPetClassic.type = 'button';
+    pillPetClassic.addEventListener('click', function () {
+      state.intent = 'pet';
+      pickClassic();
     });
-    progBtn = el('button', 'zd-ds-program', 'PROGRAM CHARACTER DANCE (CAMERA MO-CAP)');
-    progBtn.type = 'button';
-    progBtn.addEventListener('click', enterMocap);
-    dogBtn = el('button', 'zd-ds-dog', '🐾 APPLY ANIMATION TO MY PET (RIDES & WALKS WITH YOU)');
-    dogBtn.type = 'button';
-    dogBtn.addEventListener('click', onDogClick);
-    var row3 = el('div', 'zd-ds-row');
-    function act(label, fn) {
-      var b = el('button', '', label);
-      b.type = 'button';
-      b.addEventListener('click', fn);
-      row3.appendChild(b);
-      return b;
-    }
-    act('START ROUTINE', function () { api.startRoutine(state.selected || 'neon-pulse'); });
-    act('PROP 5s COUNTDOWN', propCountdown);
-    simBtn = act('PRACTICE / SIM DANCER', toggleSim);
-    act('RECORD CHOREO', function () {
-      if (isPetish() || state.intent === 'pet') api.recordPetDance();
-      else api.recordChoreo();
-    });
-    act('BACK TO NEON WORLD', onBack);
-    slotRow = el('div', 'zd-ds-row zd-ds-slots');
-    slotRow.hidden = true;
-    for (var i = 0; i < 3; i++) {
-      (function (idx) {
-        var b = el('button', 'zd-ds-slot', 'SLOT ' + (idx + 1));
-        b.type = 'button';
-        b.addEventListener('click', function () { selectSlot(idx); });
-        slotBtns.push(b);
-        slotRow.appendChild(b);
-      })(i);
-    }
-    classicBtn = el('button', 'zd-ds-classic', '✨ CLASSIC DEFAULT DANCE');
-    classicBtn.type = 'button';
-    classicBtn.addEventListener('click', pickClassic);
-    slotRow.appendChild(classicBtn);
-    var saveB = el('button', '', 'SAVE SLOT');
-    saveB.type = 'button';
-    saveB.addEventListener('click', function () {
-      if (isPetish() || state.intent === 'pet') {
-        var petFrames = state.petFrames && state.petFrames.length ? state.petFrames : null;
-        if (!petFrames) return;
-        savePetDance(readPetStore().activeSlot || 0, state.petName, petFrames);
-        return;
-      }
-      var store = readStore();
-      var frames = state.moFrames && state.moFrames.length ? state.moFrames : null;
-      if (!frames) return;
-      api.saveCustomDance(store.activeSlot || 0, state.slotName, frames);
-    });
-    slotRow.appendChild(saveB);
-    footEl.appendChild(row1);
-    footEl.appendChild(progBtn);
-    footEl.appendChild(dogBtn);
-    footEl.appendChild(row3);
-    footEl.appendChild(slotRow);
+    pillPetMine = el('button', '', '🐾 My Recorded Pet Dance');
+    pillPetMine.type = 'button';
+    pillPetMine.addEventListener('click', function () { showRecorded('pet'); });
+    pillPet.appendChild(pillPetClassic);
+    pillPet.appendChild(pillPetMine);
+    petRow.appendChild(recPetBtn);
+    petRow.appendChild(pillPet);
+    footEl.appendChild(stageRow);
+    footEl.appendChild(charRow);
+    footEl.appendChild(petRow);
+    improveEl = el('div', 'zd-ds-improve');
+    improveEl.hidden = true;
+    improveTop = el('div', 'zd-ds-improve-top');
+    improveTitle = el('div', 'zd-ds-improve-title', '📹 RECORD TO IMPROVE APP (SIDE-BY-SIDE CAMERA vs. DANCER)');
+    var caps = el('div', 'zd-ds-improve-caps');
+    improveLeftCap = el('span', 'l', 'Left: Camera Take');
+    improveRightCap = el('span', 'r', 'Right: In-Game Dancer');
+    caps.appendChild(improveLeftCap);
+    caps.appendChild(improveRightCap);
+    improveKf = el('div', 'zd-ds-improve-kf', '');
+    improveTop.appendChild(improveTitle);
+    improveTop.appendChild(caps);
+    improveTop.appendChild(improveKf);
+    improveBot = el('div', 'zd-ds-improve-bot');
+    replayBtn = el('button', '', '▶ REPLAY SIDE-BY-SIDE');
+    replayBtn.type = 'button';
+    replayBtn.addEventListener('click', replayImprove);
+    saveTuneBtn = el('button', '', '💾 SAVE / DOWNLOAD CLIP FOR TUNING');
+    saveTuneBtn.type = 'button';
+    saveTuneBtn.addEventListener('click', downloadTune);
+    closeImproveBtn = el('button', '', '✕ CLOSE');
+    closeImproveBtn.type = 'button';
+    closeImproveBtn.addEventListener('click', closeImprove);
+    improveBot.appendChild(replayBtn);
+    improveBot.appendChild(saveTuneBtn);
+    improveBot.appendChild(closeImproveBtn);
+    improveEl.appendChild(improveTop);
+    improveEl.appendChild(improveBot);
     root.appendChild(canvas);
     root.appendChild(video);
     root.appendChild(topEl);
     root.appendChild(waveBox);
     root.appendChild(footEl);
+    root.appendChild(improveEl);
     document.body.appendChild(root);
     canvas.addEventListener('pointerdown', onDown);
     canvas.addEventListener('pointermove', onMove);
@@ -356,30 +407,135 @@
     return (performance.now() / 1000) % 64;
   }
 
-  function updateChrome() {
-    if (!titleEl) return;
-    var mocap = isMocapish();
-    var pet = isPetish();
-    titleEl.textContent = pet
-      ? petHeader(readCrew())
-      : mocap
-        ? 'Z COMPANY ARTS — PROGRAM CHARACTER DANCE (CAMERA MO-CAP)'
-        : 'Z COMPANY ARTS — NEON DANCE STAGE';
-    if (pet) subEl.textContent = 'PET LOOP · 6.0 SECONDS · 60 KEYFRAMES · RIDES & WALKS WITH YOU';
-    else if (mocap) subEl.textContent = '8-COUNT LOOP · 8.0 SECONDS · 120 BPM · 80 KEYFRAMES';
-    else if (state.mode === 'freestyle') subEl.textContent = 'FREESTYLE MIRROR · NO TIMER · FLOOR CAM';
+  function syncTab() {
+    if (state.improve) return;
+    if (isPetish()) state.tab = 'pet';
+    else if (isMocapish()) state.tab = 'char';
+    else state.tab = 'stage';
+  }
+  function hasCharRecording() {
+    var slots = readStore().slots;
+    for (var i = 0; i < slots.length; i++) if (slots[i] && slots[i].frames && slots[i].frames.length) return true;
+    return false;
+  }
+  function hasPetRecording() {
+    var slots = readPetStore().slots;
+    for (var i = 0; i < slots.length; i++) if (slots[i] && slots[i].frames && slots[i].frames.length) return true;
+    return false;
+  }
+  function selectTab(tab) {
+    if (state.improve) closeImprove();
+    if (tab === state.tab) { updateChrome(); return; }
+    if (tab === 'char') enterMocap();
+    else if (tab === 'pet') enterPet();
     else {
-      var meta = ROUTINES[state.selected] || ROUTINES['neon-pulse'];
-      subEl.textContent = "ELLIE'S FLOOR CAM · " + meta.name + ' · ' + meta.bpm + ' BPM · ' + meta.tag;
+      state.intent = 'routine';
+      state.countKind = 'routine';
+      if (state.mode !== 'routine' && state.mode !== 'freestyle' && state.mode !== 'results') {
+        state.mode = 'align';
+        state.routineId = state.selected || 'neon-pulse';
+      }
+      state.tab = 'stage';
     }
-    Object.keys(chipBtns).forEach(function (id) {
-      chipBtns[id].classList.toggle('on', !mocap && !pet && state.selected === id);
+    updateChrome();
+  }
+  function toggleFreeDance() {
+    if (!state.open) api.open({});
+    if (state.mode === 'freestyle') {
+      state.mode = 'align';
+      state.routineId = state.selected || 'neon-pulse';
+      state.intent = 'routine';
+    } else {
+      state.tab = 'stage';
+      state.intent = 'routine';
+      state.countKind = 'routine';
+      state.mode = 'freestyle';
+      state.routineId = 'freestyle';
+      state.routineT = 0;
+      state.moves = 0;
+      state.kcal = 0;
+    }
+    updateChrome();
+  }
+  function armCountdown(kind, seconds) {
+    if (!state.open) api.open({});
+    state.countKind = kind === 'pet' ? 'pet' : kind === 'record' ? 'record' : 'routine';
+    state.intent = state.countKind === 'pet' ? 'pet' : state.countKind === 'record' ? 'record' : 'routine';
+    state.routineId = state.countKind === 'pet' ? 'pet' : state.countKind === 'record' ? 'mocap' : (state.selected || 'neon-pulse');
+    state.tab = state.countKind === 'pet' ? 'pet' : state.countKind === 'record' ? 'char' : 'stage';
+    state.mode = 'countdown';
+    state.countMax = seconds || 5;
+    state.countLeft = state.countMax;
+    state.countGo = 0;
+    state.waveHold = 0;
+    updateChrome();
+  }
+  function showRecorded(kind) {
+    if (kind === 'pet') {
+      state.intent = 'pet';
+      var ps = readPetStore();
+      var pidx = ps.activeSlot || 0;
+      var pslot = ps.slots[pidx];
+      if (!pslot || !pslot.frames) {
+        for (var i = 0; i < 3; i++) if (ps.slots[i] && ps.slots[i].frames) { pidx = i; pslot = ps.slots[i]; break; }
+      }
+      if (pslot && pslot.frames) {
+        state.petFrames = pslot.frames;
+        state.petName = pslot.name;
+        state.mode = 'petplay';
+        state.playT = 0;
+        state.tab = 'pet';
+        bindPetOpt(pidx);
+      }
+    } else {
+      var store = readStore();
+      var idx = store.activeSlot || 0;
+      var slot = store.slots[idx];
+      if (!slot || !slot.frames) {
+        for (var j = 0; j < 3; j++) if (store.slots[j] && store.slots[j].frames) { idx = j; slot = store.slots[j]; break; }
+      }
+      if (slot && slot.frames) {
+        state.moFrames = slot.frames;
+        state.slotName = slot.name;
+        state.mode = 'playback';
+        state.playT = 0;
+        state.intent = 'record';
+        state.routineId = 'mocap';
+        state.tab = 'char';
+        bindCharOpt(idx);
+      }
+    }
+    updateChrome();
+  }
+  function updateChrome() {
+    if (!topEl) return;
+    syncTab();
+    var tab = state.tab || 'stage';
+    Object.keys(tabBtns).forEach(function (id) {
+      tabBtns[id].classList.toggle('on', !state.improve && id === tab);
     });
-    if (progBtn) progBtn.classList.toggle('on', mocap);
-    if (dogBtn) dogBtn.classList.toggle('on', pet);
-    if (simBtn) simBtn.classList.toggle('on', !!state.userSim || (!state.cameraActive && state.simActive));
-    if (slotRow) slotRow.hidden = !(mocap || pet);
-    if (waveBox) waveBox.hidden = !(state.mode === 'align' || state.mode === 'mocap' || state.mode === 'pet');
+    if (stageRow) stageRow.hidden = state.improve || tab !== 'stage';
+    if (charRow) charRow.hidden = state.improve || tab !== 'char';
+    if (petRow) petRow.hidden = state.improve || tab !== 'pet';
+    if (freeBtn) freeBtn.classList.toggle('on', state.mode === 'freestyle');
+    if (topEl) topEl.hidden = !!state.improve;
+    if (footEl) footEl.hidden = !!state.improve;
+    if (improveEl) improveEl.hidden = !state.improve;
+    if (waveBox) waveBox.hidden = state.improve || tab !== 'stage' || !(state.mode === 'align' || state.mode === 'countdown' || state.mode === 'countgo');
+    if (pillChar) pillChar.hidden = !hasCharRecording();
+    if (pillPet) pillPet.hidden = !hasPetRecording();
+    var crew = readCrew();
+    if (pillCharClassic) pillCharClassic.classList.toggle('on', crew.charDanceOpt === 'classic');
+    if (pillCharMine) pillCharMine.classList.toggle('on', String(crew.charDanceOpt || '').indexOf('slot') === 0);
+    if (pillPetClassic) pillPetClassic.classList.toggle('on', crew.petDanceOpt === 'classic' || crew.petDanceMode === 'classic');
+    if (pillPetMine) pillPetMine.classList.toggle('on', String(crew.petDanceOpt || '').indexOf('slot') === 0 || crew.petDanceMode === 'custom');
+    if (improveRightCap) improveRightCap.textContent = state.improveKind === 'pet' ? 'Right: In-Game Pet' : 'Right: In-Game Dancer';
+    if (improveKf) {
+      var n = takeFrames.length;
+      if (!n || state.improvePhase === 'count') improveKf.textContent = state.improvePhase === 'count' ? 'GET READY' : '';
+      else if (state.improvePhase === 'rec') improveKf.textContent = 'RECORDING ' + takeFrames.length + '/' + (state.improveKind === 'pet' ? 40 : 40);
+      else improveKf.textContent = 'KF ' + (Math.floor(state.improveIndex) + 1) + '/' + n;
+    }
     refreshSlotLabels();
   }
 
@@ -416,9 +572,13 @@
   function computeLayout() {
     var W = state.W || window.innerWidth || 844;
     var H = state.H || window.innerHeight || 390;
-    var head = topEl ? topEl.offsetHeight || 36 : 36;
-    var foot = footEl ? footEl.offsetHeight || 120 : 120;
-    var mocap = isStudio();
+    var head = topEl && !topEl.hidden ? (topEl.offsetHeight || 34) : 34;
+    var foot = footEl && !footEl.hidden ? (footEl.offsetHeight || 46) : 46;
+    if (state.improve) {
+      head = improveTop ? (improveTop.offsetHeight || 62) : 62;
+      foot = improveBot ? (improveBot.offsetHeight || 48) : 48;
+    }
+    var mocap = false;
     var portrait = H > W * 1.02;
     var stage, panel = null;
     if (mocap && !portrait) {
@@ -1227,7 +1387,20 @@
       sway: a.sway + (b.sway - a.sway) * f
     }, u);
   }
+  function zoneSum() {
+    var s = 0;
+    for (var i = 0; i < ZONE_IDS.length; i++) s += +state.zoneEnergy[ZONE_IDS[i]] || 0;
+    return s;
+  }
+  function mirrorPetNow() {
+    if (!state.liveMirror || state.improve) return false;
+    if (state.mode === 'petplay') return false;
+    if (!(state.tab === 'pet' || state.mode === 'pet' || state.mode === 'petrec')) return false;
+    if (state.mode === 'petrec') return true;
+    return !!(state.cameraActive || zoneSum() > 0.04);
+  }
   function livePetPose(now) {
+    if (mirrorPetNow()) return petPoseFromZones(state.zoneEnergy, state.mode === 'petrec' ? clamp(state.recordT / 6, 0, 1) : 0);
     if (state.mode === 'petplay' && readCrew().petDanceOpt === 'classic') {
       var tc = ((now / 1000) % 6) / 6;
       return sanitizePet(petPreset('wiggle', tc), tc);
@@ -1242,9 +1415,11 @@
     state.routineId = 'pet';
     state.intent = 'pet';
     state.countKind = 'pet';
+    state.tab = 'pet';
     state.recordT = 0;
     state.petFrames = [];
     state.countGo = 0;
+    resetTake();
     updateChrome();
   }
   function finishPetRecording() {
@@ -1262,7 +1437,10 @@
     while (state.petFrames.length < 60 && state.recordT + 1e-4 >= state.petFrames.length * 0.1) {
       var i = state.petFrames.length;
       var t = i === 0 ? 0 : i === 59 ? 1 : i / 59;
-      state.petFrames.push(petPoseFromZones(state.zoneEnergy, t));
+      var petPose = petPoseFromZones(state.zoneEnergy, t);
+      state.petFrames.push(petPose);
+      var pz = zoneSum() > 0.02 ? zoneArr(state.zoneEnergy) : zonesFromPetPose(petPose);
+      pushTake(i, t, 'pet', null, petPose, pz);
     }
     if (state.petFrames.length >= 60 || state.recordT >= 6) finishPetRecording();
   }
@@ -1324,9 +1502,11 @@
     state.mode = 'recording';
     state.routineId = 'mocap';
     state.intent = 'record';
+    state.tab = 'char';
     state.recordT = 0;
     state.moFrames = [];
     state.countGo = 0;
+    resetTake();
     updateChrome();
   }
   function finishRecording() {
@@ -1344,7 +1524,10 @@
     while (state.moFrames.length < 80 && state.recordT + 1e-4 >= state.moFrames.length * 0.1) {
       var i = state.moFrames.length;
       var t = i === 0 ? 0 : i === 79 ? 1 : i / 79;
-      state.moFrames.push(poseFromZones(state.zoneEnergy, t));
+      var pose = poseFromZones(state.zoneEnergy, t);
+      state.moFrames.push(pose);
+      var zz = zoneSum() > 0.02 ? zoneArr(state.zoneEnergy) : zonesFromCharPose(pose);
+      pushTake(i, t, 'char', pose, null, zz);
     }
     if (state.moFrames.length >= 80 || state.recordT >= 8) finishRecording();
   }
@@ -1388,6 +1571,7 @@
     if (state.countKind === 'pet') state.routineId = 'pet';
     else if (state.countKind === 'record') state.routineId = 'mocap';
     state.mode = 'countdown';
+    state.countMax = 5;
     state.countLeft = 5;
     state.countGo = 0;
     state.waveHold = 0;
@@ -1399,7 +1583,15 @@
     else api.startRoutine(state.selected || 'neon-pulse');
   }
 
+  function mirrorCharNow() {
+    if (!state.liveMirror || state.improve) return false;
+    if (state.mode === 'playback' || state.mode === 'results') return false;
+    if (!(state.tab === 'char' || state.mode === 'recording' || state.mode === 'mocap' || state.mode === 'freestyle')) return false;
+    if (state.mode === 'recording' || state.mode === 'freestyle') return true;
+    return !!(state.cameraActive || zoneSum() > 0.04);
+  }
   function livePose(now) {
+    if (mirrorCharNow()) return poseFromZones(state.zoneEnergy, state.mode === 'recording' ? clamp(state.recordT / 8, 0, 1) : 0);
     if ((state.mode === 'playback' || state.mode === 'mocap') && readCrew().charDanceOpt === 'classic') {
       return sanitizePose(presetPose('groove', ((now / 1000) % 8) / 8), ((now / 1000) % 8) / 8);
     }
@@ -2273,6 +2465,313 @@
     ctx.fillText('Z', -2 * sc, 2 * sc);
     ctx.restore();
   }
+  var ZONE_POS = [[0.22, 0.18], [0.78, 0.18], [0.20, 0.48], [0.80, 0.48], [0.28, 0.82], [0.72, 0.82]];
+  function zoneArr(z) {
+    var a = [];
+    for (var i = 0; i < 6; i++) a.push(Math.round(((z && +z[ZONE_IDS[i]]) || 0) * 1000) / 1000);
+    return a;
+  }
+  function zonesFromCharPose(p) {
+    p = p || {};
+    return [
+      clamp(+p.armL || 0, 0, 1),
+      clamp(+p.armR || 0, 0, 1),
+      0,
+      0,
+      clamp(((+p.legL || 0) + 0.25) / 2, 0, 1),
+      clamp(((+p.legR || 0) + 0.25) / 2, 0, 1)
+    ];
+  }
+  function zonesFromPetPose(p) {
+    p = p || {};
+    var hop = clamp(+p.hop || 0, 0, 1);
+    var sway = clamp(+p.sway || 0, -1, 1);
+    return [
+      clamp(hop * (0.55 - sway * 0.45), 0, 1),
+      clamp(hop * (0.55 + sway * 0.45), 0, 1),
+      clamp(+p.pawL || 0, 0, 1),
+      clamp(+p.pawR || 0, 0, 1),
+      clamp(+p.bow || 0, 0, 1),
+      clamp(+p.bow || 0, 0, 1)
+    ];
+  }
+  function centroidOf(zones) {
+    var w = 0, cx = 0, cy = 0, i, e;
+    for (i = 0; i < 6; i++) {
+      e = +zones[i] || 0;
+      w += e;
+      cx += ZONE_POS[i][0] * e;
+      cy += ZONE_POS[i][1] * e;
+    }
+    if (w > 0.001) { cx /= w; cy /= w; }
+    else { cx = 0.5; cy = 0.55; w = 0; }
+    var sx = 0, sy = 0;
+    for (i = 0; i < 6; i++) {
+      e = +zones[i] || 0;
+      sx += e * Math.abs(ZONE_POS[i][0] - cx);
+      sy += e * Math.abs(ZONE_POS[i][1] - cy);
+    }
+    var div = w > 0.001 ? w : 1;
+    return {
+      cx: Math.round(cx * 1000) / 1000,
+      cy: Math.round(cy * 1000) / 1000,
+      spreadX: Math.round((w > 0.001 ? sx / div : 0.2) * 1000) / 1000,
+      spreadY: Math.round((w > 0.001 ? sy / div : 0.22) * 1000) / 1000
+    };
+  }
+  function ensureSnap() {
+    if (snapCan) return;
+    snapCan = document.createElement('canvas');
+    snapCan.width = 96;
+    snapCan.height = 72;
+    snapCtx = snapCan.getContext('2d');
+  }
+  function paintSilhouette(c, x, y, w, h, rec) {
+    var zones = (rec && rec.zones) || [0, 0, 0, 0, 0, 0];
+    var cols = ['#3ee6ff', '#ff4fd8', '#ffe14d', '#7dff6b', '#b45cff', '#ffb020'];
+    c.save();
+    c.fillStyle = '#100416';
+    c.fillRect(x, y, w, h);
+    for (var i = 0; i < 6; i++) {
+      var e = +zones[i] || 0;
+      if (e < 0.02) continue;
+      c.fillStyle = cols[i];
+      c.globalAlpha = 0.28 + e * 0.6;
+      c.beginPath();
+      c.arc(x + ZONE_POS[i][0] * w, y + ZONE_POS[i][1] * h, 3 + e * Math.min(w, h) * 0.14, 0, 6.3);
+      c.fill();
+    }
+    c.globalAlpha = 1;
+    var hx = x + ((rec && rec.cx) || 0.5) * w;
+    var hy = y + ((rec && rec.cy) || 0.55) * h;
+    c.strokeStyle = '#7dff6b';
+    c.lineWidth = 2;
+    c.beginPath();
+    c.moveTo(hx - 7, hy); c.lineTo(hx + 7, hy);
+    c.moveTo(hx, hy - 7); c.lineTo(hx, hy + 7);
+    c.stroke();
+    c.strokeStyle = '#3ee6ff';
+    c.lineWidth = Math.max(2, w * 0.02);
+    c.lineCap = 'round';
+    c.shadowColor = '#3ee6ff';
+    c.shadowBlur = 8;
+    if (rec && rec.kind === 'pet' && rec.pet) {
+      var pet = rec.pet;
+      var bodyY = y + h * (0.62 - (pet.hop || 0) * 0.18);
+      c.beginPath();
+      c.ellipse(x + w * 0.5, bodyY, w * 0.18, h * 0.16, 0, 0, 6.3);
+      c.stroke();
+      c.beginPath();
+      c.arc(x + w * 0.66, bodyY - h * 0.16, h * 0.1, 0, 6.3);
+      c.stroke();
+      c.beginPath();
+      c.moveTo(x + w * 0.34, bodyY);
+      c.quadraticCurveTo(x + w * 0.16, bodyY - h * 0.22 * (pet.wag || 0), x + w * 0.12, bodyY + h * 0.04);
+      c.stroke();
+    } else {
+      var p = (rec && rec.pose) || {};
+      var headX = x + w * (0.5 + (p.sway || 0) * 0.08);
+      var headY = y + h * (0.22 - ((p.bounce || 0.4) - 0.4) * 0.08);
+      var hipX = x + w * (0.5 + (p.sway || 0) * 0.12);
+      var hipY = y + h * 0.58;
+      c.beginPath();
+      c.arc(headX, headY, Math.max(4, h * 0.07), 0, 6.3);
+      c.moveTo(headX, headY + h * 0.08);
+      c.lineTo(hipX, hipY);
+      c.moveTo(headX, headY + h * 0.16);
+      c.lineTo(x + w * (0.28 - (p.armL || 0) * 0.12), y + h * (0.42 - (p.armL || 0) * 0.28));
+      c.moveTo(headX, headY + h * 0.16);
+      c.lineTo(x + w * (0.72 + (p.armR || 0) * 0.12), y + h * (0.42 - (p.armR || 0) * 0.28));
+      c.moveTo(hipX, hipY);
+      c.lineTo(x + w * (0.38 + (p.legL || 0) * 0.08), y + h * (0.9 - Math.max(0, p.legL || 0) * 0.16));
+      c.moveTo(hipX, hipY);
+      c.lineTo(x + w * (0.62 + (p.legR || 0) * 0.08), y + h * (0.9 - Math.max(0, p.legR || 0) * 0.16));
+      c.stroke();
+    }
+    c.restore();
+  }
+  function jpgFor(rec) {
+    try {
+      ensureSnap();
+      paintSilhouette(snapCtx, 0, 0, 96, 72, rec);
+      return snapCan.toDataURL('image/jpeg', 0.62);
+    } catch (e) { return ''; }
+  }
+  function pushTake(i, t, kind, pose, pet, zones) {
+    var c = centroidOf(zones || [0, 0, 0, 0, 0, 0]);
+    var rec = {
+      i: i,
+      t: t,
+      kind: kind,
+      pose: pose ? sanitizePose(pose, t) : null,
+      pet: pet ? sanitizePet(pet, t) : null,
+      zones: (zones || []).slice(),
+      cx: c.cx,
+      cy: c.cy,
+      spreadX: c.spreadX,
+      spreadY: c.spreadY,
+      jpg: ''
+    };
+    rec.jpg = jpgFor(rec);
+    takeFrames.push(rec);
+    return rec;
+  }
+  function resetTake() { takeFrames.length = 0; }
+  function fillTakeFromFrames(kind, frames) {
+    resetTake();
+    for (var i = 0; i < frames.length; i++) {
+      var p = frames[i];
+      var t = p.t;
+      if (kind === 'pet') pushTake(i, t, 'pet', null, p, zonesFromPetPose(p));
+      else pushTake(i, t, 'char', p, null, zonesFromCharPose(p));
+    }
+  }
+  function sampleImprovePose(t) {
+    var kind = state.improveKind === 'pet' ? 'pet' : 'char';
+    if (state.cameraActive || zoneSum() > 0.04) {
+      if (kind === 'pet') return { pet: petPoseFromZones(state.zoneEnergy, t), pose: null, zones: zoneArr(state.zoneEnergy) };
+      return { pose: poseFromZones(state.zoneEnergy, t), pet: null, zones: zoneArr(state.zoneEnergy) };
+    }
+    if (kind === 'pet') {
+      var pet = sanitizePet(petPreset('wiggle', t), t);
+      return { pet: pet, pose: null, zones: zonesFromPetPose(pet) };
+    }
+    var pose = sanitizePose(presetPose('groove', t), t);
+    return { pose: pose, pet: null, zones: zonesFromCharPose(pose) };
+  }
+  function openImprove(kind) {
+    if (!state.open) api.open({});
+    state.improveKind = kind === 'pet' ? 'pet' : 'char';
+    state.improve = true;
+    state.improvePhase = 'count';
+    state.improveCount = 3;
+    state.improveRecT = 0;
+    state.improvePlay = false;
+    state.improveIndex = 0;
+    resetTake();
+    updateChrome();
+  }
+  function closeImprove() {
+    state.improve = false;
+    state.improvePhase = 'idle';
+    state.improvePlay = false;
+    updateChrome();
+  }
+  function replayImprove() {
+    if (!takeFrames.length) {
+      openImprove(state.improveKind);
+      return;
+    }
+    state.improvePhase = 'play';
+    state.improvePlay = true;
+    state.improveIndex = 0;
+    updateChrome();
+  }
+  function downloadTune() {
+    var slim = [];
+    for (var i = 0; i < takeFrames.length; i++) {
+      var f = takeFrames[i];
+      slim.push({
+        i: f.i, t: f.t, kind: f.kind, cx: f.cx, cy: f.cy,
+        spreadX: f.spreadX, spreadY: f.spreadY, zones: f.zones, pose: f.pose, pet: f.pet
+      });
+    }
+    try {
+      var blob = new Blob([JSON.stringify({ version: 1, kind: state.improveKind, frames: slim })], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'ellie-mirror-tune.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (e) { fault(e); }
+    try {
+      if (!canvas) return;
+      var a2 = document.createElement('a');
+      a2.href = canvas.toDataURL('image/png');
+      a2.download = 'ellie-mirror-tune.png';
+      document.body.appendChild(a2);
+      a2.click();
+      a2.remove();
+    } catch (e2) {}
+  }
+  function stepImprove(dt) {
+    var cap = 40;
+    if (state.improvePhase === 'count') {
+      state.improveCount -= dt;
+      if (state.improveCount <= 0) {
+        state.improvePhase = 'rec';
+        state.improveRecT = 0;
+        resetTake();
+      }
+    } else if (state.improvePhase === 'rec') {
+      state.improveRecT += dt;
+      while (takeFrames.length < cap && state.improveRecT + 1e-4 >= takeFrames.length * 0.1) {
+        var i = takeFrames.length;
+        var t = i === 0 ? 0 : i === cap - 1 ? 1 : i / (cap - 1);
+        var s = sampleImprovePose(t);
+        pushTake(i, t, state.improveKind === 'pet' ? 'pet' : 'char', s.pose, s.pet, s.zones);
+      }
+      if (takeFrames.length >= cap || state.improveRecT >= 4) {
+        state.improvePhase = 'play';
+        state.improvePlay = true;
+        state.improveIndex = 0;
+      }
+    } else if (state.improvePlay && takeFrames.length) {
+      state.improveIndex += dt / 0.1;
+      if (state.improveIndex >= takeFrames.length) state.improveIndex = 0;
+    }
+  }
+  function currentTake() {
+    if (!takeFrames.length) return null;
+    return takeFrames[clamp(Math.floor(state.improveIndex), 0, takeFrames.length - 1)];
+  }
+  function drawImproveView(L, now) {
+    var S = L.stage;
+    var top = L.head + 6;
+    var bot = state.H - L.foot - 6;
+    var ph = Math.max(70, bot - top);
+    var gap = 12;
+    var pw = (S.w - 16 - gap) / 2;
+    var x1 = 8;
+    var x2 = 8 + pw + gap;
+    function pane(x, col) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(8,2,18,.9)';
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2;
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 12;
+      roundRect(x, top, pw, ph, 14);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+    pane(x1, '#3ee6ff');
+    pane(x2, '#ff4fd8');
+    var rec = currentTake();
+    if (!rec) {
+      var tt = state.improvePhase === 'rec' ? clamp(state.improveRecT / 4, 0, 1) : 0;
+      var s = sampleImprovePose(tt);
+      var c = centroidOf(s.zones);
+      rec = { kind: state.improveKind, pose: s.pose, pet: s.pet, zones: s.zones, cx: c.cx, cy: c.cy };
+    }
+    paintSilhouette(ctx, x1 + 8, top + 10, pw - 16, ph - 20, rec);
+    var sc = Math.max(0.62, Math.min(1.05, pw / 280, ph / 230));
+    if (state.improveKind === 'pet') drawPup(x2 + pw / 2, top + ph * 0.74, sc, rec.pet || livePetPose(now), now, 1);
+    else drawFigure(x2 + pw / 2, top + ph * 0.8, sc, rec.pose || livePose(now), now, 1);
+    if (state.improvePhase === 'count') {
+      ctx.save();
+      ctx.font = '900 64px Orbitron,sans-serif';
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = '#ffe14d';
+      ctx.shadowBlur = 16;
+      ctx.fillText(String(Math.max(1, Math.ceil(state.improveCount))), S.x + S.w / 2, top + ph / 2);
+      ctx.restore();
+    }
+  }
   function drawStage(L, now) {
     var S = L.stage;
     ctx.save();
@@ -2317,21 +2816,33 @@
     drawFloor(S, now);
     drawEq(S, now);
     if (state.fever && (state.mode === 'routine' || state.mode === 'results')) drawFever(S, now);
-    var showFrame = state.mode === 'align' || state.mode === 'countdown' || state.mode === 'countgo' || state.mode === 'mocap' || state.mode === 'recording' || state.mode === 'pet' || state.mode === 'petrec';
-    if (showFrame) drawAlign(L);
-    var pet = isPetish();
-    var showFig = !state.cameraActive || state.userSim || state.mode === 'playback' || state.mode === 'recording' || state.mode === 'mocap' || state.mode === 'align' || state.mode === 'countdown' || pet;
-    if (state.mode === 'routine' || state.mode === 'freestyle') showFig = !state.cameraActive || state.userSim;
-    if (showFig && !pet) {
-      var sc = Math.max(0.55, Math.min(S.w, S.h) / 420);
-      drawFigure(L.center.x, L.frame.y + L.frame.h * 0.62, sc, livePose(now), now, state.cameraActive && !state.userSim ? 0.55 : 1);
+    if (state.improve) {
+      drawImproveView(L, now);
+      ctx.restore();
+      return;
     }
-    drawPads(L, now);
-    drawCues(L, now);
+    var showFrame = state.tab === 'stage' && (state.mode === 'align' || state.mode === 'countdown' || state.mode === 'countgo');
+    if (showFrame) drawAlign(L);
+    var pet = state.tab === 'pet' || isPetish();
+    var studio = state.tab === 'char' || state.tab === 'pet';
+    var showFig = studio || !state.cameraActive || state.userSim || state.mode === 'playback' || state.mode === 'recording' || state.mode === 'mocap' || state.mode === 'align' || state.mode === 'countdown' || pet;
+    if ((state.mode === 'routine' || state.mode === 'freestyle') && !studio) showFig = !state.cameraActive || state.userSim;
+    var avail = Math.max(120, state.H - L.head - L.foot);
+    if (showFig && !pet) {
+      var sc = studio ? Math.max(0.9, Math.min(1.25, avail / 260)) : Math.max(0.55, Math.min(S.w, S.h) / 420);
+      var fy = studio ? (L.head + avail * 0.72) : (L.frame.y + L.frame.h * 0.62);
+      var fx = studio ? (S.x + S.w * 0.5) : L.center.x;
+      drawFigure(fx, fy, sc, livePose(now), now, state.cameraActive && !state.userSim && !studio ? 0.55 : 1);
+    }
+    if (!studio && (state.mode === 'routine' || state.mode === 'freestyle' || state.mode === 'align')) {
+      drawPads(L, now);
+      drawCues(L, now);
+    }
     if (showFig && pet) {
-      var psc = Math.max(0.55, Math.min(S.w, S.h) / 420);
-      var fade = state.cameraActive && !state.userSim ? 0.85 : 1;
-      drawPup(L.center.x, L.center.y - 4, psc * 1.15, livePetPose(now), now, fade);
+      var psc = studio ? Math.max(0.85, Math.min(1.15, avail / 280)) : Math.max(0.55, Math.min(S.w, S.h) / 420);
+      var fade = state.cameraActive && !state.userSim ? 0.92 : 1;
+      var py = studio ? (L.head + avail * 0.7) : (L.center.y - 4);
+      drawPup(S.x + S.w * 0.5, py, studio ? psc : psc * 1.15, livePetPose(now), now, fade);
     }
     ctx.restore();
   }
@@ -2593,7 +3104,7 @@
     ctx.restore();
   }
   function drawBeat(L) {
-    if (isPetish()) return;
+    if (state.improve || state.tab !== 'stage' || isPetish()) return;
     var bpm = currentBpm();
     var phase = clockTime() / (60 / bpm);
     var idx = ((Math.floor(phase) % 8) + 8) % 8;
@@ -2636,6 +3147,7 @@
     ctx.restore();
   }
   function drawHud(L) {
+    if (state.improve || state.tab !== 'stage') return;
     if (!(state.mode === 'routine' || state.mode === 'freestyle' || state.mode === 'results' || state.mode === 'countdown' || state.mode === 'countgo')) return;
     var x = L.stage.x + 10;
     var y = L.head + 30;
@@ -2675,13 +3187,13 @@
     } else if (state.mode === 'countgo') {
       word = (state.countKind === 'record' || state.countKind === 'pet') ? 'RECORDING!' : 'DANCE!';
     } else if (state.mode === 'recording' || state.mode === 'petrec') {
-      var recN = state.mode === 'petrec' ? state.petFrames.length : state.moFrames.length;
-      var recMax = state.mode === 'petrec' ? 60 : 80;
       ctx.save();
       ctx.font = '800 12px Orbitron,sans-serif';
       ctx.fillStyle = '#ff2a3d';
       ctx.textAlign = 'left';
-      ctx.fillText('REC ' + recN + '/' + recMax, L.stage.x + 12, L.head + 34);
+      ctx.shadowColor = '#ff2a3d';
+      ctx.shadowBlur = 8;
+      ctx.fillText('REC', L.stage.x + 12, L.head + 28);
       ctx.restore();
       return;
     } else return;
@@ -2696,7 +3208,9 @@
     ctx.font = '700 11px Orbitron,sans-serif';
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#ffb3e6';
-    var phrase = state.countKind === 'pet' ? '5… 4… 3… 2… 1… RECORDING!' : state.countKind === 'record' ? '5… 4… 3… 2… 1… RECORDING!' : '5… 4… 3… 2… 1… DANCE!';
+    var phrase = state.countMax <= 3
+      ? '3… 2… 1… RECORDING!'
+      : (state.countKind === 'pet' || state.countKind === 'record') ? '5… 4… 3… 2… 1… RECORDING!' : '5… 4… 3… 2… 1… DANCE!';
     ctx.fillText(phrase, L.center.x, L.center.y + 58);
     ctx.restore();
   }
@@ -2797,6 +3311,7 @@
     ctx.restore();
   }
   function drawPanel(L, now) {
+    return;
     var P = L.panel;
     if (!P) return;
     if (isPetish()) return drawPetPanel(P, now);
@@ -2862,7 +3377,9 @@
     recomputeEnergy(dt);
     if (window.WALK_MODE && WALK_MODE.nudge) { WALK_MODE.nudge.x = 0; WALK_MODE.nudge.z = 0; }
     wrapInput();
-    if (state.mode === 'align' || state.mode === 'mocap' || state.mode === 'pet') {
+    if (state.improve) {
+      stepImprove(dt);
+    } else if (state.mode === 'align' || state.mode === 'mocap' || state.mode === 'pet') {
       var waveHot = state.wavePtr || state.waveEnergy >= WAVE_E;
       if (waveHot) state.waveHold += dt;
       else state.waveHold = Math.max(0, state.waveHold - dt * 0.85);
@@ -2871,11 +3388,12 @@
         state.wavePtr = false;
         state.countKind = (state.mode === 'pet' || state.intent === 'pet') ? 'pet' : (state.mode === 'mocap' || state.intent === 'record') ? 'record' : 'routine';
         state.mode = 'countdown';
+        state.countMax = 5;
         state.countLeft = 5;
         updateChrome();
       }
     }
-    if (state.mode === 'countdown') {
+    if (!state.improve && state.mode === 'countdown') {
       state.countLeft -= dt;
       if (state.countLeft <= 0) { state.mode = 'countgo'; state.countGo = 0.55; }
     } else if (state.mode === 'countgo') {
@@ -2996,11 +3514,19 @@
         rank: state.rank,
         moves: state.moves,
         kcal: Math.round(state.kcal * 10) / 10,
-        faults: state.faults.slice()
+        faults: state.faults.slice(),
+        tab: state.tab,
+        improve: !!state.improve,
+        improveKind: state.improveKind,
+        takeFrames: takeFrames.length
       };
     },
     startRoutine: function (routineId) {
       if (!state.open) api.open({});
+      state.intent = 'routine';
+      state.countKind = 'routine';
+      state.tab = 'stage';
+      if (state.improve) closeImprove();
       var id = resolveRoutine(routineId || state.selected);
       state.userSim = state.userSim || !state.cameraActive;
       state.simActive = state.simActive || state.userSim || !state.cameraActive;
@@ -3055,9 +3581,11 @@
       state.countKind = 'record';
       state.routineId = 'mocap';
       state.mode = 'countdown';
+      state.countMax = 5;
       state.countLeft = 5;
       state.countGo = 0;
       state.waveHold = 0;
+      state.tab = 'char';
       updateChrome();
       return true;
     },
@@ -3085,9 +3613,11 @@
       state.countKind = 'pet';
       state.routineId = 'pet';
       state.mode = 'countdown';
+      state.countMax = 5;
       state.countLeft = 5;
       state.countGo = 0;
       state.waveHold = 0;
+      state.tab = 'pet';
       updateChrome();
       return true;
     },
@@ -3112,6 +3642,7 @@
       state.mode = 'petplay';
       state.playT = 1.75;
       var saved = savePetDance(readPetStore().activeSlot || 0, name, frames);
+      fillTakeFromFrames('pet', frames);
       updateChrome();
       return saved;
     },
@@ -3132,10 +3663,30 @@
       state.playT = 1.15;
       state.slotName = name;
       var saved = api.saveCustomDance(readStore().activeSlot || 0, name, frames);
+      fillTakeFromFrames('char', frames);
       updateChrome();
       return saved;
+    },
+    openCompareReplay: function (opts) {
+      if (!state.open) api.open({});
+      var o = opts || {};
+      var kind = o.kind || ((isPetish() || state.intent === 'pet') ? 'pet' : 'char');
+      state.improveKind = kind === 'pet' ? 'pet' : 'char';
+      if (!takeFrames.length) {
+        if (state.improveKind === 'pet' && state.petFrames && state.petFrames.length) fillTakeFromFrames('pet', state.petFrames);
+        else if (state.moFrames && state.moFrames.length) fillTakeFromFrames('char', state.moFrames);
+      }
+      state.improve = true;
+      state.improvePhase = 'play';
+      var n = takeFrames.length || 1;
+      var kf = o.kf != null ? (+o.kf || 1) : Math.min(n, 24);
+      state.improveIndex = clamp(kf - 1, 0, Math.max(0, n - 1));
+      state.improvePlay = !!o.play;
+      updateChrome();
+      return true;
     }
   };
+  api._lastTakeFrames = takeFrames;
 
   try {
     var stageData = loadStage();
