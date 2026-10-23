@@ -72,13 +72,14 @@ function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;miniFitPitch();
   MINI.cv=cv;}
 let miniSpan=0;
 const ZICON_W=.45; // visible car width ÷ sprite. Street width uses this.
-function miniTune(){return window.MINIMAP_TUNE||{spanClose:300,spanFar:3400,altClose:24,altFar:240,ease:.8,street:20,iconMin:20,poiPx:20};}
+function miniTune(){return window.MINIMAP_TUNE||{spanClose:300,spanFar:3400,altClose:24,altFar:240,ease:.8,street:20,iconMin:20,poiPx:20,hotPulse:.16,hotMs:110};}
 function miniZoom(dt){const T=miniTune(),y=Math.max(0,P.y||0),den=(T.altFar||240)-(T.altClose||24),u=den>0?clamp((y-(T.altClose||24))/den,0,1):0,e=u*u*(3-2*u),target=(T.spanClose||300)+((T.spanFar||3400)-(T.spanClose||300))*e;
   if(!miniSpan){miniSpan=target;return miniSpan;}
   const k=1-Math.exp(-Math.min(Math.max(dt,0),.1)/Math.max(.05,T.ease||.8));miniSpan+=(target-miniSpan)*k;return miniSpan;}
 function miniIconPx(mw,span){const T=miniTune(),px=(T.street||20)/span*mw;return Math.max(T.iconMin||20,px/ZICON_W);}
-const POI={plane:null,ball:null};
+const POI={plane:null,ball:null,hotdrop:null};
 function poiBake(){if(POI.plane)return;const N=128,disc=(glow,edge)=>{const cv=document.createElement('canvas');cv.width=cv.height=N;const c=cv.getContext('2d');c.beginPath();c.arc(64,64,54,0,7);c.fillStyle='rgba(8,4,20,0.92)';c.fill();c.lineWidth=7;c.strokeStyle=glow;c.shadowColor=glow;c.shadowBlur=14;c.stroke();c.shadowBlur=0;c.lineWidth=3;c.strokeStyle=edge;c.stroke();return c;};
+  const star=(c,r0,r1)=>{c.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rad=i%2?r0:r1,x=64+Math.cos(a)*rad,y=64+Math.sin(a)*rad;i?c.lineTo(x,y):c.moveTo(x,y);}c.closePath();};
   const pc=disc('#3ee6ff','#e9fbff');pc.save();pc.beginPath();pc.arc(64,64,50,0,7);pc.clip();pc.fillStyle='#f4fbff';pc.strokeStyle='#3ee6ff';pc.lineJoin='round';pc.lineWidth=5;
   pc.beginPath();pc.moveTo(64,18);pc.quadraticCurveTo(76,46,73,86);pc.lineTo(68,108);pc.quadraticCurveTo(64,114,60,108);pc.lineTo(55,86);pc.quadraticCurveTo(52,46,64,18);pc.closePath();pc.fill();pc.stroke();
   pc.beginPath();pc.moveTo(60,48);pc.lineTo(16,78);pc.lineTo(22,90);pc.lineTo(58,70);pc.lineTo(70,70);pc.lineTo(106,90);pc.lineTo(112,78);pc.lineTo(68,48);pc.closePath();pc.fill();pc.stroke();
@@ -88,12 +89,16 @@ function poiBake(){if(POI.plane)return;const N=128,disc=(glow,edge)=>{const cv=d
   bc.beginPath();for(let i=0;i<5;i++){const a=-Math.PI/2+i*Math.PI*2/5,x=64+Math.cos(a)*16,y=64+Math.sin(a)*16;i?bc.lineTo(x,y):bc.moveTo(x,y);}bc.closePath();bc.fillStyle='#141414';bc.fill();
   bc.lineWidth=4;bc.strokeStyle='#141414';for(let i=0;i<5;i++){const a=-Math.PI/2+i*Math.PI*2/5,b=a+Math.PI/5;bc.beginPath();bc.moveTo(64+Math.cos(a)*16,64+Math.sin(a)*16);bc.quadraticCurveTo(64+Math.cos(b)*26,64+Math.sin(b)*26,64+Math.cos(a)*34,64+Math.sin(a)*34);bc.stroke();}
   bc.beginPath();for(let i=0;i<5;i++){const a=-Math.PI/2+i*Math.PI*2/5+Math.PI/5,x=64+Math.cos(a)*30,y=64+Math.sin(a)*30;i?bc.lineTo(x,y):bc.moveTo(x,y);}bc.closePath();bc.lineWidth=3;bc.stroke();
-  POI.ball=bc.canvas;}
-function miniPois(cx,cy,mw,mh,yaw,ppm){poiBake();const px=miniTune().poiPx||20,pad=12,hx=mw/2-pad,hy=mh/2-pad,co=Math.cos(yaw),si=Math.sin(yaw);
+  POI.ball=bc.canvas;
+  const hc=disc('#ffe14d','#3ee6ff');hc.save();hc.beginPath();hc.arc(64,64,48,0,7);hc.clip();star(hc,14,34);hc.fillStyle='#ffe14d';hc.strokeStyle='#fff';hc.lineJoin='round';hc.lineWidth=4;hc.fill();hc.stroke();star(hc,6,15);hc.fillStyle='#fff8d4';hc.fill();hc.restore();
+  POI.hotdrop=hc.canvas;}
+function miniSpot(lx,lz,co,si,ppm,hx,hy){const dx=lx-P.x,dz=lz-P.z;let sx=(dx*co-dz*si)*ppm,sy=(-dx*si-dz*co)*ppm,out=Math.abs(sx)>hx||Math.abs(sy)>hy;if(out){const t=1/Math.max(Math.abs(sx)/hx,Math.abs(sy)/hy);sx*=t;sy*=t;}return[sx,sy,out];}
+function miniPois(cx,cy,mw,mh,yaw,ppm){poiBake();const T=miniTune(),px=T.poiPx||20,pad=12,hx=mw/2-pad,hy=mh/2-pad,co=Math.cos(yaw),si=Math.sin(yaw);
   const marks=[[0,730,POI.plane,-yaw],[(window.SOCCER_TUNE&&SOCCER_TUNE.fieldCx)||790,(window.SOCCER_TUNE&&SOCCER_TUNE.fieldCz)||300,POI.ball,0]];
-  for(const[lx,lz,spr,rot]of marks){const dx=lx-P.x,dz=lz-P.z;let sx=(dx*co-dz*si)*ppm,sy=(-dx*si-dz*co)*ppm,out=Math.abs(sx)>hx||Math.abs(sy)>hy;
-    if(out){const t=1/Math.max(Math.abs(sx)/hx,Math.abs(sy)/hy);sx*=t;sy*=t;}
-    ctx.save();ctx.globalAlpha=out?.85:1;ctx.translate(cx+sx,cy+sy);if(rot)ctx.rotate(rot);ctx.imageSmoothingEnabled=true;ctx.drawImage(spr,-px/2,-px/2,px,px);ctx.restore();}}
+  for(const[lx,lz,spr,rot]of marks){const[sx,sy,out]=miniSpot(lx,lz,co,si,ppm,hx,hy);
+    ctx.save();ctx.globalAlpha=out?.85:1;ctx.translate(cx+sx,cy+sy);if(rot)ctx.rotate(rot);ctx.imageSmoothingEnabled=true;ctx.drawImage(spr,-px/2,-px/2,px,px);ctx.restore();}
+  const H=window.HOTDROP;if(H&&H.active){const[sx,sy,out]=miniSpot(H.x,H.z,co,si,ppm,hx,hy),pulse=1+(T.hotPulse||.16)*Math.sin(performance.now()/(T.hotMs||110)),d=px*pulse;
+    ctx.save();ctx.globalAlpha=out?.85:1;ctx.translate(cx+sx,cy+sy);ctx.beginPath();ctx.arc(0,0,d*.62,0,7);ctx.lineWidth=2;ctx.strokeStyle=H_YEL;ctx.shadowColor=H_YEL;ctx.shadowBlur=12;ctx.stroke();ctx.shadowBlur=0;ctx.imageSmoothingEnabled=true;ctx.drawImage(POI.hotdrop,-d/2,-d/2,d,d);ctx.restore();}}
 // North on screen after the map is rotated by -yaw. yaw 0 faces +z, and +yaw turns toward +x.
 function miniNorth(mx,my,mw,mh,yaw){const dx=-Math.sin(yaw),dy=-Math.cos(yaw),r=12,cx=mx+mw/2,cy=my+mh/2,hx=mw/2-r-3,hy=mh/2-r-3,x=cx+dx*hx,y=cy+dy*hy;
   ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fillStyle='rgba(8,4,20,.92)';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=H_CYAN;ctx.shadowColor=H_CYAN;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
@@ -123,6 +128,12 @@ function drawHud(dt){const t=performance.now()/1000,w=W,h=H,s=clamp(h/378,.72,1.
     const by=gy+gh+5,bw=gw;if(P.ground){const mxv=TU.rotateSpeed*1.25,fr=v=>clamp(v/mxv,0,1);ctx.fillStyle='rgba(255,255,255,.14)';hrr(ctx,gx,by,bw,5,2.5);ctx.fill();ctx.fillStyle=ok?(Math.floor(t*6)%2?'#fff':H_YEL):H_CYAN;if(P.v>.3){hrr(ctx,gx,by,Math.max(5,bw*fr(P.v)),5,2.5);ctx.fill();}ctx.fillStyle=H_LIME;ctx.fillRect(gx+bw*fr(TU.rotateSpeed)-1.5,by-3,3,11);
       hT(ctx,ok?'PULL UP!  ▲ TILT TOWARD YOU':!P.wings?(P.v>=TU.rotateSpeed?'OPEN WINGS TO LAUNCH!':'WINGS CLOSED · NO LIFT · TAP WINGS'):P.v<1?`HOLD THROTTLE · ROTATE AT ${Math.round(TU.rotateSpeed*2.237)} MPH`:'BUILD SPEED TO THE GREEN MARK',Wd/2,by+20+(ok?2:0),ok?13:10,ok?H_YEL:'#bfd6ff','center',ok?H_FONT:H_TXT,900,ok?10:4);}
     else hT(ctx,P.stall?'LOW SPEED · NOSE DOWN OR MORE THROTTLE':P.y<15&&P.v*3.6<40?'SLOW & NOSE UP · AIR BRAKE · BUTTER IT!':'DIVE = SPEED · CLIMB = HEIGHT',Wd/2,by+14,10,P.stall?H_ORNG:'#bfd6ff','center',H_TXT,800,4);}
+  // Hot Drop pill sits under the tilt prompt. Overcharge uses the same slot while the NOS reward is live.
+  {const H=window.HOTDROP,over=H&&H.overchargeT>0,hot=H&&H.active&&H.tLeft>0;if(over||hot){const pw=184,ph=22,px=Wd/2-pw/2,py=98,col=over?H_LIME:H_YEL,frac=over?clamp(H.overchargeT/15,0,1):clamp(H.tLeft/(H.maxT||25),0,1);
+    const label=over?`🔥 OVERCHARGE NOS · ${Math.ceil(H.overchargeT)}S`:`⚡ HOT DROP · ${Math.ceil(H.tLeft)}S · ${Math.round(Math.hypot(H.x-P.x,H.z-P.z))}M`;
+    ctx.save();hrr(ctx,px,py,pw,ph,11);ctx.fillStyle='rgba(8,4,20,.92)';ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle=H_CYAN;ctx.shadowColor=col;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
+    hT(ctx,label,Wd/2,py+14,10,col,'center',H_FONT,800,3);
+    ctx.fillStyle='rgba(255,255,255,.14)';ctx.fillRect(px+10,py+ph-4,pw-20,2);ctx.fillStyle=col;ctx.shadowColor=col;ctx.shadowBlur=6;ctx.fillRect(px+10,py+ph-4,Math.max(2,(pw-20)*frac),2);ctx.shadowBlur=0;ctx.restore();}}
   // RIGHT: MPH dial, then the smaller ALT/THR + STATUS stack directly under it. N2O gauge stays off (bottle is on the NOS button).
   {const rx=Wd-16;ctx.save();const g=ctx.createLinearGradient(Wd-200,0,Wd,0);g.addColorStop(0,'rgba(8,3,20,0)');g.addColorStop(1,'rgba(8,3,20,.6)');ctx.fillStyle=g;ctx.fillRect(Wd-200,8,200,60);ctx.restore();
     {const cx=rx-128,cy=46,r=26,MAX=TU.maxSpeed*TU.nosBoost*2.237,v=clamp(vS,0,MAX),a0=Math.PI*.8,a1=Math.PI*2.2,A=m=>a0+(a1-a0)*(m/MAX);ctx.save();ctx.lineCap='round';ctx.lineWidth=5;ctx.strokeStyle='rgba(255,255,255,.14)';ctx.beginPath();ctx.arc(cx,cy,r,a0,a1);ctx.stroke();

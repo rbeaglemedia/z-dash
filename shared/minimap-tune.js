@@ -10,5 +10,7 @@ window.MINIMAP_TUNE = {
   ease: 0.8,       // seconds for the zoom to follow altitude
   street: 20,      // ground icon is about this many metres wide, one street
   iconMin: 20,     // smallest the Z sprite gets, in HUD px, so it stays readable zoomed out
-  poiPx: 20        // airport and soccer landmark badges, in HUD px. Same size at every zoom.
+  poiPx: 20,       // airport, soccer, and hot-drop badges, in HUD px. Same size at every zoom.
+  hotPulse: 0.16,  // hot-drop badge scale swing (1 ± this)
+  hotMs: 110       // hot-drop pulse period, in milliseconds
 };
