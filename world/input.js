@@ -23,7 +23,12 @@ function goFull(){const lk=()=>{try{const o=screen.orientation;if(o&&o.lock&&/^l
 function tiltCenter(){if(TL.a0!=null&&((screenAngle()-TL.a0)%180!==0)){TL.a0=screenAngle();orientFix();TL.calNext=true;TL.sl=0;TL.sf=0;return;}if(TL.have){TL.n0={lr:TL.lr,fb:TL.fb};TL.g0=TL.gv;TL.sl=0;TL.sf=0;TL.calNext=false;}else TL.calNext=true;}
 const tiltOk=()=>!TL.off&&TL.have&&TL.perm!=='denied'&&performance.now()-TL.last<1500;
 // ===== INPUT =====
-function syncWingsBtn(){const b=document.getElementById('wng');if(!b)return;const s=document.getElementById('wngS'),hasP=typeof P!=='undefined',open=!!(hasP&&P.wings),street=!open&&hasP&&P.driveMode==='street';
+function onFootNow(){const W=window.WALK_MODE;return !!(W&&W.onFoot);}
+function canExitCar(){const W=window.WALK_MODE;return !!(W&&!W.onFoot&&typeof W.canGetOut==='function'&&W.canGetOut());}
+function syncWingsBtn(){const b=document.getElementById('wng');if(!b)return;
+  if(onFootNow()||canExitCar()){if(typeof syncOnFootButtons==='function')syncOnFootButtons();return;}
+  const s=document.getElementById('wngS'),hasP=typeof P!=='undefined',open=!!(hasP&&P.wings),street=!open&&hasP&&P.driveMode==='street';
+  b.classList.remove('enter-car','exit-car');
   b.classList.toggle('open',open);b.classList.toggle('arcade',!open&&!street);b.classList.toggle('street',street);
   b.style.background='';b.style.boxShadow='';b.style.color='';
   if(s)s.textContent=open?'OPEN':street?'STREET':'ARCADE';}
@@ -41,7 +46,7 @@ addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='KeyF'&&flying)set
 function startRoll(d){return;/* Bob: no barrel rolls */if(!flying||P.ground||P.roll||P.flip)return;P.roll={d,t:0,b0:clamp(P.bank,-TUNE.maxBank*D,TUNE.maxBank*D)};toast('BARREL ROLL!');}
 {const tap={};addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='KeyZ')startRoll(-1);if(e.code==='KeyC')startRoll(1);const d=(e.code==='ArrowLeft'||e.code==='KeyA')?-1:(e.code==='ArrowRight'||e.code==='KeyD')?1:0;if(!d)return;const n=performance.now();if(n-(tap[d]||0)<300){startRoll(d);tap[d]=0;}else tap[d]=n;});}
 const K={};addEventListener('keydown',e=>{K[e.code]=1;if(e.code.startsWith('Arrow')||e.code==='Space')e.preventDefault();});addEventListener('keyup',e=>{K[e.code]=0;});
-const B={tup:0,nos:0,brk:0,brkDx:0,brkX:null,ebLatch:0};
+const B={tup:0,nos:0,brk:0,brkDx:0,brkX:null,ebLatch:0,walk:0,run:0,jump:0,emote:0};
 // Each button keeps its own pointer and its own touch so AIR BRAKE and THROTTLE can be held together.
 // Touch is handled on touch events (two fingers). Mouse/pen use pointer events. A touch does not also
 // take the mouse-compat pointer that some browsers fire afterwards.
@@ -66,16 +71,27 @@ function syncEb(){const el=document.getElementById('brk'),pad=document.getElemen
   if(canEb&&K.KeyB){B.ebLatch=1;B._ebKey=1;}
   else if(B._ebKey){B._ebKey=0;if(!B.brk)B.ebLatch=0;}
   if(pad){pad.classList.toggle('show',on);pad.setAttribute('aria-hidden',on?'false':'true');}}
-function bindHold(id){const el=document.getElementById(id);let ptr=null,touchId=null,x0=0;
-  const down=x=>{B[id]=1;el.classList.add('on','nfxp');if(id==='brk'){x0=x;B.brkX=x;B.brkDx=0;syncEb();}};
-  const move=(x)=>{if(id==='brk'&&B.brk){B.brkX=x;B.brkDx=x-x0;syncEb();}};
-  const up=()=>{B[id]=0;el.classList.remove('on','nfxp');if(id==='brk'){B.brkDx=0;B.brkX=null;B.ebLatch=0;syncEb();}};
-  el.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();ptr=e.pointerId;try{el.setPointerCapture(e.pointerId);}catch(_){}down(e.clientX);});
+function bindHold(id){const el=document.getElementById(id);let ptr=null,touchId=null,x0=0,y0=0,wasFoot=false,jumpLatched=false;
+  const down=(x,y)=>{y0=y==null?y0:y;wasFoot=onFootNow();jumpLatched=false;el.classList.add('on','nfxp');
+    if(wasFoot){if(id==='tup'){B.walk=1;B.tup=0;}else if(id==='nos'){B.run=1;B.nos=0;}else if(id==='brk'){B.jump=1;B.brk=0;B.brkX=null;B.brkDx=0;B.ebLatch=0;const pad=document.getElementById('ebpad');if(pad){pad.classList.remove('show');pad.setAttribute('aria-hidden','true');}if(window.WALK_MODE&&typeof WALK_MODE.jump==='function')WALK_MODE.jump();}
+      if(window.WALK_MODE)WALK_MODE.runMode=!!(B.run&&B.walk);return;}
+    B[id]=1;if(id==='brk'){x0=x;B.brkX=x;B.brkDx=0;syncEb();}};
+  const move=(x,y)=>{if(wasFoot&&id==='nos'&&B.run){const flip=!!(document.getElementById('kid')&&document.getElementById('kid').classList.contains('flip180'));
+      const upPx=flip?(y-y0):(y0-y);const brk=document.getElementById('brk');
+      if(upPx>=32){B.run=1;if(!jumpLatched){jumpLatched=true;B.jump=1;if(brk)brk.classList.add('on');if(window.WALK_MODE&&typeof WALK_MODE.jump==='function')WALK_MODE.jump();}}
+      else if(upPx<20&&jumpLatched){jumpLatched=false;if(brk&&!brk.classList.contains('nfxp')){B.jump=0;brk.classList.remove('on');}}
+      if(window.WALK_MODE)WALK_MODE.runMode=!!(B.run&&B.walk);return;}
+    if(!wasFoot&&id==='brk'&&B.brk){B.brkX=x;B.brkDx=x-x0;syncEb();}};
+  const up=()=>{el.classList.remove('on','nfxp');
+    if(wasFoot){if(id==='tup')B.walk=0;else if(id==='nos'){B.run=0;if(jumpLatched){jumpLatched=false;const brk=document.getElementById('brk');if(brk&&!brk.classList.contains('nfxp')){B.jump=0;brk.classList.remove('on');}}}else if(id==='brk')B.jump=0;
+      if(window.WALK_MODE)WALK_MODE.runMode=!!(onFootNow()&&B.run&&B.walk);return;}
+    B[id]=0;if(id==='brk'){B.brkDx=0;B.brkX=null;B.ebLatch=0;syncEb();}};
+  el.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();ptr=e.pointerId;try{el.setPointerCapture(e.pointerId);}catch(_){}down(e.clientX,e.clientY);});
   el.addEventListener('pointermove',e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;move(e.clientX,e.clientY);});
   const pup=e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;ptr=null;up();};
   el.addEventListener('pointerup',pup);el.addEventListener('pointercancel',pup);
   el.addEventListener('touchstart',e=>{ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}
-    for(const t of e.changedTouches)if(touchId==null){touchId=t.identifier;down(t.clientX);}},{passive:false});
+    for(const t of e.changedTouches)if(touchId==null){touchId=t.identifier;down(t.clientX,t.clientY);}},{passive:false});
   el.addEventListener('touchmove',e=>{for(const t of e.changedTouches)if(t.identifier===touchId){ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}move(t.clientX,t.clientY);}},{passive:false});
   const tup=e=>{ebTouchAt=performance.now();for(const t of e.changedTouches)if(t.identifier===touchId){touchId=null;up();}};
   el.addEventListener('touchend',tup,{passive:false});el.addEventListener('touchcancel',tup,{passive:false});}
@@ -104,7 +120,11 @@ for(const id of['tup','nos','brk'])bindHold(id);
   const release=commit=>{b.classList.remove('nfxp');const latched=!!padOn;holding=false;padOn=false;
     const pad=document.getElementById('mdpad');if(pad){pad.classList.remove('show');pad.setAttribute('aria-hidden','true');}
     if(commit&&latched)setDriveMode((typeof P!=='undefined'&&P.driveMode==='street')?'arcade':'street');
-    else if(commit&&!everPad&&moved<24)setWings(!P.wings);
+    else if(commit&&!everPad&&moved<24){const W=window.WALK_MODE;
+      if(W&&W.onFoot&&typeof W.toggleGetOut==='function')W.toggleGetOut();
+      else if(W&&!W.onFoot&&typeof W.canGetOut==='function'&&W.canGetOut()&&typeof W.toggleGetOut==='function')W.toggleGetOut();
+      else setWings(!P.wings);}
+    if(typeof syncOnFootButtons==='function')syncOnFootButtons();
     ptr=null;touchId=null;};
   b.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();ptr=e.pointerId;try{b.setPointerCapture(e.pointerId);}catch(_){}arm(e.clientX,e.clientY);});
   b.addEventListener('pointermove',e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;drag(e.clientX,e.clientY);});
@@ -115,3 +135,89 @@ for(const id of['tup','nos','brk'])bindHold(id);
   b.addEventListener('touchmove',e=>{for(const t of e.changedTouches)if(t.identifier===touchId){ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}drag(t.clientX,t.clientY);}},{passive:false});
   const tend=e=>{ebTouchAt=performance.now();const commit=e.type==='touchend';for(const t of e.changedTouches)if(t.identifier===touchId)release(commit);};
   b.addEventListener('touchend',tend,{passive:false});b.addEventListener('touchcancel',tend,{passive:false});}
+// On foot, the four drive buttons become WALK / RUN / JUMP / ENTER, and a bottom-middle EMOTE wheel appears.
+// Injected here so world-split.html stays untouched. Labels follow WALK_MODE.onFoot and canGetOut().
+const EMOTE_OPTS=[{id:'up',name:'DANCE 1',label:'🕺 DANCE 1'},{id:'right',name:'DANCE 2',label:'🔥 DANCE 2'},{id:'down',name:'PET GROOVE',label:'🐾 PET GROOVE'},{id:'left',name:'HYPE SPIN',label:'⚡ HYPE SPIN'}];
+let footMode='';
+function setBtnFace(el,main,smallText,smallId){if(!el)return;const can=el.querySelector('.nfxcan');
+  [...el.childNodes].forEach(n=>{if(n!==can)n.remove();});
+  const sm=document.createElement('small');if(smallId)sm.id=smallId;sm.textContent=smallText;
+  el.insertBefore(document.createTextNode(main),can||null);el.insertBefore(sm,can||null);}
+function paintDriveWings(){const b=document.getElementById('wng');if(!b)return;const s=document.getElementById('wngS'),hasP=typeof P!=='undefined',open=!!(hasP&&P.wings),street=!open&&hasP&&P.driveMode==='street';
+  b.classList.remove('enter-car','exit-car');b.classList.toggle('open',open);b.classList.toggle('arcade',!open&&!street);b.classList.toggle('street',street);
+  b.style.background='';b.style.boxShadow='';b.style.color='';if(s)s.textContent=open?'OPEN':street?'STREET':'ARCADE';}
+function applyFootMode(mode){const tup=document.getElementById('tup'),nos=document.getElementById('nos'),brk=document.getElementById('brk'),wng=document.getElementById('wng');
+  const can=nos&&nos.querySelector('.nfxcan');if(can)can.style.visibility=mode==='walk'?'hidden':'';
+  if(mode==='walk'){if(tup){tup.classList.add('onfoot-walk');setBtnFace(tup,'WALK','HOLD');}
+    if(nos){nos.classList.add('onfoot-run');setBtnFace(nos,'RUN','HOLD · ↑ JUMP');}
+    if(brk){brk.classList.add('onfoot-jump');setBtnFace(brk,'JUMP','TAP');}
+    if(wng){wng.classList.remove('open','arcade','street','exit-car');wng.classList.add('enter-car');setBtnFace(wng,'ENTER','CAR','wngS');}
+    const pad=document.getElementById('ebpad');if(pad){pad.classList.remove('show');pad.setAttribute('aria-hidden','true');}
+    B.tup=0;B.nos=0;B.brk=0;B.ebLatch=0;}
+  else if(mode==='exit'){if(tup){tup.classList.remove('onfoot-walk');if(footMode==='walk')setBtnFace(tup,'THROTTLE','HOLD');}
+    if(nos){nos.classList.remove('onfoot-run');if(footMode==='walk')setBtnFace(nos,'NOS','HOLD');}
+    if(brk){brk.classList.remove('onfoot-jump');if(footMode==='walk')setBtnFace(brk,'AIR','BRAKE');}
+    if(wng){wng.classList.remove('open','arcade','street','enter-car');wng.classList.add('exit-car');setBtnFace(wng,'EXIT','CAR','wngS');}}
+  else{if(tup){tup.classList.remove('onfoot-walk');setBtnFace(tup,'THROTTLE','HOLD');}
+    if(nos){nos.classList.remove('onfoot-run');setBtnFace(nos,'NOS','HOLD');}
+    if(brk){brk.classList.remove('onfoot-jump');setBtnFace(brk,'AIR','BRAKE');}
+    if(wng){wng.classList.remove('enter-car','exit-car');
+      const lead=wng.childNodes[0]&&wng.childNodes[0].nodeType===3?wng.childNodes[0].textContent:'';
+      if(lead!=='WINGS')setBtnFace(wng,'WINGS','ARCADE','wngS');
+      paintDriveWings();}}}
+function syncOnFootButtons(){ensureEmote();const mode=onFootNow()?'walk':canExitCar()?'exit':'drive';
+  const em=document.getElementById('emoteBtn'),wheel=document.getElementById('emoteWheel');
+  if(em)em.style.display=mode==='walk'?'flex':'none';
+  if(wheel&&mode!=='walk'){wheel.classList.remove('show');wheel.setAttribute('aria-hidden','true');}
+  if(mode!==footMode){applyFootMode(mode);footMode=mode;}
+  const W=window.WALK_MODE;if(W)W.runMode=!!(mode==='walk'&&B.run&&B.walk);
+  if(mode!=='walk'){B.walk=0;B.run=0;if(!B.brk)B.jump=0;}}
+window.syncOnFootButtons=syncOnFootButtons;
+function ensureEmote(){if(document.getElementById('emoteBtn'))return;
+  const css=document.createElement('style');css.id='emoteCss';css.textContent=''
+    +'#emoteBtn{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:25;display:none;width:min(92px,23vh);height:min(92px,23vh);border-radius:50%;border:4px solid #fff;margin:0;padding:0;'
+    +'background:radial-gradient(circle at 40% 35%,#ffe9ff,#d14dff 45%,#4a0a6a);box-shadow:0 0 22px #e06bff;color:#fff;font:900 clamp(12px,3.4vh,15px) Orbitron,sans-serif;letter-spacing:.5px;'
+    +'flex-direction:column;align-items:center;justify-content:center;touch-action:none;user-select:none;cursor:pointer}'
+    +'#emoteBtn small{font:800 9px Rajdhani,sans-serif;letter-spacing:.5px;margin-top:2px}'
+    +'#emoteBtn.held{filter:brightness(.86)}'
+    +'#tup.onfoot-walk{background:radial-gradient(circle at 40% 35%,#d8ffe6,#2fd980 45%,#093822);box-shadow:0 0 18px #7dff6b;color:#042414}'
+    +'#nos.onfoot-run{background:radial-gradient(circle at 40% 35%,#fff2a8,#ffb020 45%,#8a3c00);box-shadow:0 0 18px #ffe14d;color:#240c00}'
+    +'#brk.onfoot-jump{background:radial-gradient(circle at 40% 35%,#c8fbff,#3ee6ff 45%,#0b6a86);box-shadow:0 0 18px #3ee6ff;color:#04202a}'
+    +'#wng.enter-car,#wng.exit-car{background:radial-gradient(circle at 40% 35%,#ffe9ff,#d14dff 45%,#4a0a6a);box-shadow:0 0 18px #e06bff;color:#fff}'
+    +'#emoteWheel{position:fixed;left:50%;bottom:calc(20px + min(46px,11.5vh));transform:translateX(-50%);z-index:24;display:none;width:0;height:0;pointer-events:none}'
+    +'#emoteWheel.show{display:block}'
+    +'#emoteWheel .emoteOpt{position:absolute;white-space:nowrap;padding:6px 10px;border-radius:999px;border:3px solid #fff;background:rgba(20,0,40,.9);color:#fff;font:900 12px Orbitron,sans-serif;box-shadow:0 0 12px #e06bff;transform:translate(-50%,-50%)}'
+    +'#emoteWheel .emoteOpt.active{background:#ffe14d;color:#240c00;box-shadow:0 0 18px #ffe14d}'
+    +'#emoteWheel .emoteOpt[data-dir="up"]{left:0;top:-74px}#emoteWheel .emoteOpt[data-dir="right"]{left:118px;top:0}'
+    +'#emoteWheel .emoteOpt[data-dir="down"]{left:0;top:74px}#emoteWheel .emoteOpt[data-dir="left"]{left:-118px;top:0}';
+  document.head.appendChild(css);
+  const host=document.querySelector('.kbody')||document.body;
+  const wheel=document.createElement('div');wheel.id='emoteWheel';wheel.setAttribute('aria-hidden','true');
+  wheel.innerHTML=EMOTE_OPTS.map(o=>'<span class="emoteOpt" data-dir="'+o.id+'">'+o.label+'</span>').join('');
+  const btn=document.createElement('button');btn.id='emoteBtn';btn.type='button';btn.innerHTML='EMOTE<small id="emoteS">DRAG ✥</small>';
+  host.appendChild(wheel);host.appendChild(btn);
+  let ptr=null,touchId=null,cur='',maxD=0;
+  const nameOf=id=>{const o=EMOTE_OPTS.find(x=>x.id===id);return o?o.name:'';};
+  const dirAt=(x,y)=>{const r=btn.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+    const flip=!!(document.getElementById('kid')&&document.getElementById('kid').classList.contains('flip180'));
+    const dx=flip?(cx-x):(x-cx),dy=flip?(y-cy):(cy-y),dist=Math.hypot(dx,dy);
+    if(dist>maxD)maxD=dist;if(dist<24)return '';
+    if(Math.abs(dy)>=Math.abs(dx))return dy>=0?'up':'down';return dx>=0?'right':'left';};
+  const paint=d=>{cur=d;wheel.querySelectorAll('.emoteOpt').forEach(n=>n.classList.toggle('active',n.getAttribute('data-dir')===d));
+    const s=document.getElementById('emoteS');if(s)s.textContent=d?nameOf(d):'DRAG ✥';};
+  const show=on=>{wheel.classList.toggle('show',on);wheel.setAttribute('aria-hidden',on?'false':'true');btn.classList.toggle('held',on);if(!on)paint('');};
+  const fire=()=>{const W=window.WALK_MODE;if(cur){B.emote=cur;if(W&&typeof W.triggerEmote==='function')W.triggerEmote(cur);else if(W&&typeof W.toggleDance==='function')W.toggleDance();}
+    else if(maxD<24){if(W&&typeof W.triggerEmote==='function')W.triggerEmote('tap');else if(W&&typeof W.toggleDance==='function')W.toggleDance();}};
+  const start=()=>{if(!onFootNow())return false;maxD=0;cur='';show(true);paint('');return true;};
+  const end=commit=>{if(btn.classList.contains('held')){if(commit)fire();show(false);}ptr=null;touchId=null;};
+  btn.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;if(!start())return;e.preventDefault();ptr=e.pointerId;try{btn.setPointerCapture(e.pointerId);}catch(_){}});
+  btn.addEventListener('pointermove',e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;paint(dirAt(e.clientX,e.clientY));});
+  const pup=e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;end(e.type==='pointerup');};
+  btn.addEventListener('pointerup',pup);btn.addEventListener('pointercancel',pup);
+  btn.addEventListener('touchstart',e=>{ebTouchAt=performance.now();if(!start())return;try{e.preventDefault();}catch(_){}
+    for(const t of e.changedTouches)if(touchId==null)touchId=t.identifier;},{passive:false});
+  btn.addEventListener('touchmove',e=>{for(const t of e.changedTouches)if(t.identifier===touchId){ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}paint(dirAt(t.clientX,t.clientY));}},{passive:false});
+  const tend=e=>{ebTouchAt=performance.now();const commit=e.type==='touchend';for(const t of e.changedTouches)if(t.identifier===touchId)end(commit);};
+  btn.addEventListener('touchend',tend,{passive:false});btn.addEventListener('touchcancel',tend,{passive:false});}
+function footLoop(){try{syncOnFootButtons();}catch(e){}requestAnimationFrame(footLoop);}
+if(document.getElementById('wng')){ensureEmote();syncOnFootButtons();requestAnimationFrame(footLoop);}
