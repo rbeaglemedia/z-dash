@@ -12,6 +12,8 @@
   var CH_NAME = 'zdash-customdance';
   var LS_PET = 'zdash.petdance.v1';
   var CH_PET = 'zdash-petdance';
+  var LS_CREW = 'zdash.crew.v1';
+  var CH_CREW = 'zdash-crew';
   var HIT_E = 0.1;
   var STILL_E = 0.045;
   var WAVE_E = 0.08;
@@ -141,7 +143,7 @@
     recordT: 0,
     playT: 0,
     slotName: 'ELLIE MO-CAP #1',
-    petName: 'CYBER PUP #1',
+    petName: 'MY DOG',
     petFrames: [],
     faults: [],
     W: 0,
@@ -149,8 +151,8 @@
   };
 
   var root, canvas, ctx, video, stream, topEl, titleEl, subEl, footEl, waveBox, waveBtn, waveCap;
-  var chipBtns = {}, slotBtns = [], progBtn, dogBtn, simBtn, slotRow;
-  var mcan, mctx, prevPix, sparks = [], lastT = 0, storeCache = null, danceCh = null, petCache = null, petCh = null, rewarded = false;
+  var chipBtns = {}, slotBtns = [], progBtn, dogBtn, simBtn, slotRow, classicBtn;
+  var mcan, mctx, prevPix, sparks = [], lastT = 0, storeCache = null, danceCh = null, petCache = null, petCh = null, crewCh = null, rewarded = false;
   var rafOn = false, layoutCache = null;
 
   function fault(e) {
@@ -184,8 +186,10 @@
       '.zd-ds button.on{color:#12052a;background:linear-gradient(90deg,#ffe14d,#ff9a2e);border-color:#ffe14d;box-shadow:0 0 12px rgba(255,225,77,.45)}',
       '.zd-ds-program{width:100%;border-color:#ff4fd8;background:rgba(255,79,216,.16);letter-spacing:.4px}',
       '.zd-ds-program.on{color:#fff;background:linear-gradient(90deg,#ff4fd8,#3ee6ff);border-color:#fff;box-shadow:0 0 16px rgba(255,79,216,.55)}',
-      '.zd-ds-dog{width:100%;border-color:#ffe14d;background:rgba(255,225,77,.12);letter-spacing:.4px;color:#fff}',
+      '.zd-ds-dog{width:100%;border-color:#ffe14d;background:rgba(255,225,77,.12);letter-spacing:.3px;color:#fff}',
       '.zd-ds-dog.on{color:#12052a;background:linear-gradient(90deg,#ffe14d,#7dff6b);border-color:#fff;box-shadow:0 0 16px rgba(125,255,107,.55)}',
+      '.zd-ds-classic{border-color:#ffe14d;background:rgba(255,225,77,.12)}',
+      '.zd-ds-classic.on{color:#12052a;background:linear-gradient(90deg,#ffe14d,#7dff6b);border-color:#fff}',
       '.zd-ds-wavebox{position:absolute;z-index:4;display:flex;align-items:center;gap:6px}',
       '.zd-ds-wavebox[hidden]{display:none !important}',
       '.zd-ds-slots[hidden]{display:none !important}',
@@ -244,7 +248,7 @@
     progBtn = el('button', 'zd-ds-program', 'PROGRAM CHARACTER DANCE (CAMERA MO-CAP)');
     progBtn.type = 'button';
     progBtn.addEventListener('click', enterMocap);
-    dogBtn = el('button', 'zd-ds-dog', 'RECORD DOG / PET DANCE (DOG MO-CAP)');
+    dogBtn = el('button', 'zd-ds-dog', '🐾 APPLY ANIMATION TO MY PET (RIDES & WALKS WITH YOU)');
     dogBtn.type = 'button';
     dogBtn.addEventListener('click', onDogClick);
     var row3 = el('div', 'zd-ds-row');
@@ -274,6 +278,10 @@
         slotRow.appendChild(b);
       })(i);
     }
+    classicBtn = el('button', 'zd-ds-classic', '✨ CLASSIC DEFAULT DANCE');
+    classicBtn.type = 'button';
+    classicBtn.addEventListener('click', pickClassic);
+    slotRow.appendChild(classicBtn);
     var saveB = el('button', '', 'SAVE SLOT');
     saveB.type = 'button';
     saveB.addEventListener('click', function () {
@@ -353,11 +361,11 @@
     var mocap = isMocapish();
     var pet = isPetish();
     titleEl.textContent = pet
-      ? 'Z COMPANY ARTS — RECORD DOG / PET DANCE (DOG MO-CAP)'
+      ? petHeader(readCrew())
       : mocap
         ? 'Z COMPANY ARTS — PROGRAM CHARACTER DANCE (CAMERA MO-CAP)'
         : 'Z COMPANY ARTS — NEON DANCE STAGE';
-    if (pet) subEl.textContent = 'PET LOOP · 6.0 SECONDS · 60 KEYFRAMES · CYBER PUP';
+    if (pet) subEl.textContent = 'PET LOOP · 6.0 SECONDS · 60 KEYFRAMES · RIDES & WALKS WITH YOU';
     else if (mocap) subEl.textContent = '8-COUNT LOOP · 8.0 SECONDS · 120 BPM · 80 KEYFRAMES';
     else if (state.mode === 'freestyle') subEl.textContent = 'FREESTYLE MIRROR · NO TIMER · FLOOR CAM';
     else {
@@ -377,12 +385,16 @@
 
   function refreshSlotLabels() {
     if (!slotBtns.length) return;
-    var store = (isPetish() || state.intent === 'pet') ? readPetStore() : readStore();
+    var pet = isPetish() || state.intent === 'pet';
+    var store = pet ? readPetStore() : readStore();
+    var crew = readCrew();
+    var opt = pet ? crew.petDanceOpt : crew.charDanceOpt;
     for (var i = 0; i < 3; i++) {
       var s = store.slots[i];
       slotBtns[i].textContent = s && s.name ? ('SLOT ' + (i + 1) + ' · ' + s.name) : ('SLOT ' + (i + 1));
-      slotBtns[i].classList.toggle('on', store.activeSlot === i);
+      slotBtns[i].classList.toggle('on', opt === ('slot' + (i + 1)));
     }
+    if (classicBtn) classicBtn.classList.toggle('on', opt === 'classic');
   }
 
   function resize() {
@@ -1145,7 +1157,7 @@
       var slot = slots[i];
       if (!slot || !slot.frames) { s.slots[i] = null; continue; }
       s.slots[i] = {
-        name: String(slot.name || ('CYBER PUP #' + (i + 1))).slice(0, 48),
+        name: String(slot.name || petSlotName('', i)).slice(0, 48),
         duration: 6,
         updatedAt: +slot.updatedAt || Date.now(),
         frames: toSixty(slot.frames)
@@ -1181,7 +1193,7 @@
   function savePetDance(slotIdx, name, frames) {
     var store = readPetStore();
     var idx = clamp(slotIdx | 0, 0, 2) | 0;
-    var nm = String(name || state.petName || ('CYBER PUP #' + (idx + 1))).slice(0, 48);
+    var nm = petSlotName(name || state.petName, idx);
     var sixty = toSixty(frames && frames.length ? frames : state.petFrames);
     store.slots[idx] = { name: nm, duration: 6, updatedAt: Date.now(), frames: sixty };
     store.activeSlot = idx;
@@ -1189,6 +1201,7 @@
     state.petName = nm;
     state.petFrames = sixty;
     writePetStore(store);
+    bindPetOpt(idx);
     return JSON.parse(JSON.stringify(petCache));
   }
   function petPoseAt(frames, tSec) {
@@ -1215,6 +1228,10 @@
     }, u);
   }
   function livePetPose(now) {
+    if (state.mode === 'petplay' && readCrew().petDanceOpt === 'classic') {
+      var tc = ((now / 1000) % 6) / 6;
+      return sanitizePet(petPreset('wiggle', tc), tc);
+    }
     if (state.mode === 'petplay' && state.petFrames.length) return petPoseAt(state.petFrames, state.playT);
     if (state.mode === 'petrec') return petPoseFromZones(state.zoneEnergy, clamp(state.recordT / 6, 0, 1));
     var t = ((now / 1000) % 6) / 6;
@@ -1231,7 +1248,7 @@
     updateChrome();
   }
   function finishPetRecording() {
-    var name = state.petName || 'CYBER PUP #1';
+    var name = state.petName || petSlotName('', 0);
     var store = readPetStore();
     var idx = store.activeSlot || 0;
     if (!state.petFrames.length) state.petFrames = toSixty([]);
@@ -1265,18 +1282,28 @@
     updateChrome();
   }
   function onDogClick() {
-    if (isPetish() && (state.mode === 'pet' || state.mode === 'petplay')) {
-      api.recordPetDance();
+    if (!state.open) api.open({});
+    if (!isPetish()) enterPet();
+    var store = readPetStore();
+    var idx = store.activeSlot || 0;
+    var slot = store.slots[idx];
+    if (slot && slot.frames && slot.frames.length) {
+      state.petFrames = slot.frames;
+      state.petName = slot.name;
+      state.mode = 'petplay';
+      state.intent = 'pet';
+      bindPetOpt(idx);
+      updateChrome();
       return;
     }
-    enterPet();
+    api.recordPetDance();
   }
   function selectPetSlot(idx) {
     var store = readPetStore();
     store.activeSlot = idx;
     var slot = store.slots[idx];
     if (slot && slot.name) state.petName = slot.name;
-    else state.petName = 'CYBER PUP #' + (idx + 1);
+    else state.petName = petSlotName('', idx);
     writePetStore(store);
     state.intent = 'pet';
     state.routineId = 'pet';
@@ -1289,6 +1316,7 @@
       state.petFrames = [];
       state.mode = 'pet';
     }
+    if (slot && slot.frames && slot.frames.length) bindPetOpt(idx);
     updateChrome();
   }
 
@@ -1350,6 +1378,7 @@
       state.intent = 'record';
       state.routineId = 'mocap';
     }
+    if (slot && slot.frames && slot.frames.length) bindCharOpt(idx);
     updateChrome();
   }
   function propCountdown() {
@@ -1371,6 +1400,9 @@
   }
 
   function livePose(now) {
+    if ((state.mode === 'playback' || state.mode === 'mocap') && readCrew().charDanceOpt === 'classic') {
+      return sanitizePose(presetPose('groove', ((now / 1000) % 8) / 8), ((now / 1000) % 8) / 8);
+    }
     if (state.mode === 'playback' && state.moFrames.length) return poseAt(state.moFrames, state.playT);
     if (state.mode === 'recording') return poseFromZones(state.zoneEnergy, clamp(state.recordT / 8, 0, 1));
     if (state.mode === 'mocap') return sanitizePose(presetPose('groove', ((now / 1000) % 8) / 8), ((now / 1000) % 8) / 8);
@@ -1543,7 +1575,506 @@
     ctx.arcTo(x, y, x + w, y, rr);
     ctx.closePath();
   }
+  /* Crew companion + Ellie, same joint proportions as world/crew.js (metres, y up, z forward). */
+  var DEG = Math.PI / 180;
+  var CREW_H = 1.75;
+  var CREW_B = { thigh: 0.245 * CREW_H, shin: 0.247 * CREW_H, foot: 0.15 * CREW_H, spine: 0.17 * CREW_H, chest: 0.115 * CREW_H, neck: 0.045 * CREW_H, head: 0.14 * CREW_H, uarm: 0.186 * CREW_H, farm: 0.146 * CREW_H, hand: 0.09 * CREW_H };
+  var CREW_SHAPE = {
+    girl: { sh: 0.114 * CREW_H, hip: 0.098 * CREW_H, arm: 0.02, leg: 0.026 },
+    boy: { sh: 0.130 * CREW_H, hip: 0.088 * CREW_H, arm: 0.026, leg: 0.03 }
+  };
+  var PET_RIG = {
+    dog: { len: 0.28, leg: 0.16, head: 0.09, body: 0.074, ear: 'floppy', earL: 0.07, tail: 'wag', tailL: 0.22, tailR: 0.03, snout: 0.075 },
+    cat: { len: 0.22, leg: 0.14, head: 0.084, body: 0.058, ear: 'point', earL: 0.05, tail: 'up', tailL: 0.26, tailR: 0.02, snout: 0.02, whiskers: 1 },
+    bunny: { len: 0.2, leg: 0.13, head: 0.072, body: 0.055, ear: 'point', earL: 0.16, tail: 'cotton', tailL: 0.05, tailR: 0.03, snout: 0.015 },
+    dragon: { len: 0.25, leg: 0.13, head: 0.092, body: 0.072, ear: 'horn', earL: 0.06, tail: 'spade', tailL: 0.28, tailR: 0.03, snout: 0.045, wings: 1 },
+    fox: { len: 0.26, leg: 0.16, head: 0.088, body: 0.068, ear: 'point', earL: 0.075, tail: 'brush', tailL: 0.26, tailR: 0.042, snout: 0.05, whiteTip: 1 }
+  };
+  var PET_NICK = { '#ffbe3b': 'GOLD', '#ff2bd6': 'MAGENTA', '#2bff88': 'LIME', '#ff5522': 'ORANGE', '#a259ff': 'PURPLE', '#00f6ff': 'CYAN' };
+  function crewChannel() {
+    if (crewCh) return crewCh;
+    try { crewCh = new BroadcastChannel(CH_CREW); } catch (e) { crewCh = null; }
+    return crewCh;
+  }
+  function hexColor(v, fallback) {
+    var s = String(v || '').trim().toLowerCase();
+    return /^#[0-9a-f]{3,8}$/.test(s) ? s : fallback;
+  }
+  function readCrew() {
+    var o = {};
+    try {
+      var raw = localStorage.getItem(LS_CREW);
+      if (raw) o = JSON.parse(raw) || {};
+    } catch (e) { o = {}; }
+    if (!o || typeof o !== 'object' || Array.isArray(o)) o = {};
+    var live = window.CREW_STATE;
+    if (live && typeof live === 'object') {
+      ['char', 'pet', 'charColor', 'petColor', 'acc', 'moveMode', 'charDanceOpt', 'petDanceOpt', 'petDanceMode', 'activePetDanceSlot'].forEach(function (k) {
+        if ((o[k] == null || o[k] === '') && live[k] != null && live[k] !== '') o[k] = live[k];
+      });
+    }
+    var pet = String(o.pet || 'dog').toLowerCase();
+    if (!PET_RIG[pet]) pet = 'dog';
+    var ch = String(o.char || 'girl').toLowerCase();
+    if (ch === 'male' || ch === 'man' || ch === 'boy') ch = 'boy';
+    else ch = 'girl';
+    return {
+      raw: o,
+      pet: pet,
+      petColor: hexColor(o.petColor, '#ffbe3b'),
+      char: ch,
+      charColor: hexColor(o.charColor, ch === 'boy' ? '#3ee6ff' : '#ff4fd8'),
+      acc: o.acc == null ? '' : o.acc,
+      moveMode: o.moveMode,
+      charDanceOpt: o.charDanceOpt || '',
+      petDanceOpt: o.petDanceOpt || '',
+      petDanceMode: o.petDanceMode || '',
+      activePetDanceSlot: o.activePetDanceSlot
+    };
+  }
+  function writeCrew(patch) {
+    var base = {};
+    try {
+      var raw = localStorage.getItem(LS_CREW);
+      if (raw) base = JSON.parse(raw) || {};
+    } catch (e) { base = {}; }
+    if (!base || typeof base !== 'object' || Array.isArray(base)) base = {};
+    var next = {};
+    for (var k in base) next[k] = base[k];
+    for (var p in patch) next[p] = patch[p];
+    try { localStorage.setItem(LS_CREW, JSON.stringify(next)); } catch (e) { fault(e); }
+    try {
+      if (window.CREW_STATE && typeof window.CREW_STATE === 'object') {
+        for (var q in next) window.CREW_STATE[q] = next[q];
+      }
+    } catch (e2) {}
+    try {
+      var ch = crewChannel();
+      if (ch) ch.postMessage(JSON.parse(JSON.stringify(next)));
+    } catch (e3) {}
+    return next;
+  }
+  function danceOptKey(idx) { return 'slot' + ((idx | 0) + 1); }
+  function petTitleName(crew) {
+    var species = String(crew.pet || 'dog').toUpperCase();
+    var nick = PET_NICK[crew.petColor];
+    return nick ? species + ' (' + nick + ')' : species;
+  }
+  function petHeader(crew) { return 'MY PET (' + petTitleName(crew || readCrew()) + ') — CAMERA DANCE ANIMATION'; }
+  function petSlotName(name, idx) {
+    var n = String(name || '').trim();
+    if (!n || /cyber\s*pup/i.test(n)) n = 'MY ' + String(readCrew().pet || 'dog').toUpperCase();
+    void idx;
+    return n.slice(0, 48);
+  }
+  function charLabel(crew) { return crew.char === 'boy' ? 'NEON MAN' : 'NEON WOMAN'; }
+  function bindCharOpt(idx) {
+    var slot = readStore().slots[idx];
+    if (!slot || !slot.frames || !slot.frames.length) return null;
+    return writeCrew({ charDanceOpt: danceOptKey(idx) });
+  }
+  function bindPetOpt(idx) {
+    var slot = readPetStore().slots[idx];
+    if (!slot || !slot.frames || !slot.frames.length) return null;
+    return writeCrew({ petDanceMode: 'custom', activePetDanceSlot: idx | 0, petDanceOpt: danceOptKey(idx) });
+  }
+  function pickClassic() {
+    if (isPetish() || state.intent === 'pet') writeCrew({ petDanceMode: 'classic', petDanceOpt: 'classic' });
+    else writeCrew({ charDanceOpt: 'classic' });
+    updateChrome();
+  }
+  function projectPt(p, cx, cy, ppm) {
+    var x = p[0], y = p[1], z = p[2];
+    var c = 0.8, s = 0.6;
+    var xr = x * c + z * s;
+    var zr = -x * s + z * c;
+    return { x: cx + xr * ppm, y: cy - y * ppm + zr * ppm * 0.28, z: zr };
+  }
+  function stroke3(ax, ay, bx, by, col, w) {
+    ctx.strokeStyle = col;
+    ctx.lineWidth = w;
+    ctx.lineCap = 'round';
+    ctx.shadowColor = col;
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(bx, by);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+  function petPartList(type) {
+    var r = PET_RIG[type] || PET_RIG.dog;
+    var tailR = r.tail === 'brush' ? r.tailR * 1.2 : r.tail === 'cotton' ? r.tailR * 0.7 : r.tailR * 0.6;
+    var P = [['S', 'Hp', r.body], ['S', 'head', 0.03], ['head', 'head', r.head], ['head', 'snout', r.head * 0.45], ['tail0', 'tail1', r.tailR], ['tail1', 'tail2', tailR]];
+    ['L', 'R'].forEach(function (k) {
+      P.push(['ear' + k, 'earT' + k, r.ear === 'antenna' ? 0.007 : 0.018]);
+      ['F', 'B'].forEach(function (f) {
+        P.push(['leg' + f + k, 'knee' + f + k, 0.024]);
+        P.push(['knee' + f + k, 'paw' + f + k, 0.02]);
+      });
+      if (r.wings) P.push(['wing' + k, 'wingT' + k, 0.02]);
+    });
+    return P;
+  }
+  function petJoints(q, type) {
+    var R0 = PET_RIG[type] || PET_RIG.dog;
+    q = q || {};
+    var cy = Math.cos((q.yaw || 0) * DEG), sy = Math.sin((q.yaw || 0) * DEG);
+    var cpi = Math.cos((q.pitch || 0) * DEG), spi = Math.sin((q.pitch || 0) * DEG);
+    var pv = R0.leg;
+    function W(v0) {
+      var dy = v0[1] - pv, dz = v0[2];
+      var v = [v0[0], pv + dy * cpi + dz * spi, -dy * spi + dz * cpi];
+      return [(q.x || 0) + v[0] * cy + v[2] * sy, (q.y || 0) + v[1], (q.z || 0) - v[0] * sy + v[2] * cy];
+    }
+    var J = {}, L = R0.len, lg = R0.leg;
+    var hy = lg * (1 - 0.35 * (q.tuck || 0)) + (q.bob || 0);
+    var hipY = hy - (q.sit || 0) * lg * 0.72;
+    var shY = hy + (q.sit || 0) * lg * 0.12 + (q.pawUp || 0) * 0.03;
+    var S = [0, shY, L / 2 - (q.sit || 0) * 0.03];
+    var Hp = [0, hipY, -L / 2 + (q.sit || 0) * 0.05];
+    J.S = W(S); J.Hp = W(Hp);
+    var lk = (q.look || 0) * DEG, tl = (q.tilt || 0) * DEG;
+    var hd = [Math.sin(lk) * 0.05, shY + 0.075 + 0.02 * (q.sit || 0), S[2] + Math.cos(lk) * 0.05];
+    J.head = W(hd);
+    var fw = [Math.sin(lk), 0, Math.cos(lk)], sd = [Math.cos(lk), 0, -Math.sin(lk)];
+    J.snout = W([hd[0] + fw[0] * R0.head * 0.95, hd[1] - 0.022, hd[2] + fw[2] * R0.head * 0.95]);
+    [-1, 1].forEach(function (s) {
+      var k = s < 0 ? 'L' : 'R';
+      var ex = s * R0.head * 0.62 * Math.cos(tl);
+      var ey = R0.head * 0.7 + s * Math.sin(tl) * R0.head * 0.4;
+      var base = [hd[0] + sd[0] * ex, hd[1] + ey, hd[2] + sd[2] * ex - 0.01];
+      J['ear' + k] = W(base);
+      var eL = R0.earL * (1 - 0.65 * (q.earFold || 0));
+      var tip = R0.ear === 'floppy'
+        ? [base[0] + sd[0] * s * 0.045, base[1] - eL * 0.95, base[2] - 0.03]
+        : R0.ear === 'antenna'
+          ? [base[0] + sd[0] * s * 0.005, base[1] + eL, base[2] - 0.01]
+          : [base[0] + sd[0] * s * 0.018, base[1] + eL, base[2] - (R0.ear === 'horn' ? 0.035 : 0.005)];
+      J['earT' + k] = W(tip);
+      J['eye' + k] = W([hd[0] + fw[0] * R0.head * 0.8 + sd[0] * s * R0.head * 0.38, hd[1] + 0.012, hd[2] + fw[2] * R0.head * 0.8 + sd[2] * s * R0.head * 0.38]);
+      [['F', S, 0], ['B', Hp, 0.5]].forEach(function (spec) {
+        var fr = spec[0], top = spec[1], off = spec[2];
+        var ph = ((q.ph || 0) + off + (s > 0 ? 0.5 : 0)) * Math.PI * 2;
+        var swng = Math.sin(ph) * (q.amp || 0) * 0.085;
+        var lift = Math.max(0, Math.cos(ph)) * (q.amp || 0) * 0.045;
+        var tx = s * R0.body * 0.65;
+        var foot = [tx, lift + lg * 0.5 * (q.tuck || 0), top[2] + swng];
+        if (fr === 'B' && q.sit > 0) foot = [foot[0] + (s * R0.body * 0.9 - foot[0]) * q.sit, foot[1] * (1 - q.sit), foot[2] + (top[2] + 0.09 - foot[2]) * q.sit];
+        if (fr === 'F' && q.pawUp > 0) foot = [foot[0] + (s * 0.035 - foot[0]) * q.pawUp, foot[1] + (top[1] - 0.04 - foot[1]) * q.pawUp, foot[2] + (top[2] + 0.08 - foot[2]) * q.pawUp];
+        if (fr === 'F') {
+          var up = k === 'L' ? (q.pawL || 0) : (q.pawR || 0);
+          if (up) foot = [foot[0] + (s * 0.04 - foot[0]) * up, foot[1] + (top[1] - 0.02 - foot[1]) * up, foot[2] + (top[2] + 0.1 - foot[2]) * up];
+        }
+        var t3 = [tx, top[1] - 0.01, top[2]];
+        var kn = [(t3[0] + foot[0]) / 2, (t3[1] + foot[1]) / 2, (t3[2] + foot[2]) / 2 + (fr === 'F' ? -0.012 : 0.02)];
+        J['leg' + fr + k] = W(t3);
+        J['knee' + fr + k] = W(kn);
+        J['paw' + fr + k] = W(foot);
+      });
+      if (R0.wings) {
+        var flap = q.flap || 0;
+        J['wing' + k] = W([s * 0.03, shY + 0.02, S[2] - 0.04]);
+        J['wingT' + k] = W([s * (0.16 - 0.04 * flap), shY + 0.1 + 0.06 * flap, S[2] - 0.12]);
+      }
+    });
+    var w = q.wag || 0;
+    var upTail = (R0.tail === 'up' ? 1 : R0.tail === 'cotton' ? 0.15 : 0.35) * (1 - (q.tailDown || 0));
+    var t1 = [w * 0.06, hipY + 0.05 + upTail * 0.06, Hp[2] - 0.07];
+    var t2 = [w * 0.16, hipY + 0.04 + upTail * 0.18, Hp[2] - R0.tailL * (1 - upTail * 0.35)];
+    J.tail0 = W([0, hipY + 0.01, Hp[2] - 0.02]);
+    J.tail1 = W(t1);
+    J.tail2 = W(t2);
+    return J;
+  }
+  function petQ(frame, now) {
+    frame = frame || {};
+    var hop = +frame.hop || 0, wag = +frame.wag || 0, bow = +frame.bow || 0, sway = +frame.sway || 0;
+    return {
+      x: sway * 0.08, y: hop * 0.05, z: 0,
+      yaw: (+frame.spin >= 0.5) ? ((now / 7) % 360) : sway * -28,
+      pitch: -bow * 34, bob: hop * 0.02, wag: wag,
+      pawL: +frame.pawL || 0, pawR: +frame.pawR || 0,
+      sit: bow * 0.15, tuck: bow * 0.2, tilt: sway * 8, look: sway * 12,
+      flap: 0.3 + hop * 0.7
+    };
+  }
+  function groundJoints(J, keys) {
+    var minY = 99;
+    for (var i = 0; i < keys.length; i++) if (J[keys[i]]) minY = Math.min(minY, J[keys[i]][1]);
+    if (minY > 90) return J;
+    var out = {};
+    for (var k in J) out[k] = [J[k][0], J[k][1] - minY, J[k][2]];
+    return out;
+  }
+  function drawWirePet(cx, cy, ppm, frame, now, crew) {
+    var type = crew.pet;
+    var R0 = PET_RIG[type] || PET_RIG.dog;
+    var J = groundJoints(petJoints(petQ(frame, now), type), ['pawFL', 'pawFR', 'pawBL', 'pawBR']);
+    var parts = petPartList(type);
+    var pts = {};
+    for (var k in J) pts[k] = projectPt(J[k], cx, cy, ppm);
+    var items = [];
+    for (var i = 0; i < parts.length; i++) {
+      var a = parts[i][0], b = parts[i][1];
+      if (!pts[a] || !pts[b]) continue;
+      items.push({ a: a, b: b, r: parts[i][2], z: (pts[a].z + pts[b].z) / 2 });
+    }
+    items.sort(function (u, v) { return u.z - v.z; });
+    var col = crew.petColor;
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 4, 34, 7, 0, 0, 6.3);
+    ctx.fill();
+    for (var n = 0; n < items.length; n++) {
+      var it = items[n], A = pts[it.a], B = pts[it.b];
+      if (it.a === it.b) {
+        ctx.fillStyle = '#12051c';
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 2;
+        ctx.shadowColor = col;
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(A.x, A.y, Math.max(5, it.r * ppm), 0, 6.3);
+        ctx.fill();
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      } else stroke3(A.x, A.y, B.x, B.y, col, Math.max(1.7, it.r * ppm * 1.8));
+    }
+    ['L', 'R'].forEach(function (side) {
+      var e = pts['eye' + side];
+      if (!e) return;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, Math.max(1.6, 0.02 * ppm), 0, 6.3);
+      ctx.fill();
+    });
+    var sn = pts.snout, t2 = pts.tail2;
+    if (R0.whiskers && sn) {
+      ctx.strokeStyle = 'rgba(255,255,255,.9)';
+      ctx.lineWidth = 1;
+      ctx.shadowBlur = 0;
+      for (var w = -1; w <= 1; w++) {
+        ctx.beginPath();
+        ctx.moveTo(sn.x, sn.y);
+        ctx.lineTo(sn.x + 18, sn.y + w * 4);
+        ctx.moveTo(sn.x, sn.y);
+        ctx.lineTo(sn.x - 18, sn.y + w * 4);
+        ctx.stroke();
+      }
+    }
+    if (t2 && (R0.tail === 'cotton' || R0.whiteTip)) {
+      ctx.fillStyle = '#fff';
+      ctx.shadowColor = '#fff';
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(t2.x, t2.y, R0.tail === 'cotton' ? Math.max(6, R0.tailR * ppm * 1.7) : Math.max(3.5, R0.tailR * ppm * 0.65), 0, 6.3);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+    if (t2 && R0.tail === 'spade') {
+      ctx.fillStyle = col;
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.moveTo(t2.x, t2.y - 9);
+      ctx.lineTo(t2.x + 8, t2.y);
+      ctx.lineTo(t2.x, t2.y + 10);
+      ctx.lineTo(t2.x - 8, t2.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  }
+  function drawCompanion(cx, cy, sc, pose, now, alpha) {
+    ctx.save();
+    ctx.globalAlpha = alpha == null ? 1 : alpha;
+    drawWirePet(cx, cy, 360 * (sc || 1), pose, now, readCrew());
+    ctx.restore();
+  }
+  function charJoints(p, boy) {
+    var shape = boy ? CREW_SHAPE.boy : CREW_SHAPE.girl;
+    var B = CREW_B;
+    p = p || {};
+    var cy = Math.cos((p.yaw || 0) * DEG), sy = Math.sin((p.yaw || 0) * DEG);
+    function W(lx, ly, lz) { return [(p.px || 0) + lx * cy + lz * sy, (p.py || 0) + ly, (p.pz || 0) - lx * sy + lz * cy]; }
+    var rl = (p.roll || 0) * DEG;
+    var up = [Math.sin(rl), Math.cos((p.lean || 0) * DEG) * Math.cos(rl), Math.sin((p.lean || 0) * DEG)];
+    function add(a, d, l) { return [a[0] + d[0] * l, a[1] + d[1] * l, a[2] + d[2] * l]; }
+    var pel = [p.sway || 0, 0, 0];
+    var J = {};
+    J.pel = W(pel[0], pel[1], pel[2]);
+    var waist = add(pel, up, B.spine * 0.5);
+    var chest = add(pel, up, B.spine);
+    var nk = add(chest, up, B.chest);
+    var hp = ((p.lean || 0) + (p.head || 0)) * DEG;
+    var hdir = [0, Math.cos(hp), Math.sin(hp)];
+    var hd = add(nk, hdir, B.neck);
+    J.chest = W(chest[0], chest[1], chest[2]);
+    J.neck = W(nk[0], nk[1], nk[2]);
+    J.head = W(hd[0] + hdir[0] * B.head * 0.45, hd[1] + hdir[1] * B.head * 0.45, hd[2] + hdir[2] * B.head * 0.45);
+    var tw = (p.twist || 0) * DEG, ct = Math.cos(tw), st = Math.sin(tw);
+    function T(v) { return [nk[0] + (v[0] - nk[0]) * ct + (v[2] - nk[2]) * st, v[1], nk[2] - (v[0] - nk[0]) * st + (v[2] - nk[2]) * ct]; }
+    [-1, 1].forEach(function (s) {
+      var k = s < 0 ? 'L' : 'R';
+      var hip = [pel[0] + s * shape.hip, -0.02, 0];
+      var ha = (p['hip' + k] || 0) * DEG;
+      var ka = ((p['hip' + k] || 0) - (p['knee' + k] || 0)) * DEG;
+      var lo = s * 0.08;
+      var kn = [hip[0] + Math.sin(lo) * B.thigh, hip[1] - Math.cos(ha) * B.thigh * Math.cos(lo), hip[2] + Math.sin(ha) * B.thigh];
+      var an = [kn[0] + Math.sin(lo) * B.shin * 0.55, kn[1] - Math.cos(ka) * B.shin, kn[2] + Math.sin(ka) * B.shin];
+      var toe = [an[0], an[1] - B.foot * 0.12, an[2] + B.foot * 0.8];
+      J['hip' + k] = W(hip[0], hip[1], hip[2]);
+      J['knee' + k] = W(kn[0], kn[1], kn[2]);
+      J['ank' + k] = W(an[0], an[1], an[2]);
+      J['toe' + k] = W(toe[0], toe[1], toe[2]);
+      var shp = [nk[0] + s * shape.sh, nk[1] - 0.035, nk[2]];
+      var sa = (p['sh' + k] || 0) * DEG;
+      var ea = ((p['sh' + k] || 0) + (p['el' + k] || 8)) * DEG;
+      var ao = ((p['ao' + k] || 0) + 6) * DEG * s;
+      var el = [shp[0] + Math.sin(ao) * B.uarm, shp[1] - Math.cos(sa) * B.uarm * Math.cos(ao), shp[2] + Math.sin(sa) * B.uarm];
+      var wr = [el[0] + Math.sin(ao) * B.farm * 0.45, el[1] - Math.cos(ea) * B.farm, el[2] + Math.sin(ea) * B.farm];
+      var hn = [wr[0], wr[1] - Math.cos(ea) * B.hand * 0.7, wr[2] + Math.sin(ea) * B.hand * 0.7];
+      function put(name, v) { var t = T(v); J[name] = W(t[0], t[1], t[2]); }
+      put('sh' + k, shp); put('el' + k, el); put('wr' + k, wr); put('hand' + k, hn);
+    });
+    J._boy = boy ? 1 : 0;
+    return J;
+  }
+  function danceToChar(frame, now) {
+    frame = frame || {};
+    var armL = clamp(+frame.armL || 0, 0, 1), armR = clamp(+frame.armR || 0, 0, 1);
+    var legL = clamp(+frame.legL || 0, -1, 1), legR = clamp(+frame.legR || 0, -1, 1);
+    var sway = clamp(+frame.sway || 0, -1, 1), bounce = clamp(+frame.bounce || 0, 0, 1);
+    function sh(a) { return 6 + a * 158; }
+    function el(a) { return a > 0.35 && a < 0.72 ? 78 : 14 + a * 24; }
+    return {
+      px: sway * 0.07, py: 0.94 + bounce * 0.05, pz: 0,
+      yaw: (+frame.spin >= 0.5) ? ((now / 6) % 360) : sway * -18,
+      lean: (0.45 - bounce) * 10, head: sway * -8, sway: sway * 0.03, roll: sway * 7, twist: sway * 10,
+      hipL: legL * 34, hipR: legR * 34,
+      kneeL: Math.abs(legL) * 42 + (1 - bounce) * 6,
+      kneeR: Math.abs(legR) * 42 + (1 - bounce) * 6,
+      shL: sh(armL), shR: sh(armR), elL: el(armL), elR: el(armR),
+      aoL: (armL - 0.45) * 24, aoR: (armR - 0.45) * 24
+    };
+  }
+  function accList(acc) {
+    if (acc == null || acc === '' || acc === 'none' || acc === 'off') return [];
+    if (Array.isArray(acc)) return acc.map(function (x) { return String(x).toLowerCase(); });
+    if (typeof acc === 'object') return Object.keys(acc).filter(function (k) { return acc[k] && acc[k] !== 'none'; }).map(function (k) { return String(k).toLowerCase(); });
+    return String(acc).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  }
+  function drawAcc(list, pts, col, ppm) {
+    var h = pts.head, sL = pts.shL, sR = pts.shR;
+    if (!h) return;
+    list.forEach(function (name) {
+      ctx.strokeStyle = col;
+      ctx.fillStyle = col;
+      ctx.lineWidth = 2;
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 6;
+      if (name === 'visor' || name === 'glasses' || name === 'shades') {
+        stroke3(h.x - 10, h.y + 2, h.x + 10, h.y + 2, '#fff', 2.4);
+      } else if (name === 'bow') {
+        ctx.beginPath();
+        ctx.moveTo(h.x - 4, h.y - 8);
+        ctx.lineTo(h.x - 14, h.y - 14);
+        ctx.lineTo(h.x - 12, h.y - 4);
+        ctx.closePath();
+        ctx.moveTo(h.x + 4, h.y - 8);
+        ctx.lineTo(h.x + 14, h.y - 14);
+        ctx.lineTo(h.x + 12, h.y - 4);
+        ctx.closePath();
+        ctx.fill();
+      } else if (name === 'cap' || name === 'hat') {
+        ctx.beginPath();
+        ctx.arc(h.x, h.y - 2, Math.max(8, 0.07 * ppm), Math.PI, 0);
+        ctx.stroke();
+        stroke3(h.x - 8, h.y - 2, h.x + 16, h.y, col, 2);
+      } else if (name === 'headphones' || name === 'cans') {
+        ctx.beginPath();
+        ctx.arc(h.x - 11, h.y, 4, 0, 6.3);
+        ctx.arc(h.x + 11, h.y, 4, 0, 6.3);
+        ctx.stroke();
+        stroke3(h.x - 11, h.y - 4, h.x + 11, h.y - 6, col, 1.6);
+      } else if (name === 'cape' || name === 'jacket') {
+        if (sL && sR) {
+          stroke3(sL.x, sL.y, sL.x - 8, sL.y + 36, col, 2);
+          stroke3(sR.x, sR.y, sR.x + 8, sR.y + 36, col, 2);
+        }
+      } else if (name === 'crown') {
+        ctx.beginPath();
+        ctx.moveTo(h.x - 10, h.y - 8);
+        ctx.lineTo(h.x - 6, h.y - 16);
+        ctx.lineTo(h.x, h.y - 8);
+        ctx.lineTo(h.x + 6, h.y - 16);
+        ctx.lineTo(h.x + 10, h.y - 8);
+        ctx.stroke();
+      } else if (name === 'wings') {
+        if (sL && sR) {
+          stroke3(sL.x, sL.y, sL.x - 22, sL.y - 8, col, 2);
+          stroke3(sR.x, sR.y, sR.x + 22, sR.y - 8, col, 2);
+        }
+      } else if (sL && sR) {
+        stroke3((sL.x + sR.x) / 2 - 8, (sL.y + sR.y) / 2 + 8, (sL.x + sR.x) / 2 + 8, (sL.y + sR.y) / 2 + 10, '#ffe14d', 2);
+      }
+      ctx.shadowBlur = 0;
+    });
+  }
+  function drawCrewChar(cx, cy, sc, pose, now, alpha) {
+    var crew = readCrew();
+    var boy = crew.char === 'boy';
+    var shape = boy ? CREW_SHAPE.boy : CREW_SHAPE.girl;
+    var J = groundJoints(charJoints(danceToChar(pose, now), boy), ['toeL', 'toeR', 'ankL', 'ankR']);
+    var ppm = 92 * (sc || 1);
+    var pts = {};
+    for (var k in J) if (k.charAt(0) !== '_') pts[k] = projectPt(J[k], cx, cy, ppm);
+    ctx.save();
+    ctx.globalAlpha = alpha == null ? 1 : alpha;
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 2, 22 * (sc || 1), 6, 0, 0, 6.3);
+    ctx.fill();
+    var col = crew.charColor;
+    var segs = [
+      ['hipL', 'kneeL', shape.leg], ['kneeL', 'ankL', shape.leg * 0.8], ['ankL', 'toeL', shape.leg * 0.55],
+      ['hipR', 'kneeR', shape.leg], ['kneeR', 'ankR', shape.leg * 0.8], ['ankR', 'toeR', shape.leg * 0.55],
+      ['shL', 'elL', shape.arm], ['elL', 'wrL', shape.arm * 0.85], ['wrL', 'handL', shape.arm * 0.6],
+      ['shR', 'elR', shape.arm], ['elR', 'wrR', shape.arm * 0.85], ['wrR', 'handR', shape.arm * 0.6],
+      ['pel', 'chest', boy ? 0.055 : 0.042], ['chest', 'neck', boy ? 0.03 : 0.024], ['neck', 'head', 0.02]
+    ];
+    for (var i = 0; i < segs.length; i++) {
+      var A = pts[segs[i][0]], B = pts[segs[i][1]];
+      if (A && B) stroke3(A.x, A.y, B.x, B.y, col, Math.max(1.6, segs[i][2] * ppm));
+    }
+    if (pts.head) {
+      var hr = (boy ? 0.062 : 0.058) * ppm;
+      ctx.fillStyle = '#12051c';
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2;
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(pts.head.x, pts.head.y, hr, 0, 6.3);
+      ctx.fill();
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      if (boy) {
+        stroke3(pts.head.x, pts.head.y - hr * 0.4, pts.head.x, pts.head.y - hr * 1.35, col, 2);
+        stroke3(pts.head.x - hr * 0.45, pts.head.y - hr * 0.2, pts.head.x - hr * 0.9, pts.head.y - hr * 1.1, col, 1.6);
+        stroke3(pts.head.x + hr * 0.45, pts.head.y - hr * 0.2, pts.head.x + hr * 0.9, pts.head.y - hr * 1.1, col, 1.6);
+      } else {
+        stroke3(pts.head.x, pts.head.y - hr * 0.2, pts.head.x - hr * 0.35, pts.head.y + hr * 0.9, col, 3);
+        stroke3(pts.head.x - hr * 0.35, pts.head.y + hr * 0.9, pts.head.x + hr * 0.15, pts.head.y + hr * 2.1, col, 2.2);
+      }
+    }
+    drawAcc(accList(crew.acc), pts, col, ppm);
+    ctx.restore();
+  }
   function drawFigure(cx, cy, sc, pose, now, alpha) {
+    drawCrewChar(cx, cy, sc, pose, now, alpha);
+    return;
     ctx.save();
     ctx.globalAlpha = alpha == null ? 1 : alpha;
     ctx.translate(cx + pose.sway * 20 * sc, cy - (pose.bounce - 0.35) * 34 * sc);
@@ -1635,6 +2166,8 @@
     ctx.restore();
   }
   function drawPup(cx, cy, sc, pose, now, alpha) {
+    drawCompanion(cx, cy, (sc || 1) * 0.85, pose, now, alpha);
+    return;
     pose = pose || {};
     var hop = pose.hop || 0;
     var wag = pose.wag || 0;
@@ -2238,15 +2771,14 @@
     ctx.fill();
     ctx.stroke();
     ctx.shadowBlur = 0;
+    var crewCard = readCrew();
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.font = '800 10px Orbitron,sans-serif';
+    ctx.font = '800 8px Orbitron,sans-serif';
     ctx.fillStyle = '#ffe14d';
-    ctx.fillText('CYBER PUP', P.x + 10, P.y + 8);
+    ctx.fillText('MY PET (' + petTitleName(crewCard) + ')', P.x + 10, P.y + 8);
+    ctx.fillText('CAMERA DANCE ANIMATION', P.x + 10, P.y + 18);
     ctx.font = '700 8px Orbitron,sans-serif';
-    ctx.fillStyle = '#ffb3e6';
-    var cap = state.mode === 'petplay' ? ('PLAY · ' + (state.petName || 'CYBER PUP')) : state.mode === 'petrec' ? 'RECORDING DOG' : 'LIVE PUP PREVIEW';
-    ctx.fillText(cap, P.x + 10, P.y + 22);
     ctx.fillStyle = '#d9fbff';
     function line(a, yy) { ctx.fillText(a, P.x + 10, yy); }
     line('HOP ' + pose.hop.toFixed(2) + '   WAG ' + (pose.wag >= 0 ? '+' : '') + pose.wag.toFixed(2), P.y + 36);
@@ -2279,15 +2811,16 @@
     ctx.stroke();
     ctx.shadowBlur = 0;
     var pose = livePose(now);
+    var who = readCrew();
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     ctx.font = '800 10px Orbitron,sans-serif';
     ctx.fillStyle = '#ffe14d';
-    ctx.fillText('CHARACTER TWIN', P.x + 10, P.y + 8);
+    ctx.fillText(charLabel(who), P.x + 10, P.y + 8);
     ctx.font = '700 8px Orbitron,sans-serif';
     ctx.fillStyle = '#ffb3e6';
-    var cap = state.mode === 'playback' ? ('PLAY · ' + (state.slotName || 'CUSTOM')) : state.mode === 'recording' ? 'RECORDING MO-CAP' : 'LIVE PREVIEW';
-    ctx.fillText(cap, P.x + 10, P.y + 22);
+    var cap = who.charDanceOpt === 'classic' ? '✨ CLASSIC DEFAULT DANCE' : state.mode === 'playback' ? ('PLAY · ' + (state.slotName || 'CUSTOM')) : state.mode === 'recording' ? 'RECORDING MO-CAP' : 'LIVE PREVIEW';
+    ctx.fillText(cap + '  ·  ' + who.charColor.toUpperCase() + (who.acc ? '  ·  ' + String(who.acc).toUpperCase() : ''), P.x + 10, P.y + 22);
     ctx.fillStyle = '#d9fbff';
     var line = function (a, yy) { ctx.fillText(a, P.x + 10, yy); };
     line('ARM L ' + pose.armL.toFixed(2) + '   ARM R ' + pose.armR.toFixed(2), P.y + 36);
@@ -2539,8 +3072,9 @@
       store.enabled = true;
       state.slotName = nm;
       state.moFrames = eighty;
-      writeStore(store);
-      return JSON.parse(JSON.stringify(storeCache));
+    writeStore(store);
+    bindCharOpt(idx);
+    return JSON.parse(JSON.stringify(storeCache));
     },
     getCustomDance: function () {
       return JSON.parse(JSON.stringify(readStore()));
@@ -2562,7 +3096,7 @@
     },
     simulatePetMoCapRecording: function (presetName) {
       if (!state.open) api.open({});
-      var name = String(presetName || 'CYBER PUP #1').slice(0, 48);
+      var name = String(presetName || petSlotName('', 0)).slice(0, 48);
       var style = petStyle(name);
       var frames = [];
       for (var i = 0; i < 60; i++) {
