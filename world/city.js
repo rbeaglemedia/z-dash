@@ -220,7 +220,7 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
     if(window.SOCCER&&SOCCER.paved&&SOCCER.paved(x,z))return'paved';
     return'grass';}
   const padAt=(x,z,y)=>PADS.find(p=>Math.abs(p.y-y)<1&&inR(x,z,p))||null;
-  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,BX,RAMPS,PADS,TREES,LOTS,HOOPS,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,XS0,XS1,ZS0,ZS1,
+  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,BX,RAMPS,PADS,TREES,LOTS,HOOPS,RINGS:rings,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,XS0,XS1,ZS0,ZS1,
     probe,gnd,riverY,pipeY,rampH,trackPts,trackDist,surfaceAt,padAt,inTunnel:(x,z)=>x>TUN.bx0&&x<TUN.bx1&&z>TUN.z0&&z<TUN.z1};})();
 const surfaceAt=CITY.surfaceAt;
 // walls: glancing = SKIM (same skimDeg / skimKeep), steep = HARD HIT (same impactKeep * cos^impactExp). She is pushed out and turned along the wall: no reset, no damage
@@ -251,7 +251,8 @@ function cityMove(px,pz,py,dt){dt=dt||1/30;if(P.loop)return loopStep(dt);
   P._pg=P.ground&&pr.st?pr.fl:null;
   // river: sinks (floor = -RIV.sink) and drags; drives back out over the bank lip
   const wet=P.ground&&pr.fl<-0.3;if(wet){P.v-=P.v*TUNE.waterDrag*dt;if(!P.inWater){P.splash=(P.splash||0)+1;toast('SPLASH!');}}P.inWater=wet;
-  for(const h of CITY.HOOPS){const a=(px-h.x)*h.nx+(pz-h.z)*h.nz,b=(P.x-h.x)*h.nx+(P.z-h.z)*h.nz;if((a<0)!==(b<0)&&Math.abs(a-b)<20){const t=a/(a-b),cx=px+(P.x-px)*t,cz=pz+(P.z-pz)*t,cy=py+(P.y-py)*t;if(Math.hypot(cx-h.x,cz-h.z,cy-h.y)<h.r){h.hit=1;P.hoops=(P.hoops||0)+1;toast('HOOP!');}}}
+  for(const h of CITY.HOOPS){const a=(px-h.x)*h.nx+(pz-h.z)*h.nz,b=(P.x-h.x)*h.nx+(P.z-h.z)*h.nz;if((a<0)!==(b<0)&&Math.abs(a-b)<20&&!(h.hitT&&(P.simT-h.hitT)<0.5)){const t=a/(a-b),cx=px+(P.x-px)*t,cz=pz+(P.z-pz)*t,cy=py+(P.y-py)*t;if(Math.hypot(cx-h.x,cz-h.z,cy-h.y)<=h.r+1.0){P.nosTank=Math.min(1,(P.nosTank||0)+1/3);h.hit=1;h.hitT=P.simT||0;P.hoops=(P.hoops||0)+1;if(typeof fxBurst==='function')fxBurst('spark',10);if(typeof wMsg==='function')wMsg('HOOP! +1/3 NOS','#ff4fd8','NOS +33%');else toast('HOOP!');}}}
+  for(const r of rings){const nx=-Math.sin(r.yaw),nz=Math.cos(r.yaw),a=(px-r.x)*nx+(pz-r.z)*nz,b=(P.x-r.x)*nx+(P.z-r.z)*nz;if((a<0)!==(b<0)&&Math.abs(a-b)<25&&!(r.hitT&&(P.simT-r.hitT)<0.5)){const t=a/(a-b),cx=px+(P.x-px)*t,cz=pz+(P.z-pz)*t,cy=py+(P.y-py)*t;if(Math.hypot(cx-r.x,cz-r.z,cy-r.y)<=r.r+1.5){P.nosTank=1;r.hit=1;r.hitT=P.simT||0;P.rings=(P.rings||0)+1;if(typeof fxBurst==='function')fxBurst('spark',16);if(typeof wMsg==='function')wMsg('RING! FULL NOS','#ffe14d','NOS 100%');else toast('RING!');}}}
   if(P.ground&&!P.wreck&&P.v>8)for(const L of CITY.LOOPS){const f0=(px-L.x)*L.ux+(pz-L.z)*L.uz,f1=(P.x-L.x)*L.ux+(P.z-L.z)*L.uz,lat=(P.x-L.x)*L.uz-(P.z-L.z)*L.ux;
     if(f0<0&&f1>=0&&Math.abs(lat)<L.w/2&&Math.sin(P.hd)*L.ux+Math.cos(P.hd)*L.uz>Math.cos(35*D)){P.loop={L,th:0,dn:1,v0:P.v,full:P.v*P.v>=5.4*9.8*L.R};return loopStep(dt);}}
   P.gy=pr.fl;return pr;}
