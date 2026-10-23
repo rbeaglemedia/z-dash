@@ -4,12 +4,19 @@
 // e-brake drifting, particles, NOS tiers, wreck card. step() in world/phys-air.js calls groundStep() when P.ground.
 function groundStep(dt,T,I,I0,nz,vT,vr,wf,ge,cbank,g,CL){
     let ebDone=false;
+    const street=P.driveMode==='street';
     if(P.wreck){P.wreck.t+=dt;P.v=Math.max(0,P.v-Math.max(T.wreckFric,P.v*1.2)*dt);if(P.v>2)fxBurst('spark',3);if(P.wreck.t<4)fxBurst('smoke',P.wreck.t<1.5?2:1);if(P.wreck.t>T.wreckCard&&!P.wreck.card){P.wreck.card=1;showWreck(true);}P.ebK=0;P.ebSlip=0;P.donutK=0;P.ebRoll=0;}
     else{const ofr=offRoadK();P.offK=ofr;
       if(I.eb||(P.ebK||0)>0.001||(P.donutK||0)>0.001||Math.abs(P.ebSlip||0)>0.002||Math.abs(P.ebRoll||0)>0.002){ebGround(dt,T,I,ofr,vT);ebDone=true;}
+      else if(street){const streetMax=T.streetMaxSpeed||28,thrCurve=I.tu?Math.pow(clamp(P.thr,0,1),1.35):0,vStreet=streetMax*(nz&&I.tu?1.38:thrCurve);
+        if(I.tu&&vStreet>P.v){const accRate=(T.streetAccel||6.4)*ofr*(0.55+0.45*(1-clamp(P.v/streetMax,0,1)));P.v+=accRate*dt;}
+        else{const coastDecel=(T.streetCoastDecel||4.6)+P.v*0.08+T.groundFric*(ofr<1?1+2*(1-ofr):1);P.v=Math.max(0,P.v-coastDecel*dt);}
+        if(I.brk&&!I.eb)P.v=Math.max(0,P.v-(T.streetBrake||15.5)*dt);
+        P.v=Math.max(0,P.v-Math.sin(P.pitch)*T.gravityK*dt);}
       else P.v+=(vT-P.v)*(vT>P.v?T.groundAccel*ofr:T.momentum)*dt-Math.sin(P.pitch)*T.gravityK*dt-(I.brk?T.groundBrake*dt:0)-T.groundFric*(ofr<1?1+2*(1-ofr):1)*dt;}
     P.gT=(P.gT||0)+dt;
-    if(!ebDone){P.v=clamp(P.v,0,T.maxSpeed*T.nosBoost*1.1);P.gam=0;P.yaw+=I.lr*0.6*TUNE.groundSteer*dt*Math.min(1,P.v/5);P.hd=P.yaw;if(P.ebRoll){P.ebRoll*=Math.max(0,1-10*dt);if(Math.abs(P.ebRoll)<1e-3)P.ebRoll=0;}}
+    if(!ebDone){if(street&&!P.wreck){const streetMax=T.streetMaxSpeed||28;P.v=clamp(P.v,0,streetMax*(nz&&I.tu?1.38:1));P.gam=0;const stScale=Math.min(1,P.v/2.6)*(1-0.28*clamp(P.v/streetMax,0,1));P.yaw+=I.lr*0.6*T.groundSteer*stScale*dt;P.hd=P.yaw;if(P.ebRoll){P.ebRoll*=Math.max(0,1-10*dt);if(Math.abs(P.ebRoll)<1e-3)P.ebRoll=0;}}
+      else{P.v=clamp(P.v,0,T.maxSpeed*T.nosBoost*1.1);P.gam=0;P.yaw+=I.lr*0.6*TUNE.groundSteer*dt*Math.min(1,P.v/5);P.hd=P.yaw;if(P.ebRoll){P.ebRoll*=Math.max(0,1-10*dt);if(Math.abs(P.ebRoll)<1e-3)P.ebRoll=0;}}}
     const rr=P.v>=T.rotateSpeed&&P.wings;if(rr&&!P.rotOK)toast('PULL UP!');P.rotOK=rr;
     if(rr&&!P.wreck&&!(I.climb<0)&&g*CL(P.pitch)*(vr<1?vr*vr+T.floatLift*vr*(1-vr):vr*vr)*wf*ge*cbank>g){P.ground=false;P.y=P.gy+0.001;P.toT=P.simT;P.slowLaunch=P.v<T.roughSpeed;P.lift0=1;ebAirHandoff();toast(P.slowLaunch?'TOO SLOW!':'LIFT OFF!');}
 }
@@ -63,11 +70,13 @@ function ebGround(dt,T,I,ofr,vT){
   const eb=P.ebK,dk=P.donutK,mph=P.v*2.2369362920544;
   const slow=clamp((T.eBrakePivotMph-mph)/Math.max(1,T.eBrakePivotMph),0,1);
   const hard=clamp((Math.abs(I.lr)-0.12)/0.88,0,1),piv=slow*hard;
-  const decel=lerp(T.eBrakeDecel,T.eBrakePivotDecel,piv);
+  const street=P.driveMode==='street';
+  const decel=lerp(street?(T.streetEBrakeDecel||10.5):T.eBrakeDecel,street?(T.streetEBrakePivotDecel||13.5):T.eBrakePivotDecel,piv);
   const fric=T.groundFric*(ofr<1?1+2*(1-ofr):1),grav=Math.sin(P.pitch)*T.gravityK;
   const normal=(vT-P.v)*(vT>P.v?T.groundAccel*ofr:T.momentum)-grav-fric-((!want&&I.brk)?T.groundBrake:0);
   const coast=-grav-fric-decel;
-  const donut=P.v<T.eBrakeDonutV?(T.eBrakeDonutV-P.v)*T.eBrakeDonutSpool:0;
+  const donutV=street?(T.streetEBrakeDonutV||12.5):T.eBrakeDonutV;
+  const donut=P.v<donutV?(donutV-P.v)*T.eBrakeDonutSpool:0;
   const acc=lerp(normal,lerp(coast,donut,dk),Math.max(eb,dk));
   P.v=clamp(P.v+acc*dt,0,T.maxSpeed*T.nosBoost*1.1);P.gam=0;
   const base=Math.min(1,P.v/5),scale=base+(Math.max(base,T.eBrakePivotYaw)-base)*piv;
@@ -77,11 +86,14 @@ function ebGround(dt,T,I,ofr,vT){
   const slipK=clamp((mph-slip0)/Math.max(1,T.eBrakeSlipFullMph-slip0),0,1);
   const steerK=Math.min(1,Math.abs(I.lr)/Math.max(0.05,T.eBrakeSlipSteer));
   const sign=Math.abs(I.lr)>0.04?Math.sign(I.lr):0;
-  const slipDrift=(T.eBrakeSlipSlow+(T.eBrakeSlipMax-T.eBrakeSlipSlow)*slipK)*D;
-  const slipT=lerp(slipDrift,T.eBrakeDonutSlip*D,dk)*sign*steerK*eb;
-  P.ebSlip=ebDamp(P.ebSlip||0,slipT,1/(want?T.eBrakeSlipIn:T.eBrakeAlign),dt);
-  const cap=(T.eBrakeSlipMax+6)*D;P.ebSlip=clamp(P.ebSlip,-cap,cap);
+  const slipSlow=street?(T.streetEBrakeSlipSlow||15):T.eBrakeSlipSlow,slipMax=street?(T.streetEBrakeSlipMax||29):T.eBrakeSlipMax,donutSlip=street?(T.streetEBrakeDonutSlip||38):T.eBrakeDonutSlip;
+  const slipDrift=(slipSlow+(slipMax-slipSlow)*slipK)*D;
+  const slipT=lerp(slipDrift,donutSlip*D,dk)*sign*steerK*eb;
+  const align=street?(T.streetEBrakeAlign||5.2):T.eBrakeAlign;
+  P.ebSlip=ebDamp(P.ebSlip||0,slipT,1/(want?T.eBrakeSlipIn:align),dt);
+  const cap=(slipMax+6)*D;P.ebSlip=clamp(P.ebSlip,-cap,cap);
   P.yaw=P.hd+P.ebSlip;
-  P.ebRoll=ebDamp(P.ebRoll||0,-sign*T.eBrakeRoll*D*Math.min(1,Math.abs(I.lr))*eb*(0.45+0.55*Math.min(1,mph/32)),0.1,dt);
+  const roll=street?(T.streetEBrakeRoll||4.8):T.eBrakeRoll;
+  P.ebRoll=ebDamp(P.ebRoll||0,-sign*roll*D*Math.min(1,Math.abs(I.lr))*eb*(0.45+0.55*Math.min(1,mph/32)),0.1,dt);
   ebMarks(dt);}
 function showWreck(on){const e=document.getElementById('kWreck');if(e)e.classList.toggle('hidden',!on);}
