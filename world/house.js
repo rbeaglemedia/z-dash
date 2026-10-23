@@ -23,7 +23,7 @@ const WALK_PILL_M=6,WALK_AUTO_M=4.5;
 const WALK_V=3.6,RUN_V=7.6,WALK_ACCEL=14,WALK_BRAKE=32,WALK_STRIDE=2.4,DANCE_STRIDE=6;
 const WALK_PARK_M=9,WALK_PARK_PAD=1.5,WALK_BAY_M=1.35,WALK_BAY_STAND=1.7;
 const WALK_INDOOR={HOME:1,SHOWROOM:1,NEON_PAINT:1,GARAGE:1,DANCE:1,PETS:1,CAFE:1,ARCADE:1,BUILDER:1,NOS:1,SOCCER:1};
-const WALK_PAGE={NEON_PAINT:'neon-paint.html',DANCE:'dance-stage.html',GARAGE:'garage-hub.html',PETS:'crew.html'};
+const WALK_PAGE={NEON_PAINT:'neon-paint.html',DANCE:'dance-stage.html',GARAGE:'jr.html#garage',PETS:'crew.html'};
 const WALK_HOUSE_KEY='zdash.house.v1',WALK_KID_KEY='zdash.kid.v1';
 const WALK_THEMES=['#ff4fd8','#3ee6ff','#7dff6b','#ffb020','#9b5cff'];
 const WALK_FURN=['sofa','arcade','dj','trophy'];
@@ -607,6 +607,12 @@ function walkSyncPill(){
   walkEnsurePill();
   const pill=typeof document!=='undefined'&&document.getElementById('walk-door-pill');
   if(!pill)return;
+  if(typeof document!=='undefined'&&document.getElementById('enterBldBtn')){
+    pill.classList.remove('show','dance','parked');
+    pill.hidden=true;pill.style.display='none';
+    pill.setAttribute('aria-hidden','true');
+    return;
+  }
   const park=!WALK_MODE.onFoot&&WALK_MODE.parking;
   const d=WALK_MODE.onFoot?WALK_MODE.door:(park?park.door:null);
   const show=!!park||!!(d&&d.dist<WALK_PILL_M);
@@ -654,13 +660,6 @@ function walkSyncDyn(){
   if(typeof P!=='undefined'){walkDyn.glow.x=P.x;walkDyn.glow.y=(P.y||0)+0.08;walkDyn.glow.z=P.z;}
 }
 
-function walkOpenHub(purpose){
-  if(purpose!=='HOME'&&purpose!=='GARAGE')return false;
-  if(!window.GARAGE_HOME_HUB||typeof window.GARAGE_HOME_HUB.open!=='function')return false;
-  window.GARAGE_HOME_HUB.open(purpose==='GARAGE'?'garage':'home');
-  WALK_MODE.insideBuilding=true;
-  return true;
-}
 function walkAct(door){
   const b=door,purpose=door.purpose;
   if(purpose==='HOME'){
@@ -668,7 +667,6 @@ function walkAct(door){
     if(typeof showWreck==='function')showWreck(false);
     walkGreetPet();
     walkToast('WELCOME HOME, ELLIE! Z TUNED & READY',door.color);
-    walkOpenHub('HOME');
   }else if(purpose==='NEON_PAINT'){
     if(walkHeadless())walkToast("ELLIE'S NEON PAINT STUDIO!",door.color);
     else if(typeof openNeonPaint==='function')openNeonPaint();
@@ -680,7 +678,6 @@ function walkAct(door){
     if(typeof KID!=='undefined'&&KID)KID.underglow=WALK_MODE.ugColor;
     if(window.GARAGEZ&&typeof window.GARAGEZ.open==='function')window.GARAGEZ.open({building:walkDanceBuilding(door)});
     walkToast('GARAGE TUNE-UP! 100% NOS',door.color);
-    walkOpenHub('GARAGE');
   }else if(purpose==='NOS'){
     P.nosTank=1;P.hotDropNosT=30;
     walkToast('NOS DEPOT! 30s OVERCHARGED NOS!',door.color);
@@ -731,25 +728,115 @@ function walkAct(door){
 }
 
 const walkDyn={walker:null,beacon:null,glow:null};
+function walkFrontDoorAt(x,z,maxDist){
+  if(typeof CITY==='undefined'||!CITY||!CITY.BL||!(maxDist>0))return null;
+  let best=null;
+  for(const b of CITY.BL){
+    if(!b||!b.doors)continue;
+    const meta=walkMeta(b);
+    for(const door of b.doors){
+      const dx=door[0]-x,dz=door[1]-z,dist=Math.hypot(dx,dz);
+      if(!(dist<=maxDist)||(best&&dist>=best.dist))continue;
+      const nx=door[2]||0,nz=door[3]||0;
+      if((x-door[0])*nx+(z-door[1])*nz<-2)continue;
+      const garage=walkDoorTag(door);
+      const reach=garage?WALK_BAY_STAND:1.05;
+      best={x:door[0],z:door[1],nx,nz,dist,y:0,buildingId:b.id,standX:door[0]+nx*reach,standZ:door[1]+nz*reach,garage,
+        purpose:meta.purpose,purposeLabel:meta.purposeLabel,actionLabel:meta.actionLabel,color:meta.color,
+        top:b.top||0,cx:b.cx,cz:b.cz,building:b};
+    }
+  }
+  return best;
+}
+function walkEntryTarget(){
+  if(!WALK_MODE||WALK_MODE.insideBuilding||typeof P==='undefined'||!P)return null;
+  const onFoot=!!WALK_MODE.onFoot;
+  const x=onFoot?WALK_MODE.x:P.x,z=onFoot?WALK_MODE.z:P.z;
+  if(!Number.isFinite(x)||!Number.isFinite(z))return null;
+  const carOk=!!(P.ground&&!P.wreck);
+  if((onFoot||(carOk&&P.v<10))&&typeof WALK_MODE.activeParking==='function'){
+    const garage=WALK_MODE.activeParking(x,z);
+    if(garage&&garage.door)return {door:garage.door,garage};
+  }
+  const max=onFoot?10:(carOk&&P.v<8?12:0);
+  const door=walkFrontDoorAt(x,z,max);
+  return door?{door,garage:null}:null;
+}
+function walkShortBld(door){
+  const map={HOME:'HOUSE',SHOWROOM:'SHOWROOM',NEON_PAINT:'PAINT',GARAGE:'GARAGE',NOS:'NOS',DANCE:'DANCE',PETS:'PETS',CAFE:'CAFE',ARCADE:'ARCADE',SKY_DROP:'SKY',SOCCER:'STADIUM',BUILDER:'BUILDER'};
+  return (door&&map[door.purpose])||'';
+}
+function walkEnsureEnterBtn(){
+  if(typeof document==='undefined')return null;
+  const found=document.getElementById('enterBldBtn');
+  if(found)return found;
+  const css=document.createElement('style');
+  css.id='enterBldCss';
+  css.textContent='#enterBldBtn{position:fixed;top:5px;right:calc(50% + 66px);z-index:95;height:44px;min-width:98px;padding:3px 12px;display:none;margin:0;border-radius:14px;border:2.5px solid #fff;background:radial-gradient(circle at 40% 32%,#f4fff6,#39ff7a 38%,#ff2bd6 78%);box-shadow:0 0 16px #7dff6b,0 0 12px #ff2bd6;color:#140018;font:900 11px/1.05 Orbitron,sans-serif;letter-spacing:.4px;flex-direction:column;align-items:center;justify-content:center;touch-action:none;user-select:none;cursor:pointer;-webkit-tap-highlight-color:transparent}#enterBldBtn small{font:800 9px/1 Rajdhani,sans-serif;letter-spacing:.6px;margin-top:1px}#enterBldBtn.inside{border-color:#ff4fd8;background:radial-gradient(circle at 40% 32%,#fff5fc,#ff4fd8 40%,#3ee6ff 82%);box-shadow:0 0 16px #ff4fd8,0 0 12px #3ee6ff}';
+  document.head.appendChild(css);
+  const btn=document.createElement('button');
+  btn.id='enterBldBtn';btn.type='button';btn.dataset.houseEnter='1';
+  btn.setAttribute('aria-label','ENTER BUILDING');
+  const lead=document.createElement('span');lead.dataset.k='lead';lead.textContent='🚪 ENTER';
+  const sm=document.createElement('small');sm.textContent='BUILDING';
+  btn.append(lead,sm);
+  let lock=0;
+  const fire=e=>{
+    if(e){e.preventDefault();e.stopPropagation();}
+    const n=performance.now();if(n-lock<280)return;lock=n;
+    if(WALK_MODE.insideBuilding)WALK_MODE.stepBackOutside();
+    else WALK_MODE.enterDoor();
+  };
+  btn.addEventListener('pointerup',fire);
+  btn.addEventListener('click',fire);
+  (document.body||document.documentElement).appendChild(btn);
+  return btn;
+}
+function walkSyncEnterBtn(){
+  const btn=walkEnsureEnterBtn();
+  if(!btn||btn.dataset.houseEnter!=='1')return;
+  const lead=btn.querySelector('[data-k="lead"]'),sm=btn.querySelector('small');
+  if(WALK_MODE.insideBuilding){
+    btn.style.display='flex';btn.classList.add('inside');
+    if(lead)lead.textContent='🚪 EXIT';
+    if(sm)sm.textContent='BUILDING';
+    btn.setAttribute('aria-label','EXIT BUILDING');
+    return;
+  }
+  const target=walkEntryTarget();
+  if(!target){
+    btn.style.display='none';btn.classList.remove('inside');
+    btn.setAttribute('aria-hidden','true');
+    return;
+  }
+  btn.style.display='flex';btn.classList.remove('inside');
+  btn.setAttribute('aria-hidden','false');
+  if(lead)lead.textContent='🚪 ENTER';
+  const short=walkShortBld(target.door);
+  if(sm)sm.textContent=short?short+' BUILDING':'BUILDING';
+  btn.setAttribute('aria-label','ENTER BUILDING');
+}
 function walkEnterDoor(){
   const self=this&&typeof this.nearestDoor==='function'?this:WALK_MODE;
-  if(typeof P==='undefined')return false;
-  // On foot, a prompt door (under 6 m) wins. From a parked bay, the garage door opens the building.
-  // In the car elsewhere, only a sky-drop door beside the Z qualifies.
-  if(!self.onFoot)self._holdParking();
-  const park=!self.onFoot&&self.parking;
-  let door=self.onFoot&&self.door&&(self.door.dist<WALK_PILL_M||self.door.garage)?self.door:null;
-  if(!door&&park)door=park.door;
-  if(!door)door=self.nearestDoor(WALK_PILL_M);
-  if(!door)return false;
-  if(!park&&!(door.dist<WALK_PILL_M))return false;
-  if(!self.onFoot&&door.purpose!=='SKY_DROP'&&!park)return false;
-  self.door=door;
+  if(typeof P==='undefined'||!P||self.insideBuilding)return false;
+  const target=walkEntryTarget();
+  if(!target||!target.door)return false;
+  const door=target.door;
+  P.v=0;P.ground=true;P.pitch=0;
+  if(P.driveMode!=='street')P.driveMode='street';
+  if(!self.onFoot){
+    self.onFoot=true;self.y=P.y||0;self._roofY=null;
+    self.x=door.standX!=null?door.standX:P.x;
+    self.z=door.standZ!=null?door.standZ:P.z;
+    const nx=door.nx||0,nz=door.nz||0;
+    self.yaw=(nx||nz)?Math.atan2(nx,nz):(P.yaw||0);
+  }
+  self.door=door;self.parking=null;
   try{walkAct(door);}catch(e){return false;}
   if(WALK_INDOOR[door.purpose]){self.insideBuilding=true;self.insideDoor=door;walkShowInterior(door);}
   else{self.insideBuilding=false;self.insideDoor=null;walkHideInterior();}
-  walkSyncPill();walkSyncGait();walkSyncDyn();
-  return true;
+  walkSyncPill();walkSyncGait();walkSyncDyn();walkSyncEnterBtn();
+  return !!self.insideBuilding;
 }
 function walkLockEnter(){
   const wm=window.WALK_MODE;
@@ -885,6 +972,7 @@ window.WALK_MODE={
     this.vx=0;this.vz=0;this.speed=0;this.gait='idle';
     walkHideInterior();
     if(window.DANCE_STAGE&&typeof window.DANCE_STAGE.close==='function'){try{window.DANCE_STAGE.close();}catch(e){}}
+    if(window.NEON_PAINT&&typeof window.NEON_PAINT.closeStudio==='function'){try{window.NEON_PAINT.closeStudio();}catch(e){}}
     if(window.GARAGE_HOME_HUB&&typeof window.GARAGE_HOME_HUB.close==='function'){try{window.GARAGE_HOME_HUB.close();}catch(e){}}
     if(door&&door.standX!=null&&door.standZ!=null){
       this.onFoot=true;this.x=door.standX;this.z=door.standZ;this.y=door.y||0;this._roofY=null;
@@ -894,7 +982,7 @@ window.WALK_MODE={
       if(typeof P!=='undefined'&&P){P.ground=true;P.v=0;P.pitch=0;}
     }
     this.door=this.onFoot?this.nearestDoor(18):null;
-    walkSyncPill();walkSyncGait();walkSyncDyn();
+    walkSyncPill();walkSyncGait();walkSyncDyn();walkSyncEnterBtn();
     return true;
   },
   nearestDoor(maxDist){
@@ -921,9 +1009,13 @@ window.WALK_MODE={
     }
     return best;
   },
+  canEnterBuilding(){return walkEntryTarget();},
   enterDoor(){return walkEnterDoor.call(this);},
   update(dt){
     const d=Math.max(0,Math.min(0.05,+dt||0));
+    try{this._update(d);}finally{walkSyncEnterBtn();}
+  },
+  _update(d){
     const jumpHeld=!!(typeof B!=='undefined'&&B&&(B.jump||B.brk))||!!(typeof K!=='undefined'&&K&&K.Space);
     if(this.onFoot&&jumpHeld&&!this._jumpHeld)this.jump();
     this._jumpHeld=jumpHeld;
@@ -954,23 +1046,18 @@ window.WALK_MODE={
     }
     walkIntegrate(this,d);
     this.door=this.nearestDoor(18);
-    const bay=!!(this.door&&this.door.garage);
-    const autoM=bay?WALK_BAY_M:WALK_AUTO_M;
-    const stepped=!bay||this._parkLatch!==this.door.buildingId||this.door.dist<(this._parkStep==null?WALK_BAY_M:this._parkStep-0.2);
-    if(this.door&&this.door.dist<autoM&&stepped){
-      if(this._autoBld!==this.door.buildingId){this._autoBld=this.door.buildingId;walkEnterDoor.call(this);}
-    }else if(!this.door||this.door.dist>=(bay?WALK_PILL_M:WALK_PILL_M))this._autoBld=null;
     walkSyncPill();walkSyncGait();walkSyncDyn();
   }
 };
 
 walkEnsurePill();
+walkEnsureEnterBtn();
 walkLockEnter();
 setTimeout(walkLockEnter,0);
 setInterval(walkLockEnter,400);
 addEventListener('keydown',e=>{
   if(e.code==='ShiftLeft'||e.code==='ShiftRight'){WALK_MODE._shift=true;walkSyncGait();return;}
-  if(e.repeat||e.code!=='KeyE'||!WALK_MODE.onFoot)return;
+  if(e.repeat||e.code!=='KeyE'||WALK_MODE.insideBuilding)return;
   const tag=e.target&&e.target.tagName;
   if(tag==='INPUT'||tag==='TEXTAREA')return;
   WALK_MODE.enterDoor();
