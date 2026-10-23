@@ -19,6 +19,13 @@ html,body{margin:0;height:100%;background:#07010f;overflow:hidden}
 <script src="world/garage.js"></script>
 <script src="world/garagez.js"></script>
 <script src="world/neon-paint.js"></script>
-<script>NEON_PAINT.openStudio({page:true});</script>
+<script>
+(function () {
+  var q = location.search || '';
+  var hash = location.hash || '';
+  var wall = /(?:\?|&)mode=wall(?:&|$)/.test(q) || hash === '#wall' || /mode=wall/.test(hash);
+  NEON_PAINT.openStudio(wall ? 'wall' : { page: true });
+})();
+</script>
 </body>
 </html>

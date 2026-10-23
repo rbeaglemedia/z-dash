@@ -47,9 +47,24 @@
   let scratch = null;
   let loopOn = false;
   let groupN = 1;
+  const WALL_KEY = 'zdash.wallgraffiti.v1';
+  const WALL_CH = 'zdash-wallgraffiti';
+  const WALL_W = 22;
+  const WALL_H = 14;
+  const ARTS_SPOTS = [[-145, 760], [425, 1135]];
+  let wallState = wallBlank();
+  let wallJson = '';
+  let wallCh = null;
+  let wallLive = null;
+  let wallLiveMirror = null;
+  let wallGroup = 1;
+  let artsCache = null;
+  let grafFrame = 0;
+  let grafArmed = false;
   const ui = {
     mode: 'spin', color: '#ff4fd8', style: 'neon', mirror: true, pulse: false,
-    stamp: '', wings: false, yaw: 0.62, pitch: 0.38, zoom: 1
+    stamp: '', wings: false, yaw: 0.62, pitch: 0.38, zoom: 1,
+    canvas: 'car', wallYaw: 0.30, wallZoom: 1, wallMirror: true, wallLook: false, stencil: ''
   };
 
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
@@ -936,14 +951,18 @@
       '.np-stage{min-width:0;min-height:0;position:relative;background:radial-gradient(circle at 50% 70%,#1a0a2e,#05020c 70%)}',
       '.np-stage canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}',
       '.np-stage.spin canvas{cursor:grab}',
-      '.np-tools{overflow:auto;padding:6px;display:flex;flex-direction:column;gap:5px;border-left:1px solid rgba(62,230,255,.35);background:rgba(8,2,18,.72)}',
+      '.np-tools{overflow:auto;min-height:0;padding:6px;display:flex;flex-direction:column;gap:5px;border-left:1px solid rgba(62,230,255,.35);background:rgba(8,2,18,.72)}',
       '.np-row{display:flex;flex-wrap:wrap;gap:4px}',
       '.np-row button{flex:1;min-width:0}',
       '.np-colors button{flex:0 0 24px;width:24px;height:24px;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,.3)}',
       '.np-stamps button{flex:1 0 21%;font-size:14px;padding:3px 0;border-radius:10px}',
       '.np-save{background:linear-gradient(90deg,#ffe14d,#ff9a2e);color:#1a0633;border:0;font:900 12px Orbitron,sans-serif;border-radius:12px;padding:8px;letter-spacing:1px;cursor:pointer}',
       '.np-lab{font:700 8px Orbitron,sans-serif;letter-spacing:1px;color:#3ee6ff;margin:0}',
-      '.np-zoom{width:100%;accent-color:#ff4fd8}'
+      '.np-zoom{width:100%;accent-color:#ff4fd8}',
+      '.np-modes{display:flex;gap:6px;padding:6px 6px 0;flex:none}',
+      '.np-modes button{flex:1;font:900 11px Orbitron,sans-serif;letter-spacing:.4px;padding:8px 6px;border-radius:12px;color:#fff;background:rgba(22,11,40,.9);border:1.5px solid rgba(255,79,216,.65);cursor:pointer}',
+      '.np-modes button.on{background:#ff4fd8;color:#1a0633;border-color:#fff;box-shadow:0 0 14px #ff4fd8}',
+      '.np-off{display:none !important}'
     ].join('');
     document.head.appendChild(s);
   }
@@ -959,7 +978,10 @@
     const stampBtns = stamps.map(function (s) {
       return '<button type="button" data-stamp="' + s[0] + '">' + s[1] + '</button>';
     }).join('');
-    return '<div class="np-top"><h1>NEON DRAW</h1>' +
+    return '<div class="np-modes">' +
+      '<button type="button" data-canvas-mode="car">🚗 3D CAR PAINT (370Z)</button>' +
+      '<button type="button" data-canvas-mode="wall">🧱 Z COMPANY ARTS GRAFFITI WALL (BUILDING SIGN)</button></div>' +
+      '<div class="np-top" data-panel="car"><h1>NEON DRAW</h1>' +
       '<button type="button" data-mode="spin" class="on">🔄 SPIN</button>' +
       '<button type="button" data-mode="draw">✏️ DRAW</button>' +
       '<button type="button" data-cam="hood">FRONT / HOOD</button>' +
@@ -969,7 +991,12 @@
       '<button type="button" data-cam="rear">REAR</button>' +
       '<button type="button" data-act="wings">WINGS CLOSED</button>' +
       '<div class="np-status" id="np-status">DRAG TO SPIN</div></div>' +
-      '<div class="np-main"><div class="np-stage spin"><canvas data-canvas="spin"></canvas></div><div class="np-tools">' +
+      '<div class="np-top np-off" data-panel="wall"><h1>GRAFFITI WALL</h1>' +
+      '<button type="button" data-act="wall-look">🔄 ANGLE</button>' +
+      '<button type="button" data-act="wall-draw">✏️ DRAW</button>' +
+      '<div class="np-status" id="np-status-wall">DRAW THE SIGN</div></div>' +
+      '<div class="np-main"><div class="np-stage spin"><canvas data-canvas="spin"></canvas></div>' +
+      '<div class="np-tools" data-panel="car">' +
       '<p class="np-lab">COLOR</p><div class="np-row np-colors">' + colors + '</div>' +
       '<p class="np-lab">BRUSH</p><div class="np-row">' +
       '<button type="button" data-brush="neon" class="on">TUBE</button>' +
@@ -986,11 +1013,40 @@
       '<button type="button" data-act="slot" data-slot="2">3</button></div>' +
       '<div class="np-row"><button type="button" data-act="undo">UNDO</button>' +
       '<button type="button" data-act="clear">CLEAR</button></div>' +
-      '<button type="button" class="np-save" data-act="save">SAVE</button></div></div>';
+      '<button type="button" class="np-save" data-act="save">SAVE</button></div>' +
+      '<div class="np-tools np-off" data-panel="wall">' +
+      '<p class="np-lab">COLOR</p><div class="np-row np-colors">' + colors + '</div>' +
+      '<p class="np-lab">BRUSH</p><div class="np-row">' +
+      '<button type="button" data-brush="neon">TUBE</button>' +
+      '<button type="button" data-brush="spray">SPRAY</button>' +
+      '<button type="button" data-brush="ribbon">RIBBON</button>' +
+      '<button type="button" data-brush="line">LINE</button>' +
+      '<button type="button" data-brush="rainbow">RAINBOW</button></div>' +
+      '<div class="np-row"><button type="button" data-act="wall-mirror" class="on">🪞 MIRROR</button></div>' +
+      '<p class="np-lab">STAMPS</p><div class="np-row np-stamps">' +
+      '<button type="button" data-stamp="star">⭐</button>' +
+      '<button type="button" data-stamp="heart">♥</button>' +
+      '<button type="button" data-stamp="crown">👑</button>' +
+      '<button type="button" data-stamp="note">♪</button>' +
+      '<button type="button" data-stamp="dance">💃</button></div>' +
+      '<p class="np-lab">LETTER STENCILS</p><div class="np-row">' +
+      '<button type="button" data-stencil="Z CO">Z CO</button>' +
+      '<button type="button" data-stencil="ELLIE">ELLIE</button>' +
+      '<button type="button" data-stencil="DANCE">DANCE</button>' +
+      '<button type="button" data-stencil="★">★</button></div>' +
+      '<p class="np-lab">WALL ANGLE</p><input class="np-zoom" data-act="wall-yaw" type="range" min="-80" max="80" value="17">' +
+      '<div class="np-row"><button type="button" data-act="wall-slot" data-slot="0">Slot 1</button>' +
+      '<button type="button" data-act="wall-slot" data-slot="1">Slot 2</button>' +
+      '<button type="button" data-act="wall-slot" data-slot="2">Slot 3</button></div>' +
+      '<div class="np-row"><button type="button" data-act="wall-undo">↶ UNDO</button>' +
+      '<button type="button" data-act="wall-clear">🗑️ CLEAR WALL</button></div>' +
+      '<button type="button" class="np-save" data-act="wall-demo">✨ DEMO GRAFFITI</button>' +
+      '<button type="button" class="np-save" data-act="wall-apply">🏙️ APPLY TO Z COMPANY ARTS BUILDING</button></div></div>';
   }
   function setStatus(text) {
-    const el = studio && studio.querySelector('#np-status');
-    if (el) el.textContent = text;
+    if (!studio) return;
+    const els = studio.querySelectorAll('#np-status, #np-status-wall');
+    for (let i = 0; i < els.length; i++) els[i].textContent = text;
   }
   function syncUI() {
     if (!studio) return;
@@ -1015,10 +1071,22 @@
         b.textContent = ui.wings ? 'WINGS OPEN' : 'WINGS CLOSED';
         on = ui.wings;
       }
+      if (act === 'wall-mirror') on = ui.wallMirror;
+      if (act === 'wall-look') on = ui.wallLook;
+      if (act === 'wall-draw') on = !ui.wallLook;
+      if (act === 'wall-slot') on = wallState.activeSlot === (+b.getAttribute('data-slot') || 0);
+      const canvasMode = b.getAttribute('data-canvas-mode');
+      if (canvasMode) on = ui.canvas === canvasMode;
+      const stencil = b.getAttribute('data-stencil');
+      if (stencil) on = ui.stencil === stencil;
       b.classList.toggle('on', on);
     }
+    const panels = studio.querySelectorAll('[data-panel]');
+    for (let i = 0; i < panels.length; i++) {
+      panels[i].classList.toggle('np-off', panels[i].getAttribute('data-panel') !== ui.canvas);
+    }
     const stage = studio.querySelector('.np-stage');
-    if (stage) stage.classList.toggle('spin', ui.mode === 'spin');
+    if (stage) stage.classList.toggle('spin', ui.canvas === 'car' && ui.mode === 'spin');
   }
   const CAMS = {
     hood: { yaw: 0.18, pitch: 0.72 },
@@ -1033,6 +1101,11 @@
     if (!studio) { loopOn = false; return; }
     loopOn = true;
     const canvas = studio.querySelector('canvas');
+    if (ui.canvas === 'wall' && canvas) {
+      try { drawWallCanvas(canvas); } catch (e) { window.NEON_PAINT._err = String(e && e.stack || e); }
+      requestAnimationFrame(frameStudio);
+      return;
+    }
     const X = window.ZD && window.ZD.Xray;
     if (canvas && X && X.ready && X.car) {
       const rect = canvas.getBoundingClientRect();
@@ -1104,14 +1177,36 @@
       const brush = t.getAttribute('data-brush');
       const stamp = t.getAttribute('data-stamp');
       const act = t.getAttribute('data-act');
+      const canvasMode = t.getAttribute('data-canvas-mode');
+      const stencil = t.getAttribute('data-stencil');
+      if (canvasMode) {
+        ui.canvas = canvasMode;
+        ui.stamp = '';
+        ui.stencil = '';
+        setStatus(canvasMode === 'wall' ? 'DRAW THE Z COMPANY ARTS WALL' : (ui.mode === 'draw' ? 'DRAW ON THE CAR' : 'DRAG TO SPIN'));
+      }
       if (mode) { ui.mode = mode; ui.stamp = ''; setStatus(mode === 'draw' ? 'DRAW ON THE CAR' : 'DRAG TO SPIN'); }
+      if (stencil) {
+        ui.stencil = ui.stencil === stencil ? '' : stencil;
+        ui.stamp = '';
+        ui.wallLook = false;
+        ui.canvas = 'wall';
+        setStatus(ui.stencil ? 'TAP THE WALL' : 'DRAW THE SIGN');
+      }
       if (cam && CAMS[cam]) {
         ui.yaw = CAMS[cam].yaw; ui.pitch = CAMS[cam].pitch;
         setStatus(t.textContent);
       }
-      if (color) { ui.color = color; ui.stamp = ''; }
-      if (brush) { ui.style = brush; ui.stamp = ''; }
-      if (stamp) { ui.stamp = ui.stamp === stamp ? '' : stamp; if (ui.stamp && ui.style === 'eraser') ui.style = 'neon'; ui.mode = 'draw'; setStatus('TAP THE CAR'); }
+      if (color) { ui.color = color; ui.stamp = ''; ui.stencil = ''; }
+      if (brush) { ui.style = brush; ui.stamp = ''; ui.stencil = ''; ui.wallLook = false; }
+      if (stamp) {
+        ui.stamp = ui.stamp === stamp ? '' : stamp;
+        if (ui.stamp && ui.style === 'eraser') ui.style = 'neon';
+        ui.stencil = '';
+        ui.wallLook = false;
+        if (ui.canvas !== 'wall') ui.mode = 'draw';
+        setStatus(ui.stamp ? (ui.canvas === 'wall' ? 'TAP THE WALL' : 'TAP THE CAR') : (ui.canvas === 'wall' ? 'DRAW THE SIGN' : 'DRAW ON THE CAR'));
+      }
       if (act === 'mirror') { ui.mirror = !ui.mirror; setStatus(ui.mirror ? 'SYM IS ON' : 'SYM IS OFF'); }
       if (act === 'pulse') { ui.pulse = !ui.pulse; setStatus(ui.pulse ? 'NOS GLOW ON' : 'PULSE OFF'); }
       if (act === 'wings') { ui.wings = !ui.wings; setStatus(ui.wings ? 'WINGS OPEN' : 'WINGS CLOSED'); }
@@ -1123,10 +1218,24 @@
       if (act === 'clear') { slot().strokes = []; save(state); setStatus('CLEARED'); }
       if (act === 'save') { save(state); setStatus('SAVED TO THE GARAGE'); }
       if (act === 'slot') { state.activeSlot = +t.getAttribute('data-slot') || 0; save(state); setStatus('SLOT ' + (state.activeSlot + 1)); }
+      if (act === 'wall-slot') { wallState.activeSlot = +t.getAttribute('data-slot') || 0; saveWall(); setStatus('Slot ' + (wallState.activeSlot + 1)); }
+      if (act === 'wall-undo') {
+        const g = wallSlot().strokes.length ? wallSlot().strokes[wallSlot().strokes.length - 1].group : 0;
+        wallSlot().strokes = wallSlot().strokes.filter(function (s) { return !g || s.group !== g; });
+        saveWall(); setStatus('UNDID');
+      }
+      if (act === 'wall-clear') { wallSlot().strokes = []; saveWall(); setStatus('WALL CLEARED'); }
+      if (act === 'wall-demo') loadDemoWall();
+      if (act === 'wall-apply') { saveWall(); setStatus('ON THE Z COMPANY ARTS BUILDING'); }
+      if (act === 'wall-mirror') { ui.wallMirror = !ui.wallMirror; setStatus(ui.wallMirror ? 'MIRROR IS ON' : 'MIRROR IS OFF'); }
+      if (act === 'wall-look') { ui.wallLook = true; ui.stamp = ''; ui.stencil = ''; setStatus('DRAG TO TURN THE WALL'); }
+      if (act === 'wall-draw') { ui.wallLook = false; setStatus('DRAW THE SIGN'); }
       syncUI();
     });
     const zoom = root.querySelector('[data-act="zoom"]');
     if (zoom) zoom.addEventListener('input', function () { ui.zoom = (+zoom.value || 100) / 100; });
+    const yawSlide = root.querySelector('[data-act="wall-yaw"]');
+    if (yawSlide) yawSlide.addEventListener('input', function () { ui.wallYaw = (+yawSlide.value || 0) * Math.PI / 180; });
     function point(e) {
       const b = canvas.getBoundingClientRect();
       return [(e.clientX - b.left) * (canvas.width / b.width), (e.clientY - b.top) * (canvas.height / b.height)];
@@ -1137,6 +1246,7 @@
       const ids = Object.keys(pointers);
       if (ids.length >= 2) { drag = { pinch: distPointers() }; return; }
       const pt = point(e);
+      if (ui.canvas === 'wall') { wallDown(e, pt); return; }
       if (ui.mode === 'spin' && !ui.stamp) { drag = { x: e.clientX, y: e.clientY, spin: true }; return; }
       const X = carX();
       if (!X) return;
@@ -1174,6 +1284,26 @@
         drag.x = e.clientX; drag.y = e.clientY;
         return;
       }
+      if (drag.wallSpin) {
+        ui.wallYaw += (e.clientX - drag.x) * 0.008;
+        drag.x = e.clientX;
+        const slide = root.querySelector('[data-act="wall-yaw"]');
+        if (slide) slide.value = String(Math.round(ui.wallYaw * 180 / Math.PI));
+        return;
+      }
+      if (drag.wall) {
+        const pt = point(e);
+        const hit = unprojectPad(wallViewOf(canvas.width, canvas.height), pt[0], pt[1]);
+        if (!hit || !wallLive) return;
+        if (drag.line) {
+          wallLive.points = [[drag.u, drag.v], [hit.u, hit.v]];
+          if (wallLiveMirror) wallLiveMirror.points = [[-drag.u, drag.v], [-hit.u, hit.v]];
+        } else {
+          pushWall(wallLive, hit);
+          if (wallLiveMirror && ui.wallMirror) pushWall(wallLiveMirror, { u: -hit.u, v: hit.v });
+        }
+        return;
+      }
       const X = carX();
       if (!X) return;
       const pt = point(e);
@@ -1194,14 +1324,711 @@
       const was = drag;
       drag = null;
       if (was && was.draw) commitLive(carX());
+      if (was && was.wall) commitWall();
+    }
+    function wallDown(e, pt) {
+      if (ui.wallLook && !ui.stamp && !ui.stencil) { drag = { x: e.clientX, y: e.clientY, wallSpin: true }; return; }
+      const hit = unprojectPad(wallViewOf(canvas.width, canvas.height), pt[0], pt[1]);
+      if (!hit) { drag = null; return; }
+      if (ui.stencil) { placeWallStencil(hit); drag = { wallStamp: true }; return; }
+      if (ui.stamp) { placeWallStamp(hit); drag = { wallStamp: true }; return; }
+      const b = wallBrushNow();
+      const group = wallGroup++;
+      wallLive = { brush: b.brush, color: b.color, size: b.size, mirror: ui.wallMirror, group: group, points: [[hit.u, hit.v]] };
+      wallLiveMirror = ui.wallMirror ? { brush: b.brush, color: b.color, size: b.size, mirror: true, group: group, points: [[-hit.u, hit.v]] } : null;
+      drag = { wall: true, line: b.brush === 'line', u: hit.u, v: hit.v };
     }
     canvas.addEventListener('pointerup', endPtr);
     canvas.addEventListener('pointercancel', endPtr);
   }
 
+  function wallBlank() {
+    return {
+      version: 1, activeSlot: 0,
+      slots: [0, 1, 2].map(function (i) { return { name: 'Slot ' + (i + 1), strokes: [], updatedAt: 0 }; })
+    };
+  }
+  function cleanWallStroke(s) {
+    if (!s || !Array.isArray(s.points) && !Array.isArray(s.pts)) return null;
+    const raw = Array.isArray(s.points) ? s.points : s.pts;
+    const points = [];
+    for (let i = 0; i < raw.length && points.length < 800; i++) {
+      const p = raw[i];
+      if (!p || p.length < 2) continue;
+      const u = +p[0], v = +p[1];
+      if (u !== u || v !== v) continue;
+      points.push([clamp(u, -1.2, 1.2), clamp(v, -0.05, 1.05)]);
+    }
+    if (points.length < 1) return null;
+    const brush = (typeof s.brush === 'string' && s.brush) ? s.brush.slice(0, 16) : 'neon';
+    const color = (typeof s.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(s.color)) ? s.color.toLowerCase() : '#ff4fd8';
+    let size = +s.size;
+    if (!(size > 0)) size = 16;
+    return { brush: brush, color: color, size: clamp(size, 1, 64), mirror: !!s.mirror, group: s.group | 0, points: points };
+  }
+  function normalizeWall(data) {
+    const slots = [0, 1, 2].map(function (i) {
+      const s = data && data.slots && data.slots[i];
+      const strokes = [];
+      const raw = s && (Array.isArray(s.strokes) ? s.strokes : (Array.isArray(s.points) ? [s] : []));
+      for (let k = 0; k < raw.length && strokes.length < 400; k++) {
+        const c = cleanWallStroke(raw[k]);
+        if (c) strokes.push(c);
+      }
+      return { name: clipName(s && s.name, 'Slot ' + (i + 1)), strokes: strokes, updatedAt: (s && +s.updatedAt) || 0 };
+    });
+    let active = data && data.activeSlot | 0;
+    if (active < 0 || active > 2) active = 0;
+    return { version: 1, activeSlot: active, slots: slots };
+  }
+  function readWall() {
+    try {
+      const raw = localStorage.getItem(WALL_KEY);
+      if (!raw) return wallBlank();
+      return normalizeWall(JSON.parse(raw));
+    } catch (e) { return wallBlank(); }
+  }
+  function wallSlot() { return wallState.slots[wallState.activeSlot] || wallState.slots[0]; }
+  function wallAnySaved() {
+    for (let i = 0; i < wallState.slots.length; i++) if (wallState.slots[i].strokes.length) return true;
+    return false;
+  }
+  function glyphStrokes(ch) {
+    const g = {
+      Z: [[[0, 1], [1, 1], [0, 0], [1, 0]]],
+      C: [[[0.9, 0.85], [0.15, 1], [0, 0.5], [0.15, 0], [0.9, 0.15]]],
+      O: [[[0.15, 0], [0.15, 1], [0.85, 1], [0.85, 0], [0.15, 0]]],
+      E: [[[1, 1], [0, 1], [0, 0], [1, 0]], [[0, 0.5], [0.75, 0.5]]],
+      L: [[[0, 1], [0, 0], [1, 0]]],
+      I: [[[0.15, 1], [0.85, 1]], [[0.5, 1], [0.5, 0]], [[0.15, 0], [0.85, 0]]],
+      D: [[[0, 0], [0, 1], [0.55, 1], [1, 0.5], [0.55, 0], [0, 0]]],
+      A: [[[0, 0], [0.5, 1], [1, 0]], [[0.22, 0.38], [0.78, 0.38]]],
+      N: [[[0, 0], [0, 1], [1, 0], [1, 1]]],
+      ' ': []
+    };
+    if (ch === '★' || ch === '*') return [starPoly().map(function (p) { return [(p[0] + 1) / 2, (p[1] + 1) / 2]; })];
+    return g[ch] || g[ch && ch.toUpperCase()] || [];
+  }
+  function textWallStrokes(text, u, v, meters, color, size, brush) {
+    const chars = String(text).split('');
+    const gw = meters / 11;
+    const gh = meters / 14;
+    const gap = gw * 0.22;
+    const total = chars.length * gw + Math.max(0, chars.length - 1) * gap;
+    let x = u - total / 2;
+    const out = [];
+    for (let i = 0; i < chars.length; i++) {
+      const parts = glyphStrokes(chars[i]);
+      for (let p = 0; p < parts.length; p++) {
+        const pts = [];
+        for (let k = 0; k < parts[p].length; k++) {
+          pts.push([x + parts[p][k][0] * gw, v + (parts[p][k][1] - 0.5) * gh]);
+        }
+        if (pts.length) out.push({ brush: brush || 'neon', color: color, size: size || 18, mirror: false, group: 0, points: pts });
+      }
+      x += gw + gap;
+    }
+    return out;
+  }
+  function uvPoly(poly, u, v, meters) {
+    const pts = [];
+    for (let i = 0; i < poly.length; i++) {
+      pts.push([u + poly[i][0] * meters / 11, v + poly[i][1] * meters / 14]);
+    }
+    return pts;
+  }
+  function demoWall() {
+    const strokes = [];
+    function add(list, group) {
+      for (let i = 0; i < list.length; i++) { list[i].group = group; strokes.push(list[i]); }
+    }
+    add(textWallStrokes('Z', -0.55, 0.62, 5.2, '#ff4fd8', 26, 'neon'), 1);
+    add(textWallStrokes('CO', 0.12, 0.62, 4.4, '#3ee6ff', 24, 'ribbon'), 1);
+    const star = starPoly();
+    strokes.push({ brush: 'star', color: '#ffe14d', size: 18, mirror: false, group: 2, points: uvPoly(star, 0.72, 0.78, 2.4) });
+    const heart = heartPoly();
+    strokes.push({ brush: 'heart', color: '#ff4fd8', size: 16, mirror: false, group: 3, points: uvPoly(heart, -0.78, 0.28, 2.2) });
+    add(textWallStrokes('DANCE', 0.05, 0.28, 2.3, '#7dff6b', 16, 'neon'), 4);
+    const swoosh = [];
+    for (let i = 0; i <= 18; i++) {
+      const t = i / 18;
+      swoosh.push([-0.85 + t * 1.7, 0.12 + Math.sin(t * Math.PI) * 0.08]);
+    }
+    strokes.push({ brush: 'spray', color: '#9b5cff', size: 30, mirror: false, group: 5, points: swoosh });
+    strokes.push({ brush: 'line', color: '#ffe14d', size: 10, mirror: false, group: 6, points: [[-0.8, 0.48], [0.8, 0.48]] });
+    return strokes;
+  }
+  function wallShowing() {
+    const own = wallSlot().strokes;
+    if (own.length) return own.slice();
+    if (!wallAnySaved()) return demoWall();
+    return [];
+  }
+  function saveWall() {
+    wallSlot().updatedAt = Date.now();
+    const json = JSON.stringify(wallState);
+    wallJson = json;
+    try { localStorage.setItem(WALL_KEY, json); } catch (e) {}
+    if (wallCh) { try { wallCh.postMessage({ tab: TAB, json: json }); } catch (e) {} }
+    if (studio && ui.canvas === 'wall') syncUI();
+    return JSON.parse(json);
+  }
+  function ingestWall(raw) {
+    if (!raw) return;
+    let data;
+    try { data = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) { return; }
+    const next = normalizeWall(data);
+    const json = JSON.stringify(next);
+    if (json === wallJson) return;
+    wallState = next;
+    wallJson = json;
+    if (studio && ui.canvas === 'wall') syncUI();
+  }
+  function wallViewOf(w, h) {
+    const yaw = ui.wallYaw || 0;
+    const dist = 20 / (ui.wallZoom || 1);
+    return {
+      yaw: yaw, dist: dist, camY: 7.2, f: h * 0.92, cx: w * 0.5, cy: h * 0.52,
+      cos: Math.cos(yaw), sin: Math.sin(yaw)
+    };
+  }
+  function projectUV(view, u, v) {
+    const lx = u * (WALL_W / 2);
+    const ly = v * WALL_H;
+    const vx = lx * view.cos;
+    const vy = ly - view.camY;
+    const vz = view.dist - lx * view.sin;
+    if (vz < 0.35) return null;
+    return [view.cx + vx * view.f / vz, view.cy - vy * view.f / vz, vz];
+  }
+  function unprojectUV(view, sx, sy) {
+    const k = (sx - view.cx) / view.f;
+    const den = view.cos + k * view.sin;
+    if (Math.abs(den) < 1e-4) return null;
+    const lx = k * view.dist / den;
+    const vz = view.dist - lx * view.sin;
+    if (vz < 0.35) return null;
+    const m = (view.cy - sy) / view.f;
+    const ly = view.camY + m * vz;
+    const u = lx / (WALL_W / 2);
+    const v = ly / WALL_H;
+    if (u < -1.04 || u > 1.04 || v < -0.04 || v > 1.04) return null;
+    return { u: clamp(u, -1, 1), v: clamp(v, 0, 1) };
+  }
+  function unprojectPad(view, sx, sy) {
+    const direct = unprojectUV(view, sx, sy);
+    if (direct) return direct;
+    const rings = [10, 22, 36, 52];
+    for (let r = 0; r < rings.length; r++) {
+      const rad = rings[r];
+      for (let a = 0; a < 8; a++) {
+        const ang = a * Math.PI / 4;
+        const hit = unprojectUV(view, sx + Math.cos(ang) * rad, sy + Math.sin(ang) * rad);
+        if (hit) return hit;
+      }
+    }
+    return null;
+  }
+  function drawWallCanvas(canvas) {
+    const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.max(2, Math.round(rect.width * dpr));
+    const h = Math.max(2, Math.round(rect.height * dpr));
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+    const g = canvas.getContext('2d');
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    const sky = g.createLinearGradient(0, 0, 0, h);
+    sky.addColorStop(0, '#1a0830');
+    sky.addColorStop(0.55, '#12061c');
+    sky.addColorStop(1, '#07010f');
+    g.fillStyle = sky;
+    g.fillRect(0, 0, w, h);
+    const view = wallViewOf(w, h);
+    function poly(uvs) {
+      g.beginPath();
+      let n = 0;
+      for (let i = 0; i < uvs.length; i++) {
+        const p = projectUV(view, uvs[i][0], uvs[i][1]);
+        if (!p) return false;
+        if (n) g.lineTo(p[0], p[1]); else g.moveTo(p[0], p[1]);
+        n++;
+      }
+      g.closePath();
+      return true;
+    }
+    if (poly([[-1, 0], [1, 0], [1, 1], [-1, 1]])) {
+      g.fillStyle = '#160b28';
+      g.fill();
+    }
+    g.beginPath();
+    for (let i = 0; i <= 22; i++) {
+      const u = -1 + i / 11;
+      const a = projectUV(view, u, 0), b = projectUV(view, u, 1);
+      if (a && b) { g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); }
+    }
+    for (let i = 0; i <= 18; i++) {
+      const v = i / 18;
+      const a = projectUV(view, -1, v), b = projectUV(view, 1, v);
+      if (a && b) { g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); }
+    }
+    g.strokeStyle = 'rgba(90, 48, 140, 0.55)';
+    g.lineWidth = 1;
+    g.stroke();
+    if (poly([[-1.04, -0.02], [1.04, -0.02], [1.04, 1.03], [-1.04, 1.03]])) {
+      g.strokeStyle = '#ff4fd8';
+      g.lineWidth = 4;
+      g.shadowColor = '#ff4fd8';
+      g.shadowBlur = 16;
+      g.stroke();
+      g.shadowBlur = 0;
+    }
+    if (poly([[-0.96, 0.9], [0.96, 0.9], [0.96, 1.0], [-0.96, 1.0]])) {
+      g.fillStyle = 'rgba(8, 2, 18, 0.72)';
+      g.fill();
+      g.strokeStyle = '#3ee6ff';
+      g.lineWidth = 2;
+      g.shadowColor = '#3ee6ff';
+      g.shadowBlur = 10;
+      g.stroke();
+      g.shadowBlur = 0;
+    }
+    const title = projectUV(view, 0, 0.95);
+    const titleL = projectUV(view, -0.7, 0.95);
+    const titleR = projectUV(view, 0.7, 0.95);
+    if (title && titleL && titleR) {
+      const fs = Math.max(10, Math.hypot(titleR[0] - titleL[0], titleR[1] - titleL[1]) / 18);
+      g.font = '900 ' + fs.toFixed(1) + 'px Orbitron, sans-serif';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillStyle = '#3ee6ff';
+      g.shadowColor = '#3ee6ff';
+      g.shadowBlur = 12;
+      g.fillText('Z COMPANY ARTS — SIDE WALL MURAL', title[0], title[1]);
+      g.shadowBlur = 0;
+    }
+    const show = wallShowing();
+    if (wallLive && wallLive.points.length) show.push(wallLive);
+    if (wallLiveMirror && wallLiveMirror.points.length) show.push(wallLiveMirror);
+    for (let i = 0; i < show.length; i++) strokeWall2d(g, view, show[i]);
+    const tag = projectUV(view, 0, -0.08);
+    if (tag) {
+      g.font = '700 11px Orbitron, sans-serif';
+      g.fillStyle = '#ffe14d';
+      g.shadowColor = '#ffe14d';
+      g.shadowBlur = 8;
+      g.fillText(ui.wallLook ? 'DRAG TO TURN THE WALL' : '22m × 14m  ·  DRAW THE SIGN', tag[0], tag[1]);
+      g.shadowBlur = 0;
+    }
+  }
+  function strokeWall2d(g, view, s) {
+    const seq = [];
+    for (let i = 0; i < s.points.length; i++) {
+      const p = projectUV(view, s.points[i][0], s.points[i][1]);
+      seq.push(p);
+    }
+    const runs = [];
+    let cur = [];
+    for (let i = 0; i < seq.length; i++) {
+      if (!seq[i]) { if (cur.length) runs.push(cur); cur = []; continue; }
+      cur.push(seq[i]);
+    }
+    if (cur.length) runs.push(cur);
+    const color = s.brush === 'rainbow'
+      ? 'hsl(' + (((s.group || 0) * 47) % 360) + ',100%,64%)'
+      : s.color;
+    const base = s.brush === 'laser' || s.brush === 'line' ? 0.55 : (s.brush === 'spray' ? 1.7 : (s.brush === 'ribbon' ? 1.35 : 1));
+    for (let r = 0; r < runs.length; r++) {
+      const run = runs[r];
+      const lw = Math.max(3, (s.size || 16) * 0.42 * base);
+      g.save();
+      g.lineCap = 'round';
+      g.lineJoin = 'round';
+      g.beginPath();
+      for (let i = 0; i < run.length; i++) {
+        if (i) g.lineTo(run[i][0], run[i][1]); else g.moveTo(run[i][0], run[i][1]);
+      }
+      if (run.length === 1) g.lineTo(run[0][0] + 0.8, run[0][1]);
+      g.strokeStyle = color;
+      g.shadowColor = color;
+      g.globalAlpha = s.brush === 'spray' ? 0.55 : 0.95;
+      g.shadowBlur = lw * (s.brush === 'spray' ? 2.4 : 1.5);
+      g.lineWidth = lw;
+      g.stroke();
+      if (s.brush === 'spray') { g.globalAlpha = 0.35; g.lineWidth = lw * 1.8; g.stroke(); }
+      g.shadowBlur = lw * 0.25;
+      g.globalAlpha = 0.9;
+      g.strokeStyle = '#ffffff';
+      g.lineWidth = Math.max(1.5, lw * 0.28);
+      g.stroke();
+      g.restore();
+    }
+  }
+  function wallBrushNow() {
+    if (ui.stencil) return { brush: 'neon', size: 18, color: ui.color === 'rainbow' ? '#ffffff' : ui.color };
+    if (ui.stamp) return { brush: ui.stamp, size: 16, color: ui.color === 'rainbow' ? '#ff4fd8' : ui.color };
+    if (ui.color === 'rainbow' || ui.style === 'rainbow') return { brush: 'rainbow', size: ui.style === 'spray' ? 28 : 18, color: '#ffffff' };
+    if (ui.style === 'spray') return { brush: 'spray', size: 28, color: ui.color };
+    if (ui.style === 'ribbon') return { brush: 'ribbon', size: 20, color: ui.color };
+    if (ui.style === 'line') return { brush: 'line', size: 12, color: ui.color };
+    return { brush: 'neon', size: 18, color: ui.color };
+  }
+  function pushWall(stroke, hit) {
+    const prev = stroke.points[stroke.points.length - 1];
+    if (prev && Math.hypot(hit.u - prev[0], hit.v - prev[1]) < 0.008) return;
+    if (stroke.points.length < 800) stroke.points.push([hit.u, hit.v]);
+  }
+  function commitWall() {
+    if (wallLive && wallLive.points.length > 1) wallSlot().strokes.push(wallLive);
+    if (wallLiveMirror && wallLiveMirror.points.length > 1) wallSlot().strokes.push(wallLiveMirror);
+    wallLive = null;
+    wallLiveMirror = null;
+    saveWall();
+    setStatus('SAVED ON THE WALL');
+  }
+  function placeWallStamp(hit) {
+    const b = wallBrushNow();
+    const polys = ui.stamp === 'dance' ? dancePolys() : (ui.stamp === 'note' ? stampPolys('note') : stampPolys(ui.stamp || 'star'));
+    const group = wallGroup++;
+    const meters = ui.stamp === 'dance' ? 5.2 : 4.2;
+    function bake(u, v, flip) {
+      for (let i = 0; i < polys.length; i++) {
+        const pts = [];
+        for (let k = 0; k < polys[i].length; k++) {
+          const pu = polys[i][k][0] * (flip ? -1 : 1);
+          const pv = polys[i][k][1];
+          pts.push([u + pu * meters / 11, v + pv * meters / 14]);
+        }
+        wallSlot().strokes.push({ brush: b.brush, color: b.color, size: b.size, mirror: false, group: group, points: pts });
+      }
+    }
+    bake(hit.u, hit.v, false);
+    if (ui.wallMirror) bake(-hit.u, hit.v, true);
+    saveWall();
+    setStatus('STICKER ON THE WALL');
+  }
+  function dancePolys() {
+    return [
+      ellipse(0, 0.62, 0.18, 0.18),
+      [[0, 0.44], [0.05, 0.05]],
+      [[0, 0.32], [-0.55, 0.7]],
+      [[0, 0.32], [0.5, 0.75]],
+      [[0.05, 0.05], [-0.42, -0.55]],
+      [[0.05, 0.05], [0.48, -0.4]]
+    ];
+  }
+  function placeWallStencil(hit) {
+    const word = ui.stencil || 'Z';
+    const color = ui.color === 'rainbow' ? '#ff4fd8' : ui.color;
+    const letters = word.replace(/\s/g, '');
+    const n = letters.length || 1;
+    const meters = n <= 1 ? 6.4 : (n <= 3 ? 4.6 : 3.4);
+    const group = wallGroup++;
+    const made = textWallStrokes(word, hit.u, hit.v, meters, color, 20, 'neon');
+    for (let i = 0; i < made.length; i++) { made[i].group = group; wallSlot().strokes.push(made[i]); }
+    if (ui.wallMirror && Math.abs(hit.u) > 0.08) {
+      const alt = textWallStrokes(word, -hit.u, hit.v, meters, color, 20, 'neon');
+      for (let i = 0; i < alt.length; i++) { alt[i].group = group; wallSlot().strokes.push(alt[i]); }
+    }
+    saveWall();
+    setStatus(word + ' ON THE WALL');
+  }
+  function loadDemoWall() {
+    const group = wallGroup++;
+    const demo = demoWall();
+    wallSlot().strokes = [];
+    for (let i = 0; i < demo.length; i++) { demo[i].group = group; wallSlot().strokes.push(demo[i]); }
+    saveWall();
+    setStatus('DEMO GRAFFITI ON');
+  }
+  function uniqueB(list) {
+    const out = [];
+    for (let i = 0; i < list.length; i++) if (list[i] && out.indexOf(list[i]) < 0) out.push(list[i]);
+    return out;
+  }
+  function signText(b) {
+    const bits = [];
+    if (b.sign) bits.push(b.sign.text || b.sign.t || '');
+    if (b.deco) for (let i = 0; i < b.deco.length; i++) {
+      const k = b.deco[i];
+      if (k && k[0] === 'sign' && k[1]) bits.push(k[1].text || k[1].t || '');
+    }
+    return bits.join(' ');
+  }
+  function isTaggedArts(b) {
+    if (!b) return false;
+    if (b.purpose === 'DANCE') return true;
+    return signText(b).indexOf('Z COMPANY') !== -1;
+  }
+  function realBuilding(b) {
+    if (!b || b.x0 == null || b.x1 == null) return false;
+    const k = b.kind;
+    return k !== 'outline' && k !== 'pylon' && k !== 'bill' && k !== 'hill' && !b.towCab;
+  }
+  function worldCity() {
+    if (window.CITY && (window.CITY.buildings || window.CITY.BL)) return window.CITY;
+    if (typeof CITY !== 'undefined' && CITY && (CITY.buildings || CITY.BL)) return CITY;
+    if (window.FLY && FLY.CITY && (FLY.CITY.buildings || FLY.CITY.BL)) return FLY.CITY;
+    return null;
+  }
+  function worldCam() {
+    if (window.cam && window.cam.x != null) return window.cam;
+    if (typeof cam !== 'undefined' && cam && cam.x != null) return cam;
+    if (window.FLY && FLY.cam && FLY.cam.x != null) return FLY.cam;
+    return null;
+  }
+  function artsList() {
+    const C = worldCity();
+    if (!C) return [];
+    const list = C.buildings || C.BL || [];
+    if (artsCache && artsCache.src === list) return artsCache.list;
+    const tagged = [];
+    for (let i = 0; i < list.length; i++) if (isTaggedArts(list[i])) tagged.push(list[i]);
+    let chosen = tagged;
+    if (!chosen.length) {
+      chosen = [];
+      const pool = [];
+      for (let i = 0; i < list.length; i++) if (realBuilding(list[i])) pool.push(list[i]);
+      for (let s = 0; s < ARTS_SPOTS.length; s++) {
+        let best = null, bd = 1e9;
+        for (let i = 0; i < pool.length; i++) {
+          const b = pool[i];
+          const cx = b.cx != null ? b.cx : (b.x0 + b.x1) / 2;
+          const cz = b.cz != null ? b.cz : (b.z0 + b.z1) / 2;
+          const d = Math.hypot(cx - ARTS_SPOTS[s][0], cz - ARTS_SPOTS[s][1]);
+          if (d < bd) { bd = d; best = b; }
+        }
+        if (best) chosen.push(best);
+      }
+    }
+    artsCache = { src: list, list: uniqueB(chosen) };
+    return artsCache.list;
+  }
+  function beginGrafFrame() {
+    if (!grafArmed) { grafFrame++; grafArmed = true; }
+    return grafFrame;
+  }
+  function muralFrame(b) {
+    const dx = Math.abs(b.x1 - b.x0) || b.dx || WALL_W;
+    const dz = Math.abs(b.z1 - b.z0) || b.dz || WALL_W;
+    const bh = b.h || b.top || WALL_H;
+    const want = Math.min(dx, dz) * 1.55;
+    const height = Math.min(14, bh * 0.55);
+    const y0 = 3.2;
+    const faces = [
+      { nx: 1, nz: 0, len: dz, cx: b.x1, cz: (b.z0 + b.z1) / 2, tx: 0, tz: 1 },
+      { nx: -1, nz: 0, len: dz, cx: b.x0, cz: (b.z0 + b.z1) / 2, tx: 0, tz: -1 },
+      { nx: 0, nz: 1, len: dx, cx: (b.x0 + b.x1) / 2, cz: b.z1, tx: -1, tz: 0 },
+      { nx: 0, nz: -1, len: dx, cx: (b.x0 + b.x1) / 2, cz: b.z0, tx: 1, tz: 0 }
+    ];
+    const cam = worldCam();
+    let best = null, score = -1e9;
+    for (let i = 0; i < faces.length; i++) {
+      const f = faces[i];
+      const dot = cam ? ((cam.x - f.cx) * f.nx + (cam.z - f.cz) * f.nz) : f.len;
+      if (cam && dot <= 1) continue;
+      const s = dot + f.len * 0.15;
+      if (s > score) { score = s; best = f; }
+    }
+    if (!best) best = faces[0];
+    best.width = Math.min(want, best.len * 0.92);
+    best.height = Math.min(height, Math.max(2.4, (b.h || b.top || WALL_H) - 3.5));
+    best.y0 = y0;
+    best.out = 0.16;
+    return best;
+  }
+  function muralPoint(f, u, v) {
+    const along = u * f.width * 0.5;
+    const up = f.y0 + clamp(v, 0, 1) * f.height;
+    return [f.cx + f.nx * f.out + f.tx * along, up, f.cz + f.nz * f.out + f.tz * along];
+  }
+  function drawBuildingGraffiti(ctx, b) {
+    try {
+      if (!ctx || !b || b.x0 == null) return;
+      const id = beginGrafFrame();
+      const arts = artsList();
+      if (arts.indexOf(b) < 0 && !isTaggedArts(b)) return;
+      if (b._grafFrame === id) return;
+      const cam = worldCam();
+      if (cam) {
+        const dx = (b.cx != null ? b.cx : (b.x0 + b.x1) / 2) - cam.x;
+        const dz = (b.cz != null ? b.cz : (b.z0 + b.z1) / 2) - cam.z;
+        if (dx * dx + dz * dz > 260 * 260) return;
+      }
+      b._grafFrame = id;
+      paintMural(ctx, b);
+    } catch (e) { window.NEON_PAINT._err = String(e && e.message || e); }
+  }
+  function drawAllWallGraffiti(ctx) {
+    try {
+      beginGrafFrame();
+      const list = artsList();
+      for (let i = 0; i < list.length; i++) drawBuildingGraffiti(ctx, list[i]);
+    } catch (e) { window.NEON_PAINT._err = String(e && e.message || e); }
+    grafArmed = false;
+  }
+  function paintMural(ctx, b) {
+    const project = (typeof proj === 'function') ? proj : (window.R && window.R.proj);
+    if (!project) return;
+    const f = muralFrame(b);
+    const strokes = wallShowing();
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    function quad(u0, v0, u1, v1) {
+      const p = [muralPoint(f, u0, v0), muralPoint(f, u1, v0), muralPoint(f, u1, v1), muralPoint(f, u0, v1)];
+      const s = [];
+      for (let i = 0; i < 4; i++) {
+        const q = project(p[i][0], p[i][1], p[i][2]);
+        if (!q) return null;
+        s.push(q);
+      }
+      ctx.beginPath();
+      ctx.moveTo(s[0][0], s[0][1]);
+      for (let i = 1; i < 4; i++) ctx.lineTo(s[i][0], s[i][1]);
+      ctx.closePath();
+      return s;
+    }
+    if (quad(-1.04, -0.03, 1.04, 1.04)) {
+      ctx.fillStyle = 'rgba(22, 11, 40, 0.88)';
+      ctx.fill();
+    }
+    ctx.beginPath();
+    for (let i = 0; i <= 14; i++) {
+      const u = -1 + i / 7;
+      const a = project.apply(null, muralPoint(f, u, 0));
+      const c = project.apply(null, muralPoint(f, u, 1));
+      if (a && c) { ctx.moveTo(a[0], a[1]); ctx.lineTo(c[0], c[1]); }
+    }
+    for (let i = 0; i <= 10; i++) {
+      const v = i / 10;
+      const a = project.apply(null, muralPoint(f, -1, v));
+      const c = project.apply(null, muralPoint(f, 1, v));
+      if (a && c) { ctx.moveTo(a[0], a[1]); ctx.lineTo(c[0], c[1]); }
+    }
+    ctx.strokeStyle = 'rgba(120, 70, 180, 0.45)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    if (quad(-1.02, -0.02, 1.02, 1.02)) {
+      ctx.strokeStyle = '#ff4fd8';
+      ctx.lineWidth = 2.4;
+      ctx.shadowColor = '#ff4fd8';
+      ctx.shadowBlur = 10;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+    if (quad(-0.98, 0.9, 0.98, 1.0)) {
+      ctx.fillStyle = 'rgba(6, 2, 16, 0.8)';
+      ctx.fill();
+      ctx.strokeStyle = '#3ee6ff';
+      ctx.lineWidth = 1.6;
+      ctx.shadowColor = '#3ee6ff';
+      ctx.shadowBlur = 8;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+    const mid = project.apply(null, muralPoint(f, 0, 0.95));
+    const side = project.apply(null, muralPoint(f, 0.45, 0.95));
+    if (mid && side) {
+      const fs = Math.max(8, Math.hypot(side[0] - mid[0], side[1] - mid[1]) / 4.2);
+      if (fs >= 8) {
+        ctx.font = '900 ' + fs.toFixed(1) + 'px Orbitron, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#3ee6ff';
+        ctx.shadowColor = '#3ee6ff';
+        ctx.shadowBlur = 8;
+        ctx.fillText("🎨 Z COMPANY ARTS — ELLIE'S GRAFFITI WALL", mid[0], mid[1]);
+        ctx.shadowBlur = 0;
+      }
+    }
+    for (let i = 0; i < strokes.length; i++) {
+      const s = strokes[i];
+      const seq = [];
+      let depth = 40;
+      for (let k = 0; k < s.points.length; k++) {
+        const wpt = muralPoint(f, s.points[k][0], s.points[k][1]);
+        const q = project(wpt[0], wpt[1], wpt[2]);
+        if (q && q[2]) depth = q[2];
+        seq.push(q);
+      }
+      const Hpx = (typeof H === 'number' ? H : 390);
+      const px = (Hpx * 0.9) / Math.max(8, depth);
+      const mul = s.brush === 'spray' ? 1.8 : (s.brush === 'ribbon' ? 1.35 : (s.brush === 'line' ? 0.7 : 1));
+      const lw = Math.max(2.2, (s.size || 16) / 34 * f.height * px * 0.22 * mul);
+      const color = s.brush === 'rainbow' ? 'hsl(' + ((i * 36) % 360) + ',100%,64%)' : s.color;
+      const runs = [];
+      let cur = [];
+      for (let k = 0; k < seq.length; k++) {
+        if (!seq[k]) { if (cur.length) runs.push(cur); cur = []; continue; }
+        cur.push(seq[k]);
+      }
+      if (cur.length) runs.push(cur);
+      for (let r = 0; r < runs.length; r++) {
+        const run = runs[r];
+        ctx.beginPath();
+        for (let k = 0; k < run.length; k++) {
+          if (k) ctx.lineTo(run[k][0], run[k][1]); else ctx.moveTo(run[k][0], run[k][1]);
+        }
+        if (run.length === 1) ctx.lineTo(run[0][0] + 0.6, run[0][1]);
+        ctx.strokeStyle = color;
+        ctx.shadowColor = color;
+        ctx.globalAlpha = s.brush === 'spray' ? 0.5 : 0.95;
+        ctx.shadowBlur = lw * (s.brush === 'spray' ? 2.2 : 1.4);
+        ctx.lineWidth = lw;
+        ctx.stroke();
+        if (s.brush === 'spray') { ctx.globalAlpha = 0.35; ctx.lineWidth = lw * 1.7; ctx.stroke(); }
+        ctx.globalAlpha = 0.92;
+        ctx.shadowBlur = Math.max(2, lw * 0.3);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = Math.max(1.2, lw * 0.28);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+      }
+    }
+    ctx.restore();
+  }
+  function hookWorldGraffiti() {
+    if (typeof proj === 'function') {
+      window.R = window.R || {};
+      if (!window.R.proj) window.R.proj = proj;
+    }
+    if (typeof drawBldg === 'function' && !drawBldg._npGraf) {
+      const prev = drawBldg;
+      const wrapped = function (b, d) {
+        const out = prev.apply(this, arguments);
+        try { drawBuildingGraffiti(ctx, b); } catch (e) {}
+        return out;
+      };
+      wrapped._npGraf = 1;
+      drawBldg = wrapped;
+    }
+    if (typeof drawZ === 'function' && !drawZ._npGraf) {
+      const prevZ = drawZ;
+      const wrappedZ = function () {
+        try { drawAllWallGraffiti(ctx); } catch (e) {}
+        return prevZ.apply(this, arguments);
+      };
+      wrappedZ._npGraf = 1;
+      drawZ = wrappedZ;
+    }
+    if (window.DETAIL && typeof DETAIL.pass === 'function' && !DETAIL.pass._npGraf) {
+      const prevP = DETAIL.pass;
+      const wrappedP = function () {
+        const out = prevP.apply(this, arguments);
+        try { drawAllWallGraffiti(ctx); } catch (e) {}
+        return out;
+      };
+      wrappedP._npGraf = 1;
+      DETAIL.pass = wrappedP;
+    }
+  }
+
   function openStudio(opts) {
     if (typeof document === 'undefined') return;
+    if (typeof opts === 'string') opts = { page: true, canvas: opts === 'wall' ? 'wall' : 'car' };
     opts = opts || {};
+    ui.canvas = (opts.canvas === 'wall' || opts.mode === 'wall') ? 'wall' : 'car';
     closeStudio();
     state = readStore();
     lastJson = JSON.stringify(state);
@@ -1213,10 +2040,10 @@
     studio = root;
     bind(root);
     syncUI();
-    setStatus('LOADING THE 370Z');
+    setStatus(ui.canvas === 'wall' ? 'DRAW THE Z COMPANY ARTS WALL' : 'LOADING THE 370Z');
     if (!loopOn) frameStudio();
     const wait = setInterval(function () {
-      if (hookReady()) { clearInterval(wait); setStatus(ui.mode === 'draw' ? 'DRAW ON THE CAR' : 'DRAG TO SPIN'); }
+      if (ui.canvas === 'wall' || hookReady()) { clearInterval(wait); if (ui.canvas !== 'wall') setStatus(ui.mode === 'draw' ? 'DRAW ON THE CAR' : 'DRAG TO SPIN'); }
     }, 200);
   }
   function closeStudio() {
@@ -1241,10 +2068,27 @@
         ingest(d.json || d.data);
       };
     } catch (e) { ch = null; }
+    wallState = readWall();
+    wallJson = JSON.stringify(wallState);
+    try {
+      wallCh = new BroadcastChannel(WALL_CH);
+      wallCh.onmessage = function (ev) {
+        const d = ev.data;
+        if (!d || d.tab === TAB) return;
+        ingestWall(d.json || d.data);
+      };
+    } catch (e) { wallCh = null; }
     window.addEventListener('storage', function (e) {
-      if (e.key && e.key !== KEY) return;
-      ingest(e.newValue || '');
+      if (!e.key || e.key === KEY) ingest(e.newValue || '');
+      if (e.key === WALL_KEY) ingestWall(e.newValue || '');
     });
+    hookWorldGraffiti();
+    let tries = 0;
+    const hookTimer = setInterval(function () {
+      tries++;
+      hookWorldGraffiti();
+      if (tries > 40) clearInterval(hookTimer);
+    }, 250);
     if (hookReady()) return;
     let n = 0;
     const id = setInterval(function () {
@@ -1261,7 +2105,9 @@
       bakeCanvases: bakeCanvases,
       applyToCar: applyToCar,
       openStudio: openStudio,
-      closeStudio: closeStudio
+      closeStudio: closeStudio,
+      drawBuildingGraffiti: drawBuildingGraffiti,
+      drawAllWallGraffiti: drawAllWallGraffiti
     };
     if (typeof document !== 'undefined') boot();
   }
