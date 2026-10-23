@@ -73,8 +73,8 @@ try{const ch=new BroadcastChannel('zdash-customdance');ch.onmessage=()=>{danceCa
 try{const ch=new BroadcastChannel('zdash-petdance');ch.onmessage=()=>{petCache.raw=null;petDance();};}catch(e){}
 S.setWho=function(w){S.who=w==='boy'?'boy':'girl';save();};
 S.setGait=function(g){S.gait=(g==='walk'||g==='run'||g==='dance')?g:'idle';S.dancing=S.gait==='dance';};
-S.setCharDanceOpt=function(opt){S.charDanceOpt=normOpt(opt);save();if(window.CREW&&CREW.setCharDanceOpt)return CREW.setCharDanceOpt(opt);return S.charDanceOpt;};
-S.setPetDanceOpt=function(opt){S.petDanceOpt=normOpt(opt);save();if(window.CREW&&CREW.setPetDanceOpt)return CREW.setPetDanceOpt(opt);return S.petDanceOpt;};
+S.setCharDanceOpt=function(opt){if(window.CREW&&CREW.setCharDanceOpt)return CREW.setCharDanceOpt(opt);S.charDanceOpt=normOpt(opt);save();return S.charDanceOpt;};
+S.setPetDanceOpt=function(opt){if(window.CREW&&CREW.setPetDanceOpt)return CREW.setPetDanceOpt(opt);S.petDanceOpt=normOpt(opt);save();return S.petDanceOpt;};
 S.dance=dance;S.sample=sample;S.petClip=petDance;S.samplePet=samplePet;S.refresh=refresh;
 window.CREWSTATE=S;window.CREW_STATE=S;
 })();
