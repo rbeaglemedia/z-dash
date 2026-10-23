@@ -12106,7 +12106,7 @@ var qrcode = function() {
     const ds = $('#kDShift'); ds.addEventListener('pointerdown', (e) => { e.preventDefault(); if (D.phase === 'tree') { dragGas(true); try { ds.setPointerCapture(e.pointerId); } catch (x) {} } else dragTap(); });
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((ev) => ds.addEventListener(ev, () => dragGas(false))); ds.addEventListener('contextmenu', (e) => e.preventDefault()); $('#kDNos').addEventListener('pointerdown', (e) => { e.preventDefault(); dragNos(); }); $('#kWNos').addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); w4NosHold(1); wNos(); }); ['pointerup', 'pointercancel'].forEach((ev) => document.addEventListener(ev, () => w4NosHold(0), { passive: true, capture: true })); $('#kWNos').addEventListener('pointerleave', () => w4NosHold(0)); /*nos2 hold*/ $('#kWNos').addEventListener('contextmenu', (e) => e.preventDefault()); $('#kWBrake').addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); w3Brake(); }); $('#kWOil').addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); w3Oil(); });
     window.addEventListener('keyup', (e) => { if (e.key === 'n' || e.key === 'N' || e.key === ' ') w4NosHold(0); if (e.key === ' ' || e.key === 'ArrowUp') dragGas(false); });
-    window.addEventListener('keydown', (e) => { if (K.on && K.tab === 'wanted') { if (e.key === 'ArrowLeft') wLane(-1); else if (e.key === 'ArrowRight') wLane(1); else if (e.key === 'n' || e.key === 'N' || e.key === ' ') { if (!e.repeat) { w4NosHold(1); wNos(); } } else if (e.key === 'ArrowDown' || e.key === 'b' || e.key === 'B') w3Brake(); else if (e.key === 'o' || e.key === 'O') w3Oil(); return; } if (!K.on || K.tab !== 'drag') return; if (e.key === ' ' || e.key === 'ArrowUp') { if (D.phase === 'tree') dragGas(true); else if (!e.repeat) dragTap(); } else if (e.key === 'n' || e.key === 'N') dragNos(); else if (e.key === 'ArrowLeft') dragLane(-1); else if (e.key === 'ArrowRight') dragLane(1); });
+    window.addEventListener('keydown', (e) => { if (K.on && K.tab === 'wanted') { if (e.key === 'ArrowLeft') wLane(-1); else if (e.key === 'ArrowRight') wLane(1); else if (e.key === 'n' || e.key === 'N' || e.key === ' ') { if (!e.repeat) { w4NosHold(1); wNos(); } } else if (e.key === 'ArrowDown' || e.key === 'b' || e.key === 'B') w3Brake(); else if (e.key === 'o' || e.key === 'O') w3Oil(); return; } if (!K.on || K.tab !== 'drag') return; if (e.key === ' ' || e.key === 'ArrowUp') { if (D.phase === 'tree') dragGas(true); else if (!e.repeat) dragTap(); } else if (e.key === 'n' || e.key === 'N') dragNos(); else if (e.key === 'ArrowLeft') { if (!pcNoGyro()) dragLane(-1); } else if (e.key === 'ArrowRight') { if (!pcNoGyro()) dragLane(1); } });
     $('#kHelp').addEventListener('click', () => { if (K.tab === 'wanted') { if (W.phase === 'play' || W.phase === 'cd') W.phase = 'paused'; else if (W.phase !== 'paused') wReset(); showIntro('wanted'); return; } if (K.tab === 'drag') { dragReset(); showIntro('drag'); return; } if (K.tab === 'road') { if (R.phase === 'play') R.phase = 'paused'; showIntro('road'); } else if (K.tab === 'boost') { if (B.phase === 'play') B.phase = 'paused'; showIntro('boost'); } else showTut(); });
     $('#kTiltC').addEventListener('click', () => tiltCenter(true));
     $('#kGzIn').addEventListener('click', () => gzStep(-1)); $('#kGzOut').addEventListener('click', () => gzStep(1));
@@ -12134,7 +12134,7 @@ var qrcode = function() {
     cv.addEventListener('pointerdown', (e) => { if (K.tab === 'road' && R.air) TL.drag = { x: e.clientX, y: e.clientY }; });
     cv.addEventListener('pointermove', (e) => { if (TL.drag && R.air) { TL.dragIn = { lr: clamp((e.clientX - TL.drag.x) / 110, -1, 1), fb: clamp((e.clientY - TL.drag.y) / 110, -1, 1) }; } });
     addEventListener('pointerup', () => { TL.drag = null; TL.dragIn = { lr: 0, fb: 0 }; });
-    addEventListener('keydown', (e) => { if (!K.on || K.tab !== 'road' || !R.air) return; const m = { ArrowLeft: ['lr', -1], ArrowRight: ['lr', 1], ArrowUp: ['fb', 1], ArrowDown: ['fb', -1] }[e.key]; if (m) { TL.key[m[0]] = m[1]; e.preventDefault(); } });
+    addEventListener('keydown', (e) => { if (!K.on || K.tab !== 'road' || !R.air) return; if (pcNoGyro()) return; const m = { ArrowLeft: ['lr', -1], ArrowRight: ['lr', 1], ArrowUp: ['fb', 1], ArrowDown: ['fb', -1] }[e.key]; if (m) { TL.key[m[0]] = m[1]; e.preventDefault(); } });
     addEventListener('keyup', (e) => { const m = { ArrowLeft: 'lr', ArrowRight: 'lr', ArrowUp: 'fb', ArrowDown: 'fb' }[e.key]; if (m) TL.key[m] = 0; });
   }
   const touchX = (e) => { const r = $('#kCv').getBoundingClientRect(), X = ZD.Xray, mx = e.clientX - r.left; // finger x → her mini Z's lane, using the same camera so the car sits under the finger
@@ -12521,6 +12521,57 @@ var qrcode = function() {
     try { const r = await DeviceOrientationEvent.requestPermission(); TL.perm = r === 'granted' ? 'granted' : 'denied'; } catch (e) { TL.perm = 'denied'; }
     if (TL.perm === 'granted') TL.calNext = true; return TL.perm; }
   const tiltOk = () => TL.have && TL.perm !== 'denied' && performance.now() - TL.last < 1500;
+  const PCST = { x: 0, y: 0, t: 0, k: {}, laneT: 0 };
+  addEventListener('keydown', (e) => { PCST.k[e.code] = 1; });
+  addEventListener('keyup', (e) => { PCST.k[e.code] = 0; });
+  function pcNoGyro() { return document.documentElement.classList.contains('pc-mode') && !tiltOk(); }
+  function pcStickJr() {
+    const now = performance.now();
+    let dt = (now - (PCST.t || now)) / 1000; PCST.t = now;
+    if (!(dt > 0) || dt > 0.1) dt = 1 / 60;
+    const tx = (PCST.k.KeyD || PCST.k.ArrowRight ? 1 : 0) - (PCST.k.KeyA || PCST.k.ArrowLeft ? 1 : 0);
+    const ty = (PCST.k.KeyS || PCST.k.ArrowDown ? 1 : 0) - (PCST.k.KeyW || PCST.k.ArrowUp ? 1 : 0);
+    const rate = 8;
+    const step = (cur, target) => {
+      if (cur === target) return cur;
+      const next = cur + Math.sign(target - cur) * rate * dt;
+      if ((target - cur) * (target - next) <= 0) return target;
+      return next;
+    };
+    PCST.x = step(PCST.x, tx); PCST.y = step(PCST.y, ty);
+    return PCST;
+  }
+  function publishInp(steer, pitch) {
+    const inp = window.INP || (window.INP = {});
+    inp.steer = steer; inp.pitch = pitch; inp.tiltX = steer; inp.tiltY = pitch; inp.gyroX = steer; inp.gyroY = pitch;
+    inp.dotX = steer * 49; inp.dotY = pitch * 20;
+    return inp;
+  }
+  function pcDriveTilt() {
+    if (!pcNoGyro()) return;
+    const s = pcStickJr();
+    const padX = (TL.pad && TL.pad.lr) || 0, padY = -((TL.pad && TL.pad.fb) || 0);
+    const steer = clamp(s.x + padX, -1, 1), pitch = clamp(s.y + padY, -1, 1);
+    if (K.tab === 'drag') {
+      publishInp(steer, pitch);
+      if (D.phase === 'run' && (s.x >= 1 || s.x <= -1)) {
+        const far = s.x >= 1 ? 1 : -2, dir = s.x >= 1 ? 1 : -1, now = performance.now();
+        if (D.lane !== far && now - (PCST.laneT || 0) > 160) { PCST.laneT = now; dragLane(dir); }
+      }
+      return;
+    }
+    if (K.tab === 'road' && R.phase === 'play' && R.air) {
+      TL.key.lr = s.x; TL.key.fb = -s.y;
+      const dragX = (TL.dragIn && TL.dragIn.lr) || 0, dragY = -((TL.dragIn && TL.dragIn.fb) || 0);
+      publishInp(clamp(s.x + padX + dragX, -1, 1), clamp(s.y + padY + dragY, -1, 1));
+      return;
+    }
+    if (K.tab === 'road' && R.phase === 'play' && !R.air && !R.onRamp && steer !== 0) {
+      R.target = steer * XMAX; R.tilt = steer * 24.2; R.touch = performance.now();
+    }
+    const shown = (K.tab === 'road' && R.phase === 'play' && steer === 0) ? clamp(R.target / XMAX, -1, 1) : steer;
+    publishInp(shown, pitch);
+  }
   function tiltIn() { // combined air input, each axis -1..1
     const dz = (v) => (Math.abs(v) < RAMP.dead ? 0 : v); let lr = 0, fb = 0;
     if (tiltOk() && tiltSteerOn()) { lr += dz(clamp((TL.lr - TL.n0.lr) / RAMP.tilt, -1, 1)); fb += dz(clamp((TL.fb - TL.n0.fb) / RAMP.tilt, -1, 1)); }
@@ -12564,7 +12615,7 @@ var qrcode = function() {
      toward level (settle window) the zero follows the phone, so un-tilting doesn't swerve the other way either; the settled zero is kept as the new center. */
   const LANDFX = { hold: 0.5, ease: 0.6, settle: 1.0 };
   const tiltSteerOn = () => P.tiltSteer !== false;
-  function groundTilt() { if (!tiltSteerOn() || !K.on || K.tab !== 'road' || R.phase !== 'play' || R.air || R.onRamp) return;
+  function groundTilt() { if (pcNoGyro()) return; if (!tiltSteerOn() || !K.on || K.tab !== 'road' || R.phase !== 'play' || R.air || R.onRamp) return;
     const now = performance.now() / 1000;
     if (R.mode !== 'ramps') { const tilt = TL.lr; R.tilt = tilt; R.target = Math.sign(tilt) * XMAX * Math.pow(Math.min(1, Math.abs(tilt) / (22 * 1.1)), 0.8); R.touch = performance.now(); return; }
     let z = TL.n0.lr; const L = R.td;
@@ -13184,7 +13235,7 @@ var qrcode = function() {
   let lastT = performance.now(), hudT = 0;
   function loop(now) {
     requestAnimationFrame(loop); if (!K.on) return;
-    fpsFrame(now, now - lastT); const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now; const t = now / 1000;
+    fpsFrame(now, now - lastT); const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now; const t = now / 1000; pcDriveTilt();
     const f = feed(); readTick(f, dt); { const nw = performance.now() / 1000; if (!(K.tab === 'boost' && SG.prac) && sgDetect(f, nw)) sgMoment(nw); sgTick(f, nw); }
     K.wheelAng += ((f.speed || 0) * 0.44704 / 0.33) * dt;
     if (K.real && (f.speed || 0) > 3) { const before = Math.floor(P.ride / BOX_EVERY); P.ride += dt; if (Math.floor(P.ride / BOX_EVERY) > before) { P.boxes++; toast('PART BOX EARNED! Open it in the GARAGE', 3200); if (K.tab === 'garage') renderGarage(); } }
