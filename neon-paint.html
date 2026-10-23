@@ -24,7 +24,14 @@ html,body{margin:0;height:100%;background:#07010f;overflow:hidden}
   var q = location.search || '';
   var hash = location.hash || '';
   var wall = /(?:\?|&)mode=wall(?:&|$)/.test(q) || hash === '#wall' || /mode=wall/.test(hash);
-  NEON_PAINT.openStudio(wall ? 'wall' : { page: true });
+  var vinyl = '';
+  try { vinyl = new URLSearchParams(q).get('vinyl') || ''; } catch (e) { vinyl = ''; }
+  document.addEventListener('keydown', function (e) {
+    var t = e.target;
+    if (!t) return;
+    if (t.id === 'vinylNameInp' || t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable) return;
+  }, true);
+  NEON_PAINT.openStudio(wall ? { page: true, canvas: 'wall' } : { page: true, canvas: 'car', vinyl: vinyl });
 })();
 </script>
 </body>
