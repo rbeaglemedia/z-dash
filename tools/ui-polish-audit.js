@@ -417,7 +417,9 @@ const AUDIT_JS = String.raw`
     const mapW = Math.min(196, Math.max(96, Wd / 2 - 79));
     to(12, 10, mapW, 134, 'hud-minimap', 'minimap');
     to(Wd / 2 - 59, 6, 118, 86, 'hud-tilt', 'tilt gauge');
-    to(Wd - 200, 8, 200, 68, 'hud-speedometer', 'speedometer');
+    // hud.js drops the MPH stack 64px in pc-mode so it sits under the top bar.
+    const pcDrop = document.documentElement.classList.contains('pc-mode') ? 64 : 0;
+    to(Wd - 200, 8 + pcDrop, 200, 68, 'hud-speedometer', 'speedometer');
   }
 
   const visible = nodes.filter(n => n.hit || n.role === 'card');
@@ -649,26 +651,8 @@ const SCREENS = [
     budget: 28, wait: '#kid[data-tab="garage"] .gcats [data-c="vinyls"].on', settle: 800,
     after: '.vinyl-card'
   },
-  {
-    id: 'ix-l1', title: 'Index garage Level 1',
-    url: '/index.html#garage', viewports: ALL_VP,
-    budget: 12, wait: '#kid[data-tab="garage"] .gbig[data-groot="garage"]', settle: 700
-  },
-  {
-    id: 'ix-l2g', title: 'Index garage Level 2 categories',
-    url: '/index.html?gopen=garage#garage', viewports: ALL_VP,
-    budget: 16, wait: '#kid[data-tab="garage"] [data-gbroad="paintvinyl"]', settle: 700
-  },
-  {
-    id: 'ix-l2h', title: 'Index home Level 2 categories',
-    url: '/index.html?gopen=home#garage', viewports: ALL_VP,
-    budget: 16, wait: '#kid[data-tab="garage"] [data-gbroad="living"]', settle: 700
-  },
-  {
-    id: 'ix-l3v', title: 'Index garage Level 3 VINYLS',
-    url: '/index.html?gopen=vinyls#garage', viewports: ALL_VP,
-    budget: 28, wait: '#kid[data-tab="garage"] .gcats [data-c="vinyls"].on', settle: 800
-  },
+  // Adult index.html does not host the kid Garage/Home drill. adult-source and
+  // adult-landing check that. The legacy passenger garage stays as shipped.
   {
     id: 'neon-car', title: 'Neon paint — 3D car, vinyl name, saved vinyls',
     url: '/neon-paint.html', viewports: ALL_VP, seed: true,
