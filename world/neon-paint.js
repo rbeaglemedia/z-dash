@@ -1224,7 +1224,15 @@
         wallSlot().strokes = wallSlot().strokes.filter(function (s) { return !g || s.group !== g; });
         saveWall(); setStatus('UNDID');
       }
-      if (act === 'wall-clear') { wallSlot().strokes = []; saveWall(); setStatus('WALL CLEARED'); }
+      if (act === 'wall-clear') {
+        wallLive = null;
+        wallLiveMirror = null;
+        wallSlot().strokes = [];
+        wallSlot().cleared = true;
+        wallState.cleared = true;
+        saveWall();
+        setStatus('WALL CLEARED');
+      }
       if (act === 'wall-demo') loadDemoWall();
       if (act === 'wall-apply') { saveWall(); setStatus('ON THE Z COMPANY ARTS BUILDING'); }
       if (act === 'wall-mirror') { ui.wallMirror = !ui.wallMirror; setStatus(ui.wallMirror ? 'MIRROR IS ON' : 'MIRROR IS OFF'); }
@@ -1375,11 +1383,16 @@
         const c = cleanWallStroke(raw[k]);
         if (c) strokes.push(c);
       }
-      return { name: clipName(s && s.name, 'Slot ' + (i + 1)), strokes: strokes, updatedAt: (s && +s.updatedAt) || 0 };
+      return {
+        name: clipName(s && s.name, 'Slot ' + (i + 1)),
+        strokes: strokes,
+        updatedAt: (s && +s.updatedAt) || 0,
+        cleared: !!(s && s.cleared)
+      };
     });
     let active = data && data.activeSlot | 0;
     if (active < 0 || active > 2) active = 0;
-    return { version: 1, activeSlot: active, slots: slots };
+    return { version: 1, activeSlot: active, cleared: !!(data && data.cleared), slots: slots };
   }
   function readWall() {
     try {
@@ -1459,8 +1472,11 @@
     return strokes;
   }
   function wallShowing() {
-    const own = wallSlot().strokes;
+    const slot = wallSlot();
+    const own = slot.strokes;
     if (own.length) return own.slice();
+    if (slot.cleared || wallState.cleared) return [];
+    if (wallLive && wallLive.points && wallLive.points.length) return [];
     if (!wallAnySaved()) return demoWall();
     return [];
   }
@@ -1592,33 +1608,46 @@
       g.stroke();
       g.shadowBlur = 0;
     }
-    const title = projectUV(view, 0, 0.95);
-    const titleL = projectUV(view, -0.7, 0.95);
-    const titleR = projectUV(view, 0.7, 0.95);
-    if (title && titleL && titleR) {
-      const fs = Math.max(10, Math.hypot(titleR[0] - titleL[0], titleR[1] - titleL[1]) / 18);
-      g.font = '900 ' + fs.toFixed(1) + 'px Orbitron, sans-serif';
-      g.textAlign = 'center';
-      g.textBaseline = 'middle';
-      g.fillStyle = '#3ee6ff';
-      g.shadowColor = '#3ee6ff';
-      g.shadowBlur = 12;
-      g.fillText('Z COMPANY ARTS — SIDE WALL MURAL', title[0], title[1]);
-      g.shadowBlur = 0;
-    }
+    drawWallLabel(g, view, 'Z COMPANY ARTS — SIDE WALL MURAL', 0.95, {
+      color: '#3ee6ff', weight: '900', blur: 12, band: [0.9, 1], bandFit: 0.62
+    });
     const show = wallShowing();
     if (wallLive && wallLive.points.length) show.push(wallLive);
     if (wallLiveMirror && wallLiveMirror.points.length) show.push(wallLiveMirror);
     for (let i = 0; i < show.length; i++) strokeWall2d(g, view, show[i]);
-    const tag = projectUV(view, 0, -0.08);
-    if (tag) {
-      g.font = '700 11px Orbitron, sans-serif';
-      g.fillStyle = '#ffe14d';
-      g.shadowColor = '#ffe14d';
-      g.shadowBlur = 8;
-      g.fillText(ui.wallLook ? 'DRAG TO TURN THE WALL' : '22m × 14m  ·  DRAW THE SIGN', tag[0], tag[1]);
-      g.shadowBlur = 0;
+    drawWallLabel(g, view, ui.wallLook ? 'DRAG TO TURN THE WALL' : '22m × 14m  ·  DRAW THE SIGN', -0.06, {
+      color: '#ffe14d', weight: '700', blur: 8, size: Math.max(11, h * 0.034)
+    });
+  }
+  function drawWallLabel(g, view, text, v, style) {
+    const mid = projectUV(view, 0, v);
+    const left = projectUV(view, -0.92, v);
+    const right = projectUV(view, 0.92, v);
+    const edgeL = projectUV(view, -0.96, v);
+    const edgeR = projectUV(view, 0.96, v);
+    if (!mid || !left || !right || !edgeL || !edgeR) return;
+    const ang = Math.atan2(right[1] - left[1], right[0] - left[0]);
+    const span = Math.hypot(edgeR[0] - edgeL[0], edgeR[1] - edgeL[1]);
+    if (span < 12) return;
+    let fs = style.size || 16;
+    if (style.band) {
+      const a = projectUV(view, 0, style.band[0]);
+      const b = projectUV(view, 0, style.band[1]);
+      if (a && b) fs = Math.max(8, Math.hypot(b[0] - a[0], b[1] - a[1]) * (style.bandFit || 0.62));
     }
+    g.save();
+    g.translate(mid[0], mid[1]);
+    g.rotate(ang);
+    g.font = (style.weight || '900') + ' ' + fs.toFixed(1) + 'px Orbitron, sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillStyle = style.color;
+    g.shadowColor = style.color;
+    g.shadowBlur = style.blur || 0;
+    const tw = g.measureText(text).width || 1;
+    g.scale(Math.min(1, (span * 0.94) / tw), 1);
+    g.fillText(text, 0, 0);
+    g.restore();
   }
   function strokeWall2d(g, view, s) {
     const seq = [];
@@ -1736,6 +1765,8 @@
     const group = wallGroup++;
     const demo = demoWall();
     wallSlot().strokes = [];
+    wallSlot().cleared = false;
+    wallState.cleared = false;
     for (let i = 0; i < demo.length; i++) { demo[i].group = group; wallSlot().strokes.push(demo[i]); }
     saveWall();
     setStatus('DEMO GRAFFITI ON');
@@ -1927,18 +1958,32 @@
       ctx.shadowBlur = 0;
     }
     const mid = project.apply(null, muralPoint(f, 0, 0.95));
-    const side = project.apply(null, muralPoint(f, 0.45, 0.95));
-    if (mid && side) {
-      const fs = Math.max(8, Math.hypot(side[0] - mid[0], side[1] - mid[1]) / 4.2);
-      if (fs >= 8) {
+    const leftPt = project.apply(null, muralPoint(f, -0.92, 0.95));
+    const rightPt = project.apply(null, muralPoint(f, 0.92, 0.95));
+    const edgeL = project.apply(null, muralPoint(f, -0.96, 0.95));
+    const edgeR = project.apply(null, muralPoint(f, 0.96, 0.95));
+    const bandA = project.apply(null, muralPoint(f, 0, 0.9));
+    const bandB = project.apply(null, muralPoint(f, 0, 1));
+    if (mid && leftPt && rightPt && edgeL && edgeR) {
+      const span = Math.hypot(edgeR[0] - edgeL[0], edgeR[1] - edgeL[1]);
+      const thick = (bandA && bandB) ? Math.hypot(bandB[0] - bandA[0], bandB[1] - bandA[1]) : span * 0.08;
+      const fs = Math.max(8, thick * 0.62);
+      if (span > 16 && fs >= 8) {
+        const ang = Math.atan2(rightPt[1] - leftPt[1], rightPt[0] - leftPt[0]);
+        const label = "🎨 Z COMPANY ARTS — ELLIE'S GRAFFITI WALL";
+        ctx.save();
+        ctx.translate(mid[0], mid[1]);
+        ctx.rotate(ang);
         ctx.font = '900 ' + fs.toFixed(1) + 'px Orbitron, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = '#3ee6ff';
         ctx.shadowColor = '#3ee6ff';
         ctx.shadowBlur = 8;
-        ctx.fillText("🎨 Z COMPANY ARTS — ELLIE'S GRAFFITI WALL", mid[0], mid[1]);
-        ctx.shadowBlur = 0;
+        const tw = ctx.measureText(label).width || 1;
+        ctx.scale(Math.min(1, (span * 0.94) / tw), 1);
+        ctx.fillText(label, 0, 0);
+        ctx.restore();
       }
     }
     for (let i = 0; i < strokes.length; i++) {
