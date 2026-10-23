@@ -223,16 +223,25 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,BX,RAMPS,PADS,TREES,LOTS,HOOPS,RINGS:rings,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,XS0,XS1,ZS0,ZS1,
     probe,gnd,riverY,pipeY,rampH,trackPts,trackDist,surfaceAt,padAt,inTunnel:(x,z)=>x>TUN.bx0&&x<TUN.bx1&&z>TUN.z0&&z<TUN.z1};})();
 const surfaceAt=CITY.surfaceAt;
-// walls: glancing = SKIM (same skimDeg / skimKeep), steep = HARD HIT (same impactKeep * cos^impactExp). She is pushed out and turned along the wall: no reset, no damage
+// walls: glancing scrapes along the tangent (keeps tangential speed, sparks), square hits bounce 2.5–4.5 m/s off the normal, airborne grazes deflect outward. Pushed out of q: no reset, no trap.
 function cityWall(q,px,pz){const T=TUNE,m=q.y0>0||q.ramp?0:0.8;let nx=0,nz=0;
-  if(px<q.x0-m)nx=-1;else if(px>q.x1+m)nx=1;else if(pz<q.z0-m)nz=-1;else if(pz>q.z1+m)nz=1;else{const d=[P.x-(q.x0-m),(q.x1+m)-P.x,P.z-(q.z0-m),(q.z1+m)-P.z],k=d.indexOf(Math.min(...d));[nx,nz]=[[-1,0],[1,0],[0,-1],[0,1]][k];}
+  const ox=px<q.x0-m?-1:px>q.x1+m?1:0,oz=pz<q.z0-m?-1:pz>q.z1+m?1:0;
+  if(ox&&oz){const hx0=Math.sin(P.hd||0),hz0=Math.cos(P.hd||0),gapX=ox<0?q.x0-m-px:px-(q.x1+m),gapZ=oz<0?q.z0-m-pz:pz-(q.z1+m),cX=ox<0?hx0:-hx0,cZ=oz<0?hz0:-hz0,tX=cX>1e-4?gapX/cX:1e9,tZ=cZ>1e-4?gapZ/cZ:1e9;if(tX<=tZ)nx=ox;else nz=oz;}
+  else if(ox||oz){nx=ox;nz=oz;}
+  else{const d=[P.x-(q.x0-m),(q.x1+m)-P.x,P.z-(q.z0-m),(q.z1+m)-P.z],k=d.indexOf(Math.min(...d));[nx,nz]=[[-1,0],[1,0],[0,-1],[0,1]][k];}
   if(nx<0)P.x=q.x0-m-0.05;if(nx>0)P.x=q.x1+m+0.05;if(nz<0)P.z=q.z0-m-0.05;if(nz>0)P.z=q.z1+m+0.05;
-  const hx=Math.sin(P.hd),hz=Math.cos(P.hd),dot=hx*nx+hz*nz,a=Math.asin(clamp(-dot,0,1));let tx=hx-dot*nx,tz=hz-dot*nz;if(Math.hypot(tx,tz)<1e-3){tx=-nz;tz=nx;}
-  const nh=Math.atan2(tx,tz);P.walls=(P.walls||0)+1;P.lastWall={a:+(a/D).toFixed(1),n:[nx,nz]};
-  if(a/D<T.skimDeg&&P.v>T.skimSpeed){P.v*=T.skimKeep;P.skims=(P.skims||0)+1;fxBurst('spark',8);toast('SKIM!');navigator.vibrate&&navigator.vibrate(30);}
-  else if(P.ground&&P.v<12){P.v*=.5;P.bumps=(P.bumps||0)+1;toast('BUMP!');}
-  else{P.hards=(P.hards||0)+1;P.wallHards=(P.wallHards||0)+1;P.landKmh=P.v*3.6;P.v*=T.impactKeep*Math.pow(Math.cos(a),T.impactExp);P.roll=null;P.flip=null;fxBurst('spark',30);fxBurst('smoke',6);toast('HARD HIT!');navigator.vibrate&&navigator.vibrate([120,60,200]);}
-  P.hd=nh;P.yaw=nh;}
+  const hx=Math.sin(P.hd||0),hz=Math.cos(P.hd||0),dot=hx*nx+hz*nz,a=Math.asin(clamp(-dot,0,1)),cosAngle=Math.cos(a);let tx=hx-dot*nx,tz=hz-dot*nz;if(Math.hypot(tx,tz)<1e-3){tx=-nz;tz=nx;}
+  const nh=Math.atan2(tx,tz),spark=()=>{if(typeof fxBurst==='function')fxBurst('spark',10);},keep=Math.max(0.55,cosAngle*0.85);
+  P.walls=(P.walls||0)+1;P.lastWall={a:+(a/D).toFixed(1),n:[nx,nz]};
+  const glance=a/D<T.skimDeg&&(P.v>T.skimSpeed||!P.ground),square=a/D>=48&&P.v>=12;
+  if(glance){P.v*=keep;P.skims=(P.skims||0)+1;spark();toast('SKIM!');navigator.vibrate&&navigator.vibrate(30);P.hd=nh;P.yaw=nh;
+    if(!P.ground){P.x+=nx*0.3;P.z+=nz*0.3;P.bank=clamp((P.bank||0)-nx*12*D+nz*6*D,-0.7,0.7);}}
+  else if(square){const bounce=clamp(P.v*0.075,2.5,4.5);P.hards=(P.hards||0)+1;P.wallHards=(P.wallHards||0)+1;P.landKmh=P.v*3.6;P.v=bounce;P.roll=null;P.flip=null;const away=Math.atan2(nx,nz);P.hd=away;P.yaw=away;P.x+=nx*0.35;P.z+=nz*0.35;spark();if(typeof fxBurst==='function')fxBurst('smoke',6);toast('HARD HIT!');navigator.vibrate&&navigator.vibrate([120,60,200]);
+    if(!P.ground)P.bank=clamp((P.bank||0)-nx*14*D,-0.7,0.7);}
+  else if(!P.ground){P.v*=keep;const away=Math.atan2(nx,nz);let dAng=away-nh;while(dAng>Math.PI)dAng-=Math.PI*2;while(dAng<-Math.PI)dAng+=Math.PI*2;P.hd=nh+dAng*0.35;P.yaw=P.hd;P.x+=nx*0.35;P.z+=nz*0.35;P.bank=clamp((P.bank||0)-nx*12*D+nz*6*D,-0.7,0.7);spark();}
+  else if(P.v<12){P.v*=.5;P.bumps=(P.bumps||0)+1;toast('BUMP!');P.hd=nh;P.yaw=nh;}
+  else{P.v*=keep;spark();P.hd=nh;P.yaw=nh;}
+  if(P.x>q.x0&&P.x<q.x1&&P.z>q.z0&&P.z<q.z1){if(nx)P.x=nx<0?q.x0-0.05:q.x1+0.05;if(nz)P.z=nz<0?q.z0-0.05:q.z1+0.05;}}
 // loop-de-loop ride: energy along the circle (v^2 = v0^2 - 2 g y); fast enough = full loop and out the exit lane, too slow = rolls back out the way she came
 function loopStep(dt){const o=P.loop,L=o.L,g=9.8;let y=L.R*(1-Math.cos(o.th)),v=Math.sqrt(Math.max(0,o.v0*o.v0-2*g*y))*0.995;
   if(o.dn>0&&!o.full&&(v<1||o.th>=Math.PI/2))o.dn=-1;o.th+=o.dn*Math.max(v,1.2)*dt/L.R;
