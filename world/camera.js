@@ -3,23 +3,111 @@
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');let W=0,H=0,DPR=1;
 function resize(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}addEventListener('resize',resize);resize();
 const cam={x:0,y:0,z:0,yaw:0,pitch:0,roll:0};
-function camS(x,y,z){let dx=x-cam.x,dy=y-cam.y,dz=z-cam.z;
+// Flight pull-up damping. boot.js aims the chase cam with the raw nose pitch, which
+// drops the camera under the car on a sharp climb and shoves the city off the bottom.
+// The first projection of each frame rewrites that pose with a softened climb angle.
+// The Z sprite still reads the real P.pitch, and flight physics are untouched.
+let CAM_CLIMB_P=0,camFrameN=0,camStabN=-1,camStabT=0;
+// Street look publishes into these. FLYCAM.orbit stays null: boot.js orbits with +sin
+// and a hardcoded aim height, which parks the camera in front of the Z.
+let camLookOn=false,camLookAz=0,camLookElDelta=0,camSeatedFoot=false;
+function camOnFoot(){
+  return typeof WALK_MODE!=='undefined'&&WALK_MODE&&WALK_MODE.onFoot&&!WALK_MODE.insideBuilding;
+}
+function camSyncDist(onFoot){
+  if(typeof ZV==='undefined'||!ZV)return;
+  if(onFoot)ZV.camDist=Math.max(4,Math.hypot(cam.x-P.x,cam.y-(P.y+(ZV.ty||0.6)),cam.z-P.z));
+  else ZV.camDist=Math.hypot((typeof FLYCAM!=='undefined'&&FLYCAM.back)||10,(typeof FLYCAM!=='undefined'&&FLYCAM.up)||2);
+}
+function camSeatFoot(){
+  const wx=Number.isFinite(WALK_MODE.x)?WALK_MODE.x:P.x;
+  const wy=Number.isFinite(WALK_MODE.y)?WALK_MODE.y:(P.y||0);
+  const wz=Number.isFinite(WALK_MODE.z)?WALK_MODE.z:P.z;
+  const wyaw=Number.isFinite(WALK_MODE.yaw)?WALK_MODE.yaw:(P.yaw||0);
+  const back=4.5,ty=wy+1.10;
+  cam.x=wx-Math.sin(wyaw)*back;
+  cam.z=wz-Math.cos(wyaw)*back;
+  cam.y=Math.max(0.8,wy+1.85);
+  const lx=wx-cam.x,ly=ty-cam.y,lz=wz-cam.z;
+  cam.yaw=Math.atan2(lx,lz);cam.pitch=Math.atan2(-ly,Math.hypot(lx,lz));cam.roll=0;
+  camSyncDist(true);
+}
+function camSeatChase(aim){
+  if(camOnFoot()){camSeatFoot();return;}
+  const back=(typeof FLYCAM!=='undefined'&&FLYCAM.back)||10;
+  const up=(typeof FLYCAM!=='undefined'&&FLYCAM.up)||2;
+  const ty=P.y+((typeof ZV!=='undefined'&&ZV.ty)||0.6);
+  const eff=CAM_CLIMB_P,cp=Math.cos(eff);
+  const D0=Math.hypot(back,up);
+  let dx=-Math.sin(aim)*cp*back,dy=-Math.sin(eff)*back+up,dz=-Math.cos(aim)*cp*back;
+  const len=Math.hypot(dx,dy,dz)||1,kk=D0/len;dx*=kk;dy*=kk;dz*=kk;
+  let cy=ty+dy;
+  if(cy<1){cy=1;const dyA=cy-ty,horiz=Math.sqrt(Math.max(0,D0*D0-dyA*dyA));dx=-Math.sin(aim)*horiz;dz=-Math.cos(aim)*horiz;}
+  cam.x=P.x+dx;cam.y=cy;cam.z=P.z+dz;
+  const lx=P.x-cam.x,ly=ty-cam.y,lz=P.z-cam.z;
+  cam.yaw=Math.atan2(lx,lz);cam.pitch=Math.atan2(-ly,Math.hypot(lx,lz));cam.roll=0;
+  camSyncDist(false);
+}
+function camStabilizeFlightPitch(){
+  if(typeof P==='undefined'||!P)return;
+  const onFoot=camOnFoot();
+  // A real orbit (not street look, not the on-foot follow) is someone else's camera.
+  if(typeof FLYCAM!=='undefined'&&FLYCAM.orbit&&!camLookOn&&!onFoot)return;
+  if((camLookOn||onFoot)&&typeof FLYCAM!=='undefined')FLYCAM.orbit=null;
+  if(camStabN!==camFrameN){
+    const now=performance.now();
+    const dt=camStabT?Math.min(0.5,Math.max(0,(now-camStabT)/1000)):1/60;
+    camStabT=now;camStabN=camFrameN;
+    const maxUp=9*Math.PI/180;
+    const climb=!P.ground&&!P.loop&&P.pitch>0;
+    const target=climb?Math.min(P.pitch*0.22,maxUp):P.pitch;
+    const k=1-Math.exp(-(dt||1/60)/0.18);
+    CAM_CLIMB_P+=(target-CAM_CLIMB_P)*k;
+    let aim=P.yaw;
+    if(!onFoot&&!camLookOn&&(P.ebK||0)>0.02){const dh=Math.atan2(Math.sin((P.hd||0)-P.yaw),Math.cos((P.hd||0)-P.yaw));aim=P.yaw+dh*P.ebK;}
+    if(onFoot){camSeatFoot();camSeatedFoot=true;}
+    else{camSeatChase(aim);camSeatedFoot=false;}
+  }else if(onFoot){
+    camSeatFoot();camSeatedFoot=true;
+  }else if(camLookOn||camSeatedFoot){
+    // boot.js rewrites the chase pose at the start of render. Put it back behind the car,
+    // including the frame she climbs back into the seat.
+    camSeatChase(P.yaw);camSeatedFoot=false;
+  }
+  if(camLookOn){
+    // Head pan only. On foot she stays in front of the rig, back toward the lens.
+    cam.yaw=camWrap(cam.yaw+camLookAz);
+    cam.pitch=clamp(cam.pitch-camLookElDelta,-0.45,0.35);
+  }
+}
+function camS(x,y,z){camStabilizeFlightPitch();let dx=x-cam.x,dy=y-cam.y,dz=z-cam.z;
   const cy=Math.cos(cam.yaw),sy=Math.sin(cam.yaw);let X=dx*cy-dz*sy,Z=dx*sy+dz*cy;
   const cp=Math.cos(-cam.pitch),sp=Math.sin(-cam.pitch);let Y=dy*cp-Z*sp;Z=dy*sp+Z*cp;
   const cr=Math.cos(cam.roll),sr=Math.sin(cam.roll);return[X*cr-Y*sr,X*sr+Y*cr,Z];}
 const NEAR=0.5;function scr(c){const f=H*0.9;return[W/2+c[0]*f/c[2],H/2-c[1]*f/c[2],c[2]];}
-function proj(x,y,z){const c=camS(x,y,z);return c[2]<NEAR?null:scr(c);}
+function proj(x,y,z){
+  // boot.js samples the horizon from the chase cam it just wrote. Retarget that
+  // one far point onto the stabilized camera so the sky line matches the city.
+  const ox=cam.x,oy=cam.y,oz=cam.z,oyaw=cam.yaw;
+  camStabilizeFlightPitch();
+  const hx=ox+Math.sin(oyaw)*1e5,hz=oz+Math.cos(oyaw)*1e5;
+  if(Math.abs(x-hx)<2&&Math.abs(z-hz)<2&&Math.abs(y-oy)<2){x=cam.x+Math.sin(cam.yaw)*1e5;y=cam.y;z=cam.z+Math.cos(cam.yaw)*1e5;}
+  const c=camS(x,y,z);return c[2]<NEAR?null:scr(c);
+}
 function line(a,b,col,w){let p=camS(...a),q=camS(...b);if(p[2]<NEAR&&q[2]<NEAR)return;
   if(p[2]<NEAR||q[2]<NEAR){const t=(NEAR-p[2])/(q[2]-p[2]),m=[p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t,NEAR];if(p[2]<NEAR)p=m;else q=m;}
   const P1=scr(p),Q1=scr(q);ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(P1[0],P1[1]);ctx.lineTo(Q1[0],Q1[1]);ctx.stroke();}
 // yaw convention: heading vector (sin yaw, cos yaw) in x,z
 
-// Street-mode LOOK AROUND. boot.js already orbits when FLYCAM.orbit = {az, el, d}.
+// Street-mode LOOK AROUND. The chase rig stays behind the car (same pose as boot.js).
+// az / el only pan and pitch the camera head, clamped so a drag cannot orbit around
+// to the nose. FLYCAM.orbit stays null: boot's orbit branch uses +sin and ty = P.y+0.6,
+// which frames the front of the Z and lifts it off its shadow.
 // Hold and drag the upper canvas (clear of the HUD buttons), or call beginDrag / moveDrag
 // from the LOOK AROUND control. After release the view holds (holdMs, default 1.2s), then
 // az eases back to 0 and the chase cam returns. Double-tap, leaving street mode, or leaving
 // the ground skips the hold and eases home the same way.
-const CAM_EL0=0.18,CAM_EL_MIN=0.04,CAM_EL_MAX=0.85,CAM_DIST=10.2,CAM_SENS_X=0.0075,CAM_SENS_Y=0.004,CAM_PAN_TAU=0.05,CAM_SLOP=6;
+const CAM_EL0=0.18,CAM_EL_MIN=0.04,CAM_EL_MAX=0.85,CAM_DIST=10.2,CAM_AZ_MAX=0.65,CAM_SENS_X=0.0075,CAM_SENS_Y=0.004,CAM_PAN_TAU=0.05,CAM_SLOP=6;
 function camWrap(a){return Math.atan2(Math.sin(a),Math.cos(a));}
 function camStreet(){return typeof P!=='undefined'&&P.driveMode==='street'&&!!P.ground;}
 const CAM_LOOK={
@@ -40,7 +128,7 @@ const CAM_LOOK={
     if(!camStreet()){this.dragLook=false;this._armed=false;this._panning=false;this._ptr=null;if(this.active)this._easeAt=performance.now();return false;}
     if(this._moved<CAM_SLOP&&!this._panning)return true;
     this._panning=true;this._x=x;this._y=y;
-    this._gAz=camWrap(this._gAz+dx*CAM_SENS_X);
+    this._gAz=clamp(this._gAz+dx*CAM_SENS_X,-CAM_AZ_MAX,CAM_AZ_MAX);
     this._gEl=clamp(this._gEl-dy*CAM_SENS_Y,CAM_EL_MIN,CAM_EL_MAX);
     camLookFollow(0.12);
     return true;
@@ -57,18 +145,22 @@ const CAM_LOOK={
   }
 };
 function camLookPublish(){
+  CAM_LOOK.az=clamp(CAM_LOOK.az,-CAM_AZ_MAX,CAM_AZ_MAX);
+  CAM_LOOK._gAz=clamp(CAM_LOOK._gAz,-CAM_AZ_MAX,CAM_AZ_MAX);
   CAM_LOOK.el=clamp(CAM_LOOK.el,CAM_EL_MIN,CAM_EL_MAX);CAM_LOOK.d=CAM_DIST;CAM_LOOK.active=true;
-  FLYCAM.orbit={az:CAM_LOOK.az,el:CAM_LOOK.el,d:CAM_DIST};
+  CAM_LOOK.orbit={az:CAM_LOOK.az,el:CAM_LOOK.el,d:CAM_DIST};
+  camLookOn=true;camLookAz=CAM_LOOK.az;camLookElDelta=CAM_LOOK.el-CAM_EL0;
+  if(typeof FLYCAM!=='undefined')FLYCAM.orbit=null;
 }
 function camLookClear(){
   CAM_LOOK.az=0;CAM_LOOK.el=CAM_EL0;CAM_LOOK.d=CAM_DIST;CAM_LOOK._gAz=0;CAM_LOOK._gEl=CAM_EL0;
   CAM_LOOK.active=false;CAM_LOOK.dragLook=false;CAM_LOOK._easeAt=0;CAM_LOOK._fast=false;CAM_LOOK._panning=false;
+  CAM_LOOK.orbit=null;camLookOn=false;camLookAz=0;camLookElDelta=0;
   if(typeof FLYCAM!=='undefined')FLYCAM.orbit=null;
 }
 function camLookFollow(dt){
   const k=1-Math.exp(-Math.max(0.016,dt)/CAM_PAN_TAU);
-  const dAz=Math.atan2(Math.sin(CAM_LOOK._gAz-CAM_LOOK.az),Math.cos(CAM_LOOK._gAz-CAM_LOOK.az));
-  CAM_LOOK.az=camWrap(CAM_LOOK.az+dAz*k);
+  CAM_LOOK.az=clamp(CAM_LOOK.az+(CAM_LOOK._gAz-CAM_LOOK.az)*k,-CAM_AZ_MAX,CAM_AZ_MAX);
   CAM_LOOK.el=clamp(CAM_LOOK.el+(CAM_LOOK._gEl-CAM_LOOK.el)*k,CAM_EL_MIN,CAM_EL_MAX);
   camLookPublish();
 }
@@ -93,6 +185,7 @@ function camLookPtrUp(e){if(CAM_LOOK._ptr==null||e.pointerId!==CAM_LOOK._ptr)ret
 cv.addEventListener('pointerup',camLookPtrUp);cv.addEventListener('pointercancel',camLookPtrUp);
 let camLookT=performance.now();
 function camLookTick(t){
+  camFrameN++;
   const dt=Math.min(0.05,Math.max(0,(t-camLookT)/1000));camLookT=t;
   try{
     if((CAM_LOOK.active||CAM_LOOK.dragLook)&&!camStreet()){
@@ -102,8 +195,8 @@ function camLookTick(t){
     if(CAM_LOOK.dragLook&&CAM_LOOK._panning)camLookFollow(dt||1/60);
     else if(CAM_LOOK.active&&!CAM_LOOK.dragLook&&CAM_LOOK._easeAt&&t>=CAM_LOOK._easeAt){
       const tau=CAM_LOOK._fast?0.16:0.34,k=1-Math.exp(-(dt||1/60)/tau);
-      CAM_LOOK.az+=-CAM_LOOK.az*k;CAM_LOOK.el+= (CAM_EL0-CAM_LOOK.el)*k;
-      CAM_LOOK._gAz=CAM_LOOK.az;CAM_LOOK._gEl=CAM_LOOK.el;
+      CAM_LOOK.az=clamp(CAM_LOOK.az*(1-k),-CAM_AZ_MAX,CAM_AZ_MAX);CAM_LOOK.el+= (CAM_EL0-CAM_LOOK.el)*k;
+      CAM_LOOK._gAz=clamp(CAM_LOOK.az,-CAM_AZ_MAX,CAM_AZ_MAX);CAM_LOOK._gEl=CAM_LOOK.el;
       if(Math.abs(CAM_LOOK.az)<0.012&&Math.abs(CAM_LOOK.el-CAM_EL0)<0.015)camLookClear();
       else camLookPublish();
     }
