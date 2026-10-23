@@ -34,6 +34,13 @@
   let lastJson = '';
   let ch = null;
   let studio = null;
+  let pauseOn = false;
+  const HOST_AT = {
+    body: [0, 0, 0],
+    doorR: [0.5561, 0.5287, 0.8314],
+    doorL: [0.5561, 0.5287, -0.8335],
+    hatch: [-0.8035, 1.1927, 0.0001]
+  };
   let live = null;
   let liveMirror = null;
   let builtCar = null;
@@ -89,6 +96,10 @@
       pts.push([x, y, z, nx, ny, nz]);
     }
     if (!pts.length || s.brush === 'eraser') return null;
+    if (pts.length === 1) {
+      const p = pts[0];
+      pts.push([p[0] + 0.02, p[1], p[2], p[3], p[4], p[5]]);
+    }
     let size = +s.size;
     if (!(size > 0)) size = 14;
     const color = (typeof s.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(s.color)) ? s.color.toLowerCase() : '#ff4fd8';
@@ -137,7 +148,24 @@
     try { localStorage.setItem(KEY, json); } catch (e) {}
     try { if (ch) ch.postMessage({ tab: TAB, json: json }); } catch (e) {}
   }
+  function thickenStroke(stroke) {
+    if (!stroke || stroke.brush === 'eraser' || !stroke.pts || !stroke.pts.length) return null;
+    if (stroke.pts.length === 1) {
+      const p = stroke.pts[0];
+      stroke.pts.push([p[0] + 0.02, p[1], p[2], p[3], p[4], p[5]]);
+    }
+    return stroke;
+  }
+  function sealLive() {
+    const a = thickenStroke(live);
+    const b = thickenStroke(liveMirror);
+    live = null;
+    liveMirror = null;
+    if (a) slot().strokes.push(a);
+    if (b) slot().strokes.push(b);
+  }
   function save(data) {
+    if ((live || liveMirror) && (!data || data === state)) sealLive();
     state = normalize(data || state);
     if (slot()) slot().updatedAt = Date.now();
     write();
@@ -162,9 +190,44 @@
     armPulse();
   }
 
+  function stanceDy(opts) {
+    const stance = opts && opts.kid && opts.kid.stance;
+    return ({ low: 0.035, slam: 0.07 })[stance] || 0;
+  }
+  function zglOk() {
+    return !!(window.ZGL && window.ZGL.S && window.ZGL.S.ok);
+  }
+  function ensureHosts(X, dy) {
+    if (!X || !X.car) return null;
+    const d = dy || 0;
+    let bag = X._npHosts;
+    const stale = !bag || !bag.body || !bag.doorR || !bag.doorL || !bag.hatch || bag.body.parent !== X.car;
+    if (stale) {
+      const Group = (window.THREE && window.THREE.Group) || X.car.constructor;
+      bag = {};
+      const names = ['body', 'doorR', 'doorL', 'hatch'];
+      for (let i = 0; i < names.length; i++) {
+        const g = new Group();
+        g.name = 'np-host-' + names[i];
+        g.userData = { npHost: true, crew: true };
+        X.car.add(g);
+        bag[names[i]] = g;
+      }
+      X._npHosts = bag;
+    }
+    bag.body.position.set(0, -d, 0);
+    bag.doorR.position.set(HOST_AT.doorR[0], HOST_AT.doorR[1] - d, HOST_AT.doorR[2]);
+    bag.doorL.position.set(HOST_AT.doorL[0], HOST_AT.doorL[1] - d, HOST_AT.doorL[2]);
+    bag.hatch.position.set(HOST_AT.hatch[0], HOST_AT.hatch[1] - d, HOST_AT.hatch[2]);
+    if (bag.body.updateMatrixWorld) bag.body.updateMatrixWorld(true);
+    if (bag.doorR.updateMatrixWorld) bag.doorR.updateMatrixWorld(true);
+    if (bag.doorL.updateMatrixWorld) bag.doorL.updateMatrixWorld(true);
+    if (bag.hatch.updateMatrixWorld) bag.hatch.updateMatrixWorld(true);
+    return bag;
+  }
   function hostFor(X, part) {
     const S = window.ZGL && window.ZGL.S;
-    if (S && (part === 'doorL' || part === 'doorR')) {
+    if (S && S.ok && (part === 'doorL' || part === 'doorR')) {
       if (part === 'doorL' && S.doorL && S.doorL.isObject3D) return S.doorL;
       if (part === 'doorR' && S.doorR && S.doorR.isObject3D) return S.doorR;
       const hinges = S.hingeD || [];
@@ -175,10 +238,13 @@
         if (part === 'doorL' && side < 0) return p;
       }
     }
-    if (part === 'hatch' && S) {
+    if (part === 'hatch' && S && S.ok) {
       if (S.hatchP && S.hatchP.isObject3D) return S.hatchP;
       if (S.hingeH && S.hingeH.isObject3D) return S.hingeH;
     }
+    if (S && S.ok) return X.car;
+    const bag = ensureHosts(X, X._npDy || 0);
+    if (bag && bag[part]) return bag[part];
     return X.car;
   }
   function partOfMesh(mesh) {
@@ -768,10 +834,18 @@
   }
 
   function hookRender(X) {
-    if (!X || !X.render || hooked) return;
+    if (!X || !X.render || X.render._npPaint) return;
     hooked = true;
     origRender = X.render.bind(X);
-    X.render = function (ctx, x, y, w, h, opts) {
+    const wrapped = function (ctx, x, y, w, h, opts) {
+      try {
+        if (!zglOk()) {
+          const fresh = !X._npHosts || !X._npHosts.body || X._npHosts.body.parent !== X.car;
+          X._npDy = stanceDy(opts);
+          ensureHosts(X, X._npDy);
+          if (fresh && hasPaint()) applyToCar(X);
+        }
+      } catch (e) { window.NEON_PAINT._err = String(e && e.message || e); }
       const out = origRender(ctx, x, y, w, h, opts);
       try {
         const glow = paintGlow(X);
@@ -785,6 +859,8 @@
       } catch (e) { window.NEON_PAINT._err = String(e && e.message || e); }
       return out;
     };
+    wrapped._npPaint = 1;
+    X.render = wrapped;
   }
 
   function basis(nx, ny, nz) {
@@ -899,10 +975,6 @@
     if (stroke.pts.length < 700) stroke.pts.push([hit.x, hit.y, hit.z, hit.nx, hit.ny, hit.nz]);
   }
   function commitLive(X) {
-    if (live && live.pts.length > 1) slot().strokes.push(live);
-    if (liveMirror && liveMirror.pts.length > 1) slot().strokes.push(liveMirror);
-    live = null;
-    liveMirror = null;
     save(state);
     setStatus('SAVED TO THE GARAGE');
   }
@@ -942,7 +1014,7 @@
     s.textContent = [
       '#np-studio{position:fixed;inset:0;z-index:80;color:#fff;font-family:Orbitron,sans-serif;background:#07010f;display:flex;flex-direction:column}',
       '#np-studio *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}',
-      '.np-top{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px 6px;flex:none}',
+      '.np-top{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px 58px 4px 6px;flex:none}',
       '.np-top h1{margin:0;font:900 12px Orbitron,sans-serif;letter-spacing:.6px;color:#fff;text-shadow:0 0 8px #ff4fd8}',
       '.np-status{margin-left:auto;font:700 9px Orbitron,sans-serif;color:#ffe14d}',
       '.np-top button,.np-tools button{font:800 8px Orbitron,sans-serif;letter-spacing:.3px;color:#fff;background:rgba(62,230,255,.08);border:1.5px solid rgba(62,230,255,.55);border-radius:999px;padding:4px 7px;cursor:pointer}',
@@ -959,7 +1031,14 @@
       '.np-save{background:linear-gradient(90deg,#ffe14d,#ff9a2e);color:#1a0633;border:0;font:900 12px Orbitron,sans-serif;border-radius:12px;padding:8px;letter-spacing:1px;cursor:pointer}',
       '.np-lab{font:700 8px Orbitron,sans-serif;letter-spacing:1px;color:#3ee6ff;margin:0}',
       '.np-zoom{width:100%;accent-color:#ff4fd8}',
-      '.np-modes{display:flex;gap:6px;padding:6px 6px 0;flex:none}',
+      '.np-modes{display:flex;gap:6px;padding:6px 58px 0 6px;flex:none}',
+      '#np-studio>.np-pauseb{position:absolute;z-index:6;top:2px;right:4px;width:48px;height:48px;padding:0;border:0;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center}',
+      '#np-studio>.np-pauseb span{width:38px;height:38px;line-height:34px;font:900 17px sans-serif;text-align:center;border-radius:11px;background:rgba(8,2,15,.45);border:1.5px solid rgba(62,230,255,.55);color:#fff}',
+      '#np-studio>.np-pauseb.np-open{display:none}',
+      '#npPauseModal{position:absolute;inset:0;z-index:7;background:rgba(8,2,15,.62);display:flex;align-items:center;justify-content:center;padding:12px}',
+      '#npPauseModal[hidden]{display:none !important}',
+      '#npPauseModal .np-pausec{width:min(420px,100%);background:rgba(8,2,15,.94);border:2px solid #3ee6ff;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px;box-shadow:0 0 18px rgba(62,230,255,.35)}',
+      '#npPauseModal .np-pausec>button{font:800 13px Orbitron,sans-serif;letter-spacing:.4px;color:#fff;background:rgba(62,230,255,.1);border:1.5px solid rgba(62,230,255,.7);border-radius:12px;padding:10px 12px;cursor:pointer}',
       '.np-modes button{flex:1;font:900 11px Orbitron,sans-serif;letter-spacing:.4px;padding:8px 6px;border-radius:12px;color:#fff;background:rgba(22,11,40,.9);border:1.5px solid rgba(255,79,216,.65);cursor:pointer}',
       '.np-modes button.on{background:#ff4fd8;color:#1a0633;border-color:#fff;box-shadow:0 0 14px #ff4fd8}',
       '.np-off{display:none !important}'
@@ -1041,7 +1120,47 @@
       '<div class="np-row"><button type="button" data-act="wall-undo">↶ UNDO</button>' +
       '<button type="button" data-act="wall-clear">🗑️ CLEAR WALL</button></div>' +
       '<button type="button" class="np-save" data-act="wall-demo">✨ DEMO GRAFFITI</button>' +
-      '<button type="button" class="np-save" data-act="wall-apply">🏙️ APPLY TO Z COMPANY ARTS BUILDING</button></div></div>';
+      '<button type="button" class="np-save" data-act="wall-apply">🏙️ APPLY TO Z COMPANY ARTS BUILDING</button></div></div>' +
+      '<button id="kMenuB" class="np-pauseb" type="button" data-np-go="pause" aria-label="Pause"><span>⏸</span></button>' +
+      '<div id="npPauseModal" hidden><div class="np-pausec">' +
+      '<button type="button" data-np-go="resume">▶ RESUME</button>' +
+      '<button type="button" data-np-go="garage">🚗 GARAGE</button>' +
+      '<button type="button" data-np-go="world">🌆 NEON WORLD</button>' +
+      '<button type="button" data-np-go="home">⌂ MAIN MENU</button>' +
+      '</div></div>';
+  }
+  function setPause(on) {
+    pauseOn = !!on;
+    if (!studio) return;
+    const modal = studio.querySelector('#npPauseModal');
+    const btn = studio.querySelector('#kMenuB');
+    if (modal) {
+      if (pauseOn) modal.removeAttribute('hidden');
+      else modal.setAttribute('hidden', '');
+    }
+    if (btn) btn.classList.toggle('np-open', pauseOn);
+  }
+  function flushPaint() {
+    try { save(state); } catch (e) {}
+    try { saveWall(); } catch (e) {}
+  }
+  function onPauseGo(go) {
+    if (go === 'pause') { setPause(true); return; }
+    if (go === 'resume') { setPause(false); return; }
+    const urls = { garage: 'jr.html#garage', world: 'world.html', home: 'jr.html?kmenu=1' };
+    if (urls[go]) { flushPaint(); location.assign(urls[go]); }
+  }
+  function parkMenuButton() {
+    const el = document.getElementById('kMenuB');
+    if (!el || (studio && studio.contains(el))) return;
+    el.setAttribute('data-np-park', 'kMenuB');
+    el.id = 'np-park-kMenuB';
+  }
+  function unparkMenuButton() {
+    const el = document.getElementById('np-park-kMenuB');
+    if (!el) return;
+    if (!document.getElementById('kMenuB')) el.id = 'kMenuB';
+    el.removeAttribute('data-np-park');
   }
   function setStatus(text) {
     if (!studio) return;
@@ -1179,6 +1298,8 @@
       const act = t.getAttribute('data-act');
       const canvasMode = t.getAttribute('data-canvas-mode');
       const stencil = t.getAttribute('data-stencil');
+      const go = t.getAttribute('data-np-go');
+      if (go) { onPauseGo(go); return; }
       if (canvasMode) {
         ui.canvas = canvasMode;
         ui.stamp = '';
@@ -1197,8 +1318,14 @@
         ui.yaw = CAMS[cam].yaw; ui.pitch = CAMS[cam].pitch;
         setStatus(t.textContent);
       }
-      if (color) { ui.color = color; ui.stamp = ''; ui.stencil = ''; }
-      if (brush) { ui.style = brush; ui.stamp = ''; ui.stencil = ''; ui.wallLook = false; }
+      if (color) {
+        ui.color = color; ui.stamp = ''; ui.stencil = '';
+        if (ui.canvas === 'car') { ui.mode = 'draw'; setStatus('DRAW ON THE CAR'); }
+      }
+      if (brush) {
+        ui.style = brush; ui.stamp = ''; ui.stencil = ''; ui.wallLook = false;
+        if (ui.canvas === 'car') { ui.mode = 'draw'; setStatus(brush === 'eraser' ? 'ERASE ON THE CAR' : 'DRAW ON THE CAR'); }
+      }
       if (stamp) {
         ui.stamp = ui.stamp === stamp ? '' : stamp;
         if (ui.stamp && ui.style === 'eraser') ui.style = 'neon';
@@ -1215,7 +1342,7 @@
         slot().strokes = slot().strokes.filter(function (s) { return !g || s.group !== g; });
         save(state); setStatus('UNDID');
       }
-      if (act === 'clear') { slot().strokes = []; save(state); setStatus('CLEARED'); }
+      if (act === 'clear') { live = null; liveMirror = null; slot().strokes = []; save(state); setStatus('CLEARED'); }
       if (act === 'save') { save(state); setStatus('SAVED TO THE GARAGE'); }
       if (act === 'slot') { state.activeSlot = +t.getAttribute('data-slot') || 0; save(state); setStatus('SLOT ' + (state.activeSlot + 1)); }
       if (act === 'wall-slot') { wallState.activeSlot = +t.getAttribute('data-slot') || 0; saveWall(); setStatus('Slot ' + (wallState.activeSlot + 1)); }
@@ -1224,7 +1351,15 @@
         wallSlot().strokes = wallSlot().strokes.filter(function (s) { return !g || s.group !== g; });
         saveWall(); setStatus('UNDID');
       }
-      if (act === 'wall-clear') { wallSlot().strokes = []; saveWall(); setStatus('WALL CLEARED'); }
+      if (act === 'wall-clear') {
+        wallLive = null;
+        wallLiveMirror = null;
+        wallSlot().strokes = [];
+        wallSlot().cleared = true;
+        wallState.cleared = true;
+        saveWall();
+        setStatus('WALL CLEARED');
+      }
       if (act === 'wall-demo') loadDemoWall();
       if (act === 'wall-apply') { saveWall(); setStatus('ON THE Z COMPANY ARTS BUILDING'); }
       if (act === 'wall-mirror') { ui.wallMirror = !ui.wallMirror; setStatus(ui.wallMirror ? 'MIRROR IS ON' : 'MIRROR IS OFF'); }
@@ -1241,6 +1376,7 @@
       return [(e.clientX - b.left) * (canvas.width / b.width), (e.clientY - b.top) * (canvas.height / b.height)];
     }
     canvas.addEventListener('pointerdown', function (e) {
+      if (pauseOn) return;
       pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
       canvas.setPointerCapture(e.pointerId);
       const ids = Object.keys(pointers);
@@ -1311,7 +1447,20 @@
       if (!hit) return;
       if (drag.erase) { eraseNear(X, hit); return; }
       if (!drag.draw || !live) return;
-      if (hit.part !== live.part) return;
+      if (hit.part !== live.part) {
+        const group = live.group;
+        sealLive();
+        const b = brushNow();
+        live = { part: hit.part, brush: b.brush, color: b.color, size: b.size, mirror: ui.mirror, pulse: ui.pulse, group: group, pts: [[hit.x, hit.y, hit.z, hit.nx, hit.ny, hit.nz]] };
+        liveMirror = null;
+        if (ui.mirror) {
+          try {
+            const m = mirrorHit(X, hit);
+            liveMirror = { part: m.part, brush: b.brush, color: b.color, size: b.size, mirror: true, pulse: ui.pulse, group: group, pts: [[m.x, m.y, m.z, m.nx, m.ny, m.nz]] };
+          } catch (err) { liveMirror = null; }
+        }
+        return;
+      }
       pushPoint(live, hit);
       if (liveMirror && ui.mirror) {
         const m = mirrorHit(X, hit);
@@ -1375,11 +1524,16 @@
         const c = cleanWallStroke(raw[k]);
         if (c) strokes.push(c);
       }
-      return { name: clipName(s && s.name, 'Slot ' + (i + 1)), strokes: strokes, updatedAt: (s && +s.updatedAt) || 0 };
+      return {
+        name: clipName(s && s.name, 'Slot ' + (i + 1)),
+        strokes: strokes,
+        updatedAt: (s && +s.updatedAt) || 0,
+        cleared: !!(s && s.cleared)
+      };
     });
     let active = data && data.activeSlot | 0;
     if (active < 0 || active > 2) active = 0;
-    return { version: 1, activeSlot: active, slots: slots };
+    return { version: 1, activeSlot: active, cleared: !!(data && data.cleared), slots: slots };
   }
   function readWall() {
     try {
@@ -1459,8 +1613,11 @@
     return strokes;
   }
   function wallShowing() {
-    const own = wallSlot().strokes;
+    const slot = wallSlot();
+    const own = slot.strokes;
     if (own.length) return own.slice();
+    if (slot.cleared || wallState.cleared) return [];
+    if (wallLive && wallLive.points && wallLive.points.length) return [];
     if (!wallAnySaved()) return demoWall();
     return [];
   }
@@ -1592,33 +1749,46 @@
       g.stroke();
       g.shadowBlur = 0;
     }
-    const title = projectUV(view, 0, 0.95);
-    const titleL = projectUV(view, -0.7, 0.95);
-    const titleR = projectUV(view, 0.7, 0.95);
-    if (title && titleL && titleR) {
-      const fs = Math.max(10, Math.hypot(titleR[0] - titleL[0], titleR[1] - titleL[1]) / 18);
-      g.font = '900 ' + fs.toFixed(1) + 'px Orbitron, sans-serif';
-      g.textAlign = 'center';
-      g.textBaseline = 'middle';
-      g.fillStyle = '#3ee6ff';
-      g.shadowColor = '#3ee6ff';
-      g.shadowBlur = 12;
-      g.fillText('Z COMPANY ARTS — SIDE WALL MURAL', title[0], title[1]);
-      g.shadowBlur = 0;
-    }
+    drawWallLabel(g, view, 'Z COMPANY ARTS — SIDE WALL MURAL', 0.95, {
+      color: '#3ee6ff', weight: '900', blur: 12, band: [0.9, 1], bandFit: 0.62
+    });
     const show = wallShowing();
     if (wallLive && wallLive.points.length) show.push(wallLive);
     if (wallLiveMirror && wallLiveMirror.points.length) show.push(wallLiveMirror);
     for (let i = 0; i < show.length; i++) strokeWall2d(g, view, show[i]);
-    const tag = projectUV(view, 0, -0.08);
-    if (tag) {
-      g.font = '700 11px Orbitron, sans-serif';
-      g.fillStyle = '#ffe14d';
-      g.shadowColor = '#ffe14d';
-      g.shadowBlur = 8;
-      g.fillText(ui.wallLook ? 'DRAG TO TURN THE WALL' : '22m × 14m  ·  DRAW THE SIGN', tag[0], tag[1]);
-      g.shadowBlur = 0;
+    drawWallLabel(g, view, ui.wallLook ? 'DRAG TO TURN THE WALL' : '22m × 14m  ·  DRAW THE SIGN', -0.06, {
+      color: '#ffe14d', weight: '700', blur: 8, size: Math.max(11, h * 0.034)
+    });
+  }
+  function drawWallLabel(g, view, text, v, style) {
+    const mid = projectUV(view, 0, v);
+    const left = projectUV(view, -0.92, v);
+    const right = projectUV(view, 0.92, v);
+    const edgeL = projectUV(view, -0.96, v);
+    const edgeR = projectUV(view, 0.96, v);
+    if (!mid || !left || !right || !edgeL || !edgeR) return;
+    const ang = Math.atan2(right[1] - left[1], right[0] - left[0]);
+    const span = Math.hypot(edgeR[0] - edgeL[0], edgeR[1] - edgeL[1]);
+    if (span < 12) return;
+    let fs = style.size || 16;
+    if (style.band) {
+      const a = projectUV(view, 0, style.band[0]);
+      const b = projectUV(view, 0, style.band[1]);
+      if (a && b) fs = Math.max(8, Math.hypot(b[0] - a[0], b[1] - a[1]) * (style.bandFit || 0.62));
     }
+    g.save();
+    g.translate(mid[0], mid[1]);
+    g.rotate(ang);
+    g.font = (style.weight || '900') + ' ' + fs.toFixed(1) + 'px Orbitron, sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillStyle = style.color;
+    g.shadowColor = style.color;
+    g.shadowBlur = style.blur || 0;
+    const tw = g.measureText(text).width || 1;
+    g.scale(Math.min(1, (span * 0.94) / tw), 1);
+    g.fillText(text, 0, 0);
+    g.restore();
   }
   function strokeWall2d(g, view, s) {
     const seq = [];
@@ -1736,6 +1906,8 @@
     const group = wallGroup++;
     const demo = demoWall();
     wallSlot().strokes = [];
+    wallSlot().cleared = false;
+    wallState.cleared = false;
     for (let i = 0; i < demo.length; i++) { demo[i].group = group; wallSlot().strokes.push(demo[i]); }
     saveWall();
     setStatus('DEMO GRAFFITI ON');
@@ -1814,32 +1986,136 @@
     const want = Math.min(dx, dz) * 1.55;
     const height = Math.min(14, bh * 0.55);
     const y0 = 3.2;
-    const faces = [
-      { nx: 1, nz: 0, len: dz, cx: b.x1, cz: (b.z0 + b.z1) / 2, tx: 0, tz: 1 },
-      { nx: -1, nz: 0, len: dz, cx: b.x0, cz: (b.z0 + b.z1) / 2, tx: 0, tz: -1 },
-      { nx: 0, nz: 1, len: dx, cx: (b.x0 + b.x1) / 2, cz: b.z1, tx: -1, tz: 0 },
-      { nx: 0, nz: -1, len: dx, cx: (b.x0 + b.x1) / 2, cz: b.z0, tx: 1, tz: 0 }
-    ];
-    const cam = worldCam();
-    let best = null, score = -1e9;
-    for (let i = 0; i < faces.length; i++) {
-      const f = faces[i];
-      const dot = cam ? ((cam.x - f.cx) * f.nx + (cam.z - f.cz) * f.nz) : f.len;
-      if (cam && dot <= 1) continue;
-      const s = dot + f.len * 0.15;
-      if (s > score) { score = s; best = f; }
+    const sign = b.sign || {};
+    let nx = 0, nz = 0;
+    if (b.face === 'w' || b.face === 'e' || b.face === 'n' || b.face === 's') {
+      nx = b.face === 'e' ? 1 : (b.face === 'w' ? -1 : 0);
+      nz = b.face === 'n' ? 1 : (b.face === 's' ? -1 : 0);
+    } else if (sign.nx || sign.nz) {
+      nx = sign.nx || 0;
+      nz = sign.nz || 0;
+    } else if (dz >= dx) {
+      nx = -1;
+    } else {
+      nz = -1;
     }
-    if (!best) best = faces[0];
-    best.width = Math.min(want, best.len * 0.92);
-    best.height = Math.min(height, Math.max(2.4, (b.h || b.top || WALL_H) - 3.5));
-    best.y0 = y0;
-    best.out = 0.16;
-    return best;
+    const nlen = Math.hypot(nx, nz) || 1;
+    nx /= nlen;
+    nz /= nlen;
+    let cx, cz, tx, tz, span;
+    if (Math.abs(nx) >= Math.abs(nz)) {
+      cx = nx > 0 ? b.x1 : b.x0;
+      cz = ((b.z0 != null ? b.z0 : 0) + (b.z1 != null ? b.z1 : 0)) / 2;
+      tx = 0;
+      tz = nx > 0 ? 1 : -1;
+      span = dz;
+    } else {
+      cx = ((b.x0 != null ? b.x0 : 0) + (b.x1 != null ? b.x1 : 0)) / 2;
+      cz = nz > 0 ? b.z1 : b.z0;
+      tx = nz > 0 ? -1 : 1;
+      tz = 0;
+      span = dx;
+    }
+    return {
+      nx: nx, nz: nz, tx: tx, tz: tz, cx: cx, cz: cz,
+      width: Math.min(want, span * 0.92),
+      height: Math.min(height, Math.max(2.4, bh - 3.5)),
+      y0: y0,
+      out: 0.04
+    };
+  }
+  // Stored strokes use u in -1..+1 and v in 0..1. The wall quad is 0..1.
+  function muralUV(u, v) {
+    return [clamp((u + 1) * 0.5, 0, 1), clamp(v, 0, 1)];
+  }
+  function muralPoint01(f, su, sv) {
+    const u = clamp(su, 0, 1);
+    const v = clamp(sv, 0, 1);
+    const along = (u - 0.5) * f.width;
+    const up = f.y0 + v * f.height;
+    return [f.cx + f.nx * f.out + f.tx * along, up, f.cz + f.nz * f.out + f.tz * along];
   }
   function muralPoint(f, u, v) {
-    const along = u * f.width * 0.5;
-    const up = f.y0 + clamp(v, 0, 1) * f.height;
-    return [f.cx + f.nx * f.out + f.tx * along, up, f.cz + f.nz * f.out + f.tz * along];
+    const uv = muralUV(u, v);
+    return muralPoint01(f, uv[0], uv[1]);
+  }
+  function grafNear() { return (typeof NEAR === 'number') ? NEAR : 0.5; }
+  function grafCam(x, y, z) {
+    if (typeof camS !== 'function') return null;
+    return camS(x, y, z);
+  }
+  function grafScr(c) {
+    if (typeof scr === 'function') return scr(c);
+    const Hp = (typeof H === 'number') ? H : 390;
+    const Wp = (typeof W === 'number') ? W : 844;
+    const f = Hp * 0.9;
+    return [Wp / 2 + c[0] * f / c[2], Hp / 2 - c[1] * f / c[2], c[2]];
+  }
+  function grafClipPoly(camPts) {
+    const near = grafNear();
+    const o = [];
+    for (let i = 0; i < camPts.length; i++) {
+      const a = camPts[i], b = camPts[(i + 1) % camPts.length];
+      const ai = a[2] >= near, bi = b[2] >= near;
+      if (ai) o.push(a);
+      if (ai !== bi) {
+        const t = (near - a[2]) / (b[2] - a[2]);
+        o.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, near]);
+      }
+    }
+    return o;
+  }
+  function grafClipSeg(a, b) {
+    const near = grafNear();
+    if (a[2] < near && b[2] < near) return null;
+    if (a[2] >= near && b[2] >= near) return [a, b];
+    const t = (near - a[2]) / (b[2] - a[2]);
+    const m = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, near];
+    return a[2] < near ? [m, b] : [a, m];
+  }
+  function grafProjectPoly(worldPts) {
+    const camPts = [];
+    for (let i = 0; i < worldPts.length; i++) {
+      const p = worldPts[i];
+      const c = grafCam(p[0], p[1], p[2]);
+      if (!c) return null;
+      camPts.push(c);
+    }
+    const clipped = grafClipPoly(camPts);
+    if (clipped.length < 3) return null;
+    const s = [];
+    for (let i = 0; i < clipped.length; i++) {
+      if (clipped[i][2] < grafNear() - 1e-6) return null;
+      const q = grafScr(clipped[i]);
+      if (!isFinite(q[0]) || !isFinite(q[1])) return null;
+      s.push(q);
+    }
+    return s;
+  }
+  function grafTrace(ctx, s) {
+    ctx.beginPath();
+    ctx.moveTo(s[0][0], s[0][1]);
+    for (let i = 1; i < s.length; i++) ctx.lineTo(s[i][0], s[i][1]);
+    ctx.closePath();
+  }
+  function grafSegScreen(p, q) {
+    const a = grafCam(p[0], p[1], p[2]);
+    const b = grafCam(q[0], q[1], q[2]);
+    if (!a || !b) return null;
+    const seg = grafClipSeg(a, b);
+    if (!seg) return null;
+    const sa = grafScr(seg[0]);
+    const sb = grafScr(seg[1]);
+    if (!isFinite(sa[0]) || !isFinite(sa[1]) || !isFinite(sb[0]) || !isFinite(sb[1])) return null;
+    return { a: sa, b: sb, z: (seg[0][2] + seg[1][2]) * 0.5 };
+  }
+  function grafWorldPoly(f, u0, v0, u1, v1) {
+    return [
+      muralPoint01(f, u0, v0),
+      muralPoint01(f, u1, v0),
+      muralPoint01(f, u1, v1),
+      muralPoint01(f, u0, v1)
+    ];
   }
   function drawBuildingGraffiti(ctx, b) {
     try {
@@ -1867,56 +2143,55 @@
     grafArmed = false;
   }
   function paintMural(ctx, b) {
-    const project = (typeof proj === 'function') ? proj : (window.R && window.R.proj);
-    if (!project) return;
+    if (typeof camS !== 'function') return;
     const f = muralFrame(b);
+    const eye = worldCam();
+    const wx = f.cx + f.nx * f.out;
+    const wy = f.y0 + f.height * 0.5;
+    const wz = f.cz + f.nz * f.out;
+    if (eye) {
+      const facing = (eye.x - wx) * f.nx + (eye.y - wy) * 0 + (eye.z - wz) * f.nz;
+      if (!(facing > 0)) return;
+    }
+    const wall = grafProjectPoly(grafWorldPoly(f, 0, 0, 1, 1));
+    if (!wall) return;
     const strokes = wallShowing();
+    const Hp = (typeof H === 'number') ? H : 390;
     ctx.save();
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    function quad(u0, v0, u1, v1) {
-      const p = [muralPoint(f, u0, v0), muralPoint(f, u1, v0), muralPoint(f, u1, v1), muralPoint(f, u0, v1)];
-      const s = [];
-      for (let i = 0; i < 4; i++) {
-        const q = project(p[i][0], p[i][1], p[i][2]);
-        if (!q) return null;
-        s.push(q);
-      }
-      ctx.beginPath();
-      ctx.moveTo(s[0][0], s[0][1]);
-      for (let i = 1; i < 4; i++) ctx.lineTo(s[i][0], s[i][1]);
-      ctx.closePath();
-      return s;
-    }
-    if (quad(-1.04, -0.03, 1.04, 1.04)) {
-      ctx.fillStyle = 'rgba(22, 11, 40, 0.88)';
-      ctx.fill();
-    }
+    grafTrace(ctx, wall);
+    ctx.clip();
+    ctx.fillStyle = 'rgba(22, 11, 40, 0.88)';
+    ctx.fill();
     ctx.beginPath();
     for (let i = 0; i <= 14; i++) {
-      const u = -1 + i / 7;
-      const a = project.apply(null, muralPoint(f, u, 0));
-      const c = project.apply(null, muralPoint(f, u, 1));
-      if (a && c) { ctx.moveTo(a[0], a[1]); ctx.lineTo(c[0], c[1]); }
+      const u = i / 14;
+      const seg = grafSegScreen(muralPoint01(f, u, 0), muralPoint01(f, u, 1));
+      if (!seg) continue;
+      ctx.moveTo(seg.a[0], seg.a[1]);
+      ctx.lineTo(seg.b[0], seg.b[1]);
     }
     for (let i = 0; i <= 10; i++) {
       const v = i / 10;
-      const a = project.apply(null, muralPoint(f, -1, v));
-      const c = project.apply(null, muralPoint(f, 1, v));
-      if (a && c) { ctx.moveTo(a[0], a[1]); ctx.lineTo(c[0], c[1]); }
+      const seg = grafSegScreen(muralPoint01(f, 0, v), muralPoint01(f, 1, v));
+      if (!seg) continue;
+      ctx.moveTo(seg.a[0], seg.a[1]);
+      ctx.lineTo(seg.b[0], seg.b[1]);
     }
     ctx.strokeStyle = 'rgba(120, 70, 180, 0.45)';
     ctx.lineWidth = 1;
     ctx.stroke();
-    if (quad(-1.02, -0.02, 1.02, 1.02)) {
-      ctx.strokeStyle = '#ff4fd8';
-      ctx.lineWidth = 2.4;
-      ctx.shadowColor = '#ff4fd8';
-      ctx.shadowBlur = 10;
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-    }
-    if (quad(-0.98, 0.9, 0.98, 1.0)) {
+    grafTrace(ctx, wall);
+    ctx.strokeStyle = '#ff4fd8';
+    ctx.lineWidth = 2.4;
+    ctx.shadowColor = '#ff4fd8';
+    ctx.shadowBlur = 10;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    const band = grafProjectPoly(grafWorldPoly(f, 0.01, 0.9, 0.99, 1));
+    if (band) {
+      grafTrace(ctx, band);
       ctx.fillStyle = 'rgba(6, 2, 16, 0.8)';
       ctx.fill();
       ctx.strokeStyle = '#3ee6ff';
@@ -1926,50 +2201,50 @@
       ctx.stroke();
       ctx.shadowBlur = 0;
     }
-    const mid = project.apply(null, muralPoint(f, 0, 0.95));
-    const side = project.apply(null, muralPoint(f, 0.45, 0.95));
-    if (mid && side) {
-      const fs = Math.max(8, Math.hypot(side[0] - mid[0], side[1] - mid[1]) / 4.2);
-      if (fs >= 8) {
+    const base = grafSegScreen(muralPoint01(f, 0.04, 0.95), muralPoint01(f, 0.96, 0.95));
+    const rise = grafSegScreen(muralPoint01(f, 0.5, 0.9), muralPoint01(f, 0.5, 1));
+    if (base) {
+      const span = Math.hypot(base.b[0] - base.a[0], base.b[1] - base.a[1]);
+      const thick = rise ? Math.hypot(rise.b[0] - rise.a[0], rise.b[1] - rise.a[1]) : span * 0.08;
+      const fs = Math.max(8, thick * 0.62);
+      if (span > 16) {
+        const ang = Math.atan2(base.b[1] - base.a[1], base.b[0] - base.a[0]);
+        const label = "🎨 Z COMPANY ARTS — ELLIE'S GRAFFITI WALL";
+        ctx.save();
+        ctx.translate((base.a[0] + base.b[0]) * 0.5, (base.a[1] + base.b[1]) * 0.5);
+        ctx.rotate(ang);
         ctx.font = '900 ' + fs.toFixed(1) + 'px Orbitron, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = '#3ee6ff';
         ctx.shadowColor = '#3ee6ff';
         ctx.shadowBlur = 8;
-        ctx.fillText("🎨 Z COMPANY ARTS — ELLIE'S GRAFFITI WALL", mid[0], mid[1]);
-        ctx.shadowBlur = 0;
+        const tw = ctx.measureText(label).width || 1;
+        ctx.scale(Math.min(1, (span * 0.94) / tw), 1);
+        ctx.fillText(label, 0, 0);
+        ctx.restore();
       }
     }
     for (let i = 0; i < strokes.length; i++) {
       const s = strokes[i];
-      const seq = [];
-      let depth = 40;
-      for (let k = 0; k < s.points.length; k++) {
-        const wpt = muralPoint(f, s.points[k][0], s.points[k][1]);
-        const q = project(wpt[0], wpt[1], wpt[2]);
-        if (q && q[2]) depth = q[2];
-        seq.push(q);
-      }
-      const Hpx = (typeof H === 'number' ? H : 390);
-      const px = (Hpx * 0.9) / Math.max(8, depth);
+      const pts = s.points || [];
+      if (!pts.length) continue;
       const mul = s.brush === 'spray' ? 1.8 : (s.brush === 'ribbon' ? 1.35 : (s.brush === 'line' ? 0.7 : 1));
-      const lw = Math.max(2.2, (s.size || 16) / 34 * f.height * px * 0.22 * mul);
       const color = s.brush === 'rainbow' ? 'hsl(' + ((i * 36) % 360) + ',100%,64%)' : s.color;
-      const runs = [];
-      let cur = [];
-      for (let k = 0; k < seq.length; k++) {
-        if (!seq[k]) { if (cur.length) runs.push(cur); cur = []; continue; }
-        cur.push(seq[k]);
+      const world = [];
+      for (let k = 0; k < pts.length; k++) world.push(muralPoint(f, pts[k][0], pts[k][1]));
+      if (world.length === 1) {
+        const p = world[0];
+        world.push([p[0] + f.tx * 0.04, p[1], p[2] + f.tz * 0.04]);
       }
-      if (cur.length) runs.push(cur);
-      for (let r = 0; r < runs.length; r++) {
-        const run = runs[r];
+      for (let k = 1; k < world.length; k++) {
+        const seg = grafSegScreen(world[k - 1], world[k]);
+        if (!seg) continue;
+        const px = (Hp * 0.9) / Math.max(8, seg.z);
+        const lw = Math.max(2.2, (s.size || 16) / 34 * f.height * px * 0.22 * mul);
         ctx.beginPath();
-        for (let k = 0; k < run.length; k++) {
-          if (k) ctx.lineTo(run[k][0], run[k][1]); else ctx.moveTo(run[k][0], run[k][1]);
-        }
-        if (run.length === 1) ctx.lineTo(run[0][0] + 0.6, run[0][1]);
+        ctx.moveTo(seg.a[0], seg.a[1]);
+        ctx.lineTo(seg.b[0], seg.b[1]);
         ctx.strokeStyle = color;
         ctx.shadowColor = color;
         ctx.globalAlpha = s.brush === 'spray' ? 0.5 : 0.95;
@@ -2030,6 +2305,7 @@
     opts = opts || {};
     ui.canvas = (opts.canvas === 'wall' || opts.mode === 'wall') ? 'wall' : 'car';
     closeStudio();
+    parkMenuButton();
     state = readStore();
     lastJson = JSON.stringify(state);
     ensureCss();
@@ -2049,8 +2325,10 @@
   function closeStudio() {
     live = null;
     liveMirror = null;
+    pauseOn = false;
     if (studio && studio.parentNode) studio.parentNode.removeChild(studio);
     studio = null;
+    unparkMenuButton();
   }
   function bakeCanvases() {
     const X = carX();
@@ -2081,6 +2359,9 @@
     window.addEventListener('storage', function (e) {
       if (!e.key || e.key === KEY) ingest(e.newValue || '');
       if (e.key === WALL_KEY) ingestWall(e.newValue || '');
+    });
+    window.addEventListener('pagehide', function () {
+      if (live || liveMirror || wallLive || wallLiveMirror) flushPaint();
     });
     hookWorldGraffiti();
     let tries = 0;

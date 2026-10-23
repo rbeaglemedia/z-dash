@@ -1,8 +1,9 @@
 'use strict';
 /* Menus & Garage/Home Hub.
    Owns the Neon World pause-menu icons, the game-tile grid, and GARAGE_HOME_HUB.
-   Reads zdash.kid.v1 and writes only sv.eq (plus a fresh profile when no save exists).
-   Never replaces window.KID, window.GZ, or window.GARAGEZ. Live paint goes through GARAGEZ.sync(). */
+   Reads zdash.kid.v1 and writes only sv.eq and sv.house (plus a fresh profile when no save exists).
+   Never replaces window.KID, window.GZ, or window.GARAGEZ. Live paint goes through GARAGEZ.sync().
+   Track color is copied onto KID.trackColor after that sync. House decor is also stored in zdash.house.v1. */
 (function () {
   if (window.GARAGE_HOME_HUB) return;
 
@@ -14,6 +15,7 @@
   const DANCE_KEY = 'zdash.customdance.v1';
   const PETDANCE_KEY = 'zdash.petdance.v1';
   const STAGE_KEY = 'zdash.dancestage.v1';
+  const HOUSE_KEY = 'zdash.house.v1';
   const DANCE_IDS = ['default', 'slot0', 'slot1', 'slot2'];
   const SLOT_IDS = ['slot0', 'slot1', 'slot2'];
 
@@ -22,9 +24,9 @@
     roof: 'r-match', bumper: 'bp-stock', bcan: 'bc-off', nos: 'n-stock', heads: 'h-clear', tails: 't-red',
     spoiler: 'none-s', spcol: 'sc-match', underglow: 'ug-off', caliper: 'cal-red', stance: 'st-stock',
     camber: 'cb-off', lip: 'lip-none', skirts: 'sk-none', diffuser: 'df-none', kitmat: 'km-black',
-    tips: 'tip-stock', wings: 'none-w', extra: 'none-x'
+    tips: 'tip-stock', wings: 'none-w', extra: 'none-x', tracks: 'tr-match'
   };
-  const FREE_IDS = ['cyan', 'pink', 'gun', 'gunmetal', 'win-clear', 'win-smoke', 'gtx04', 'stock', '5spoke', 'steel', 'w-gun', 'street', 'n-stock', 'r-match', 'h-clear', 't-red', 'none-s', 'sc-match', 'ug-off', 'cal-red', 'st-stock', 'cb-off', 'lip-none', 'bp-stock', 'bc-off', 'bc-on', 'sk-none', 'df-none', 'km-black', 'tip-stock', 'tip-invidia', 'none-w', 'none-x'];
+  const FREE_IDS = ['cyan', 'pink', 'gun', 'gunmetal', 'win-clear', 'win-smoke', 'gtx04', 'stock', '5spoke', 'steel', 'w-gun', 'street', 'n-stock', 'r-match', 'h-clear', 't-red', 'none-s', 'sc-match', 'ug-off', 'cal-red', 'st-stock', 'cb-off', 'lip-none', 'bp-stock', 'bc-off', 'bc-on', 'sk-none', 'df-none', 'km-black', 'tip-stock', 'tip-invidia', 'none-w', 'none-x', 'tr-match', 'tr-cyan', 'tr-pink'];
 
   const CATS = {
     paint: [
@@ -78,8 +80,37 @@
       { id: 'ug-red', name: 'RED HOT', hex: '#ff2a3d', cost: 70 },
       { id: 'ug-blue', name: 'DEEP BLUE', hex: '#2a5bff', cost: 70 },
       { id: 'ug-rainbow', name: 'RAINBOW', hex: '#ff4fd8', how: 'box' }
+    ],
+    tracks: [
+      { id: 'tr-match', name: 'MATCH CAR GLOW', hex: '#3ee6ff' },
+      { id: 'tr-cyan', name: 'CYBER CYAN', hex: '#3ee6ff' },
+      { id: 'tr-pink', name: 'NEON PINK', hex: '#ff4fd8' },
+      { id: 'tr-lime', name: 'LASER LIME', hex: '#7dff6b', cost: 40 },
+      { id: 'tr-purple', name: 'ULTRA VIOLET', hex: '#9b5cff', cost: 40 },
+      { id: 'tr-gold', name: 'SOLAR GOLD', hex: '#ffe14d', cost: 50 },
+      { id: 'tr-red', name: 'RED HOT', hex: '#ff2a3d', cost: 50 },
+      { id: 'tr-rainbow', name: 'RAINBOW TRACKS', hex: '#ff4fd8', cost: 80 }
     ]
   };
+  const HOUSE_WALLS = [
+    { id: 'neon-grid', name: 'NEON GRID', hex: '#3ee6ff' },
+    { id: 'bubblegum', name: 'BUBBLEGUM', hex: '#ff4fd8' },
+    { id: 'midnight', name: 'MIDNIGHT', hex: '#9b5cff' },
+    { id: 'lime-loft', name: 'LIME LOFT', hex: '#7dff6b' }
+  ];
+  const HOUSE_SIGNS = [
+    { id: 'ellie', name: "ELLIE'S Z", text: "ELLIE'S Z" },
+    { id: 'arts', name: 'Z COMPANY ARTS', text: 'Z COMPANY ARTS' },
+    { id: 'home', name: 'WELCOME HOME', text: 'WELCOME HOME' },
+    { id: 'glow', name: 'NEON DREAMS', text: 'NEON DREAMS' }
+  ];
+  const HOUSE_ITEMS = [
+    { id: 'sofa', name: '🛋 SOFA' },
+    { id: 'arcade', name: '🕹 ARCADE' },
+    { id: 'petBed', name: '🛏 PET BED' },
+    { id: 'danceFloor', name: '💃 DANCE FLOOR' }
+  ];
+  const DEFAULT_HOUSE = { v: 1, wall: 'neon-grid', sign: 'ellie', sofa: true, arcade: true, petBed: true, danceFloor: true };
   const PRESETS = [
     { id: 'dad', name: 'CLASSIC DAD', eq: { paint: 'gunmetal', wheels: 'w-gun', spoiler: 'none-s', windows: 'win-clear', underglow: 'ug-off', rims: 'gtx04', caliper: 'cal-red' } },
     { id: 'neon', name: 'NEON RACER', eq: { paint: 'pink', wheels: 'w-cyan', spoiler: 'duck', windows: 'win-ice', underglow: 'ug-cyan' } },
@@ -113,6 +144,10 @@
     world: svg('<path d="M4 16 V10 H8 V16"/><path d="M8 16 V6 H13 V16"/><path d="M13 16 V9 H18 V16"/><path d="M3 16 H21"/><path d="M12 6 V3"/><circle cx="12" cy="3" r="0.8" fill="currentColor"/>'),
     stunt: svg('<circle cx="12" cy="8" r="3"/><path d="M5 20 C7 14 17 14 19 20"/><path d="M8 20 H16"/>'),
     chase: svg('<path d="M3 16 L7 11 H12 L14 13 H19 L21 16 V18 H3 Z"/><path d="M7 11 L9 8 H13"/>'),
+    road: svg('<path d="M8 20 L11 4 M16 20 L13 4"/><path d="M12 5 V8 M12 11 V14 M12 17 V20"/>'),
+    drag: svg('<path d="M12 3 V21"/><circle cx="12" cy="6" r="1.6" fill="currentColor"/><circle cx="12" cy="11" r="1.6" fill="currentColor"/><circle cx="12" cy="16" r="1.6" fill="#7dff6b"/>'),
+    fly: svg('<path d="M3 16 L12 12 L21 16"/><path d="M8 14 L12 6 L16 14"/><path d="M5 19 Q12 16 19 19"/>'),
+    ride: svg('<path d="M5 16 A7 7 0 0 1 19 16"/><path d="M12 16 V7"/><circle cx="12" cy="16" r="1.3" fill="currentColor"/>'),
     wall: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M2 7 H22 M2 12 H22 M2 17 H22 M6 7 V2 M10 12 V7 M14 17 V12 M18 7 V2 M8 12 V7 M16 12 V7" fill="none" stroke="#ff4fd8" stroke-width="1.3"/><path d="M15 21c1.6-2.4 2.4-3.4 2.4-5a1.8 1.8 0 0 0-3.6 0c0 1.6.8 2.6 1.2 5z" fill="#3ee6ff" stroke="#e9fbff" stroke-width="1"/><path d="M14.2 21 H20" stroke="#ffe14d" stroke-width="1.5" stroke-linecap="round"/></svg>'
   };
 
@@ -162,7 +197,139 @@
     };
   }
   function syncCar() {
-    try { if (window.GARAGEZ && typeof GARAGEZ.sync === 'function') GARAGEZ.sync(); } catch (e) {}
+    try {
+      if (window.GARAGEZ && typeof GARAGEZ.sync === 'function') { GARAGEZ.sync(); return; }
+    } catch (e) {}
+    applyTrackColor();
+  }
+  function hookGarageSync() {
+    const gz = window.GARAGEZ;
+    if (!gz || gz.__ghhTracks || typeof gz.sync !== 'function') return;
+    const orig = gz.sync.bind(gz);
+    gz.sync = function () {
+      let result;
+      try { result = orig(); } finally { applyTrackColor(); }
+      return result;
+    };
+    try { Object.defineProperty(gz, '__ghhTracks', { value: 1 }); } catch (e) {}
+  }
+  function trackColorFor(id) {
+    const item = meta('tracks', id) || meta('tracks', 'tr-match');
+    if (!item) return '#3ee6ff';
+    if (item.id === 'tr-match') {
+      try {
+        if (typeof KID !== 'undefined' && KID && typeof KID.glow === 'string' && /^#/.test(KID.glow)) return KID.glow;
+      } catch (e) {}
+    }
+    return item.hex || '#3ee6ff';
+  }
+  function applyTrackColor() {
+    const color = trackColorFor(readEq().tracks || 'tr-match');
+    try { if (typeof KID !== 'undefined' && KID) KID.trackColor = color; } catch (e) {}
+    try { if (window.KID) window.KID.trackColor = color; } catch (e) {}
+    return color;
+  }
+  function houseKnown(list, id) {
+    for (let i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+  function signText(id) {
+    const row = houseKnown(HOUSE_SIGNS, id);
+    return row ? row.text : (id ? String(id) : "ELLIE'S Z");
+  }
+  function houseBool(value, fallback) {
+    return typeof value === 'boolean' ? value : fallback;
+  }
+  function normalizeHouse(src) {
+    const base = src && typeof src === 'object' && !Array.isArray(src) ? src : {};
+    const items = base.items && typeof base.items === 'object' && !Array.isArray(base.items) ? base.items : {};
+    const wallId = base.wall || base.wallTheme || DEFAULT_HOUSE.wall;
+    const signId = base.sign || DEFAULT_HOUSE.sign;
+    const next = Object.assign({}, base, {
+      v: 1,
+      wall: houseKnown(HOUSE_WALLS, wallId) ? wallId : DEFAULT_HOUSE.wall,
+      sign: houseKnown(HOUSE_SIGNS, signId) ? signId : DEFAULT_HOUSE.sign,
+      sofa: houseBool(base.sofa, houseBool(items.sofa, DEFAULT_HOUSE.sofa)),
+      arcade: houseBool(base.arcade, houseBool(items.arcade, DEFAULT_HOUSE.arcade)),
+      petBed: houseBool(base.petBed, houseBool(items.petBed, DEFAULT_HOUSE.petBed)),
+      danceFloor: houseBool(base.danceFloor, houseBool(items.danceFloor, DEFAULT_HOUSE.danceFloor))
+    });
+    next.wallTheme = next.wall;
+    next.neonSign = signText(next.sign);
+    next.items = { sofa: !!next.sofa, arcade: !!next.arcade, petBed: !!next.petBed, danceFloor: !!next.danceFloor };
+    return next;
+  }
+  function readHouse() {
+    const file = readObj(HOUSE_KEY);
+    const got = readKid();
+    const fromKid = got.sv && got.sv.house && typeof got.sv.house === 'object' && !Array.isArray(got.sv.house) ? got.sv.house : null;
+    return normalizeHouse(Object.assign({}, fromKid || {}, file || {}));
+  }
+  function publishHouse(next) {
+    window.HOUSE_STATE = next;
+    try { window.dispatchEvent(new CustomEvent('zdash-house', { detail: next })); } catch (e) {}
+    return next;
+  }
+  function saveHouse(patch) {
+    const next = normalizeHouse(Object.assign({}, readHouse(), patch || {}));
+    try { localStorage.setItem(HOUSE_KEY, JSON.stringify(next)); } catch (e) {}
+    const got = readKid();
+    if (!got.corrupt) {
+      const sv = got.missing ? defaultSv() : got.sv;
+      const prev = sv.house && typeof sv.house === 'object' && !Array.isArray(sv.house) ? sv.house : {};
+      sv.house = Object.assign({}, prev, next);
+      try { localStorage.setItem(KID_KEY, JSON.stringify(sv)); } catch (e) {}
+    }
+    publishHouse(next);
+    decorateInterior();
+    if (opened && current === 'home') render();
+    return next;
+  }
+  function interiorIsHome() {
+    let door = null;
+    try { door = window.WALK_MODE && (WALK_MODE.insideDoor || WALK_MODE.door); } catch (e) {}
+    if (door && door.purpose) return door.purpose === 'HOME';
+    const card = document.getElementById('walk-interior');
+    const title = card && card.querySelector('[data-k="title"]');
+    return !!(card && card.classList.contains('show') && title && /HOME|HOUSE/.test(title.textContent || ''));
+  }
+  function decorateInterior() {
+    const card = document.getElementById('walk-interior');
+    if (!card) return;
+    let box = document.getElementById('ghh-room');
+    if (!interiorIsHome()) {
+      if (box) box.hidden = true;
+      return;
+    }
+    const house = readHouse();
+    const wall = houseKnown(HOUSE_WALLS, house.wall) || HOUSE_WALLS[0];
+    if (!box) {
+      box = el('div', 'ghh-room');
+      box.id = 'ghh-room';
+      const step = card.querySelector('#walk-step-out');
+      if (step) card.insertBefore(box, step);
+      else card.appendChild(box);
+    }
+    box.hidden = false;
+    box.style.setProperty('--wall', wall.hex);
+    box.replaceChildren();
+    box.appendChild(el('b', 'ghh-room-sign', house.neonSign || signText(house.sign)));
+    const row = el('div', 'ghh-room-items');
+    HOUSE_ITEMS.forEach(function (item) {
+      if (!house[item.id]) return;
+      row.appendChild(el('span', 'ghh-room-item', item.name));
+    });
+    box.appendChild(row);
+    box.appendChild(el('small', '', wall.name + ' WALLS'));
+  }
+  function watchInterior() {
+    const room = document.getElementById('walk-interior');
+    if (!room || room.dataset.ghhHouse) return;
+    room.dataset.ghhHouse = '1';
+    if (window.MutationObserver) {
+      new MutationObserver(function () { decorateInterior(); }).observe(room, { attributes: true, attributeFilter: ['class', 'hidden'] });
+    }
+    decorateInterior();
   }
   function commitEq(patch) {
     const got = readKid();
@@ -602,122 +769,148 @@
       list.forEach(function (g) { host.appendChild(gameCard(g)); });
     });
   }
+  function goJr(tab) {
+    const hashTabs = { garage: 'garage', car: 'car', road: 'road', drag: 'drag', wanted: 'wanted', boost: 'boost', drive: 'drive', ride: 'boost' };
+    if (tab === 'home' || tab === 'menu') { location.assign('jr.html?kmenu=1'); return; }
+    const h = hashTabs[tab];
+    if (h) location.assign('jr.html#' + h);
+    else location.assign('jr.html?ktab=' + encodeURIComponent(tab || 'drive'));
+  }
   function installGames() {
     registerGame({
-      id: 'neon-world',
-      hero: true,
-      title: '🌆 NEON WORLD',
-      subtitle: 'Choose: 🪂 Sky Drop OR 🏙️ Street Cruise & Building Explorer',
-      badge: 'HOME CITY',
+      id: 'car',
+      title: 'SHOWROOM CAR',
+      subtitle: 'spin your Z',
+      badge: 'CAR',
       color: '#3ee6ff',
-      iconSvg: ICONS.world,
-      modes: [
-        { id: 'skydrop', label: '🪂 SKY DROP', onPlay: startSkyDrop },
-        { id: 'street', label: '🏙️ STREET CRUISE', onPlay: startStreet }
-      ]
+      iconSvg: ICONS.car,
+      onPlay: function () { goJr('car'); }
     });
     registerGame({
-      id: 'arts',
-      title: '🕺 RECORD MY DANCE',
-      subtitle: 'Z Company Arts · Camera Dance Stage & 8s Mo-Cap',
-      badge: 'DANCE',
-      color: '#ff4fd8',
-      iconSvg: ICONS.dance,
-      onPlay: function () { openDance('char'); }
+      id: 'road',
+      title: 'ROAD',
+      subtitle: 'coins & ramps',
+      badge: 'ROAD',
+      color: '#7dff6b',
+      iconSvg: ICONS.road,
+      onPlay: function () { goJr('road'); }
     });
     registerGame({
-      id: 'record-pet',
-      title: '🐾 RECORD MY PET',
-      subtitle: 'Z Company Arts · 6s Companion Pet Camera Mo-Cap',
-      badge: 'PET MO-CAP',
+      id: 'drag',
+      title: 'DRAG',
+      subtitle: 'race a rival',
+      badge: 'DRAG',
       color: '#ffe14d',
-      iconSvg: ICONS.pet,
-      onPlay: function () { openDance('dog'); }
+      iconSvg: ICONS.drag,
+      onPlay: function () { goJr('drag'); }
     });
     registerGame({
-      id: 'arts-wall',
-      title: '🎨 NEON GRAFFITI WALL',
-      subtitle: 'Z Company Arts Graffiti Wall · Draw on Studio Wall',
-      badge: 'DRAW',
+      id: 'fly',
+      title: 'NEON FLYING',
+      subtitle: 'take to the sky',
+      badge: 'FLY',
+      color: '#3ee6ff',
+      iconSvg: ICONS.fly,
+      onPlay: function () { location.assign('fly3.html'); }
+    });
+    registerGame({
+      id: 'world',
+      title: 'NEON WORLD',
+      subtitle: 'fly & drive 3D city',
+      badge: 'CITY',
       color: '#ff4fd8',
-      iconSvg: ICONS.wall,
-      doorPurpose: 'wall',
-      driveLabel: '📍 VIEW WALL IN CITY',
-      onPlay: function () { openPaintStudio('wall'); },
-      onDrive: viewWall
+      iconSvg: ICONS.world,
+      onPlay: function () { location.assign('world.html'); }
+    });
+    registerGame({
+      id: 'garage',
+      title: 'GARAGE',
+      subtitle: 'paint & parts',
+      badge: 'LOOK',
+      color: '#ffb020',
+      iconSvg: ICONS.garage,
+      onPlay: function () { location.assign('jr.html#garage'); }
+    });
+    registerGame({
+      id: 'wanted',
+      title: 'WANTED',
+      subtitle: '1.0 + Z TAKEOVER',
+      badge: 'WANTED',
+      color: '#ff2a3d',
+      iconSvg: ICONS.chase,
+      onPlay: function () { goJr('wanted'); }
+    });
+    registerGame({
+      id: 'boost',
+      title: 'RIDE ALONG',
+      subtitle: 'shift + BOOST',
+      badge: 'RIDE',
+      color: '#ff4fd8',
+      iconSvg: ICONS.ride,
+      onPlay: function () { goJr('boost'); }
     });
     registerGame({
       id: 'soccer',
-      title: '⚽ CAR SOCCER',
-      subtitle: 'Car Soccer Dome · 104×160m Geodesic Stadium Match',
+      title: 'CAR SOCCER',
+      subtitle: 'stadium arena match',
       badge: 'MATCH',
       color: '#7dff6b',
       iconSvg: ICONS.ball,
-      doorPurpose: 'soccer',
-      onPlay: playSoccer,
-      onDrive: playSoccer
+      onPlay: playSoccer
     });
     registerGame({
-      id: 'garage-z',
-      title: '🚗 GARAGE Z',
-      subtitle: 'Garage Z (Home) · 370Z Paint, Rims & Underglow Sync',
-      badge: 'LOOK',
+      id: 'skydrop',
+      title: 'SKY DROP',
+      subtitle: 'drop 320m over city',
+      badge: 'SKY',
       color: '#3ee6ff',
-      iconSvg: ICONS.car,
-      doorPurpose: 'garage',
-      onPlay: function () { open('garage'); },
-      onDrive: driveHomePad
+      iconSvg: ICONS.sky,
+      onPlay: startSkyDrop
     });
     registerGame({
-      id: 'crew',
-      title: '👗 CREW CLOSET',
-      subtitle: 'Crew & Pets · Sleek Character + Companion Pet',
-      badge: 'CREW',
-      color: '#b48cff',
-      iconSvg: ICONS.crew,
-      onPlay: function () { open('crew'); }
-    });
-    registerGame({
-      id: 'neon-paint',
-      title: '3D NEON PAINT STUDIO',
-      subtitle: 'Spin the 3D 370Z & Draw Glowing Decals',
+      id: 'paint',
+      title: 'NEON PAINT',
+      subtitle: 'draw on your 3D Z',
       badge: 'DECALS',
       color: '#ffe14d',
       iconSvg: ICONS.paint,
       onPlay: function () { openPaintStudio(); }
     });
     registerGame({
-      id: 'builder',
-      title: 'CITY BUILDER',
-      subtitle: 'North-of-River Building & Ramp Sandbox',
-      badge: 'BUILD',
-      color: '#ffb020',
-      iconSvg: ICONS.city,
-      doorPurpose: 'builder',
-      onPlay: playCity,
-      onDrive: playCity
+      id: 'wall',
+      title: 'GRAFFITI WALL',
+      subtitle: 'Z Co Arts 3D sign',
+      badge: 'DRAW',
+      color: '#ff4fd8',
+      iconSvg: ICONS.wall,
+      onPlay: function () { openPaintStudio('wall'); }
     });
     registerGame({
-      id: 'stunt',
-      title: 'ROOFTOP STUNT & RING RUN',
-      subtitle: 'Sky Rings, Megaramps & 100% NOS Hoops',
-      badge: 'STUNT',
+      id: 'dance',
+      title: 'RECORD DANCE',
+      subtitle: 'Z Co Arts mo-cap',
+      badge: 'DANCE',
+      color: '#ff4fd8',
+      iconSvg: ICONS.dance,
+      onPlay: function () { openDance('char'); }
+    });
+    registerGame({
+      id: 'petdance',
+      title: 'RECORD MY PET',
+      subtitle: 'pet camera dance',
+      badge: 'PET',
       color: '#ffe14d',
-      iconSvg: ICONS.stunt,
-      doorPurpose: 'stunt',
-      onPlay: playStunt,
-      onDrive: playStunt
+      iconSvg: ICONS.pet,
+      onPlay: function () { openDance('dog'); }
     });
     registerGame({
-      id: 'takeover',
-      title: 'Z TAKEOVER',
-      subtitle: 'High-Speed Traffic Knockback & Combos',
-      badge: 'CHASE',
-      color: '#ff2a3d',
-      iconSvg: ICONS.chase,
-      doorPurpose: 'traffic',
-      onPlay: playTakeover,
-      onDrive: playTakeover
+      id: 'crew',
+      title: 'CREW & PETS',
+      subtitle: 'characters & pets',
+      badge: 'CREW',
+      color: '#b48cff',
+      iconSvg: ICONS.crew,
+      onPlay: function () { location.assign('crew.html'); }
     });
   }
 
@@ -740,7 +933,7 @@
     if (!home || home.dataset.ghhReady === '1') return;
     home.dataset.ghhReady = '1';
     home.classList.add('ghh-ready');
-    const labels = { resume: 'RESUME', home: 'HOME / EXIT', recal: 'TILT CENTER', full: 'FULLSCREEN', runway: 'BACK TO RUNWAY', skydrop: 'SKY DROP' };
+    const labels = { resume: 'RESUME', home: 'HOME / MAIN MENU', recal: 'TILT CENTER', full: 'FULLSCREEN', runway: 'BACK TO RUNWAY', skydrop: 'SKY DROP' };
     const icons = { resume: 'play', home: 'exit', recal: 'tilt', full: 'full', runway: 'runway', skydrop: 'sky', xray: 'eye' };
     home.querySelectorAll('button[data-m]').forEach(function (btn) {
       const key = btn.dataset.m;
@@ -752,31 +945,14 @@
       new MutationObserver(function () { dress(xb, 'eye'); }).observe(xb, { childList: true, characterData: true, subtree: true });
     }
     const anchor = home.querySelector('#kPzRow') || home.firstChild;
-    const hubRow = el('div', 'ghh-hubrow');
-    hubRow.id = 'kHubRow';
-    const openBtn = el('button', 'ghh-open');
-    openBtn.type = 'button';
-    openBtn.id = 'ghhOpen';
-    openBtn.dataset.ghhOpen = '1';
-    openBtn.appendChild(svgSpan(ICONS.garage));
-    openBtn.appendChild(el('span', '', '🏠 GARAGE & HOME HUB'));
-    hubRow.appendChild(openBtn);
     const wrap = el('section', 'ghh-wrap');
     wrap.id = 'kGamesWrap';
-    wrap.appendChild(el('div', 'ghh-kicker', 'NEON WORLD GAMES'));
+    wrap.appendChild(el('div', 'ghh-kicker', 'GAMES'));
     const grid = el('div', 'ghh-grid');
     grid.id = 'kGameGrid';
     grid.setAttribute('data-ghh-grid', 'all');
     wrap.appendChild(grid);
-    const pill = el('button', 'ghh-pill');
-    pill.type = 'button';
-    pill.id = 'ghhPill';
-    pill.dataset.ghhOpen = '1';
-    pill.appendChild(svgSpan(ICONS.garage));
-    pill.appendChild(el('span', '', 'GARAGE & HOME'));
-    home.insertBefore(hubRow, anchor);
     home.insertBefore(wrap, anchor);
-    home.appendChild(pill);
   }
 
   function picks(parent, list, currentId, attr, extra) {
@@ -872,6 +1048,43 @@
     grid.setAttribute('data-ghh-grid', 'all');
     body.appendChild(grid);
     statusCards(body);
+    renderHouse(body);
+  }
+  function renderHouse(body) {
+    const house = readHouse();
+    const block = el('section', 'ghh-block');
+    block.appendChild(el('h3', '', "🏠 ELLIE'S HOUSE"));
+    block.appendChild(el('p', 'ghh-note', 'These choices are saved on this device. When Ellie walks into a HOME building, the wall, neon sign, and furniture show up in her room.'));
+    block.appendChild(el('h3', '', 'WALL THEME'));
+    const walls = el('div', 'ghh-picks');
+    HOUSE_WALLS.forEach(function (w) {
+      const b = el('button', 'ghh-pick' + (house.wall === w.id ? ' on' : ''), w.name);
+      b.type = 'button';
+      b.dataset.ghhWall = w.id;
+      b.style.setProperty('--chip', w.hex);
+      walls.appendChild(b);
+    });
+    block.appendChild(walls);
+    block.appendChild(el('h3', '', 'NEON SIGN'));
+    const signs = el('div', 'ghh-picks');
+    HOUSE_SIGNS.forEach(function (s) {
+      const b = el('button', 'ghh-pick' + (house.sign === s.id ? ' on' : ''), s.name);
+      b.type = 'button';
+      b.dataset.ghhSign = s.id;
+      signs.appendChild(b);
+    });
+    block.appendChild(signs);
+    block.appendChild(el('h3', '', 'ROOM ITEMS'));
+    const items = el('div', 'ghh-picks');
+    HOUSE_ITEMS.forEach(function (item) {
+      const on = !!house[item.id];
+      const b = el('button', 'ghh-pick' + (on ? ' on' : ''), (on ? '' : '＋ ') + item.name);
+      b.type = 'button';
+      b.dataset.ghhItem = item.id;
+      items.appendChild(b);
+    });
+    block.appendChild(items);
+    body.appendChild(block);
   }
   function renderGarage(body) {
     const eq = readEq();
@@ -885,6 +1098,7 @@
     lines.appendChild(el('b', '', labelOf('paint', eq.paint)));
     lines.appendChild(el('small', '', 'Rims ' + (eq.rims || 'gtx04') + ' · Wheels ' + labelOf('wheels', eq.wheels) + ' · Spoiler ' + labelOf('spoiler', eq.spoiler)));
     lines.appendChild(el('small', '', 'Windows ' + labelOf('windows', eq.windows) + ' · Underglow ' + labelOf('underglow', eq.underglow) + ' · Caliper ' + (eq.caliper || 'cal-red')));
+    lines.appendChild(el('small', '', 'Track marks ' + labelOf('tracks', eq.tracks)));
     look.appendChild(lines);
     body.appendChild(look);
     body.appendChild(el('h3', '', 'QUICK PRESETS'));
@@ -901,6 +1115,7 @@
     catRow(body, 'spoiler', 'SPOILER');
     catRow(body, 'windows', 'WINDOWS');
     catRow(body, 'underglow', 'UNDERGLOW');
+    catRow(body, 'tracks', 'TRACK MARKS');
     const jr = el('a', 'ghh-go', 'OPEN FULL Z-DASH JR GARAGE ›');
     jr.href = 'jr.html#garage';
     body.appendChild(jr);
@@ -1042,30 +1257,19 @@
     if (!(menu && !menu.classList.contains('hidden'))) { try { paused = false; } catch (e) {} }
   }
   function isOpen() { return opened; }
-  function open(tab) {
-    ensureHub();
-    current = tabName(tab);
-    opened = true;
-    hub.classList.remove('ghh-hide');
-    hub.setAttribute('aria-hidden', 'false');
-    document.documentElement.classList.add('ghh-open');
-    holdPhysics();
+  function open() {
     syncCar();
-    render();
+    location.assign('jr.html#garage');
   }
   function close() {
     opened = false;
-    document.documentElement.classList.remove('ghh-open');
-    if (hub) {
-      hub.classList.add('ghh-hide');
-      hub.setAttribute('aria-hidden', 'true');
-    }
+    const stray = document.getElementById('ghh');
+    if (stray) stray.remove();
+    document.getElementById('ghhPill') && document.getElementById('ghhPill').remove();
+    document.getElementById('ghhOpen') && document.getElementById('ghhOpen').remove();
     releasePhysics();
   }
-  function toggle(tab) {
-    if (opened && (!tab || tabName(tab) === current)) close();
-    else open(tab || current);
-  }
+  function toggle() { close(); }
 
   function onEq(cat, id) {
     const item = meta(cat, id);
@@ -1106,6 +1310,13 @@
   function onClick(e) {
     const t = e.target && e.target.closest ? e.target : null;
     if (!t) return;
+    const mainB = t.closest('[data-m="home"]');
+    if (mainB && document.getElementById('kHome') && document.getElementById('kHome').contains(mainB)) {
+      e.preventDefault();
+      e.stopPropagation();
+      location.assign('jr.html?kmenu=1');
+      return;
+    }
     const openB = t.closest('[data-ghh-open]');
     const closeB = t.closest('[data-ghh-close]');
     const tabB = t.closest('[data-ghh-tab]');
@@ -1123,7 +1334,10 @@
     const onB = t.closest('[data-ghh-paint-on]');
     const studioB = t.closest('[data-ghh-studio]');
     const footB = t.closest('[data-ghh-foot]');
-    if (!(openB || closeB || tabB || modeB || playB || driveB || eqB || preB || danceB || recB || charB || petB || animB || slotB || onB || studioB || footB)) return;
+    const wallB = t.closest('[data-ghh-wall]');
+    const signB = t.closest('[data-ghh-sign]');
+    const itemB = t.closest('[data-ghh-item]');
+    if (!(openB || closeB || tabB || modeB || playB || driveB || eqB || preB || danceB || recB || charB || petB || animB || slotB || onB || studioB || footB || wallB || signB || itemB)) return;
     e.preventDefault();
     e.stopPropagation();
     if (openB) { open('home'); return; }
@@ -1167,23 +1381,20 @@
         } catch (err) {}
         note('ON FOOT');
       });
+      return;
+    }
+    if (wallB) { saveHouse({ wall: wallB.dataset.ghhWall }); note('WALL THEME SET'); return; }
+    if (signB) { saveHouse({ sign: signB.dataset.ghhSign }); note('NEON SIGN SET'); return; }
+    if (itemB) {
+      const key = itemB.dataset.ghhItem;
+      const cur = readHouse();
+      const patch = {};
+      patch[key] = !cur[key];
+      saveHouse(patch);
+      note((patch[key] ? 'ADDED ' : 'REMOVED ') + key);
     }
   }
-  function onEnterDoor(b) {
-    const building = (b && b.building) || b;
-    let resolved = building;
-    if (b && b.buildingId != null && typeof CITY !== 'undefined' && CITY.BL) {
-      for (let i = 0; i < CITY.BL.length; i++) if (CITY.BL[i] && CITY.BL[i].id === b.buildingId) resolved = CITY.BL[i];
-    }
-    const text = buildingText(resolved) + ' ' + buildingText(b);
-    const garage = /GARAGE/.test(text);
-    const home = /HOME/.test(text);
-    if (!garage && !home) return;
-    const now = Date.now();
-    if (now - doorAt < 1200) return;
-    doorAt = now;
-    open(garage && !home ? 'garage' : 'home');
-  }
+  function onEnterDoor() {}
   function hookWalk() {
     try {
       let currentWM = window.WALK_MODE;
@@ -1194,6 +1405,7 @@
           let result;
           if (typeof impl === 'function') result = impl.apply(this, arguments);
           try { onEnterDoor(b); } catch (e) {}
+          try { decorateInterior(); } catch (e) {}
           return result;
         };
         try {
@@ -1247,7 +1459,7 @@
     else if (entry === 'soccer') playSoccer();
     else if (entry === 'builder') playCity();
     else if (entry === 'stunt') playStunt();
-    else if (entry === 'hub') open('home');
+    else if (entry === 'hub') open();
   }
   function listenCrew() {
     try {
@@ -1256,7 +1468,11 @@
     } catch (e) {}
     window.addEventListener('storage', function (e) {
       if (!opened || !e.key) return;
-      if (e.key === CREW_KEY || e.key === DANCE_KEY || e.key === PETDANCE_KEY || e.key === KID_KEY || e.key === PAINT_KEY || e.key === STAGE_KEY) render();
+      if (e.key === CREW_KEY || e.key === DANCE_KEY || e.key === PETDANCE_KEY || e.key === KID_KEY || e.key === PAINT_KEY || e.key === STAGE_KEY || e.key === HOUSE_KEY) {
+        if (e.key === KID_KEY) applyTrackColor();
+        decorateInterior();
+        render();
+      }
     });
   }
   function css() {
@@ -1317,6 +1533,12 @@
       '.ghh-block{display:flex;flex-direction:column;gap:6px;padding:8px;border-radius:14px;border:1px solid rgba(255,79,216,.35);background:rgba(255,255,255,.03)}',
       '.ghh-toast{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);padding:6px 12px;border-radius:999px;border:1.5px solid #ffe14d;background:rgba(12,6,24,.94);color:#fff;font:800 11px Orbitron,sans-serif;opacity:0;pointer-events:none;transition:opacity .2s}',
       '.ghh-toast.on{opacity:1}',
+      '#ghh-room{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(520px,100%);padding:16px;border-radius:18px;border:2px solid var(--wall,#3ee6ff);background:rgba(8,4,20,.72);box-shadow:0 0 24px var(--wall,#3ee6ff)}',
+      '#ghh-room[hidden]{display:none}',
+      '#ghh-room .ghh-room-sign{font:900 22px Orbitron,sans-serif;color:var(--wall,#3ee6ff);text-shadow:0 0 12px var(--wall,#3ee6ff);letter-spacing:1px}',
+      '#ghh-room .ghh-room-items{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}',
+      '#ghh-room .ghh-room-item{border:1.5px solid var(--wall,#3ee6ff);border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.06)}',
+      '#ghh-room small{font:700 11px Rajdhani,sans-serif;letter-spacing:1px}',
       '@media (max-width:700px){.ghh-grid,.ghh-stats{grid-template-columns:1fr}}'
     ].join('');
     document.head.appendChild(s);
@@ -1324,7 +1546,6 @@
 
   css();
   dressMenu();
-  ensureHub();
   installGames();
   hookWalk();
   listenCrew();
@@ -1334,22 +1555,31 @@
   });
   const bootLine = document.getElementById('ghhBoot');
   if (bootLine) bootLine.hidden = true;
-  if (!document.getElementById('kHome')) open('home');
+  if (!document.getElementById('kHome')) location.replace('jr.html#garage');
 
   window.GARAGE_HOME_HUB = {
     open: open,
     close: close,
     toggle: toggle,
+    onEnterDoor: onEnterDoor,
     registerGame: registerGame,
     games: games,
     get tab() { return current; },
-    get isOpen() { return opened; }
+    get isOpen() { return opened; },
+    get house() { return readHouse(); }
   };
+  publishHouse(readHouse());
+  hookGarageSync();
+  syncCar();
 
   function afterBoot(fn) {
     const go = function () { setTimeout(fn, 0); };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go);
     else go();
   }
-  afterBoot(consumeEntry);
+  afterBoot(function () {
+    applyTrackColor();
+    watchInterior();
+    consumeEntry();
+  });
 })();
