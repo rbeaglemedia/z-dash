@@ -1,0 +1,50 @@
+{
+  "tag": "after",
+  "views": [
+    {
+      "rounds": [
+        6,
+        238.6,
+        222.4,
+        289.5
+      ],
+      "baySolids": 8,
+      "liveSolids": 33,
+      "neighbors": 8,
+      "buffer": "844x390",
+      "id": "phone",
+      "medianMs": 238.6,
+      "fps": 4
+    },
+    {
+      "rounds": [
+        6.5,
+        445,
+        366,
+        462
+      ],
+      "baySolids": 8,
+      "liveSolids": 33,
+      "neighbors": 8,
+      "buffer": "1024x768",
+      "id": "ipad",
+      "medianMs": 445,
+      "fps": 2
+    },
+    {
+      "rounds": [
+        6.6,
+        406.3,
+        510,
+        649.8
+      ],
+      "baySolids": 8,
+      "liveSolids": 33,
+      "neighbors": 8,
+      "buffer": "1280x720",
+      "id": "pc",
+      "medianMs": 510,
+      "fps": 2
+    }
+  ]
+}

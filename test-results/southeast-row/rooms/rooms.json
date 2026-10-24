@@ -1,0 +1,242 @@
+[
+  {
+    "shot": "house",
+    "style": 1,
+    "view": "phone",
+    "ok": true,
+    "name": "Glass loft",
+    "styleName": "1",
+    "buffer": "844x390",
+    "file": "/tmp/se-shot/rooms/house-1-phone.png"
+  },
+  {
+    "shot": "house",
+    "style": 1,
+    "view": "ipad",
+    "ok": true,
+    "name": "Glass loft",
+    "styleName": "1",
+    "buffer": "1024x768",
+    "file": "/tmp/se-shot/rooms/house-1-ipad.png"
+  },
+  {
+    "shot": "house",
+    "style": 1,
+    "view": "pc",
+    "ok": true,
+    "name": "Glass loft",
+    "styleName": "1",
+    "buffer": "1280x720",
+    "file": "/tmp/se-shot/rooms/house-1-pc.png"
+  },
+  {
+    "shot": "house",
+    "style": 2,
+    "view": "phone",
+    "ok": true,
+    "name": "Timber cabin",
+    "styleName": "2",
+    "buffer": "844x390",
+    "file": "/tmp/se-shot/rooms/house-2-phone.png"
+  },
+  {
+    "shot": "house",
+    "style": 2,
+    "view": "ipad",
+    "ok": true,
+    "name": "Timber cabin",
+    "styleName": "2",
+    "buffer": "1024x768",
+    "file": "/tmp/se-shot/rooms/house-2-ipad.png"
+  },
+  {
+    "shot": "house",
+    "style": 2,
+    "view": "pc",
+    "ok": true,
+    "name": "Timber cabin",
+    "styleName": "2",
+    "buffer": "1280x720",
+    "file": "/tmp/se-shot/rooms/house-2-pc.png"
+  },
+  {
+    "shot": "house",
+    "style": 3,
+    "view": "phone",
+    "ok": true,
+    "name": "Sky penthouse",
+    "styleName": "3",
+    "buffer": "844x390",
+    "file": "/tmp/se-shot/rooms/house-3-phone.png"
+  },
+  {
+    "shot": "house",
+    "style": 3,
+    "view": "ipad",
+    "ok": true,
+    "name": "Sky penthouse",
+    "styleName": "3",
+    "buffer": "1024x768",
+    "file": "/tmp/se-shot/rooms/house-3-ipad.png"
+  },
+  {
+    "shot": "house",
+    "style": 3,
+    "view": "pc",
+    "ok": true,
+    "name": "Sky penthouse",
+    "styleName": "3",
+    "buffer": "1280x720",
+    "file": "/tmp/se-shot/rooms/house-3-pc.png"
+  },
+  {
+    "shot": "house",
+    "style": 4,
+    "view": "phone",
+    "ok": true,
+    "name": "Block home",
+    "styleName": "4",
+    "buffer": "844x390",
+    "file": "/tmp/se-shot/rooms/house-4-phone.png"
+  },
+  {
+    "shot": "house",
+    "style": 4,
+    "view": "ipad",
+    "ok": true,
+    "name": "Block home",
+    "styleName": "4",
+    "buffer": "1024x768",
+    "file": "/tmp/se-shot/rooms/house-4-ipad.png"
+  },
+  {
+    "shot": "house",
+    "style": 4,
+    "view": "pc",
+    "ok": true,
+    "name": "Block home",
+    "styleName": "4",
+    "buffer": "1280x720",
+    "file": "/tmp/se-shot/rooms/house-4-pc.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 1,
+    "view": "phone",
+    "ok": true,
+    "name": "Beach shack",
+    "styleName": "1",
+    "buffer": "844x390",
+    "file": "/tmp/se-shot/rooms/cafe-1-phone.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 1,
+    "view": "ipad",
+    "ok": true,
+    "name": "Beach shack",
+    "styleName": "1",
+    "buffer": "1024x768",
+    "file": "/tmp/se-shot/rooms/cafe-1-ipad.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 1,
+    "view": "pc",
+    "ok": true,
+    "name": "Beach shack",
+    "styleName": "1",
+    "buffer": "1280x720",
+    "file": "/tmp/se-shot/rooms/cafe-1-pc.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 2,
+    "view": "phone",
+    "ok": true,
+    "name": "Wood bakery",
+    "styleName": "2",
+    "buffer": "844x390",
+    "file": "/tmp/se-shot/rooms/cafe-2-phone.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 2,
+    "view": "ipad",
+    "ok": true,
+    "name": "Wood bakery",
+    "styleName": "2",
+    "buffer": "1024x768",
+    "file": "/tmp/se-shot/rooms/cafe-2-ipad.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 2,
+    "view": "pc",
+    "ok": true,
+    "name": "Wood bakery",
+    "styleName": "2",
+    "buffer": "1280x720",
+    "file": "/tmp/se-shot/rooms/cafe-2-pc.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 3,
+    "view": "phone",
+    "ok": true,
+    "name": "Pop diner",
+    "styleName": "3",
+    "buffer": "844x390",
+    "file": "/tmp/se-shot/rooms/cafe-3-phone.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 3,
+    "view": "ipad",
+    "ok": true,
+    "name": "Pop diner",
+    "styleName": "3",
+    "buffer": "1024x768",
+    "file": "/tmp/se-shot/rooms/cafe-3-ipad.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 3,
+    "view": "pc",
+    "ok": true,
+    "name": "Pop diner",
+    "styleName": "3",
+    "buffer": "1280x720",
+    "file": "/tmp/se-shot/rooms/cafe-3-pc.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 4,
+    "view": "phone",
+    "ok": true,
+    "name": "Night counter",
+    "styleName": "4",
+    "buffer": "844x390",
+    "file": "/tmp/se-shot/rooms/cafe-4-phone.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 4,
+    "view": "ipad",
+    "ok": true,
+    "name": "Night counter",
+    "styleName": "4",
+    "buffer": "1024x768",
+    "file": "/tmp/se-shot/rooms/cafe-4-ipad.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 4,
+    "view": "pc",
+    "ok": true,
+    "name": "Night counter",
+    "styleName": "4",
+    "buffer": "1280x720",
+    "file": "/tmp/se-shot/rooms/cafe-4-pc.png"
+  }
+]

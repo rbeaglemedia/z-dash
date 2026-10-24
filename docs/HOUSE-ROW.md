@@ -1,63 +1,34 @@
 # House row
 
-The boulevard map on main has one player house. It is not a row, and it is not in the southeast.
+Neon World has five HOME doors. One stays in Homestead. Four stand on the southeast street in Builder Bay, one interior style each.
 
-## Where it is
+## Homestead
 
-Homestead, southwest of spawn. +x is east and +z is north. Spawn is (0, 0).
+The original house is unchanged. It is southwest of spawn. Its sign still says HOME, and it opens style 1.
 
 | | metres |
 | --- | --- |
-| Name | HOME |
 | District | Homestead, x −360 to −100, z −900 to −560 |
 | Footprint | x −274 to −230, z −678 to −630, 11 m tall |
-| Street | Yard lane at x = −220. The door faces that lane. |
+| Street | Yard lane at x = −220. The door faces east. |
 
-The pet lounge sits on the same sidewalk just north of the house. The main garage sits just south and west. Those two are not houses.
+The pet lounge and the main garage stay beside it.
 
-The southeast is Builder Bay. Along the street at x = 840, south of spawn, the doors are the arcade, a snack stand, and a bay. None of them is a home.
+## Southeast
 
-## Ask for City Layout
+Builder Bay's placeholders are gone: the gate, the bay, the arcade, the snack stand, Builder HQ, the jump pad, and the kit NOS. The street at x = 840 stays. Pavement is x 830 to 850. Nothing else in the city moved.
 
-This branch does not move a building and does not add one. City Layout (`bc-3ff1a27b`) can add three homes so the street has four doors. Leave the current house, the pet lounge, and the garage where they are.
+Houses stand on the west sidewalk. The east face is x = 826, 4 m outside the west curb. Each door faces the street. Cafes stand on the east sidewalk at the same frontage. Their west face is x = 854, 4 m outside the east curb.
 
-One place that fits, on the east sidewalk of the same yard lane, facing the lane:
+| Door | Style | x0 | x1 | z0 | z1 | h | Sign |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Home 1 | 1 Glass loft | 786 | 826 | −740 | −707 | 11 | HOME 1 |
+| Home 2 | 2 Timber cabin | 786 | 826 | −699 | −666 | 11 | HOME 2 |
+| Home 3 | 3 Sky penthouse | 786 | 826 | −658 | −625 | 11 | HOME 3 |
+| Home 4 | 4 Block home | 786 | 826 | −617 | −584 | 11 | HOME 4 |
 
-| Door | x0 | x1 | z0 | z1 | h |
-| --- | --- | --- | --- | --- | --- |
-| House 2 | −210 | −192 | −860 | −842 | 11 |
-| House 3 | −210 | −192 | −834 | −816 | 11 |
-| House 4 | −210 | −192 | −808 | −790 | 11 |
+Each roof has an antenna. The row sits clear of the cross streets at z = −760 and z = −128.
 
-The west face is 4 m outside the east curb. The footprints sit inside Homestead and clear of the house, the pets, and the garage. If Bob wants that row in the southeast instead, City Layout should use open sidewalk there and leave the arcade, the snack stand, and the bay where they are.
+A signed HOME 1 to HOME 4 opens that style. The unsigned Homestead door is counted only among unsigned homes, so it stays style 1.
 
-## What this branch does
-
-Each HOME door, south to north, gets a look: style 1, 2, 3, 4, then repeat. The one door that exists today is style 1. The look file loads when she walks in. The city frame does not draw the room.
-
-| Style | Name | Line |
-| --- | --- | --- |
-| 1 | Glass loft | A bright glass house with a cyan light and a soft sofa. |
-| 2 | Timber cabin | A warm wood cabin with a big window and a stone hearth. |
-| 3 | Sky penthouse | A tall glass room with a gold edge and a low lounge. |
-| 4 | Block home | Chunky wood blocks, a glass window, and a cube seat. |
-
-Every look keeps glass. Straight boxes, flat color. Ellie is 1.7 m (legs 0.82 m, torso `#2f7f96`). The pet stands on the same floor, ears at 0.74 m.
-
-Open a look in the real painter with `world.html?rowShot=inside&homeStyle=2&notraffic=1`. The street shot is `world.html?rowShot=street&notraffic=1`. That shot parks the 370Z on the yard lane, nose toward the east door, camera just east of the car.
-
-Paint time on this machine, boxes only: style 1 is 0.21 ms, style 2 is 0.29 ms, style 3 is 0.23 ms, style 4 is 0.32 ms. All of those sit under the 9.1 ms Galaxy frame, so the picture says about 110 fps. This host is not a phone.
-
-Nothing here deploys. Live rooms for houses 2, 3, and 4 wait until those doors exist and Bob says go.
-
-## Cafe street
-
-On the try link the one house is labeled HOME 1, and homes 2, 3, and 4 stand north of the pet lounge on the same sidewalk. Four cafes stand across the lane, one style each. See `docs/CAFE-ROW.md`.
-
-## Ellie test
-
-The try page is `test/interior-try.html`. It opens `world.html?interiorTry=1&notraffic=1`. That query is the only way the try script loads. A normal walk does not show the buttons. This is a test link, and it does not go live from here.
-
-Houses stay one style each. The try link labels four house doors HOME 1 to HOME 4, and four cafe doors CAFE 1 to CAFE 4 across the lane. A house room and a cafe room have FAVORITE and no 1 2 3 4 row. Arcade, pet lounge, soccer shop, and Builder HQ have buttons 1 2 3 4 plus FAVORITE. The style number is painted on the picture. Picks stay in this tab under `zdash.interior.try.v1`. Neon Paint, the garage, and the dance studio stay the apps they already are.
-
-Paint time for those try rooms on this machine is 0.07 ms to 0.21 ms. That is under the 9.1 ms Galaxy frame, so the picture says about 110 fps. This host is not a phone.
+Nothing here deploys.

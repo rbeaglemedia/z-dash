@@ -1,6 +1,7 @@
-/* House looks for the homestead doors.
-   Painted only while a HOME interior is open. The city frame does not draw these boxes.
-   Straight boxes and flat color. Glass on every look. */
+/* House looks for HOME doors.
+   A sign that says HOME 1 to HOME 4 keeps that style. An unsigned door, the
+   Homestead house, counts only among unsigned homes, so the southeast row
+   does not change it. Painted only while a HOME interior is open. */
 'use strict';
 
 const HOUSE_LOOKS = [
@@ -94,14 +95,18 @@ function houseMarked(door) {
 
 function housePick(door) {
   const homes = houseHomes();
-  let i = 0;
-  if (door && door.building) {
-    for (let n = 0; n < homes.length; n++) {
-      if (homes[n] === door.building || homes[n].id === door.building.id) { i = n; break; }
-    }
-  }
   const url = houseUrlStyle();
   const marked = houseMarked(door);
+  let i = 0;
+  if (!marked && door && door.building) {
+    const plain = [];
+    for (let n = 0; n < homes.length; n++) {
+      if (!houseMarked({ building: homes[n] })) plain.push(homes[n]);
+    }
+    for (let n = 0; n < plain.length; n++) {
+      if (plain[n] === door.building || plain[n].id === door.building.id) { i = n; break; }
+    }
+  }
   const held = (!url && !marked && typeof window !== 'undefined' && window.INTERIOR_TRY_HOUSE >= 1 && window.INTERIOR_TRY_HOUSE <= 4)
     ? window.INTERIOR_TRY_HOUSE : 0;
   const style = url || marked || held || ((i % 4) + 1);

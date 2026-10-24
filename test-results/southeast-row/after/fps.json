@@ -1,0 +1,86 @@
+{
+  "mode": "after",
+  "views": [
+    {
+      "id": "phone",
+      "css": "844x390",
+      "file": "/tmp/se-shot/after/se-after-phone.png",
+      "renderMs": 9.7,
+      "fps": 103,
+      "passMs": 0.5,
+      "neighbors": 8,
+      "baySolids": 8,
+      "liveSolids": 33,
+      "buffer": "844x390",
+      "cam": {
+        "x": 840,
+        "z": -717,
+        "y": 20.3
+      },
+      "signs": [
+        "HOME 1",
+        "CAFE 1",
+        "HOME 2",
+        "CAFE 2",
+        "HOME 3",
+        "CAFE 3",
+        "HOME 4",
+        "CAFE 4"
+      ]
+    },
+    {
+      "id": "ipad",
+      "css": "1024x768",
+      "file": "/tmp/se-shot/after/se-after-ipad.png",
+      "renderMs": 6.9,
+      "fps": 145,
+      "passMs": 0.4,
+      "neighbors": 8,
+      "baySolids": 8,
+      "liveSolids": 33,
+      "buffer": "1024x768",
+      "cam": {
+        "x": 840,
+        "z": -717,
+        "y": 20.3
+      },
+      "signs": [
+        "HOME 1",
+        "CAFE 1",
+        "HOME 2",
+        "CAFE 2",
+        "HOME 3",
+        "CAFE 3",
+        "HOME 4",
+        "CAFE 4"
+      ]
+    },
+    {
+      "id": "pc",
+      "css": "1280x720",
+      "file": "/tmp/se-shot/after/se-after-pc.png",
+      "renderMs": 5.4,
+      "fps": 185,
+      "passMs": 0.4,
+      "neighbors": 8,
+      "baySolids": 8,
+      "liveSolids": 33,
+      "buffer": "1280x720",
+      "cam": {
+        "x": 840,
+        "z": -717,
+        "y": 20.3
+      },
+      "signs": [
+        "HOME 1",
+        "CAFE 1",
+        "HOME 2",
+        "CAFE 2",
+        "HOME 3",
+        "CAFE 3",
+        "HOME 4",
+        "CAFE 4"
+      ]
+    }
+  ]
+}

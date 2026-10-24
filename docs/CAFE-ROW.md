@@ -1,30 +1,22 @@
-# House row and cafe row
+# Cafe row
 
-The try link puts four houses and four cafes on the yard lane. A normal walk does not add the extra doors. The script is `world/interior-try-map.js`, and it runs only when `world.html?interiorTry=1` is set.
+Four cafes stand across the southeast street from the four houses. They are real doors in Neon World. The try link does not add a second row.
 
 ## Where they sit
 
-City Layout's boulevard map has one house. It is on the west sidewalk of the yard lane in Homestead, south of spawn. That lane is the house street. It is not Builder Bay. Builder Bay is the southeast street at x = 840, and it has no house to stand across from.
+The street center is x = 840, width 20 m. Pavement is x 830 to 850. Cafe doors face west. The west face is x = 854, 4 m outside the east curb. Depth stops at x = 894, clear of the lanes at x = 958 and x = 966.
 
-The yard lane center is x = −220, width 12 m. The pavement is x −226 to −214. The west curb is x = −226, so the house face is x = −230. The east curb is x = −214, so the cafe face is x = −210. House doors face east. Cafe doors face west.
-
-The live house stays at its footprint and the try link labels it HOME 1. The pet lounge and the garage stay put, so homes 2, 3, and 4 stand north of the pet lounge on the same sidewalk. The cafes stand on the opposite sidewalk, each one sharing its house's frontage. Cafe depth stops at x = −170. The architecture check treats the Car Row connector at x = −160 as a street for the whole map, and a deeper cafe would cover that band.
-
-The try link also stretches the Homestead district north to z = −370, so the new centers sit inside the district. That stretch is only on the try link. The cross streets the checker draws at z = −128 and z = −80 stay north of the row.
-
-Homes 2 to 4 and every cafe are marked try-only. They are not part of the live solid count. Each of those roofs carries an antenna. Their height is 7.5 m.
+Each cafe shares its house's frontage. The roof carries an antenna. Height is 12 m.
 
 | Door | Style | x0 | x1 | z0 | z1 | Sign |
 | --- | --- | --- | --- | --- | --- | --- |
-| Home 1 | 1 Glass loft | −274 | −230 | −678 | −630 | HOME 1 |
-| Cafe 1 | 1 Beach shack | −210 | −170 | −678 | −630 | CAFE 1 |
-| Home 2 | 2 Timber cabin | −274 | −230 | −548 | −515 | HOME 2 |
-| Cafe 2 | 2 Wood bakery | −210 | −170 | −548 | −515 | CAFE 2 |
-| Home 3 | 3 Sky penthouse | −274 | −230 | −507 | −474 | HOME 3 |
-| Cafe 3 | 3 Pop diner | −210 | −170 | −507 | −474 | CAFE 3 |
-| Home 4 | 4 Block home | −274 | −230 | −466 | −433 | HOME 4 |
-| Cafe 4 | 4 Night counter | −210 | −170 | −466 | −433 | CAFE 4 |
+| Cafe 1 | 1 Beach shack | 854 | 894 | −740 | −707 | CAFE 1 |
+| Cafe 2 | 2 Wood bakery | 854 | 894 | −699 | −666 | CAFE 2 |
+| Cafe 3 | 3 Pop diner | 854 | 894 | −658 | −625 | CAFE 3 |
+| Cafe 4 | 4 Night counter | 854 | 894 | −617 | −584 | CAFE 4 |
 
-Arcade, pet lounge, soccer shop, and Builder HQ keep the 1 2 3 4 buttons. A house room and a cafe room do not.
+The stage cafe on the west side of the city stays where it is. Its sign still says PIZZA.
+
+Arcade, pet lounge, soccer shop, and Builder HQ keep the 1 2 3 4 buttons on the try link. A house room and a cafe room do not. The southeast no longer has an arcade door or a Builder HQ door. Those rooms open from the try link.
 
 Nothing here deploys.

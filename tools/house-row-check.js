@@ -13,10 +13,10 @@ const world = fs.readFileSync(path.join(root, 'world.html'), 'utf8');
 const split = fs.readFileSync(path.join(root, 'world-split.html'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
-if (!/house-styles\.js\?v=40/.test(house)) fail('interior script is not loaded from the house painter');
+if (!/house-styles\.js\?v=41/.test(house)) fail('interior script is not loaded from the house painter');
 if (/\bshadowBlur\s*=/.test(styles)) fail('house looks assign shadowBlur');
 if (index.includes('house-styles')) fail('adult index loads the house looks');
-if (!world.includes('house.js?v=40') || !split.includes('house.js?v=40')) fail('kid pages are not on world40');
+if (!world.includes('house.js?v=41') || !split.includes('house.js?v=41')) fail('kid pages are not on world41');
 
 const sandbox = { window: {}, globalThis: {}, performance: { now: function () { return 0; } }, URLSearchParams: URLSearchParams, location: { search: '' }, CITY: { BL: [] } };
 sandbox.globalThis = sandbox;
@@ -26,8 +26,16 @@ vm.runInContext(styles, sandbox);
 const places = sandbox.CITY_LAYOUT && sandbox.CITY_LAYOUT.places;
 if (!places) fail('city layout did not publish places');
 const homes = (places || []).filter(function (p) { return p.purpose === 'HOME' || p.kind === 'home'; });
-if (homes.length !== 1) fail('expected 1 HOME on the boulevard map, found ' + homes.length);
-const home = homes[0] || {};
+if (homes.length !== 5) fail('expected 5 HOME doors, found ' + homes.length);
+const home = homes.filter(function (p) { return p.district === 'HOMESTEAD'; })[0] || {};
+const bayHomes = homes.filter(function (p) { return p.district === 'BUILDER_BAY'; }).sort(function (a, b) { return a.z0 - b.z0; });
+if (bayHomes.length !== 4) fail('expected 4 southeast homes, found ' + bayHomes.length);
+bayHomes.forEach(function (p, i) {
+  const n = i + 1;
+  if (p.sign !== 'HOME ' + n || p.tryHouse !== n) fail(p.name + ' is not style ' + n);
+  if (p.x0 !== 786 || p.x1 !== 826) fail(p.name + ' left the west sidewalk');
+});
+if (home.sign !== 'HOME' || home.tryHouse) fail('the homestead house was relabeled');
 const spot = {
   name: home.name,
   x0: home.x0, x1: home.x1, z0: home.z0, z1: home.z1,

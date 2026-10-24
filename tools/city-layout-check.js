@@ -34,15 +34,19 @@ const typed = M.places.filter(p => p.type && Number.isFinite(p.cx) && Number.isF
 expect(typed.length === M.places.length, 'every place has type and position');
 const purposes = {};
 for (const p of M.places) purposes[p.purpose || p.type] = (purposes[p.purpose || p.type] || 0) + 1;
-for (const name of ['HOME', 'PETS', 'SHOWROOM', 'NEON_PAINT', 'DANCE', 'CAFE', 'ARCADE', 'BUILDER', 'SOCCER']) {
+for (const name of ['PETS', 'SHOWROOM', 'NEON_PAINT', 'DANCE', 'SOCCER']) {
   const n = M.places.filter(p => p.purpose === name).length;
   expect(n === 1, name + ' count ' + n);
 }
-expect(M.places.filter(p => p.purpose === 'NOS').length >= 5, 'NOS in each district');
-expect(M.places.filter(p => p.type === 'arch').length === 5, 'five arches');
+expect(M.places.filter(p => p.purpose === 'HOME').length === 5, 'HOME count');
+expect(M.places.filter(p => p.purpose === 'CAFE').length === 5, 'CAFE count');
+expect(M.places.filter(p => p.purpose === 'ARCADE').length === 0, 'arcade still in the southeast');
+expect(M.places.filter(p => p.purpose === 'BUILDER').length === 0, 'builder hq still in the southeast');
+expect(M.places.filter(p => p.purpose === 'NOS').length >= 4, 'NOS stations');
+expect(M.places.filter(p => p.type === 'arch').length === 4, 'four arches');
 const ed = L.editor;
 expect(ed && ed.places.length === M.places.length && ed.roads.length === M.roads.length, 'editor places and roads');
-expect(ed.nos && ed.nos.length >= 5 && ed.nos.every(n => n.pumps && n.pumps.length), 'editor NOS pumps');
+expect(ed.nos && ed.nos.length >= 4 && ed.nos.every(n => n.pumps && n.pumps.length), 'editor NOS pumps');
 expect(ed.spawns && ed.spawns.length > 40 && ed.spawns.every(s => Number.isFinite(s.x) && Number.isFinite(s.z)), 'editor spawns');
 const again = C.editorDoc();
 expect(again.nos.length === ed.nos.length && again.spawns.length === ed.spawns.length, 'editorDoc copy');
@@ -58,9 +62,9 @@ expect(C.spotClear(0, 0, 0) === true, 'runway clear');
 expect(C.spotClear(0, 400, 0) === true, 'runway mid clear');
 
 const nos = C.BL.filter(b => b.purpose === 'NOS' && b.nosStation);
-expect(nos.length >= 5, 'fitted NOS stations ' + nos.length);
+expect(nos.length >= 4, 'fitted NOS stations ' + nos.length);
 expect(nos.some(b => b.nosStation.kind === 'depot'), 'one depot');
-expect(nos.filter(b => b.nosStation.kind === 'station').length >= 4, 'drive-up stations');
+expect(nos.filter(b => b.nosStation.kind === 'station').length >= 3, 'drive-up stations');
 
 function laneDist(x, z) {
   let best = 1e9;
