@@ -1,0 +1,294 @@
+pwa display
+  manifest.webmanifest  scope ./  start ./  display fullscreen  id ./
+  manifest-jr.webmanifest  scope ./  start ./jr.html  display fullscreen  id ./jr.html
+  index.html  manifest.webmanifest  apple yes  theme #000000
+  jr.html  manifest-jr.webmanifest  apple yes  theme #000000
+  world.html  manifest-jr.webmanifest  apple yes  theme #000000
+  world-split.html  manifest-jr.webmanifest  apple yes  theme #000000
+  neon-paint.html  manifest-jr.webmanifest  apple yes  theme #000000
+  crew.html  manifest-jr.webmanifest  apple yes  theme #000000
+  dance-stage.html  manifest-jr.webmanifest  apple yes  theme #000000
+  fly3.html  manifest-jr.webmanifest  apple yes  theme #000000
+  char.html  manifest-jr.webmanifest  apple yes  theme #000000
+  garage-hub.html  manifest-jr.webmanifest  apple yes  theme #000000
+pwa errors 0
+MENU TREE
+MAIN MENU  jr.html
+  SHOWROOM CAR  [car]  spin your Z
+    -> in-app tab car
+  ROAD  [road]  coins & ramps
+    -> in-app tab road
+  DRAG  [drag]  race a rival
+    -> in-app tab drag
+  WANTED  [wanted]  1.0 + Z TAKEOVER
+    -> in-app tab wanted
+  RIDE ALONG  [boost]  shift + BOOST
+    -> in-app tab boost
+  NEON FLYING  [fly]  take to the sky
+    -> fly3.html
+  NEON WORLD  [world]  fly & drive 3D city
+    -> world.html
+    NEON WORLD SUBMENU  (first screen of world.html)
+      🪂 SKY DROP  [skydrop]
+      🛫 RUNWAY  [runway]
+      ⚽ CAR SOCCER  [soccer]
+      🧱 GRAFFITI WALL  [wall]
+      🎨 NEON PAINT  [paint]
+      -- not on this submenu; reached from the main menu or Garage/Home --
+      (elsewhere) RECORD DANCE  [dance]
+      (elsewhere) RECORD MY PET  [petdance]
+      (elsewhere) CREW & PETS  [crew]
+    PAUSE MENU
+      ▶ RESUME  [resume]
+      ⌂ HOME / EXIT  [home]
+      ⊙ TILT CENTER  [recal]
+      ⛶ FULLSCREEN  [full]
+      ↺ BACK TO RUNWAY  [runway]
+      🪂 SKY DROP  [skydrop]
+      RUNWAY X-RAY ON  [xray]
+    PAUSE GAME GRID  (after START, then pause)
+      SHOWROOM CAR  [car]
+      ROAD  [road]
+      DRAG  [drag]
+      NEON FLYING  [fly]
+      NEON WORLD  [world]
+      GARAGE  [garage]
+      WANTED  [wanted]
+      RIDE ALONG  [boost]
+      CAR SOCCER  [soccer]
+      SKY DROP  [skydrop]
+      NEON PAINT  [paint]
+      GRAFFITI WALL  [wall]
+      RECORD DANCE  [dance]
+      RECORD MY PET  [petdance]
+      CREW & PETS  [crew]
+    WDRILL  GARAGE / HOME DRILL
+      GARAGE  [garage]
+      HOME  [home]
+      PAINT & VINYLS  [paintvinyl]
+        🎨 BODY  [paint]
+        🏁 ROOF & HOOD  [roof]
+        ✨ VINYLS  [vinyls]
+        ⭐ PRESETS  [presets]
+      WHEELS & STANCE  [wheels]
+        🛞 RIMS  [rims]
+        🎨 RIM COLOR  [wheels]
+        🔤 TIRE LETTERING  [tires]
+        🔴 BRAKE CALIPERS  [caliper]
+        ⬇️ STANCE / LOWERED  [stance]
+        📐 CAMBER  [camber]
+      AERO & WINGS  [aero]
+        🪽 SPOILER  [spoiler]
+        🎨 SPOILER COLOR  [spcol]
+        ✈️ FLIGHT WINGS  [wings]
+        📐 FRONT SPLITTER  [lip]
+        ▯ SIDE SKIRTS  [skirts]
+        ▽ DIFFUSER  [diffuser]
+        ✦ KIT FINISH  [kitmat]
+        ◉ EXHAUST  [tips]
+        🚪 DOORS  [doors]
+      LIGHTS & FX  [lights]
+        💡 HEADLIGHTS  [heads]
+        🔴 TAILLIGHTS  [tails]
+        🌈 UNDERGLOW  [underglow]
+        🪟 WINDOW TINT  [windows]
+        〰️ TRACK MARKS  [tracks]
+        📣 HORN  [horn]
+      PERFORMANCE & NOS  [perf]
+        🔥 NOS FLAME  [nos]
+        ⚡ BOOST / UPGRADE  [boost]
+      LIVING ROOM & DECOR  [living]
+        🌈 WALL NEON  [wall]
+        🛋️ CYBER FURNITURE  [furniture]
+        🛏️ GLOWING PET BED  [petbed]
+        ✨ NEON SIGN  [sign]
+      PETS & CREW  [crew]
+        🐾 COMPANION PET  [pet]
+        👤 CHARACTER OUTFIT  [character]
+        🚪 ENTER HOME  [enter]
+          -> crew.html, world.html
+      STUDIO & PAINT APPS  [studio]
+        🎨 3D CAR PAINT  [paintapp]
+          -> neon-paint.html
+        🧱 GRAFFITI WALL  [wallapp]
+          -> neon-paint.html?mode=wall
+        💃 DANCE STAGE  [danceapp]
+          -> dance-stage.html
+  RECORD DANCE  [dance]  Z Co Arts mo-cap
+    -> dance-stage.html?record=character
+  RECORD MY PET  [petdance]  pet camera dance
+    -> dance-stage.html?record=dog
+GARAGE TAB  jr.html  (not a main-menu tile)
+  -> in-app tab garage
+    GDRILL  GARAGE / HOME DRILL
+      GARAGE  [garage]
+      HOME  [home]
+      PAINT & VINYLS  [paintvinyl]
+        🎨 BODY  [paint]
+        🏁 ROOF & HOOD  [roof]
+        ✨ VINYLS  [vinyls]
+        ⭐ PRESETS  [presets]
+      WHEELS & STANCE  [wheels]
+        🛞 RIMS  [rims]
+        🎨 RIM COLOR  [wheels]
+        🔤 TIRE LETTERING  [tires]
+        🔴 BRAKE CALIPERS  [caliper]
+        ⬇️ STANCE / LOWERED  [stance]
+        📐 CAMBER  [camber]
+      AERO & WINGS  [aero]
+        🪽 SPOILER  [spoiler]
+        🎨 SPOILER COLOR  [spcol]
+        ✈️ FLIGHT WINGS  [wings]
+        📐 FRONT SPLITTER  [lip]
+        ▯ SIDE SKIRTS  [skirts]
+        ▽ DIFFUSER  [diffuser]
+        ✦ KIT FINISH  [kitmat]
+        ◉ EXHAUST  [tips]
+        🚪 DOORS  [doors]
+      LIGHTS & FX  [lights]
+        💡 HEADLIGHTS  [heads]
+        🔴 TAILLIGHTS  [tails]
+        🌈 UNDERGLOW  [underglow]
+        🪟 WINDOW TINT  [windows]
+        〰️ TRACK MARKS  [tracks]
+        📣 HORN  [horn]
+      PERFORMANCE & NOS  [perf]
+        🔥 NOS FLAME  [nos]
+        ⚡ BOOST / UPGRADE  [boost]
+      LIVING ROOM & DECOR  [living]
+        🌈 WALL NEON  [wall]
+        🛋️ CYBER FURNITURE  [furniture]
+        🛏️ GLOWING PET BED  [petbed]
+        ✨ NEON SIGN  [sign]
+      PETS & CREW  [crew]
+        🐾 COMPANION PET  [pet]
+        👤 CHARACTER OUTFIT  [character]
+        🚪 ENTER HOME  [enter]
+          -> crew.html, world.html
+      STUDIO & PAINT APPS  [studio]
+        🎨 3D CAR PAINT  [paintapp]
+          -> neon-paint.html
+        🧱 GRAFFITI WALL  [wallapp]
+          -> neon-paint.html?mode=wall
+        💃 DANCE STAGE  [danceapp]
+          -> dance-stage.html
+CREW & PETS  crew.html
+  characters: Neon Woman [woman], Neon Man [man], None [none]
+  pets: Cyber Pup Dog [dog], Neon Kitty Cat [cat], Star Bunny [bunny], Mini Dragon [dragon], Nova Fox [fox], None [none]
+  + RECORD NEW DANCE IN Z COMPANY ARTS -> dance-stage.html?record=character
+  🚗 GARAGE -> jr.html#garage
+  🌆 NEON WORLD -> world.html
+  ⌂ MAIN MENU -> jr.html?kmenu=1
+INTENTIONALLY HIDDEN  Bob, Oct 23, 2026
+  STREET CRUISE  [street]
+  CITY BUILDER  [builder]
+  ROOFTOP STUNT RUN  [stunt]
+  Z TAKEOVER  [takeover]
+ORPHAN PAGE  fly2.html
+
+FINDINGS
+ERROR / placeholder: Garage menu offers "DAD'S STILLEN" but it is a coming-soon placeholder (on hold).
+ERROR / unreachable: Kid App page fly2.html ships in the repo and no menu tile opens it.
+menu-reach errors 2  root /workspace
+audit adult-source e=0
+audit adult-landing phone-844x390 ... ready e=0 w=0
+audit adult-landing phone-667x375 ... ready e=0 w=0
+audit adult-landing ipad-1180x820 ... ready e=0 w=0
+audit adult-landing ipad-1024x768 ... ready e=0 w=0
+audit adult-landing ipad-820x1180 ... ready e=0 w=0
+audit adult-landing pc-1366x768 ... ready e=0 w=0
+audit adult-landing pc-1920x1080 ... ready e=0 w=0
+audit jr-menu phone-844x390 ... ready e=0 w=1
+audit jr-menu phone-667x375 ... ready e=0 w=1
+audit jr-menu pc-1366x768 ... ready e=0 w=0
+audit jr-menu pc-1920x1080 ... ready e=0 w=0
+audit jr-l1 phone-844x390 ... ready e=0 w=0
+audit jr-l1 phone-667x375 ... ready e=0 w=0
+audit jr-l1 ipad-1180x820 ... ready e=0 w=0
+audit jr-l1 ipad-1024x768 ... ready e=0 w=0
+audit jr-l1 ipad-820x1180 ... ready e=0 w=0
+audit jr-l1 pc-1366x768 ... ready e=0 w=0
+audit jr-l1 pc-1920x1080 ... ready e=0 w=0
+audit jr-l2g phone-844x390 ... ready e=0 w=0
+audit jr-l2g phone-667x375 ... ready e=0 w=0
+audit jr-l2g ipad-1180x820 ... ready e=0 w=0
+audit jr-l2g ipad-1024x768 ... ready e=0 w=0
+audit jr-l2g ipad-820x1180 ... ready e=0 w=0
+audit jr-l2g pc-1366x768 ... ready e=0 w=0
+audit jr-l2g pc-1920x1080 ... ready e=0 w=0
+audit jr-l2h phone-844x390 ... ready e=0 w=0
+audit jr-l2h phone-667x375 ... ready e=0 w=0
+audit jr-l2h ipad-1180x820 ... ready e=0 w=0
+audit jr-l2h ipad-1024x768 ... ready e=0 w=0
+audit jr-l2h ipad-820x1180 ... ready e=0 w=0
+audit jr-l2h pc-1366x768 ... ready e=0 w=0
+audit jr-l2h pc-1920x1080 ... ready e=0 w=0
+audit jr-l3v phone-844x390 ... ready e=0 w=0
+audit jr-l3v phone-667x375 ... ready e=0 w=0
+audit jr-l3v ipad-1180x820 ... ready e=0 w=0
+audit jr-l3v ipad-1024x768 ... ready e=0 w=0
+audit jr-l3v ipad-820x1180 ... ready e=0 w=0
+audit jr-l3v pc-1366x768 ... ready e=0 w=0
+audit jr-l3v pc-1920x1080 ... ready e=0 w=0
+audit neon-car phone-844x390 ... ready e=0 w=0
+audit neon-car phone-667x375 ... ready e=0 w=0
+audit neon-car ipad-1180x820 ... ready e=0 w=0
+audit neon-car ipad-1024x768 ... ready e=0 w=0
+audit neon-car ipad-820x1180 ... ready e=0 w=0
+audit neon-car pc-1366x768 ... ready e=0 w=0
+audit neon-car pc-1920x1080 ... ready e=0 w=0
+audit neon-wall phone-844x390 ... ready e=0 w=0
+audit neon-wall phone-667x375 ... ready e=0 w=0
+audit neon-wall ipad-1180x820 ... ready e=0 w=0
+audit neon-wall ipad-1024x768 ... ready e=0 w=0
+audit neon-wall ipad-820x1180 ... ready e=0 w=0
+audit neon-wall pc-1366x768 ... ready e=0 w=0
+audit neon-wall pc-1920x1080 ... ready e=0 w=0
+audit neon-pause phone-844x390 ... ready e=0 w=0
+audit neon-pause pc-1366x768 ... ready e=0 w=0
+audit world-start phone-844x390 ... ready e=0 w=1
+audit world-start pc-1366x768 ... ready e=0 w=0
+audit world-drive phone-844x390 ... ready e=0 w=1
+audit world-drive pc-1366x768 ... ready e=0 w=0
+audit world-walk phone-844x390 ... ready e=0 w=1
+audit world-walk pc-1366x768 ... ready e=0 w=0
+audit world-interior phone-844x390 ... ready e=0 w=0
+audit world-interior pc-1366x768 ... ready e=0 w=0
+audit wz-l1 phone-844x390 ... ready e=0 w=0
+audit wz-l1 phone-667x375 ... ready e=0 w=0
+audit wz-l1 ipad-1180x820 ... ready e=0 w=0
+audit wz-l1 ipad-1024x768 ... ready e=0 w=0
+audit wz-l1 ipad-820x1180 ... ready e=0 w=0
+audit wz-l1 pc-1366x768 ... ready e=0 w=0
+audit wz-l1 pc-1920x1080 ... ready e=0 w=0
+audit wz-l2g phone-844x390 ... ready e=0 w=0
+audit wz-l2g phone-667x375 ... ready e=0 w=0
+audit wz-l2g ipad-1180x820 ... ready e=0 w=1
+audit wz-l2g ipad-1024x768 ... ready e=0 w=1
+audit wz-l2g ipad-820x1180 ... ready e=0 w=1
+audit wz-l2g pc-1366x768 ... ready e=0 w=0
+audit wz-l2g pc-1920x1080 ... ready e=0 w=0
+audit wz-l2h phone-844x390 ... ready e=0 w=0
+audit wz-l2h phone-667x375 ... ready e=0 w=0
+audit wz-l2h ipad-1180x820 ... ready e=0 w=1
+audit wz-l2h ipad-1024x768 ... ready e=0 w=1
+audit wz-l2h ipad-820x1180 ... ready e=0 w=1
+audit wz-l2h pc-1366x768 ... ready e=0 w=0
+audit wz-l2h pc-1920x1080 ... ready e=0 w=0
+audit wz-l3v phone-844x390 ... ready e=0 w=0
+audit wz-l3v phone-667x375 ... ready e=0 w=0
+audit wz-l3v ipad-1180x820 ... ready e=0 w=1
+audit wz-l3v ipad-1024x768 ... ready e=0 w=1
+audit wz-l3v ipad-820x1180 ... ready e=0 w=1
+audit wz-l3v pc-1366x768 ... ready e=0 w=0
+audit wz-l3v pc-1920x1080 ... ready e=0 w=0
+audit dance phone-844x390 ... ready e=0 w=1
+audit dance pc-1366x768 ... ready e=0 w=0
+audit crew phone-844x390 ... ready e=0 w=0
+audit crew pc-1366x768 ... ready e=0 w=0
+Traceback (most recent call last):
+  File "<string>", line 3, in <module>
+ModuleNotFoundError: No module named 'PIL'
+Wrote /workspace/test-results/weather/ui-polish/audit.md
+errors 0 warnings 15 menu-reach 2 pwa 0
+EXIT:1

@@ -162,7 +162,7 @@ function drawCityGround(){const cx=cam.x,cz=cam.z,R=CDRAW.dist,C=CITY;ctx.save()
   drawRoads(cx,cz);
   ctx.beginPath();for(const e of[-C.HW.hw,C.HW.hw])pathSeg([C.HW.x+e,0.03,Math.max(C.ZS0-400,cz-R)],[C.HW.x+e,0.03,Math.min(C.ZS1+400,cz+R)]);
   for(const e of[C.TAXI.x0,C.TAXI.x1])pathSeg([e,0.03,C.TAXI.z0],[e,0.03,C.TAXI.z1]);ctx.strokeStyle='#ffb020';ctx.lineWidth=1.8;ctx.stroke();
-  if(Math.abs(cx-C.HW.x)<700){ctx.beginPath();for(let z=Math.floor((cz-500)/24)*24;z<cz+700;z+=24)for(const e of[-5,5])pathSeg([C.HW.x+e,0.03,z],[C.HW.x+e,0.03,z+10]);ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=1.2;ctx.stroke();}
+  const dashSee=CDRAW.dist>=700,dashNear=dashSee?700:CDRAW.dist,dashBack=dashSee?500:CDRAW.dist;if(Math.abs(cx-C.HW.x)<dashNear){ctx.beginPath();for(let z=Math.floor((cz-dashBack)/24)*24;z<cz+dashNear;z+=24)for(const e of[-5,5])pathSeg([C.HW.x+e,0.03,z],[C.HW.x+e,0.03,z+10]);ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=1.2;ctx.stroke();}
   // City Builder sandbox: one cyan-emerald grid, only while the zone is inside the draw distance.
   const ZN=C.BUILDER_ZONE;if(ZN){const dx=cx<ZN.x0?ZN.x0-cx:cx>ZN.x1?cx-ZN.x1:0,dz=cz<ZN.z0?ZN.z0-cz:cz>ZN.z1?cz-ZN.z1:0;
     if(Math.hypot(dx,dz)<R){ctx.beginPath();const step=20;for(let x=ZN.x0;x<=ZN.x1+.1;x+=step)pathSeg([x,.05,ZN.z0],[x,.05,ZN.z1]);for(let z=ZN.z0;z<=ZN.z1+.1;z+=step)pathSeg([ZN.x0,.05,z],[ZN.x1,.05,z]);
