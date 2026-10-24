@@ -1,0 +1,110 @@
+name: PERF-GUARD
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      quick:
+        description: Short samples and a 20s heap (not a baseline)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: perf-guard-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  perf-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Chrome
+        id: chrome
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "path=$(command -v google-chrome)" >> "$GITHUB_OUTPUT"
+          else
+            sudo apt-get update
+            wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+            sudo apt-get install -y /tmp/chrome.deb || sudo apt-get -f install -y
+            echo "path=$(command -v google-chrome)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Bench
+        env:
+          CHROME: ${{ steps.chrome.outputs.path }}
+        run: |
+          set -o pipefail
+          args=(--out test-results/perf-guard-pr.json --comment-md test-results/perf-guard-comment.md)
+          if [ "${{ inputs.quick }}" = "true" ]; then args+=(--quick --measure); fi
+          node tools/perf-guard.mjs "${args[@]}"
+
+      - name: Show table
+        if: always()
+        run: |
+          if [ -f test-results/perf-guard-comment.md ]; then
+            cat test-results/perf-guard-comment.md
+          else
+            echo "PERF-GUARD produced no comment. The bench did not finish."
+          fi
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-guard
+          path: |
+            test-results/perf-guard-pr.json
+            test-results/perf-guard-comment.md
+          if-no-files-found: warn
+
+      - name: Post PERF-GUARD comment
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'test-results/perf-guard-comment.md';
+            if (!fs.existsSync(path)) {
+              core.warning('No PERF-GUARD comment file');
+              return;
+            }
+            const marker = '<!-- PERF-GUARD -->';
+            const body = fs.readFileSync(path, 'utf8');
+            if (!body.includes(marker)) {
+              core.warning('Comment file is missing the PERF-GUARD marker');
+              return;
+            }
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100
+            });
+            const existing = comments.find((c) => c.user && c.user.type === 'Bot' && c.body && c.body.includes(marker))
+              || comments.find((c) => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              });
+            }
