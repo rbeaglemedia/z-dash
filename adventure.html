@@ -39,6 +39,7 @@
   <script>
     const q = new URLSearchParams(location.search);
     if (q.get('anatomy') === '1') document.body.classList.add('anatomy');
+    if (q.get('shot') === 'heads') document.body.classList.add('shot');
     if (q.get('shot') === '1') {
       document.body.classList.add('shot');
       const label = document.getElementById('label');

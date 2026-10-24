@@ -1,0 +1,34 @@
+{
+  "what": "Phone close-up of the pack head (left) and the new head (right).",
+  "front": {
+    "file": "head-compare-front.png",
+    "bytes": 90902,
+    "md5": "8c91aadfff0c0c08a06080b05a40c65b",
+    "nearBlackPixels": {
+      "left": 0,
+      "right": 104
+    },
+    "sameBytesAsBefore": false
+  },
+  "threeQuarter": {
+    "file": "head-compare-three-quarter.png",
+    "bytes": 78673,
+    "md5": "b84cfb7e020b7d0aebdc26dc09a98374",
+    "nearBlackPixels": {
+      "left": 0,
+      "right": 170
+    },
+    "sameBytesAsBefore": false
+  },
+  "beforePhoneHero": {
+    "file": "before/phone-hero.png",
+    "bytes": 37973,
+    "md5": "7ccd1caa87b22d0787a33726e36a66bd"
+  },
+  "phoneHeroFullBody": {
+    "file": "phone-hero.png",
+    "bytes": 34225,
+    "md5": "ce72689a07324e5e248f5f5c640d70c6"
+  },
+  "note": "Near-black pixels are the new head's pupils. They sit on the right half only. The left half is the pack head, Face and Hair still visible, no EllieHead kit. The files are not the before shot."
+}

@@ -34,13 +34,13 @@ The iPad floor is 30 because that tablet is 60 Hz and already the strict machine
 
 Lab numbers are software GL on this agent (SwiftShader). They are not his phone and not the 2018 iPad. A lab pass means the scene is cheap enough to grow in the lab. His phone is still the column that matters before a later milestone is called done.
 
-Milestone 0, lab, 360 frames, first 30 dropped as warmup, fox loaded (the default pet). Every steady frame was under 8 ms. The steady gate passed on all three. The phone job is the first page in a fresh browser, and its warmup frame was 173 ms, over the 80 ms hitch line, while the iPad and PC loads in that same browser were 49 ms and 48 ms.
+Milestone 0, lab, 360 frames, first 30 dropped as warmup, fox loaded (the default pet). Every steady frame was under 8 ms. The steady gate passed on all three. The phone job is the first page in a fresh browser, and its warmup frame was 138 ms, over the 80 ms hitch line, while the iPad and PC loads in that same browser were 48 ms and 49 ms.
 
 | Viewport | p50 | p95 | 1% low | Worst steady | Boot hitch | Gate |
 | --- | --- | --- | --- | --- | --- | --- |
-| Phone 844×390 | 0.5 ms | 1.2 ms | 247 fps | 4.4 ms | 173 ms | Pass on steady frames |
-| iPad 1024×768 | 0.5 ms | 1.1 ms | 213 fps | 5.8 ms | 49 ms | Pass |
-| PC 1366×768 | 0.5 ms | 2.0 ms | 185 fps | 6.0 ms | 48 ms | Pass |
+| Phone 844×390 | 0.5 ms | 1.3 ms | 308 fps | 3.7 ms | 138 ms | Pass on steady frames |
+| iPad 1024×768 | 0.5 ms | 1.0 ms | 234 fps | 6.8 ms | 48 ms | Pass |
+| PC 1366×768 | 0.5 ms | 1.1 ms | 225 fps | 5.0 ms | 49 ms | Pass |
 
 The histogram is in `test-results/adventure-m0/bench.json`. The overlay that produced it is `?fps=1`.
 
@@ -55,14 +55,14 @@ Result: **PASS** (exit 0).
 | Ellie | 1.50 m. Feet at 0.00 m. Hip bone 0.44 m. |
 | Head, front | 34% of the figure. On a neck. Centered. Three-quarter 35%, side 36%, back 34%. |
 | Chest width | Front 81 px, three-quarter 102, side 67 (83% of the front), back 162. |
-| Walk | Side step 182 px, arm swing 75 px, opposition 0.66, bob 13 px, feet trade a plant. |
+| Walk | Side step 182 px, arm swing 68 px, opposition 0.54, bob 13 px, feet trade a plant. |
 | Fox | 0.39 m tall, 0.77 m long. Top 0.39 m, under the 0.44 m hip. Feet at 0.00 m. |
 | Cat | 0.34 m tall, 0.42 m long. Top 0.34 m. Feet at 0.00 m. |
 | Puppy | 0.31 m tall, 0.49 m long. Top 0.31 m. Feet at 0.00 m. |
 
-Ellie is the CC0 Casual Female, scaled to 1.50 m. Her shirt, pants, and body mesh are the pack's. The pack Face and Hair are hidden, and a new head (longer face, brows, eyes, nose, mouth, side-swept hair) sits on the Head bone. The suited pug is not the follower. It is saved at `adventure/assets/later/Pug.fbx` for a later town character.
+Ellie is the CC0 Casual Female, scaled to 1.50 m. Her shirt, pants, and body mesh are the pack's. The pack Face and Hair are hidden, and a new head (longer face, brows, eyes, nose, mouth, side-swept hair) sits on the Head bone, forward of the pack skin so the face is not buried in the old helmet. The suited pug is not the follower. It is saved at `adventure/assets/later/Pug.fbx` for a later town character.
 
-`?pet=fox|cat|puppy|bunny|aussie` picks the follower. Fox, cat, and puppy are in the scene, one at a time, at her heel, with idle and walk. Bunny and Australian Shepherd are accepted by the switch and are not loaded. Shots are in `test-results/adventure-m0/`. Before shots of the old head and the suited pug are in `test-results/adventure-m0/before/`.
+`?pet=fox|cat|puppy|bunny|aussie` picks the follower. Fox, cat, and puppy are in the scene, one at a time, at her heel, with idle and walk. Bunny and Australian Shepherd are accepted by the switch and are not loaded. Shots are in `test-results/adventure-m0/`. Before shots of the old head and the suited pug are in `test-results/adventure-m0/before/`. `shot=heads` puts the pack head and the new head side by side, zoomed, front and three-quarter (`head-compare-front.png`, `head-compare-three-quarter.png`).
 
 ### Bunny and Australian Shepherd
 

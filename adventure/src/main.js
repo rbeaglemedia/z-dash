@@ -33,7 +33,7 @@ const hemi = new THREE.HemisphereLight(0xfff6e4, 0x8fd0c4, 0.85);
 const sun = new THREE.DirectionalLight(0xffffff, 1.15);
 sun.position.set(4, 10, 6);
 scene.add(hemi, sun);
-if (ANATOMY) {
+if (ANATOMY || SHOT === 'heads') {
   const fill = new THREE.DirectionalLight(0xffffff, 0.9);
   fill.position.set(0, 1.6, 5);
   scene.add(fill);
@@ -196,6 +196,8 @@ function dressHead(root) {
   hideOldFace(root);
   const kit = new THREE.Group();
   kit.name = 'EllieHead';
+  // Pack skin still fills the old helmet, so the new face sits forward of that shell.
+  kit.position.z = -0.28;
   head.add(kit);
 
   const skin = lambert('#f0c2a0');
@@ -282,11 +284,11 @@ function actorBox(root) {
   return box;
 }
 
-async function loadActor(url, height) {
+async function loadActor(url, height, dress) {
   const obj = await loader.loadAsync(url);
   prepareModel(obj);
   const box = fitHeight(obj, height);
-  dressHead(obj);
+  if (dress !== false) dressHead(obj);
   const mixer = new THREE.AnimationMixer(obj);
   const idleClip = clipNamed(obj.animations, 'idle');
   const walkClip = clipNamed(obj.animations, 'walk');
@@ -380,7 +382,9 @@ function buildCourtyard() {
 
 const heroRig = new THREE.Group();
 const petRig = new THREE.Group();
-scene.add(heroRig, petRig);
+const oldRig = new THREE.Group();
+scene.add(heroRig, petRig, oldRig);
+oldRig.visible = false;
 
 const tmp = new THREE.Vector3();
 const follow = new THREE.Vector3();
@@ -432,7 +436,86 @@ function frameSubject(root, yawBias) {
   camera.lookAt(c.x, c.y, c.z);
 }
 
+function faceState(root) {
+  let face = null;
+  let hair = null;
+  let kit = false;
+  root.traverse((o) => {
+    if (o.name === 'EllieHead') kit = true;
+    if (!o.isMesh) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    for (const m of mats) {
+      if (!m) continue;
+      const name = (m.name || '').toLowerCase();
+      if (name.includes('face')) face = m.visible !== false;
+      if (name.includes('hair')) hair = m.visible !== false;
+    }
+  });
+  return { kit, face, hair };
+}
+
+function headPad(rig) {
+  const box = new THREE.Box3();
+  const head = findBone(rig, 'Head');
+  if (!head) return box;
+  let kit = false;
+  head.updateWorldMatrix(true, true);
+  head.traverse((o) => {
+    if (!o.isMesh) return;
+    kit = true;
+    box.union(new THREE.Box3().setFromObject(o));
+  });
+  const p = bonePos(head, new THREE.Vector3());
+  if (!kit) {
+    box.expandByPoint(p.clone().add(new THREE.Vector3(0.16, 0.48, 0.16)));
+    box.expandByPoint(p.clone().add(new THREE.Vector3(-0.16, -0.06, -0.16)));
+  }
+  return box;
+}
+
+function frameHeads() {
+  const view = (params.get('view') || 'front').toLowerCase();
+  const turn = view.startsWith('three') || view === '3q' ? 0.62 : 0;
+  const box = new THREE.Box3();
+  box.union(headPad(oldRig));
+  box.union(headPad(heroRig));
+  if (box.isEmpty()) return;
+  const c = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  const vFov = THREE.MathUtils.degToRad(camera.fov);
+  const hFov = 2 * Math.atan(Math.tan(vFov / 2) * Math.max(0.2, camera.aspect));
+  const dist = Math.max(
+    (size.y * 0.5) / Math.tan(vFov / 2),
+    (size.x * 0.5) / Math.tan(hFov / 2),
+  ) * 1.2;
+  camera.position.set(c.x + Math.sin(turn) * dist, c.y + size.y * 0.04, c.z + Math.cos(turn) * dist);
+  camera.lookAt(c.x, c.y, c.z);
+  placeHeadChips();
+}
+
+function placeHeadChips() {
+  const rows = [[oldRig, 'head-old', 'Old head'], [heroRig, 'head-new', 'New head']];
+  for (const [rig, id, text] of rows) {
+    let el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement('div');
+      el.id = id;
+      el.textContent = text;
+      el.style.cssText = 'position:fixed;z-index:4;transform:translate(-50%,0);background:#fff;color:#142033;font:700 16px/1.2 ui-sans-serif,system-ui,sans-serif;padding:5px 10px;border-radius:8px;';
+      document.body.appendChild(el);
+    }
+    const head = findBone(rig, 'Head');
+    if (!head) continue;
+    const p = bonePos(head, new THREE.Vector3());
+    p.project(camera);
+    const x = (p.x * 0.5 + 0.5) * window.innerWidth;
+    el.style.left = x + 'px';
+    el.style.top = (window.innerHeight - 40) + 'px';
+  }
+}
+
 function frameCamera(mode) {
+  if (mode === 'heads') { frameHeads(); return; }
   if (mode === 'hero') { frameSubject(heroRig, 0.2); return; }
   if (mode === 'pet') { frameSubject(petRig, 0.3); return; }
   if (mode === 'shot' || mode === 'play') {
@@ -688,6 +771,7 @@ function publish(extra) {
   const st = stats();
   window.__ADV = Object.assign({
     ready: world.ready,
+    headCompare: world.headCompare || null,
     petId: world.petId,
     petNote: world.petNote || null,
     clips: world.hero ? { hero: world.hero.clips, pet: world.pet ? world.pet.clips : null } : null,
@@ -719,10 +803,17 @@ function publish(extra) {
 
 async function boot() {
   if (!ANATOMY) buildCourtyard();
-  const hero = await loadActor('adventure/assets/Casual_Female.fbx', 1.5);
+  const compare = SHOT === 'heads';
+  const hero = await loadActor('adventure/assets/Casual_Female.fbx', 1.5, true);
+  let oldHero = null;
+  if (compare) {
+    oldHero = await loadActor('adventure/assets/Casual_Female.fbx', 1.5, false);
+    oldRig.add(oldHero.obj);
+    oldRig.visible = true;
+  }
   const petId = petChoice();
   const spec = PET_CATALOG[petId];
-  const pet = spec ? await loadPet(spec) : null;
+  const pet = !compare && spec ? await loadPet(spec) : null;
   heroRig.add(hero.obj);
   if (pet) petRig.add(pet.obj);
   world.hero = hero;
@@ -731,12 +822,20 @@ async function boot() {
   world.petNote = spec ? null : (PET_NOTE[petId] || null);
   world.ready = true;
   const hint = document.getElementById('hint');
-  if (hint) {
+  if (hint && !compare) {
     hint.textContent = pet
       ? 'WASD walks. Shift runs. The ' + spec.label.toLowerCase() + ' stays at your heel.'
       : 'WASD walks. Shift runs. ' + world.petNote;
   }
-  if (SHOT === 'pet') {
+  if (compare) {
+    petRig.visible = false;
+    document.body.classList.add('shot');
+    oldRig.position.set(-0.38, 0, 0);
+    heroRig.position.set(0.38, 0, 0);
+    oldRig.rotation.y = Math.PI;
+    heroRig.rotation.y = Math.PI;
+    seek(oldHero, 'idle', 0.15);
+  } else if (SHOT === 'pet') {
     heroRig.visible = false;
     petRig.position.set(0, 0, 0);
   } else if (SHOT === 'hero') {
@@ -769,7 +868,7 @@ async function boot() {
   }
   if (SHOT) {
     yaw = 0.35;
-    const mode = SHOT === 'hero' || SHOT === 'pet' ? SHOT : 'shot';
+    const mode = SHOT === 'hero' || SHOT === 'pet' || SHOT === 'heads' ? SHOT : 'shot';
     frameCamera(mode);
     renderer.render(scene, camera);
     const label = document.getElementById('label');
@@ -778,17 +877,30 @@ async function boot() {
       const h = window.innerHeight;
       const kind = deviceKind();
       const title = kind === 'ipad' ? 'iPad' : (kind === 'pc' ? 'PC' : 'Phone');
-      const petLabel = spec ? spec.label : petId;
-      const who = SHOT === 'pet' ? petLabel : (SHOT === 'hero' ? 'Ellie' : 'Ellie and ' + petLabel.toLowerCase());
       label.hidden = false;
-      label.textContent = title + ' ' + w + '×' + h + ' · ' + who
-        + ' · Ellie ' + hm.height.toFixed(2) + ' m, hip ' + hm.hipY.toFixed(2) + ' m'
-        + (pm
-          ? ' · ' + petLabel.toLowerCase() + ' ' + pm.height.toFixed(2) + ' m × ' + pm.length.toFixed(2) + ' m, feet ' + pm.minY.toFixed(2) + ' m'
-          : ' · ' + (world.petNote || ''))
-        + (SHOT === '1' ? ' · pink = hip, gold = ground' : '');
+      if (SHOT === 'heads') {
+        const view = (params.get('view') || 'front').toLowerCase();
+        const viewName = view.startsWith('three') || view === '3q' ? 'three-quarter' : 'front';
+        label.textContent = title + ' ' + w + '×' + h + ' · ' + viewName + ' · old pack head on the left, new head on the right';
+      } else {
+        const petLabel = spec ? spec.label : petId;
+        const who = SHOT === 'pet' ? petLabel : (SHOT === 'hero' ? 'Ellie' : 'Ellie and ' + petLabel.toLowerCase());
+        label.textContent = title + ' ' + w + '×' + h + ' · ' + who
+          + ' · Ellie ' + hm.height.toFixed(2) + ' m, hip ' + hm.hipY.toFixed(2) + ' m'
+          + (pm
+            ? ' · ' + petLabel.toLowerCase() + ' ' + pm.height.toFixed(2) + ' m × ' + pm.length.toFixed(2) + ' m, feet ' + pm.minY.toFixed(2) + ' m'
+            : ' · ' + (world.petNote || ''))
+          + (SHOT === '1' ? ' · pink = hip, gold = ground' : '');
+      }
     }
   }
+  world.headCompare = compare ? {
+    view: params.get('view') || 'front',
+    old: faceState(oldRig),
+    fresh: faceState(heroRig),
+    oldX: +oldRig.position.x.toFixed(3),
+    newX: +heroRig.position.x.toFixed(3),
+  } : null;
   publish({
     heroMeasure: hm,
     petMeasure: pm,
@@ -858,7 +970,7 @@ function tick() {
       }
       frameCamera('play');
     } else {
-      frameCamera(SHOT === 'hero' || SHOT === 'pet' ? SHOT : 'shot');
+      frameCamera(SHOT === 'hero' || SHOT === 'pet' || SHOT === 'heads' ? SHOT : 'shot');
     }
     renderer.render(scene, camera);
   }

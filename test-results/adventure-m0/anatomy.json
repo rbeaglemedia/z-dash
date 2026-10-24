@@ -163,8 +163,8 @@
     },
     "side": {
       "step": 182,
-      "swing": 75,
-      "oppose": 0.66,
+      "swing": 68,
+      "oppose": 0.54,
       "bob": 13,
       "lifts": 2,
       "figureH": 515
