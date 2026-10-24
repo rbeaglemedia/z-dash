@@ -1,0 +1,29 @@
+{
+  "harness": "844x390 dpr 2, SwiftShader, CPU 4x, street lane, step+TRAFFIC.update+render, 40 frames, yield between frames",
+  "cause": "Player car sprite. drawZ copies the preserved WebGL buffer with a synchronous drawImage. After the readback backs up, the next X.render waits 200-500ms. Buildings, traffic collect, and collision stay under 10ms. Photo bakes stay 0 while flying.",
+  "before300": {
+    "note": "Same machine, sync drawImage, 40 frames at 300 mph, no yield. Frames 0-22 stay near 20ms, then most frames are 200-500ms.",
+    "wallMeanMs": 101,
+    "p95Ms": 402,
+    "maxMs": 537,
+    "over50": 13,
+    "fpsFromMean": 10
+  },
+  "after": {
+    "shaNote": "working tree on cursor/speed-frame-9e5c before commit",
+    "inkSamples": 4739,
+    "bakesDuring": 0,
+    "rows": [
+      {"mph": 30, "wallMeanMs": 22, "p95Ms": 36, "maxMs": 43, "over50": 0, "fps": 46, "glMeanMs": 11},
+      {"mph": 80, "wallMeanMs": 20, "p95Ms": 28, "maxMs": 43, "over50": 0, "fps": 51, "glMeanMs": 10},
+      {"mph": 150, "wallMeanMs": 19, "p95Ms": 28, "maxMs": 30, "over50": 0, "fps": 51, "glMeanMs": 10},
+      {"mph": 300, "wallMeanMs": 20, "p95Ms": 26, "maxMs": 34, "over50": 0, "fps": 51, "glMeanMs": 10}
+    ]
+  },
+  "priorLab": {
+    "rev": "9721d4a",
+    "note": "render() only, 12 frames, speeds in order 30 then 80 then 150 then 300, after the photo grid warmed. 150 and 300 landed after the readback cliff.",
+    "fps": {"30": 89.7, "80": 91.8, "150": 5.8, "300": 4.9},
+    "p95Ms": {"30": 19.3, "80": 18.2, "150": 440, "300": 413}
+  }
+}
