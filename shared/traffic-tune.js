@@ -37,8 +37,9 @@ window.TRAFFIC_TUNE = {
   hopLane: 0,          // no mid-block lane change; a merge waits for a crossing
   hopVy: 6.2,          // m/s, scripted launch off the bed (ballistic, no damage)
   spritePx: 160,       // baked once per paint x view; the mesh is not redrawn per car
-  bakePerFrame: 2,     // two new pitch/yaw views a frame; cache holds the finer grid
-  cacheMax: 140,       // paint x 24 yaw steps x pitch buckets
+  bakePerFrame: 0,     // a drive never bakes. The menu fills the whole grid first.
+  warmMs: 48,          // menu frames spend up to this long on the next photos
+  cacheMax: 1512,      // 9 paints x 24 headings x 7 camera heights, kept for the whole drive
   yawStep: Math.PI / 12, // 15° sprite yaw (was 22.5°)
   yawHold: 0.62,       // keep the current photo until the heading is this far across a bucket
   elevHold: 0.22,      // radians. camera-height bucket. slip and pitch do not change the photo

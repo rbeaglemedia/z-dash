@@ -916,65 +916,110 @@ const TRAFFIC = (() => {
         }
       });
       wingHinges = wing; crewN = crew; cloned = baked.length;
-      for (let i = 0; i < T.paints.length; i++) bake(i + ':0:0');
       return cloned > 0;
     } catch (e) { bakeErr = String(e); try { ZGL.set(g0); } catch (e2) {} cloned = -1; return false; }
+  }
+  let warmQ = null, warmI = 0;
+  function buildWarm() {
+    const q = [];
+    for (let pi = 0; pi < T.paints.length; pi++) q.push(pi + ':0:0');
+    for (let pi = 0; pi < T.paints.length; pi++) {
+      for (let yb = -12; yb <= 11; yb++) {
+        for (let eb = -1; eb <= 5; eb++) {
+          if (yb === 0 && eb === 0) continue;
+          q.push(pi + ':' + yb + ':' + eb);
+        }
+      }
+    }
+    warmQ = q; warmI = 0;
+  }
+  function gridCap() { return Math.max(T.cacheMax || 0, (T.paints.length || 0) * 24 * 7); }
+  let photoR = null, photoCv = null;
+  // A 160px renderer of its own, so a photo never resizes the city view.
+  function photoRenderer() {
+    if (photoR) return photoR;
+    const X = window.ZD && ZD.Xray;
+    if (!X || !X.renderer) return null;
+    const px = T.spritePx;
+    const cv = document.createElement('canvas');
+    cv.width = px; cv.height = px;
+    let aa = false;
+    try { aa = !!((X.renderer.getContext().getContextAttributes() || {}).antialias); } catch (e) {}
+    photoR = new X.renderer.constructor({ canvas: cv, alpha: true, antialias: aa, preserveDrawingBuffer: true });
+    photoR.setPixelRatio(1);
+    photoR.setSize(px, px, false);
+    photoR.setClearColor(0x000000, 0);
+    photoCv = cv;
+    return photoR;
+  }
+  function shoot(pi, yb, eb) {
+    const R = photoRenderer();
+    if (!R || !TRAFFIC._clone || !TRAFFIC._scene || !TRAFFIC._cam) return null;
+    applyPaint(TRAFFIC._clone, pi);
+    const yaw = yb * (T.yawStep || Math.PI / 12), elev = eb * 0.35;
+    const dist = 7 / (2 * Math.tan(13 * Math.PI / 180)), ty = 0.6;
+    const camT = TRAFFIC._cam;
+    camT.fov = 26; camT.aspect = 1; camT.near = 0.05; camT.far = 80;
+    camT.position.set(Math.cos(yaw) * Math.cos(elev) * dist, ty + Math.sin(elev) * dist, Math.sin(yaw) * Math.cos(elev) * dist);
+    camT.lookAt(0, ty, 0);
+    camT.updateProjectionMatrix();
+    camT.updateMatrixWorld();
+    if (R.clear) R.clear();
+    R.render(TRAFFIC._scene, camT);
+    if (!photoCv || photoCv.width < 8) return null;
+    const px = T.spritePx;
+    const cv = document.createElement('canvas');
+    cv.width = px; cv.height = px;
+    cv.getContext('2d', { alpha: true }).drawImage(photoCv, 0, 0, photoCv.width, photoCv.height, 0, 0, px, px);
+    return cv;
+  }
+  function storePhoto(key, cv) {
+    const cap = gridCap();
+    while (cache.size >= cap) {
+      const oldest = cache.keys().next().value;
+      if (oldest == null) break;
+      cache.delete(oldest);
+    }
+    cache.set(key, cv); bakes++;
+  }
+  // Menu frames only. Driving never calls this.
+  function bakeSlice(tEnd) {
+    let n = 0;
+    try {
+      while (warmI < warmQ.length) {
+        const key = warmQ[warmI];
+        if (cache.has(key)) { warmI++; continue; }
+        const parts = key.split(':').map(Number);
+        const cv = shoot(parts[0], parts[1], parts[2]);
+        if (!cv) break;
+        storePhoto(key, cv); n++; warmI++;
+        if (performance.now() >= tEnd) break;
+      }
+      return n;
+    } catch (e) { bakeErr = String(e); return n; }
+  }
+  function warmStep() {
+    if (typeof flying !== 'undefined' && flying) return;
+    if (!warmQ) buildWarm();
+    if (warmI >= warmQ.length) return;
+    const X = window.ZD && ZD.Xray;
+    if (!X || !X.ready || !X.renderer) return;
+    if (!TRAFFIC._clone && !ensureClone()) return;
+    const budget = T.warmMs == null ? 48 : T.warmMs;
+    bakeSlice(performance.now() + Math.max(1, budget));
   }
   function bake(key) {
     const X = window.ZD && ZD.Xray;
     if (!X || !X.renderer) return false;
     if (!TRAFFIC._clone && !ensureClone()) return false;
-    if (!TRAFFIC._clone || !TRAFFIC._scene || !TRAFFIC._cam) return false;
     const [pi, yb, eb] = key.split(':').map(Number);
     if (!T.paints[pi]) return false;
-    const R = X.renderer, px = T.spritePx;
-    const box = {set(w, h){ this.w = w; this.h = h; return this; }, w:1, h:1};
-    const dpr = R.getPixelRatio ? R.getPixelRatio() : 1;
-    const rt = R.getRenderTarget ? R.getRenderTarget() : null;
-    const scissor = R.getScissorTest ? R.getScissorTest() : false;
-    if (R.getSize) R.getSize(box);
     try {
-      applyPaint(TRAFFIC._clone, pi);
-      const yaw = yb * (T.yawStep || Math.PI / 12), elev = eb * 0.35;
-      const dist = 7 / (2 * Math.tan(13 * Math.PI / 180)), ty = 0.6;
-      const camT = TRAFFIC._cam;
-      camT.fov = 26; camT.aspect = 1; camT.near = 0.05; camT.far = 80;
-      camT.position.set(Math.cos(yaw) * Math.cos(elev) * dist, ty + Math.sin(elev) * dist, Math.sin(yaw) * Math.cos(elev) * dist);
-      camT.lookAt(0, ty, 0);
-      camT.updateProjectionMatrix();
-      camT.updateMatrixWorld();
-      if (R.setRenderTarget) R.setRenderTarget(null);
-      if (R.setScissorTest) R.setScissorTest(false);
-      if (R.setPixelRatio) R.setPixelRatio(1);
-      R.setSize(px, px, false);
-      if (R.setViewport) R.setViewport(0, 0, px, px);
-      R.setClearColor(0x000000, 0);
-      if (R.clear) R.clear();
-      R.render(TRAFFIC._scene, camT);
-      const src = R.domElement || X.canvas;
-      if (!src || src.width < 8) return false;
-      const cv = document.createElement('canvas');
-      cv.width = px; cv.height = px;
-      cv.getContext('2d', {alpha:true}).drawImage(src, 0, 0, src.width, src.height, 0, 0, px, px);
-      const cap = T.cacheMax || 140;
-      while (cache.size >= cap) {
-        const oldest = cache.keys().next().value;
-        if (oldest == null) break;
-        cache.delete(oldest);
-      }
-      cache.set(key, cv); bakes++;
+      const cv = shoot(pi, yb, eb);
+      if (!cv) return false;
+      storePhoto(key, cv);
       return true;
     } catch (e) { bakeErr = String(e); return false; }
-    finally {
-      try {
-        if (R.setPixelRatio) R.setPixelRatio(dpr);
-        R.setSize(box.w || 1, box.h || 1, false);
-        if (R.setViewport) R.setViewport(0, 0, box.w || 1, box.h || 1);
-        if (R.setScissorTest) R.setScissorTest(scissor);
-        if (rt && R.setRenderTarget) R.setRenderTarget(rt);
-      } catch (e2) {}
-      X._w = 0; X._h = 0;
-    }
   }
   function shadow(c) {
     const gy = c.gy || 0, hAir = Math.max(0, (c.y || 0) - gy);
@@ -1125,7 +1170,7 @@ const TRAFFIC = (() => {
   function collect(items) {
     if (OFF || !built) return;
     try {
-    let baked = 0;
+    if (typeof flying === 'undefined' || !flying) warmStep();
     for (const c of cars) {
       if (!c.on) continue;
       const dx = c.x - cam.x, dy = (c.y + 0.6) - cam.y, dz = c.z - cam.z;
@@ -1133,10 +1178,7 @@ const TRAFFIC = (() => {
       c._dist = dist;
       const b = band(c, dist);
       if (b === 'off') continue;
-      if (b === 'sprite') {
-        c._key = viewKey(c);
-        if (!cache.has(c._key) && baked < T.bakePerFrame) { if (bake(c._key)) baked++; }
-      }
+      if (b === 'sprite') c._key = viewKey(c);
       items.push([dx * dx + dz * dz, 't', c.slot]);
     }
     if (sparks.length) items.push([0, 't', sparkSlot]);
@@ -1152,6 +1194,7 @@ const TRAFFIC = (() => {
       fullDist:T.fullDist, boxDist:T.boxDist, dotDist:T.dotDist,
       speedMin:T.speedMin, speedMax:T.speedMax, fastMin:T.fastMin, fastMax:T.fastMax,
       paints:T.paints.map(p => p.id), cache:cache.size, bakes, bakeErr, runErr,
+      warmLeft: warmQ ? warmQ.length - warmI : -1, warmTotal: warmQ ? warmQ.length : 0,
       wingHinges, crewN, sparkN, sparks:sparks.length
     };
   }
