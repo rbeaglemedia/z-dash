@@ -1,0 +1,83 @@
+{
+  "sha": "9721d4a52f78f92e1082aad389b2bcb07fc9e80e",
+  "lab": "CPU 4x, 844x390, DPR 2, software GL, 24 scripted street frames",
+  "before": {
+    "sha": "49cf637",
+    "readyMs": 16303,
+    "errors": [],
+    "mean": 232,
+    "fps": 4.3,
+    "p50": 23.6,
+    "p95": 1061.7,
+    "max": 2149,
+    "over50": 6,
+    "frames": 24,
+    "bakesDuring": 9,
+    "alive": 30,
+    "cache": 25,
+    "ink": 297,
+    "bakeErr": "",
+    "runErr": ""
+  },
+  "after": {
+    "readyMs": 8537,
+    "warmMs": 75205,
+    "heap": {
+      "used": 45125378,
+      "total": 72545970
+    },
+    "errors": [],
+    "mean": 14.4,
+    "fps": 69.4,
+    "p50": 12.4,
+    "p95": 32.5,
+    "max": 33.7,
+    "over50": 0,
+    "frames": 24,
+    "bakesDuring": 0,
+    "alive": 30,
+    "cache": 1512,
+    "warmLeft": 0,
+    "ink": 297,
+    "bakeErr": "",
+    "runErr": ""
+  },
+  "speeds": [
+    {
+      "mph": 30,
+      "mean": 11.2,
+      "fps": 89.7,
+      "p95": 19.3,
+      "max": 20.8,
+      "over50": 0,
+      "bakesDuring": 0
+    },
+    {
+      "mph": 80,
+      "mean": 10.9,
+      "fps": 91.8,
+      "p95": 18.2,
+      "max": 18.6,
+      "over50": 0,
+      "bakesDuring": 0
+    },
+    {
+      "mph": 150,
+      "mean": 171.2,
+      "fps": 5.8,
+      "p95": 440,
+      "max": 443.6,
+      "over50": 10,
+      "bakesDuring": 0
+    },
+    {
+      "mph": 300,
+      "mean": 204.2,
+      "fps": 4.9,
+      "p95": 413.3,
+      "max": 421,
+      "over50": 12,
+      "bakesDuring": 0
+    }
+  ]
+}
