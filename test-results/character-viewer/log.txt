@@ -1,0 +1,13 @@
+hub contract 1 modules character,car,building
+broken module stayed inside its card, tabs 3
+character sweep fails 0
+phone-ellie.png frames 11.8, 16.8, 16.3, 17, 16.3
+ipad-ellie.png frames 12.4, 16.8, 16.7, 16.5, 16.9
+pc-compare.png frames 7.3, 8.9, 16.4, 17.5, 16.5
+pc-turntable.png frames 4.7, 16.5, 16.3, 16.8, 16.6
+pc-scrub.png frames 8.3, 16.4, 16.6, 17.2, 16.1
+pixel mae 0
+car sweep fails 0
+building sweep fails 0
+hub still opens characters after car and building
+index.html, world.html, jr.html, adventure sources untouched

@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "note": "Metres and colors copied from the Neon World drawers (world/city-draw.js door, world/house.js rooms). The game draws these on a 2D canvas. This spinner builds the same box so the door can be checked against the 370Z.",
+  "defaults": {
+    "purpose": "garage",
+    "door": "game",
+    "roof": "slab",
+    "wall": "game"
+  },
+  "bay": { "w": 10, "d": 9, "h": 4.4 },
+  "sections": [
+    { "id": "purpose", "name": "PLACE", "slots": ["purpose"] },
+    { "id": "door", "name": "DOOR", "slots": ["door"] },
+    { "id": "roof", "name": "ROOF", "slots": ["roof", "wall"] },
+    { "id": "looks", "name": "LOOKS", "slots": ["favorites"] }
+  ],
+  "purposes": {
+    "home": { "name": "HOME", "sign": "HOME", "accent": "#7dff6b", "floor": "#241434", "wall": "#3a2058", "ceil": "#14081c" },
+    "garage": { "name": "GARAGE", "sign": "GARAGE", "accent": "#ff4fd8", "floor": "#2a2416", "wall": "#3a321c", "ceil": "#14120c" },
+    "showroom": { "name": "SHOWROOM", "sign": "Z-DASH", "accent": "#3ee6ff", "floor": "#182430", "wall": "#243848", "ceil": "#101820" },
+    "paint": { "name": "NEON PAINT", "sign": "PAINT", "accent": "#ff4fd8", "floor": "#1c1830", "wall": "#2c2450", "ceil": "#100e1c" },
+    "dance": { "name": "DANCE", "sign": "DANCE", "accent": "#ff4fd8", "floor": "#2a1024", "wall": "#4a1840", "ceil": "#160810" },
+    "pets": { "name": "PETS", "sign": "PETS", "accent": "#7dff6b", "floor": "#142418", "wall": "#1c3824", "ceil": "#0c140e" },
+    "arcade": { "name": "ARCADE", "sign": "PIXEL", "accent": "#ffe14d", "floor": "#221838", "wall": "#342050", "ceil": "#120a1c" },
+    "cafe": { "name": "CAFE", "sign": "CAFE", "accent": "#ffb020", "floor": "#301810", "wall": "#482418", "ceil": "#180c08" },
+    "nos": { "name": "NOS", "sign": "NOS", "accent": "#3ee6ff", "floor": "#142028", "wall": "#1c3040", "ceil": "#0c1418" },
+    "sky": { "name": "SKY DROP", "sign": "JUMP", "accent": "#7dff6b", "floor": "#143040", "wall": "#1c4860", "ceil": "#0c1820" },
+    "soccer": { "name": "SOCCER", "sign": "TURBO", "accent": "#7dff6b", "floor": "#14301c", "wall": "#1c4030", "ceil": "#0c1810" },
+    "builder": { "name": "BUILDER", "sign": "PIXEL", "accent": "#ffe14d", "floor": "#2a2614", "wall": "#3a3418", "ceil": "#14120c" }
+  },
+  "slots": {
+    "door": {
+      "name": "GARAGE DOOR",
+      "options": [
+        { "id": "game", "name": "GAME", "w": 1.44, "h": 2.45, "desc": "The door the city draws today." },
+        { "id": "car", "name": "CLEARS THE Z", "w": 2.4, "h": 2.6, "desc": "Wider than 1.85 m and taller than 1.32 m." },
+        { "id": "tight", "name": "TIGHT", "w": 1.2, "h": 1.2 }
+      ]
+    },
+    "roof": {
+      "name": "ROOF",
+      "options": [
+        { "id": "slab", "name": "SLAB", "kind": "slab" },
+        { "id": "pad", "name": "HELIPAD", "kind": "pad" },
+        { "id": "tank", "name": "TANK", "kind": "tank" },
+        { "id": "antenna", "name": "ANTENNA", "kind": "antenna" }
+      ]
+    },
+    "wall": {
+      "name": "SHELL",
+      "options": [
+        { "id": "game", "name": "GAME SHELL", "color": "#140818" },
+        { "id": "room", "name": "ROOM COLORS", "color": null },
+        { "id": "cyan", "name": "CYAN EDGE", "color": "#102028" }
+      ]
+    }
+  },
+  "architecture": {
+    "checker": "tools/arch-check.mjs",
+    "carClear": { "w": 1.85, "h": 1.32, "spare": 0.15 },
+    "ellieDoor": 1.9,
+    "signMinPx": 10
+  }
+}

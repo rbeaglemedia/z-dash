@@ -1,0 +1,253 @@
+{
+  "version": 1,
+  "defaults": {
+    "head": "old",
+    "hair": "pack",
+    "hairColor": "game",
+    "top": "game",
+    "bottom": "game",
+    "shoes": "game",
+    "skin": "game",
+    "eyes": "pack",
+    "extra": "none",
+    "size": "game",
+    "fur": "game",
+    "collar": "none"
+  },
+  "match": {
+    "hair": ["hair"],
+    "top": ["shirt", "top", "jacket"],
+    "bottom": ["pant"],
+    "shoes": ["shoe", "boot", "belt"],
+    "skin": ["skin", "face"],
+    "fur": ["fur", "dog", "fox", "grey", "gray", "beige", "brown"],
+    "mark": ["white", "pink", "detail"]
+  },
+  "lights": [
+    { "id": "studio", "name": "Studio", "bg": "#12081c", "hemi": ["#fff6e8", "#2a1038", 0.9], "key": ["#ffffff", 1.2, [4, 8, 5]], "fill": ["#ffd0f4", 0.35, [-3, 3, 2]] },
+    { "id": "neon", "name": "Neon Night", "bg": "#07010f", "hemi": ["#ff4fd8", "#041018", 0.55], "key": ["#3ee6ff", 1.35, [-4, 6, 3]], "fill": ["#ff4fd8", 0.45, [3, 2, -2]] },
+    { "id": "day", "name": "Daylight", "bg": "#c8f4ff", "hemi": ["#fff6e4", "#8fd0c4", 0.95], "key": ["#ffffff", 1.25, [4, 10, 6]], "fill": ["#ffffff", 0.25, [-2, 4, 2]] },
+    { "id": "game", "name": "Adventure", "bg": "#d7e6f2", "hemi": ["#fff6e4", "#8fd0c4", 0.85], "key": ["#ffffff", 1.15, [4, 10, 6]], "fill": ["#ffffff", 0.9, [0, 1.6, 5]] }
+  ],
+  "angles": [
+    { "id": "front", "name": "Front", "azimuth": 0, "polar": 1.28 },
+    { "id": "three", "name": "3/4", "azimuth": 0.785, "polar": 1.22 },
+    { "id": "side", "name": "Side", "azimuth": 1.5708, "polar": 1.28 },
+    { "id": "back", "name": "Back", "azimuth": 3.1416, "polar": 1.28 },
+    { "id": "top", "name": "Top", "azimuth": 0.4, "polar": 0.22 }
+  ],
+  "sections": [
+    { "id": "model", "name": "MODEL", "slots": ["model"] },
+    { "id": "head", "name": "HEAD", "slots": ["head", "eyes", "skin"] },
+    { "id": "hair", "name": "HAIR", "slots": ["hair", "hairColor"] },
+    { "id": "outfit", "name": "OUTFIT", "slots": ["top", "bottom", "shoes"] },
+    { "id": "extras", "name": "EXTRAS", "slots": ["extra", "size"] },
+    { "id": "pet", "name": "PET", "slots": ["fur", "collar"] },
+    { "id": "looks", "name": "LOOKS", "slots": ["favorites"] }
+  ],
+  "slots": {
+    "head": {
+      "name": "FACE",
+      "options": [
+        { "id": "old", "name": "OLD HEAD", "kind": "pack", "desc": "Pack head. Approved default." },
+        { "id": "big", "name": "BIG", "kind": "scaleBone", "bone": "head", "scale": [1.16, 1.16, 1.16] },
+        { "id": "small", "name": "SMALL", "kind": "scaleBone", "bone": "head", "scale": [0.86, 0.86, 0.86] },
+        { "id": "wide", "name": "WIDE", "kind": "scaleBone", "bone": "head", "scale": [1.18, 0.96, 1.12] }
+      ]
+    },
+    "eyes": {
+      "name": "EYES",
+      "options": [
+        { "id": "pack", "name": "PACK", "kind": "pack" },
+        { "id": "brown", "name": "BROWN", "kind": "attach", "bone": "head", "color": "#3a2414", "parts": [
+          { "prim": "sphere", "r": 0.018, "x": -0.028, "y": 0.02, "z": 0.07 },
+          { "prim": "sphere", "r": 0.018, "x": 0.028, "y": 0.02, "z": 0.07 }
+        ] },
+        { "id": "blue", "name": "BLUE", "kind": "attach", "bone": "head", "color": "#3aa0e0", "parts": [
+          { "prim": "sphere", "r": 0.018, "x": -0.028, "y": 0.02, "z": 0.07 },
+          { "prim": "sphere", "r": 0.018, "x": 0.028, "y": 0.02, "z": 0.07 }
+        ] },
+        { "id": "green", "name": "GREEN", "kind": "attach", "bone": "head", "color": "#3ecf6e", "parts": [
+          { "prim": "sphere", "r": 0.018, "x": -0.028, "y": 0.02, "z": 0.07 },
+          { "prim": "sphere", "r": 0.018, "x": 0.028, "y": 0.02, "z": 0.07 }
+        ] },
+        { "id": "neon", "name": "NEON", "kind": "attach", "bone": "head", "color": "#3ee6ff", "parts": [
+          { "prim": "sphere", "r": 0.02, "x": -0.028, "y": 0.02, "z": 0.07 },
+          { "prim": "sphere", "r": 0.02, "x": 0.028, "y": 0.02, "z": 0.07 }
+        ] }
+      ]
+    },
+    "skin": {
+      "name": "SKIN",
+      "tint": "skin",
+      "options": [
+        { "id": "game", "name": "GAME", "kind": "pack" },
+        { "id": "peach", "name": "PEACH", "kind": "color", "color": "#f0c2a0" },
+        { "id": "tan", "name": "TAN", "kind": "color", "color": "#c68642" },
+        { "id": "deep", "name": "DEEP", "kind": "color", "color": "#8d5524" },
+        { "id": "cool", "name": "COOL", "kind": "color", "color": "#e8b89a" }
+      ]
+    },
+    "hair": {
+      "name": "HAIR",
+      "options": [
+        { "id": "pack", "name": "PACK HAIR", "kind": "pack" },
+        { "id": "off", "name": "OFF", "kind": "hide", "hide": ["hair"] },
+        { "id": "ponytail", "name": "PONYTAIL", "kind": "attach", "bone": "head", "hide": ["hair"], "colorSlot": "hair", "parts": [
+          { "prim": "sphere", "r": 0.09, "y": 0.04, "z": -0.02 },
+          { "prim": "cylinder", "r": 0.03, "h": 0.22, "y": -0.08, "z": -0.08 }
+        ] },
+        { "id": "bun", "name": "BUN", "kind": "attach", "bone": "head", "hide": ["hair"], "colorSlot": "hair", "parts": [
+          { "prim": "sphere", "r": 0.055, "y": 0.1, "z": -0.02 }
+        ] },
+        { "id": "buns", "name": "BUNS", "kind": "attach", "bone": "head", "hide": ["hair"], "colorSlot": "hair", "parts": [
+          { "prim": "sphere", "r": 0.045, "x": -0.08, "y": 0.06 },
+          { "prim": "sphere", "r": 0.045, "x": 0.08, "y": 0.06 }
+        ] },
+        { "id": "bob", "name": "BOB", "kind": "attach", "bone": "head", "hide": ["hair"], "colorSlot": "hair", "parts": [
+          { "prim": "sphere", "r": 0.11, "y": 0.02, "z": 0.01 },
+          { "prim": "box", "w": 0.16, "h": 0.08, "d": 0.12, "y": -0.04, "z": 0.02 }
+        ] },
+        { "id": "spiky", "name": "SPIKY", "kind": "attach", "bone": "head", "hide": ["hair"], "colorSlot": "hair", "parts": [
+          { "prim": "cone", "r": 0.03, "h": 0.12, "y": 0.12 },
+          { "prim": "cone", "r": 0.025, "h": 0.1, "x": -0.05, "y": 0.1, "rz": 0.4 },
+          { "prim": "cone", "r": 0.025, "h": 0.1, "x": 0.05, "y": 0.1, "rz": -0.4 }
+        ] },
+        { "id": "long", "name": "LONG", "kind": "attach", "bone": "head", "hide": ["hair"], "colorSlot": "hair", "parts": [
+          { "prim": "box", "w": 0.16, "h": 0.28, "d": 0.06, "y": -0.08, "z": -0.04 }
+        ] },
+        { "id": "short", "name": "SHORT", "kind": "attach", "bone": "head", "hide": ["hair"], "colorSlot": "hair", "parts": [
+          { "prim": "sphere", "r": 0.095, "y": 0.05 }
+        ] }
+      ]
+    },
+    "hairColor": {
+      "name": "HAIR COLOR",
+      "tint": "hair",
+      "also": "attach",
+      "options": [
+        { "id": "game", "name": "GAME", "kind": "pack" },
+        { "id": "honey", "name": "HONEY", "kind": "color", "color": "#c9853a" },
+        { "id": "night", "name": "NIGHT", "kind": "color", "color": "#2a211c" },
+        { "id": "pink", "name": "PINK", "kind": "color", "color": "#ff4fd8" },
+        { "id": "cyan", "name": "CYAN", "kind": "color", "color": "#3ee6ff" },
+        { "id": "white", "name": "WHITE", "kind": "color", "color": "#f4f1ea" }
+      ]
+    },
+    "top": {
+      "name": "TOP",
+      "tint": "top",
+      "fallbackBone": "spine",
+      "fallbackParts": [{ "prim": "box", "w": 0.22, "h": 0.18, "d": 0.12, "y": 0.02 }],
+      "options": [
+        { "id": "game", "name": "GAME", "kind": "pack" },
+        { "id": "blue", "name": "BLUE", "kind": "color", "color": "#3a7bd5" },
+        { "id": "pink", "name": "PINK", "kind": "color", "color": "#ff3df2" },
+        { "id": "cyan", "name": "CYAN", "kind": "color", "color": "#3ee6ff" },
+        { "id": "lime", "name": "LIME", "kind": "color", "color": "#7cff4f" },
+        { "id": "gold", "name": "GOLD", "kind": "color", "color": "#ffb020" },
+        { "id": "black", "name": "BLACK", "kind": "color", "color": "#1a1220" }
+      ]
+    },
+    "bottom": {
+      "name": "BOTTOM",
+      "tint": "bottom",
+      "fallbackBone": "hips",
+      "fallbackParts": [{ "prim": "box", "w": 0.2, "h": 0.1, "d": 0.1, "y": -0.02 }],
+      "options": [
+        { "id": "game", "name": "GAME", "kind": "pack" },
+        { "id": "navy", "name": "NAVY", "kind": "color", "color": "#2a3358" },
+        { "id": "black", "name": "BLACK", "kind": "color", "color": "#16141c" },
+        { "id": "pink", "name": "PINK", "kind": "color", "color": "#e0359f" },
+        { "id": "white", "name": "WHITE", "kind": "color", "color": "#e9edf2" }
+      ]
+    },
+    "shoes": {
+      "name": "SHOES",
+      "tint": "shoes",
+      "fallbackBone": "foot",
+      "fallbackParts": [{ "prim": "box", "w": 0.08, "h": 0.04, "d": 0.14, "y": 0.02, "z": 0.02 }],
+      "options": [
+        { "id": "game", "name": "GAME", "kind": "pack" },
+        { "id": "black", "name": "BLACK", "kind": "color", "color": "#2a211c" },
+        { "id": "white", "name": "WHITE", "kind": "color", "color": "#f2f4f8" },
+        { "id": "pink", "name": "PINK", "kind": "color", "color": "#ff4fd8" },
+        { "id": "cyan", "name": "CYAN", "kind": "color", "color": "#3ee6ff" }
+      ]
+    },
+    "extra": {
+      "name": "EXTRAS",
+      "options": [
+        { "id": "none", "name": "NONE", "kind": "pack" },
+        { "id": "cap", "name": "CAP", "kind": "attach", "bone": "head", "color": "#1a1030", "parts": [
+          { "prim": "cylinder", "r": 0.09, "h": 0.04, "y": 0.1 },
+          { "prim": "box", "w": 0.12, "h": 0.012, "d": 0.08, "y": 0.08, "z": 0.08 }
+        ] },
+        { "id": "glasses", "name": "GLASSES", "kind": "attach", "bone": "head", "color": "#141018", "parts": [
+          { "prim": "torus", "r": 0.022, "tube": 0.005, "x": -0.028, "y": 0.02, "z": 0.075 },
+          { "prim": "torus", "r": 0.022, "tube": 0.005, "x": 0.028, "y": 0.02, "z": 0.075 },
+          { "prim": "box", "w": 0.02, "h": 0.006, "d": 0.006, "y": 0.02, "z": 0.075 }
+        ] },
+        { "id": "wings", "name": "WINGS", "kind": "attach", "bone": "spine", "color": "#f4f7ff", "parts": [
+          { "prim": "box", "w": 0.28, "h": 0.16, "d": 0.02, "x": -0.2, "rz": 0.4 },
+          { "prim": "box", "w": 0.28, "h": 0.16, "d": 0.02, "x": 0.2, "rz": -0.4 }
+        ] },
+        { "id": "bow", "name": "BOW", "kind": "attach", "bone": "head", "color": "#ff4fd8", "parts": [
+          { "prim": "cone", "r": 0.04, "h": 0.06, "x": -0.04, "y": 0.1, "rz": 1.2 },
+          { "prim": "cone", "r": 0.04, "h": 0.06, "x": 0.04, "y": 0.1, "rz": -1.2 }
+        ] },
+        { "id": "halo", "name": "HALO", "kind": "attach", "bone": "head", "color": "#ffe14d", "parts": [
+          { "prim": "torus", "r": 0.09, "tube": 0.008, "y": 0.16, "rx": 1.57 }
+        ] }
+      ]
+    },
+    "size": {
+      "name": "SIZE",
+      "options": [
+        { "id": "game", "name": "GAME", "kind": "size", "scale": 1 },
+        { "id": "small", "name": "SMALL", "kind": "size", "scale": 0.82 },
+        { "id": "tall", "name": "TALL", "kind": "size", "scale": 1.15 }
+      ]
+    },
+    "fur": {
+      "name": "FUR",
+      "tint": "fur",
+      "options": [
+        { "id": "game", "name": "GAME", "kind": "pack" },
+        { "id": "fox", "name": "FOX", "kind": "color", "color": "#e0b060" },
+        { "id": "night", "name": "NIGHT", "kind": "color", "color": "#2a241c" },
+        { "id": "snow", "name": "SNOW", "kind": "color", "color": "#f2f0ea" },
+        { "id": "blue", "name": "BLUE", "kind": "color", "color": "#4aa8d8" }
+      ]
+    },
+    "collar": {
+      "name": "COLLAR",
+      "options": [
+        { "id": "none", "name": "NONE", "kind": "pack" },
+        { "id": "pink", "name": "PINK", "kind": "attach", "bone": "neck", "color": "#ff4fd8", "parts": [
+          { "prim": "torus", "r": 0.06, "tube": 0.012, "rx": 1.57 }
+        ] },
+        { "id": "cyan", "name": "CYAN", "kind": "attach", "bone": "neck", "color": "#3ee6ff", "parts": [
+          { "prim": "torus", "r": 0.06, "tube": 0.012, "rx": 1.57 }
+        ] },
+        { "id": "gold", "name": "GOLD", "kind": "attach", "bone": "neck", "color": "#ffe14d", "parts": [
+          { "prim": "torus", "r": 0.06, "tube": 0.012, "rx": 1.57 }
+        ] }
+      ]
+    }
+  },
+  "anatomy": {
+    "checker": "tools/adventure-anatomy.mjs",
+    "humanHeight": [1.15, 2.05],
+    "headFrac": [0.16, 0.45],
+    "feet": [-0.05, 0.08],
+    "petMin": 0.28,
+    "petLong": 1.15,
+    "petAboveHip": 0.08
+  },
+  "presets": [
+    { "id": "game", "name": "GAME LOOK", "eq": {} },
+    { "id": "neon-pony", "name": "NEON PONY", "eq": { "hair": "ponytail", "hairColor": "pink", "top": "pink", "bottom": "navy", "shoes": "cyan", "eyes": "neon" } },
+    { "id": "old-plain", "name": "OLD HEAD", "eq": { "head": "old", "hair": "pack", "hairColor": "game", "extra": "none" } }
+  ]
+}

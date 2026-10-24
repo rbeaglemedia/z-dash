@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "source": "shared/assets/370z-glb.js",
+  "cfgFile": "assets/370z.glb",
+  "defaults": {
+    "paint": "game",
+    "wheels": "game",
+    "spoiler": "none",
+    "caliper": "game",
+    "underglow": "none"
+  },
+  "sections": [
+    { "id": "paint", "name": "PAINT", "slots": ["paint"] },
+    { "id": "wheels", "name": "WHEELS", "slots": ["wheels", "caliper"] },
+    { "id": "aero", "name": "AERO", "slots": ["spoiler", "underglow"] },
+    { "id": "looks", "name": "LOOKS", "slots": ["favorites"] }
+  ],
+  "slots": {
+    "paint": {
+      "name": "BODY",
+      "options": [
+        { "id": "game", "name": "GAME", "kind": "game" },
+        { "id": "cyan", "name": "CYAN", "paint": "#1aa6c8", "glow": "#3ee6ff", "grid": "#9b5cff" },
+        { "id": "pink", "name": "PINK", "paint": "#e0359f", "glow": "#ff4fd8", "grid": "#3ee6ff" },
+        { "id": "gun", "name": "GUNMETAL", "paint": "#5c6068", "glow": "#ff2a3d", "grid": "#ff2a3d" },
+        { "id": "lime", "name": "LIME", "paint": "#3cc24a", "glow": "#7dff6b", "grid": "#ff4fd8" },
+        { "id": "purple", "name": "PURPLE", "paint": "#6a33d6", "glow": "#c08bff", "grid": "#3ee6ff" },
+        { "id": "gold", "name": "GOLD", "paint": "#d9a514", "glow": "#ffe14d", "grid": "#ff4fd8" },
+        { "id": "blackout", "name": "BLACKOUT", "paint": "#121318", "glow": "#3a7bff", "grid": "#3a7bff" },
+        { "id": "orange", "name": "ORANGE", "paint": "#ff7a1a", "glow": "#ffe14d", "grid": "#ff9a3d" }
+      ]
+    },
+    "wheels": {
+      "name": "RIM COLOR",
+      "options": [
+        { "id": "game", "name": "GAME", "kind": "game" },
+        { "id": "gun", "name": "GUN", "wheel": "#4a4f57", "wheelGlow": false },
+        { "id": "black", "name": "BLACK", "wheel": "#15161a", "wheelGlow": false },
+        { "id": "chrome", "name": "CHROME", "wheel": "#d8dde4", "wheelGlow": false },
+        { "id": "gold", "name": "GOLD", "wheel": "#e0b020", "wheelGlow": false },
+        { "id": "cyan", "name": "CYAN", "wheel": "#3ee6ff", "wheelGlow": true },
+        { "id": "pink", "name": "PINK", "wheel": "#ff4fd8", "wheelGlow": true }
+      ]
+    },
+    "spoiler": {
+      "name": "SPOILER",
+      "options": [
+        { "id": "none", "name": "NONE", "spoiler": null },
+        { "id": "duck", "name": "DUCK", "spoiler": "duck" },
+        { "id": "gtwing", "name": "GT WING", "spoiler": "gtwing" },
+        { "id": "twin", "name": "TWIN", "spoiler": "twin" },
+        { "id": "bolt", "name": "BOLT", "spoiler": "bolt" }
+      ]
+    },
+    "caliper": {
+      "name": "CALIPERS",
+      "options": [
+        { "id": "game", "name": "GAME", "kind": "game" },
+        { "id": "red", "name": "RED", "caliper": "#d1121f" },
+        { "id": "gold", "name": "GOLD", "caliper": "#e0b020" },
+        { "id": "cyan", "name": "CYAN", "caliper": "#3ee6ff" }
+      ]
+    },
+    "underglow": {
+      "name": "UNDERGLOW",
+      "options": [
+        { "id": "none", "name": "NONE", "underglow": null },
+        { "id": "cyan", "name": "CYAN", "underglow": "#3ee6ff" },
+        { "id": "pink", "name": "PINK", "underglow": "#ff4fd8" },
+        { "id": "lime", "name": "LIME", "underglow": "#7dff6b" }
+      ]
+    }
+  },
+  "design": {
+    "checker": "tools/car-design-check.mjs",
+    "rules": [
+      "Close copies match the 3D Z",
+      "Wheels are real wheels",
+      "Resolution stays readable",
+      "Far cars may be simpler",
+      "The frame stays cheap",
+      "Same GLB file and path"
+    ]
+  }
+}
