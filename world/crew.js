@@ -444,10 +444,13 @@ function customSpec(sm){
 }
 function humanSpec(gait,phase,tSec,allowCustom){
   if(gait==='dance'){
-    if(allowCustom!==false){const sm=sampleHumanSelected(tSec);if(sm)return customSpec(sm);}
-    return builtinDance(((tSec%8)+8)%8/8);
+    let spec=null;
+    if(allowCustom!==false){const sm=sampleHumanSelected(tSec);if(sm)spec=customSpec(sm);}
+    if(!spec)spec=builtinDance(((tSec%8)+8)%8/8);
+    spec.gait='dance';spec.phase=phase||0;return spec;
   }
   const spec=baseSpec(),s=Math.sin((phase||0)*Math.PI*2);
+  spec.gait=gait||'idle';spec.phase=phase||0;
   if(gait!=='walk'&&gait!=='run'){
     const b=Math.sin((phase||0)*Math.PI*2);
     spec.bob=.016*b;spec.headYaw=.18*Math.sin((phase||0)*Math.PI*2*.37);spec.headPitch=.04*b;
@@ -576,6 +579,29 @@ function chain(forward,bend,l1,l2,out){
   return {knee,ankle};
 }
 function midP(a,b){return V((a.x+b.x)*.5,(a.y+b.y)*.5,(a.z+b.z)*.5);}
+function walkStride(gait){return gait==='run'?0.34:0.22;}
+function footPlant(phase,gait){
+  const stride=walkStride(gait),stance=0.62,liftMax=gait==='run'?0.08:0.045;
+  const u=((phase%1)+1)%1,travel=stride*stance,z0=travel*0.55,z1=z0-travel;
+  if(u<stance)return {z:z0-u*stride,lift:0,planted:true};
+  const t=(u-stance)/(1-stance),ease=t*t*(3-2*t);
+  return {z:z1+(z0-z1)*ease,lift:Math.sin(Math.PI*t)*liftMax,planted:false};
+}
+function ikKnee(hip,ankle,thigh,shin){
+  let d=V(ankle.x-hip.x,ankle.y-hip.y,ankle.z-hip.z);
+  let dist=Math.hypot(d.x,d.y,d.z),reach=thigh+shin-0.001;
+  if(dist>reach){ankle=add(hip,mul(d,(reach)/(dist||1)));d=V(ankle.x-hip.x,ankle.y-hip.y,ankle.z-hip.z);dist=reach;}
+  if(dist<0.02)dist=0.02;
+  const n=mul(d,1/dist),along=(thigh*thigh-shin*shin+dist*dist)/(2*dist);
+  const mid=add(hip,mul(n,along));
+  const fwd=V(0,0,1),dot=fwd.x*n.x+fwd.y*n.y+fwd.z*n.z;
+  let px=fwd.x-n.x*dot,py=fwd.y-n.y*dot,pz=fwd.z-n.z*dot,pl=Math.hypot(px,py,pz)||1;
+  px/=pl;py/=pl;pz/=pl;
+  const h=Math.sqrt(Math.max(0,thigh*thigh-along*along));
+  let knee=add(mid,V(px*h,py*h,pz*h));
+  if(knee.z<mid.z)knee=add(mid,V(-px*h,-py*h,-pz*h));
+  return {knee,ankle};
+}
 function torsoRing(center,side,fwd,halfW,halfD){
   const lx=mul(side,-halfW),rx=mul(side,halfW),fz=mul(fwd,halfD),bz=mul(fwd,-halfD);
   return [add(add(center,lx),fz),add(add(center,rx),fz),add(add(center,rx),bz),add(add(center,lx),bz)];
@@ -584,25 +610,50 @@ function figurePoints(look,spec){
   const hip=V((spec.sway||0)*.04,look.thigh+look.shin+(spec.bob||0),0);
   const sway=spec.sway||0,lean=spec.lean||0;
   const up=rz(rx(V(0,1,0),lean),sway),side=rz(rx(V(1,0,0),lean),sway),fwd=rz(rx(V(0,0,1),lean),sway);
-  const chest=add(hip,mul(up,look.torso)),neck=add(chest,mul(up,look.neck)),head=add(neck,mul(up,look.head*.85));
+  const chest=add(hip,mul(up,look.torso));
+  const neckLen=Math.max(look.neck,.07);
+  const neckBase=add(chest,mul(fwd,look.shoulder*.12));
+  const neck=add(neckBase,mul(up,neckLen)),head=add(neck,mul(up,look.head));
   const halfW=look.shoulder,chestD=halfW*.72;
   const chestR=torsoRing(chest,side,fwd,halfW,chestD);
   const bellyR=torsoRing(add(hip,mul(up,look.torso*.48)),side,fwd,halfW*.86,halfW*.98);
   const hipR=torsoRing(hip,side,fwd,Math.max(look.hip*1.15,halfW*.72),halfW*.62);
   const shL=add(midP(chestR[0],chestR[3]),mul(side,-look.armR));
   const shR=add(midP(chestR[1],chestR[2]),mul(side,look.armR));
-  const hpL=add(hip,V(-look.hip,-.02,0)),hpR=add(hip,V(look.hip,-.02,0));
+  const hpL=add(midP(hipR[0],hipR[3]),mul(up,-.02)),hpR=add(midP(hipR[1],hipR[2]),mul(up,-.02));
   const out=spec.armOut==null?0.2:spec.armOut;
-  const aL=chain(spec.armL||0,spec.elbL||0,look.uarm,look.farm,-out);
-  const aR=chain(spec.armR||0,spec.elbR||0,look.uarm,look.farm,out);
-  const lL=chain(spec.legL||0,spec.kneeL||0,look.thigh,look.shin,-.05);
-  const lR=chain(spec.legR||0,spec.kneeR||0,look.thigh,look.shin,.05);
+  const gait=spec.gait||'idle',phase=spec.phase||0,moving=gait==='walk'||gait==='run';
+  let aL,aR,knL,anL,knR,anR,ftL,ftR;
+  if(gait==='dance'){
+    aL=chain(spec.armL||0,spec.elbL||0,look.uarm,look.farm,-out);
+    aR=chain(spec.armR||0,spec.elbR||0,look.uarm,look.farm,out);
+    const lL=chain(spec.legL||0,spec.kneeL||0,look.thigh,look.shin,-.05);
+    const lR=chain(spec.legR||0,spec.kneeR||0,look.thigh,look.shin,.05);
+    knL=add(hpL,lL.knee);anL=add(hpL,lL.ankle);knR=add(hpR,lR.knee);anR=add(hpR,lR.ankle);
+    ftL=add(anL,V(0,-.02,.09));ftR=add(anR,V(0,-.02,.09));
+  }else{
+    const soleY=Math.max(0.028,look.legR*.7);
+    const L=moving?footPlant(phase,gait):{z:0.02,lift:0,planted:true};
+    const R=moving?footPlant(phase+0.5,gait):{z:0.02,lift:0,planted:true};
+    const lk=ikKnee(hpL,V(hpL.x,soleY+L.lift,hpL.z+L.z),look.thigh,look.shin);
+    const rk=ikKnee(hpR,V(hpR.x,soleY+R.lift,hpR.z+R.z),look.thigh,look.shin);
+    knL=lk.knee;anL=lk.ankle;knR=rk.knee;anR=rk.ankle;
+    ftL=V(anL.x,anL.y,anL.z+0.07);
+    ftR=V(anR.x,anR.y,anR.z+0.07);
+    if(moving){
+      const lead=L.z-R.z,arm=Math.max(-1,Math.min(1,lead/(walkStride(gait)*0.5)));
+      const swing=gait==='run'?0.72:0.55;
+      aL=chain(-arm*swing,0.35,look.uarm,look.farm,-out);
+      aR=chain(arm*swing,0.35,look.uarm,look.farm,out);
+    }else{
+      aL=chain(spec.armL||0,spec.elbL||0,look.uarm,look.farm,-out);
+      aR=chain(spec.armR||0,spec.elbR||0,look.uarm,look.farm,out);
+    }
+  }
   const elL=add(shL,aL.knee),wrL=add(shL,aL.ankle),elR=add(shR,aR.knee),wrR=add(shR,aR.ankle);
-  const knL=add(hpL,lL.knee),anL=add(hpL,lL.ankle),knR=add(hpR,lR.knee),anR=add(hpR,lR.ankle);
-  const ftL=add(anL,V(0,-.02,.09)),ftR=add(anR,V(0,-.02,.09));
   const pony0=add(head,V(0,look.head*.1,-look.head*.75));
   const pony1=add(pony0,V(0,-.16,-.06)),pony2=add(pony1,V((spec.sway||0)*.2,-.14,-.03));
-  return {hip,chest,neck,head,neckBase:chest,shL,shR,hpL,hpR,elL,wrL,elR,wrR,knL,anL,knR,anR,ftL,ftR,pony0,pony1,pony2,
+  return {hip,chest,neck,head,neckBase,shL,shR,hpL,hpR,elL,wrL,elR,wrR,knL,anL,knR,anR,ftL,ftR,pony0,pony1,pony2,
     cFL:chestR[0],cFR:chestR[1],cBR:chestR[2],cBL:chestR[3],
     bFL:bellyR[0],bFR:bellyR[1],bBR:bellyR[2],bBL:bellyR[3],
     yFL:hipR[0],yFR:hipR[1],yBR:hipR[2],yBL:hipR[3],
@@ -625,8 +676,8 @@ function shadeHex(hex,amt){
   return '#'+ch((n>>16)&255)+ch((n>>8)&255)+ch(n&255);
 }
 function paintFigure(ctx,look,spec,project,yaw,origin){
-  const pts=figurePoints(look,spec),o=origin||{x:0,y:0,z:0},P={};
-  for(const k in pts){const w=xform(pts[k],o.x,o.y,o.z,yaw||0);P[k]=project(w[0],w[1],w[2]);}
+  const pts=figurePoints(look,spec),o=origin||{x:0,y:0,z:0},P={},rootZ=spec.rootZ||0;
+  for(const k in pts){const p=pts[k];const w=xform(V(p.x,p.y,p.z+rootZ),o.x,o.y,o.z,yaw||0);P[k]=project(w[0],w[1],w[2]);}
   const items=[];
   ctx.shadowBlur=0;
   const push=(a,b,r,fill,glow)=>{if(P[a]&&P[b])items.push({z:(P[a][2]+P[b][2])*.5,draw(){bone(ctx,P[a],P[b],r,fill,glow);}});};
@@ -917,10 +968,21 @@ window.CREW={
   preview,
   parts(who){const w=who==='boy'?'boy':who==='girl'?'girl':whoNow();return (st.rigs&&st.rigs[w]&&st.rigs[w].parts)||logical[w];},
   debugHuman(gait,tSec,phase){syncDanceOpts();return humanSpec(gait,phase==null?tSec:phase,tSec,true);},
-  debugPaint(ctx,who,gait,phase,yaw,w,h){
+  debugPaint(ctx,who,gait,phase,yaw,w,h,travel){
     if(!ctx)return;
     const W=w||360,H=h||480;
-    drawOne(ctx,who==='boy'?'boy':'girl',humanSpec(gait||'walk',phase==null?0:phase,0,false),W*.5,H*.62,Math.min(H*.9,W*.7),yaw||0);
+    const spec=humanSpec(gait||'walk',phase==null?0:phase,0,false);
+    if(travel)spec.rootZ=travel;
+    drawOne(ctx,who==='boy'?'boy':'girl',spec,W*.5,H*.62,Math.min(H*.9,W*.7),yaw||0);
+  },
+  debugPose(who,gait,phase){
+    const w=who==='boy'?'boy':'girl',look=LOOK[w]||LOOK.girl;
+    const spec=humanSpec(gait||'walk',phase==null?0:phase,0,false);
+    const p=figurePoints(look,spec),stride=walkStride(gait||'walk');
+    const pack=q=>q?[+q.x.toFixed(4),+q.y.toFixed(4),+q.z.toFixed(4)]:null;
+    return {stride,headR:look.head,neck:pack(p.neck),head:pack(p.head),neckBase:pack(p.neckBase),
+      shL:pack(p.shL),shR:pack(p.shR),elL:pack(p.elL),elR:pack(p.elR),hpL:pack(p.hpL),hpR:pack(p.hpR),
+      anL:pack(p.anL),anR:pack(p.anR),ftL:pack(p.ftL),ftR:pack(p.ftR),cFL:pack(p.cFL),cBL:pack(p.cBL),yFL:pack(p.yFL)};
   },
   debugPet(type,tSec){syncDanceOpts();st.pet=type;return petDanceQ(type,tSec);},
   debugGround(type,gait,phase,tSec){syncDanceOpts();return groundPetQ(type,gait,phase==null?0.2:phase,tSec,null);},
