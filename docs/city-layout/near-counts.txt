@@ -626,4 +626,6 @@
 }
 ---PLAZA---
 {"A":["13 ARCADE lot 160,240,310,490","17 CAFE lot -540,-472,310,490"],"B":["13 ARCADE lot 160,240,310,490","17 CAFE lot -540,-472,310,490"]}
+---TUNNEL---
+{"changes":"none","A":[{"label":"south","nearest":"17 CAFE","meters":144},{"label":"north","nearest":"19 CAFE","meters":143}],"B":[{"label":"south","nearest":"17 CAFE","meters":144},{"label":"north","nearest":"19 CAFE","meters":143}]}
 svg written

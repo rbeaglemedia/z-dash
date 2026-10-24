@@ -6,7 +6,12 @@ import fs from 'fs';
 const ROADX = [-550, -450, -350, -250, -150, 150, 250, 350, 450, 550];
 const ROADZ = [-300, -100, 100, 300, 500, 700, 900, 1100, 1300, 1500, 1700, 1900, 2100];
 const HW = { x: -450, hw: 15 };
-const TUN = { x0: -530, x1: -370, z0: 500, z1: 700 };
+const TUN = { x0: -530, x1: -370, z0: 500, z1: 700, bx0: -465, bx1: -435, ceil: 10, top: 34 };
+// Bore extended 60 m past each mouth. That is the lead-in the tunnel drawing already uses.
+const APPROACH = [
+  { x0: -465, x1: -435, z0: 440, z1: 500, tag: 'south-mouth' },
+  { x0: -465, x1: -435, z0: 700, z1: 760, tag: 'north-mouth' }
+];
 const RIV = { z0: 1780, z1: 1840 };
 const PARK = { x0: -340, x1: -160, z0: 1010, z1: 1190 };
 const ZONE = { x0: -400, x1: 540, z0: 1860, z1: 2100 };
@@ -152,6 +157,7 @@ function validate(name, list) {
     const hits = gapRoad(b);
     if (hits.length) problems.push('road ' + b.id + ' ' + hits.join(','));
     if (overlap(b, TUN)) problems.push('tunnel ' + b.id);
+    for (const a of APPROACH) if (overlap(b, a)) problems.push('approach ' + b.id + ' ' + a.tag);
     if (b.z1 > RIV.z0 && b.z0 < RIV.z1) problems.push('river ' + b.id);
     const cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
     if (Math.abs(cx) < 140 && cz > -80 && cz < 1700) problems.push('runway ' + b.id);
@@ -261,6 +267,22 @@ console.log('---WORST---');
 console.log(JSON.stringify({ current: worst(CUR), A: worst(OPT_A), B: worst(OPT_B) }, null, 2));
 console.log('---PLAZA---');
 console.log(JSON.stringify({ A: plazaHits(OPT_A), B: plazaHits(OPT_B) }));
+function mouthGap(list) {
+  const mouths = [['south', -450, 500], ['north', -450, 700]];
+  return mouths.map(([label, x, z]) => {
+    let best = 1e9, id = '';
+    for (const raw of list) {
+      const b = box(raw);
+      const dx = x < b.x0 ? b.x0 - x : x > b.x1 ? x - b.x1 : 0;
+      const dz = z < b.z0 ? b.z0 - z : z > b.z1 ? z - b.z1 : 0;
+      const d = Math.hypot(dx, dz);
+      if (d < best) { best = d; id = b.id + ' ' + b.name; }
+    }
+    return { label, nearest: id, meters: Math.round(best) };
+  });
+}
+console.log('---TUNNEL---');
+console.log(JSON.stringify({ changes: 'none', A: mouthGap(OPT_A), B: mouthGap(OPT_B) }));
 
 const COL = {
   HOME: '#7dff6b', SHOWROOM: '#3ee6ff', NEON_PAINT: '#ff4fd8', GARAGE: '#ffb020',
@@ -313,9 +335,13 @@ function svgFor(title, subtitle, list, districts) {
   }
   parts.push(`<text x="${X(0)}" y="${Y(1868)}" fill="#ffb020" font-size="11" text-anchor="middle" font-family="ui-sans-serif,sans-serif">BRIDGE</text>`);
   parts.push(`<text x="${X(-450)}" y="${Y(1868)}" fill="#ffb020" font-size="11" text-anchor="middle" font-family="ui-sans-serif,sans-serif">HWY BRIDGE</text>`);
-  // tunnel
+  // tunnel, unchanged. Pale bars are the 60 m bore approaches, kept clear.
   parts.push(`<rect x="${X(-530)}" y="${Y(700)}" width="${X(-370) - X(-530)}" height="${Y(500) - Y(700)}" fill="rgba(125,255,107,0.15)" stroke="#7dff6b" stroke-dasharray="4 3"/>`);
   parts.push(`<text x="${X(-450)}" y="${Y(600)}" fill="#7dff6b" font-size="11" text-anchor="middle" font-family="ui-sans-serif,sans-serif">TUNNEL</text>`);
+  parts.push(`<text x="${X(-450)}" y="${Y(584)}" fill="#7dff6b" font-size="10" text-anchor="middle" font-family="ui-sans-serif,sans-serif">unchanged</text>`);
+  for (const a of APPROACH) {
+    parts.push(`<rect x="${X(a.x0)}" y="${Y(a.z1)}" width="${X(a.x1) - X(a.x0)}" height="${Y(a.z0) - Y(a.z1)}" fill="rgba(125,255,107,0.28)" stroke="#7dff6b"/>`);
+  }
   // park
   parts.push(`<rect x="${X(PARK.x0)}" y="${Y(PARK.z1)}" width="${X(PARK.x1) - X(PARK.x0)}" height="${Y(PARK.z0) - Y(PARK.z1)}" fill="rgba(10,60,30,0.85)" stroke="#7dff6b"/>`);
   parts.push(`<text x="${X(-250)}" y="${Y(1100)}" fill="#7dff6b" font-size="13" text-anchor="middle" font-family="ui-sans-serif,sans-serif">PARK</text>`);
@@ -358,7 +384,7 @@ function svgFor(title, subtitle, list, districts) {
     ly += 20;
   }
   ly += 8;
-  const notes = ['Cyan strip = runway flying lane', 'Amber = highway, 30 m', 'Pink oval = race track', 'Pink dome = soccer field', 'Green dash = builder sandbox', '★ = tall roof (62 m or 239 m)'];
+  const notes = ['Cyan strip = runway flying lane', 'Amber = highway, 30 m', 'Green hill = tunnel, unchanged', 'Green bars = clear tunnel mouths', 'Pink oval = race track', 'Pink dome = soccer field', 'Green dash = builder sandbox', '★ = tall roof (62 m or 239 m)'];
   for (const n of notes) {
     parts.push(`<text x="${W - 220}" y="${ly}" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">${n}</text>`);
     ly += 16;

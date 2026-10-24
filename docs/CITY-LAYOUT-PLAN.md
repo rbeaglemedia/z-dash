@@ -17,6 +17,7 @@ This plan keeps every building, every height, and every footprint. It keeps the 
 - **The tower** alone in downtown.
 - **The builder island** on the pads it already uses, north of the river.
 - **The runway** empty down the middle, from spawn to the river. She still starts at (0, 0), looking up the airport.
+- **The west highway tunnel** left exactly as it is, including the open mouths you line up on to fly through.
 
 The two options are the same map. The only difference is the Sky Drop roof (the 62 m pad).
 
@@ -47,13 +48,23 @@ Same streets, same buildings, same tower. Only the cyan Sky Drop roof crosses th
 
 - The runway, the taxiway, the half-pipe, the loop, and the ramps beside the runway.
 - The river, both bridges, and the river-edge jumps. The small jump that just clears the water at about 80 mph stays the same size and the same place on the bank.
-- The tunnel on the west highway (the green dashed hill).
+- The west highway tunnel. Same hill, same bore, same ceiling, same guide lines, same place. The mouths stay clear. Details and the flag are in the tunnel section below.
 - The park, the soccer dome, the road out to the dome, and the race track.
 - The builder sandbox north of the river, and both builder HQs. They stay on today's pads. Sliding them along the bank would put them on top of the north-bank jumps.
 - The road centerlines. Traffic, Hot Drop, the tow trucks, and the minimap all read those lines. New roads would be a separate plan.
 - Spawn at (0, 0). Ellie's saved home (it looks up a HOME building, not a coordinate). The Garage Z link (it looks up a GARAGE). Objectives.
 - Traffic stays 30 cars (12 simulated, 18 dots).
 - Both dance halls keep a 64 m mural wall, 18 m and 20 m tall, with the Z Company Arts sign. The wall faces east, onto a street, in both options. It is not smaller than today's mural.
+
+## Tunnel
+
+**Tunnel changes: none.** The layout did not need any.
+
+The tunnel stays the hill on the west highway at x −530..−370, z 500..700. The hill is 160 m wide, 200 m long, and 34 m tall. The bore is the highway itself, 30 m wide (x −465..−435). The ceiling is 10 m. Flying into that ceiling still eases you down instead of crashing. The two cyan guide lines stay on the bore edges, from the south mouth to the north mouth, 1 m off the road. Nothing in this plan resizes, reshapes, lengthens, or moves any of that.
+
+The mouths stay clear for 60 m, which is the lead-in the game already uses when it draws the tunnel. No new building enters that bore, on either side. The nearest shop to the south mouth is the south pizza cafe, 138 m down the road and 25 m off the side of the bore (144 m from the mouth center). The nearest shop to the north mouth is the north pizza cafe, 138 m down the road and 21 m off the bore (143 m from the mouth center). The west jump roof, in Option A, sits beside the runway, about 140 m east of the hill, not on the highway.
+
+The pale green bars on the maps are those two clear mouths. They are not a new tunnel.
 
 There are still a lot of ramps. This pass does not remove any. Two old plaza rectangles sit under a new arcade and a new cafe. At build time those two plazas, ramps included, slide to the nearest empty block. They are not deleted. The airport ramps, river jumps, highway jump, street ramp, and taxi ramp are not in those plazas and do not move.
 
@@ -138,6 +149,7 @@ Ellie is 10 and ahead of that on games, and the game is a web canvas on a phone 
 4. **Downtown stays one tower until a PC build.** That district is the slot for a skyline. Adding offices next to the tower on the phone would spend the shot this plan just made cheap.
 5. **A school on Home Street, a fire station, or a train on the roads that already exist** would make the city feel lived-in. Each new building is another close-up. They wait until the phone holds its frame. The roads can already carry a bus or a train with no new pavement.
 6. **Next round is a slide, not a redraw.** The two options differ by one building so a note like "the car shops feel far from home" can move one row. The black boxes stay until the building-look work is cleared.
+7. **A second tunnel, only as a comparison, and not on this map.** The west highway tunnel stays the one she already flies. If you want another to set beside it, put a separate short one on the empty east avenue at x = 350, from z 940 to 1060, between Play and the tower. Same 30 m bore and same 10 m ceiling, so the flying physics match, but 120 m long instead of 200 m. It does not touch the existing hill, the guide lines, or either mouth. It is not in Option A or Option B.
 
 ## Architecture Check packet
 
@@ -150,7 +162,7 @@ For the Architecture Check agent, bc-c7ace59c. This PR is a plan. It does not ch
 | Dance mural | Seeds 12 and 18 keep a 64 m east face, 18 m and 20 m tall. The wall is not shorter than today's 64 m face. Antenna heights (14 m and 16 m) stay at build. The sign stays Z Company Arts. |
 | Black placeholder boxes | Unchanged. No new meshes. |
 | Airport | Runway, taxiway, half-pipe, loop, and shoulder ramps unchanged. Both options are drawn around them. |
-| Tunnel | Bounds unchanged. No building overlaps it. |
+| Tunnel | No change. Hill, bore, 10 m ceiling, and cyan guide lines stay. Both 60 m mouths are clear of new buildings. A second tunnel is an idea only, on the east avenue, and is not in either option. |
 | River and bridges | Unchanged. River-edge jumps unchanged, including the small jump that clears the water at about 80 mph. |
 | Builder HQs | Seeds 23 and 24 stay on today's pads. Moving them overlaps the north-bank jumps. Sandbox north of the river unchanged. |
 | Roads, traffic, Hot Drop, tows | Centerlines unchanged. Traffic stays 30. No building covers a tow point. |
