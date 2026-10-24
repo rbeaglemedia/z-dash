@@ -470,6 +470,122 @@ function countTinyDraws(fn) {
     };
   }
 
+  function bytesOfB64(b64) {
+    const n = atob(b64);
+    const s = new Uint8Array(n.length);
+    for (let i = 0; i < n.length; i++) s[i] = n.charCodeAt(i) & 255;
+    return s;
+  }
+
+  async function sha256(buf) {
+    const hash = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function geomStats(root) {
+    const uuids = new Set();
+    let meshes = 0, verts = 0;
+    if (root && root.traverse) root.traverse((o) => {
+      if (!o.isMesh || !o.geometry || !o.geometry.attributes || !o.geometry.attributes.position) return;
+      meshes++;
+      verts += o.geometry.attributes.position.count;
+      if (o.geometry.uuid) uuids.add(o.geometry.uuid);
+    });
+    return { meshes, verts, uuids };
+  }
+
+  async function sourceModel() {
+    const expect = window.__CAR_EXPECT || {};
+    const reasons = [];
+    const out = {
+      ok: true,
+      reasons,
+      file: '',
+      source: '',
+      bytesha: '',
+      embedSha: '',
+      creditSha: '',
+      script: expect.script || 'shared/assets/370z-glb.js',
+      bytes: expect.bytes || 0,
+      playerVerts: 0,
+      cloneVerts: 0,
+      sharedGeom: 0,
+      fetched: []
+    };
+    function bad(msg) { out.ok = false; reasons.push(msg); }
+    try {
+      if (!expect.bytesha) bad('checker has no sha256 for shared/assets/370z-glb.js');
+      const embed = window.ZD_EMBED || {};
+      const cfgFile = (embed.cfg && embed.cfg.file) || '';
+      out.file = cfgFile;
+      const wantFile = expect.file || 'assets/370z.glb';
+      if (cfgFile !== wantFile) bad('runtime cfg.file is ' + (cfgFile || 'missing') + ', expected ' + wantFile);
+      const asset = window.ZD_ASSET_GLB || '';
+      if (!asset) bad('window.ZD_ASSET_GLB is empty');
+      if (embed.glb && asset && embed.glb !== asset) bad('ZD_EMBED.glb is not the same string as ZD_ASSET_GLB');
+      if (asset && expect.bytesha) {
+        out.embedSha = await sha256(bytesOfB64(asset));
+        if (out.embedSha !== expect.bytesha) {
+          bad('ZD_ASSET_GLB sha256 ' + out.embedSha.slice(0, 12) + ' does not match ' + out.script + ' ' + expect.bytesha.slice(0, 12));
+        }
+      }
+      const X = window.ZD && ZD.Xray;
+      if (!X) bad('ZD.Xray is missing');
+      else {
+        out.source = X.source || '';
+        if (X.source !== 'glb') bad('player source is "' + (X.source || '') + '", expected glb from ' + wantFile);
+        const credit = X.credit || null;
+        const cfile = (credit && credit.file) || '';
+        if (cfile !== wantFile) bad('ZD.Xray.credit.file is ' + (cfile || 'missing') + ', expected ' + wantFile);
+        if (!credit || !credit.buffer) bad('ZD.Xray.credit.buffer is missing');
+        else if (expect.bytesha) {
+          out.creditSha = await sha256(credit.buffer);
+          out.bytesha = out.creditSha;
+          if (out.creditSha !== expect.bytesha) {
+            bad('loaded GLB sha256 ' + out.creditSha.slice(0, 12) + ' does not match ' + out.script + ' ' + expect.bytesha.slice(0, 12));
+          }
+        }
+        const pg = geomStats(X.car);
+        out.playerVerts = pg.verts;
+        if (window.TRAFFIC && !TRAFFIC._clone && typeof TRAFFIC._bake === 'function') {
+          try { TRAFFIC._bake('0:0:0'); } catch (e) {}
+        }
+        const cg = geomStats(window.TRAFFIC && TRAFFIC._clone);
+        out.cloneVerts = cg.verts;
+        let shared = 0;
+        cg.uuids.forEach((id) => { if (pg.uuids.has(id)) shared++; });
+        out.sharedGeom = shared;
+      }
+      const zGlb = [];
+      document.querySelectorAll('script[src]').forEach((el) => {
+        try {
+          const u = new URL(el.getAttribute('src'), location.href);
+          const rel = u.pathname.replace(/^\//, '').split('?')[0];
+          if (/370z/i.test(rel) || /\.(glb|gltf)$/i.test(rel)) zGlb.push(rel);
+        } catch (e) {}
+      });
+      const canonScript = (s) => s === 'shared/assets/370z-glb.js' || s.endsWith('/shared/assets/370z-glb.js');
+      if (!zGlb.some(canonScript)) bad('the page did not load shared/assets/370z-glb.js');
+      zGlb.filter((s) => !canonScript(s)).forEach((s) => {
+        bad('the page loads a second model script ' + s);
+      });
+      const fetched = [];
+      (performance.getEntriesByType('resource') || []).forEach((e) => {
+        if (/\.glb(\?|$)/i.test(e.name) || /\.gltf(\?|$)/i.test(e.name)) fetched.push(String(e.name).split('?')[0]);
+      });
+      out.fetched = fetched;
+      fetched.forEach((name) => {
+        if (!/\/assets\/370z\.glb$/.test(name) && !/\/shared\/assets\/370z\.glb$/.test(name)) {
+          bad('the page fetched a different model ' + name);
+        }
+      });
+    } catch (e) {
+      bad('source hash failed: ' + (e && e.message || e));
+    }
+    window.__CAR_SOURCE = out;
+    return out;
+  }
+
   async function boot() {
     errors.length = 0;
     hideChrome();
@@ -490,10 +606,15 @@ function countTinyDraws(fn) {
       const ctx3 = ZD.Xray.renderer.getContext();
       gl = ctx3.getParameter(ctx3.RENDERER) + ' / ' + ctx3.getParameter(ctx3.VENDOR);
     } catch (e) { gl = 'unknown'; }
+    let source = null;
+    try { source = await sourceModel(); } catch (e) {
+      source = { ok: false, reasons: ['source hash failed: ' + (e && e.message || e)] };
+    }
     return {
       ok: true,
       errors,
       gl,
+      source,
       cloned: (TRAFFIC.stats && TRAFFIC.stats().clonedMeshes) || 0,
       cars: (TRAFFIC.cars || []).length,
       flags: codeFlags(),
@@ -527,10 +648,17 @@ async function shot(spec) {
   if (!car) throw new Error('boot first');
   const gap = gapFor(spec);
   spec.gap = +gap.toFixed(2);
+  const srcModel = window.__CAR_SOURCE;
+  const sha = srcModel && (srcModel.bytesha || srcModel.creditSha || '');
+  const glbNote = !srcModel ? ''
+    : (srcModel.ok
+      ? '  ·  same GLB ' + (srcModel.file || 'assets/370z.glb') + ' ' + String(sha).slice(0, 12)
+      : '  ·  WRONG GLB');
   spec.sub = spec.sub || (
     (spec.range === 'far' ? 'Far range ' : 'Close range ') + spec.dist + ' m'
     + '  ·  cars ' + spec.gap + ' m apart'
     + (spec.steer ? '  ·  front axle steered 0.45 rad' : '')
+    + glbNote
   );
   pose = {
       az: spec.az, el: spec.el, dist: spec.dist, gap,

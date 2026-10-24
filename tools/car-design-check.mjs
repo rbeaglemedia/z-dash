@@ -10,6 +10,7 @@
  *
  * Exit 0 pass, 1 design fail, 2 checker failure.
  */
+import crypto from 'crypto';
 import fs from 'fs';
 import http from 'http';
 import os from 'os';
@@ -64,9 +65,10 @@ function mime(file) {
 
 function readCommit(root) {
   try {
+    const git = (args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
     return {
-      sha: execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
-      branch: execFileSync('git', ['-C', root, 'rev-parse', '--abbrev-ref', 'HEAD'], { encoding: 'utf8' }).trim()
+      sha: git(['rev-parse', 'HEAD']),
+      branch: git(['rev-parse', '--abbrev-ref', 'HEAD'])
     };
   } catch (e) {
     return { sha: '', branch: '', error: e.message };
@@ -77,6 +79,172 @@ function readText(root, rel) {
   const file = path.join(root, rel);
   if (!fs.existsSync(file)) return '';
   return fs.readFileSync(file, 'utf8');
+}
+
+const CANON_SCRIPT = 'shared/assets/370z-glb.js';
+const CANON_FILE = 'assets/370z.glb';
+const COPY_FILES = [
+  'world/traffic.js',
+  'shared/traffic-tune.js',
+  'shared/car-draw.js',
+  'world/garage.js',
+  'world/garagez.js',
+  'world/neon-paint.js'
+];
+const PAGES = ['world.html', 'world-split.html', 'neon-paint.html'];
+
+function stripComments(src) {
+  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:\\])\/\/.*$/gm, '$1');
+}
+
+function canonGlb(root) {
+  const raw = readText(root, CANON_SCRIPT);
+  if (!raw) return { ok: false, script: CANON_SCRIPT, file: CANON_FILE, bytes: 0, bytesha: '', reason: CANON_SCRIPT + ' is missing' };
+  const m = raw.match(/window\.ZD_ASSET_GLB\s*=\s*["']([A-Za-z0-9+/=]+)["']/);
+  if (!m) {
+    return { ok: false, script: CANON_SCRIPT, file: CANON_FILE, bytes: 0, bytesha: '', reason: CANON_SCRIPT + ' does not assign window.ZD_ASSET_GLB to one base64 string' };
+  }
+  const bytes = Buffer.from(m[1], 'base64');
+  if (bytes.slice(0, 4).toString('ascii') !== 'glTF') {
+    return { ok: false, script: CANON_SCRIPT, file: CANON_FILE, bytes: bytes.length, bytesha: '', reason: CANON_SCRIPT + ' does not decode to a GLB' };
+  }
+  return {
+    ok: true,
+    script: CANON_SCRIPT,
+    file: CANON_FILE,
+    bytes: bytes.length,
+    bytesha: crypto.createHash('sha256').update(bytes).digest('hex'),
+    reason: ''
+  };
+}
+
+function isCanonPath(p) {
+  const n = String(p || '').replace(/^\.\//, '').replace(/^\/+/, '');
+  return n === CANON_FILE || n === 'shared/assets/370z.glb';
+}
+
+function glbPaths(code) {
+  const out = [];
+  const re = /['"`]([^'"`\s]+\.(?:glb|gltf))['"`]/gi;
+  let m;
+  while ((m = re.exec(code))) out.push(m[1]);
+  return out;
+}
+
+function pageScripts(html) {
+  const srcs = [];
+  const re = /<script\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/gi;
+  let m;
+  while ((m = re.exec(html))) srcs.push(m[1].split('?')[0].replace(/^\.\//, ''));
+  return srcs;
+}
+
+function extraModelFiles(root) {
+  const hits = [];
+  function walk(dir, rel) {
+    if (!fs.existsSync(dir)) return;
+    for (const name of fs.readdirSync(dir)) {
+      if (name === 'node_modules' || name === '.git' || name === 'test-results') continue;
+      const abs = path.join(dir, name);
+      const r = rel ? rel + '/' + name : name;
+      let st;
+      try { st = fs.statSync(abs); } catch (e) { continue; }
+      if (st.isDirectory()) walk(abs, r);
+      else if (/\.(glb|gltf)$/i.test(name) || (/370z/i.test(name) && name.endsWith('.js'))) {
+        if (r !== CANON_SCRIPT) hits.push(r);
+      }
+    }
+  }
+  walk(path.join(root, 'shared'), 'shared');
+  walk(path.join(root, 'world'), 'world');
+  return hits;
+}
+
+function kenneyBody(rel, code) {
+  const reasons = [];
+  if (code.includes('ZD_ASSET_TRAFFIC')) {
+    reasons.push(rel + ' reads ZD_ASSET_TRAFFIC. That pack is Kenney traffic, not the 370Z.');
+  }
+  const re = /(?:loadTraffic\s*\(|ZD_EMBED\s*\.\s*traffic\b)[\s\S]{0,800}/g;
+  let m;
+  while ((m = re.exec(code))) {
+    const chunk = m[0];
+    const takesBody = /\.add\s*\(/.test(chunk) || /_clone\s*=/.test(chunk) || /\.clone\s*\(\s*true\s*\)/.test(chunk);
+    if (takesBody && !/isLight/.test(chunk)) {
+      reasons.push(rel + ' builds a body from the Kenney traffic pack instead of ZD.Xray.car.');
+      break;
+    }
+    if (/scene\.add\s*\(\s*tr\.scene\b/.test(chunk) || /\.clone\s*\(\s*true\s*\)/.test(chunk)) {
+      reasons.push(rel + ' clones the Kenney traffic scene as a car body.');
+      break;
+    }
+  }
+  return reasons;
+}
+
+function sourceScan(root) {
+  const findings = [];
+  const canon = canonGlb(root);
+  function fail(detail) {
+    findings.push({
+      rule: 6, severity: 'fail', id: 'source-model',
+      title: 'Copy is not built from Bob\'s 370Z GLB',
+      detail
+    });
+  }
+  if (!canon.ok) fail(canon.reason);
+  const embed = readText(root, 'shared/zd-embed.js');
+  if (!embed) fail('shared/zd-embed.js is missing, so the player has no path to ' + CANON_FILE + '.');
+  else {
+    const fileM = embed.match(/"file"\s*:\s*"([^"]+)"/);
+    if (!fileM || fileM[1] !== CANON_FILE) {
+      fail('shared/zd-embed.js cfg.file is ' + (fileM ? fileM[1] : 'missing') + '. The player and the garage use ' + CANON_FILE + '.');
+    }
+    if (!/glb\s*:\s*window\.ZD_ASSET_GLB\b/.test(embed)) {
+      fail('shared/zd-embed.js does not set glb to window.ZD_ASSET_GLB from ' + CANON_SCRIPT + '.');
+    }
+  }
+  for (const rel of PAGES) {
+    const html = readText(root, rel);
+    if (!html) {
+      fail(rel + ' is missing, so it cannot load ' + CANON_SCRIPT + '.');
+      continue;
+    }
+    const srcs = pageScripts(html);
+    if (!srcs.includes(CANON_SCRIPT)) fail(rel + ' does not include ' + CANON_SCRIPT + '.');
+    srcs.filter((s) => s !== CANON_SCRIPT && (/370z/i.test(s) || /\.(glb|gltf)$/i.test(s))).forEach((s) => {
+      fail(rel + ' loads a second model script ' + s + '. The only 370Z script is ' + CANON_SCRIPT + '.');
+    });
+  }
+  const traffic = stripComments(readText(root, 'world/traffic.js'));
+  if (!traffic) fail('world/traffic.js is missing.');
+  else if (!/X\.car\b|ZD\.Xray\.car|ZD_ASSET_GLB|ZD_EMBED\s*\.\s*glb|assets\/370z\.glb|370z-glb\.js/.test(traffic)) {
+    fail('world/traffic.js does not build the copy from ZD.Xray.car / ' + CANON_SCRIPT + '.');
+  }
+  for (const rel of COPY_FILES) {
+    const code = stripComments(readText(root, rel));
+    if (!code) continue;
+    for (const pth of glbPaths(code)) {
+      if (!isCanonPath(pth)) fail(rel + ' loads ' + pth + '. The only 370Z path is ' + CANON_FILE + ' from ' + CANON_SCRIPT + '.');
+    }
+    if (code.includes('Z2xURg')) fail(rel + ' embeds its own GLB. The copy has to use ' + CANON_SCRIPT + ', not a second file inlined in the script.');
+    if (rel === 'world/traffic.js') {
+      for (const reason of kenneyBody(rel, code)) fail(reason);
+    }
+  }
+  const garage = readText(root, 'world/garage.js') + '\n' + readText(root, 'world/garagez.js');
+  if (garage.trim() && !/X\.car\b|ZD\.Xray/.test(garage)) {
+    fail('Garage 370Z does not draw ZD.Xray.car, the car loaded from ' + CANON_FILE + '.');
+  }
+  for (const rel of extraModelFiles(root)) {
+    fail(rel + ' is a second model file. Player, garage, and traffic have to share ' + CANON_SCRIPT + '.');
+  }
+  // One finding, every reason. A stack of identical ids is harder to read.
+  if (findings.length > 1) {
+    const detail = findings.map((f) => f.detail).join(' ');
+    return { canon, findings: [{ ...findings[0], detail }] };
+  }
+  return { canon, findings };
 }
 
 function staticScan(root) {
@@ -128,7 +296,7 @@ function staticScan(root) {
   }
   let indexTouched = false;
   try {
-    const names = execFileSync('git', ['-C', root, 'diff', '--name-only', 'origin/main...HEAD'], { encoding: 'utf8' });
+    const names = execFileSync('git', ['-C', root, 'diff', '--name-only', 'origin/main...HEAD'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
     indexTouched = names.split('\n').some((n) => n === 'index.html' || n.endsWith('/index.html'));
   } catch (e) { /* detached tree */ }
   if (indexTouched) {
@@ -138,8 +306,11 @@ function staticScan(root) {
       detail: 'This check does not approve edits to adult index.html. Kid App files only.'
     });
   }
+  const source = sourceScan(root);
+  findings.push(...source.findings);
   return {
-    spritePx, usesCloseSprite, wheelDecal: !!(wheelFn && wheelCall), wheelPx, shadow, indexTouched, findings
+    spritePx, usesCloseSprite, wheelDecal: !!(wheelFn && wheelCall), wheelPx, shadow, indexTouched,
+    canon: source.canon, findings
   };
 }
 
@@ -289,7 +460,7 @@ function markdown(p) {
   lines.push('');
   lines.push('Result: **' + (p.ok ? 'PASS' : 'FAIL') + '**');
   lines.push('');
-  lines.push('Bar: `docs/CAR-DESIGN-CHECK.md`. Close copies match his 370Z from every angle. Wheels are real wheels. No 160 px bake. Far cars may be simpler. The frame stays cheap.');
+  lines.push('Bar: `docs/CAR-DESIGN-CHECK.md`. Close copies match his 370Z from every angle. Wheels are real wheels. No 160 px bake. Far cars may be simpler. The frame stays cheap. Every copy loads the same GLB file and path as the player and the garage.');
   lines.push('');
   if (p.checkerError) {
     lines.push('Checker error: ' + p.checkerError);
@@ -300,13 +471,18 @@ function markdown(p) {
     [2, 'Wheels'],
     [3, 'Resolution'],
     [4, 'Far LOD'],
-    [5, 'Frame cost']
+    [5, 'Frame cost'],
+    [6, 'Same GLB file and path']
   ];
   for (const [rule, title] of rules) {
     const items = (p.findings || []).filter((f) => f.rule === rule && f.severity === 'fail');
     lines.push('## ' + rule + '. ' + title);
     lines.push('');
-    if (!items.length) lines.push(rule === 4 ? 'Far shots are recorded. A simpler shape is allowed there.' : 'Pass.');
+    if (!items.length) {
+      if (rule === 4) lines.push('Far shots are recorded. A simpler shape is allowed there.');
+      else if (rule === 6) lines.push(sourcePass(p));
+      else lines.push('Pass.');
+    }
     for (const f of items) {
       lines.push('- **' + f.title + '** `' + f.id + '`');
       lines.push('  ' + f.detail);
@@ -341,6 +517,14 @@ function markdown(p) {
   return lines.join('\n');
 }
 
+function sourcePass(p) {
+  const s = (p && p.source) || {};
+  const sha = String(s.bytesha || '').slice(0, 12);
+  if (!sha) return 'Pass.';
+  const runtime = s.runtime && s.runtime.ok ? ' Runtime buffer matches.' : '';
+  return 'Pass. `' + (s.script || CANON_SCRIPT) + '` loaded as `' + (s.file || CANON_FILE) + '`, sha256 `' + sha + '` (' + (s.bytes || 0) + ' bytes). The player Z, Garage 370Z, and the traffic copy use that file and that path.' + runtime;
+}
+
 function commentBody(p) {
   const lines = [];
   lines.push(MARKER);
@@ -350,7 +534,7 @@ function commentBody(p) {
   lines.push('`' + (p.branch || '') + '` `' + (p.sha || '').slice(0, 12) + '`' + (p.label ? ' · ' + p.label : ''));
   lines.push('');
   const fails = (p.findings || []).filter((f) => f.severity === 'fail');
-  if (!fails.length) lines.push('Close copies match his 370Z on shape, wheels, resolution, and frame cost. Far LODs are allowed to be simpler.');
+  if (!fails.length) lines.push('Close copies match his 370Z on shape, wheels, resolution, frame cost, and the GLB file. Far LODs are allowed to be simpler. ' + sourcePass(p));
   for (const f of fails) {
     lines.push('- **Rule ' + f.rule + ' — ' + f.title + '.** ' + f.detail);
   }
@@ -373,7 +557,7 @@ function writeReport(dir, payload) {
   fs.writeFileSync(path.join(dir, 'comment.md'), commentBody(payload));
 }
 
-async function reviewVisual(root, shotDir) {
+async function reviewVisual(root, shotDir, canon) {
   const server = await startServer(root, 0, shotDir);
   const port = server.address().port;
   const debugPort = 9300 + Math.floor(Math.random() * 500);
@@ -412,6 +596,13 @@ async function reviewVisual(root, shotDir) {
       await sleep(250);
     }
     if (!pageState.includes('complete')) throw new Error('world.html did not finish loading: ' + pageState);
+    const expect = {
+      file: (canon && canon.file) || CANON_FILE,
+      script: (canon && canon.script) || CANON_SCRIPT,
+      bytesha: (canon && canon.bytesha) || '',
+      bytes: (canon && canon.bytes) || 0
+    };
+    await evalJson(cdp, 'window.__CAR_EXPECT = ' + JSON.stringify(expect), 20000);
     const harness = fs.readFileSync(path.join(HERE, 'car-design-browser.js'), 'utf8');
     await evalJson(cdp, harness, 20000);
     const boot = await evalJson(cdp, 'window.__CAR_DESIGN.boot()', 60000);
@@ -485,6 +676,20 @@ function foldShots(staticInfo, visual) {
   const fps = visual && visual.fps;
   const fpsFinding = fpsFail(fps);
   if (fpsFinding) findings.push(fpsFinding);
+  const runtime = visual && visual.boot && visual.boot.source;
+  if (runtime && runtime.ok === false) {
+    const detail = (runtime.reasons || []).filter(Boolean).join(' ');
+    const have = findings.find((f) => f.id === 'source-model');
+    if (have) {
+      if (detail && !have.detail.includes(detail.slice(0, 40))) have.detail += ' Runtime: ' + detail;
+    } else {
+      findings.push({
+        rule: 6, severity: 'fail', id: 'source-model',
+        title: 'Copy is not built from Bob\'s 370Z GLB',
+        detail: detail || 'The loaded buffer does not match ' + CANON_SCRIPT + '.'
+      });
+    }
+  }
   // Static wheel/bake already cover the code. Drop a visual duplicate that only repeats them.
   const filtered = findings.filter((f) => {
     if (f.id === 'wheel-visual' && staticInfo.wheelDecal && (f.detail || '').length < 8) return false;
@@ -507,7 +712,7 @@ async function main() {
   let checkerError = '';
   if (!args.staticOnly) {
     try {
-      visual = await reviewVisual(args.root, shotDir);
+      visual = await reviewVisual(args.root, shotDir, staticInfo.canon);
     } catch (e) {
       checkerError = String(e && e.stack || e);
     }
@@ -527,6 +732,13 @@ async function main() {
     fps: visual ? visual.fps : null,
     gl: visual && visual.boot ? visual.boot.gl : '',
     boot: visual ? visual.boot : null,
+    source: {
+      script: staticInfo.canon.script,
+      file: staticInfo.canon.file,
+      bytes: staticInfo.canon.bytes,
+      bytesha: staticInfo.canon.bytesha,
+      runtime: visual && visual.boot ? visual.boot.source : null
+    },
     static: {
       spritePx: staticInfo.spritePx,
       usesCloseSprite: staticInfo.usesCloseSprite,
