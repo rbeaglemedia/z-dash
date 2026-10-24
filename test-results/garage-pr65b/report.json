@@ -1,0 +1,979 @@
+{
+  "ok": true,
+  "calib": {
+    "ok": true,
+    "errors": [],
+    "good": {
+      "missing": false,
+      "figureH": 436,
+      "head": {
+        "gap": 0,
+        "ratio": 0.19036697247706422,
+        "centered": true,
+        "dx": 0,
+        "headH": 83,
+        "neck": true,
+        "top": 66,
+        "bottom": 148,
+        "cx": 209.5
+      },
+      "torso": {
+        "left": 160,
+        "right": 259,
+        "cx": 209.5,
+        "top": 148,
+        "hip": 273,
+        "shoulderY": 164,
+        "depth": 100,
+        "neckJoin": 0,
+        "hipJoin": 0,
+        "win0": 214,
+        "win1": 292
+      },
+      "arms": {
+        "L": {
+          "present": true,
+          "attachGap": 2,
+          "handGap": 0,
+          "angle": 19.6,
+          "up": false,
+          "n": 2259
+        },
+        "R": {
+          "present": true,
+          "attachGap": 2,
+          "handGap": 0,
+          "angle": 13.4,
+          "up": false,
+          "n": 2259
+        }
+      },
+      "legs": {
+        "L": {
+          "present": true,
+          "hipGap": 0,
+          "footGap": 0,
+          "angle": 5
+        },
+        "R": {
+          "present": true,
+          "hipGap": 0,
+          "footGap": 0,
+          "angle": 2.2
+        }
+      },
+      "lr": {
+        "ok": true,
+        "msg": ""
+      },
+      "ground": {
+        "floatPx": 0,
+        "clipPx": 1,
+        "slop": 17.44,
+        "groundY": 500,
+        "footY": 501
+      },
+      "buried": false,
+      "clip": "",
+      "components": [
+        {
+          "area": 29969,
+          "x0": 107,
+          "y0": 66,
+          "x1": 312,
+          "y1": 501
+        }
+      ]
+    },
+    "badProblems": [
+      {
+        "id": "head-neck",
+        "priority": 1,
+        "msg": "The head floats 52px above the body. No neck joins them"
+      },
+      {
+        "id": "torso-neck",
+        "priority": 2,
+        "msg": "The neck does not connect to the torso. Gap 52px"
+      },
+      {
+        "id": "arm-shoulder",
+        "priority": 2,
+        "msg": "Left arm does not leave the shoulder. Closest gap is 32px"
+      },
+      {
+        "id": "hand-arm",
+        "priority": 2,
+        "msg": "Left hand does not sit on the end of the arm. Gap 27px"
+      },
+      {
+        "id": "arm-shoulder",
+        "priority": 2,
+        "msg": "Right arm does not leave the shoulder. Closest gap is 32px"
+      },
+      {
+        "id": "hand-arm",
+        "priority": 2,
+        "msg": "Right hand does not sit on the end of the arm. Gap 27px"
+      },
+      {
+        "id": "feet-ground",
+        "priority": 2,
+        "msg": "Feet float 57px above the ground"
+      }
+    ],
+    "sideDeep": {
+      "left": 184,
+      "right": 255,
+      "cx": 219.5,
+      "top": 148,
+      "hip": 345,
+      "shoulderY": 166,
+      "depth": 72,
+      "neckJoin": 0,
+      "hipJoin": 0,
+      "win0": 214,
+      "win1": 292
+    },
+    "sideFlat": [
+      "head-neck",
+      "torso-depth",
+      "torso-hip"
+    ],
+    "walkGood": {
+      "step": 54,
+      "swing": 56,
+      "oppose": -0.929,
+      "together": -1,
+      "lifts": 4,
+      "swapL": 2,
+      "swapR": 2,
+      "floatMax": 0,
+      "bob": 9,
+      "figureH": 382
+    },
+    "walkBad": {
+      "step": 0,
+      "swing": 0,
+      "oppose": 0,
+      "together": 0,
+      "lifts": 0,
+      "swapL": 0,
+      "swapR": 0,
+      "floatMax": 40,
+      "bob": 0,
+      "figureH": 333
+    }
+  },
+  "findings": [
+    {
+      "id": "scale-held",
+      "severity": "note",
+      "priority": 9,
+      "title": "Pets stay at or below her hip, and everyone stands on the floor",
+      "detail": "home fox top 0.64m, feet -0.08m, character 1.48m, hip 0.78m. home cat top 0.68m, feet -0.07m, character 1.48m, hip 0.78m. home dragon top 0.57m, feet -0.08m, character 1.48m, hip 0.78m. home robo top 0.62m, feet -0.08m, character 1.48m, hip 0.78m. outdoors fox top 0.74m, feet -0.12m, character 1.5m, hip 0.78m. shop fox top 0.64m, feet -0.08m, character 1.48m, hip 0.78m. garage dog start y 0.844 to 1.078m, tall 0.235m. garage dog fling y 0.591 to 0.862m, tall 0.271m. garage dog hang y 0.181 to 0.628m, tall 0.446m. garage dog land y 0.842 to 1.082m, tall 0.24m. garage dog ride y 0.844 to 1.081m, tall 0.237m. garage dog fly y 0.816 to 1.261m, tall 0.445m. garage cat start y 0.833 to 1.033m, tall 0.2m. garage cat fling y 0.588 to 0.848m, tall 0.26m. garage cat hang y 0.182 to 0.624m, tall 0.442m. garage cat land y 0.832 to 1.037m, tall 0.205m. garage cat ride y 0.833 to 1.035m, tall 0.202m. garage cat fly y 0.816 to 1.223m, tall 0.407m. garage bunny start y 0.829 to 1.077m, tall 0.248m. garage bunny fling y 0.584 to 0.864m, tall 0.281m. garage bunny hang y 0.245 to 0.611m, tall 0.367m. garage bunny land y 0.828 to 1.081m, tall 0.253m. garage bunny ride y 0.829 to 1.079m, tall 0.25m. garage bunny fly y 0.816 to 1.262m, tall 0.446m. garage dragon start y 0.849 to 1.066m, tall 0.217m. garage dragon fling y 0.584 to 0.83m, tall 0.246m. garage dragon hang y 0.039 to 0.631m, tall 0.592m. garage dragon land y 0.847 to 1.068m, tall 0.222m. garage dragon ride y 0.849 to 1.068m, tall 0.22m. garage dragon fly y 0.816 to 1.228m, tall 0.412m. garage fox start y 0.84 to 1.071m, tall 0.231m. garage fox fling y 0.595 to 0.864m, tall 0.269m. garage fox hang y 0.046 to 0.628m, tall 0.582m. garage fox land y 0.839 to 1.075m, tall 0.236m. garage fox ride y 0.84 to 1.073m, tall 0.233m. garage fox fly y 0.816 to 1.267m, tall 0.451m.",
+      "shots": [
+        "scale-home.png",
+        "scale-shop.png",
+        "scale-home-fox.png",
+        "scale-home-cat.png",
+        "scale-home-dragon.png",
+        "scale-home-robo.png",
+        "scale-outdoors.png",
+        "scale-prop-chair.png",
+        "scale-prop-sofa.png",
+        "scale-prop-counter.png",
+        "scale-prop-plant.png",
+        "scale-prop-petBed.png",
+        "scale-prop-arcade.png",
+        "scale-prop-lamp.png",
+        "scale-prop-plaque.png",
+        "garage-dog-hang.png",
+        "garage-dog-ride.png",
+        "garage-cat-hang.png",
+        "garage-cat-ride.png",
+        "garage-bunny-hang.png",
+        "garage-bunny-ride.png",
+        "garage-dragon-hang.png",
+        "garage-dragon-ride.png",
+        "garage-fox-fling.png",
+        "garage-fox-hang.png",
+        "garage-fox-ride.png",
+        "garage-fox-fly.png"
+      ],
+      "views": [],
+      "msgs": []
+    }
+  ],
+  "pets": {
+    "ok": true,
+    "findings": []
+  },
+  "scale": {
+    "ok": true,
+    "ready": true,
+    "stats": [
+      {
+        "where": "home",
+        "type": "fox",
+        "petTop": 0.64,
+        "petBot": -0.08,
+        "charTop": 1.48,
+        "charBot": -0.11,
+        "hip": 0.78
+      },
+      {
+        "where": "home",
+        "type": "cat",
+        "petTop": 0.68,
+        "petBot": -0.07,
+        "charTop": 1.48,
+        "charBot": -0.11,
+        "hip": 0.78
+      },
+      {
+        "where": "home",
+        "type": "dragon",
+        "petTop": 0.57,
+        "petBot": -0.08,
+        "charTop": 1.48,
+        "charBot": -0.11,
+        "hip": 0.78
+      },
+      {
+        "where": "home",
+        "type": "robo",
+        "petTop": 0.62,
+        "petBot": -0.08,
+        "charTop": 1.48,
+        "charBot": -0.11,
+        "hip": 0.78
+      },
+      {
+        "where": "outdoors",
+        "type": "fox",
+        "petTop": 0.74,
+        "petBot": -0.12,
+        "charTop": 1.5,
+        "charBot": -0.1,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "chair",
+        "petTop": 0.78,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "sofa",
+        "petTop": 0.74,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "counter",
+        "petTop": 0.7,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "plant",
+        "petTop": 0.76,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "petBed",
+        "petTop": 0.14,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "arcade",
+        "petTop": 1.05,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "lamp",
+        "petTop": 1.01,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "plaque",
+        "petTop": 1,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "shop",
+        "type": "fox",
+        "petTop": 0.64,
+        "petBot": -0.08,
+        "charTop": 1.48,
+        "charBot": -0.11,
+        "hip": 0.78
+      },
+      {
+        "type": "dog",
+        "pose": "start",
+        "mode": "wings",
+        "petTop": 1.078,
+        "petBot": 0.844,
+        "charTop": 0.235,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dog",
+        "pose": "fling",
+        "mode": "wings",
+        "petTop": 0.862,
+        "petBot": 0.591,
+        "charTop": 0.271,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dog",
+        "pose": "hang",
+        "mode": "wings",
+        "petTop": 0.628,
+        "petBot": 0.181,
+        "charTop": 0.446,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dog",
+        "pose": "land",
+        "mode": "wings",
+        "petTop": 1.082,
+        "petBot": 0.842,
+        "charTop": 0.24,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dog",
+        "pose": "ride",
+        "mode": "wings",
+        "petTop": 1.081,
+        "petBot": 0.844,
+        "charTop": 0.237,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dog",
+        "pose": "fly",
+        "mode": "wings",
+        "petTop": 1.261,
+        "petBot": 0.816,
+        "charTop": 0.445,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "cat",
+        "pose": "start",
+        "mode": "wings",
+        "petTop": 1.033,
+        "petBot": 0.833,
+        "charTop": 0.2,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "cat",
+        "pose": "fling",
+        "mode": "wings",
+        "petTop": 0.848,
+        "petBot": 0.588,
+        "charTop": 0.26,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "cat",
+        "pose": "hang",
+        "mode": "wings",
+        "petTop": 0.624,
+        "petBot": 0.182,
+        "charTop": 0.442,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "cat",
+        "pose": "land",
+        "mode": "wings",
+        "petTop": 1.037,
+        "petBot": 0.832,
+        "charTop": 0.205,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "cat",
+        "pose": "ride",
+        "mode": "wings",
+        "petTop": 1.035,
+        "petBot": 0.833,
+        "charTop": 0.202,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "cat",
+        "pose": "fly",
+        "mode": "wings",
+        "petTop": 1.223,
+        "petBot": 0.816,
+        "charTop": 0.407,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "bunny",
+        "pose": "start",
+        "mode": "wings",
+        "petTop": 1.077,
+        "petBot": 0.829,
+        "charTop": 0.248,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "bunny",
+        "pose": "fling",
+        "mode": "wings",
+        "petTop": 0.864,
+        "petBot": 0.584,
+        "charTop": 0.281,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "bunny",
+        "pose": "hang",
+        "mode": "wings",
+        "petTop": 0.611,
+        "petBot": 0.245,
+        "charTop": 0.367,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "bunny",
+        "pose": "land",
+        "mode": "wings",
+        "petTop": 1.081,
+        "petBot": 0.828,
+        "charTop": 0.253,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "bunny",
+        "pose": "ride",
+        "mode": "wings",
+        "petTop": 1.079,
+        "petBot": 0.829,
+        "charTop": 0.25,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "bunny",
+        "pose": "fly",
+        "mode": "wings",
+        "petTop": 1.262,
+        "petBot": 0.816,
+        "charTop": 0.446,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dragon",
+        "pose": "start",
+        "mode": "wings",
+        "petTop": 1.066,
+        "petBot": 0.849,
+        "charTop": 0.217,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dragon",
+        "pose": "fling",
+        "mode": "wings",
+        "petTop": 0.83,
+        "petBot": 0.584,
+        "charTop": 0.246,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dragon",
+        "pose": "hang",
+        "mode": "wings",
+        "petTop": 0.631,
+        "petBot": 0.039,
+        "charTop": 0.592,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dragon",
+        "pose": "land",
+        "mode": "wings",
+        "petTop": 1.068,
+        "petBot": 0.847,
+        "charTop": 0.222,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dragon",
+        "pose": "ride",
+        "mode": "wings",
+        "petTop": 1.068,
+        "petBot": 0.849,
+        "charTop": 0.22,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dragon",
+        "pose": "fly",
+        "mode": "wings",
+        "petTop": 1.228,
+        "petBot": 0.816,
+        "charTop": 0.412,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "fox",
+        "pose": "start",
+        "mode": "wings",
+        "petTop": 1.071,
+        "petBot": 0.84,
+        "charTop": 0.231,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "fox",
+        "pose": "fling",
+        "mode": "wings",
+        "petTop": 0.864,
+        "petBot": 0.595,
+        "charTop": 0.269,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "fox",
+        "pose": "hang",
+        "mode": "wings",
+        "petTop": 0.628,
+        "petBot": 0.046,
+        "charTop": 0.582,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "fox",
+        "pose": "land",
+        "mode": "wings",
+        "petTop": 1.075,
+        "petBot": 0.839,
+        "charTop": 0.236,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "fox",
+        "pose": "ride",
+        "mode": "wings",
+        "petTop": 1.073,
+        "petBot": 0.84,
+        "charTop": 0.233,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "fox",
+        "pose": "fly",
+        "mode": "wings",
+        "petTop": 1.267,
+        "petBot": 0.816,
+        "charTop": 0.451,
+        "hip": 0.79,
+        "ratio": null
+      }
+    ],
+    "note": ""
+  },
+  "garage": {
+    "ok": true,
+    "ready": true,
+    "stats": [
+      {
+        "type": "dog",
+        "pose": "start",
+        "mode": "wings",
+        "petTop": 1.078,
+        "petBot": 0.844,
+        "charTop": 0.235,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dog",
+        "pose": "fling",
+        "mode": "wings",
+        "petTop": 0.862,
+        "petBot": 0.591,
+        "charTop": 0.271,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dog",
+        "pose": "hang",
+        "mode": "wings",
+        "petTop": 0.628,
+        "petBot": 0.181,
+        "charTop": 0.446,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dog",
+        "pose": "land",
+        "mode": "wings",
+        "petTop": 1.082,
+        "petBot": 0.842,
+        "charTop": 0.24,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dog",
+        "pose": "ride",
+        "mode": "wings",
+        "petTop": 1.081,
+        "petBot": 0.844,
+        "charTop": 0.237,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dog",
+        "pose": "fly",
+        "mode": "wings",
+        "petTop": 1.261,
+        "petBot": 0.816,
+        "charTop": 0.445,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "cat",
+        "pose": "start",
+        "mode": "wings",
+        "petTop": 1.033,
+        "petBot": 0.833,
+        "charTop": 0.2,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "cat",
+        "pose": "fling",
+        "mode": "wings",
+        "petTop": 0.848,
+        "petBot": 0.588,
+        "charTop": 0.26,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "cat",
+        "pose": "hang",
+        "mode": "wings",
+        "petTop": 0.624,
+        "petBot": 0.182,
+        "charTop": 0.442,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "cat",
+        "pose": "land",
+        "mode": "wings",
+        "petTop": 1.037,
+        "petBot": 0.832,
+        "charTop": 0.205,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "cat",
+        "pose": "ride",
+        "mode": "wings",
+        "petTop": 1.035,
+        "petBot": 0.833,
+        "charTop": 0.202,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "cat",
+        "pose": "fly",
+        "mode": "wings",
+        "petTop": 1.223,
+        "petBot": 0.816,
+        "charTop": 0.407,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "bunny",
+        "pose": "start",
+        "mode": "wings",
+        "petTop": 1.077,
+        "petBot": 0.829,
+        "charTop": 0.248,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "bunny",
+        "pose": "fling",
+        "mode": "wings",
+        "petTop": 0.864,
+        "petBot": 0.584,
+        "charTop": 0.281,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "bunny",
+        "pose": "hang",
+        "mode": "wings",
+        "petTop": 0.611,
+        "petBot": 0.245,
+        "charTop": 0.367,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "bunny",
+        "pose": "land",
+        "mode": "wings",
+        "petTop": 1.081,
+        "petBot": 0.828,
+        "charTop": 0.253,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "bunny",
+        "pose": "ride",
+        "mode": "wings",
+        "petTop": 1.079,
+        "petBot": 0.829,
+        "charTop": 0.25,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "bunny",
+        "pose": "fly",
+        "mode": "wings",
+        "petTop": 1.262,
+        "petBot": 0.816,
+        "charTop": 0.446,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dragon",
+        "pose": "start",
+        "mode": "wings",
+        "petTop": 1.066,
+        "petBot": 0.849,
+        "charTop": 0.217,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dragon",
+        "pose": "fling",
+        "mode": "wings",
+        "petTop": 0.83,
+        "petBot": 0.584,
+        "charTop": 0.246,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dragon",
+        "pose": "hang",
+        "mode": "wings",
+        "petTop": 0.631,
+        "petBot": 0.039,
+        "charTop": 0.592,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dragon",
+        "pose": "land",
+        "mode": "wings",
+        "petTop": 1.068,
+        "petBot": 0.847,
+        "charTop": 0.222,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dragon",
+        "pose": "ride",
+        "mode": "wings",
+        "petTop": 1.068,
+        "petBot": 0.849,
+        "charTop": 0.22,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "dragon",
+        "pose": "fly",
+        "mode": "wings",
+        "petTop": 1.228,
+        "petBot": 0.816,
+        "charTop": 0.412,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "fox",
+        "pose": "start",
+        "mode": "wings",
+        "petTop": 1.071,
+        "petBot": 0.84,
+        "charTop": 0.231,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "fox",
+        "pose": "fling",
+        "mode": "wings",
+        "petTop": 0.864,
+        "petBot": 0.595,
+        "charTop": 0.269,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "fox",
+        "pose": "hang",
+        "mode": "wings",
+        "petTop": 0.628,
+        "petBot": 0.046,
+        "charTop": 0.582,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "fox",
+        "pose": "land",
+        "mode": "wings",
+        "petTop": 1.075,
+        "petBot": 0.839,
+        "charTop": 0.236,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "fox",
+        "pose": "ride",
+        "mode": "wings",
+        "petTop": 1.073,
+        "petBot": 0.84,
+        "charTop": 0.233,
+        "hip": 0.79,
+        "ratio": null
+      },
+      {
+        "type": "fox",
+        "pose": "fly",
+        "mode": "wings",
+        "petTop": 1.267,
+        "petBot": 0.816,
+        "charTop": 0.451,
+        "hip": 0.79,
+        "ratio": null
+      }
+    ],
+    "note": ""
+  },
+  "passes": [],
+  "coverage": [
+    "No jointed closet in this tree, so the head, limb, and walk pixel suite was not scored here",
+    "Pets: fox, cat, dragon, robo, bunny joint check",
+    "Scale: pet beside the character in the house, the showroom shop, and outdoors, plus room props on the floor",
+    "Garage turntable: dog, cat, bunny, dragon, and fox through the wings takeoff, the cargo ride, and the open-hatch stand"
+  ],
+  "shotNames": [
+    "pets.png",
+    "scale-home.png",
+    "scale-shop.png",
+    "scale-home-fox.png",
+    "scale-home-cat.png",
+    "scale-home-dragon.png",
+    "scale-home-robo.png",
+    "scale-outdoors.png",
+    "scale-prop-chair.png",
+    "scale-prop-sofa.png",
+    "scale-prop-counter.png",
+    "scale-prop-plant.png",
+    "scale-prop-petBed.png",
+    "scale-prop-arcade.png",
+    "scale-prop-lamp.png",
+    "scale-prop-plaque.png",
+    "garage-dog-hang.png",
+    "garage-dog-ride.png",
+    "garage-cat-hang.png",
+    "garage-cat-ride.png",
+    "garage-bunny-hang.png",
+    "garage-bunny-ride.png",
+    "garage-dragon-hang.png",
+    "garage-dragon-ride.png",
+    "garage-fox-fling.png",
+    "garage-fox-hang.png",
+    "garage-fox-ride.png",
+    "garage-fox-fly.png"
+  ],
+  "closet": false,
+  "walkStats": null,
+  "sample": [],
+  "checkerError": "",
+  "sha": "0b402be0bdad53b7f77236e6d7fd2d0e65e58c14",
+  "branch": "HEAD"
+}
