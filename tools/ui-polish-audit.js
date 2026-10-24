@@ -833,6 +833,7 @@ const SCREENS = [
     after: 'body[data-resume-shot="1"]',
     setup: inject(`
       document.getElementById('kResumeGo').click();
+      flying = false;
       document.body.dataset.resumeShot = '1';
     `),
     probe: RESUME_GO_PROBE

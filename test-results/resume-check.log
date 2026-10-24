@@ -1,0 +1,58 @@
+ok  resume exports create
+ok  browser boot stays off without document
+ok  hot drop spawn no-ops while active
+ok  hold freezes the timer far from the beacon
+ok  coming within 80m unholds and starts the clock
+ok  runway reset keeps the challenge
+ok  runway reset still parks the car
+ok  ignores bad resume "{"
+ok  bad resume does not touch profile keys
+ok  ignores bad resume "[]"
+ok  bad resume does not touch profile keys
+ok  ignores bad resume "null"
+ok  bad resume does not touch profile keys
+ok  ignores bad resume "{\"v\":2,\"pose\":{\"x\
+ok  bad resume does not touch profile keys
+ok  ignores bad resume "{\"v\":1,\"pose\":\"nop
+ok  bad resume does not touch profile keys
+ok  2.0s still inside the throttle
+ok  one write at 2.6s
+ok  120 further frames do not write again
+ok  unchanged pose does not write again
+ok  paused time does not write
+ok  throttle only touches the resume key
+ok  saved bag is v1 away from the origin
+ok  fresh runway clears a stale empty save
+ok  clear does not remove profile keys
+ok  same map uses the exact spot
+ok  moved map keeps a spot that is still clear
+ok  moved district resolves the fraction
+ok  moved road anchor resolves
+ok  blocked spot uses a safe spawn
+ok  blocked spot keeps the challenge
+ok  safe spawn does not touch profile keys
+ok  safe spawn tells her the city changed
+ok  same-spot save offers RESUME and not a second continue
+ok  sky drop keeps the challenge timer
+ok  sky drop holds a far challenge and asks to resume
+ok  resume puts her on the challenge home
+ok  resume restores the NOS bottle
+ok  resume drops the hold
+ok  far pose offers continue and resume
+ok  continue restores the saved pose
+ok  continue keeps the challenge and holds it while she is far
+ok  continue restores NOS
+ok  foot mode is passed through
+ok  foot continue keeps the street mode and NOS
+ok  start card shows the resume prompt
+ok  start card hides continue when she is already there
+ok  browser resume parks her on foot
+ok  browser resume restores NOS and the beacon
+ok  browser sky drop keeps the beacon and shows the prompt
+ok  browser flow leaves profile keys alone
+ok  inside resume reopens the room
+ok  world and world-split stay identical
+ok  kid world loads resume.js
+ok  adult index has no resume save
+
+all resume checks passed
