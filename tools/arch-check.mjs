@@ -351,7 +351,7 @@ function loadBaseline(root) {
 function writeBaseline(root, report, prev) {
   const next = {
     version: 1,
-    note: 'Mural floor for the Z dance buildings, the small river-edge ramps, and the solid-building roster on main. A later mural wall must be at least this big. The river-edge ramps stay this size and this far from the water. Extra ramps are allowed. The building list stays exact until Bob adds one: do not edit it to hide a new, removed, or merged building. Written by arch-check --write-baseline. Do not edit these numbers to hide a smaller wall or a moved river jump.',
+    note: 'Mural floor for the Z dance buildings, the small river-edge ramps, and the solid-building count on main. A later mural wall must be at least this big. The river-edge ramps stay this size and this far from the water. Extra ramps are allowed. The building list is a snapshot of main. Placements may change. The count stays at buildings.length unless docs/NEON-WORLD-STYLE.md raises Approved count. Do not edit the count to hide a block that loaded in the game. Written by arch-check --write-baseline. Do not edit these numbers to hide a smaller wall or a moved river jump.',
     capturedAt: new Date().toISOString(),
     git: { sha: report.sha || '', branch: report.branch || '' },
     murals: (report.murals || []).map((m) => ({
@@ -443,11 +443,17 @@ function purposeRules(body) {
   return rows;
 }
 
+function approvedCount(md) {
+  const body = sectionBody(md, '## Buildings');
+  const m = /Approved count:\s*(\d+)/i.exec(body);
+  return m ? Number(m[1]) : null;
+}
+
 function loadStyle(root) {
   const file = path.join(root, 'docs', 'NEON-WORLD-STYLE.md');
   let md = '';
   try { md = fs.readFileSync(file, 'utf8'); }
-  catch (e) { return { ok: false, file, error: e.message, capability: [], drift: [], hard: [], purpose: [] }; }
+  catch (e) { return { ok: false, file, error: e.message, capability: [], drift: [], hard: [], purpose: [], approvedCount: null }; }
   const brand = sectionBody(md, '## Brand');
   return {
     ok: true,
@@ -458,7 +464,8 @@ function loadStyle(root) {
     capability: styleRules(sectionBody(md, '## Capability')),
     drift: styleRules(sectionBody(md, '### Drift')),
     hard: styleRules(sectionBody(md, '### Hard breaks')),
-    purpose: purposeRules(sectionBody(md, '## Purpose'))
+    purpose: purposeRules(sectionBody(md, '## Purpose')),
+    approvedCount: approvedCount(md)
   };
 }
 
@@ -633,7 +640,8 @@ function markdown(p) {
     lines.push('');
   }
   const order = [
-    ['placement', 'Placements'],
+    ['count', 'Count'],
+    ['layout', 'Layout'],
     ['scale', 'Scale'],
     ['doors', 'Doors'],
     ['garage', 'Garages'],

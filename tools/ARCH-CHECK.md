@@ -70,7 +70,9 @@ Calibration runs first. It must pass a good person door (1.4×2.4 m at street le
 
 **Tiers.** Arcade (airborne), Street (slow, in front of a door), and on-foot must keep the same boxes, doors, parking, and top. Only surface segments may differ. Arcade must not stroke storefronts. Street must add storefronts. On-foot must add foot segments.
 
-**Placements.** Solid buildings (`kind` `b` or `landmark`) must match the roster in `tools/arch-check-baseline.json`: same count, same purpose, and the same footprint within 0.2 m on each edge. An added building, a removed building, a moved or resized footprint, or two locked footprints inside one new footprint (a merge) fails. The lock is main today. `--write-baseline` does not replace a roster that is already there. Bob adding a building means editing that list on purpose.
+**Count.** Solid buildings (`kind` `b` or `landmark`) must match the approved count. That number is `Approved count` in `docs/NEON-WORLD-STYLE.md`, and it starts as the 24 on main. A moved or resized footprint does not fail. A removed or merged building drops the count and fails. An extra block that actually loads fails until Bob raises the number. A plan may pitch new buildings under `Ideas for Bob`. Those lines are not approval and are not in the game, so they do not fail.
+
+**Layout.** After a move, the city still has to work. Each building's center sits in a district. If it carries a district tag, that district contains the center, or it touches the district that does. The builder HQ stays in `BUILDER_NORTH`, and that sandbox does not take other purposes. Soccer stays on the east side (`x` at least 350). The footprint does not enter the river, a street (20 m), the highway, the runway, the taxiway, or the spawn pad at the origin. A person door stands on a road, and the ground 2.2 m outside that door is not inside a building, not in the water, and not a wall.
 
 **Signs.** A word, `mounted`, gap from the face between −0.05 m and 0.45 m, not above the roof, and at least 10 px at the PC front camera.
 

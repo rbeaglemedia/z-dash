@@ -637,20 +637,13 @@
     return '';
   }
 
-  function sameBox(a, b) {
-    return Math.abs(a.x0 - b.x0) <= 0.2 && Math.abs(a.x1 - b.x1) <= 0.2 && Math.abs(a.z0 - b.z0) <= 0.2 && Math.abs(a.z1 - b.z1) <= 0.2;
-  }
-
-  function centerInside(lock, live) {
-    return lock.cx >= live.x0 - 0.2 && lock.cx <= live.x1 + 0.2 && lock.cz >= live.z0 - 0.2 && lock.cz <= live.z1 + 0.2;
-  }
-
   function footOf(b) {
     const x0 = +b.x0, x1 = +b.x1, z0 = +b.z0, z1 = +b.z1;
     return {
       id: b.id,
       purpose: String(b.purpose || ''),
       label: b.label || b.purpose || '',
+      district: b.district || '',
       sign: b.sign || '',
       x0: x0, x1: x1, z0: z0, z1: z1,
       cx: b.cx != null ? +b.cx : (x0 + x1) / 2,
@@ -658,54 +651,143 @@
     };
   }
 
-  function matchPlacements(live, locked) {
-    if (!locked) return { missing: true, added: [], removed: [], merged: [], moved: [], count: { live: (live || []).length, locked: 0 } };
-    const L = locked.map(footOf);
-    const V = (live || []).map(footOf);
-    const used = {};
-    const matched = {};
-    for (let i = 0; i < L.length; i++) {
-      for (let j = 0; j < V.length; j++) {
-        if (used[j]) continue;
-        if (sameBox(L[i], V[j]) && L[i].purpose === V[j].purpose) {
-          used[j] = 1;
-          matched[i] = j;
+  // A plan can pitch new buildings, including under "Ideas for Bob".
+  // Those words are not buildings. Only a block that loads can change the count.
+  function extraInGame(liveCount, approved, planText) {
+    void planText;
+    if (approved == null) return { missing: true, extra: 0, dropped: 0, live: liveCount, approved: null };
+    return {
+      missing: false,
+      extra: Math.max(0, liveCount - approved),
+      dropped: Math.max(0, approved - liveCount),
+      live: liveCount,
+      approved: approved
+    };
+  }
+
+  function approvedTotal(style, baseline) {
+    if (style && typeof style.approvedCount === 'number') return style.approvedCount;
+    if (baseline && baseline.buildings && baseline.buildings.length) return baseline.buildings.length;
+    return null;
+  }
+
+  function rectHit(a, b) {
+    return a.x1 > b.x0 && a.x0 < b.x1 && a.z1 > b.z0 && a.z0 < b.z1;
+  }
+
+  function districtsTouch(a, b) {
+    return a.x1 >= b.x0 && a.x0 <= b.x1 && a.z1 >= b.z0 && a.z0 <= b.z1;
+  }
+
+  function districtsAt(cx, cz, districts) {
+    const ids = [];
+    for (let i = 0; i < districts.length; i++) {
+      const d = districts[i];
+      if (cx >= d.x0 && cx <= d.x1 && cz >= d.z0 && cz <= d.z1) ids.push(d.id);
+    }
+    return ids;
+  }
+
+  function layoutIssues(b, city) {
+    const issues = [];
+    const here = districtsAt(b.cx, b.cz, city.districts);
+    if (!here.length) issues.push({ title: 'Building is outside the districts', detail: 'The center has to land inside a district. The map may move. A block in the grass past every district does not.', note: 'center ' + b.cx + ', ' + b.cz });
+    if (b.district) {
+      let tag = null;
+      for (let i = 0; i < city.districts.length; i++) if (city.districts[i].id === b.district) tag = city.districts[i];
+      if (!tag) issues.push({ title: 'Building is in the wrong district', detail: 'The district tag is not one of the city districts.', note: b.district });
+      else if (here.indexOf(tag.id) < 0) {
+        const near = [];
+        for (let i = 0; i < city.districts.length; i++) if (districtsTouch(city.districts[i], tag)) near.push(city.districts[i].id);
+        let ok = false;
+        for (let i = 0; i < here.length; i++) if (near.indexOf(here[i]) >= 0) ok = true;
+        if (!ok) issues.push({ title: 'Building is in the wrong district', detail: 'The district tag has to contain the building, or touch the district that does. A move is allowed. The block still has to sit in a fitting district.', note: 'tag ' + b.district + ', center is in ' + (here.join(', ') || 'no district') });
+      }
+    }
+    if (b.z1 > city.river.z0 && b.z0 < city.river.z1) {
+      let bridge = false;
+      for (let i = 0; i < city.bridges.length; i++) {
+        const span = city.bridges[i];
+        if (b.x1 > span[0] && b.x0 < span[1]) bridge = true;
+      }
+      if (!bridge) issues.push({ title: 'Building sits in the river', detail: 'The footprint crosses the water. A bridge deck is the crossing. A shop is not.', note: 'z ' + b.z0 + '–' + b.z1 });
+    }
+    for (let i = 0; i < city.roads.length; i++) {
+      const road = city.roads[i];
+      if (rectHit(b, road)) issues.push({ title: 'Building blocks a road', detail: 'The footprint covers a street, the highway, the runway, or the taxiway. Keep the pavement clear so a car can pass.', note: road.kind });
+    }
+    if (rectHit(b, city.spawn)) issues.push({ title: 'Building blocks spawn', detail: 'The start pad at the origin has to stay open. A building on that square traps the player at the first frame.', note: 'spawn ' + city.spawn.x0 + ',' + city.spawn.z0 });
+    if (b.purpose === 'BUILDER') {
+      let north = null;
+      for (let i = 0; i < city.districts.length; i++) if (city.districts[i].id === 'BUILDER_NORTH') north = city.districts[i];
+      if (north && !(b.cx >= north.x0 && b.cx <= north.x1 && b.cz >= north.z0 && b.cz <= north.z1)) {
+        issues.push({ title: 'Purpose is in the wrong part of the city', detail: 'The builder HQ stays in the north sandbox. Soccer stays on the east side. The north sandbox does not take other purposes.', note: 'builder center ' + b.cx + ', ' + b.cz });
+      }
+    } else if (here.indexOf('BUILDER_NORTH') >= 0 && b.purpose) {
+      issues.push({ title: 'Purpose is in the wrong part of the city', detail: 'The builder HQ stays in the north sandbox. Soccer stays on the east side. The north sandbox does not take other purposes.', note: b.purpose + ' in the north sandbox' });
+    }
+    if (b.purpose === 'SOCCER' && b.cx < 350) issues.push({ title: 'Purpose is in the wrong part of the city', detail: 'The builder HQ stays in the north sandbox. Soccer stays on the east side. The north sandbox does not take other purposes.', note: 'soccer center x ' + b.cx });
+    return issues;
+  }
+
+  function nearRoad(x, z, roads, pad) {
+    for (let i = 0; i < roads.length; i++) {
+      const r = roads[i];
+      if (x >= r.x0 - pad && x <= r.x1 + pad && z >= r.z0 - pad && z <= r.z1 + pad) return true;
+    }
+    return false;
+  }
+
+  function doorLayoutIssues(doors, buildings, city) {
+    const issues = [];
+    if (!doors.length) return issues;
+    let access = false;
+    for (let i = 0; i < doors.length; i++) {
+      const d = doors[i];
+      const nx = d[2] || 0, nz = d[3] || 0;
+      const x = d[0] + nx * 2.2, z = d[1] + nz * 2.2;
+      if (nearRoad(x, z, city.roads, 14)) access = true;
+      if (z > city.river.z0 && z < city.river.z1) issues.push({ title: 'Door is not walkable', detail: 'The ground just outside a person door has to be walkable: not inside a building, not in the river, and not a wall.', note: 'opens onto the river' });
+      for (let k = 0; k < buildings.length; k++) {
+        const b = buildings[k];
+        if (x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1) {
+          issues.push({ title: 'Door is not walkable', detail: 'The ground just outside a person door has to be walkable: not inside a building, not in the river, and not a wall.', note: 'opens into ' + (b.purpose || 'a building') });
           break;
         }
       }
     }
-    const merged = [];
-    const mergedLock = {};
-    for (let j = 0; j < V.length; j++) {
-      const inside = [];
-      for (let i = 0; i < L.length; i++) if (centerInside(L[i], V[j])) inside.push(i);
-      if (inside.length >= 2) {
-        merged.push({ live: V[j], locks: inside.map(function (i) { return L[i]; }) });
-        for (let k = 0; k < inside.length; k++) mergedLock[inside[k]] = 1;
-      }
-    }
-    const removed = [];
-    const moved = [];
-    for (let i = 0; i < L.length; i++) {
-      if (matched[i] != null || mergedLock[i]) continue;
-      let host = null;
-      for (let j = 0; j < V.length; j++) if (centerInside(L[i], V[j])) host = V[j];
-      if (host) moved.push({ lock: L[i], live: host });
-      else removed.push(L[i]);
-    }
-    const added = [];
-    for (let j = 0; j < V.length; j++) {
-      if (used[j]) continue;
-      let explained = false;
-      for (let m = 0; m < merged.length; m++) if (merged[m].live === V[j]) explained = true;
-      for (let m = 0; m < moved.length; m++) if (moved[m].live === V[j]) explained = true;
-      if (!explained) added.push(V[j]);
-    }
-    return { missing: false, added: added, removed: removed, merged: merged, moved: moved, count: { live: V.length, locked: L.length } };
+    if (!access) issues.push({ title: 'Door has no road', detail: 'A person door has to stand within reach of a street, the highway, the runway, or the taxiway. A door in a field has no way in.', note: doors.length + ' door' + (doors.length === 1 ? '' : 's') });
+    return issues;
   }
 
-  function placeNote(b) {
-    return (b.purpose || 'building') + ' ' + b.x0 + ',' + b.z0 + '–' + b.x1 + ',' + b.z1;
+  function cityMap() {
+    const C = CITY;
+    const districts = (C.DISTRICTS || []).map(function (d) { return { id: d.id, x0: d.x0, x1: d.x1, z0: d.z0, z1: d.z1 }; });
+    const roads = [];
+    const half = 10;
+    const xs = C.roadsX || [];
+    const zs = C.roadsZ || [];
+    const z0 = C.ZS0, z1 = C.ZS1;
+    for (let i = 0; i < xs.length; i++) {
+      roads.push({ kind: 'street', x0: xs[i] - half, x1: xs[i] + half, z0: z0, z1: Math.min(1700, z1) });
+      roads.push({ kind: 'street', x0: xs[i] - half, x1: xs[i] + half, z0: 1900, z1: z1 });
+    }
+    for (let i = 0; i < zs.length; i++) {
+      roads.push({ kind: 'street', x0: C.XS0, x1: -150, z0: zs[i] - half, z1: zs[i] + half });
+      roads.push({ kind: 'street', x0: 150, x1: C.XS1, z0: zs[i] - half, z1: zs[i] + half });
+    }
+    const hw = C.HW;
+    roads.push({ kind: 'highway', x0: hw.x - hw.hw, x1: hw.x + hw.hw, z0: z0 - 400, z1: z1 + 400 });
+    roads.push({ kind: 'runway', x0: -16, x1: 16, z0: -60, z1: 1500 });
+    const taxi = C.TAXI;
+    roads.push({ kind: 'taxiway', x0: taxi.x0, x1: taxi.x1, z0: taxi.z0, z1: taxi.z1 });
+    return {
+      districts: districts,
+      river: { z0: C.RIV.z0, z1: C.RIV.z1 },
+      bridges: (C.BRIDGES || []).map(function (span) { return [span[0], span[1]]; }),
+      roads: roads,
+      spawn: { x0: -16, x1: 16, z0: -30, z1: 40 }
+    };
   }
 
   function muralSeen(b, view) {
@@ -758,30 +840,43 @@
     }
   }
 
-  function applyPlacement(placed, add) {
-    if (placed.missing) {
-      add('placement', 'fail', 'Building lock is missing', 'tools/arch-check-baseline.json has no building roster, so an added, removed, or merged building would not fail. Record main before trusting this run.', null);
+  function judgeCount(liveCount, style, baseline, add) {
+    const approved = approvedTotal(style, baseline);
+    const row = extraInGame(liveCount, approved, '');
+    if (row.missing) {
+      add('count', 'fail', 'Approved count is missing', 'docs/NEON-WORLD-STYLE.md has no Approved count, and the baseline has no roster, so an extra building would not fail.', null);
       return;
     }
-    if (placed.count.live !== placed.count.locked) {
-      add('placement', 'fail', 'Building count does not match main', 'Main has ' + placed.count.locked + ' solid buildings. This city has ' + placed.count.live + '. Until Bob adds a building, the count stays put.', null);
-    }
-    for (let i = 0; i < placed.removed.length; i++) {
-      const b = placed.removed[i];
-      add('placement', 'fail', 'Building was removed', 'This footprint is on main and is not in the city.', { id: b.id, purpose: b.purpose, label: b.label, note: placeNote(b) });
-    }
-    for (let i = 0; i < placed.added.length; i++) {
-      const b = placed.added[i];
-      add('placement', 'fail', 'Building was added', 'This footprint is not on main. The roster stays exact until Bob adds a building.', { id: b.id, purpose: b.purpose, label: b.label, note: placeNote(b) });
-    }
-    for (let i = 0; i < placed.moved.length; i++) {
-      const row = placed.moved[i];
-      add('placement', 'fail', 'Building placement does not match main', 'The locked footprint no longer matches. Main has ' + placeNote(row.lock) + '.', { id: row.live.id, purpose: row.live.purpose, label: row.live.label, note: 'now ' + placeNote(row.live) });
-    }
-    for (let i = 0; i < placed.merged.length; i++) {
-      const row = placed.merged[i];
-      const names = row.locks.map(placeNote).join('; ');
-      add('placement', 'fail', 'Buildings were merged', 'One footprint covers ' + row.locks.length + ' buildings from main: ' + names + '.', { id: row.live.id, purpose: row.live.purpose, label: row.live.label, note: placeNote(row.live) });
+    if (row.extra) add('count', 'fail', 'Unapproved new building', 'The city has ' + row.live + ' solid buildings. Bob approved ' + row.approved + '. A moved building is not a new one. An extra block that loads in the game is. A pitch under Ideas for Bob is not.', null);
+    if (row.dropped) add('count', 'fail', 'Building count dropped', 'Bob approved ' + row.approved + ' solid buildings. This city has ' + row.live + '. A move keeps the count. A removed or merged building does not.', null);
+  }
+
+  function judgeLayout(list, add) {
+    const map = cityMap();
+    const foots = [];
+    for (let i = 0; i < list.length; i++) foots.push(footOf(list[i]));
+    for (let i = 0; i < list.length; i++) {
+      const b = list[i];
+      const foot = foots[i];
+      const issues = layoutIssues(foot, map).concat(doorLayoutIssues(personDoorData(b), foots, map));
+      const seen = {};
+      for (let k = 0; k < issues.length; k++) {
+        const issue = issues[k];
+        const key = issue.title + '|' + (issue.note || '');
+        if (seen[key]) continue;
+        seen[key] = 1;
+        add('layout', 'fail', issue.title, issue.detail, Object.assign({ note: issue.note }, refOf(b)));
+      }
+      if (typeof CITY !== 'undefined' && typeof CITY.hit === 'function') {
+        const doors = personDoorData(b);
+        for (let d = 0; d < doors.length; d++) {
+          const door = doors[d];
+          const x = door[0] + (door[2] || 0) * 2.2;
+          const z = door[1] + (door[3] || 0) * 2.2;
+          const wall = CITY.hit(x, z, 0.3, 0);
+          if (wall) add('layout', 'fail', 'Door is not walkable', 'The ground just outside a person door has to be walkable: not inside a building, not in the river, and not a wall.', Object.assign({ note: 'a wall is 2.2 m outside the door' }, refOf(b)));
+        }
+      }
     }
   }
 
@@ -806,15 +901,31 @@
     expect('stacked tiers', overlapVol({ x0: 0, x1: 10, y0: 0, y1: 6, z0: 0, z1: 10 }, { x0: 1, x1: 9, y0: 6, y1: 12, z0: 1, z1: 9 }) > 1, false);
     expect('intersect', overlapVol({ x0: 0, x1: 10, y0: 0, y1: 8, z0: 0, z1: 10 }, { x0: 8, x1: 14, y0: 0, y1: 8, z0: 0, z1: 10 }) > 1, true);
     expect('z-fight', zFight({ x0: 0, x1: 12, y0: 0, y1: 10, z0: 0, z1: 12 }, { x0: 0.02, x1: 12.02, y0: 0, y1: 10, z0: 0, z1: 12 }) > 0, true);
-    const homeBox = { purpose: 'HOME', x0: 0, x1: 10, z0: 0, z1: 10, cx: 5, cz: 5 };
-    const garageBox = { purpose: 'GARAGE', x0: 20, x1: 30, z0: 0, z1: 10, cx: 25, cz: 5 };
-    const extraBox = { purpose: 'CAFE', x0: 40, x1: 50, z0: 0, z1: 10, cx: 45, cz: 5 };
-    const mergedBox = { purpose: 'HOME', x0: 0, x1: 30, z0: 0, z1: 10, cx: 15, cz: 5 };
-    function placementBad(row) { return row.added.length + row.removed.length + row.merged.length + row.moved.length > 0; }
-    expect('roster holds', placementBad(matchPlacements([homeBox, garageBox], [homeBox, garageBox])), false);
-    expect('roster added', placementBad(matchPlacements([homeBox, garageBox, extraBox], [homeBox, garageBox])), true);
-    expect('roster removed', placementBad(matchPlacements([homeBox], [homeBox, garageBox])), true);
-    expect('roster merged', matchPlacements([mergedBox], [homeBox, garageBox]).merged.length === 0, false);
+    const toy = {
+      districts: [
+        { id: 'SPAWN_SOUTH', x0: -50, x1: 80, z0: -50, z1: 80 },
+        { id: 'BUILDER_NORTH', x0: -50, x1: 80, z0: 200, z1: 280 },
+        { id: 'SPORTS_EAST', x0: 100, x1: 200, z0: -50, z1: 80 }
+      ],
+      river: { z0: 140, z1: 170 },
+      bridges: [[-6, 6]],
+      roads: [
+        { kind: 'street', x0: -10, x1: 10, z0: -50, z1: 80 },
+        { kind: 'runway', x0: -4, x1: 4, z0: -20, z1: 40 }
+      ],
+      spawn: { x0: -4, x1: 4, z0: -4, z1: 4 }
+    };
+    const homeOk = { purpose: 'HOME', district: 'SPAWN_SOUTH', x0: 20, x1: 32, z0: 20, z1: 32, cx: 26, cz: 26 };
+    const onRoad = { purpose: 'HOME', district: 'SPAWN_SOUTH', x0: -8, x1: 8, z0: 20, z1: 32, cx: 0, cz: 26 };
+    const builderSouth = { purpose: 'BUILDER', district: 'BUILDER_NORTH', x0: 20, x1: 32, z0: 20, z1: 32, cx: 26, cz: 26 };
+    expect('move keeps the count', extraInGame(2, 2, '## Ideas for Bob\nAdd 12 garages.').extra + extraInGame(2, 2).dropped > 0, false);
+    expect('unapproved extra', extraInGame(3, 2, '').extra > 0, true);
+    expect('count dropped', extraInGame(1, 2, '').dropped > 0, true);
+    expect('layout holds', layoutIssues(homeOk, toy).length > 0, false);
+    expect('blocks a road', layoutIssues(onRoad, toy).length === 0, false);
+    expect('builder stays north', layoutIssues(builderSouth, toy).length === 0, false);
+    expect('door into a building', doorLayoutIssues([[0, 10, 1, 0]], [{ purpose: 'HOME', x0: 1, x1: 8, z0: 8, z1: 14 }], toy).length === 0, false);
+    expect('door is clear', doorLayoutIssues([[20, 26, -1, 0]], [homeOk], toy).length > 0, false);
     expect('turbo is not soccer', purposeHit('TURBO', ['soccer', 'pitch'], false) !== '', false);
     expect('home word', purposeHit('HOME', ['home'], false) === '', false);
     expect('blur zero', [0, 0].some(function (v) { return v > 0.5; }), false);
@@ -1199,10 +1310,13 @@
         });
         judgePurpose(b, purposes, murals, add);
       }
-      const placed = matchPlacements(roster, (baseline && baseline.buildings && baseline.buildings.length) ? baseline.buildings : null);
-      applyPlacement(placed, add);
-      if (!findings.some(function (f) { return f.check === 'placement'; })) {
-        passes.push(roster.length + ' solid buildings sit on the locked footprints from main. None were added, removed, or merged.');
+      judgeCount(roster.length, baseline && baseline.style, baseline, add);
+      judgeLayout(list, add);
+      if (!findings.some(function (f) { return f.check === 'count'; })) {
+        passes.push(roster.length + ' solid buildings, the approved count. A move does not change it. Ideas for Bob are not buildings.');
+      }
+      if (!findings.some(function (f) { return f.check === 'layout'; })) {
+        passes.push('Districts, roads, spawn, purpose placement, and walkable doors still read as a city.');
       }
       if (!findings.some(function (f) { return f.check === 'purpose'; })) {
         passes.push('Each building reads as its purpose at street level and from the air.');

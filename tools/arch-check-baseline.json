@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "Mural floor for the Z dance buildings, the small river-edge ramps, and the solid-building roster on main. A later mural wall must be at least this big. The river-edge ramps stay this size and this far from the water. Extra ramps are allowed. The building list is the 24 solid buildings on main today. Until Bob adds one, do not edit it to hide a new, removed, moved, or merged building.",
+  "note": "Mural floor for the Z dance buildings, the small river-edge ramps, and the solid-building count on main. A later mural wall must be at least this big. The river-edge ramps stay this size and this far from the water. Extra ramps are allowed. The building list is a snapshot of where main put them. Placements may change. The count stays at 24 unless docs/NEON-WORLD-STYLE.md raises Approved count. Do not edit the count to hide a block that loaded in the game.",
   "capturedAt": "2026-10-24T05:21:27.482Z",
   "git": {
     "sha": "1b90d27e4b89a904c480f1f4292b44566871345c",

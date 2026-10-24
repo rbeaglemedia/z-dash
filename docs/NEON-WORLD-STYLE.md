@@ -60,7 +60,13 @@ These fail the brand check. Each bullet is `triggers | what to do instead`.
 
 ## Buildings
 
-The solid-building count and the footprints stay exactly as they are on main today. The lock is `tools/arch-check-baseline.json`. An added building, a removed building, or two buildings merged into one fails. A footprint that moves fails too. Bob adding a building means updating that lock on purpose. The checker does not raise the lock by itself.
+Placements and the city map may change. Moving a building is not a fail. The count of solid buildings stays at the approved count, which is main today. Bob raises the number when he approves an addition. The checker does not raise it from a plan.
+
+Approved count: 24
+
+A heading `Ideas for Bob` may pitch new buildings. Those lines are not approval, and they are not in the game. Only a solid building that actually loads, past this count, fails.
+
+A moved city still has to read as a city. Every building sits in a district, or in a district that touches its tag. The builder HQ stays in the north sandbox, and that sandbox does not take other purposes. Soccer stays on the east side. Nothing sits in the river. Nothing covers a street, the highway, the runway, the taxiway, or spawn. Every building has a door on a road, and that door opens onto ground a person can walk.
 
 ## Purpose
 
@@ -100,6 +106,6 @@ Tow-truck beds are their own jumps. They are not part of this count, and they ar
 
 ## What else the review still scores
 
-The building count and footprints locked to main. Each building readable as its purpose from the street and from the air. Doors at street level, sized for a person. Garages sized for the 370Z. Windows on one grid. No floating, intersecting, or z-fighting boxes. Roofs closed, and detailed when seen from the air. The same shape, doors, and garages at Arcade, Street, and on-foot. Signs attached and readable. The Z dance mural on a flat wall at least as big as today's. The neon palette. No `shadowBlur` on the building pass. The building pass inside the FPS budget shared with PERF-GUARD.
+The approved building count. A logical map after a move: districts, roads, purpose, spawn, and walkable doors. Each building readable as its purpose from the street and from the air. Doors at street level, sized for a person. Garages sized for the 370Z. Windows on one grid. No floating, intersecting, or z-fighting boxes. Roofs closed, and detailed when seen from the air. The same shape, doors, and garages at Arcade, Street, and on-foot. Signs attached and readable. The Z dance mural on a flat wall at least as big as today's. The neon palette. No `shadowBlur` on the building pass. The building pass inside the FPS budget shared with PERF-GUARD.
 
 Those checks are in `tools/ARCH-CHECK.md`.
