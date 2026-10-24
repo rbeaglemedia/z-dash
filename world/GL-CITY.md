@@ -61,7 +61,9 @@ Street-front, three-quarter, roof, and on-foot frames for each of these are in `
 
 Bob approved this one building. The other purpose looks above still wait for the layout.
 
-The prefab is `world/nos-station.js`. Both NOS shops use it. The tall pad building is the depot. The 12 m shop is the small station a city can repeat. A canopy of flat boxes sits on the street face, with two pump islands and a lane between them. The car drives under the canopy (clearance 3.4 m, above the 1.4 m car probe) and claims there. The empty room does not open.
+The prefab is `world/nos-station.js`. `world.html` (the page the JR menu opens) and `world-split.html` both load it, in the same place, immediately before `world/city.js`. `world/gl-city.js` stays on `world-split.html` only. That is the `?gl=1` prototype and was never part of the kid page. The service-worker cache for these pages is `world-split-v` plus `ZD_WORLD` in `shared/version.js` (now 31), and the script tags use `?v=31`, so a phone drops the old page that had no pumps. Nothing here deploys.
+
+Both NOS shops use the prefab. The tall pad building is the depot. The 12 m shop is the small station a city can repeat. A canopy of flat boxes sits on the street face, with two pump islands and a lane between them. The car drives under the canopy (clearance 3.4 m, above the 1.4 m car probe) and claims there. The empty room does not open.
 
 The claim is the same overcharge as before: the tank fills and stays full for 30 seconds. The button reads CLAIM NOS. Pulling up to the kiosk door does not claim. The pumps stay on the parcel. Nothing in this prefab reads a world coordinate.
 

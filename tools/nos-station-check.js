@@ -55,4 +55,17 @@ assert.ok(fn.includes('function drawNosStation'), 'draw exists');
 assert.ok(!/shadowBlur/.test(fn), 'station draw has no shadowBlur');
 assert.ok(draw.includes('if(b.nosStation)drawNosStation'), 'near path uses the station');
 
+for (const page of ['world.html', 'world-split.html']) {
+  const html = fs.readFileSync(path.join(__dirname, '..', page), 'utf8');
+  const iNos = html.indexOf('world/nos-station.js?v=31');
+  const iCity = html.indexOf('world/city.js?v=31');
+  assert.ok(iNos > 0 && iCity > iNos, page + ' loads the prefab before city.js');
+}
+const kid = fs.readFileSync(path.join(__dirname, '../world.html'), 'utf8');
+const split = fs.readFileSync(path.join(__dirname, '../world-split.html'), 'utf8');
+assert.ok(!kid.includes('world/gl-city.js'), 'kid page does not load the gl prototype');
+assert.ok(split.includes('world/gl-city.js?v=31'), 'split page still loads the gl prototype');
+const ver = fs.readFileSync(path.join(__dirname, '../shared/version.js'), 'utf8');
+assert.ok(/ZD_WORLD = '31'/.test(ver), 'cache world version is 31');
+
 console.log('nos-station-check ok', SHOPS.map((s) => s.name).join(', '));
