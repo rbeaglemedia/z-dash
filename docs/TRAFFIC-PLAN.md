@@ -19,7 +19,7 @@ Sources for any future build, and only these: `CITY.ROADS` for lanes and crossin
 
 What is in the tree today is a placeholder, not a choice from this list: city pace 10–15 m/s, +3 m/s on highway / bridge / tunnel, an 11 m centre-to-centre gap, and a bumper slowdown when Ellie overlaps a car. Bob picks the options below before that behavior is replaced.
 
-Weather is a later check. Do not wire the weather API in the first build.
+Weather is a later check. Do not wire the weather API in the first build. The reads to use then are in section 8. They come from Weather PR #89. Nothing in `world/traffic.js` calls them.
 
 ## 1. Lane keeping
 
@@ -93,10 +93,19 @@ Far dots (past the box range) can come and go more freely. They are lights, not 
 
 ## 8. Weather, later
 
-After Bob picks the options above and the behavior is in, check it against the weather API. Do that as its own pass. Likely effects, still not built:
+After Bob picks the options above and the behavior is in, a separate pass can thin out or slow cars inside a weather zone. Do not wire this while the dry-road rules are still a placeholder. Weather does not change Ellie's speed. Traffic would be the side that eases off.
 
-- rain: a longer following gap (add half a length) and the low end of the speed band
-- fog: despawn no closer than today, so a car does not appear out of the fog in front of her
-- clear: the picked options, unchanged
+The surface is on the Weather agent's PR #89 (`world/weather.js`, branch `cursor/weather-overlay-c773`). Read it. Do not copy the zone rectangles into traffic.
 
-No weather branch until the dry-road rules are the ones Bob chose.
+| Read | Meaning |
+| --- | --- |
+| `weather.inZone(x, z)` | The zone rectangle under that point, or `null` outside. Fields include `id`, `kind`, `name`, `x0`, `x1`, `z0`, `z1`. |
+| `weather.density` | `0` outside. About `0.30` in light weather, up to about `0.78` when thick. |
+| `weather.kind` | `'sand'`, `'fog'`, `'rain'`, or `null`. |
+| `weather.thick` | True when the far draw is shortened. |
+| `weather.viewDist` | Current far draw, in metres. |
+| `weather.onHeadroom(fn)` | Called when the frame has room. |
+
+A car with `inZone(x, z)` set can drop its target speed as `density` rises, and a spawn roll can skip slots so the zone holds fewer cars. `kind` picks the flavour: rain lengthens the following gap and uses the low end of the speed band; fog keeps the despawn distance where it is so a car does not appear out of the fog in front of her; sand uses the same density throttle. `thick` and `viewDist` say when the far draw has already closed in, so respawns stay inside that distance. `onHeadroom` is the hook for a spawn catch-up, not a per-frame scan.
+
+Clear air (`inZone` null, `density` 0) keeps the dry-road options Bob picked. No weather branch until those dry-road rules are the ones he chose.
