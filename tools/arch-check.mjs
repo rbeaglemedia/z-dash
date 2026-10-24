@@ -351,7 +351,7 @@ function loadBaseline(root) {
 function writeBaseline(root, report, prev) {
   const next = {
     version: 1,
-    note: 'Mural floor for the Z dance buildings, and the small river-edge ramps. A later mural wall must be at least this big. The river-edge ramps stay this size and this far from the water. Extra ramps are allowed. Written by arch-check --write-baseline. Do not edit these numbers to hide a smaller wall or a moved river jump.',
+    note: 'Mural floor for the Z dance buildings, the small river-edge ramps, and the solid-building roster on main. A later mural wall must be at least this big. The river-edge ramps stay this size and this far from the water. Extra ramps are allowed. The building list stays exact until Bob adds one: do not edit it to hide a new, removed, or merged building. Written by arch-check --write-baseline. Do not edit these numbers to hide a smaller wall or a moved river jump.',
     capturedAt: new Date().toISOString(),
     git: { sha: report.sha || '', branch: report.branch || '' },
     murals: (report.murals || []).map((m) => ({
@@ -364,6 +364,7 @@ function writeBaseline(root, report, prev) {
       height: m.height,
       area: m.area
     })),
+    buildings: (prev && prev.buildings && prev.buildings.length) ? prev.buildings : (report.roster || []),
     riverEdge: (prev && prev.riverEdge && prev.riverEdge.length) ? prev.riverEdge : ((report.ramps && report.ramps.riverEdge) || []),
     rampLot: (report.ramps && report.ramps.lot) || (prev && prev.rampLot) || 24,
     scales: report.scales || (prev && prev.scales) || null
@@ -430,11 +431,23 @@ function labeledLine(body, label) {
   return m ? m[1].trim() : '';
 }
 
+function purposeRules(body) {
+  const rows = [];
+  for (const line of String(body || '').split('\n')) {
+    const m = /^\s*-\s+([A-Za-z0-9_ -]+)\s*\|\s*(.*)$/.exec(line);
+    if (!m) continue;
+    const key = m[1].trim().toUpperCase().replace(/[\s-]+/g, '_');
+    const words = m[2].split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+    rows.push({ key, words });
+  }
+  return rows;
+}
+
 function loadStyle(root) {
   const file = path.join(root, 'docs', 'NEON-WORLD-STYLE.md');
   let md = '';
   try { md = fs.readFileSync(file, 'utf8'); }
-  catch (e) { return { ok: false, file, error: e.message, capability: [], drift: [], hard: [] }; }
+  catch (e) { return { ok: false, file, error: e.message, capability: [], drift: [], hard: [], purpose: [] }; }
   const brand = sectionBody(md, '## Brand');
   return {
     ok: true,
@@ -444,7 +457,8 @@ function loadStyle(root) {
     ellie: labeledLine(brand, 'Ellie'),
     capability: styleRules(sectionBody(md, '## Capability')),
     drift: styleRules(sectionBody(md, '### Drift')),
-    hard: styleRules(sectionBody(md, '### Hard breaks'))
+    hard: styleRules(sectionBody(md, '### Hard breaks')),
+    purpose: purposeRules(sectionBody(md, '## Purpose'))
   };
 }
 
@@ -619,6 +633,7 @@ function markdown(p) {
     lines.push('');
   }
   const order = [
+    ['placement', 'Placements'],
     ['scale', 'Scale'],
     ['doors', 'Doors'],
     ['garage', 'Garages'],
@@ -627,6 +642,7 @@ function markdown(p) {
     ['roofs', 'Roofs'],
     ['tiers', 'Detail tiers'],
     ['signs', 'Signs'],
+    ['purpose', 'Purpose'],
     ['mural', 'Z dance mural'],
     ['style', 'Style'],
     ['ramps', 'Ramps'],

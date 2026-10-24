@@ -596,6 +596,195 @@
     });
   }
 
+  const PURPOSE_FALLBACK = [
+    { key: 'HOME', words: ['home'] },
+    { key: 'NEON_PAINT', words: ['neon', 'paint'] },
+    { key: 'GARAGE', words: ['garage'] },
+    { key: 'DANCE', words: ['dance', 'arts', 'z company'] },
+    { key: 'PETS', words: ['pet'] },
+    { key: 'ARCADE', words: ['arcade'] },
+    { key: 'NOS', words: ['nos', 'fuel'] },
+    { key: 'SKY_DROP', words: ['sky', 'jump', 'helipad'] },
+    { key: 'BUILDER', words: ['build', 'architect'] },
+    { key: 'SOCCER', words: ['soccer', 'pitch', 'goal', 'stadium', 'arena'] },
+    { key: 'CAFE', words: ['pizza', 'cafe', 'boba'] },
+    { key: 'SHOWROOM', words: ['z-dash', 'showroom', 'z dash'] },
+    { key: 'GENERIC', words: [] }
+  ];
+
+  function purposeMap(style) {
+    const rows = style && style.purpose && style.purpose.length ? style.purpose : PURPOSE_FALLBACK;
+    const map = {};
+    for (let i = 0; i < rows.length; i++) map[rows[i].key] = rows[i].words || [];
+    return map;
+  }
+
+  function purposeKey(raw, map) {
+    const key = String(raw || '').toUpperCase().replace(/[\s-]+/g, '_');
+    if (!key || key === 'GENERIC') return 'GENERIC';
+    if (Object.prototype.hasOwnProperty.call(map, key)) return key;
+    return 'UNKNOWN';
+  }
+
+  function purposeHit(text, words, generic) {
+    const t = String(text || '').toLowerCase();
+    if (!t) return '';
+    if (generic) return t;
+    const list = words || [];
+    for (let i = 0; i < list.length; i++) {
+      if (list[i] && t.indexOf(list[i]) >= 0) return list[i];
+    }
+    return '';
+  }
+
+  function sameBox(a, b) {
+    return Math.abs(a.x0 - b.x0) <= 0.2 && Math.abs(a.x1 - b.x1) <= 0.2 && Math.abs(a.z0 - b.z0) <= 0.2 && Math.abs(a.z1 - b.z1) <= 0.2;
+  }
+
+  function centerInside(lock, live) {
+    return lock.cx >= live.x0 - 0.2 && lock.cx <= live.x1 + 0.2 && lock.cz >= live.z0 - 0.2 && lock.cz <= live.z1 + 0.2;
+  }
+
+  function footOf(b) {
+    const x0 = +b.x0, x1 = +b.x1, z0 = +b.z0, z1 = +b.z1;
+    return {
+      id: b.id,
+      purpose: String(b.purpose || ''),
+      label: b.label || b.purpose || '',
+      sign: b.sign || '',
+      x0: x0, x1: x1, z0: z0, z1: z1,
+      cx: b.cx != null ? +b.cx : (x0 + x1) / 2,
+      cz: b.cz != null ? +b.cz : (z0 + z1) / 2
+    };
+  }
+
+  function matchPlacements(live, locked) {
+    if (!locked) return { missing: true, added: [], removed: [], merged: [], moved: [], count: { live: (live || []).length, locked: 0 } };
+    const L = locked.map(footOf);
+    const V = (live || []).map(footOf);
+    const used = {};
+    const matched = {};
+    for (let i = 0; i < L.length; i++) {
+      for (let j = 0; j < V.length; j++) {
+        if (used[j]) continue;
+        if (sameBox(L[i], V[j]) && L[i].purpose === V[j].purpose) {
+          used[j] = 1;
+          matched[i] = j;
+          break;
+        }
+      }
+    }
+    const merged = [];
+    const mergedLock = {};
+    for (let j = 0; j < V.length; j++) {
+      const inside = [];
+      for (let i = 0; i < L.length; i++) if (centerInside(L[i], V[j])) inside.push(i);
+      if (inside.length >= 2) {
+        merged.push({ live: V[j], locks: inside.map(function (i) { return L[i]; }) });
+        for (let k = 0; k < inside.length; k++) mergedLock[inside[k]] = 1;
+      }
+    }
+    const removed = [];
+    const moved = [];
+    for (let i = 0; i < L.length; i++) {
+      if (matched[i] != null || mergedLock[i]) continue;
+      let host = null;
+      for (let j = 0; j < V.length; j++) if (centerInside(L[i], V[j])) host = V[j];
+      if (host) moved.push({ lock: L[i], live: host });
+      else removed.push(L[i]);
+    }
+    const added = [];
+    for (let j = 0; j < V.length; j++) {
+      if (used[j]) continue;
+      let explained = false;
+      for (let m = 0; m < merged.length; m++) if (merged[m].live === V[j]) explained = true;
+      for (let m = 0; m < moved.length; m++) if (moved[m].live === V[j]) explained = true;
+      if (!explained) added.push(V[j]);
+    }
+    return { missing: false, added: added, removed: removed, merged: merged, moved: moved, count: { live: V.length, locked: L.length } };
+  }
+
+  function placeNote(b) {
+    return (b.purpose || 'building') + ' ' + b.x0 + ',' + b.z0 + '–' + b.x1 + ',' + b.z1;
+  }
+
+  function muralSeen(b, view) {
+    if (!(window.NEON_PAINT && typeof NEON_PAINT.muralFrame === 'function')) return false;
+    const f = NEON_PAINT.muralFrame(b);
+    paintBuilding(b, view, VIEWPORTS[2]);
+    const mid = proj(f.cx + f.nx * (f.out + 0.05), f.y0 + f.height * 0.55, f.cz + f.nz * (f.out + 0.05));
+    if (!mid) return false;
+    const x0 = Math.max(0, Math.floor(mid[0] * DPR - 18));
+    const y0 = Math.max(0, Math.floor(mid[1] * DPR - 18));
+    const img = ctx.getImageData(x0, y0, 36, 36).data;
+    let pink = 0, lift = 0;
+    for (let i = 0; i < img.length; i += 4) {
+      const r = img[i], g = img[i + 1], bl = img[i + 2];
+      if (r > 180 && bl > 140 && r > g + 40) pink++;
+      if (bl > r + 8 && bl > 28 && r < 80) lift++;
+    }
+    return pink > 2 || lift > 8;
+  }
+
+  function judgePurpose(b, map, murals, add) {
+    const key = purposeKey(b.purpose, map);
+    const ref = refOf(b);
+    if (key === 'UNKNOWN') {
+      add('purpose', 'fail', 'Purpose is not in the style guide', 'Add ' + (b.purpose || '(blank)') + ' to the Purpose list in docs/NEON-WORLD-STYLE.md, with the words a player should read, or mark the building generic.', ref);
+      return;
+    }
+    const words = map[key] || [];
+    const generic = key === 'GENERIC';
+    const text = (b.sign && b.sign.t) || '';
+    const hit = purposeHit(text, words, generic);
+    const streetPx = signFontPx(b, frontSpec(b, 0.55));
+    let muralStreet = false;
+    if (key === 'DANCE') {
+      for (let i = 0; i < murals.length; i++) if (murals[i].id === b.id && murals[i].intact) muralStreet = true;
+    }
+    const streetOk = (hit && streetPx >= 10) || (key === 'DANCE' && muralStreet);
+    if (!streetOk) {
+      const wordList = generic ? 'any word' : (words.join(', ') || '(none listed)');
+      add('purpose', 'fail', 'Purpose is not readable at street level', 'The street sign has to say the purpose and measure at least 10 px at the front camera. Words for this purpose: ' + wordList + '.', Object.assign({ note: 'sign "' + (text || 'none') + '" ' + streetPx + ' px' }, ref));
+    }
+    const airPx = signFontPx(b, viewSpec(b, 'roof'));
+    const feat = roofFeature(b);
+    let airOk = !!(hit && airPx >= 10);
+    if (!airOk && key === 'SKY_DROP' && feat === 'pad') airOk = true;
+    if (!airOk && key === 'DANCE' && muralSeen(b, 'roof')) airOk = true;
+    if (!airOk) {
+      const roof = feat === 'pad' ? 'a helipad' : feat === 'ant' ? 'an antenna' : feat === 'tank' ? 'a tank' : 'a blank slab';
+      add('purpose', 'fail', 'Purpose is not readable from the air', 'A flying view has to show the purpose. A sky drop can use its helipad. A dance building can show the mural. Anything else needs its purpose word at least 10 px from the roof camera. Put that word on the roof in straight boxes and a glow strip.', Object.assign({ note: 'sign "' + (text || 'none') + '" ' + airPx + ' px, roof is ' + roof }, ref));
+    }
+  }
+
+  function applyPlacement(placed, add) {
+    if (placed.missing) {
+      add('placement', 'fail', 'Building lock is missing', 'tools/arch-check-baseline.json has no building roster, so an added, removed, or merged building would not fail. Record main before trusting this run.', null);
+      return;
+    }
+    if (placed.count.live !== placed.count.locked) {
+      add('placement', 'fail', 'Building count does not match main', 'Main has ' + placed.count.locked + ' solid buildings. This city has ' + placed.count.live + '. Until Bob adds a building, the count stays put.', null);
+    }
+    for (let i = 0; i < placed.removed.length; i++) {
+      const b = placed.removed[i];
+      add('placement', 'fail', 'Building was removed', 'This footprint is on main and is not in the city.', { id: b.id, purpose: b.purpose, label: b.label, note: placeNote(b) });
+    }
+    for (let i = 0; i < placed.added.length; i++) {
+      const b = placed.added[i];
+      add('placement', 'fail', 'Building was added', 'This footprint is not on main. The roster stays exact until Bob adds a building.', { id: b.id, purpose: b.purpose, label: b.label, note: placeNote(b) });
+    }
+    for (let i = 0; i < placed.moved.length; i++) {
+      const row = placed.moved[i];
+      add('placement', 'fail', 'Building placement does not match main', 'The locked footprint no longer matches. Main has ' + placeNote(row.lock) + '.', { id: row.live.id, purpose: row.live.purpose, label: row.live.label, note: 'now ' + placeNote(row.live) });
+    }
+    for (let i = 0; i < placed.merged.length; i++) {
+      const row = placed.merged[i];
+      const names = row.locks.map(placeNote).join('; ');
+      add('placement', 'fail', 'Buildings were merged', 'One footprint covers ' + row.locks.length + ' buildings from main: ' + names + '.', { id: row.live.id, purpose: row.live.purpose, label: row.live.label, note: placeNote(row.live) });
+    }
+  }
+
   function calibrate() {
     const errors = [];
     function expect(name, fails, shouldFail) {
@@ -617,6 +806,17 @@
     expect('stacked tiers', overlapVol({ x0: 0, x1: 10, y0: 0, y1: 6, z0: 0, z1: 10 }, { x0: 1, x1: 9, y0: 6, y1: 12, z0: 1, z1: 9 }) > 1, false);
     expect('intersect', overlapVol({ x0: 0, x1: 10, y0: 0, y1: 8, z0: 0, z1: 10 }, { x0: 8, x1: 14, y0: 0, y1: 8, z0: 0, z1: 10 }) > 1, true);
     expect('z-fight', zFight({ x0: 0, x1: 12, y0: 0, y1: 10, z0: 0, z1: 12 }, { x0: 0.02, x1: 12.02, y0: 0, y1: 10, z0: 0, z1: 12 }) > 0, true);
+    const homeBox = { purpose: 'HOME', x0: 0, x1: 10, z0: 0, z1: 10, cx: 5, cz: 5 };
+    const garageBox = { purpose: 'GARAGE', x0: 20, x1: 30, z0: 0, z1: 10, cx: 25, cz: 5 };
+    const extraBox = { purpose: 'CAFE', x0: 40, x1: 50, z0: 0, z1: 10, cx: 45, cz: 5 };
+    const mergedBox = { purpose: 'HOME', x0: 0, x1: 30, z0: 0, z1: 10, cx: 15, cz: 5 };
+    function placementBad(row) { return row.added.length + row.removed.length + row.merged.length + row.moved.length > 0; }
+    expect('roster holds', placementBad(matchPlacements([homeBox, garageBox], [homeBox, garageBox])), false);
+    expect('roster added', placementBad(matchPlacements([homeBox, garageBox, extraBox], [homeBox, garageBox])), true);
+    expect('roster removed', placementBad(matchPlacements([homeBox], [homeBox, garageBox])), true);
+    expect('roster merged', matchPlacements([mergedBox], [homeBox, garageBox]).merged.length === 0, false);
+    expect('turbo is not soccer', purposeHit('TURBO', ['soccer', 'pitch'], false) !== '', false);
+    expect('home word', purposeHit('HOME', ['home'], false) === '', false);
     expect('blur zero', [0, 0].some(function (v) { return v > 0.5; }), false);
     expect('blur glow', [0, 10].some(function (v) { return v > 0.5; }), true);
     if (PET >= PERSON) errors.push('pet reference is not shorter than the person');
@@ -983,6 +1183,31 @@
         passes.push('Lots of ramps (' + ramps.count + '). No upper limit. The small river-edge jump stays the one that clears the river at about 80 mph.');
       }
 
+      const roster = [];
+      const purposes = purposeMap(baseline && baseline.style);
+      for (let i = 0; i < list.length; i++) {
+        const b = list[i];
+        roster.push({
+          id: b.id,
+          purpose: b.purpose || '',
+          label: labelOf(b),
+          sign: (b.sign && b.sign.t) || '',
+          x0: rnd(b.x0), x1: rnd(b.x1), z0: rnd(b.z0), z1: rnd(b.z1),
+          h: rnd(b.top || 0),
+          cx: rnd((b.x0 + b.x1) / 2),
+          cz: rnd((b.z0 + b.z1) / 2)
+        });
+        judgePurpose(b, purposes, murals, add);
+      }
+      const placed = matchPlacements(roster, (baseline && baseline.buildings && baseline.buildings.length) ? baseline.buildings : null);
+      applyPlacement(placed, add);
+      if (!findings.some(function (f) { return f.check === 'placement'; })) {
+        passes.push(roster.length + ' solid buildings sit on the locked footprints from main. None were added, removed, or merged.');
+      }
+      if (!findings.some(function (f) { return f.check === 'purpose'; })) {
+        passes.push('Each building reads as its purpose at street level and from the air.');
+      }
+
       const style = baseline && baseline.style;
       if (style && style.ok) {
         function ruleFor(list, needle) {
@@ -1061,6 +1286,7 @@
         passes: passes,
         murals: murals,
         ramps: ramps,
+        roster: roster,
         tier: tier.stats,
         blurHits: blurHits
       };

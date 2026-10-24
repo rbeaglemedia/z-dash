@@ -58,6 +58,28 @@ These fail the brand check. Each bullet is `triggers | what to do instead`.
 - copy roblox, roblox asset, roblox mesh, roblox, copied from brookhaven, download the brookhaven | Use our own boxes, strips, and flat murals. Brookhaven is a feeling, not a file to copy.
 - photoreal daylight, realistic concrete city, no neon at all | Stay a neon night city. Without that, it is no longer Neon World.
 
+## Buildings
+
+The solid-building count and the footprints stay exactly as they are on main today. The lock is `tools/arch-check-baseline.json`. An added building, a removed building, or two buildings merged into one fails. A footprint that moves fails too. Bob adding a building means updating that lock on purpose. The checker does not raise the lock by itself.
+
+## Purpose
+
+Each solid building has to read as its purpose at street level and from the air. The words after the bar are the ones a player can read. Bob can edit this list. A sky drop may show a helipad from the air instead of the word. A dance building may show the mural. Every other purpose needs its word readable in that view. Use straight boxes and a glow strip. Generic is a building with no named purpose: any readable word is enough.
+
+- HOME | home
+- NEON_PAINT | neon, paint
+- GARAGE | garage
+- DANCE | dance, arts, z company
+- PETS | pet
+- ARCADE | arcade
+- NOS | nos, fuel
+- SKY_DROP | sky, jump, helipad
+- BUILDER | build, architect
+- SOCCER | soccer, pitch, goal, stadium, arena
+- CAFE | pizza, cafe, boba
+- SHOWROOM | z-dash, showroom, z dash
+- GENERIC |
+
 ## Ramps
 
 Bob simplified this rule. The old strict ramp-count check is dropped.
@@ -78,6 +100,6 @@ Tow-truck beds are their own jumps. They are not part of this count, and they ar
 
 ## What else the review still scores
 
-Doors at street level, sized for a person. Garages sized for the 370Z. Windows on one grid. No floating, intersecting, or z-fighting boxes. Roofs closed, and detailed when seen from the air. The same shape, doors, and garages at Arcade, Street, and on-foot. Signs attached and readable. The Z dance mural on a flat wall at least as big as today's. The neon palette. No `shadowBlur` on the building pass. The building pass inside the FPS budget shared with PERF-GUARD.
+The building count and footprints locked to main. Each building readable as its purpose from the street and from the air. Doors at street level, sized for a person. Garages sized for the 370Z. Windows on one grid. No floating, intersecting, or z-fighting boxes. Roofs closed, and detailed when seen from the air. The same shape, doors, and garages at Arcade, Street, and on-foot. Signs attached and readable. The Z dance mural on a flat wall at least as big as today's. The neon palette. No `shadowBlur` on the building pass. The building pass inside the FPS budget shared with PERF-GUARD.
 
 Those checks are in `tools/ARCH-CHECK.md`.

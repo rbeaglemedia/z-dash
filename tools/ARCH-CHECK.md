@@ -70,7 +70,11 @@ Calibration runs first. It must pass a good person door (1.4×2.4 m at street le
 
 **Tiers.** Arcade (airborne), Street (slow, in front of a door), and on-foot must keep the same boxes, doors, parking, and top. Only surface segments may differ. Arcade must not stroke storefronts. Street must add storefronts. On-foot must add foot segments.
 
+**Placements.** Solid buildings (`kind` `b` or `landmark`) must match the roster in `tools/arch-check-baseline.json`: same count, same purpose, and the same footprint within 0.2 m on each edge. An added building, a removed building, a moved or resized footprint, or two locked footprints inside one new footprint (a merge) fails. The lock is main today. `--write-baseline` does not replace a roster that is already there. Bob adding a building means editing that list on purpose.
+
 **Signs.** A word, `mounted`, gap from the face between −0.05 m and 0.45 m, not above the roof, and at least 10 px at the PC front camera.
+
+**Purpose.** Read from the Purpose list in `docs/NEON-WORLD-STYLE.md` on every run. The street sign has to use one of that purpose's words and measure at least 10 px at the front camera. The same word has to measure at least 10 px from the flying roof camera, with two exceptions: a sky drop may show a helipad instead, and a dance building may show its mural in that shot. A blank roof, a wrong word (`TURBO` on a soccer shop, `PIXEL` on a builder), or a sign that is too small fails. Generic (no named purpose) accepts any readable word. A purpose that is not in the style guide fails until Bob adds a line. The fix is straight boxes and a glow strip, not a curved shell.
 
 **Z dance mural.** Buildings with purpose `DANCE`, or a sign tagged Z Company Arts. The mural quad is one plane, no wider than the face, and inside the wall. The front shot must show mural fill (blue lift) or the pink frame `#ff4fd8`. Area is compared with `tools/arch-check-baseline.json` (match by center within 40 m). A wall more than about 2% under that floor fails. Equality passes. `--write-baseline` records the floor; a later run never raises it.
 
