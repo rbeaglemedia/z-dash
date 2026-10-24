@@ -1,0 +1,117 @@
+name: ARCHITECTURE-CHECK
+
+on:
+  pull_request:
+    paths:
+      - 'world/city.js'
+      - 'world/city-draw.js'
+      - 'world/detail.js'
+      - 'world/detail-tune.js'
+      - 'world/neon-paint.js'
+      - 'world/house.js'
+      - 'world/camera.js'
+      - 'shared/detail-tune.js'
+      - 'shared/car-wire.js'
+      - 'tools/arch-check.mjs'
+      - 'tools/arch-check-browser.js'
+      - 'tools/arch-check-baseline.json'
+      - 'tools/ARCH-CHECK.md'
+      - 'docs/NEON-WORLD-STYLE.md'
+      - 'docs/**'
+      - '.github/workflows/arch-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: arch-check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  arch-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Chrome
+        id: chrome
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "path=$(command -v google-chrome)" >> "$GITHUB_OUTPUT"
+          else
+            sudo apt-get update
+            wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+            sudo apt-get install -y /tmp/chrome.deb || sudo apt-get -f install -y
+            echo "path=$(command -v google-chrome)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Review buildings
+        env:
+          CHROME: ${{ steps.chrome.outputs.path }}
+        run: node tools/arch-check.mjs --review --out test-results/arch-check
+
+      - name: Show verdict
+        if: always()
+        run: |
+          if [ -f test-results/arch-check/comment.md ]; then
+            cat test-results/arch-check/comment.md
+          else
+            echo "ARCHITECTURE-CHECK produced no comment. The checker did not finish."
+            exit 1
+          fi
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: architecture-check
+          path: test-results/arch-check
+          if-no-files-found: warn
+
+      - name: Post ARCHITECTURE-CHECK comment
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'test-results/arch-check/comment.md';
+            if (!fs.existsSync(path)) {
+              core.warning('No ARCHITECTURE-CHECK comment file');
+              return;
+            }
+            const marker = '<!-- ARCHITECTURE-CHECK -->';
+            const body = fs.readFileSync(path, 'utf8');
+            if (!body.includes(marker)) {
+              core.warning('Comment file is missing the ARCHITECTURE-CHECK marker');
+              return;
+            }
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100
+            });
+            const existing = comments.find((c) => c.user && c.user.type === 'Bot' && c.body && c.body.includes(marker))
+              || comments.find((c) => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              });
+            }
