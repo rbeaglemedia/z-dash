@@ -28,6 +28,21 @@ function load(parts) {
 }
 
 function dist(a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]); }
+function screenX(p, yaw) {
+  const c = Math.cos(yaw), s = Math.sin(yaw);
+  const xr = p[0] * c + p[2] * s, zr = -p[0] * s + p[2] * c;
+  return xr / (2.7 - zr);
+}
+function torsoSpan(J, yaw) {
+  const keys = ['chestFL', 'chestFR', 'chestBR', 'chestBL', 'bellyFL', 'bellyFR', 'bellyBR', 'bellyBL', 'hipFL', 'hipFR', 'hipBR', 'hipBL'];
+  let min = 99, max = -99;
+  keys.forEach(function (k) {
+    const x = screenX(J[k], yaw);
+    if (x < min) min = x;
+    if (x > max) max = x;
+  });
+  return max - min;
+}
 function fail(msg) { console.error('FAIL ' + msg); process.exitCode = 1; }
 function near(a, b, eps, msg) {
   if (Math.abs(a - b) > eps) fail(msg + ' got ' + a + ' want ' + b);
@@ -76,6 +91,23 @@ function check(label, api) {
     if (Math.abs(footLead) > 0.03 && footLead * handLead >= 0) fail(label + ' arms not opposite legs @' + phase + ' foot ' + footLead + ' hand ' + handLead);
     bobMin = Math.min(bobMin, J.head[1]);
     bobMax = Math.max(bobMax, J.head[1]);
+    if (dist(J.chestF, J.chestB) < m.torsoR * 1.3) fail(label + ' chest has no depth @' + phase);
+    if (dist(J.bellyF, J.bellyB) < dist(J.chestF, J.chestB)) fail(label + ' belly thinner than chest @' + phase);
+    if (!(J.neckBase[1] < J.neck[1] && J.neck[1] < J.head[1])) fail(label + ' neck does not join head and torso @' + phase);
+    if (Math.abs(J.neckBase[0]) > 0.01 || Math.abs(J.neck[0]) > 0.01) fail(label + ' neck off center @' + phase);
+    if (dist(J.neckBase, J.neck) < 0.03) fail(label + ' neck too short @' + phase);
+    const hipSideL = [(J.hipFL[0] + J.hipBL[0]) * 0.5, (J.hipFL[1] + J.hipBL[1]) * 0.5, (J.hipFL[2] + J.hipBL[2]) * 0.5];
+    const hipSideR = [(J.hipFR[0] + J.hipBR[0]) * 0.5, (J.hipFR[1] + J.hipBR[1]) * 0.5, (J.hipFR[2] + J.hipBR[2]) * 0.5];
+    if (dist(hipSideL, J.hipL) > 0.02 || dist(hipSideR, J.hipR) > 0.02) fail(label + ' hips not on the torso @' + phase);
+    if (dist(J.shoulderL, J.chestFL) > m.torsoR * 1.2 && dist(J.shoulderL, J.chestBL) > m.torsoR * 1.2) fail(label + ' left arm not on the torso @' + phase);
+    ['front', 'three', 'side', 'back'].forEach(function (name, yi) {
+      const yaw = [0, 0.65, Math.PI / 2, Math.PI][yi];
+      const span = torsoSpan(J, yaw);
+      if (span < 0.045) fail(label + ' torso flat at ' + name + ' @' + phase + ' span ' + span);
+    });
+    const sideSpan = torsoSpan(J, Math.PI / 2);
+    const frontSpan = torsoSpan(J, 0);
+    if (sideSpan < frontSpan * 0.65) fail(label + ' side torso thinner than the front @' + phase);
   }
   const bob = bobMax - bobMin;
   if (bob < 0.006 || bob > 0.04) fail(label + ' bob out of range ' + bob);

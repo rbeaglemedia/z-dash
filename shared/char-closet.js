@@ -1,5 +1,6 @@
 /* Character closet. A short list of our own parts, drawn as a jointed person.
-   Head sits on the neck. Arms hang from the shoulders. Legs hang from the hips.
+   Head sits on the neck. The neck sits on a torso with chest, belly, and hip depth.
+   Arms hang from the sides of that torso. Legs hang from the hips.
    A planted foot stays on the ground and does not slide. */
 (function (root) {
   'use strict';
@@ -168,6 +169,21 @@
     return { hipY: hipY, top: top, ratio: (m.headR * 2) / top, m: m };
   }
 
+  function ring(y, halfW, halfD, z0) {
+    return [
+      [-halfW, y, z0 + halfD],
+      [halfW, y, z0 + halfD],
+      [halfW, y, z0 - halfD],
+      [-halfW, y, z0 - halfD]
+    ];
+  }
+  function mid(a, b) { return [(a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5, (a[2] + b[2]) * 0.5]; }
+  function shade(hex, amt) {
+    var n = parseInt(String(hex || '#888888').slice(1), 16);
+    if (!isFinite(n)) n = 0x888888;
+    function ch(v) { v = Math.max(0, Math.min(255, Math.round(v + amt))); return ('0' + v.toString(16)).slice(-2); }
+    return '#' + ch((n >> 16) & 255) + ch((n >> 8) & 255) + ch(n & 255);
+  }
   function vadd(a, b) { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
   function vsub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
   function vmul(a, s) { return [a[0] * s, a[1] * s, a[2] * s]; }
@@ -244,10 +260,15 @@
     var toeR = [soleR[0], soleR[1], soleR[2] + 0.07];
     var heelL = [soleL[0], soleL[1], soleL[2] - 0.04];
     var heelR = [soleR[0], soleR[1], soleR[2] - 0.04];
-    var shL = [-m.shoulderX, shoulderY, 0.02];
-    var shR = [m.shoulderX, shoulderY, 0.02];
-    var neck = [0, shoulderY + m.neck, 0];
-    var head = [0, neck[1] + m.headR, 0];
+    var zC = 0.012;
+    var chest = ring(shoulderY, m.torsoR, m.torsoR * 0.78, zC);
+    var belly = ring(hipY + m.torso * 0.46, m.torsoR * 0.9, m.torsoR * 1.05, zC);
+    var hips = ring(hipY, m.hipX, m.torsoR * 0.7, 0);
+    var neckBase = [0, shoulderY, zC];
+    var shL = [-m.torsoR, shoulderY, zC];
+    var shR = [m.torsoR, shoulderY, zC];
+    var neck = [0, shoulderY + m.neck, zC];
+    var head = [0, neck[1] + m.headR, zC];
     var lead = left.z - right.z;
     var arm = moving ? Math.max(-1, Math.min(1, lead / (STRIDE * 0.5))) : 0;
     var aL = armFK(-1, shL, moving ? -arm * 0.62 : 0.1, m.uarm, m.farm, m.hand);
@@ -258,14 +279,22 @@
     var mouth = [0, head[1] - m.headR * 0.28, head[2] + m.headR * 0.7];
     var pony0 = [0, head[1] + m.headR * 0.1, head[2] - m.headR * 0.75];
     var pony1 = [0, neck[1] - m.headR * (parts && parts.hair === 'long' ? 1.15 : 0.35), head[2] - m.headR * 0.85];
-    var upper = [shL, shR, neck, head, nose, eyeL, eyeR, mouth, pony0, pony1, aL.elbow, aL.wrist, aL.hand, aR.elbow, aR.wrist, aR.hand];
+    var upper = [shL, shR, neckBase, neck, head, nose, eyeL, eyeR, mouth, pony0, pony1, aL.elbow, aL.wrist, aL.hand, aR.elbow, aR.wrist, aR.hand]
+      .concat(chest, belly);
     for (var i = 0; i < upper.length; i++) upper[i] = leanOf(upper[i], hipY, lean);
+    chest = upper.slice(17, 21);
+    belly = upper.slice(21, 25);
     return {
       hipL: hipL, hipR: hipR, kneeL: lk.knee, kneeR: rk.knee, ankleL: lk.ankle, ankleR: rk.ankle,
       soleL: soleL, soleR: soleR, toeL: toeL, toeR: toeR, heelL: heelL, heelR: heelR,
-      shoulderL: upper[0], shoulderR: upper[1], neck: upper[2], head: upper[3],
-      nose: upper[4], eyeL: upper[5], eyeR: upper[6], mouth: upper[7], pony0: upper[8], pony1: upper[9],
-      elbowL: upper[10], wristL: upper[11], handL: upper[12], elbowR: upper[13], wristR: upper[14], handR: upper[15],
+      shoulderL: upper[0], shoulderR: upper[1], neckBase: upper[2], neck: upper[3], head: upper[4],
+      nose: upper[5], eyeL: upper[6], eyeR: upper[7], mouth: upper[8], pony0: upper[9], pony1: upper[10],
+      elbowL: upper[11], wristL: upper[12], handL: upper[13], elbowR: upper[14], wristR: upper[15], handR: upper[16],
+      chestFL: chest[0], chestFR: chest[1], chestBR: chest[2], chestBL: chest[3],
+      bellyFL: belly[0], bellyFR: belly[1], bellyBR: belly[2], bellyBL: belly[3],
+      hipFL: hips[0], hipFR: hips[1], hipBR: hips[2], hipBL: hips[3],
+      chestF: mid(chest[0], chest[1]), chestB: mid(chest[3], chest[2]),
+      bellyF: mid(belly[0], belly[1]), bellyB: mid(belly[3], belly[2]),
       plantedL: left.planted, plantedR: right.planted, bob: bob, stride: STRIDE
     };
   }
@@ -352,27 +381,44 @@
     capsule('kneeR', 'ankleR', parts.bottom === 'shorts' || parts.bottom === 'skirt' ? 0.04 : 0.048, parts.bottom === 'shorts' || parts.bottom === 'skirt' ? skin : legFill);
     capsule('heelL', 'toeL', measures(parts).shoeR, shoe);
     capsule('heelR', 'toeR', measures(parts).shoeR, shoe);
-    capsule('shoulderL', 'elbowL', 0.042, top);
-    capsule('elbowL', 'wristL', 0.036, skin);
+    capsule('shoulderL', 'elbowL', 0.04, top);
+    capsule('elbowL', 'wristL', 0.034, skin);
     capsule('wristL', 'handL', parts.hands === 'gloves' ? 0.04 : 0.034, hand);
-    capsule('shoulderR', 'elbowR', 0.042, top);
-    capsule('elbowR', 'wristR', 0.036, skin);
+    capsule('shoulderR', 'elbowR', 0.04, top);
+    capsule('elbowR', 'wristR', 0.034, skin);
     capsule('wristR', 'handR', parts.hands === 'gloves' ? 0.04 : 0.034, hand);
-    if (P.shoulderL && P.shoulderR && P.hipL && P.hipR) {
-      add((P.shoulderL[2] + P.hipL[2]) * 0.5, function () {
+    var fills = [shade(top, 36), shade(top, -8), shade(top, -48), shade(top, 8)];
+    function quad(a, b, c, d, fill) {
+      if (!P[a] || !P[b] || !P[c] || !P[d]) return;
+      add((P[a][2] + P[b][2] + P[c][2] + P[d][2]) * 0.25, function () {
         ctx.beginPath();
-        ctx.moveTo(P.shoulderL[0], P.shoulderL[1]);
-        ctx.lineTo(P.shoulderR[0], P.shoulderR[1]);
-        ctx.lineTo(P.hipR[0], P.hipR[1]);
-        ctx.lineTo(P.hipL[0], P.hipL[1]);
+        ctx.moveTo(P[a][0], P[a][1]);
+        ctx.lineTo(P[b][0], P[b][1]);
+        ctx.lineTo(P[c][0], P[c][1]);
+        ctx.lineTo(P[d][0], P[d][1]);
         ctx.closePath();
-        ctx.fillStyle = top;
+        ctx.fillStyle = fill;
         ctx.fill();
         ctx.lineWidth = 1.5;
         ctx.strokeStyle = STRIP;
         ctx.stroke();
       });
     }
+    var bands = [
+      ['chestFL', 'chestFR', 'chestBR', 'chestBL'],
+      ['bellyFL', 'bellyFR', 'bellyBR', 'bellyBL'],
+      ['hipFL', 'hipFR', 'hipBR', 'hipBL']
+    ];
+    for (var bi = 0; bi < bands.length - 1; bi++) {
+      var A = bands[bi], B = bands[bi + 1];
+      for (var s = 0; s < 4; s++) {
+        var t = (s + 1) % 4;
+        quad(A[s], A[t], B[t], B[s], fills[s]);
+      }
+    }
+    quad('chestBL', 'chestBR', 'chestFR', 'chestFL', shade(top, 18));
+    quad('hipFL', 'hipFR', 'hipBR', 'hipBL', shade(top, -20));
+    capsule('neckBase', 'neck', 0.034, skin);
     capsule('neck', 'head', 0.03, skin);
     if (parts.hair === 'ponytail' || parts.hair === 'long') capsule('pony0', 'pony1', parts.hair === 'long' ? 0.028 : 0.02, colors.hair);
     if (P.head) {
@@ -666,12 +712,15 @@
   function poseFrame(ctx, w, h) {
     var q = new URLSearchParams(root.location && root.location.search || '');
     var pose = q.get('pose') || 'front';
-    var ang = pose === 'side' ? Math.PI / 2 : pose === 'back' ? Math.PI : 0;
+    var ang = pose === 'side' ? Math.PI / 2 : pose === 'back' ? Math.PI : pose === 'three' ? 0.65 : 0;
+    var gait = q.get('gait') === 'run' ? 'run' : q.get('gait') === 'walk' ? 'walk' : 'idle';
+    var phase = parseFloat(q.get('phase'));
+    if (!isFinite(phase)) phase = gait === 'idle' ? 0.2 : 0.16;
     ctx.save();
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#07010f';
     ctx.fillRect(0, 0, w, h);
-    drawAt(ctx, w * 0.5, h * 0.9, Math.min(w, h) * 0.78, ang, 'idle', 0.2);
+    drawAt(ctx, w * 0.5, h * 0.9, Math.min(w, h) * 0.78, ang, gait, phase);
     ctx.restore();
   }
   function paintStrip(ctx, w, h) {
