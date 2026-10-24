@@ -438,11 +438,100 @@ function walkPaintCrew(g,foot,W,H){
   g.drawImage(walkCrewBuf,foot[0]-dw*0.40,foot[1]-dh*0.90,dw,dh);
   return true;
 }
+let houseStylesLoading=false;
+function walkEnsureHomeStyles(){
+  if(window.HOUSE_ROW||houseStylesLoading||typeof document==='undefined')return;
+  houseStylesLoading=true;
+  const s=document.createElement('script');
+  s.src='world/house-styles.js?v=37';
+  s.onload=function(){houseStylesLoading=false;};
+  s.onerror=function(){houseStylesLoading=false;};
+  document.head.appendChild(s);
+}
+function houseRowDoor(){
+  if(!window.HOUSE_ROW)return null;
+  const homes=HOUSE_ROW.homes();
+  const b=homes[0];
+  if(!b)return null;
+  const door=(b.doors&&b.doors[0])||[b.cx,b.z0,0,-1];
+  return walkDoorRec(b,door,door[0],door[1]);
+}
+let houseShotN=0;
+function houseShotChrome(){
+  const ids=['kOver','kWreck','brk','wng','tup','nos','mdpad','ebpad','kMenuB','kToast'];
+  for(let i=0;i<ids.length;i++){
+    const el=document.getElementById(ids[i]);
+    if(el)el.style.display='none';
+  }
+}
+function houseRowTick(){
+  const q=houseRowQuery();
+  if(!q.shot||typeof document==='undefined'||!document.body)return;
+  if(q.shot==='street'){
+    if(typeof P==='undefined'||!P)return;
+    houseShotChrome();
+    // Yard lane is x=-220. The house east face is x=-230 and the door faces east.
+    // Nose points west at that face. Orbit sits east of the car so the chase looks at the door.
+    P.x=-218;P.z=-654;P.y=0.2;P.v=0;P.ground=true;P.pitch=0;P.bank=0;P.gam=0;P.wreck=null;
+    P.yaw=-Math.PI/2;P.hd=P.yaw;P.driveMode='street';
+    if(typeof FLYCAM!=='undefined')FLYCAM.orbit={az:Math.PI,el:0.12,d:12};
+    houseShotN++;
+    if(houseShotN>36&&document.body.dataset.ready!=='1'){
+      document.body.dataset.ready='1';
+      document.body.dataset.shot='street';
+      document.body.dataset.px=P.x.toFixed(1);
+      document.body.dataset.pz=P.z.toFixed(1);
+      if(typeof cam!=='undefined'&&cam){
+        document.body.dataset.cx=Number(cam.x).toFixed(1);
+        document.body.dataset.cy=Number(cam.y).toFixed(1);
+        document.body.dataset.cz=Number(cam.z).toFixed(1);
+      }
+    }
+    return;
+  }
+  if(q.shot!=='inside')return;
+  if(typeof P!=='undefined'&&P){P.driveMode='street';P.ground=true;P.v=0;P.wreck=null;P.pitch=0;}
+  walkEnsureHomeStyles();
+  houseShotN++;
+  if(!window.HOUSE_ROW)return;
+  const cardNow=document.getElementById('walk-interior');
+  if(!WALK_MODE.insideBuilding||!cardNow||cardNow.hidden){
+    const door=houseRowDoor();
+    if(!door)return;
+    WALK_MODE.onFoot=true;WALK_MODE.insideBuilding=true;WALK_MODE.insideDoor=door;
+    walkShowInterior(door);
+    const card=document.getElementById('walk-interior');
+    if(card){const nodes=card.querySelectorAll('h2,p,button,#walk-room-tools');for(let i=0;i<nodes.length;i++)nodes[i].style.visibility='hidden';}
+  }
+  const info=window.HOUSE_ROW.last;
+  if(info&&houseShotN>12&&document.body.dataset.ready!=='1'){
+    document.body.dataset.ready='1';
+    document.body.dataset.shot='inside';
+    document.body.dataset.ms=String(info.ms);
+    document.body.dataset.house=String(info.house);
+    document.body.dataset.style=String(info.style);
+    document.body.dataset.name=info.name;
+    document.body.dataset.homes=String(info.homes);
+  }
+}
 function walkPaintRoom(){
   const cv=typeof document!=='undefined'&&document.getElementById('walk-room-cv');
   const door=WALK_MODE.insideDoor;
   const card=typeof document!=='undefined'&&document.getElementById('walk-interior');
   if(!cv||!door||!WALK_MODE.insideBuilding)return;
+  if((door.purpose||'HOME')==='HOME'){
+    walkEnsureHomeStyles();
+    if(window.HOUSE_ROW){
+      const W=Math.max(320,Math.floor((card&&card.clientWidth)||window.innerWidth||844));
+      const H=Math.max(180,Math.floor((card&&card.clientHeight)||window.innerHeight||390));
+      if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+      const g=cv.getContext('2d');if(!g)return;
+      const info=HOUSE_ROW.paint(g,W,H,door);
+      HOUSE_ROW.last=info;
+      if(card)card.dataset.room='HOME';
+      return;
+    }
+  }
   const W=Math.max(320,Math.floor((card&&card.clientWidth)||window.innerWidth||844));
   const H=Math.max(180,Math.floor((card&&card.clientHeight)||window.innerHeight||390));
   if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
@@ -528,7 +617,14 @@ function walkHeadless(){
   try{if(navigator.webdriver)return true;if(/Headless/i.test(navigator.userAgent||''))return true;}catch(e){}
   return !!window.__WALK_HEADLESS;
 }
+function houseRowQuery(){
+  try{
+    const q=new URLSearchParams(location.search);
+    return {shot:q.get('rowShot')||'',style:q.get('homeStyle')||''};
+  }catch(e){return {shot:'',style:''};}
+}
 function walkToast(s,col){
+  if(houseRowQuery().shot)return;
   if(typeof wMsg==='function')wMsg(s,col||'#7dff6b','');
   else if(typeof toast==='function')toast(s);
   else if(typeof kToast==='function')kToast(s);
@@ -1230,6 +1326,7 @@ window.requestAnimationFrame=function(fn){
 let walkT=performance.now();
 function walkFrame(t){
   const dt=Math.min(0.05,Math.max(0,(t-walkT)/1000));walkT=t;
+  try{houseRowTick();}catch(e){}
   try{WALK_MODE.update(dt);}catch(e){}
   walkNativeRAF(walkFrame);
 }

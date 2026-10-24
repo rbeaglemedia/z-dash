@@ -1,10 +1,10 @@
 # Architecture check
 
-Target `cursor/boulevards-batch-ef23` `17710011b05c`
+Target `cursor/house-row-styles-52fc` `48aace48b023`
 
 Result: **FAIL**
 
-Reviewed 31 solid buildings. Shots: 0. Style guide: `docs/NEON-WORLD-STYLE.md`.
+Reviewed 31 solid buildings. Shots: 12. Style guide: `/workspace/docs/NEON-WORLD-STYLE.md`.
 
 ## Count
 
@@ -16,9 +16,6 @@ Reviewed 31 solid buildings. Shots: 0. Style guide: `docs/NEON-WORLD-STYLE.md`.
 - **Building blocks a road**
   The footprint covers a street, the highway, the runway, or the taxiway. Keep the pavement clear so a car can pass.
   Buildings: SKY_DROP `3` — street.
-- **Door is not walkable**
-  The ground just outside a person door has to be walkable: not inside a building, not in the river, and not a wall.
-  Buildings: NOS `9` — opens into NOS; NOS `9` — a wall is 2.2 m outside the door; NOS `9` — a wall is 2.2 m outside the door; NOS `19` — opens into NOS; NOS `19` — a wall is 2.2 m outside the door; NOS `19` — a wall is 2.2 m outside the door; NOS `30` — opens into NOS; NOS `30` — a wall is 2.2 m outside the door; NOS `30` — a wall is 2.2 m outside the door; NOS `36` — opens into NOS; NOS `36` — a wall is 2.2 m outside the door; NOS `36` — a wall is 2.2 m outside the door; NOS `45` — opens into NOS; NOS `45` — a wall is 2.2 m outside the door; NOS `45` — a wall is 2.2 m outside the door.
 
 ## Scale
 
@@ -44,12 +41,7 @@ Pass.
 
 ## Geometry
 
-- **Box is floating**
-  A volume starts at 3.18 m with nothing under it.
-  Buildings: NOS `9`; NOS `9`; NOS `19`; NOS `19`; NOS `30`; NOS `30`; NOS `36`; NOS `36`; NOS `45`; NOS `45`.
-- **Volumes intersect inside one building**
-  7.26 m³ overlap.
-  Buildings: NOS `9`; NOS `9`; NOS `19`; NOS `19`; NOS `30`; NOS `30`; NOS `36`; NOS `36`; NOS `45`; NOS `45`.
+Pass.
 
 ## Roofs
 
@@ -71,7 +63,7 @@ Pass.
 
 - **Purpose is not readable from the air**
   A flying view has to show the purpose. A sky drop can use its helipad. A dance building can show the mural. Anything else needs its purpose word at least 10 px from the roof camera. Put that word on the roof in straight boxes and a glow strip.
-  Buildings: GARAGE `2` — sign "GARAGE" 9.7 px, roof is a helipad; SHOWROOM `5` — sign "Z-DASH" 7.97 px, roof is a helipad; NOS `9` — sign "NOS" 7.55 px, roof is a helipad; BUILDER `28` — sign "PIXEL" 32.89 px, roof is a blank slab; SOCCER `38` — sign "TURBO" 15.83 px, roof is a blank slab.
+  Buildings: GARAGE `2` — sign "GARAGE" 9.7 px, roof is a helipad; SHOWROOM `5` — sign "Z-DASH" 7.97 px, roof is a helipad; NOS `9` — sign "NOS" 7.94 px, roof is a helipad; BUILDER `28` — sign "PIXEL" 32.89 px, roof is a blank slab; SOCCER `38` — sign "TURBO" 15.83 px, roof is a blank slab.
 - **Purpose is not readable at street level**
   The street sign has to use a word from that purpose in docs/NEON-WORLD-STYLE.md and measure at least 10 px at the front camera.
   Buildings: SKY_DROP `3` — sign "JUMP" 4.59 px; wants sky, jump, helipad; BUILDER `28` — sign "PIXEL" 45.88 px; wants build, architect; SOCCER `38` — sign "TURBO" 25.67 px; wants soccer, pitch, goal, stadium, arena.
@@ -109,17 +101,12 @@ Pass.
 
 ## Capability
 
-- **Beyond the stack: blur**
-  Finished building draw uses a live blur. Draw a second brighter stroke, or a thin lit box. No blur.
+Pass.
 
 ## On brand
 
-- Warning: **Buildings are still all-black**
-  The shared drawer fills every solid building with #0a0612 and a neon edge. Keep the night sky. Add a glass band and a cyan, magenta, lime, or gold strip, made of boxes, so the block is not a black slab.
-  Buildings: HOME `0`; PETS `1`; GARAGE `2`; SKY_DROP `3`; SKY_DROP `4`; SHOWROOM `5`; GARAGE `6`; NEON_PAINT `7`; SNACK `8`; NOS `9`; SKY_DROP `10`; GARAGE `17`; CAFE `18`; NOS `19`; DANCE `20`; SKY_DROP `21`; GARAGE `25`; ARCADE `26`; SNACK `27`; BUILDER `28`; SKY_DROP `29`; NOS `30`; SNACK `34`; GARAGE `35`; NOS `36`; SKY_DROP `37`; SOCCER `38`; SKY_DROP `39`; SNACK `43`; GARAGE `44`; NOS `45`.
-- Warning: **Home is not a glass house yet**
-  A home wants a lighter glass face and a cyan strip, still made of boxes.
-  Buildings: HOME `0`.
+- Warning: **Style guide was not loaded**
+  docs/NEON-WORLD-STYLE.md could not be read, so this run did not judge brand or capability against Bob's latest edits.
 
 ## River-edge ramps
 
@@ -139,8 +126,8 @@ Software GL. Milliseconds are this host, same idea as PERF-GUARD. Source for the
 
 | View | One building ms | Pass ms | Buildings | Cap one | Cap pass | Buffer |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| phone | 0.2 | 0.6 | 20 | 8 | 40 | 1688x780 |
-| ipad | 0.4 | 1.6 | 20 | 16 | 90 | 1024x768 |
+| phone | 0.2 | 0.4 | 20 | 8 | 40 | 1688x780 |
+| ipad | 0.3 | 1.2 | 20 | 16 | 90 | 1024x768 |
 | pc | 0.1 | 0.3 | 20 | 8 | 40 | 1280x720 |
 
 ## What held
@@ -148,6 +135,12 @@ Software GL. Milliseconds are this host, same idea as PERF-GUARD. Source for the
 - Shape, doors, and garages match on Arcade, Street, and on foot.
 - Dance mural walls are flat, on the face, and at least as big as the recorded floor.
 - The tunnel keeps its length, bore, ceiling, and height, and both mouths stay clear.
-- Finished buildings are straight boxes on the shared drawer. Curves, organic shells, and photoreal skins are not in this city.
 - Person doors sit on the street, wide enough and tall enough for a 1.7 m person.
+- No floating boxes, intersecting volumes, or z-fighting faces in the reviewed set.
 - One near building and the in-view building pass stay inside the FPS caps on phone, iPad, and PC.
+
+## Shots
+
+Street front, three-quarter, flying roof, and on-foot close-up, at phone 844×390, iPad 1024×768, and PC 1280×720.
+
+- `b0` shots/b0-home-front-phone.png, shots/b0-home-front-ipad.png, shots/b0-home-front-pc.png, shots/b0-home-three-phone.png, shots/b0-home-three-ipad.png, shots/b0-home-three-pc.png, shots/b0-home-roof-phone.png, shots/b0-home-roof-ipad.png, shots/b0-home-roof-pc.png, shots/b0-home-foot-phone.png, shots/b0-home-foot-ipad.png, shots/b0-home-foot-pc.png
