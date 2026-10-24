@@ -1305,6 +1305,10 @@
     origRender = X.render.bind(X);
     const wrapped = function (ctx, x, y, w, h, opts) {
       try {
+        // The 2D stroke overlay writes the GL canvas directly. Three's state
+        // cache would otherwise keep the old blend and drop the underglow on
+        // the next frame, so the car would stay looking painted after unequip.
+        if (X.renderer && typeof X.renderer.resetState === 'function') X.renderer.resetState();
         if (!zglOk()) {
           X._npDy = stanceDy(opts);
           if (hasPaint()) {

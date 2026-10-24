@@ -1,0 +1,29 @@
+{
+  "shaNote": "Numbers below were measured on the branch after the vinyl GL-state fix, except the Garage menu clicks, which were measured on the same draw path before that one-line fix. The menu clicks do not go through the vinyl overlay.",
+  "page": "world-split.html?nocarskip=1",
+  "viewport": "1280x720",
+  "saveFormat": "unchanged. Writes used the existing zdash.kid.v1 eq object and zdash_vinyls_v1 {v, activeId, items[{id,name,updatedAt,strokes,colors}]}",
+  "menuClicks": {
+    "path": "jr.html garage buttons write zdash.kid.v1. The open world tab receives the storage event and GARAGEZ.sync() updates KID before the next draw.",
+    "paintPink": "sprite mean RGB 39,72,81 -> 179,61,136. 8.00% of sprite pixels changed.",
+    "wheelsGold": "During the draw, kid wheels are on (glb wheels hidden) and kidRim is #e0b020. Frozen-flame reshoot: 2.43% of sprite pixels changed.",
+    "rims5spoke": "Live wheel set key is 5spoke|19|street. Chase-sprite change is small (55 px with flames frozen) because the tire, not the spoke face, fills the view.",
+    "spoilerGtwing": "kid part gtwing visible. 0.74% of sprite pixels changed.",
+    "windowsLimo": "0.39% of sprite pixels changed.",
+    "underglowCyan": "underglow mesh visible. 3.95% of sprite pixels changed.",
+    "lipSkirtsDiffuser": "lip-street, sk-street, and df-street meshes visible. Frozen-flame pixel changes 245, 324, and 444.",
+    "garageButterfly": "Save stores wings=butterfly. World KID.wings stays null. Flight doors are the world wings. Sprite change was flame noise only.",
+    "flightWings": "Closed to open changed 6.63% of the sprite. Open to closed changed the same pixels back."
+  },
+  "vinyl": {
+    "equip": "Named vinyl ELLIE STRIPE (hood stripe plus a star sticker stroke) changed 1.67% of the sprite after the GL reset.",
+    "unequip": "Before the fix, unequip left 3.84% of the sprite different (underglow dropped). After renderer.resetState() before each car draw, unequip vs the pre-vinyl car is 91 px (0.05%).",
+    "reload": "A new page load of the same zdash.kid.v1 and zdash_vinyls_v1 restores paint #e0359f, gold wheels, GT wing, body kit, underglow, the name ELLIE'S Z, vinyl ELLIE STRIPE, and 2 live ribbons. Garage butterfly stays stored and is not applied."
+  },
+  "traffic": {
+    "playerSpriteIsNotTheBake": true,
+    "cyanBakeMean": "32,84,110",
+    "pinkBakeMean": "102,39,93",
+    "playerAfterBake": "same sprite as before the bake, within 99 px"
+  }
+}
