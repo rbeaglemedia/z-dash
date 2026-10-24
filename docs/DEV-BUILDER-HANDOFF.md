@@ -20,6 +20,16 @@ DEV Builder M2 and the Q2 tools (roof, measure, align, group, 15° rotate), on b
 - Architecture Check, plan review of `docs/DEV-BUILDER-ARCHITECTURE.md`: capability pass, on brand pass. The city shot pass was not run. `world/city.js` is unchanged, so today's 24 buildings are still the published city. Report: `test-results/dev-builder/arch-check/report.md`.
 - Cache: `ZD_WORLD` is 31 and the world pages use `?v=31`. Adult `index.html` was not bumped.
 
+## Integration Check result
+
+Ran `node tools/integration-check.js --branch cursor/dev-builder-m2-cbd5 --base origin/cursor/planner-port-plan-cbd5` (the checker from `cursor/integration-check-b88c`). Commit `1f069bff93cc407f9529fb54a86cdc5ea4fe2183`.
+
+Systems touched: Planner props (the plan note) and sw.js cache.
+
+Passed on this branch: both world pages load the new scripts, the `/test/` pages name them, `?v=` matches `ZD_WORLD` 31, the cache stamp moved, adult `index.html` is untouched, and this is not an art-style redesign.
+
+One gap, owned by Interiors, not by this editor: house, detail, walk-items, and the style sampler do not reference `PROP-CATALOG` or `PLANNER_PROPS` yet. This branch does not add a second prop list and does not edit those files. Ellie's Builder should keep using `world/planner-tools.js` and the existing catalog.
+
 ## What Integration should watch
 
 - Interiors' L1 and R1 work should script-tag `world/planner-tools.js` rather than reimplement it.
