@@ -187,9 +187,9 @@ The house and trailer numbers include a texture upload and a view that fills the
 The object swap stays paused until the zip from agent `bc-04ef9a95` arrives. When it does, this plan is rewritten around two slightly modified copies of the planner app:
 
 1. **Builder HQ mode.** Walls, shapes, and roofs. DEV Builder uses this on the city.
-2. **House object placement.** The drop-objects tool. Ellie tests it first in the current Neon World interiors. The same tool runs on the new world. The builders themselves stay on the new world.
+2. **House object placement.** Ellie's Builder and the drop-objects tool. Both are planned for the current Neon World. She tests drops in the current house first.
 
-The venue section stays out. A following section will study the planner objects as whole sets and one by one, then propose better objects and building designs, as ideas for Bob to pick from. Those designs land on the new world page, not on the frozen Neon World. That study needs the real objects. The City Editor below does not.
+The venue section stays out. A following section will study the planner objects as whole sets and one by one, then propose better objects and building designs, as ideas for Bob to pick from. A proposal that is a new building look or a new city art style lands on the new world page. The tools that place today's objects land on the current Neon World. That study needs the real objects. The City Editor below does not.
 
 ## City Editor
 
@@ -198,10 +198,10 @@ Plan only. No editor code in this phase. Two builders sit on one editor core. Th
 | | DEV Builder | Ellie's Builder |
 | --- | --- | --- |
 | Who | Bob | Ellie, from her own house |
-| Reach | The new world page: buildings, roads, NOS stations, spawns, props, interiors | Her build area. The drop-objects tool also runs in the current interiors. The rest of her builder stays on the new world |
+| Reach | The current Neon World: buildings, roads, NOS stations, spawns, props, interiors. A new art style is the piece that stays on the new world | Her build area on the current Neon World, and the same tools if that room exists on the new world |
 | City and roads | Yes, on the Option 1 map | No. Those tools are off |
-| Save | Test first, then the new world on Bob's explicit go, with a rollback. The current Neon World is not the target | Her device only, the same way her home choices already save |
-| Menu | Hidden. A Bob-only unlock. New world only | Place, inside a room. First on the current Neon World house. The fuller builder opens on the new world |
+| Save | Test first, then the current Neon World on Bob's explicit go, with a rollback | Her device only, the same way her home choices already save |
+| Menu | Hidden. A Bob-only unlock on the current game | Place, inside a room on the current Neon World. Her fuller builder is on that same house |
 
 The map seed is Option 1, The Boulevards (`cursor/city-layout-plan-ef23`, agent `bc-3ff1a27b`). It does not seed from today's 24 shops, and it does not seed from Option 2.
 
@@ -259,14 +259,14 @@ DEV save, test, publish, rollback:
 | Step | Where it lands | Who allows it |
 | --- | --- | --- |
 | 1. Save | This browser only, `localStorage` key `zdash.city.editor.v1` | Bob, any time, in DEV |
-| 2. Drive this | The new world's test page reads that key when present, else its committed layout copy | Bob. `world.html` stays the frozen Neon World |
-| 3. Publish | A reviewed commit that copies the tested JSON into the new world's layout file | Bob's explicit go, same bar as "yes, do it" |
-| 4. Rollback | "Restore published" copies the previous new-world JSON back over the test key, and that commit reverts. `world.html` is not in the revert | Bob |
+| 2. Drive this | `/test/world.html` reads that key when present, else the committed layout | Bob. The live page keeps the last published map until the next go |
+| 3. Publish | A reviewed commit that copies the tested JSON into the layout the live Neon World loads | Bob's explicit go, same bar as "yes, do it". A new art style is not this commit |
+| 4. Rollback | "Restore published" copies the previous live JSON back over the test key, and that commit reverts | Bob |
 
 | Choice | How far one go goes |
 | --- | --- |
-| P1 | One explicit go writes the new world's layout file. The previous file is kept beside it for rollback. `world.html` stays frozen |
-| P2 | The first go updates the new world's `/test/` page only. A second explicit go updates that world's live page. `world.html` stays frozen |
+| P1 | One explicit go writes the live Neon World layout. The previous file is kept beside it for rollback. A new art style is not included |
+| P2 | The first go updates `/test/` only. A second explicit go updates the live Neon World. A new art style still goes to the new world, on its own go |
 
 This plan recommends **P2**.
 
@@ -426,7 +426,7 @@ Agent `bc-3ff1a27b` keeps ownership of Option 1. DEV consumes their file. Their 
 1. Put the boulevard roads, the two spawns, and the bounds in the same layout file as the buildings. Keep Option 2 out of the file the game loads.
 2. Add `h` and `face` on every building. Unique places keep today's heights. Kit sizes stay the ones in their plan (bay about 20×14×8, NOS kiosk about 16×12×6, pad about 28×28×6, snack about 12×10×5, arch about 8 m deep and 12 m tall).
 3. Mark the locked skeleton: highway, bridges, river, tunnel, runway, ramps, half-pipe, loop, player spawn, Sky Drop start. M3 is allowed to edit those marks. The file still ships with them locked.
-4. Option 1 may land once on `world/city.js`. That landing is the freeze. After it, `world/city.js` takes bug fixes and FPS fixes only. The data-driven loader, `ROADS.addRoad`, and `ROADS.rebuild` from the layout file belong to the new world page, not to a second edit of the frozen city.
+4. Option 1 may land on `world/city.js`. After that, the same file can load this layout for builder edits. Call `ROADS.addRoad` and `ROADS.rebuild`. A new building look or a new city art style does not land in that file. It lands on the new world page.
 5. Map kinds to purposes: bay → GARAGE, small and big NOS → NOS, pad → SKY_DROP, snack → the stall, arch → posts with an open lane. One BUILDER. Empty lots stay empty.
 6. Export `bounds` for the test minimap. The test copy of `miniBake` uses them. The live HUD stays as it is.
 7. Do not cache the old road grid. Traffic builds lanes from `CITY.ROADS` at page load, so a test reload is enough.
@@ -449,14 +449,14 @@ Bold items are the recommendation. Nothing here is built. The object swap and th
 
 ## The new world
 
-Bob's decision: after the Option 1 layout lands, the current Neon World freezes. Later changes there are bug fixes and FPS fixes. Major redesigns go to a new world on its own page. That includes the DEV Builder, Ellie's Builder, the planner editor tools, and the new building designs from the object study. The exception is the drop-objects tool: Ellie tests it in the current interiors first, and the same tool runs on the new world. This phase still does not build the page or the tool. The object swap still waits on the zip.
+Bob's rule, which replaces the earlier split: everything except a huge aesthetic redesign can still go into the current Neon World. The DEV Builder, Ellie's Builder, and the drop-objects tool are planned for that world. The new world page is for the big new looks only: new building designs and new city art styles from the planner object study. A road move, a kit stamp, a wall in today's box style, a prop, and a room drop stay on `world.html`. A new facade language or a new city look does not. This phase still does not build the page or the tools. The object swap still waits on the zip.
 
 The current game stays the one she already plays.
 
-- `world.html` and `world-split.html` stay the frozen city. Adult `index.html` is not a home for the new tile.
-- Option 1, The Boulevards, is allowed to land once, as City Layout's build. That is the freeze line.
-- After the freeze, a planner wall, a road drag, or a new building does not get patched into `world/city.js`. A dropped prop is drawn by the room painter, in room coordinates, and does not change the city file.
-- Soccer, Sky Drop, the runway, and today's drive keep working on that page.
+- `world.html` and `world-split.html` keep taking builder edits after Option 1, through the test-then-go path above. Adult `index.html` is not a home for the new tile.
+- Option 1, The Boulevards, can land as City Layout's build. Later builder edits load the layout file on top of that.
+- A new building look or a new city art style is the piece that does not get patched into `world/city.js`.
+- Soccer, Sky Drop, the runway, and today's drive keep working on that page. A published builder edit keeps those guards.
 
 ### Its own page and tile
 
@@ -468,23 +468,22 @@ Until Bob's explicit go, the page is reachable on `/test/` by URL only. The JR t
 
 | Name | Tile | File | Why it is on the list |
 | --- | --- | --- | --- |
-| Neon Bay | NEON BAY, sub "build the next city" | `neon-bay.html` | Recommended. Sits beside Neon World. Builder Bay is already the district where the new tools live |
-| The Boulevards | THE BOULEVARDS, sub "the next map" | `boulevards.html` | Says it starts from Option 1. Long for a tile |
-| Z City | Z CITY, sub "her next city" | `z-city.html` | Short. Matches the Z she already drives |
-| Neon World 2 | NEON WORLD 2, sub "the new map" | `world-2.html` | Makes the freeze obvious. The number is the plain one |
+| Neon Bay | NEON BAY, sub "the new look" | `neon-bay.html` | Recommended. Sits beside Neon World. The tile is the new art, not a second set of tools |
+| The Boulevards | THE BOULEVARDS, sub "the new look" | `boulevards.html` | Says the new look starts from Option 1. Long for a tile |
+| Z City | Z CITY, sub "the new look" | `z-city.html` | Short. Matches the Z she already drives |
+| Neon World 2 | NEON WORLD 2, sub "the new look" | `world-2.html` | Makes it plain this page is the new art, and the current city stays |
 
 This plan recommends **Neon Bay**.
 
 ### Starts from a copy of Option 1
 
-The moment Option 1 is the frozen map, copy that layout into the new world's own file (`neon-bay/layout.json`, or the matching folder for the name he picks). If the freeze has not happened yet, the seed is the boulevard list already in this plan: the boxes from City Layout and the roads from `roadsFor('boulevard')`.
+When Option 1 is on the current map, copy that layout into the new world's own file (`neon-bay/layout.json`, or the matching folder for the name he picks). If Option 1 has not landed yet, the seed is the boulevard list already in this plan: the boxes from City Layout and the roads from `roadsFor('boulevard')`.
 
-After the copy, the two files diverge.
+After the copy, the two files diverge on purpose.
 
-- DEV save, test, and publish write the new world's layout only.
-- Rollback restores the previous copy of that file.
-- `world/city.js` is not on either side of that write.
-- City edits stay in the new world's layout file. Dropped props are the exception below: the same `zdash.ellie.builder.v1` list draws in the current walk-in rooms and in the new world's rooms.
+- DEV save, test, and publish for ordinary edits write the current Neon World's layout. Rollback restores that file.
+- A new art style is saved and published only into the new world's layout. Rollback of that file leaves `world.html` as it was.
+- Dropped props stay in `zdash.ellie.builder.v1`. The current walk-in draws them. The new world draws the same list when its rooms use the same purpose.
 
 ### Shared saves, car, pet, and home
 
@@ -496,17 +495,17 @@ One device, one Ellie. The new page reads the keys the current world already rea
 | Pet | `zdash.kid.v1` → `pet`, and the crew data the current world already loads | Same pet, same height 0.74 m. No second pet key |
 | Home choices | `zdash.house.v1`, and the `house` object inside `zdash.kid.v1` | Wall, sign, sofa, arcade, pet bed, and dance floor stay those checkboxes. Both pages read them. The builder does not write them |
 | Her placed props | `zdash.ellie.builder.v1` | New key, one list per room purpose. The current walk-in and the new world both draw it. It is not a field on the house save |
-| DEV test layout | `zdash.city.editor.v1` | This browser, the new page only |
+| DEV test layout | `zdash.city.editor.v1` | This browser. `/test/world.html` reads it for ordinary edits. The new world reads it only while a new look is on that page |
 
 The new page may include the existing garage and house controls, and those controls keep their current write path. A new field inside `zdash.kid.v1` or `zdash.house.v1` is not how the builder stores props. Old readers keep working because the keys they already understand are unchanged.
 
 ### What stays playable
 
-She can open NEON WORLD and the new tile from the same menu. NEON WORLD loads `world.html` and the frozen city. The new tile loads the new page and the copied layout. Drive, fly, Garage Z, the pet, and the house checkboxes work on both. A bad DEV drag rolls back the new layout and leaves the frozen city as it was.
+She can open NEON WORLD and the new tile from the same menu. NEON WORLD loads `world.html`, including builder edits that have been published. The new tile loads the new page and the new look. Drive, fly, Garage Z, the pet, and the house checkboxes work on both. A bad DEV drag on the current city rolls back that city's layout. A bad drag on a new look rolls back the new world's file and leaves the current city as it was.
 
 ## Drop objects
 
-Plan only. This is the house object-placement mode: Ellie drops planner objects into a room, tech first. It is the one piece that runs in both worlds. The first test is the current Neon World, inside her house, for her. DEV Builder, the rest of Ellie's Builder, and the new building designs stay on the new world page.
+Plan only. This is the house object-placement mode: Ellie drops planner objects into a room, tech first. It is planned for the current Neon World, and the same tool runs on the new world when that page has the room. The first test is the current house. The DEV Builder and the rest of Ellie's Builder are planned for the current Neon World too. A new building look still waits on the new world.
 
 The tool is the simple form of select, move, quarter-turn, snap, undo, and Done. Pack B's extra buttons can come later. Wall drawing, layers, roads, stamps, and the color picker stay off this tool. The words are Place, Turn, Done, and Undo. Palette order is Screens, Sound, then Seats and Tables. The saved hero piece (sofa, arcade, dj, or trophy), the pet bed, the sign, and the wall theme stay the garage checkboxes. This palette does not offer a second copy of those.
 
@@ -534,7 +533,7 @@ The cap is the shell plus the drops, together at or under 48 boxes, and one vide
 
 This plan recommends **R1**. HOME is the room she already knows. Tech is the piece Bob asked to see. Arcade is the second room when he wants it, because that room can hold the one video on the jackpot screen. Cafe, pets, soccer shop, and Builder HQ stay empty until he says the house test is good. Paint, the garage, and the dance hall stay apps. NOS, the showroom, and the sky pad stay drive-up. Those doors do not get a Place button.
 
-The Place control sits on the house interior, after she is inside (H1). UI Polish places it. It stays off the driver HUD. The current world gets this button and the room-painter call. It does not get the DEV tools, a road edit, or a new building. That is the whole exception to the freeze.
+The Place control sits on the house interior, after she is inside (H1). UI Polish places it. It stays off the driver HUD. The current world gets this button, the room-painter call, and, on Bob's unlock, the DEV Builder. A new building look or a new city art style is the piece the current world does not get.
 
 ### What Interiors needs to hook
 
@@ -555,7 +554,7 @@ What to ask them for, through Bob:
 4. Keep the shell at or under 32 boxes so the shared cap of 48 still has room for her drops.
 5. Do not write `zdash.ellie.builder.v1`. This plan owns that key. Do not read it from inside the house save.
 
-What this plan will not ask them to do: move a shop, add a door, change a saved home key, or draw the new world's city. The new building designs stay on the new world, for Bob to pick from after the object study.
+What this plan will not ask them to do: move a shop, add a door, or change a saved home key. New building looks and new city art styles from the object study stay on the new world, for Bob to pick from. The rooms they are already planning stay on the current Neon World, and this tool drops props into those rooms.
 
 ## What this phase does not do
 
