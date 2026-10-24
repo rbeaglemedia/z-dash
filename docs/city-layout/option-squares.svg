@@ -97,7 +97,14 @@
 <rect x="1458.225" y="1642.3823529411764" width="33.86250000000018" height="24.460784313725753" fill="rgba(255,255,255,0.45)" stroke="#7c62d6" stroke-dasharray="4 3"/>
 <text x="1419.525" y="1697.9803921568628" fill="#5b46a8" font-size="12" font-weight="700" font-family="ui-sans-serif, sans-serif">room for later games</text>
 <text x="742.275" y="1862.5294117647059" text-anchor="middle" fill="#8a5a12" font-size="13" font-family="ui-sans-serif, sans-serif" font-weight="700">HOMESTEAD</text>
-<text x="1042.2" y="1148.2745098039215" fill="#6a7a62" font-size="13" font-family="ui-sans-serif, sans-serif">open ground</text>
+<rect x="679.3875" y="1148.2745098039215" width="87.07499999999993" height="362.01960784313724" rx="10" fill="rgba(214,180,96,0.38)" stroke="#5c6b7a" stroke-width="1.4" stroke-dasharray="7 4"/>
+<text x="722.925" y="1329.2843137254902" text-anchor="middle" fill="#3a4654" font-size="12" font-weight="800" font-family="ui-sans-serif, sans-serif">Sand later</text>
+<rect x="761.625" y="776.4705882352941" width="208.01250000000005" height="63.5980392156863" rx="10" fill="rgba(186,204,216,0.5)" stroke="#5c6b7a" stroke-width="1.4" stroke-dasharray="7 4"/>
+<text x="865.6312499999999" y="808.2696078431374" text-anchor="middle" fill="#3a4654" font-size="12" font-weight="800" font-family="ui-sans-serif, sans-serif">Fog later</text>
+<rect x="1090.575" y="1089.5686274509803" width="154.79999999999995" height="117.41176470588243" rx="10" fill="rgba(126,168,204,0.38)" stroke="#5c6b7a" stroke-width="1.4" stroke-dasharray="7 4"/>
+<text x="1167.975" y="1148.2745098039215" text-anchor="middle" fill="#3a4654" font-size="12" font-weight="800" font-family="ui-sans-serif, sans-serif">Rain later</text>
+<rect x="616.5" y="1666.843137254902" width="193.5" height="117.4117647058822" rx="10" fill="rgba(186,204,216,0.5)" stroke="#5c6b7a" stroke-width="1.4" stroke-dasharray="7 4"/>
+<text x="713.25" y="1725.5490196078433" text-anchor="middle" fill="#3a4654" font-size="12" font-weight="800" font-family="ui-sans-serif, sans-serif">Fog later</text>
 <polygon points="829.3499999999999,715.3186274509804 825.48,729.0166666666667 833.22,729.0166666666667" fill="#ffffff" stroke="#0c4a6e" stroke-width="1"/>
 <polygon points="727.7625,715.3186274509804 723.8925,729.0166666666667 731.6325,729.0166666666667" fill="#ffffff" stroke="#0c4a6e" stroke-width="1"/>
 <polygon points="877.7249999999999,673.2460784313726 873.855,686.9441176470589 881.595,686.9441176470589" fill="#ffffff" stroke="#0c4a6e" stroke-width="1"/>

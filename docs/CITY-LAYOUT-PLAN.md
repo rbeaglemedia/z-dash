@@ -59,7 +59,7 @@ Empty grass does not add shops to that count. A bigger map is cheap as long as t
 
 ![Option 1, The Boulevards](city-layout/option-boulevards.png)
 
-Each city is one straight street. The shops are stops along it, far enough apart that the next stop is out of the detail view. You can see the gate at the end of the street. Car Row faces the river. The dance mural faces east onto its street. The two ovals sit side by side, with a pit road along the south. The soccer approach comes up from the south. The jump roof stays on the west side of the runway. The tower sits on the riverbank, just east of the center bridge, and the short dashed line is a view, not a road.
+Each city is one straight street. The shops are stops along it, far enough apart that the next stop is out of the detail view. You can see the gate at the end of the street. Car Row faces the river. The dance mural faces east onto its street. The two ovals sit side by side, with a pit road along the south. The soccer approach comes up from the south. The jump roof stays on the west side of the runway. The tower sits on the riverbank, just east of the center bridge, and the short dashed line is a view, not a road. The hatched bands are weather for later: sand on the west shoulder, fog by the river and on the south lane, rain in the east gap.
 
 Worst view: 3 buildings, the homestead yard. Inside a city the worst is 2.
 
@@ -67,7 +67,7 @@ Worst view: 3 buildings, the homestead yard. Inside a city the worst is 2.
 
 ![Option 2, The Town Squares](city-layout/option-squares.png)
 
-Same zones, same places. Each city is a square. The arch is the middle (Car Row's arch is the south gate, because that gate faces the river). The next shop is around the corner and out of view. The dance building is the west side of its square so the mural still faces east. The two ovals are stacked north–south, which is why this side of the map is tall. The soccer approach comes in from the west, off the airport. The jump roof is on the east shoulder of the runway, just north of where a Sky Drop already starts. The tower is the same riverbank landmark, and the long dashed line is the view from the southwest across the open middle.
+Same zones, same places. Each city is a square. The arch is the middle (Car Row's arch is the south gate, because that gate faces the river). The next shop is around the corner and out of view. The dance building is the west side of its square so the mural still faces east. The two ovals are stacked north–south, which is why this side of the map is tall. The soccer approach comes in from the west, off the airport. The jump roof is on the east shoulder of the runway, just north of where a Sky Drop already starts. The tower is the same riverbank landmark, and the long dashed line is the view from the southwest across the open middle. The hatched bands are the same later weather, with the rain sitting higher so it stays clear of the east jump roof.
 
 Worst view: 3 buildings, the homestead yard. Inside a city the worst is 2.
 
@@ -170,6 +170,38 @@ Boxes are x0..x1 and z0..z1. The full list is also in `docs/city-layout/coords.j
 | Field arch, and its snack | 356..364, 1227..1253 and 414..426, 1175..1185 |
 | Field bay, and its NOS | 1310..1330, 1313..1327 and 1312..1328, 1374..1386 |
 
+## Weather (later)
+
+Not in the first build. No code in this plan. When it is built, weather sits on the open ground between cities. Sand, fog, and rain. The hatched bands on both maps are those stretches. A city, the homestead yard, the runway, the tunnel, and the river jumps stay clear so she can see the shops, the bore, and the jump.
+
+The look and the frame are tied together. In a weather stretch the world can show a light haze any time: a tint and a few streaks, not a cloud of sprites. The thick version turns on when the frame is low. Use a short average, so one bad frame does not throw a storm, and ease it out slowly so it does not flicker. On a Galaxy that is missing 110 fps, the thick weather shortens the far draw. Above that, the draw distances stay as they are and the weather stays light.
+
+What it shortens: building silhouettes and the ground fill, which today reach 950 m, come in to 320 m. The road draw stays at 360 m, so the lane in front of the car is still there. Building detail stays at 170 m. There is nothing to detail in these stretches anyway. The long highway dash marks, which today draw whenever she is within 700 m of the highway, should stop for the part she can no longer see. The weather itself has to stay cheaper than the silhouettes it removes.
+
+The car keeps its speed. Slowing down does not remove anything from the frame. The draw list depends on where she is, not how fast she is moving. If the frame is still short after the distance is already cut, a later pass may trim a few percent, and only while the thick weather is on. Not a crawl. Not in a city, the tunnel, or a jump.
+
+From the middle of each stretch, these are the building silhouettes the game would draw today (inside 950 m, skipping stalls shorter than 12 m once they are past 595 m) and how many are left if that stretch is thick. Every one of these middles drops to zero. The ground disc shrinks from a 950 m radius to 320 m, which is about one ninth of that area.
+
+### Option 1
+
+| Stretch | Where | Silhouettes now | Left when thick |
+|---|---|---|---|
+| Sand | West shoulder, between the highway and the runway, z 40 to 1000 | 4 | 0 |
+| Fog | North of the runway, south of the river jumps, x −180 to 250 | 7 | 0 |
+| Rain | East gap, between Builder Bay and The Field, z 240 to 760 | 6 | 0 |
+| Fog | South lane, between spawn and the homestead, stopping before the yard | 5 | 0 |
+
+### Option 2
+
+| Stretch | Where | Silhouettes now | Left when thick |
+|---|---|---|---|
+| Sand | West shoulder, z 160 to 900 | 5 | 0 |
+| Fog | Same riverbank band as Option 1 | 10 | 0 |
+| Rain | East gap, x 500 to 820, z 780 to 1020, clear of the jump roof | 9 | 0 |
+| Fog | Same south lane as Option 1 | 7 | 0 |
+
+This does not change the worst view of 3. That number is the close-up count, and these stretches already have no building inside 170 m. Weather cuts the far outlines and most of the ground while she is crossing, which is the cost the empty ground still pays today.
+
 ## Ideas for Bob
 
 These are not in either option.
@@ -204,4 +236,5 @@ Bob's later zoning replaces the older "keep both builder HQs and the tower where
 | Plazas | The old plaza rectangles are not reused. The cities are outside those lots. Do not spawn the old plaza ramps inside a new shop. Leave the airport and river ramps where they are. |
 | Building interiors | Not this plan. Footprints on the map do not grow to make rooms larger. |
 | FPS files | Not touched. The worst view above is a distance count at 170 m, not a new benchmark. |
+| Weather | Later. Marked on the maps and written up above. Not in this build, and not a draw-code change now. |
 | Adult `index.html` | Not touched. |

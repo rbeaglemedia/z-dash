@@ -217,6 +217,28 @@ function fields(mode) {
   return { cx: 1100, cz: 1320, rx: 90, ry: 80 };
 }
 
+// Later weather. Open ground only. Not the runway, the tunnel, the river jumps, or a city.
+function weatherZones(mode) {
+  const shared = [
+    ['Fog', -180, 250, 1530, 1660],
+    ['Fog', -480, -80, -400, -160]
+  ];
+  if (mode === 'boulevard') {
+    return [
+      ['Sand', -350, -170, 40, 1000],
+      shared[0],
+      ['Rain', 240, 640, 240, 760],
+      shared[1]
+    ];
+  }
+  return [
+    ['Sand', -350, -170, 160, 900],
+    shared[0],
+    ['Rain', 500, 820, 780, 1020],
+    shared[1]
+  ];
+}
+
 function check(mode, B) {
   const problems = [];
   for (let i = 0; i < B.length; i++) for (let j = i + 1; j < B.length; j++) {
@@ -370,7 +392,11 @@ function svgFor(mode, worstN) {
   P.push(`<text x="${X(parcels[0][0])}" y="${Y(parcels[0][1]) - 8}" fill="#5b46a8" font-size="12" font-weight="700" font-family="ui-sans-serif, sans-serif">room for later games</text>`);
   // Homestead chip.
   P.push(`<text x="${X(-220)}" y="${Y(-560)}" text-anchor="middle" fill="#8a5a12" font-size="13" font-family="ui-sans-serif, sans-serif" font-weight="700">HOMESTEAD</text>`);
-  P.push(`<text x="${X(400)}" y="${Y(900)}" fill="#6a7a62" font-size="13" font-family="ui-sans-serif, sans-serif">open ground</text>`);
+  const weatherFill = { Sand: 'rgba(214,180,96,0.38)', Fog: 'rgba(186,204,216,0.5)', Rain: 'rgba(126,168,204,0.38)' };
+  for (const [name, xa, xb, za, zb] of weatherZones(mode)) {
+    P.push(`<rect x="${X(xa)}" y="${Y(zb)}" width="${X(xb) - X(xa)}" height="${Y(za) - Y(zb)}" rx="10" fill="${weatherFill[name]}" stroke="#5c6b7a" stroke-width="1.4" stroke-dasharray="7 4"/>`);
+    P.push(`<text x="${X((xa + xb) / 2)}" y="${Y((za + zb) / 2)}" text-anchor="middle" fill="#3a4654" font-size="12" font-weight="800" font-family="ui-sans-serif, sans-serif">${name} later</text>`);
+  }
   // River kicks.
   for (const [x, z] of [[-40, 1767], [-250, 1767], [60, 1853]]) {
     P.push(`<polygon points="${X(x)},${Y(z + 18)} ${X(x - 8)},${Y(z - 10)} ${X(x + 8)},${Y(z - 10)}" fill="#ffffff" stroke="#0c4a6e" stroke-width="1"/>`);
