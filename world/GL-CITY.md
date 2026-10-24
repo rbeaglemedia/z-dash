@@ -4,6 +4,49 @@
 
 The look proposal below is for Bob to pick. This branch keeps the black-solid `?gl=1` fallback. No model files are in the repo.
 
+## Same buildings, same places
+
+The redesign keeps today's count and today's lots. Nothing is added, removed, or merged until Bob adds more.
+
+The purposeful set is the 24 `shop()` calls in `world/city.js`, two of each purpose. Districts stay `SPAWN_SOUTH`, `ARTS_GARAGE`, `PARKSIDE_WEST`, `DOWNTOWN_CORE`, `SPORTS_EAST`, and `BUILDER_NORTH`.
+
+| Purpose | Shops | Where they already sit |
+|---|---|---|
+| GARAGE | 2 | Spawn south, 64×164×26 m, pad. Sports east, 48×90×15 m. |
+| SKY_DROP | 2 | Arts helipad deck, 64×164×62 m. Downtown sky tower, 70×70×239 m. |
+| SHOWROOM | 2 | Downtown, 64×164×18 m. Spawn south, 64×56×16 m. Both signed Z-DASH. |
+| NOS | 2 | Parkside, 64×164×34 m. Spawn south, 40×46×12 m. |
+| HOME | 2 | Spawn south, 44×48×11 m. Parkside, 40×48×12 m. |
+| NEON_PAINT | 2 | Arts, 44×48×14 m. Parkside, 44×48×15 m. |
+| DANCE | 2 | Arts, 60×64×18 m, mural on the east face. Downtown, 60×64×20 m, mural on the west face. |
+| ARCADE | 2 | Arts, 56×64×18 m. Sports east, 52×64×17 m. |
+| PETS | 2 | Parkside, 40×48×12 m and 44×48×13 m. |
+| CAFE | 2 | Parkside, 44×48×12 m. Downtown, 48×48×13 m. Both signed PIZZA. |
+| SOCCER | 2 | Sports east. One is 56×88×16 m, the other is 56×68×16 m. Both signed TURBO. |
+| BUILDER | 2 | Builder north, the two HQ blocks at the bridge landing. |
+
+The generic background is the existing far-outline skyline (`kind: 'outline'`, the 34-step loop, with the skips that loop already has). Those blocks stay where the loop puts them. They do not grow a purpose sign. A purpose word belongs on the shop that already has that purpose.
+
+Each purpose has a shape, a color, and a sign so it reads at a glance. The shape is the same at every tier. Street and on-foot add surface detail on that shape. Every mockup prints the purpose in the corner, and the building itself carries the sign that shop already uses. These frames are one portrait per purpose, on the lots that already exist. They do not add, remove, or move a shop.
+
+| Purpose | How it reads |
+|---|---|
+| HOME | Pitched roof, green, a person door and a garage door, sign HOME. |
+| NEON_PAINT | Magenta studio, paint swatches on the wall, sign NEON. |
+| GARAGE | Amber bay wider and taller than the car (3.6×2.8 m), sign GARAGE. |
+| DANCE | Flat mural wall at least 64×18 m (east) or 64×20 m (west). Sign Z COMPANY ARTS. The mural stays on that face. |
+| PETS | Green front, paw mark, sign PETS. |
+| ARCADE | Marquee over the sidewalk, pixel lights, sign ARCADE. |
+| NOS | Gold, tanks on the roof, sign NOS. |
+| SKY_DROP | Tall cyan shaft, a landing pad with an H on the roof, and the sign JUMP. The portrait is the downtown tower, 70×70×239 m. The arts deck stays 64×164×62 m and wears the same pad and the same JUMP sign. |
+| BUILDER | Stepped blocks, sign PIXEL. |
+| SOCCER | Stands around a field, sign TURBO. |
+| CAFE | Red awning, sign PIZZA. |
+| SHOWROOM | Glass front with a car in the window, sign Z-DASH. |
+| GENERIC | Dark box, sparse windows, no purpose word. |
+
+Street-front, three-quarter, roof, and on-foot frames for each of these are in `test-results/arch-check/shots/purpose-{PURPOSE}-{front|threeq|roof|foot}-{phone|ipad|pc}.png`. The iPad street-front lineup is `test-results/gl-city/looks/purpose-front-sheet.png`.
+
 ## Detail tiers (approved plan, folded into the look)
 
 Shapes, doors, and garages are the same at every tier. Only the surface changes.

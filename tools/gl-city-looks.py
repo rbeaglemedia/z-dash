@@ -2,10 +2,12 @@
 """Proposal mockups for the building-look hold. Not the game. No model files."""
 import math
 import os
-from PIL import Image, ImageDraw
+import sys
+from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.join(os.path.dirname(__file__), '..', 'test-results', 'gl-city', 'looks')
 ART = '/opt/cursor/artifacts/gl-city/looks'
+SIGN_FONT = '/usr/share/fonts/truetype/macos/Inter-Bold.ttf'
 
 SKY_TOP = (5, 2, 12)
 SKY_MID = (42, 6, 54)
@@ -57,6 +59,23 @@ def grid(dr, w, h, hy):
 
 def shade(c, k):
     return tuple(max(0, min(255, int(v * k))) for v in c)
+
+
+def draw_label(dr, text, cx, cy, box_w, box_h, fill):
+    """Center a word in a screen-space box, sized so the purpose stays readable."""
+    if not text or box_w < 8 or box_h < 8:
+        return
+    size = int(min(box_h * 0.72, 72))
+    size = max(8, size)
+    font = ImageFont.truetype(SIGN_FONT, size)
+    bb = font.getbbox(text)
+    tw, th = bb[2] - bb[0], bb[3] - bb[1]
+    while size > 8 and (tw > box_w * 0.92 or th > box_h * 0.9):
+        size -= 1
+        font = ImageFont.truetype(SIGN_FONT, size)
+        bb = font.getbbox(text)
+        tw, th = bb[2] - bb[0], bb[3] - bb[1]
+    dr.text((cx - tw / 2.0, cy - th / 2.0 - bb[1]), text, fill=fill, font=font)
 
 
 TIER = 'arcade'
@@ -523,7 +542,8 @@ def paint_mural(dr, quad):
     dr.line(band + [band[0]], fill=CYAN, width=2)
     label = mpt(0.50, 0.92)
     word = 'Z COMPANY ARTS' if span > 160 else 'Z ARTS'
-    dr.text((label[0] - (54 if span > 160 else 22), label[1] - 6), word, fill=CYAN)
+    band_h = abs(mpt(0.50, 0.86)[1] - mpt(0.50, 0.98)[1])
+    draw_label(dr, word, label[0], label[1], span * 0.86, max(12, band_h), CYAN)
     dr.line(quad + [quad[0]], fill=MAG, width=3)
 
 
@@ -598,6 +618,240 @@ def review_frame(shape, view, tier, w, h, title):
     dr.text((12, h - bar_h + 6), 'ARCH SHOT  DANCE %s  %s  %s' % (shape.upper(), title, tier_name), fill=(233, 227, 228))
     dr.text((12, h - bar_h + 22), 'Mural wall 64 x 18 m, same facing. Person 1.7 m, car 4.25 m.', fill=(62, 230, 255))
     dr.text((12, h - bar_h + 36), 'Mockup for Architecture Check. Not in the game.', fill=(138, 122, 125))
+    return img
+
+
+# Twelve purposes, two shops each, plus the far-outline skyline. Counts and lots stay.
+PURPOSE_SPECS = [
+    ('HOME', 'HOME', (125, 255, 107), 44, 11, 20, 'house'),
+    ('NEON_PAINT', 'NEON', (255, 79, 216), 44, 14, 18, 'paint'),
+    ('GARAGE', 'GARAGE', (255, 176, 32), 48, 15, 24, 'garage'),
+    ('DANCE', 'Z COMPANY ARTS', (255, 79, 216), 64, 18, 16, 'dance'),
+    ('PETS', 'PETS', (125, 255, 107), 40, 12, 18, 'pets'),
+    ('ARCADE', 'ARCADE', (62, 230, 255), 56, 18, 20, 'arcade'),
+    ('NOS', 'NOS', (255, 225, 77), 40, 12, 18, 'nos'),
+    ('SKY_DROP', 'JUMP', (62, 230, 255), 70, 239, 70, 'sky'),
+    ('BUILDER', 'PIXEL', (125, 255, 107), 44, 16, 20, 'builder'),
+    ('SOCCER', 'TURBO', (255, 176, 32), 56, 16, 28, 'soccer'),
+    ('CAFE', 'PIZZA', (255, 42, 61), 44, 12, 18, 'cafe'),
+    ('SHOWROOM', 'Z-DASH', (62, 230, 255), 64, 18, 22, 'show'),
+    ('GENERIC', '', (22, 14, 48), 40, 24, 18, 'plain'),
+]
+
+
+def fast_sky(img):
+    w, h = img.size
+    dr = ImageDraw.Draw(img)
+    hy = int(h * 0.62)
+    dr.rectangle([0, 0, w, hy], fill=SKY_TOP)
+    dr.rectangle([0, int(hy * 0.35), w, hy], fill=SKY_MID)
+    dr.rectangle([0, hy, w, h], fill=GROUND)
+    dr.line([(0, hy), (w, hy)], fill=HORIZON, width=2)
+    return hy
+
+
+def purpose_cameras(vw, vh, bw, bh, bd):
+    focal = (vh * 0.5) / math.tan(math.radians(50) * 0.5)
+    dist = max(bw * 0.5 * focal / (0.34 * vw), bh * 0.55 * focal / (0.30 * vh))
+    dist = max(16.0, min(140.0, dist))
+    eye_y = max(2.2, min(8.0, bh * 0.12))
+    # Flying view looks at the roof center, about 38 degrees down, far enough
+    # that the whole roof (and a pad on it) stays inside the frame.
+    half = 0.5 * math.hypot(bw, bd)
+    roof_dist = max(18.0, half / math.tan(math.radians(50 * 0.34)))
+    pitch = math.radians(38)
+    horiz = roof_dist * math.cos(pitch)
+    lift = roof_dist * math.sin(pitch)
+    az = math.radians(32)
+    rcx, rcz = 0.0, -bd * 0.5
+    roof_eye = (rcx + horiz * math.sin(az), bh + lift, rcz + horiz * math.cos(az))
+    roof_target = (rcx, bh + 0.2, rcz)
+    return {
+        'front': ((0.0, eye_y, dist), (0.0, bh * 0.42, 0.0)),
+        'threeq': ((dist * 0.72, max(3.0, bh * 0.16), dist * 0.58), (0.0, bh * 0.4, -4.0)),
+        'roof': (roof_eye, roof_target),
+        'foot': ((-bw * 0.5 + 2.2, 1.65, 6.4), (-bw * 0.5 + 1.4, 2.2, 0.2)),
+    }
+
+
+def roof_pad(dr, proj, bh, bw, bd):
+    """Landing pad in world space, on the roof, so a flyover reads as sky drop."""
+    cx, cz = 0.0, -bd * 0.5
+    r = min(bw, bd) * 0.34
+    r = min(r, bw * 0.42 - 1.5, bd * 0.42 - 1.5)
+    y = bh + 0.55
+    segs = 24
+    disc = []
+    ring_o = []
+    ring_i = []
+    for i in range(segs):
+        a = math.tau * i / segs
+        co, si = math.cos(a), math.sin(a)
+        disc.append(proj(cx + co * r * 0.82, y, cz + si * r * 0.82))
+        ring_o.append((cx + co * r, y + 0.08, cz + si * r))
+        ring_i.append((cx + co * r * 0.82, y + 0.08, cz + si * r * 0.82))
+    dr.polygon(disc, fill=(12, 48, 64))
+    for i in range(segs):
+        j = (i + 1) % segs
+        dr.polygon([
+            proj(*ring_o[i]), proj(*ring_o[j]), proj(*ring_i[j]), proj(*ring_i[i])
+        ], fill=CYAN)
+    # H is drawn upright in the frame so the pad still reads as a landing mark
+    # when the camera is pitched down. The ring stays in world space on the roof.
+    xs = [p[0] for p in disc]
+    ys = [p[1] for p in disc]
+    hx = sum(xs) / len(xs)
+    hy = sum(ys) / len(ys)
+    rad = sum(math.hypot(px - hx, py - hy) for px, py in disc) / len(disc)
+    arm = rad * 0.72
+    t = max(4.0, rad * 0.16)
+    dr.rectangle([hx - arm, hy - arm, hx - arm + t, hy + arm], fill=(8, 2, 16))
+    dr.rectangle([hx + arm - t, hy - arm, hx + arm, hy + arm], fill=(8, 2, 16))
+    dr.rectangle([hx - arm, hy - t * 0.5, hx + arm, hy + t * 0.5], fill=(8, 2, 16))
+
+
+def win_face(dr, proj, x0, x1, y0, y1, z, tier, color):
+    step = 3.6 if tier == 'arcade' else 2.2
+    y = y0
+    row = 0
+    while y < y1 - 1.0:
+        if tier == 'arcade' and row % 2:
+            y += step * 0.65
+            row += 1
+            continue
+        x = x0
+        while x < x1 - 1.0:
+            cull_face(dr, proj, [(x, y, z), (x + 0.9, y, z), (x + 0.9, y + 1.2, z), (x, y + 1.2, z)], color)
+            x += step
+        y += step * 0.7
+        row += 1
+
+
+def draw_purpose(dr, proj, spec, tier):
+    pid, sign, color, bw, bh, bd, kind = spec
+    x0, x1, zf = -bw / 2.0, bw / 2.0, 0.0
+    side = shade(color, 0.72)
+    roof_c = shade(color, 0.45)
+    # Identity shape. Present in every shot. Surface trim changes with the tier.
+    if kind == 'house':
+        cull_face(dr, proj, [(x0, 0, zf), (x1, 0, zf), (x1, bh, zf), (x0, bh, zf)], color, None)
+        peak = bh + bw * 0.18
+        cull_face(dr, proj, [(x0 - 1, bh, zf + 0.4), (x1 + 1, bh, zf + 0.4), (0, peak, zf - bd * 0.5)], (90, 16, 48))
+        cull_face(dr, proj, [(x0, 0, zf + 0.2), (x0 + 2.4, 0, zf + 0.2), (x0 + 2.4, 2.2, zf + 0.2), (x0, 2.2, zf + 0.2)], (20, 8, 16), CYAN, 2)
+        cull_face(dr, proj, [(x0 + 3.2, 0, zf + 0.2), (x0 + 6.2, 0, zf + 0.2), (x0 + 6.2, 2.3, zf + 0.2), (x0 + 3.2, 2.3, zf + 0.2)], (16, 10, 22), AMBER, 2)
+    elif kind == 'garage':
+        cull_face(dr, proj, [(x0, 0, zf), (x1, 0, zf), (x1, bh, zf), (x0, bh, zf)], color)
+        cull_face(dr, proj, [(-1.8, 0, 0.3), (1.8, 0, 0.3), (1.8, 2.8, 0.3), (-1.8, 2.8, 0.3)], (12, 8, 10), AMBER, 3)
+        cull_face(dr, proj, [(-1.5, 0.2, 1.2), (1.5, 0.2, 1.2), (1.5, 1.5, 1.2), (-1.5, 1.5, 1.2)], (16, 16, 24), CYAN, 2)
+    elif kind == 'dance':
+        cull_face(dr, proj, [(x0, 0, zf), (x1, 0, zf), (x1, bh, zf), (x0, bh, zf)], (36, 12, 32), MAG, 2 if tier == 'arcade' else 4)
+        cull_face(dr, proj, [(x0, 0, 0.12), (x0 + 1.2, 0, 0.12), (x0 + 1.2, 2.3, 0.12), (x0, 2.3, 0.12)], (20, 8, 16), CYAN, 2)
+    elif kind == 'sky':
+        cull_face(dr, proj, [(x0, 0, zf), (x1, 0, zf), (x1, bh, zf), (x0, bh, zf)], color, CYAN, 2)
+        cull_face(dr, proj, [(x0 + 6, bh, zf), (x1 - 6, bh, zf), (x1 - 6, bh + 1.2, zf - 4), (x0 + 6, bh + 1.2, zf - 4)], CYAN)
+    elif kind == 'builder':
+        cull_face(dr, proj, [(x0, 0, zf), (x1, 0, zf), (x1, bh * 0.45, zf), (x0, bh * 0.45, zf)], color)
+        cull_face(dr, proj, [(x0 + 4, bh * 0.45, zf - 1), (x1 - 2, bh * 0.45, zf - 1), (x1 - 2, bh * 0.78, zf - 1), (x0 + 4, bh * 0.78, zf - 1)], shade(color, 0.8), AMBER, 2)
+        cull_face(dr, proj, [(x0 + 8, bh * 0.78, zf - 2), (x1 - 8, bh * 0.78, zf - 2), (x1 - 8, bh, zf - 2), (x0 + 8, bh, zf - 2)], shade(color, 0.6), CYAN, 2)
+    elif kind == 'soccer':
+        cull_face(dr, proj, [(x0, 0, zf), (x1, 0, zf), (x1, bh * 0.35, zf), (x0, bh * 0.35, zf)], color)
+        cull_face(dr, proj, [(x0, bh * 0.35, -2), (x0 + 8, bh * 0.35, -8), (x0 + 8, bh, -8), (x0, bh * 0.55, -2)], shade(color, 0.7))
+        cull_face(dr, proj, [(x1, bh * 0.35, -2), (x1 - 8, bh * 0.35, -8), (x1 - 8, bh, -8), (x1, bh * 0.55, -2)], shade(color, 0.55))
+        cull_face(dr, proj, [(x0 + 10, 1.2, 0.3), (x1 - 10, 1.2, 0.3), (x1 - 10, bh * 0.32, 0.3), (x0 + 10, bh * 0.32, 0.3)], (20, 40, 24))
+    elif kind == 'show':
+        cull_face(dr, proj, [(x0, 0, zf), (x1, 0, zf), (x1, bh, zf), (x0, bh, zf)], (28, 16, 48))
+        cull_face(dr, proj, [(x0 + 3, 1.2, 0.25), (x1 - 3, 1.2, 0.25), (x1 - 3, bh - 2, 0.25), (x0 + 3, bh - 2, 0.25)], (70, 40, 110), CYAN, 2)
+        cull_face(dr, proj, [(-2, 0.2, 1.0), (2.2, 0.2, 1.0), (2.2, 1.5, 1.0), (-2, 1.5, 1.0)], (16, 16, 24), CYAN, 2)
+    elif kind == 'plain':
+        cull_face(dr, proj, [(x0, 0, zf), (x1, 0, zf), (x1, bh, zf), (x0, bh, zf)], (18, 12, 28))
+        win_face(dr, proj, x0 + 3, x1 - 3, 3, bh - 3, 0.15, 'arcade', (40, 28, 64))
+    else:
+        cull_face(dr, proj, [(x0, 0, zf), (x1, 0, zf), (x1, bh, zf), (x0, bh, zf)], color)
+    if kind not in ('house', 'garage', 'dance', 'soccer', 'show', 'plain', 'builder'):
+        win_face(dr, proj, x0 + 2, x1 - 2, 3.2, bh - 3.5, 0.12, tier, shade(CYAN, 0.8))
+    if kind == 'paint':
+        for i, c in enumerate((MAG, CYAN, AMBER, GREEN)):
+            cull_face(dr, proj, [(x0 + 3 + i * 4, 3, 0.3), (x0 + 6 + i * 4, 3, 0.3), (x0 + 6 + i * 4, 8, 0.3), (x0 + 3 + i * 4, 8, 0.3)], c)
+    if kind == 'pets':
+        paw = proj(0, bh * 0.55, 0.3)
+        dr.ellipse([paw[0] - 10, paw[1] - 10, paw[0] + 10, paw[1] + 10], fill=GREEN)
+    if kind == 'arcade':
+        cull_face(dr, proj, [(x0 + 2, bh * 0.62, 0.2), (x1 - 2, bh * 0.62, 0.2), (x1 - 1, bh * 0.62 - 1.2, 2.4), (x0 + 1, bh * 0.62 - 1.2, 2.4)], (20, 8, 28), CYAN, 2)
+        win_face(dr, proj, x0 + 4, x1 - 4, bh * 0.66, bh - 2, 0.35, 'street', AMBER)
+    if kind == 'nos':
+        for ox in (-6, 6):
+            cull_face(dr, proj, [(ox - 2, bh, -4), (ox + 2, bh, -4), (ox + 2, bh + 5, -4), (ox - 2, bh + 5, -4)], AMBER, (20, 8, 16), 2)
+    if kind == 'cafe':
+        cull_face(dr, proj, [(x0 + 1, 3.2, 0.2), (x1 - 1, 3.2, 0.2), (x1 - 0.4, 2.6, 2.6), (x0 + 0.4, 2.6, 2.6)], (255, 42, 61))
+    # Side and roof so three-quarter and flying shots have a closed top.
+    if kind != 'builder':
+        cull_face(dr, proj, [(x1, 0, zf), (x1, 0, zf - bd), (x1, bh, zf - bd), (x1, bh, zf)], side)
+        cull_face(dr, proj, [(x0, bh, zf), (x1, bh, zf), (x1, bh, zf - bd), (x0, bh, zf - bd)], roof_c)
+    if kind == 'sky':
+        roof_pad(dr, proj, bh, bw, bd)
+        # Street plaque so the on-foot shot, which cannot see the roof, still reads JUMP.
+        cull_face(dr, proj, [(-8, 3.2, 0.4), (8, 3.2, 0.4), (8, 7.4, 0.4), (-8, 7.4, 0.4)], (8, 2, 16), CYAN, 3)
+        plaque = [proj(-8, 3.2, 0.45), proj(8, 7.4, 0.45)]
+        draw_label(dr, 'JUMP', (plaque[0][0] + plaque[1][0]) / 2, (plaque[0][1] + plaque[1][1]) / 2,
+                   abs(plaque[1][0] - plaque[0][0]) * 0.8, abs(plaque[1][1] - plaque[0][1]) * 0.7, CYAN)
+    if kind != 'dance' and kind != 'plain':
+        if kind == 'sky':
+            sy0, sy1 = bh * 0.62, bh * 0.74
+            sx0, sx1 = x0 + bw * 0.18, x1 - bw * 0.18
+        else:
+            sy0, sy1 = bh - 3.2, bh - 1.0
+            sx0, sx1 = x0 + 2, x1 - 2
+        if sy0 > 3:
+            fill = color if tier == 'arcade' else (12, 4, 20)
+            outline = CYAN if tier != 'street' else MAG
+            cull_face(dr, proj, [(sx0, sy0, 0.35), (sx1, sy0, 0.35), (sx1, sy1, 0.35), (sx0, sy1, 0.35)], fill, outline, 2)
+            top = proj(sx0, sy1, 0.45)
+            bot = proj(sx1, sy0, 0.45)
+            if sign:
+                draw_label(dr, sign, (top[0] + bot[0]) / 2, (top[1] + bot[1]) / 2,
+                           abs(bot[0] - top[0]) * 0.9, abs(bot[1] - top[1]) * 0.8,
+                           CYAN if tier != 'street' else AMBER)
+    if tier != 'arcade' and kind not in ('dance', 'cafe', 'arcade'):
+        cull_face(dr, proj, [(x0 + 1.5, 2.5, 0.15), (x0 + 4.5, 2.5, 0.15), (x0 + 4.8, 2.2, 1.4), (x0 + 1.2, 2.2, 1.4)], color)
+    if kind == 'dance':
+        y0, y1 = 3.2, 3.2 + 9.9
+        mx0, mx1 = x0 + bw * 0.04, x1 - bw * 0.04
+        quad = [proj(mx0, y0, 0.28), proj(mx1, y0, 0.28), proj(mx1, y1, 0.28), proj(mx0, y1, 0.28)]
+        paint_mural(dr, quad)
+    # Scale: person 1.7 m. Car only where the purpose is the car.
+    cull_face(dr, proj, [(-bw / 2 + 3.2, 0, 3.2), (-bw / 2 + 3.7, 0, 3.2), (-bw / 2 + 3.7, 1.7, 3.2), (-bw / 2 + 3.2, 1.7, 3.2)], (233, 227, 228), CYAN, 1)
+    if kind in ('garage', 'show', 'house'):
+        cull_face(dr, proj, [(2, 0, 8), (6.25, 0, 8), (6.25, 1.32, 8), (2, 1.32, 8)], (16, 16, 24), CYAN, 2)
+
+
+def purpose_frame(spec, view, tier, vw, vh, title):
+    pid = spec[0]
+    img = Image.new('RGB', (vw, vh))
+    fast_sky(img)
+    dr = ImageDraw.Draw(img)
+    bw, bh, bd = spec[3], spec[4], spec[5]
+    eye, target = purpose_cameras(vw, vh, bw, bh, bd)[view]
+    proj = look_proj(vw, vh, eye, target, 50)
+    for i in range(-8, 9):
+        dr.line([proj(i * 5.0, 0.02, -4), proj(i * 5.0, 0.02, 30)], fill=(48, 18, 58), width=1)
+    draw_purpose(dr, proj, spec, tier)
+    tier_name = {'street': 'STREET', 'arcade': 'ARCADE', 'onfoot': 'ON FOOT'}[tier]
+    chip = pid.replace('_', ' ')
+    chip_font = ImageFont.truetype(SIGN_FONT, 18 if vh < 500 else 26)
+    chip_bb = chip_font.getbbox(chip)
+    chip_w, chip_h = chip_bb[2] - chip_bb[0], chip_bb[3] - chip_bb[1]
+    dr.rectangle([12, 12, 28 + chip_w, 22 + chip_h], fill=(8, 2, 16))
+    dr.text((20, 16 - chip_bb[1]), chip, fill=CYAN, font=chip_font)
+    cap = ImageFont.truetype(SIGN_FONT, 13 if vh < 500 else 16)
+    bar_h = 70 if vh < 500 else 82
+    dr.rectangle([0, vh - bar_h, vw, vh], fill=(8, 2, 16))
+    if pid == 'SKY_DROP':
+        sign_line = 'Sign JUMP. Tower 70x239 and deck 64x164x62 both stay on their lots.'
+    else:
+        sign_line = 'Sign %s. Same lot as today. Not a new building.' % (spec[1] or 'none')
+    dr.text((12, vh - bar_h + 8), 'PURPOSE  %s    %s    %s' % (pid, title, tier_name), fill=(233, 227, 228), font=cap)
+    dr.text((12, vh - bar_h + 30), sign_line, fill=(62, 230, 255), font=cap)
+    dr.text((12, vh - bar_h + 52), 'Mockup. 24 shops stay. Placements unchanged.', fill=(138, 122, 125), font=cap)
     return img
 
 
@@ -700,7 +954,52 @@ def main():
     board.save(os.path.join(ART, 'dance-review-sheet.png'))
     board.save(os.path.join(art_shots, 'dance-review-sheet.png'))
     print(board_path, board.size)
+    write_purpose(shot_dir, art_shots)
+
+
+def write_purpose(shot_dir=None, art_shots=None):
+    os.makedirs(ROOT, exist_ok=True)
+    os.makedirs(ART, exist_ok=True)
+    if shot_dir is None:
+        shot_dir = os.path.join(os.path.dirname(__file__), '..', 'test-results', 'arch-check', 'shots')
+    if art_shots is None:
+        art_shots = '/opt/cursor/artifacts/arch-check/shots'
+    os.makedirs(shot_dir, exist_ok=True)
+    os.makedirs(art_shots, exist_ok=True)
+    purpose_dir = shot_dir
+    front_row = []
+    for spec in PURPOSE_SPECS:
+        for view, tier, title in REVIEW_SHOTS:
+            for name, vw, vh in REVIEW_VIEWS:
+                img = purpose_frame(spec, view, tier, vw, vh, title)
+                leaf = 'purpose-%s-%s-%s.png' % (spec[0], view, name)
+                img.save(os.path.join(purpose_dir, leaf))
+                img.save(os.path.join(art_shots, leaf))
+                img.save(os.path.join(ROOT, leaf))
+                if view == 'front' and name == 'ipad':
+                    front_row.append(img)
+                print(leaf, img.size)
+    cell = 210
+    gap = 6
+    cols = 5
+    thumbs = [im.resize((int(im.size[0] * cell / im.size[1]), cell), Image.BILINEAR) for im in front_row]
+    rows = (len(thumbs) + cols - 1) // cols
+    pw = max(th.size[0] for th in thumbs)
+    board_w = cols * pw + gap * (cols + 1)
+    board_h = rows * cell + gap * (rows + 1)
+    lineup = Image.new('RGB', (board_w, board_h), (8, 2, 16))
+    for i, th in enumerate(thumbs):
+        r, c = divmod(i, cols)
+        lineup.paste(th, (gap + c * (pw + gap), gap + r * (cell + gap)))
+    lineup_path = os.path.join(ROOT, 'purpose-front-sheet.png')
+    lineup.save(lineup_path)
+    lineup.save(os.path.join(ART, 'purpose-front-sheet.png'))
+    lineup.save(os.path.join(art_shots, 'purpose-front-sheet.png'))
+    print(lineup_path, lineup.size)
 
 
 if __name__ == '__main__':
-    main()
+    if '--purpose' in sys.argv:
+        write_purpose()
+    else:
+        main()
