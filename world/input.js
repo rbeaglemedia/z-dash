@@ -313,13 +313,17 @@ function buildingSpot(W){
   return (x-(door.x||0))*(door.nx||0)+(z-(door.z||0))*(door.nz||0)>=-2;
 }
 function paintEnterFace(b,inside){
-  const want=inside?'🚪 EXIT':'🚪 ENTER';
+  let pump=false;
+  if(!inside&&typeof walkEntryTarget==='function'){const t=walkEntryTarget();pump=!!(t&&t.door&&t.door.pump);}
+  const want=inside?'🚪 EXIT':pump?'⛽ CLAIM':'🚪 ENTER';
+  const subText=inside?'BUILDING':pump?'NOS':'BUILDING';
   b.classList.toggle('is-inside',inside);
   const lead=b.childNodes[0]&&b.childNodes[0].nodeType===3?b.childNodes[0].textContent:'';
   const sub=b.querySelector('small:not(.pc-key)');
-  if(!(lead===want&&sub&&sub.textContent==='BUILDING')){const keep=b.querySelector(':scope > small.pc-key');
+  if(!(lead===want&&sub&&sub.textContent===subText)){const keep=b.querySelector(':scope > small.pc-key');
     b.replaceChildren(document.createTextNode(want));
-    const sm=document.createElement('small');sm.textContent='BUILDING';b.appendChild(sm);if(keep)b.appendChild(keep);}
+    const sm=document.createElement('small');sm.textContent=subText;b.appendChild(sm);if(keep)b.appendChild(keep);}
+  if(pump)b.setAttribute('aria-label','CLAIM NOS');
   stampPcKey(b);
 }
 function syncEnterBldBtn(){ensureEnterBldBtn();installSafeEnter();
@@ -339,12 +343,31 @@ window.syncEnterBldBtn=syncEnterBldBtn;
 function safeEnterDoor(){
   const W=(this&&typeof this.nearestDoor==='function')?this:window.WALK_MODE;
   if(!W||typeof P==='undefined')return false;
+  if(typeof NOS_STATION!=='undefined'&&NOS_STATION.nearest){
+    const x=W.onFoot?W.x:P.x,z=W.onFoot?W.z:P.z;
+    const slow=W.onFoot||(P.ground&&!P.wreck&&P.v<8);
+    const pump=slow?NOS_STATION.nearest(x,z):null;
+    if(pump){const door=NOS_STATION.asDoor(pump);
+      try{walkAct(door);}catch(e){return false;}
+      W.door=door;W.insideBuilding=false;W.insideDoor=null;
+      if(typeof walkHideInterior==='function')walkHideInterior();
+      if(typeof walkSyncPill==='function')walkSyncPill();
+      return false;}
+  }
   if(!W.onFoot&&typeof W._holdParking==='function')W._holdParking();
   const park=!W.onFoot&&W.parking;
   let door=W.onFoot&&W.door&&(W.door.dist<WALK_PILL_M||W.door.garage)?W.door:null;
   if(!door&&park)door=park.door;
   if(!door&&typeof W.nearestDoor==='function')door=W.nearestDoor(WALK_PILL_M);
   if(!door)return false;
+  if(door.purpose==='NOS'){
+    if(!door.pump)return false;
+    try{walkAct(door);}catch(e){return false;}
+    W.door=door;W.insideBuilding=false;W.insideDoor=null;
+    if(typeof walkHideInterior==='function')walkHideInterior();
+    if(typeof walkSyncPill==='function')walkSyncPill();
+    return false;
+  }
   if(!park&&!(door.dist<WALK_PILL_M))return false;
   if(!W.onFoot&&door.purpose!=='SKY_DROP'&&!park)return false;
   W.door=door;

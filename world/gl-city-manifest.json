@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "budgetMs": 10000,
+  "note": "Glow kernel only. Building geometry stays procedural in world/gl-city.js. Point url at a CDN later; a failed fetch keeps the hard-edge picture.",
+  "assets": [
+    {
+      "id": "glow-kernel",
+      "kind": "image",
+      "url": "world/gl-assets/glow-kernel.png",
+      "size": 64
+    }
+  ]
+}

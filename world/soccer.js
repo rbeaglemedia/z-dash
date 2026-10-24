@@ -15,7 +15,7 @@ const SOCCER = (() => {
     x0: 0, x1: 0, z0: 0, z1: 0,
     goalW: 0, goalH: 0, goalD: 0, mouth: 0
   };
-  // Dome stadium east of the city limit. The z=300 boulevard runs into the west
+  // Dome on The Field. The z=1280 boulevard runs into the west
   // tunnel and opens on the center line. The shell is an ellipse around the pitch.
   F.x0 = F.cx - F.hw; F.x1 = F.cx + F.hw;
   F.z0 = F.cz - F.hl; F.z1 = F.cz + F.hl;

@@ -2,6 +2,13 @@
 // Option 1, The Boulevards. Data only: no drawing, no physics.
 // Loaded before world/city.js on world.html and world-split.html.
 //
+// These two pages stay the current Neon World. Builders, the drop-objects
+// tool, traffic, interiors, and features still edit them. Only a huge
+// aesthetic redesign goes to a separate world. This file and
+// CITY.editorDoc() stay editable so the DEV Builder can change the map
+// here. editorDoc() is a JSON snapshot: places, roads, districts,
+// anchors, NOS pumps, and lane spawns.
+//
 // Other agents should read window.CITY_LAYOUT (this file) and, after the
 // city boots, window.CITY.LAYOUT (the same records plus the curb spurs the
 // game actually drives). Do not scrape shop() calls.
@@ -16,6 +23,18 @@
 //                 {name, station, kind, purpose, x0, x1, z0, z1, h, sign, c, pad, roof, antH, district}
 //   roads[]       approved centerlines {x0,z0,x1,z1,w,kind}
 //                 kind: street | lane | highway | bridge | water
+//   places[].type the same as kind (arch, nos, snack, bay, pad, home, ...)
+//   places[].cx/cz footprint centre. x0,x1,z0,z1 are the corners.
+//   anchors.river    {z0,z1}
+//   anchors.bridges  [{x0,x1,z0,z1}, ...] both decks
+//   After boot, CITY.LAYOUT and CITY.LAYOUT.minimap repeat roads (the
+//   driven centerlines, including curb spurs), river, bridges, districts,
+//   and every place with position and type. The minimap bakes from that.
+//   CITY.LAYOUT.editor is the document the DEV Builder reads and can
+//   write back into this Neon World. CITY.editorDoc() returns a fresh
+//   JSON copy: places (footprints), roads (centerlines), districts,
+//   anchors, nos (fitted stations and pump spots), spawns (lane points
+//   traffic uses). Only a huge new look belongs in a separate world.
 //   buildNetwork()  returns {roads, faces}
 //                 roads: centerlines with buildings cut out and a curb spur
 //                 added where a door was more than 16 m from a lane.
@@ -78,11 +97,18 @@
     {x0:-980, z0:0, x1:-40, z1:0, w:20, kind:'street'},
     {x0:40, z0:0, x1:900, z1:0, w:20, kind:'street'},
     {x0:-1100, z0:2260, x1:720, z1:2260, w:20, kind:'street'},
+    {x0:-640, z0:2370, x1:660, z1:2370, w:12, kind:'lane'},
+    {x0:-230, z0:2260, x1:-230, z1:2370, w:12, kind:'lane'},
+    {x0:250, z0:2260, x1:250, z1:2370, w:12, kind:'lane'},
     {x0:-450, z0:1640, x1:-450, z1:2260, w:20, kind:'street'},
     {x0:-990, z0:-760, x1:-990, z1:620, w:20, kind:'street'},
     {x0:-990, z0:-80, x1:-450, z1:-80, w:20, kind:'street'},
     {x0:760, z0:-760, x1:1100, z1:-760, w:20, kind:'street'},
     {x0:840, z0:-760, x1:840, z1:620, w:20, kind:'street'},
+    {x0:840, z0:-128, x1:1000, z1:-128, w:12, kind:'lane'},
+    {x0:966, z0:-128, x1:966, z1:-40, w:12, kind:'lane'},
+    {x0:840, z0:500, x1:1020, z1:500, w:12, kind:'lane'},
+    {x0:958, z0:430, x1:958, z1:500, w:12, kind:'lane'},
     {x0:160, z0:200, x1:1160, z1:200, w:20, kind:'street'},
     {x0:-1560, z0:860, x1:-450, z1:860, w:20, kind:'street'},
     {x0:-1180, z0:860, x1:-1180, z1:910, w:18, kind:'street'},
@@ -131,7 +157,7 @@
 
   function cutOne(s, b) {
     if (b.kind === 'arch') return [s];
-    const pad = 12;
+    const pad = 4;
     if (vertical(s)) {
       const x = s.x0;
       if (x <= b.x0 || x >= b.x1) return [s];
@@ -233,8 +259,8 @@
       const f = faceToward(b, hit);
       faces[b.station + ':' + b.name] = f.face;
       const along = f.ax === 'z' ? (b.z0 + b.z1) / 2 : (b.x0 + b.x1) / 2;
-      const tx = f.ax === 'z' ? f.fix + f.nx * 12 : along;
-      const tz = f.ax === 'x' ? f.fix + f.nz * 12 : along;
+      const tx = f.ax === 'z' ? f.fix + f.nx * 4 : along;
+      const tz = f.ax === 'x' ? f.fix + f.nz * 4 : along;
       const near = f.outward <= 16 && (
         (vertical(hit.s) && f.ax === 'z' && Math.abs(hit.x - f.fix) <= 18) ||
         (horizontal(hit.s) && f.ax === 'x' && Math.abs(hit.z - f.fix) <= 18)
@@ -256,6 +282,13 @@
     return {roads:segs, faces:faces};
   }
 
+  for (let i = 0; i < places.length; i++) {
+    const p = places[i];
+    p.type = p.kind;
+    p.cx = (p.x0 + p.x1) / 2;
+    p.cz = (p.z0 + p.z1) / 2;
+  }
+
   root.CITY_LAYOUT = {
     id:'option1-boulevards',
     bounds:{x0:-1600, x1:1400, z0:-900, z1:3000},
@@ -264,6 +297,8 @@
     districts:districts,
     places:places,
     roads:roads,
+    river:anchors.river,
+    bridges:anchors.bridges,
     trailerPad:anchors.trailerPad,
     buildNetwork:buildNetwork
   };
