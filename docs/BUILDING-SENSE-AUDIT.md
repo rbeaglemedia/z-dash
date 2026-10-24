@@ -14,15 +14,15 @@ City ids below are the ids in `world/city.js`. PR #68 numbers the same shops dif
 | --- | --- | --- | --- |
 | NOS & Fuel Depot | 3, 7 | Drive-up | Gas station. A canopy of flat boxes, two pump islands, claim NOS at the pump. |
 | Speed & Tuning Garage | 0, 8 | Launch the app | Garage Z opens directly. Back returns to that bay, with the tune kept. |
-| Pet rescue | 14, 15 | Walk-in | A lounge. Two low pens, greet at a pen. The pet stays shorter than Ellie. |
+| Pet rescue | 14, 15 | Walk-in | A large lounge. Two low pens, greet at a pen. The pet stays shorter than Ellie. |
 | Z Company Arts | 11, 17 | Launch the app | The dance stage opens directly. BACK returns to the street in front of that mural. |
 | Z-DASH showroom | 2, 6 | Drive-up | The car stays on a cyan pad under a box frame and a glow strip. |
 | Sky-drop pad and sky tower | 1, 4 | Drive-up | A pad and a straight shaft. A bigger JUMP sign, readable from the street and from the air. |
-| Stadium pro shop | 20, 21 | Walk-in | Sign says SOCCER. Kick off starts at a goal in the room. No teleport. |
-| Builder HQ | 22, 23 | Walk-in | A desk of flat blueprint boards. Sign says BUILD. The sandbox stays outside. |
-| Player house | 5, 13 | Walk-in | Stays a home. A real room: glass panels and a cyan strip, sofa, pet bed, and sign. |
-| Retro pixel arcade | 12, 19 | Walk-in | Stays an arcade. A real room: a row of box cabinets with flat glow screens. |
-| Pizza and boba cafe | 16, 18 | Walk-in | Stays a cafe. A real room: a counter and two box tables. |
+| Stadium pro shop | 20, 21 | Walk-in | A large shop. Sign says SOCCER. Kick off starts at a goal in the room. No teleport. |
+| Builder HQ | 22, 23 | Walk-in | A large room and a desk of flat blueprint boards. Sign says BUILD. The sandbox stays outside. |
+| Player house | 5, 13 | Walk-in | Stays a home. A large room: glass panels and a cyan strip, sofa, pet bed, and sign. |
+| Retro pixel arcade | 12, 19 | Walk-in | Stays an arcade. A large room: a row of box cabinets with flat glow screens. |
+| Pizza and boba cafe | 16, 18 | Walk-in | Stays a cafe. A large room: a counter and two box tables. |
 | Neon paint studio | 9, 10 | Launch the app | Already decided. In progress with the Paint agent. |
 
 Drive-up means the car stays in the place. Walk-in means Ellie is on foot. Launch the app means skip the empty room.
@@ -50,6 +50,27 @@ Build each place from a few straight boxes and a glow strip, in cyan, magenta, l
 Where the mode is an app, skip the empty room. Walking in opens the app. A back button returns to the world, at that door, with whatever the app changed.
 
 Glow on these props is a second brighter stroke, or a thin lit box.
+
+## Interior size
+
+Standing rule from Bob. It applies to every interior in this plan, and to later ones.
+
+Interiors vary in size by use case. None will ever be as small as the current tiny rooms. Today every indoor purpose shares one shell in `world/house.js`: about 8.4 m wide, 6.3 m deep, and 3.1 m tall, and the walk stays inside an even smaller patch. That size is retired. A new interior is larger than that room.
+
+An interior can be huge. The room does not cost much of the frame, so size follows the use, within reason for that use. A house, a cafe, and a stadium shop do not have to match each other. Each one is large enough for what you do there.
+
+These walk-in places are planned as large rooms:
+
+- Player house (ids 5, 13)
+- Arcade (ids 12, 19)
+- Pizza and boba cafe (ids 16, 18)
+- Pet lounge (ids 14, 15)
+- Stadium shop (ids 20, 21)
+- Builder HQ (ids 22, 23)
+
+The large size is the space behind the door. It does not grow the shop on the map. PR #68 keeps today's footprints and heights. A bigger interior must not push a shop onto a road, a ramp, or a tunnel mouth.
+
+Paint, the garage, and the dance hall launch an app and skip the room. NOS, the showroom, and the sky-drop pad are drive-up. They are not these walk-in rooms.
 
 ## The buildings
 
@@ -89,7 +110,7 @@ What's wrong today: the empty room, a pink floor square, and a dark board. The m
 
 Parkside, id 14, sign PETS. Parkside, id 15, sign PETS.
 
-**Decided.** A walk-in lounge. Two low pens made of boxes. Greet at a pen. The pet in the room stays shorter than Ellie. If the crew page stays linked, its back button returns to the lounge door.
+**Decided.** A walk-in lounge, and a large one. Two low pens made of boxes. Greet at a pen. The pet in the room stays shorter than Ellie. If the crew page stays linked, its back button returns to the lounge door. The room is larger than today's shared shell.
 
 What's wrong today: the empty room, a low green bed, and a gold counter. OPEN CREW & PETS goes to `crew.html`. The pause menu can open Neon World, which loads the city fresh. It does not return you to the lounge. The fox in this interior draw is about twice Ellie's height. See the pet note below.
 
@@ -121,7 +142,7 @@ What's wrong today: the same teleport, no shaft. The word JUMP is too small to r
 
 Sports, id 20, sign TURBO. Sports, id 21, sign TURBO.
 
-**Decided.** A walk-in shop. The sign says SOCCER. Kick off starts at the goal in the room. Entering does not teleport the car to the far oval.
+**Decided.** A walk-in shop, and a large one. The sign says SOCCER. Kick off starts at the goal in the room. Entering does not teleport the car to the far oval. The room is larger than today's shared shell.
 
 What's wrong today: the empty room, a green rug, and a goal. The street sign says TURBO, so it does not read as soccer. KICK OFF on the button is a toast. Entering the door also teleports the car to the far stadium oval, then opens the room. You can step outside, and you are no longer at the shop.
 
@@ -129,7 +150,7 @@ What's wrong today: the empty room, a green rug, and a goal. The street sign say
 
 North of the river, id 22, sign PIXEL. Id 23, sign PIXEL.
 
-**Decided.** A walk-in desk of flat blueprint boards. The sign says BUILD. The sandbox stays outside.
+**Decided.** A large walk-in room with a desk of flat blueprint boards. The sign says BUILD. The sandbox stays outside. The room is larger than today's shared shell.
 
 What's wrong today: the empty room and one crate. The street sign says PIXEL, so it does not read as a builder. OPEN THE BLUEPRINTS is a toast about the sandbox. You can step outside. There is no blueprint app today.
 
@@ -137,7 +158,7 @@ What's wrong today: the empty room and one crate. The street sign says PIXEL, so
 
 Spawn, id 5, sign HOME. Parkside, id 13, sign HOME.
 
-**Decided.** It stays a walk-in home. The room becomes a living room of flat glass panels and a cyan strip, keeping the sofa, the pet bed, and the sign.
+**Decided.** It stays a walk-in home, and the room is large. It becomes a living room of flat glass panels and a cyan strip, keeping the sofa, the pet bed, and the sign. The room is larger than today's shared shell.
 
 This one is not the empty-room pattern. The room already has a wall color, a furniture block, a pet bed, and a sign, and you can step outside. There is no house app. It is still a dark room with three lumps, and it does not yet read as a bright modern home with glass walls.
 
@@ -145,7 +166,7 @@ This one is not the empty-room pattern. The room already has a wall color, a fur
 
 Arts, id 12, sign ARCADE. Sports, id 19, sign ARCADE.
 
-**Decided.** It stays a walk-in arcade. The room becomes a row of box cabinets with flat glow screens, and the jackpot action sits on a cabinet.
+**Decided.** It stays a walk-in arcade, and the room is large. The room becomes a row of box cabinets with flat glow screens, and the jackpot action sits on a cabinet. The room is larger than today's shared shell.
 
 What's wrong today: the empty room and two cabinets. HIT THE ARCADE is a toast from the middle of the floor. You can step outside. There is no arcade app page.
 
@@ -153,7 +174,7 @@ What's wrong today: the empty room and two cabinets. HIT THE ARCADE is a toast f
 
 Parkside, id 16, sign PIZZA. Downtown, id 18, sign PIZZA.
 
-**Decided.** It stays a walk-in cafe. The room becomes a counter and two box tables, and the order action sits at the counter.
+**Decided.** It stays a walk-in cafe, and the room is large. The room becomes a counter and two box tables, and the order action sits at the counter. The room is larger than today's shared shell.
 
 What's wrong today: the empty room and one counter. ORDER BOBA & PIZZA is a toast that adds points and NOS. You can step outside. There is no cafe app page.
 
@@ -173,12 +194,12 @@ Game code still waits for "plan approved, build it" on this plan. PR #68 has its
 | NOS canopy and pumps | Buildings agent | Exterior props on the NOS shops | Both copies. Claim at the pump. |
 | Showroom pad | Buildings agent | Exterior props on the showroom shops | Both copies. Car stays on the pad. |
 | Sky pad, straight shaft, bigger JUMP sign | Buildings agent | Props on both sky-drop buildings | The 62 m pad and the 239 m tower. Word stays JUMP. |
-| Stadium room, SOCCER sign, no teleport | Buildings agent | SOCCER room and the door | Remove the teleport to the far oval. |
-| Builder desk, BUILD sign | Buildings agent | BUILDER room and the sign | Sandbox stays outside. Do not move the HQs. |
-| Pet lounge | Buildings agent | PETS room | Pens and the greet. Not the pet-scale check. |
-| Arcade room | Buildings agent | ARCADE room | Cabinets. Not a toast in an empty room. |
-| Cafe room | Buildings agent | CAFE room | Counter and two tables. |
-| House glass room | Buildings agent | HOME room in the world | See the overlap with PRs #70, #57, and #60. |
+| Stadium room, SOCCER sign, no teleport | Buildings agent | SOCCER room and the door | A large room. Remove the teleport to the far oval. |
+| Builder desk, BUILD sign | Buildings agent | BUILDER room and the sign | A large room. Sandbox stays outside. Do not move the HQs. |
+| Pet lounge | Buildings agent | PETS room | A large room. Pens and the greet. Not the pet-scale check. |
+| Arcade room | Buildings agent | ARCADE room | A large room. Cabinets. Not a toast in an empty room. |
+| Cafe room | Buildings agent | CAFE room | A large room. Counter and two tables. |
+| House glass room | Buildings agent | HOME room in the world | A large room. See the overlap with PRs #70, #57, and #60. |
 | Interior pet scale | Anatomy Check, PR #61 (`bc-bfc8fc93`) | The anatomy checker | Flag only. A pet taller than Ellie inside a building fails. |
 | Where the shops sit | City Layout agent, PR #68 (`bc-3ff1a27b`) | Shop positions, district labels, two plaza slides | Only after Bob approves that plan. Does not build these kits. |
 | Review after the build | Architecture Check, PR #66 (`bc-c7ace59c`) | The checker | Does not build. Does not loosen a check to pass a half-built place. |
@@ -210,7 +231,7 @@ The layout agent owns where shops sit. This plan owns how a shop behaves. Either
 - The layout plan says a soccer shop still sends her to the dome, and that this needs no rewiring. That is the old behavior. Bob decided the shop is a walk-in with no teleport. The sense build removes that teleport on the SOCCER purpose. The layout build must not put it back.
 - A canopy, a pump island, a showroom pad, or a sky shaft sits on that building's parcel, or on a short drive apron on the same parcel. It does not cover a road, spawn, the runway, the river, a ramp run-up, a ramp landing, or a tunnel mouth. The layout agent leaves that apron clear when it places the shops. The place kits do not edit shop positions.
 - PR #68 already slides two plazas so ramps are not inside the new arcade and the new cafe (arcade lot one block north, pizza lot one block south). Those slides stay the layout agent's job. The arcade cabinets and the cafe tables do not change them.
-- The close-up draw reaches 170 m, and a neighborhood can put several shops in one shot. Each purpose uses one repeated kit of a few boxes. The shot does not pay for a different interior on every copy.
+- The close-up draw reaches 170 m, and a neighborhood can put several shops in one shot. Each purpose uses one repeated kit of a few boxes. The shot does not pay for a different interior on every copy. Interior size is a separate cost. Bob's rule is that those rooms can be huge, within reason for the use, because the interior does not cost much of the frame. That size stays behind the door. It does not enlarge the shop footprint on the map.
 - The approved count stays 24. Placeholder buildings stay until a look is actually built. These kits replace the empty room and the missing pad. They do not add a shop, and they do not cover a street to do it.
 
 ### What Architecture Check will look for
