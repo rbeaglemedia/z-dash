@@ -183,9 +183,9 @@ function drawRoads(cx,cz){cx=cx==null?cam.x:cx;cz=cz==null?cam.z:cz;const C=CITY
     if(Math.abs(r.x0-r.x1)<1.5){const x=r.x0,zA=Math.min(r.z0,r.z1),zB=Math.max(r.z0,r.z1);if(Math.abs(x-cx)>RS+half||zB<cz-RS||zA>cz+RS)continue;const za=Math.max(zA,cz-RS),zb=Math.min(zB,cz+RS);for(const e of[-half,half])emitZ(x+e,za,zb);}
     else if(Math.abs(r.z0-r.z1)<1.5){const z=r.z0,xA=Math.min(r.x0,r.x1),xB=Math.max(r.x0,r.x1);if(Math.abs(z-cz)>RS+half||xB<cx-RS||xA>cx+RS)continue;const xa=Math.max(xA,cx-RS),xb=Math.min(xB,cx+RS);for(const e of[-half,half])emitX(z+e,xa,xb);}}
   ctx.strokeStyle='rgba(62,230,255,.35)';ctx.lineWidth=1.2;ctx.stroke();}
-// Optional road readability. Off unless ?roads=A|B|C|D|E. One batched stroke or fill, no shadowBlur.
-function roadLook(){if(roadLook.v!=null)return roadLook.v;let v='';try{v=(new URLSearchParams(location.search).get('roads')||'').trim().toUpperCase();}catch(e){}roadLook.v=(v==='A'||v==='B'||v==='C'||v==='D'||v==='E'||v==='NOW')?v:'';return roadLook.v;}
-const ROAD_LOOK_NAME={A:'A · neon curbs',B:'B · road tint',C:'C · center dashes',D:'D · sidewalk',E:'E · quiet ground',NOW:'NOW'};
+// Road readability. Default (no flag) is B+A: purple fill plus cyan curbs. ?roads=NOW is the old look. One batched fill and one stroke, no shadowBlur.
+function roadLook(){if(roadLook.v!=null)return roadLook.v;let raw='';try{raw=(new URLSearchParams(location.search).get('roads')||'').trim().toUpperCase();}catch(e){}const known=raw==='A'||raw==='B'||raw==='C'||raw==='D'||raw==='E'||raw==='NOW'||raw==='BA';roadLook.explicit=known;roadLook.v=known?raw:'BA';return roadLook.v;}
+const ROAD_LOOK_NAME={A:'A · neon curbs',B:'B · road tint',BA:'B + A',C:'C · center dashes',D:'D · sidewalk',E:'E · quiet ground',NOW:'NOW'};
 function roadAxis(r){if(Math.abs(r.x0-r.x1)<1.5)return{ax:'z',x:r.x0,z0:Math.min(r.z0,r.z1),z1:Math.max(r.z0,r.z1),half:(r.w||20)/2};if(Math.abs(r.z0-r.z1)<1.5)return{ax:'x',z:r.z0,x0:Math.min(r.x0,r.x1),x1:Math.max(r.x0,r.x1),half:(r.w||20)/2};return null;}
 function roadNear(cx,cz,R,ok){const segs=(CITY.LAYOUT&&CITY.LAYOUT.roads)||[],out=[];for(const r of segs){if(!r||r.kind==='tunnel'||r.kind==='water'||(ok&&!ok(r)))continue;const a=roadAxis(r);if(!a)continue;
   if(a.ax==='z'){if(Math.abs(a.x-cx)>R+a.half||a.z1<cz-R||a.z0>cz+R)continue;a.z0=Math.max(a.z0,cz-R);a.z1=Math.min(a.z1,cz+R);if(a.z1-a.z0>0.8)out.push(a);}
@@ -197,14 +197,15 @@ function roadDashes(){if(roadDashes.list)return roadDashes.list;const list=[],se
       if(a.ax==='z'){const z0=a.z0+t,z1=a.z0+t1;if(Math.abs(a.x)<18&&z1>-70&&z0<1520)continue;list.push([a.x,z0,a.x,z1]);}
       else list.push([a.x0+t,a.z,a.x0+t1,a.z]);}}
   roadDashes.list=list;return list;}
-function drawRoadLook(cx,cz){const v=roadLook();if(!v||v==='E'||v==='NOW')return;const R=240,street=r=>r.kind!=='highway'&&r.kind!=='bridge';ctx.save();ctx.shadowBlur=0;
-  if(v==='A'){const list=roadNear(cx,cz,R,street);ctx.beginPath();for(const a of list){if(a.ax==='z'){pathSeg([a.x-a.half,0.03,a.z0],[a.x-a.half,0.03,a.z1]);pathSeg([a.x+a.half,0.03,a.z0],[a.x+a.half,0.03,a.z1]);}else{pathSeg([a.x0,0.03,a.z-a.half],[a.x1,0.03,a.z-a.half]);pathSeg([a.x0,0.03,a.z+a.half],[a.x1,0.03,a.z+a.half]);}}ctx.strokeStyle='#3ee6ff';ctx.lineWidth=2.2;ctx.stroke();}
-  else if(v==='B'){roadFill(roadNear(cx,cz,R,street),0.02,0);ctx.fillStyle='rgba(28,18,42,.72)';ctx.fill();}
+function drawRoadCurbs(list){ctx.beginPath();for(const a of list){if(a.ax==='z'){pathSeg([a.x-a.half,0.03,a.z0],[a.x-a.half,0.03,a.z1]);pathSeg([a.x+a.half,0.03,a.z0],[a.x+a.half,0.03,a.z1]);}else{pathSeg([a.x0,0.03,a.z-a.half],[a.x1,0.03,a.z-a.half]);pathSeg([a.x0,0.03,a.z+a.half],[a.x1,0.03,a.z+a.half]);}}ctx.strokeStyle='#3ee6ff';ctx.lineWidth=2.2;ctx.stroke();}
+function drawRoadLook(cx,cz){const v=roadLook();if(v==='E'||v==='NOW')return;const R=240,street=r=>r.kind!=='highway'&&r.kind!=='bridge';ctx.save();ctx.shadowBlur=0;
+  if(v==='BA'||v==='B'){roadFill(roadNear(cx,cz,R,street),0.02,0);ctx.fillStyle='rgba(28,18,42,.72)';ctx.fill();}
+  if(v==='BA'||v==='A')drawRoadCurbs(roadNear(cx,cz,R,street));
   else if(v==='C'){const list=roadDashes();ctx.beginPath();for(const s of list){const mx=(s[0]+s[2])/2,mz=(s[1]+s[3])/2;if(Math.abs(mx-cx)>R||Math.abs(mz-cz)>R)continue;pathSeg([s[0],0.04,s[1]],[s[2],0.04,s[3]]);}ctx.strokeStyle='#f4fbff';ctx.lineWidth=3;ctx.stroke();}
   else if(v==='D'){const list=roadNear(cx,cz,R,street);ctx.beginPath();for(const a of list){const inn=a.half,out=a.half+3.4;if(a.ax==='z'){wpoly([[a.x-out,0.015,a.z0],[a.x-inn,0.015,a.z0],[a.x-inn,0.015,a.z1],[a.x-out,0.015,a.z1]]);wpoly([[a.x+inn,0.015,a.z0],[a.x+out,0.015,a.z0],[a.x+out,0.015,a.z1],[a.x+inn,0.015,a.z1]]);}else{wpoly([[a.x0,0.015,a.z-out],[a.x1,0.015,a.z-out],[a.x1,0.015,a.z-inn],[a.x0,0.015,a.z-inn]]);wpoly([[a.x0,0.015,a.z+inn],[a.x1,0.015,a.z+inn],[a.x1,0.015,a.z+out],[a.x0,0.015,a.z+out]]);}}ctx.fillStyle='rgba(46,34,28,.9)';ctx.fill();}
   ctx.restore();}
 function drawRoadLookGround(cx,cz){if(roadLook()!=='E')return;ctx.save();ctx.shadowBlur=0;ctx.beginPath();wpoly([[cx-260,0.012,cz-260],[cx+260,0.012,cz-260],[cx+260,0.012,cz+260],[cx-260,0.012,cz+260]]);ctx.fillStyle='rgba(3,2,8,.42)';ctx.fill();ctx.restore();}
-function drawRoadLookTag(){const v=roadLook();if(!v||typeof W!=='number')return;const t=ROAD_LOOK_NAME[v];ctx.save();ctx.shadowBlur=0;ctx.font='700 18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='rgba(8,4,20,.9)';ctx.fillRect(W/2-118,8,236,30);ctx.fillStyle='#e9fbff';ctx.fillText(t,W/2,23);ctx.restore();}
+function drawRoadLookTag(){const v=roadLook();if(!roadLook.explicit||!v||typeof W!=='number')return;const t=ROAD_LOOK_NAME[v]||v;ctx.save();ctx.shadowBlur=0;ctx.font='700 18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='rgba(8,4,20,.9)';ctx.fillRect(W/2-118,8,236,30);ctx.fillStyle='#e9fbff';ctx.fillText(t,W/2,23);ctx.restore();}
 function drawCityGround(){const cx=cam.x,cz=cam.z,R=CDRAW.dist,C=CITY;ctx.save();
   drawRoadLookGround(cx,cz);
   // river + bridge decks + bank lips
