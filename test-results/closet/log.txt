@@ -1,0 +1,24 @@
+shot closet-phone
+shot closet-ipad
+shot closet-ipad-portrait
+shot closet-pc
+hands tab ok
+fingers ok
+gloves ok
+color ok
+hands color #222222
+undo ok
+autumn ok
+autumn wear {"shirt":"hoodie","hat":"beanie","hair":"long","body":"standard"}
+tiny ok
+swimsuit ok
+rotate ok
+head ratio 0.2558139534883721
+back autumn ok
+remove none
+save Everyday,Autumn,Swimsuit,Tiny,Park Day
+saved 2 female
+pets ok
+pet panel pet panel
+crew idle shirt hoodie
+crew walk shirt hoodie

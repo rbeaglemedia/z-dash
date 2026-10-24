@@ -442,6 +442,7 @@ const AUDIT_JS = String.raw`
     '#kGarageDrill .gback', '#kGarageDrill .gcrumbs button',
     '#kHome .kpzrow button', '#kHome .ktabs button', '#kHome a.ghh-go', '#kPzX', '.kpzx',
     '#bar button', '#bar a',
+    '#closet button', '#closet button span',
     '.zd-top-pause-item', '.zd-ds-top button', '.zd-ds-top a', '.zd-ds-foot button',
     '.np-modes button', '.np-top button', '.np-top a', '.np-tools button',
     '.np-pausec button', '.np-pausec a', '.np-pauseb',
@@ -829,6 +830,11 @@ const SCREENS = [
     id: 'crew', title: 'Crew',
     url: '/crew.html', viewports: PHONE_WIDE.concat(PC_LAP),
     budget: 18, wait: '#bar button', settle: 600
+  },
+  {
+    id: 'closet', title: 'Character closet',
+    url: '/char.html', viewports: ALL_VP,
+    budget: 48, wait: '#closet #clRot', settle: 700
   }
 ];
 

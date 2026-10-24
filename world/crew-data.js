@@ -12,7 +12,7 @@ const HAIRS=['short','spiky','bob','long','ponytail','buns'];
 const OUTFITS=['#3ee6ff','#ff3df2','#7cff4f','#ffb020','#ff4d5e','#b48cff','#fff04d','#ffffff'];
 const GLOWS=OUTFITS;
 const DEF={v:1,gender:'female',hair:'ponytail',outfit:'#ff3df2',glow:'#ff3df2'};
-function load(){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');if(o&&o.v===1){const c=Object.assign({},DEF,o);if(!GLOWS.includes(c.glow))c.glow=DEF.glow;c.outfit=c.glow;return c;}}catch(e){}return Object.assign({},DEF);}
+function load(){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');if(o&&(o.v===1||o.v===2)){const c=Object.assign({},DEF,o);if(o.v===2&&o.colors){if(o.colors.eye)c.glow=o.colors.eye;if(o.colors.shirt)c.outfit=o.colors.shirt;}if(o.v===1&&!GLOWS.includes(c.glow))c.glow=DEF.glow;if(!c.outfit)c.outfit=c.glow;return c;}}catch(e){}return Object.assign({},DEF);}
 let C=load();
 function save(){C.updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify(C));}catch(e){}}
 
