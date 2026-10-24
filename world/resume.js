@@ -2,8 +2,9 @@
 /* Neon World resume. Kid app only.
    Saves Ellie's spot, car/foot state, NOS bottle, and in-progress challenges
    to localStorage 'zdash.world.resume.v1'. Never reads or writes cars, pets,
-   characters, home, or paint (zdash.kid.v1, zdash.char.v1, zdash.pet.v1,
-   zdash.house.v1, zdash.neonpaint.v1, and the other profile keys).
+   characters, home, paint, or the builder
+   (zdash.kid.v1, zdash.house.v1, zdash.ellie.builder.v1, zdash.char.v1,
+   zdash.pet.v1, zdash.neonpaint.v1, and the other profile keys).
    Position is an absolute spot plus a district/road anchor. If the city
    layout changes and that spot is blocked, she gets a safe spawn and the
    challenge record stays. Writes are throttled (no per-frame storage). */

@@ -19,6 +19,7 @@ const PROTECTED = {
   'zdash.char.v1': '{"v":1,"name":"Ellie"}',
   'zdash.pet.v1': '{"v":1,"type":"fox"}',
   'zdash.house.v1': '{"v":1,"home":"loft"}',
+  'zdash.ellie.builder.v1': '{"v":1,"blocks":["hq"]}',
   'zdash.neonpaint.v1': '{"version":1,"enabled":true}'
 };
 
