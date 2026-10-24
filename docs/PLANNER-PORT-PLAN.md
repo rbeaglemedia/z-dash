@@ -187,7 +187,7 @@ The house and trailer numbers include a texture upload and a view that fills the
 The object swap stays paused until the zip from agent `bc-04ef9a95` arrives. When it does, this plan is rewritten around two slightly modified copies of the planner app:
 
 1. **Builder HQ mode.** Walls, shapes, and roofs. DEV Builder uses this on the city.
-2. **House object placement.** Ellie's Builder. Starts inside her house. Reuses the planner objects, especially the tech.
+2. **House object placement.** The drop-objects tool. Ellie tests it first in the current Neon World interiors. The same tool runs on the new world. The builders themselves stay on the new world.
 
 The venue section stays out. A following section will study the planner objects as whole sets and one by one, then propose better objects and building designs, as ideas for Bob to pick from. Those designs land on the new world page, not on the frozen Neon World. That study needs the real objects. The City Editor below does not.
 
@@ -198,10 +198,10 @@ Plan only. No editor code in this phase. Two builders sit on one editor core. Th
 | | DEV Builder | Ellie's Builder |
 | --- | --- | --- |
 | Who | Bob | Ellie, from her own house |
-| Reach | The new world page, eventually: buildings, roads, NOS stations, spawns, props, interiors | Her build area on that page only |
+| Reach | The new world page: buildings, roads, NOS stations, spawns, props, interiors | Her build area. The drop-objects tool also runs in the current interiors. The rest of her builder stays on the new world |
 | City and roads | Yes, on the Option 1 map | No. Those tools are off |
 | Save | Test first, then the new world on Bob's explicit go, with a rollback. The current Neon World is not the target | Her device only, the same way her home choices already save |
-| Menu | Hidden. A Bob-only unlock | A Build control inside her house |
+| Menu | Hidden. A Bob-only unlock. New world only | Place, inside a room. First on the current Neon World house. The fuller builder opens on the new world |
 
 The map seed is Option 1, The Boulevards (`cursor/city-layout-plan-ef23`, agent `bc-3ff1a27b`). It does not seed from today's 24 shops, and it does not seed from Option 2.
 
@@ -304,13 +304,13 @@ How she opens it:
 
 The words are Place, Turn, Done, and Undo. Palette groups are Screens, Sound, Seats, and Tables, with the tech first. A full room stops at the interior budget (under 48 instances, one video) and says "This room is full." The hero pieces the garage already saves (sofa, arcade, pet bed, dance floor) stay those checkboxes. They are not a second copy in this palette, so her builder cannot clear them.
 
-Her save is a new key, `zdash.ellie.builder.v1`:
+Her save is a new key, `zdash.ellie.builder.v1`. One list per room purpose, so a TV in the house does not appear in the arcade:
 
 ```text
-{ v: 1, area: "house", props: [{ prop, x, z, yaw, params }] }
+{ v: 1, rooms: { HOME: [{ prop, x, z, yaw, params }], ARCADE: [], CAFE: [], PETS: [], SOCCER: [], BUILDER: [] } }
 ```
 
-`params` is the catalog size, color, glow, and proportions. The write path is this key only. It does not call `saveHouse` or `walkHouseSave`. It does not patch `house` inside `zdash.kid.v1`. Clearing the site data clears this list the same way it clears her other device saves. There is no account in the cloud. DEV publish does not read or write this key. Her list draws on top of the house after the city loads, and only inside the boundary.
+`x` and `z` are metres on that room's floor, not city coordinates. `params` is the catalog size, color, glow, and proportions. The write path is this key only. It does not call `saveHouse` or `walkHouseSave`. It does not patch `house` inside `zdash.kid.v1`. Clearing the site data clears this list the same way it clears her other device saves. There is no account in the cloud. DEV publish does not read or write this key. Both worlds read this key. The current world draws it only while a walk-in room is open. The new world draws the same list in the matching room.
 
 ### Planner tools as the DEV base
 
@@ -443,18 +443,19 @@ Agent `bc-3ff1a27b` keeps ownership of Option 1. DEV consumes their file. Their 
 7. Her tools: pack A (move and turn only), **pack B** (plus duplicate, align, three sizes, measure, Floor view, four neon swatches), or pack C (B plus stick-together).
 8. New DEV tools: pack N1 (roads, stamp, NOS and spawns, minimap, FPS meter), **pack N2** (N1 plus bulk move, traffic preview, color picker), or pack N3 (N2 plus prop scatter).
 9. New world name: **Neon Bay**, The Boulevards, Z City, or Neon World 2. The section below is the full choice.
+10. Drop-objects first test: **R1** (current house, tech only), R2 (house, tech plus seats and tables), or R3 (all six current rooms at once). Same save on the new world.
 
 Bold items are the recommendation. Nothing here is built. The object swap and the review shots still wait on the planner zip. The tool names above are the ones Bob listed. The zip confirms the real functions.
 
 ## The new world
 
-Bob's decision: after the Option 1 layout lands, the current Neon World freezes. Later changes there are bug fixes and FPS fixes. Major redesigns go to a new world on its own page. That includes the DEV Builder, Ellie's Builder, the planner objects and tools, and the new building designs from the object study. This phase still does not build the page. The object swap still waits on the zip.
+Bob's decision: after the Option 1 layout lands, the current Neon World freezes. Later changes there are bug fixes and FPS fixes. Major redesigns go to a new world on its own page. That includes the DEV Builder, Ellie's Builder, the planner editor tools, and the new building designs from the object study. The exception is the drop-objects tool: Ellie tests it in the current interiors first, and the same tool runs on the new world. This phase still does not build the page or the tool. The object swap still waits on the zip.
 
 The current game stays the one she already plays.
 
 - `world.html` and `world-split.html` stay the frozen city. Adult `index.html` is not a home for the new tile.
 - Option 1, The Boulevards, is allowed to land once, as City Layout's build. That is the freeze line.
-- After the freeze, a planner wall, a remixed prop, a road drag, or a new building does not get patched into `world/city.js`.
+- After the freeze, a planner wall, a road drag, or a new building does not get patched into `world/city.js`. A dropped prop is drawn by the room painter, in room coordinates, and does not change the city file.
 - Soccer, Sky Drop, the runway, and today's drive keep working on that page.
 
 ### Its own page and tile
@@ -483,7 +484,7 @@ After the copy, the two files diverge.
 - DEV save, test, and publish write the new world's layout only.
 - Rollback restores the previous copy of that file.
 - `world/city.js` is not on either side of that write.
-- Ellie's props stay in `zdash.ellie.builder.v1` and draw on the new page only. The frozen house ignores that key.
+- City edits stay in the new world's layout file. Dropped props are the exception below: the same `zdash.ellie.builder.v1` list draws in the current walk-in rooms and in the new world's rooms.
 
 ### Shared saves, car, pet, and home
 
@@ -494,7 +495,7 @@ One device, one Ellie. The new page reads the keys the current world already rea
 | Car, paint, parts | `zdash.kid.v1` → `eq` | Same 370Z mesh. Garage Z still changes nothing except `eq`. A paint she sets in either place shows in both |
 | Pet | `zdash.kid.v1` → `pet`, and the crew data the current world already loads | Same pet, same height 0.74 m. No second pet key |
 | Home choices | `zdash.house.v1`, and the `house` object inside `zdash.kid.v1` | Wall, sign, sofa, arcade, pet bed, and dance floor stay those checkboxes. Both pages read them. The builder does not write them |
-| Her placed props | `zdash.ellie.builder.v1` | New key. The new page draws it inside her boundary. `world.html` does not read it |
+| Her placed props | `zdash.ellie.builder.v1` | New key, one list per room purpose. The current walk-in and the new world both draw it. It is not a field on the house save |
 | DEV test layout | `zdash.city.editor.v1` | This browser, the new page only |
 
 The new page may include the existing garage and house controls, and those controls keep their current write path. A new field inside `zdash.kid.v1` or `zdash.house.v1` is not how the builder stores props. Old readers keep working because the keys they already understand are unchanged.
@@ -503,6 +504,59 @@ The new page may include the existing garage and house controls, and those contr
 
 She can open NEON WORLD and the new tile from the same menu. NEON WORLD loads `world.html` and the frozen city. The new tile loads the new page and the copied layout. Drive, fly, Garage Z, the pet, and the house checkboxes work on both. A bad DEV drag rolls back the new layout and leaves the frozen city as it was.
 
+## Drop objects
+
+Plan only. This is the house object-placement mode: Ellie drops planner objects into a room, tech first. It is the one piece that runs in both worlds. The first test is the current Neon World, inside her house, for her. DEV Builder, the rest of Ellie's Builder, and the new building designs stay on the new world page.
+
+The tool is the simple form of select, move, quarter-turn, snap, undo, and Done. Pack B's extra buttons can come later. Wall drawing, layers, roads, stamps, and the color picker stay off this tool. The words are Place, Turn, Done, and Undo. Palette order is Screens, Sound, then Seats and Tables. The saved hero piece (sofa, arcade, dj, or trophy), the pet bed, the sign, and the wall theme stay the garage checkboxes. This palette does not offer a second copy of those.
+
+Both pages call one function. A prop she drops in the current house is in the new world's house, because the save is room-local and keyed by purpose.
+
+```text
+PLANNER_DROPS.list(purpose)                 → the props in zdash.ellie.builder.v1 for that purpose
+PLANNER_DROPS.parts(purpose)                → boxes in room space, facing +z, y up, metres
+PLANNER_DROPS.clamp(purpose, floor)         → pull a prop back inside that floor
+```
+
+`floor` is `{ w, d, h }` in metres, the kit she is standing in, inset 0.4 m. The tool does not store a city x or z. Enter already opens the kit for the door's purpose and remembers that door. This tool reads that purpose. Step outside still returns her to that door. The drop list does not change the door.
+
+While the room is open the city loop stays held, the way Interiors already planned. The room painter draws the shell, then the saved hero piece, then `PLANNER_DROPS.parts`. Flat fills. Glow is a brighter box. No `shadowBlur`. One video element, 256×144, and only in the room she is in. A second screen in the same room is a baked color.
+
+The cap is the shell plus the drops, together at or under 48 boxes, and one video. Interiors keeps each shell at or under 32 boxes (PR #74). A house shell of about 24 to 28 boxes leaves room for about 20 drops. Past the cap, Place says "This room is full." The meter counts boxes. It does not run a stress frame.
+
+### Where she tests it
+
+| Choice | First test | Later, same tool |
+| --- | --- | --- |
+| R1 | Current Neon World, HOME only, tech only: TV, wall screen, speaker. Recommended | The other five walk-in rooms, then the same lists on the new world |
+| R2 | Current HOME, tech plus seats and tables | Same, still skipping the saved hero pieces |
+| R3 | All six walk-in rooms on the current world at once | The new world reads the lists that already exist |
+
+This plan recommends **R1**. HOME is the room she already knows. Tech is the piece Bob asked to see. Arcade is the second room when he wants it, because that room can hold the one video on the jackpot screen. Cafe, pets, soccer shop, and Builder HQ stay empty until he says the house test is good. Paint, the garage, and the dance hall stay apps. NOS, the showroom, and the sky pad stay drive-up. Those doors do not get a Place button.
+
+The Place control sits on the house interior, after she is inside (H1). UI Polish places it. It stays off the driver HUD. The current world gets this button and the room-painter call. It does not get the DEV tools, a road edit, or a new building. That is the whole exception to the freeze.
+
+### What Interiors needs to hook
+
+Interiors agent `bc-80a1fc6f`, PR #74, branch `cursor/interiors-plan-52fc`, owns the six rooms. This plan does not edit that PR. Bob carries the notes below. The rooms are not built yet. The hook lands when Bob writes "plan approved, build it" for both plans.
+
+What their plan already gives this tool:
+
+- A kit per purpose: HOME, ARCADE, CAFE, PETS, SOCCER, BUILDER. No city id and no world coordinate in the kit. Both worlds can share it.
+- House A is 24 × 18 × 4.8 m. House B is 22 × 16 × 4.6 m. The floor size comes from the concept Bob picks. This tool reads that size. It does not bake 24 × 18 into the save.
+- The city loop is held while the room is open. Drops draw in that same painter, so they do not put the outdoor city back on the frame.
+- Saved home keys stay `zdash.house.v1` and the house object inside `zdash.kid.v1`. Theme, furniture, pet bed, and sign stay theirs. If the prop sheet from PR #60 has landed, that sheet keeps its own cap. Drops sit on the new floor beside it. They do not replace it.
+
+What to ask them for, through Bob:
+
+1. At the end of the room painter, call `PLANNER_DROPS.parts(purpose)` and draw those boxes with the same flat fills as the shell. Purpose is the door she entered.
+2. Pass the floor `{ w, d, h }` for the concept that was picked, A or B. One letter per room is their pick list. This tool follows that letter.
+3. Leave a spot for a Place control on the interior, for UI Polish. Their plaque, hero piece, and pet bed stay their draw.
+4. Keep the shell at or under 32 boxes so the shared cap of 48 still has room for her drops.
+5. Do not write `zdash.ellie.builder.v1`. This plan owns that key. Do not read it from inside the house save.
+
+What this plan will not ask them to do: move a shop, add a door, change a saved home key, or draw the new world's city. The new building designs stay on the new world, for Bob to pick from after the object study.
+
 ## What this phase does not do
 
-It does not copy the planner. It does not edit the live world, the adult page, the driver screens, Ellie's saved home, or the Garage Z link. It does not place the trailer pad in `city.js`. It does not build the City Editor or the new world page. It does not add the JR tile. It does not deploy.
+It does not copy the planner. It does not edit the live world, the adult page, the driver screens, Ellie's saved home, or the Garage Z link. It does not place the trailer pad in `city.js`. It does not build the City Editor, the drop-objects tool, or the new world page. It does not add the JR tile. It does not post on the Interiors PR. It does not deploy.
