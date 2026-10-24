@@ -1,31 +1,36 @@
 {
-  "commit": "a3f01640afe7e28d8c87a8d2ea9930c9eab66ad2",
+  "commit": "0b402be0bdad53b7f77236e6d7fd2d0e65e58c14",
   "vps": {
     "phone": {
       "pets": {
         "dog": {
           "sig": {
             "pet": "dog",
-            "phase": "sig",
-            "t": 0.667,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.967,
+            "door": 0.537,
+            "hatch": 0.305,
             "on": true,
+            "clip": {
+              "x": 1.14,
+              "y": 0.201,
+              "z": 0.939
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.591,
           "place": {
             "foot": {
-              "x": 322,
-              "y": 231.9,
-              "m": 56.58
+              "x": 262.1,
+              "y": 256,
+              "m": 62.93
             },
             "top": {
-              "x": 323.1,
-              "y": 195.4
+              "x": 262.3,
+              "y": 243.6
             },
             "car": {
               "x": 227.9,
@@ -46,16 +51,21 @@
           },
           "idle": {
             "pet": "dog",
-            "phase": "idle",
-            "t": 2.65,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.883,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.84,
+              "z": -1.38
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 400395,
+          "bytes": 405303,
           "crew": {
             "v": 1,
             "pet": "dog"
@@ -68,26 +78,31 @@
         "cat": {
           "sig": {
             "pet": "cat",
-            "phase": "sig",
-            "t": 0.667,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.95,
+            "door": 0.528,
+            "hatch": 0.284,
             "on": true,
+            "clip": {
+              "x": 1.14,
+              "y": 0.23,
+              "z": 0.933
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.56,
           "place": {
             "foot": {
-              "x": 322,
-              "y": 231.9,
-              "m": 56.58
+              "x": 261.7,
+              "y": 256,
+              "m": 62.92
             },
             "top": {
-              "x": 323.1,
-              "y": 195.4
+              "x": 261.9,
+              "y": 241.7
             },
             "car": {
               "x": 227.9,
@@ -108,16 +123,21 @@
           },
           "idle": {
             "pet": "cat",
-            "phase": "idle",
-            "t": 2.65,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.85,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.841,
+              "z": -1.4
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 400261,
+          "bytes": 405683,
           "crew": {
             "v": 1,
             "pet": "cat"
@@ -130,26 +150,31 @@
         "bunny": {
           "sig": {
             "pet": "bunny",
-            "phase": "sig",
-            "t": 0.683,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.917,
+            "door": 0.509,
+            "hatch": 0.243,
             "on": true,
+            "clip": {
+              "x": 1.144,
+              "y": 0.25,
+              "z": 0.93
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.493,
           "place": {
             "foot": {
-              "x": 322,
-              "y": 231.9,
-              "m": 56.58
+              "x": 261.5,
+              "y": 256,
+              "m": 62.93
             },
             "top": {
-              "x": 323.1,
-              "y": 195.4
+              "x": 261.7,
+              "y": 240.5
             },
             "car": {
               "x": 227.9,
@@ -170,16 +195,21 @@
           },
           "idle": {
             "pet": "bunny",
-            "phase": "idle",
-            "t": 2.65,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.85,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.842,
+              "z": -1.42
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 402239,
+          "bytes": 408072,
           "crew": {
             "v": 1,
             "pet": "bunny"
@@ -192,26 +222,31 @@
         "dragon": {
           "sig": {
             "pet": "dragon",
-            "phase": "sig",
-            "t": 0.667,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.917,
+            "door": 0.509,
+            "hatch": 0.243,
             "on": true,
+            "clip": {
+              "x": 1.144,
+              "y": 0.226,
+              "z": 0.938
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.493,
           "place": {
             "foot": {
-              "x": 322,
-              "y": 231.9,
-              "m": 56.58
+              "x": 262,
+              "y": 256.1,
+              "m": 62.95
             },
             "top": {
-              "x": 323.1,
-              "y": 195.4
+              "x": 262.1,
+              "y": 242.1
             },
             "car": {
               "x": 227.9,
@@ -232,16 +267,21 @@
           },
           "idle": {
             "pet": "dragon",
-            "phase": "idle",
-            "t": 2.616,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.817,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.845,
+              "z": -1.4
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 403868,
+          "bytes": 410109,
           "crew": {
             "v": 1,
             "pet": "dragon"
@@ -254,26 +294,31 @@
         "fox": {
           "sig": {
             "pet": "fox",
-            "phase": "sig",
-            "t": 0.667,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.95,
+            "door": 0.528,
+            "hatch": 0.284,
             "on": true,
+            "clip": {
+              "x": 1.14,
+              "y": 0.191,
+              "z": 0.939
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.56,
           "place": {
             "foot": {
-              "x": 322,
-              "y": 231.9,
-              "m": 56.58
+              "x": 262.1,
+              "y": 256,
+              "m": 62.93
             },
             "top": {
-              "x": 323.1,
-              "y": 195.4
+              "x": 262.2,
+              "y": 244.2
             },
             "car": {
               "x": 227.9,
@@ -294,16 +339,21 @@
           },
           "idle": {
             "pet": "fox",
-            "phase": "idle",
-            "t": 2.65,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.817,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.84,
+              "z": -1.38
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 398479,
+          "bytes": 404932,
           "crew": {
             "v": 1,
             "pet": "fox"
@@ -318,24 +368,25 @@
             "pet": "",
             "phase": "none",
             "t": 0,
-            "door": 0,
-            "side": 1.635,
-            "axis": "z",
+            "door": 0.009,
+            "hatch": 0,
             "on": false,
+            "clip": null,
+            "mesh": false,
             "hinge": true,
             "hingeBad": false
           },
-          "doorDelta": 0.008,
+          "doorDelta": 0,
           "hatchDelta": 0,
           "place": {
             "foot": {
-              "x": 322,
+              "x": 227.9,
               "y": 231.9,
               "m": 56.58
             },
             "top": {
-              "x": 323.1,
-              "y": 195.4
+              "x": 227.9,
+              "y": 209.5
             },
             "car": {
               "x": 227.9,
@@ -349,7 +400,7 @@
           },
           "metres": null,
           "idle": null,
-          "bytes": 385616,
+          "bytes": 385735,
           "crew": {
             "v": 1,
             "pet": "none"
@@ -363,12 +414,17 @@
       "boot": {
         "door": {
           "pet": "fox",
-          "phase": "sig",
-          "t": 0.07,
-          "door": 0.039,
-          "side": 1.635,
-          "axis": "z",
+          "phase": "takeoff",
+          "t": 0.069,
+          "door": 0.038,
+          "hatch": 0,
           "on": true,
+          "clip": {
+            "x": -0.02,
+            "y": 0.773,
+            "z": -1.12
+          },
+          "mesh": true,
           "hinge": true,
           "hingeBad": false
         },
@@ -380,7 +436,7 @@
       },
       "hover": {
         "before": "{\"v\":1,\"pet\":\"none\"}",
-        "after": "{\"crew\":\"{\\\"v\\\":1,\\\"pet\\\":\\\"none\\\"}\",\"st\":{\"pet\":\"dragon\",\"phase\":\"sig\",\"t\":0.25,\"door\":0.139,\"side\":1.635,\"axis\":\"z\",\"on\":true,\"hinge\":true,\"hingeBad\":false}}"
+        "after": "{\"crew\":\"{\\\"v\\\":1,\\\"pet\\\":\\\"none\\\"}\",\"st\":{\"pet\":\"dragon\",\"phase\":\"takeoff\",\"t\":0.25,\"door\":0.139,\"hatch\":0,\"on\":true,\"clip\":{\"x\":-0.01,\"y\":0.816,\"z\":-1.072},\"mesh\":true,\"hinge\":true,\"hingeBad\":false}}"
       }
     },
     "ipad": {
@@ -388,26 +444,31 @@
         "dog": {
           "sig": {
             "pet": "dog",
-            "phase": "sig",
-            "t": 0.683,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.967,
+            "door": 0.537,
+            "hatch": 0.305,
             "on": true,
+            "clip": {
+              "x": 1.14,
+              "y": 0.201,
+              "z": 0.939
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.591,
           "place": {
             "foot": {
-              "x": 450.7,
-              "y": 469.9,
-              "m": 79.05
+              "x": 364.8,
+              "y": 501.1,
+              "m": 84.73
             },
             "top": {
-              "x": 451.8,
-              "y": 418.8
+              "x": 365,
+              "y": 484.3
             },
             "car": {
               "x": 318.6,
@@ -428,16 +489,21 @@
           },
           "idle": {
             "pet": "dog",
-            "phase": "idle",
-            "t": 2.616,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.833,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.84,
+              "z": -1.38
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 621783,
+          "bytes": 623359,
           "crew": {
             "v": 1,
             "pet": "dog"
@@ -450,26 +516,31 @@
         "cat": {
           "sig": {
             "pet": "cat",
-            "phase": "sig",
-            "t": 0.683,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.95,
+            "door": 0.528,
+            "hatch": 0.284,
             "on": true,
+            "clip": {
+              "x": 1.14,
+              "y": 0.23,
+              "z": 0.933
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.56,
           "place": {
             "foot": {
-              "x": 450.7,
-              "y": 469.9,
-              "m": 79.05
+              "x": 364.3,
+              "y": 501.1,
+              "m": 84.72
             },
             "top": {
-              "x": 451.8,
-              "y": 418.8
+              "x": 364.5,
+              "y": 481.8
             },
             "car": {
               "x": 318.6,
@@ -490,16 +561,21 @@
           },
           "idle": {
             "pet": "cat",
-            "phase": "idle",
-            "t": 2.7,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.9,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.841,
+              "z": -1.4
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 625002,
+          "bytes": 626064,
           "crew": {
             "v": 1,
             "pet": "cat"
@@ -512,26 +588,31 @@
         "bunny": {
           "sig": {
             "pet": "bunny",
-            "phase": "sig",
-            "t": 0.667,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.966,
+            "door": 0.537,
+            "hatch": 0.304,
             "on": true,
+            "clip": {
+              "x": 1.14,
+              "y": 0.25,
+              "z": 0.93
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.591,
           "place": {
             "foot": {
-              "x": 450.7,
-              "y": 469.9,
-              "m": 79.05
+              "x": 364.1,
+              "y": 501,
+              "m": 84.72
             },
             "top": {
-              "x": 451.8,
-              "y": 418.8
+              "x": 364.2,
+              "y": 480.1
             },
             "car": {
               "x": 318.6,
@@ -552,16 +633,21 @@
           },
           "idle": {
             "pet": "bunny",
-            "phase": "idle",
-            "t": 2.633,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.833,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.842,
+              "z": -1.42
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 620164,
+          "bytes": 623620,
           "crew": {
             "v": 1,
             "pet": "bunny"
@@ -574,26 +660,31 @@
         "dragon": {
           "sig": {
             "pet": "dragon",
-            "phase": "sig",
-            "t": 0.666,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.966,
+            "door": 0.537,
+            "hatch": 0.304,
             "on": true,
+            "clip": {
+              "x": 1.14,
+              "y": 0.226,
+              "z": 0.938
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.591,
           "place": {
             "foot": {
-              "x": 450.7,
-              "y": 469.9,
-              "m": 79.05
+              "x": 364.8,
+              "y": 501.1,
+              "m": 84.73
             },
             "top": {
-              "x": 451.8,
-              "y": 418.8
+              "x": 364.9,
+              "y": 482.1
             },
             "car": {
               "x": 318.6,
@@ -614,16 +705,21 @@
           },
           "idle": {
             "pet": "dragon",
-            "phase": "idle",
-            "t": 2.666,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.833,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.845,
+              "z": -1.4
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 622685,
+          "bytes": 624251,
           "crew": {
             "v": 1,
             "pet": "dragon"
@@ -636,26 +732,31 @@
         "fox": {
           "sig": {
             "pet": "fox",
-            "phase": "sig",
-            "t": 0.75,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.983,
+            "door": 0.546,
+            "hatch": 0.325,
             "on": true,
+            "clip": {
+              "x": 1.14,
+              "y": 0.191,
+              "z": 0.939
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.621,
           "place": {
             "foot": {
-              "x": 450.7,
-              "y": 469.9,
-              "m": 79.05
+              "x": 364.8,
+              "y": 501.1,
+              "m": 84.73
             },
             "top": {
-              "x": 451.8,
-              "y": 418.8
+              "x": 365,
+              "y": 485.1
             },
             "car": {
               "x": 318.6,
@@ -676,16 +777,21 @@
           },
           "idle": {
             "pet": "fox",
-            "phase": "idle",
-            "t": 2.65,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.85,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.84,
+              "z": -1.38
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 627279,
+          "bytes": 629707,
           "crew": {
             "v": 1,
             "pet": "fox"
@@ -701,23 +807,24 @@
             "phase": "none",
             "t": 0,
             "door": 0,
-            "side": 1.635,
-            "axis": "z",
+            "hatch": 0,
             "on": false,
+            "clip": null,
+            "mesh": false,
             "hinge": true,
             "hingeBad": false
           },
-          "doorDelta": 0,
+          "doorDelta": 0.027,
           "hatchDelta": 0,
           "place": {
             "foot": {
-              "x": 450.7,
+              "x": 318.6,
               "y": 469.9,
               "m": 79.05
             },
             "top": {
-              "x": 451.8,
-              "y": 418.8
+              "x": 318.6,
+              "y": 438.5
             },
             "car": {
               "x": 318.6,
@@ -731,7 +838,7 @@
           },
           "metres": null,
           "idle": null,
-          "bytes": 600153,
+          "bytes": 599259,
           "crew": {
             "v": 1,
             "pet": "none"
@@ -748,9 +855,10 @@
           "phase": "none",
           "t": 0,
           "door": 0,
-          "side": 1.5,
-          "axis": "z",
+          "hatch": 0,
           "on": false,
+          "clip": null,
+          "mesh": false,
           "hinge": false,
           "hingeBad": false
         },
@@ -765,7 +873,7 @@
       },
       "hover": {
         "before": "{\"v\":1,\"pet\":\"none\"}",
-        "after": "{\"crew\":\"{\\\"v\\\":1,\\\"pet\\\":\\\"none\\\"}\",\"st\":{\"pet\":\"dragon\",\"phase\":\"sig\",\"t\":0.283,\"door\":0.157,\"side\":1.635,\"axis\":\"z\",\"on\":true,\"hinge\":true,\"hingeBad\":false}}"
+        "after": "{\"crew\":\"{\\\"v\\\":1,\\\"pet\\\":\\\"none\\\"}\",\"st\":{\"pet\":\"dragon\",\"phase\":\"takeoff\",\"t\":0.283,\"door\":0.157,\"hatch\":0,\"on\":true,\"clip\":{\"x\":-0.005,\"y\":0.812,\"z\":-1.043},\"mesh\":true,\"hinge\":true,\"hingeBad\":false}}"
       }
     },
     "pc": {
@@ -773,26 +881,31 @@
         "dog": {
           "sig": {
             "pet": "dog",
-            "phase": "sig",
-            "t": 0.7,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.917,
+            "door": 0.509,
+            "hatch": 0.243,
             "on": true,
+            "clip": {
+              "x": 1.144,
+              "y": 0.201,
+              "z": 0.939
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.493,
           "place": {
             "foot": {
-              "x": 521.4,
-              "y": 447.9,
-              "m": 91.54
+              "x": 423.1,
+              "y": 485.4,
+              "m": 99.84
             },
             "top": {
-              "x": 522.9,
-              "y": 388.7
+              "x": 423.3,
+              "y": 465.6
             },
             "car": {
               "x": 368.8,
@@ -813,16 +926,21 @@
           },
           "idle": {
             "pet": "dog",
-            "phase": "idle",
-            "t": 2.633,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.85,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.84,
+              "z": -1.38
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 262085,
+          "bytes": 264716,
           "crew": {
             "v": 1,
             "pet": "dog"
@@ -835,26 +953,31 @@
         "cat": {
           "sig": {
             "pet": "cat",
-            "phase": "sig",
-            "t": 0.683,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.917,
+            "door": 0.509,
+            "hatch": 0.243,
             "on": true,
+            "clip": {
+              "x": 1.144,
+              "y": 0.23,
+              "z": 0.933
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.493,
           "place": {
             "foot": {
-              "x": 521.4,
-              "y": 447.9,
-              "m": 91.54
+              "x": 422.5,
+              "y": 485.4,
+              "m": 99.82
             },
             "top": {
-              "x": 522.9,
-              "y": 388.7
+              "x": 422.7,
+              "y": 462.7
             },
             "car": {
               "x": 368.8,
@@ -875,16 +998,21 @@
           },
           "idle": {
             "pet": "cat",
-            "phase": "idle",
-            "t": 2.633,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.867,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.841,
+              "z": -1.4
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 263735,
+          "bytes": 265779,
           "crew": {
             "v": 1,
             "pet": "cat"
@@ -897,26 +1025,31 @@
         "bunny": {
           "sig": {
             "pet": "bunny",
-            "phase": "sig",
-            "t": 0.7,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.95,
+            "door": 0.528,
+            "hatch": 0.284,
             "on": true,
+            "clip": {
+              "x": 1.14,
+              "y": 0.25,
+              "z": 0.93
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.56,
           "place": {
             "foot": {
-              "x": 521.4,
-              "y": 447.9,
-              "m": 91.54
+              "x": 422.3,
+              "y": 485.2,
+              "m": 99.79
             },
             "top": {
-              "x": 522.9,
-              "y": 388.7
+              "x": 422.5,
+              "y": 460.6
             },
             "car": {
               "x": 368.8,
@@ -937,16 +1070,21 @@
           },
           "idle": {
             "pet": "bunny",
-            "phase": "idle",
-            "t": 2.616,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.833,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.842,
+              "z": -1.42
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 261887,
+          "bytes": 264548,
           "crew": {
             "v": 1,
             "pet": "bunny"
@@ -959,26 +1097,31 @@
         "dragon": {
           "sig": {
             "pet": "dragon",
-            "phase": "sig",
-            "t": 0.667,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.95,
+            "door": 0.528,
+            "hatch": 0.284,
             "on": true,
+            "clip": {
+              "x": 1.14,
+              "y": 0.226,
+              "z": 0.938
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.56,
           "place": {
             "foot": {
-              "x": 521.4,
-              "y": 447.9,
-              "m": 91.54
+              "x": 423.1,
+              "y": 485.3,
+              "m": 99.81
             },
             "top": {
-              "x": 522.9,
-              "y": 388.7
+              "x": 423.3,
+              "y": 463.1
             },
             "car": {
               "x": 368.8,
@@ -999,16 +1142,21 @@
           },
           "idle": {
             "pet": "dragon",
-            "phase": "idle",
-            "t": 2.65,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.85,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.845,
+              "z": -1.4
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 262738,
+          "bytes": 265395,
           "crew": {
             "v": 1,
             "pet": "dragon"
@@ -1021,26 +1169,31 @@
         "fox": {
           "sig": {
             "pet": "fox",
-            "phase": "sig",
-            "t": 0.717,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "takeoff",
+            "t": 0.967,
+            "door": 0.537,
+            "hatch": 0.304,
             "on": true,
+            "clip": {
+              "x": 1.14,
+              "y": 0.191,
+              "z": 0.939
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
           "doorDelta": 2.08,
-          "hatchDelta": 0,
+          "hatchDelta": 0.591,
           "place": {
             "foot": {
-              "x": 521.4,
-              "y": 447.9,
-              "m": 91.54
+              "x": 423.2,
+              "y": 485.3,
+              "m": 99.81
             },
             "top": {
-              "x": 522.9,
-              "y": 388.7
+              "x": 423.4,
+              "y": 466.5
             },
             "car": {
               "x": 368.8,
@@ -1061,16 +1214,21 @@
           },
           "idle": {
             "pet": "fox",
-            "phase": "idle",
-            "t": 2.633,
-            "door": 0.38,
-            "side": 1.635,
-            "axis": "z",
+            "phase": "fly",
+            "t": 2.85,
+            "door": 1,
+            "hatch": 1,
             "on": true,
+            "clip": {
+              "x": 0,
+              "y": 0.84,
+              "z": -1.38
+            },
+            "mesh": true,
             "hinge": true,
             "hingeBad": false
           },
-          "bytes": 263861,
+          "bytes": 266944,
           "crew": {
             "v": 1,
             "pet": "fox"
@@ -1085,24 +1243,25 @@
             "pet": "",
             "phase": "none",
             "t": 0,
-            "door": 0,
-            "side": 1.635,
-            "axis": "z",
+            "door": 0.009,
+            "hatch": 0,
             "on": false,
+            "clip": null,
+            "mesh": false,
             "hinge": true,
             "hingeBad": false
           },
-          "doorDelta": 0.003,
+          "doorDelta": 0,
           "hatchDelta": 0,
           "place": {
             "foot": {
-              "x": 521.4,
+              "x": 368.8,
               "y": 447.9,
               "m": 91.54
             },
             "top": {
-              "x": 522.9,
-              "y": 388.7
+              "x": 368.8,
+              "y": 411.6
             },
             "car": {
               "x": 368.8,
@@ -1116,7 +1275,7 @@
           },
           "metres": null,
           "idle": null,
-          "bytes": 251799,
+          "bytes": 251996,
           "crew": {
             "v": 1,
             "pet": "none"
@@ -1133,9 +1292,10 @@
           "phase": "none",
           "t": 0,
           "door": 0,
-          "side": 1.5,
-          "axis": "z",
+          "hatch": 0,
           "on": false,
+          "clip": null,
+          "mesh": false,
           "hinge": false,
           "hingeBad": false
         },
@@ -1150,7 +1310,7 @@
       },
       "hover": {
         "before": "{\"v\":1,\"pet\":\"none\"}",
-        "after": "{\"crew\":\"{\\\"v\\\":1,\\\"pet\\\":\\\"none\\\"}\",\"st\":{\"pet\":\"dragon\",\"phase\":\"sig\",\"t\":0.217,\"door\":0.12,\"side\":1.635,\"axis\":\"z\",\"on\":true,\"hinge\":true,\"hingeBad\":false}}"
+        "after": "{\"crew\":\"{\\\"v\\\":1,\\\"pet\\\":\\\"none\\\"}\",\"st\":{\"pet\":\"dragon\",\"phase\":\"takeoff\",\"t\":0.233,\"door\":0.13,\"hatch\":0,\"on\":true,\"clip\":{\"x\":-0.013,\"y\":0.815,\"z\":-1.086},\"mesh\":true,\"hinge\":true,\"hingeBad\":false}}"
       }
     }
   },
