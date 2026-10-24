@@ -1,0 +1,699 @@
+{
+  "head": "ed0adff91538d33b51ebe93628491b9c3df3add4",
+  "pageErrors": [],
+  "adult": {
+    "href": "http://127.0.0.1:35275/index.html?zdchk=adult",
+    "hasKSet": false,
+    "hasKGear": true,
+    "kidFiles": [],
+    "title": "Z-DASH · 370Z"
+  },
+  "mutate": {
+    "shown": {
+      "hi": "HI, ELLIE · ELLIE",
+      "name": "ELLIE",
+      "vol": "55",
+      "mute": "VOLUME 55",
+      "low": "LOW DETAIL: OFF",
+      "wake": "KEEP SCREEN ON: ON",
+      "units": "MPH"
+    },
+    "beforeName": "ELLIE",
+    "afterName": "GLOW UP",
+    "noteAfterName": "keep-me",
+    "carNameAfterName": "ELLIE Z",
+    "coinsAfterName": 12,
+    "shiftsAfterName": 41,
+    "eqAfterName": {
+      "paint": "cyan",
+      "windows": "win-clear",
+      "rims": "gtx04",
+      "size": 19,
+      "wheels": "w-gun",
+      "tires": "street",
+      "roof": "r-match",
+      "bumper": "bp-stock",
+      "bcan": "bc-off",
+      "nos": "n-stock",
+      "heads": "h-clear",
+      "tails": "t-red",
+      "spoiler": "none-s",
+      "spcol": "sc-match",
+      "underglow": "ug-off",
+      "caliper": "cal-red",
+      "stance": "st-stock",
+      "camber": "cb-off",
+      "lip": "lip-none",
+      "skirts": "sk-none",
+      "diffuser": "df-none",
+      "kitmat": "km-black",
+      "tips": "tip-stock",
+      "wings": "none-w",
+      "extra": "none-x",
+      "tracks": "tr-match",
+      "extras": {}
+    },
+    "houseAfterName": {
+      "wall": "neon-grid",
+      "sign": "ellie"
+    },
+    "volAfterName": "42",
+    "mutedAfterName": "1",
+    "lowAfterName": "1",
+    "wakeAfterName": "0",
+    "final": {
+      "name": "GLOW UP",
+      "note": "keep-me",
+      "carName": "ELLIE Z",
+      "coins": 12,
+      "stars": 3,
+      "shifts": 41,
+      "eq": {
+        "paint": "cyan",
+        "windows": "win-clear",
+        "rims": "gtx04",
+        "size": 19,
+        "wheels": "w-gun",
+        "tires": "street",
+        "roof": "r-match",
+        "bumper": "bp-stock",
+        "bcan": "bc-off",
+        "nos": "n-stock",
+        "heads": "h-clear",
+        "tails": "t-red",
+        "spoiler": "none-s",
+        "spcol": "sc-match",
+        "underglow": "ug-off",
+        "caliper": "cal-red",
+        "stance": "st-stock",
+        "camber": "cb-off",
+        "lip": "lip-none",
+        "skirts": "sk-none",
+        "diffuser": "df-none",
+        "kitmat": "km-black",
+        "tips": "tip-stock",
+        "wings": "none-w",
+        "extra": "none-x",
+        "tracks": "tr-match",
+        "extras": {}
+      },
+      "house": {
+        "wall": "neon-grid",
+        "sign": "ellie"
+      },
+      "vol": "42",
+      "muted": "1",
+      "low": "1",
+      "wake": "0"
+    },
+    "siblings": {
+      "zdash.house.v1": "{\"v\":1,\"wall\":\"neon-grid\",\"ellie\":true}",
+      "zdash.char.v1": "{\"who\":\"ellie\"}",
+      "zdash.pet.v1": "{\"pet\":\"dog\"}",
+      "zdash.crew.v1": "{\"v\":1,\"name\":\"ellie\"}",
+      "zdash.neonpaint.v1": "{\"version\":1,\"enabled\":true}",
+      "zdash_vinyls_v1": "{\"v\":1,\"activeId\":\"v1\"}",
+      "zdash_neon_paint_v1": "{\"v\":1,\"strokes\":1}",
+      "zdash.customdance.v1": "{\"id\":\"spin\"}",
+      "zdash.petdance.v1": "{\"id\":\"hop\"}"
+    },
+    "prefs": {
+      "name": "GLOW UP",
+      "vol": 42,
+      "muted": true,
+      "low": true,
+      "wake": false,
+      "units": "mph"
+    },
+    "storeBeforeClick": {
+      "name": "ELLIE",
+      "note": "keep-me",
+      "coins": 12,
+      "shifts": 41,
+      "carName": "ELLIE Z"
+    },
+    "bannedAfterEdit": []
+  },
+  "rows": [
+    {
+      "viewport": "phone-844x390",
+      "size": [
+        844,
+        390
+      ],
+      "touch": true,
+      "ready": true,
+      "opened": true,
+      "href": "http://127.0.0.1:35275/test/jr.html?stay=1&nokstart=1&kmenu=1&zdchk=phone-844x390",
+      "kidon": true,
+      "settingsDisplay": "none",
+      "settingsHidden": true,
+      "gearTitle": "Settings",
+      "gearHitBefore": "kGear",
+      "kSetText": "✕ SETTINGS HI, ELLIE · ELLIE NAME ELLIE SOUND VOLUME 55 SPEED MPH LOW DETAIL: OFF KEEP SCREEN ON: ON MAKE THIS ELLIE'S DEVICE DRIVER MODE switches this device back to Dad's driver app (parent passcode). LOCKS Pick which games are locked on this device (grown-up code). Coins, garage and progress stay. SHOW FPS: OFF Parent / debug: tiny frame-rate readout at the top edge of Passenger Mode (FPS, 1-second min, last spike time). Off for Ellie. SET PARENT PASSCODE CREDITS DONE",
+      "shownName": true,
+      "prefs": true,
+      "Music": false,
+      "wakeApi": true,
+      "scriptsBefore": [
+        "http://127.0.0.1:35275/test/shared/kid-idle.js",
+        "http://127.0.0.1:35275/test/shared/kid-seam.js",
+        "http://127.0.0.1:35275/test/shared/app-settings.js",
+        "http://127.0.0.1:35275/test/shared/version.js",
+        "http://127.0.0.1:35275/test/shared/ipad.js?v=28",
+        "http://127.0.0.1:35275/test/driver/roles.js"
+      ],
+      "scriptsAdded": [],
+      "bannedBefore": [],
+      "bannedAfter": [],
+      "auditErrors": [
+        {
+          "severity": "error",
+          "kind": "overlap",
+          "msg": "LOCKS overlaps DONE by 80×17px",
+          "a": "btnRelockZT",
+          "b": "kSetDone"
+        }
+      ],
+      "auditWarns": [],
+      "style": {
+        "open": true,
+        "box": {
+          "x": 182,
+          "y": 12,
+          "w": 480,
+          "h": 366,
+          "vw": 844,
+          "vh": 390
+        },
+        "panelOffscreen": false,
+        "scroll": {
+          "sw": 478,
+          "sh": 580,
+          "cw": 478,
+          "ch": 364,
+          "oy": "auto"
+        },
+        "issues": [
+          {
+            "severity": "error",
+            "kind": "menu-align",
+            "msg": "MPH text is start"
+          }
+        ]
+      },
+      "styleErrors": [
+        {
+          "severity": "error",
+          "kind": "menu-align",
+          "msg": "MPH text is start"
+        }
+      ],
+      "controls": 10,
+      "screenshot": "/workspace/test-results/kid-settings-ed0adff/screenshots/kid-settings__phone-844x390.png"
+    },
+    {
+      "viewport": "phone-390x844",
+      "size": [
+        390,
+        844
+      ],
+      "touch": true,
+      "ready": true,
+      "opened": true,
+      "href": "http://127.0.0.1:35275/test/jr.html?stay=1&nokstart=1&kmenu=1&zdchk=phone-390x844",
+      "kidon": true,
+      "settingsDisplay": "none",
+      "settingsHidden": true,
+      "gearTitle": "Settings",
+      "gearHitBefore": "kGear",
+      "kSetText": "✕ SETTINGS HI, ELLIE · ELLIE NAME ELLIE SOUND VOLUME 55 SPEED MPH LOW DETAIL: OFF KEEP SCREEN ON: ON MAKE THIS ELLIE'S DEVICE DRIVER MODE switches this device back to Dad's driver app (parent passcode). LOCKS Pick which games are locked on this device (grown-up code). Coins, garage and progress stay. SHOW FPS: OFF Parent / debug: tiny frame-rate readout at the top edge of Passenger Mode (FPS, 1-second min, last spike time). Off for Ellie. SET PARENT PASSCODE CREDITS DONE",
+      "shownName": true,
+      "prefs": true,
+      "Music": false,
+      "wakeApi": true,
+      "scriptsBefore": [
+        "http://127.0.0.1:35275/test/shared/kid-idle.js",
+        "http://127.0.0.1:35275/test/shared/kid-seam.js",
+        "http://127.0.0.1:35275/test/shared/app-settings.js",
+        "http://127.0.0.1:35275/test/shared/version.js",
+        "http://127.0.0.1:35275/test/shared/ipad.js?v=28",
+        "http://127.0.0.1:35275/test/driver/roles.js"
+      ],
+      "scriptsAdded": [],
+      "bannedBefore": [],
+      "bannedAfter": [],
+      "auditErrors": [],
+      "auditWarns": [],
+      "style": {
+        "open": true,
+        "box": {
+          "x": 8,
+          "y": 57,
+          "w": 374,
+          "h": 730,
+          "vw": 390,
+          "vh": 844
+        },
+        "panelOffscreen": false,
+        "scroll": {
+          "sw": 372,
+          "sh": 728,
+          "cw": 372,
+          "ch": 728,
+          "oy": "auto"
+        },
+        "issues": [
+          {
+            "severity": "error",
+            "kind": "menu-align",
+            "msg": "MPH text is start"
+          }
+        ]
+      },
+      "styleErrors": [
+        {
+          "severity": "error",
+          "kind": "menu-align",
+          "msg": "MPH text is start"
+        }
+      ],
+      "controls": 12,
+      "screenshot": "/workspace/test-results/kid-settings-ed0adff/screenshots/kid-settings__phone-390x844.png"
+    },
+    {
+      "viewport": "phone-667x375",
+      "size": [
+        667,
+        375
+      ],
+      "touch": true,
+      "ready": true,
+      "opened": true,
+      "href": "http://127.0.0.1:35275/test/jr.html?stay=1&nokstart=1&kmenu=1&zdchk=phone-667x375",
+      "kidon": true,
+      "settingsDisplay": "none",
+      "settingsHidden": true,
+      "gearTitle": "Settings",
+      "gearHitBefore": "kGear",
+      "kSetText": "✕ SETTINGS HI, ELLIE · ELLIE NAME ELLIE SOUND VOLUME 55 SPEED MPH LOW DETAIL: OFF KEEP SCREEN ON: ON MAKE THIS ELLIE'S DEVICE DRIVER MODE switches this device back to Dad's driver app (parent passcode). LOCKS Pick which games are locked on this device (grown-up code). Coins, garage and progress stay. SHOW FPS: OFF Parent / debug: tiny frame-rate readout at the top edge of Passenger Mode (FPS, 1-second min, last spike time). Off for Ellie. SET PARENT PASSCODE CREDITS DONE",
+      "shownName": true,
+      "prefs": true,
+      "Music": false,
+      "wakeApi": true,
+      "scriptsBefore": [
+        "http://127.0.0.1:35275/test/shared/kid-idle.js",
+        "http://127.0.0.1:35275/test/shared/kid-seam.js",
+        "http://127.0.0.1:35275/test/shared/app-settings.js",
+        "http://127.0.0.1:35275/test/shared/version.js",
+        "http://127.0.0.1:35275/test/shared/ipad.js?v=28",
+        "http://127.0.0.1:35275/test/driver/roles.js"
+      ],
+      "scriptsAdded": [],
+      "bannedBefore": [],
+      "bannedAfter": [],
+      "auditErrors": [],
+      "auditWarns": [],
+      "style": {
+        "open": true,
+        "box": {
+          "x": 94,
+          "y": 12,
+          "w": 480,
+          "h": 351,
+          "vw": 667,
+          "vh": 375
+        },
+        "panelOffscreen": false,
+        "scroll": {
+          "sw": 478,
+          "sh": 580,
+          "cw": 478,
+          "ch": 349,
+          "oy": "auto"
+        },
+        "issues": [
+          {
+            "severity": "error",
+            "kind": "menu-align",
+            "msg": "MPH text is start"
+          }
+        ]
+      },
+      "styleErrors": [
+        {
+          "severity": "error",
+          "kind": "menu-align",
+          "msg": "MPH text is start"
+        }
+      ],
+      "controls": 8,
+      "screenshot": "/workspace/test-results/kid-settings-ed0adff/screenshots/kid-settings__phone-667x375.png"
+    },
+    {
+      "viewport": "ipad-1180x820",
+      "size": [
+        1180,
+        820
+      ],
+      "touch": true,
+      "ready": true,
+      "opened": true,
+      "href": "http://127.0.0.1:35275/test/jr.html?stay=1&nokstart=1&kmenu=1&zdchk=ipad-1180x820",
+      "kidon": true,
+      "settingsDisplay": "none",
+      "settingsHidden": true,
+      "gearTitle": "Settings",
+      "gearHitBefore": "kGear",
+      "kSetText": "✕ SETTINGS HI, ELLIE · ELLIE NAME ELLIE SOUND VOLUME 55 SPEED MPH LOW DETAIL: OFF KEEP SCREEN ON: ON MAKE THIS ELLIE'S DEVICE DRIVER MODE switches this device back to Dad's driver app (parent passcode). LOCKS Pick which games are locked on this device (grown-up code). Coins, garage and progress stay. SHOW FPS: OFF Parent / debug: tiny frame-rate readout at the top edge of Passenger Mode (FPS, 1-second min, last spike time). Off for Ellie. SET PARENT PASSCODE CREDITS DONE",
+      "shownName": true,
+      "prefs": true,
+      "Music": false,
+      "wakeApi": true,
+      "scriptsBefore": [
+        "http://127.0.0.1:35275/test/shared/kid-idle.js",
+        "http://127.0.0.1:35275/test/shared/kid-seam.js",
+        "http://127.0.0.1:35275/test/shared/app-settings.js",
+        "http://127.0.0.1:35275/test/shared/version.js",
+        "http://127.0.0.1:35275/test/shared/ipad.js?v=28",
+        "http://127.0.0.1:35275/test/driver/roles.js"
+      ],
+      "scriptsAdded": [],
+      "bannedBefore": [],
+      "bannedAfter": [],
+      "auditErrors": [],
+      "auditWarns": [],
+      "style": {
+        "open": true,
+        "box": {
+          "x": 350,
+          "y": 119,
+          "w": 480,
+          "h": 582,
+          "vw": 1180,
+          "vh": 820
+        },
+        "panelOffscreen": false,
+        "scroll": {
+          "sw": 478,
+          "sh": 580,
+          "cw": 478,
+          "ch": 580,
+          "oy": "auto"
+        },
+        "issues": [
+          {
+            "severity": "error",
+            "kind": "menu-align",
+            "msg": "MPH text is start"
+          }
+        ]
+      },
+      "styleErrors": [
+        {
+          "severity": "error",
+          "kind": "menu-align",
+          "msg": "MPH text is start"
+        }
+      ],
+      "controls": 12,
+      "screenshot": "/workspace/test-results/kid-settings-ed0adff/screenshots/kid-settings__ipad-1180x820.png"
+    },
+    {
+      "viewport": "ipad-820x1180",
+      "size": [
+        820,
+        1180
+      ],
+      "touch": true,
+      "ready": true,
+      "opened": true,
+      "href": "http://127.0.0.1:35275/test/jr.html?stay=1&nokstart=1&kmenu=1&zdchk=ipad-820x1180",
+      "kidon": true,
+      "settingsDisplay": "none",
+      "settingsHidden": true,
+      "gearTitle": "Settings",
+      "gearHitBefore": "kGear",
+      "kSetText": "✕ SETTINGS HI, ELLIE · ELLIE NAME ELLIE SOUND VOLUME 55 SPEED MPH LOW DETAIL: OFF KEEP SCREEN ON: ON MAKE THIS ELLIE'S DEVICE DRIVER MODE switches this device back to Dad's driver app (parent passcode). LOCKS Pick which games are locked on this device (grown-up code). Coins, garage and progress stay. SHOW FPS: OFF Parent / debug: tiny frame-rate readout at the top edge of Passenger Mode (FPS, 1-second min, last spike time). Off for Ellie. SET PARENT PASSCODE CREDITS DONE",
+      "shownName": true,
+      "prefs": true,
+      "Music": false,
+      "wakeApi": true,
+      "scriptsBefore": [
+        "http://127.0.0.1:35275/test/shared/kid-idle.js",
+        "http://127.0.0.1:35275/test/shared/kid-seam.js",
+        "http://127.0.0.1:35275/test/shared/app-settings.js",
+        "http://127.0.0.1:35275/test/shared/version.js",
+        "http://127.0.0.1:35275/test/shared/ipad.js?v=28",
+        "http://127.0.0.1:35275/test/driver/roles.js"
+      ],
+      "scriptsAdded": [],
+      "bannedBefore": [],
+      "bannedAfter": [],
+      "auditErrors": [],
+      "auditWarns": [],
+      "style": {
+        "open": true,
+        "box": {
+          "x": 170,
+          "y": 299,
+          "w": 480,
+          "h": 582,
+          "vw": 820,
+          "vh": 1180
+        },
+        "panelOffscreen": false,
+        "scroll": {
+          "sw": 478,
+          "sh": 580,
+          "cw": 478,
+          "ch": 580,
+          "oy": "auto"
+        },
+        "issues": [
+          {
+            "severity": "error",
+            "kind": "menu-align",
+            "msg": "MPH text is start"
+          }
+        ]
+      },
+      "styleErrors": [
+        {
+          "severity": "error",
+          "kind": "menu-align",
+          "msg": "MPH text is start"
+        }
+      ],
+      "controls": 12,
+      "screenshot": "/workspace/test-results/kid-settings-ed0adff/screenshots/kid-settings__ipad-820x1180.png"
+    },
+    {
+      "viewport": "ipad-1024x768",
+      "size": [
+        1024,
+        768
+      ],
+      "touch": true,
+      "ready": true,
+      "opened": true,
+      "href": "http://127.0.0.1:35275/test/jr.html?stay=1&nokstart=1&kmenu=1&zdchk=ipad-1024x768",
+      "kidon": true,
+      "settingsDisplay": "none",
+      "settingsHidden": true,
+      "gearTitle": "Settings",
+      "gearHitBefore": "kGear",
+      "kSetText": "✕ SETTINGS HI, ELLIE · ELLIE NAME ELLIE SOUND VOLUME 55 SPEED MPH LOW DETAIL: OFF KEEP SCREEN ON: ON MAKE THIS ELLIE'S DEVICE DRIVER MODE switches this device back to Dad's driver app (parent passcode). LOCKS Pick which games are locked on this device (grown-up code). Coins, garage and progress stay. SHOW FPS: OFF Parent / debug: tiny frame-rate readout at the top edge of Passenger Mode (FPS, 1-second min, last spike time). Off for Ellie. SET PARENT PASSCODE CREDITS DONE",
+      "shownName": true,
+      "prefs": true,
+      "Music": false,
+      "wakeApi": true,
+      "scriptsBefore": [
+        "http://127.0.0.1:35275/test/shared/kid-idle.js",
+        "http://127.0.0.1:35275/test/shared/kid-seam.js",
+        "http://127.0.0.1:35275/test/shared/app-settings.js",
+        "http://127.0.0.1:35275/test/shared/version.js",
+        "http://127.0.0.1:35275/test/shared/ipad.js?v=28",
+        "http://127.0.0.1:35275/test/driver/roles.js"
+      ],
+      "scriptsAdded": [],
+      "bannedBefore": [],
+      "bannedAfter": [],
+      "auditErrors": [],
+      "auditWarns": [],
+      "style": {
+        "open": true,
+        "box": {
+          "x": 272,
+          "y": 93,
+          "w": 480,
+          "h": 582,
+          "vw": 1024,
+          "vh": 768
+        },
+        "panelOffscreen": false,
+        "scroll": {
+          "sw": 478,
+          "sh": 580,
+          "cw": 478,
+          "ch": 580,
+          "oy": "auto"
+        },
+        "issues": [
+          {
+            "severity": "error",
+            "kind": "menu-align",
+            "msg": "MPH text is start"
+          }
+        ]
+      },
+      "styleErrors": [
+        {
+          "severity": "error",
+          "kind": "menu-align",
+          "msg": "MPH text is start"
+        }
+      ],
+      "controls": 12,
+      "screenshot": "/workspace/test-results/kid-settings-ed0adff/screenshots/kid-settings__ipad-1024x768.png"
+    },
+    {
+      "viewport": "pc-1366x768",
+      "size": [
+        1366,
+        768
+      ],
+      "touch": false,
+      "ready": true,
+      "opened": true,
+      "href": "http://127.0.0.1:35275/test/jr.html?stay=1&nokstart=1&kmenu=1&zdchk=pc-1366x768",
+      "kidon": true,
+      "settingsDisplay": "none",
+      "settingsHidden": true,
+      "gearTitle": "Settings",
+      "gearHitBefore": "kGear",
+      "kSetText": "✕ SETTINGS HI, ELLIE · ELLIE NAME ELLIE SOUND VOLUME 55 SPEED MPH LOW DETAIL: OFF KEEP SCREEN ON: ON MAKE THIS ELLIE'S DEVICE DRIVER MODE switches this device back to Dad's driver app (parent passcode). LOCKS Pick which games are locked on this device (grown-up code). Coins, garage and progress stay. SHOW FPS: OFF Parent / debug: tiny frame-rate readout at the top edge of Passenger Mode (FPS, 1-second min, last spike time). Off for Ellie. SET PARENT PASSCODE CREDITS DONE",
+      "shownName": true,
+      "prefs": true,
+      "Music": false,
+      "wakeApi": true,
+      "scriptsBefore": [
+        "http://127.0.0.1:35275/test/shared/kid-idle.js",
+        "http://127.0.0.1:35275/test/shared/kid-seam.js",
+        "http://127.0.0.1:35275/test/shared/app-settings.js",
+        "http://127.0.0.1:35275/test/shared/version.js",
+        "http://127.0.0.1:35275/test/shared/ipad.js?v=28",
+        "http://127.0.0.1:35275/test/driver/roles.js"
+      ],
+      "scriptsAdded": [],
+      "bannedBefore": [],
+      "bannedAfter": [],
+      "auditErrors": [],
+      "auditWarns": [],
+      "style": {
+        "open": true,
+        "box": {
+          "x": 443,
+          "y": 93,
+          "w": 480,
+          "h": 582,
+          "vw": 1366,
+          "vh": 768
+        },
+        "panelOffscreen": false,
+        "scroll": {
+          "sw": 478,
+          "sh": 580,
+          "cw": 478,
+          "ch": 580,
+          "oy": "auto"
+        },
+        "issues": [
+          {
+            "severity": "error",
+            "kind": "menu-align",
+            "msg": "MPH text is start"
+          }
+        ]
+      },
+      "styleErrors": [
+        {
+          "severity": "error",
+          "kind": "menu-align",
+          "msg": "MPH text is start"
+        }
+      ],
+      "controls": 12,
+      "screenshot": "/workspace/test-results/kid-settings-ed0adff/screenshots/kid-settings__pc-1366x768.png"
+    },
+    {
+      "viewport": "pc-1920x1080",
+      "size": [
+        1920,
+        1080
+      ],
+      "touch": false,
+      "ready": true,
+      "opened": true,
+      "href": "http://127.0.0.1:35275/test/jr.html?stay=1&nokstart=1&kmenu=1&zdchk=pc-1920x1080",
+      "kidon": true,
+      "settingsDisplay": "none",
+      "settingsHidden": true,
+      "gearTitle": "Settings",
+      "gearHitBefore": "kGear",
+      "kSetText": "✕ SETTINGS HI, ELLIE · ELLIE NAME ELLIE SOUND VOLUME 55 SPEED MPH LOW DETAIL: OFF KEEP SCREEN ON: ON MAKE THIS ELLIE'S DEVICE DRIVER MODE switches this device back to Dad's driver app (parent passcode). LOCKS Pick which games are locked on this device (grown-up code). Coins, garage and progress stay. SHOW FPS: OFF Parent / debug: tiny frame-rate readout at the top edge of Passenger Mode (FPS, 1-second min, last spike time). Off for Ellie. SET PARENT PASSCODE CREDITS DONE",
+      "shownName": true,
+      "prefs": true,
+      "Music": false,
+      "wakeApi": true,
+      "scriptsBefore": [
+        "http://127.0.0.1:35275/test/shared/kid-idle.js",
+        "http://127.0.0.1:35275/test/shared/kid-seam.js",
+        "http://127.0.0.1:35275/test/shared/app-settings.js",
+        "http://127.0.0.1:35275/test/shared/version.js",
+        "http://127.0.0.1:35275/test/shared/ipad.js?v=28",
+        "http://127.0.0.1:35275/test/driver/roles.js"
+      ],
+      "scriptsAdded": [],
+      "bannedBefore": [],
+      "bannedAfter": [],
+      "auditErrors": [],
+      "auditWarns": [],
+      "style": {
+        "open": true,
+        "box": {
+          "x": 720,
+          "y": 249,
+          "w": 480,
+          "h": 582,
+          "vw": 1920,
+          "vh": 1080
+        },
+        "panelOffscreen": false,
+        "scroll": {
+          "sw": 478,
+          "sh": 580,
+          "cw": 478,
+          "ch": 580,
+          "oy": "auto"
+        },
+        "issues": [
+          {
+            "severity": "error",
+            "kind": "menu-align",
+            "msg": "MPH text is start"
+          }
+        ]
+      },
+      "styleErrors": [
+        {
+          "severity": "error",
+          "kind": "menu-align",
+          "msg": "MPH text is start"
+        }
+      ],
+      "controls": 12,
+      "screenshot": "/workspace/test-results/kid-settings-ed0adff/screenshots/kid-settings__pc-1920x1080.png"
+    }
+  ]
+}
