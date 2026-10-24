@@ -68,6 +68,16 @@ A heading `Ideas for Bob` may pitch new buildings. Those lines are not approval,
 
 A moved city still has to read as a city. Every building sits in a district, or in a district that touches its tag. The builder HQ stays in the north sandbox, and that sandbox does not take other purposes. Soccer stays on the east side. Nothing sits in the river. Nothing covers a street, the highway, the runway, the taxiway, or spawn. Every building has a door on a road, and that door opens onto ground a person can walk.
 
+## Interiors
+
+Standing rule from Bob. Interiors vary in size by use case. None will ever be as small as the current tiny rooms. The shared room today is about 8.4 m wide, 6.3 m deep, and 3.1 m tall. A new interior is larger than that.
+
+An interior can be huge. That room does not cost much of the frame, so the size follows the use, within reason for that use.
+
+Walk-in places are large rooms: the house, the arcade, the cafe, the pet lounge, the stadium shop, and the builder HQ. A place that launches an app, or a drive-up pad, is not one of those rooms.
+
+The large size is the space behind the door. It does not grow the shop's footprint on the map. The checker does not measure room size yet. The rule still stands for every plan.
+
 ## Purpose
 
 Each solid building has to read as its purpose at street level and from the air. The words after the bar are the ones a player can read. Bob can edit this list. A sky drop may show a helipad from the air instead of the word. A dance building may show the mural. Every other purpose needs its word readable in that view. Use straight boxes and a glow strip. Generic is a building with no named purpose: any readable word is enough.
