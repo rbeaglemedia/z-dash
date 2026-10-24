@@ -15,7 +15,8 @@
  *   4. Scale: a pet's ears stay at or below the character's hip, unless that
  *      pet is marked tall on its rig. The character, the pet, and room props
  *      stand on the floor at a sensible size in interiors, the shop, and
- *      outdoors. The room shot is the real walkPaintRoom path.
+ *      outdoors. Every interior is scored from the pixels walkPaintRoom
+ *      actually paints, and the pet has to stay at or below her hip.
  * Clothing and extra style are noted, not failed, unless they break 1-3.
  *
  *   node tools/anatomy-check.mjs --root /path/to/tree --out test-results/anatomy
@@ -1870,6 +1871,237 @@ var ANATOMY = (function () {
     return out;
   }
 
+  function womanSpanMetres() {
+    var look = girlLook() || { thigh: 0.4, shin: 0.38, torso: 0.4, neck: 0.045, head: 0.125 };
+    var hip = look.thigh + look.shin;
+    var top = hip + (look.torso || 0.4) + (look.neck || 0.045) + (look.head || 0.125) * 1.85;
+    return { hip: hip, top: top, frac: top > 0 ? hip / top : 0.54 };
+  }
+
+  function pixelRole(r, g, b) {
+    if (r < 28 && g < 22 && b < 42) return '';
+    if (r > 170 && b > 130 && g < 155 && r > g) return 'who';
+    if (g > 150 && b > 170 && r < 170 && b + 10 > r) return 'who';
+    if (r > 220 && g > 200 && b > 40 && b < 110) return 'who';
+    if (r > 165 && g > 70 && g < 210 && b < 100 && r > g + 12) return 'pet';
+    if (r > 205 && g > 155 && b > 105 && b < 205 && r > b + 15) return 'pet';
+    return '';
+  }
+
+  function judgeInterior(pet, who, frac, label, problems) {
+    if (!who || who.n < 40 || who.h < 24) {
+      problems.push({ id: 'scale-missing', priority: 4, msg: label + ' did not draw the woman' });
+      return;
+    }
+    if (!pet || pet.n < 30 || pet.h < 8) {
+      problems.push({ id: 'scale-missing', priority: 4, msg: label + ' did not draw the pet' });
+      return;
+    }
+    var hipH = who.h * frac;
+    var ratio = pet.h / who.h;
+    if (pet.h > hipH * 1.12) {
+      problems.push({ id: 'pet-scale', priority: 4, msg: label + ' pet is ' + ratio.toFixed(2) + '× her height (' + pet.h + 'px against ' + who.h + 'px). Her hip is ' + frac.toFixed(2) + ' of that.' });
+    }
+    var gap = who.maxY - pet.maxY;
+    if (gap > who.h * 0.2) problems.push({ id: 'pet-floor', priority: 4, msg: label + ' pet floats ' + Math.round(gap) + 'px above her feet' });
+    else if (pet.maxY > who.maxY + who.h * 0.18) problems.push({ id: 'pet-floor', priority: 4, msg: label + ' pet hangs ' + Math.round(pet.maxY - who.maxY) + 'px below her feet' });
+  }
+
+  function crewBoxes(live, bare) {
+    var w = live.width, h = live.height;
+    var a = live.getContext('2d').getImageData(0, 0, w, h).data;
+    var b = bare.getContext('2d').getImageData(0, 0, w, h).data;
+    function box() { return { minX: w, maxX: -1, minY: h, maxY: -1, n: 0, h: 0, rows: [] }; }
+    var pet = box(), who = box();
+    for (var y0 = 0; y0 < h; y0++) { pet.rows.push(0); who.rows.push(0); }
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var i = (y * w + x) * 4;
+        var diff = Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]);
+        if (diff < 48) continue;
+        if (b[i] < 50 && b[i + 1] > 170 && b[i + 2] < 90) continue;
+        var role = pixelRole(a[i], a[i + 1], a[i + 2]);
+        if (!role) continue;
+        var slot = role === 'pet' ? pet : who;
+        slot.n++;
+        slot.rows[y]++;
+        if (x < slot.minX) slot.minX = x;
+        if (x > slot.maxX) slot.maxX = x;
+      }
+    }
+    function longest(rows) {
+      var best = null, start = -1, empty = 0;
+      function close(end) {
+        var span = end - start;
+        if (span >= 12 && (!best || span > best.h)) best = { minY: start, maxY: end - 1, h: span };
+      }
+      for (var yy = 0; yy < rows.length; yy++) {
+        if (rows[yy] >= 4) {
+          if (start < 0) start = yy;
+          empty = 0;
+        } else if (start >= 0) {
+          empty++;
+          if (empty > 10) { close(yy - empty); start = -1; empty = 0; }
+        }
+      }
+      if (start >= 0) close(rows.length - empty);
+      return best;
+    }
+    var petRun = longest(pet.rows), whoRun = longest(who.rows);
+    if (petRun) { pet.minY = petRun.minY; pet.maxY = petRun.maxY; pet.h = petRun.h; }
+    if (whoRun) { who.minY = whoRun.minY; who.maxY = whoRun.maxY; who.h = whoRun.h; }
+    pet.rows = null;
+    who.rows = null;
+    return { pet: pet, who: who };
+  }
+
+  function measureInk(src) {
+    var w = src.width, h = src.height;
+    var a = src.getContext('2d').getImageData(0, 0, w, h).data;
+    function box() { return { n: 0, h: 0, minY: 0, maxY: 0, rows: [] }; }
+    var pet = box(), who = box();
+    for (var y0 = 0; y0 < h; y0++) { pet.rows.push(0); who.rows.push(0); }
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var i = (y * w + x) * 4;
+        if (a[i + 3] < 20) continue;
+        var role = pixelRole(a[i], a[i + 1], a[i + 2]);
+        if (!role) continue;
+        var slot = role === 'pet' ? pet : who;
+        slot.n++;
+        slot.rows[y]++;
+      }
+    }
+    function longest(rows) {
+      var best = null, start = -1, empty = 0;
+      function close(end) {
+        var span = end - start;
+        if (span >= 12 && (!best || span > best.h)) best = { minY: start, maxY: end - 1, h: span };
+      }
+      for (var yy = 0; yy < rows.length; yy++) {
+        if (rows[yy] >= 4) {
+          if (start < 0) start = yy;
+          empty = 0;
+        } else if (start >= 0) {
+          empty++;
+          if (empty > 10) { close(yy - empty); start = -1; empty = 0; }
+        }
+      }
+      if (start >= 0) close(rows.length - empty);
+      return best;
+    }
+    var petRun = longest(pet.rows), whoRun = longest(who.rows);
+    if (petRun) { pet.minY = petRun.minY; pet.maxY = petRun.maxY; pet.h = petRun.h; }
+    if (whoRun) { who.minY = whoRun.minY; who.maxY = whoRun.maxY; who.h = whoRun.h; }
+    return { pet: pet, who: who };
+  }
+
+  function paintInterior(purpose, marker) {
+    var orig = window.CREW && CREW.preview;
+    var origDraw = CanvasRenderingContext2D.prototype.drawImage;
+    var stamped = null;
+    if (marker && orig) {
+      CREW.preview = function (ctx, w, h) {
+        ctx.fillStyle = '#07010f';
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = '#00ff00';
+        ctx.fillRect(0, 0, 14, 14);
+      };
+    }
+    if (!marker) {
+      CanvasRenderingContext2D.prototype.drawImage = function (img) {
+        if (img && img.width === 360 && img.height === 480) {
+          stamped = document.createElement('canvas');
+          stamped.width = 360;
+          stamped.height = 480;
+          origDraw.call(stamped.getContext('2d'), img, 0, 0);
+        }
+        return origDraw.apply(this, arguments);
+      };
+    }
+    var opened = null;
+    try { opened = openRoom(purpose); } catch (e) { opened = { error: String(e && e.message || e) }; }
+    CanvasRenderingContext2D.prototype.drawImage = origDraw;
+    if (orig) CREW.preview = orig;
+    if (opened) opened.stamped = stamped;
+    return opened;
+  }
+
+  function runInterior() {
+    var out = { problems: [], shots: [], stats: [], note: '', ready: false };
+    if (typeof walkPaintRoom !== 'function' || !window.CREW || typeof CREW.preview !== 'function') {
+      out.note = 'This tree has no walkPaintRoom interior, so the painted-room pet check was not run here.';
+      return out;
+    }
+    out.ready = true;
+    var dims = womanSpanMetres();
+    var probe = [];
+    judgeInterior({ h: 300, maxY: 400, n: 80 }, { h: 200, maxY: 400, n: 80 }, dims.frac, 'A giant interior pet', probe);
+    if (!probe.some(function (p) { return p.id === 'pet-scale'; })) out.problems.push({ id: 'pet-scale', priority: 4, msg: 'The interior check missed a pet taller than her hip', room: 'calib', shot: '' });
+    probe = [];
+    judgeInterior({ h: Math.round(200 * dims.frac * 0.7), maxY: 400, n: 80 }, { h: 200, maxY: 400, n: 80 }, dims.frac, 'A knee-high interior pet', probe);
+    if (probe.length) out.problems.push({ id: 'pet-scale', priority: 4, msg: 'The interior check failed a pet that stays under her hip', room: 'calib', shot: '' });
+    var rooms = [
+      ['NOS', 'NOS & Fuel Depot'],
+      ['HOME', "Ellie's house"],
+      ['SHOWROOM', 'Showroom shop'],
+      ['GARAGE', 'Speed garage'],
+      ['DANCE', 'Dance studio'],
+      ['PETS', 'Pet lounge'],
+      ['CAFE', 'Pizza cafe'],
+      ['ARCADE', 'Pixel arcade'],
+      ['NEON_PAINT', 'Neon paint studio'],
+      ['SKY_DROP', 'Sky tower'],
+      ['SOCCER', 'Stadium'],
+      ['BUILDER', 'Builder HQ']
+    ];
+    rooms.forEach(function (room) {
+      var liveWrap = paintInterior(room[0], false);
+      var live = liveWrap && liveWrap.canvas;
+      if (!live) {
+        out.problems.push({ id: 'scale-missing', priority: 4, msg: room[1] + ' did not paint', room: room[1], shot: '' });
+        return;
+      }
+      var shot = canvas(live.width, live.height);
+      shot.getContext('2d').drawImage(live, 0, 0);
+      var roomSpace = false;
+      var boxes = liveWrap.stamped ? measureInk(liveWrap.stamped) : null;
+      if (!boxes || !boxes.pet || boxes.pet.n < 30 || !boxes.who || boxes.who.h < 24) {
+        var bareWrap = paintInterior(room[0], true);
+        var bare = bareWrap && bareWrap.canvas;
+        boxes = bare ? crewBoxes(shot, bare) : { pet: { n: 0, h: 0 }, who: { n: 0, h: 0 } };
+        roomSpace = true;
+      }
+      var local = [];
+      judgeInterior(boxes.pet, boxes.who, dims.frac, room[1], local);
+      var name = 'interior-' + room[0].toLowerCase().replace(/_/g, '-') + '.png';
+      if (roomSpace && boxes.who && boxes.who.h > 24) {
+        var g = shot.getContext('2d');
+        var hipY = boxes.who.maxY - boxes.who.h * dims.frac;
+        g.save();
+        g.strokeStyle = '#ff4d8d';
+        g.lineWidth = 2;
+        g.setLineDash([6, 4]);
+        g.beginPath();
+        g.moveTo(8, hipY);
+        g.lineTo(shot.width - 8, hipY);
+        g.stroke();
+        g.restore();
+      }
+      store(name, shot, null, room[1] + '. Pink dashes are her hip.');
+      out.shots.push(name);
+      local.forEach(function (p) { p.room = room[1]; p.shot = name; out.problems.push(p); });
+      out.stats.push({
+        room: room[1],
+        petH: boxes.pet ? boxes.pet.h : 0,
+        whoH: boxes.who ? boxes.who.h : 0,
+        ratio: boxes.pet && boxes.who && boxes.who.h ? +(boxes.pet.h / boxes.who.h).toFixed(3) : null,
+        hip: +dims.frac.toFixed(3)
+      });
+    });
+    return out;
+  }
+
   function judgeWings(box, label) {
     var probs = [];
     if (!box || box.missing.length) {
@@ -2252,14 +2484,19 @@ var ANATOMY = (function () {
 
     var scale = runScale();
     var garage = runGarage();
+    var interior = runInterior();
     if (window.CREWDATA && CREWDATA.PET_RIG && CREWDATA.PET_RIG.bunny) {
       petIssues('bunny').forEach(function (msg) { petFindings.push(msg); });
     }
     (scale.shots || []).forEach(keep);
     (garage.shots || []).forEach(keep);
-    var scaleShot = (garage.shots || []).filter(function (s) { return s.indexOf('garage-fox-sig') === 0; })[0] || (scale.shots || []).filter(function (s) { return s.indexOf('scale-home-') === 0; })[0] || (scale.shots || [])[0] || '';
+    (interior.shots || []).forEach(keep);
+    var scaleShot = (interior.shots || []).filter(function (s) { return s.indexOf('interior-nos') === 0; })[0] || (garage.shots || []).filter(function (s) { return s.indexOf('garage-fox-sig') === 0; })[0] || (scale.shots || []).filter(function (s) { return s.indexOf('scale-home-') === 0; })[0] || (scale.shots || [])[0] || '';
     (scale.problems || []).concat(garage.problems || []).forEach(function (p) {
       cases.push({ name: p.msg.slice(0, 48), problems: [p], shot: scaleShot });
+    });
+    (interior.problems || []).forEach(function (p) {
+      cases.push({ name: p.room || p.msg.slice(0, 48), problems: [p], shot: p.shot || scaleShot });
     });
 
     var findings = mergeFindings(cases);
@@ -2302,7 +2539,8 @@ var ANATOMY = (function () {
       msgs: []
     });
     var garageFails = (garage.problems || []).length;
-    if ((scale.ready || garage.ready) && !(scale.problems || []).length && !garageFails) {
+    var interiorFails = (interior.problems || []).length;
+    if ((scale.ready || garage.ready || interior.ready) && !(scale.problems || []).length && !garageFails && !interiorFails) {
       var bits = (scale.stats || []).filter(function (s) { return s.where !== 'prop'; }).map(function (s) {
         return s.where + ' ' + s.type + ' top ' + s.petTop + 'm, feet ' + s.petBot + 'm, character ' + s.charTop + 'm, hip ' + s.hip + 'm';
       });
@@ -2311,13 +2549,16 @@ var ANATOMY = (function () {
         else if (s.mode === 'wings') bits.push('garage ' + s.type + ' ' + s.pose + ' y ' + s.petBot + ' to ' + s.petTop + 'm, tall ' + s.charTop + 'm');
         else bits.push('garage ' + s.type + ' ' + s.pose + ' top ' + s.petTop + 'm (' + s.ratio + ' of her), feet ' + s.petBot + 'm');
       });
+      (interior.stats || []).forEach(function (s) {
+        bits.push(s.room + ' pet ' + s.ratio + ' of her height, hip line ' + s.hip);
+      });
       findings.push({
         id: 'scale-held',
         severity: 'note',
         priority: 9,
         title: 'Pets stay at or below her hip, and everyone stands on the floor',
         detail: bits.join('. ') + '.',
-        shots: (scale.shots || []).concat(garage.shots || []),
+        shots: (scale.shots || []).concat(garage.shots || []).concat(interior.shots || []),
         views: [],
         msgs: []
       });
@@ -2334,7 +2575,7 @@ var ANATOMY = (function () {
     });
 
     var blocking = findings.filter(function (f) { return f.severity === 'fail' && f.priority <= 3; });
-    var scaleFails = (scale.problems || []).length + garageFails;
+    var scaleFails = (scale.problems || []).length + garageFails + interiorFails;
     var coverage = closetOn ? [
       'Closet preview, idle front, idle side, idle back, on-foot idle',
       'Body and clothes that can change the silhouette: short body, bob, long hair, hoodie, jacket, shorts, skirt, boots, gloves',
@@ -2346,6 +2587,17 @@ var ANATOMY = (function () {
       'Pets: ' + (window.CREWDATA && CREWDATA.PET_RIG ? Object.keys(CREWDATA.PET_RIG).join(', ') : 'none') + ' joint check',
       'Scale: pet beside the character in the house, the showroom shop, and outdoors, plus room props on the floor'
     ];
+    if (interior.ready) coverage.push('Interiors: the pet and the woman measured in the painted room for the depot, the house, the shop, and every other building');
+    if (interior.note) findings.push({
+      id: 'interior-skip',
+      severity: 'note',
+      priority: 9,
+      title: 'Interior pet check was not run on this tree',
+      detail: interior.note,
+      shots: [],
+      views: [],
+      msgs: []
+    });
     if (garage.ready) coverage.push((garage.stats || []).some(function (s) { return s.mode === 'wings'; })
       ? 'Garage turntable: dog, cat, bunny, dragon, and fox through the wings takeoff, the cargo ride, and the open-hatch stand'
       : 'Garage turntable: dog, cat, bunny, dragon, and fox in the signature pose and at idle, standing outside the car');
@@ -2354,8 +2606,9 @@ var ANATOMY = (function () {
       calib: calib,
       findings: findings,
       pets: { ok: petFindings.length === 0, findings: petFindings },
-      scale: { ok: scaleFails === 0, ready: !!(scale.ready || garage.ready), stats: (scale.stats || []).concat(garage.stats || []), note: scale.note || '' },
+      scale: { ok: scaleFails === 0, ready: !!(scale.ready || garage.ready || interior.ready), stats: (scale.stats || []).concat(garage.stats || []), note: scale.note || '' },
       garage: { ok: garageFails === 0, ready: !!garage.ready, stats: garage.stats || [], note: garage.note || '' },
+      interior: { ok: interiorFails === 0, ready: !!interior.ready, stats: interior.stats || [], note: interior.note || '' },
       passes: closetOn ? passesFrom(cases, findings) : [],
       coverage: coverage,
       shotNames: shotNames,
