@@ -216,6 +216,20 @@ flowchart TD
   weather --> traffic
 ```
 
+## Frozen Neon World
+
+After the Option 1 Boulevards bundle (plan PR #68, build PR #85), `world.html` and `world-split.html` are frozen except for bug fixes and FPS fixes. The minimap follow-through for that same map (PR #86) is part of the bundle.
+
+Major redesigns belong on a new world page, not on those two files:
+
+- Builder mode
+- Planner objects (`world/planner-props.js`, `docs/planner/`, `docs/PLANNER-PORT-PLAN.md`, `test/planner-port/`, the room-place hook)
+- New building and room designs (`world/style-sampler.js`, `docs/STYLE-SAMPLER.md`, `docs/INTERIORS-PLAN.md`, `docs/interiors/`)
+
+A plan that only has docs still counts. If it does not add the new page, the checker flags it before the build lands on the frozen pages.
+
+The new world page has to keep Ellie's shared saves. Same keys: `zdash.kid.v1`, `zdash.house.v1`, `zdash.char.v1`, `zdash.pet.v1`, `zdash.crew.v1`, `zdash.neonpaint.v1`, `zdash_vinyls_v1`, `zdash_neon_paint_v1`, `zdash_garage_v1`, `zdash_paint3d_v1`, `zdash.customdance.v1`, `zdash.petdance.v1`. A new `zdash.kid.v2` (or any sibling key) splits Garage, Home, paint, crew, and pets from the current world. The world spot key `zdash.world.resume.v1` and the door-return key `zdash.neonworld.session.v1` are per visit, not those shared profile saves.
+
 ## Both pages
 
 `world.html` and `world-split.html` must reference the same script paths (the `?v=` query is compared separately to `ZD_WORLD`). The hidden preview copies are `test/world.html` and `test/world-split.html`. A new `world/*.js` module has to be on the live JR page, not only on `world-split.html`.

@@ -4,20 +4,21 @@ Base: `origin/main`.
 
 | PR | Title | Gaps | Owner |
 | --- | --- | --- | --- |
-| #87 | Room hook for placed furniture and screens | Script ?v= does not match ZD_WORLD 30; Cache version was not bumped | Neon World Interiors (`cursor/room-place-hook-52fc`, PR #87) |
+| #88 | Add the kid-app integration map and checker | none | — |
+| #87 | Room hook for placed furniture and screens | Script ?v= does not match ZD_WORLD 30; Cache version was not bumped; Major redesign belongs on a new world page, not the frozen Neon World | Neon World Interiors (`cursor/room-place-hook-52fc`, PR #87) |
 | #86 | Minimap follows the boulevard city layout | Hidden /test preview does not load world/city-layout.js; Script ?v= does not match ZD_WORLD 31; Minimap zoom span was not updated for the new city size; Weather bands are stored and nothing draws them | Neon World minimap (split-map) (`cursor/minimap-boulevards-f039`, PR #86); Neon World minimap (split-map) (`split-map`, PR #37); No weather agent yet |
 | #85 | Option 1 boulevards, NOS stations, and a fresh minimap | Hidden /test preview does not load world/city-layout.js, world/gl-city.js, world/nos-station.js, world/resume-safe.js; Adult index.html was edited; Minimap zoom span was not updated for the new city size; Weather bands are stored and nothing draws them | Neon world city layout plan (`cursor/city-boulevards-ef23`, PR #85); Neon World minimap (split-map) (`split-map`, PR #37); No weather agent yet |
 | #84 | Add the 370Z design check | none | — |
-| #83 | Lazy-load adult driver code out of the Kid App menu | none | — |
-| #82 | Planner port plan and stand-in proof | Interiors and props do not use the shared catalog | Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) |
-| #81 | Style sampler: eight rooms, furnished from the planner catalog | Script ?v= does not match ZD_WORLD 30; Cache version was not bumped; Interiors do not use the shared prop catalog | Neon World Interiors (`cursor/style-sampler-52fc`, PR #81); Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) |
+| #83 | Keep adult driver code off the Kid App menu and settings | none | — |
+| #82 | Planner port plan and stand-in proof | Major redesign belongs on a new world page, not the frozen Neon World; Interiors and props do not use the shared catalog | Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82); Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) |
+| #81 | Style sampler: eight rooms, furnished from the planner catalog | Script ?v= does not match ZD_WORLD 30; Cache version was not bumped; Major redesign belongs on a new world page, not the frozen Neon World; Interiors do not use the shared prop catalog | Neon World Interiors (`cursor/style-sampler-52fc`, PR #81); Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) |
 | #80 | Idle Kid App Spotify, OBD, and cross-app links on /test/ | none | — |
 | #79 | Save Ellie's Neon World spot so she can resume a challenge | Hidden /test preview does not load world/resume.js; Cache version was not bumped | Neon World Save & Resume (`cursor/world-save-resume-b8a9`, PR #79) |
 | #78 | Pose near traffic on the current photo | Script ?v= does not match ZD_WORLD 30; Cache version was not bumped | Neon World Traffic Physics (`cursor/traffic-option-b-2bdb`, PR #78) |
 | #77 | Open Garage Z and the dance stage from their buildings | Script ?v= does not match ZD_WORLD 30; Cache version was not bumped | Ellie's Neon Drawing agent (`cursor/garage-dance-doors-0eec`, PR #77) |
 | #76 | NOS drive-up station — canopy, two pumps, claim at the pump | JR page and world-split load different scripts; Hidden /test preview does not load world/gl-city.js, world/nos-station.js; Adult index.html was edited; Resume spots were not rechecked against the NOS pads | Neon World buildings glow WebGL (`cursor/nos-driveup-58d4`, PR #76); Neon World Save & Resume (`cursor/world-save-resume-b8a9`, PR #79) |
 | #75 | Give walking characters chest and back depth | Cache version was not bumped | Neon World character + pet (`cursor/torso-depth-b5e7`, PR #75) |
-| #74 | Interiors plan: a daylight room and a glow-strip room for each walk-in | before build: interiors | Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) |
+| #74 | Interiors plan: a daylight room and a glow-strip room for each walk-in | Major redesign belongs on a new world page, not the frozen Neon World / before build: interiors | Neon World Interiors (`cursor/interiors-plan-52fc`, PR #74); Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) |
 | #73 | Traffic plan: pose the sprite, do not clone the 3D car | none | Neon World Traffic Physics |
 | #72 | Kid App dashboard is its own menu tile | none | — |
 | #71 | Open Neon Paint from its building and come back to the same world | Script ?v= does not match ZD_WORLD 30; Cache version was not bumped | Ellie's Neon Drawing agent (`cursor/neon-paint-studio-door-0eec`, PR #71) |
@@ -55,6 +56,18 @@ Base: `origin/main`.
 | #17 | Build a dome stadium and west tunnel around the bigger pitch | Cache version was not bumped; Soccer field moved and the minimap fallback did not | Neon World car soccer field (`split-soccer`, PR #17); Neon World minimap (split-map) (`split-map`, PR #37) |
 
 
+## PR #88 Add the kid-app integration map and checker
+
+## Integration check
+
+Kid App cross-system pass for PR #88 — Add the kid-app integration map and checker.
+
+Systems touched: none.
+
+No missing dependents. Both pages, cache, and the saved-key check did not flag this diff.
+Map: `docs/INTEGRATION-MAP.md`. Tool: `node tools/integration-check.js --pr 88`.
+
+
 ## PR #87 Room hook for placed furniture and screens
 
 ## Integration check
@@ -67,6 +80,7 @@ Systems touched: Planner props, Interiors.
 
 - **Script ?v= does not match ZD_WORLD 30.** Owner: Neon World Interiors (`cursor/room-place-hook-52fc`, PR #87). world.html / world-split.html advertise ?v=30, 33 while shared/version.js ZD_WORLD is 30. One token has to win, and it has to be the cache build.
 - **Cache version was not bumped.** Owner: Neon World Interiors (`cursor/room-place-hook-52fc`, PR #87). Kid runtime changed (world-split.html, world.html, world/house.js, world/planner-props.js, world/style-sampler.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move.
+- **Major redesign belongs on a new world page, not the frozen Neon World.** Owner: Neon World Interiors (`cursor/room-place-hook-52fc`, PR #87). After the Option 1 Boulevards bundle, world.html and world-split.html take bug and FPS fixes only. This PR adds planner objects and new building designs. This branch wires it into world.html and world-split.html (the frozen Neon World). Take it back off those pages. Build it on a new world page, and keep Ellie's shared save keys (zdash.kid.v1, zdash.house.v1, zdash.char.v1, zdash.pet.v1, zdash.crew.v1, zdash.neonpaint.v1, zdash_vinyls_v1, zdash_neon_paint_v1, zdash_garage_v1, zdash_paint3d_v1, zdash.customdance.v1, zdash.petdance.v1).
 
 Map: `docs/INTEGRATION-MAP.md`. Tool: `node tools/integration-check.js --pr 87`.
 
@@ -125,11 +139,11 @@ No missing dependents. Both pages, cache, and the saved-key check did not flag t
 Map: `docs/INTEGRATION-MAP.md`. Tool: `node tools/integration-check.js --pr 84`.
 
 
-## PR #83 Lazy-load adult driver code out of the Kid App menu
+## PR #83 Keep adult driver code off the Kid App menu and settings
 
 ## Integration check
 
-Kid App cross-system pass for PR #83 — Lazy-load adult driver code out of the Kid App menu.
+Kid App cross-system pass for PR #83 — Keep adult driver code off the Kid App menu and settings.
 
 Systems touched: none.
 
@@ -147,6 +161,7 @@ Systems touched: Planner props.
 
 ### Fix on this branch
 
+- **Major redesign belongs on a new world page, not the frozen Neon World.** Owner: Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82). After the Option 1 Boulevards bundle, world.html and world-split.html take bug and FPS fixes only. This PR adds planner objects. This branch does not add the new page yet, so the work still points at the frozen Neon World. Build it on a new world page, and keep Ellie's shared save keys (zdash.kid.v1, zdash.house.v1, zdash.char.v1, zdash.pet.v1, zdash.crew.v1, zdash.neonpaint.v1, zdash_vinyls_v1, zdash_neon_paint_v1, zdash_garage_v1, zdash_paint3d_v1, zdash.customdance.v1, zdash.petdance.v1).
 - **Interiors and props do not use the shared catalog.** Owner: Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81). The prop list is on this branch and world/house.js, world/detail.js, world/walk-items.js, world/style-sampler.js do not reference PROP-CATALOG or PLANNER_PROPS. Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) must place from that catalog. Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82) keeps it the only list.
 
 Map: `docs/INTEGRATION-MAP.md`. Tool: `node tools/integration-check.js --pr 82`.
@@ -164,6 +179,7 @@ Systems touched: Interiors.
 
 - **Script ?v= does not match ZD_WORLD 30.** Owner: Neon World Interiors (`cursor/style-sampler-52fc`, PR #81). world.html / world-split.html advertise ?v=30, 31 while shared/version.js ZD_WORLD is 30. One token has to win, and it has to be the cache build.
 - **Cache version was not bumped.** Owner: Neon World Interiors (`cursor/style-sampler-52fc`, PR #81). Kid runtime changed (world-split.html, world.html, world/house.js, world/style-sampler.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move.
+- **Major redesign belongs on a new world page, not the frozen Neon World.** Owner: Neon World Interiors (`cursor/style-sampler-52fc`, PR #81). After the Option 1 Boulevards bundle, world.html and world-split.html take bug and FPS fixes only. This PR adds new building designs. This branch wires it into world.html and world-split.html (the frozen Neon World). Take it back off those pages. Build it on a new world page, and keep Ellie's shared save keys (zdash.kid.v1, zdash.house.v1, zdash.char.v1, zdash.pet.v1, zdash.crew.v1, zdash.neonpaint.v1, zdash_vinyls_v1, zdash_neon_paint_v1, zdash_garage_v1, zdash_paint3d_v1, zdash.customdance.v1, zdash.petdance.v1).
 - **Interiors do not use the shared prop catalog.** Owner: Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81). This branch changes interiors or walk-in props and does not reference docs/planner/PROP-CATALOG.json. Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82) owns the catalog (PR #82). Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) has to place sofas, counters, and kit pieces from it instead of a second size list.
 
 Map: `docs/INTEGRATION-MAP.md`. Tool: `node tools/integration-check.js --pr 81`.
@@ -272,6 +288,10 @@ Map: `docs/INTEGRATION-MAP.md`. Tool: `node tools/integration-check.js --pr 75`.
 Kid App cross-system pass for PR #74 — Interiors plan: a daylight room and a glow-strip room for each walk-in.
 
 Systems touched: Interiors.
+
+### Fix on this branch
+
+- **Major redesign belongs on a new world page, not the frozen Neon World.** Owner: Neon World Interiors (`cursor/interiors-plan-52fc`, PR #74). After the Option 1 Boulevards bundle, world.html and world-split.html take bug and FPS fixes only. This PR adds new building designs and builders. This branch does not add the new page yet, so the work still points at the frozen Neon World. Build it on a new world page, and keep Ellie's shared save keys (zdash.kid.v1, zdash.house.v1, zdash.char.v1, zdash.pet.v1, zdash.crew.v1, zdash.neonpaint.v1, zdash_vinyls_v1, zdash_neon_paint_v1, zdash_garage_v1, zdash_paint3d_v1, zdash.customdance.v1, zdash.petdance.v1).
 
 ### Before this plan is built
 

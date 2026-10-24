@@ -2,6 +2,24 @@
   "base": "origin/main",
   "reports": [
     {
+      "pr": 88,
+      "title": "Add the kid-app integration map and checker",
+      "branch": "origin/cursor/integration-check-b88c",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/88",
+      "agent": "",
+      "systems": [],
+      "gaps": [],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
       "pr": 87,
       "title": "Room hook for placed furniture and screens",
       "branch": "origin/cursor/room-place-hook-52fc",
@@ -29,6 +47,15 @@
           "owner": "Neon World Interiors (`cursor/room-place-hook-52fc`, PR #87)",
           "ownerId": "self",
           "detail": "Kid runtime changed (world-split.html, world.html, world/house.js, world/planner-props.js, world/style-sampler.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        },
+        {
+          "severity": "gap",
+          "id": "frozen-world",
+          "system": "pages",
+          "summary": "Major redesign belongs on a new world page, not the frozen Neon World",
+          "owner": "Neon World Interiors (`cursor/room-place-hook-52fc`, PR #87)",
+          "ownerId": "self",
+          "detail": "After the Option 1 Boulevards bundle, world.html and world-split.html take bug and FPS fixes only. This PR adds planner objects and new building designs. This branch wires it into world.html and world-split.html (the frozen Neon World). Take it back off those pages. Build it on a new world page, and keep Ellie's shared save keys (zdash.kid.v1, zdash.house.v1, zdash.char.v1, zdash.pet.v1, zdash.crew.v1, zdash.neonpaint.v1, zdash_vinyls_v1, zdash_neon_paint_v1, zdash_garage_v1, zdash_paint3d_v1, zdash.customdance.v1, zdash.petdance.v1)."
         }
       ],
       "notes": [],
@@ -189,7 +216,7 @@
     },
     {
       "pr": 83,
-      "title": "Lazy-load adult driver code out of the Kid App menu",
+      "title": "Keep adult driver code off the Kid App menu and settings",
       "branch": "origin/cursor/kid-lazy-driver-9e5c",
       "url": "https://github.com/rbeaglemedia/z-dash/pull/83",
       "agent": "",
@@ -215,6 +242,15 @@
         "planner"
       ],
       "gaps": [
+        {
+          "severity": "gap",
+          "id": "frozen-world",
+          "system": "pages",
+          "summary": "Major redesign belongs on a new world page, not the frozen Neon World",
+          "owner": "Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82)",
+          "ownerId": "self",
+          "detail": "After the Option 1 Boulevards bundle, world.html and world-split.html take bug and FPS fixes only. This PR adds planner objects. This branch does not add the new page yet, so the work still points at the frozen Neon World. Build it on a new world page, and keep Ellie's shared save keys (zdash.kid.v1, zdash.house.v1, zdash.char.v1, zdash.pet.v1, zdash.crew.v1, zdash.neonpaint.v1, zdash_vinyls_v1, zdash_neon_paint_v1, zdash_garage_v1, zdash_paint3d_v1, zdash.customdance.v1, zdash.petdance.v1)."
+        },
         {
           "severity": "gap",
           "id": "catalog",
@@ -262,6 +298,15 @@
           "owner": "Neon World Interiors (`cursor/style-sampler-52fc`, PR #81)",
           "ownerId": "self",
           "detail": "Kid runtime changed (world-split.html, world.html, world/house.js, world/style-sampler.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        },
+        {
+          "severity": "gap",
+          "id": "frozen-world",
+          "system": "pages",
+          "summary": "Major redesign belongs on a new world page, not the frozen Neon World",
+          "owner": "Neon World Interiors (`cursor/style-sampler-52fc`, PR #81)",
+          "ownerId": "self",
+          "detail": "After the Option 1 Boulevards bundle, world.html and world-split.html take bug and FPS fixes only. This PR adds new building designs. This branch wires it into world.html and world-split.html (the frozen Neon World). Take it back off those pages. Build it on a new world page, and keep Ellie's shared save keys (zdash.kid.v1, zdash.house.v1, zdash.char.v1, zdash.pet.v1, zdash.crew.v1, zdash.neonpaint.v1, zdash_vinyls_v1, zdash_neon_paint_v1, zdash_garage_v1, zdash_paint3d_v1, zdash.customdance.v1, zdash.petdance.v1)."
         },
         {
           "severity": "gap",
@@ -527,6 +572,15 @@
         "interiors"
       ],
       "gaps": [
+        {
+          "severity": "gap",
+          "id": "frozen-world",
+          "system": "pages",
+          "summary": "Major redesign belongs on a new world page, not the frozen Neon World",
+          "owner": "Neon World Interiors (`cursor/interiors-plan-52fc`, PR #74)",
+          "ownerId": "self",
+          "detail": "After the Option 1 Boulevards bundle, world.html and world-split.html take bug and FPS fixes only. This PR adds new building designs and builders. This branch does not add the new page yet, so the work still points at the frozen Neon World. Build it on a new world page, and keep Ellie's shared save keys (zdash.kid.v1, zdash.house.v1, zdash.char.v1, zdash.pet.v1, zdash.crew.v1, zdash.neonpaint.v1, zdash_vinyls_v1, zdash_neon_paint_v1, zdash_garage_v1, zdash_paint3d_v1, zdash.customdance.v1, zdash.petdance.v1)."
+        },
         {
           "severity": "before-build",
           "id": "catalog",
@@ -1794,12 +1848,20 @@
   ],
   "rows": [
     {
+      "pr": 88,
+      "title": "Add the kid-app integration map and checker",
+      "gaps": "none",
+      "owner": "—",
+      "gapCount": 0,
+      "nowCount": 0
+    },
+    {
       "pr": 87,
       "title": "Room hook for placed furniture and screens",
-      "gaps": "Script ?v= does not match ZD_WORLD 30; Cache version was not bumped",
+      "gaps": "Script ?v= does not match ZD_WORLD 30; Cache version was not bumped; Major redesign belongs on a new world page, not the frozen Neon World",
       "owner": "Neon World Interiors (`cursor/room-place-hook-52fc`, PR #87)",
-      "gapCount": 2,
-      "nowCount": 2
+      "gapCount": 3,
+      "nowCount": 3
     },
     {
       "pr": 86,
@@ -1827,7 +1889,7 @@
     },
     {
       "pr": 83,
-      "title": "Lazy-load adult driver code out of the Kid App menu",
+      "title": "Keep adult driver code off the Kid App menu and settings",
       "gaps": "none",
       "owner": "—",
       "gapCount": 0,
@@ -1836,18 +1898,18 @@
     {
       "pr": 82,
       "title": "Planner port plan and stand-in proof",
-      "gaps": "Interiors and props do not use the shared catalog",
-      "owner": "Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
-      "gapCount": 1,
-      "nowCount": 1
+      "gaps": "Major redesign belongs on a new world page, not the frozen Neon World; Interiors and props do not use the shared catalog",
+      "owner": "Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82); Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+      "gapCount": 2,
+      "nowCount": 2
     },
     {
       "pr": 81,
       "title": "Style sampler: eight rooms, furnished from the planner catalog",
-      "gaps": "Script ?v= does not match ZD_WORLD 30; Cache version was not bumped; Interiors do not use the shared prop catalog",
+      "gaps": "Script ?v= does not match ZD_WORLD 30; Cache version was not bumped; Major redesign belongs on a new world page, not the frozen Neon World; Interiors do not use the shared prop catalog",
       "owner": "Neon World Interiors (`cursor/style-sampler-52fc`, PR #81); Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
-      "gapCount": 3,
-      "nowCount": 3
+      "gapCount": 4,
+      "nowCount": 4
     },
     {
       "pr": 80,
@@ -1900,10 +1962,10 @@
     {
       "pr": 74,
       "title": "Interiors plan: a daylight room and a glow-strip room for each walk-in",
-      "gaps": "before build: interiors",
-      "owner": "Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
-      "gapCount": 1,
-      "nowCount": 0
+      "gaps": "Major redesign belongs on a new world page, not the frozen Neon World | before build: interiors",
+      "owner": "Neon World Interiors (`cursor/interiors-plan-52fc`, PR #74); Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+      "gapCount": 2,
+      "nowCount": 1
     },
     {
       "pr": 73,

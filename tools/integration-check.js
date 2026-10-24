@@ -175,6 +175,32 @@ const CATALOG_FILES = [
   'world/style-sampler.js'
 ];
 
+const BUNDLE_BRANCHES = {
+  'cursor/city-layout-plan-ef23': true,
+  'cursor/city-boulevards-ef23': true,
+  'cursor/minimap-boulevards-f039': true
+};
+
+const SAVE_FAMILIES = [
+  ['zdash.kid.', 'zdash.kid.v1'],
+  ['zdash.house.', 'zdash.house.v1'],
+  ['zdash.char.', 'zdash.char.v1'],
+  ['zdash.pet.', 'zdash.pet.v1'],
+  ['zdash.crew.', 'zdash.crew.v1'],
+  ['zdash.neonpaint.', 'zdash.neonpaint.v1'],
+  ['zdash_vinyls_', 'zdash_vinyls_v1'],
+  ['zdash_neon_paint_', 'zdash_neon_paint_v1'],
+  ['zdash_garage_', 'zdash_garage_v1'],
+  ['zdash_paint3d_', 'zdash_paint3d_v1'],
+  ['zdash.customdance.', 'zdash.customdance.v1'],
+  ['zdash.petdance.', 'zdash.petdance.v1']
+];
+
+const LOCAL_SAVE_KEYS = {
+  'zdash.world.resume.v1': true,
+  'zdash.neonworld.session.v1': true
+};
+
 const MENU_HOSTS = [
   'jr.html',
   'char.html',
@@ -291,6 +317,63 @@ function droppedProfileKeys(keyDiff) {
     }
   }
   return [...removed].filter((k) => !added.has(k));
+}
+
+function branchName(branch) {
+  return String(branch || '').replace(/^origin\//, '');
+}
+
+function isBundleBranch(branch) {
+  return !!BUNDLE_BRANCHES[branchName(branch)];
+}
+
+function isNewWorldPage(filePath) {
+  const p = filePath.replace(/\\/g, '/');
+  if (!/\.html$/i.test(p)) return false;
+  if (p === 'world.html' || p === 'world-split.html' || p === 'index.html') return false;
+  if (p === 'test/world.html' || p === 'test/world-split.html') return false;
+  const base = p.split('/').pop();
+  if (base === 'world-split.html') return false;
+  return /^world-.+\.html$/i.test(base);
+}
+
+function redesignKinds(files) {
+  const kinds = [];
+  function add(kind) {
+    if (kinds.indexOf(kind) === -1) kinds.push(kind);
+  }
+  files.forEach((f) => {
+    const p = f.path.replace(/\\/g, '/');
+    if (p === 'world/planner-props.js' || p.startsWith('docs/planner/') || p === 'docs/PLANNER-PORT-PLAN.md' || p.startsWith('test/planner-port') || p === 'docs/ROOM-PLACE-HOOK.md' || p.startsWith('docs/room-place/')) add('planner objects');
+    if (p === 'world/style-sampler.js' || p === 'docs/STYLE-SAMPLER.md' || p === 'docs/INTERIORS-PLAN.md' || p.startsWith('docs/interiors/')) add('new building designs');
+    if ((p.startsWith('world/') || p.startsWith('docs/')) && /builder/i.test(p) && p.indexOf('city-layout') === -1 && p !== 'world/city.js' && p !== 'world/hud.js') add('builders');
+  });
+  return kinds;
+}
+
+function quotedKeys(line) {
+  const found = [];
+  const re = /['"](zdash[._][A-Za-z0-9_.]+)['"]/g;
+  let m;
+  while ((m = re.exec(line))) {
+    if (found.indexOf(m[1]) === -1) found.push(m[1]);
+  }
+  return found;
+}
+
+function straySaveKeys(keyDiff) {
+  if (!keyDiff) return [];
+  const stray = [];
+  keyDiff.split('\n').forEach((line) => {
+    if (!line || line[0] !== '+' || line.startsWith('+++')) return;
+    quotedKeys(line).forEach((key) => {
+      if (LOCAL_SAVE_KEYS[key]) return;
+      if (PROFILE_KEYS.indexOf(key) !== -1) return;
+      const family = SAVE_FAMILIES.some((pair) => key.indexOf(pair[0]) === 0 && key !== pair[1]);
+      if (family && stray.indexOf(key) === -1) stray.push(key);
+    });
+  });
+  return stray;
 }
 
 function gap(list, item) {
@@ -490,6 +573,43 @@ function checkOne(ctx) {
       ownerId: 'self',
       detail: 'Garage, Home, paint, crew, or pet readers still depend on ' + dropped.join(', ') + '. A rename has to land in every reader in the same branch (world/garage.js, world/garagez.js, world/house.js, world/icon-garage.js, world/neon-paint.js, world/crew.js, shared/crew-state.js, shared/physics.js).'
     });
+  }
+
+  const redesign = redesignKinds(files);
+  const newWorldPages = files.filter((f) => isNewWorldPage(f.path)).map((f) => f.path);
+  const redesignScripts = ['world/planner-props.js', 'world/style-sampler.js'];
+  const loadedByFrozen = redesignScripts.some((src) => worldScripts.indexOf(src) !== -1 || splitScripts.indexOf(src) !== -1);
+  const wiresFrozen = hasFile(files, (p) => p === 'world.html' || p === 'world-split.html') || loadedByFrozen;
+  if (redesign.length && !isBundleBranch(ctx.branch) && (wiresFrozen || !newWorldPages.length)) {
+    const where = wiresFrozen
+      ? ' This branch wires it into world.html and world-split.html (the frozen Neon World). Take it back off those pages.'
+      : ' This branch does not add the new page yet, so the work still points at the frozen Neon World.';
+    gap(gaps, {
+      id: 'frozen-world',
+      system: 'pages',
+      summary: 'Major redesign belongs on a new world page, not the frozen Neon World',
+      owner: selfText(ctx),
+      ownerId: 'self',
+      detail: 'After the Option 1 Boulevards bundle, world.html and world-split.html take bug and FPS fixes only. This PR adds ' + redesign.join(' and ') + '.' + where + ' Build it on a new world page, and keep Ellie\'s shared save keys (' + PROFILE_KEYS.join(', ') + ').'
+    });
+  }
+  if (newWorldPages.length) {
+    const stray = straySaveKeys(ctx.keyDiff || '');
+    if (dropped.length || stray.length) {
+      const bits = [];
+      if (dropped.length) bits.push('drops ' + dropped.join(', '));
+      if (stray.length) bits.push('writes a new key ' + stray.join(', '));
+      gap(gaps, {
+        id: 'shared-saves',
+        system: 'paint',
+        summary: 'New world page breaks Ellie\'s shared saves',
+        owner: selfText(ctx),
+        ownerId: 'self',
+        detail: newWorldPages.join(', ') + ' ' + bits.join(' and ') + '. Garage, Home, paint, crew, and pets on the current Neon World still read ' + PROFILE_KEYS.join(', ') + '. The new world has to read and write those same keys.'
+      });
+    } else {
+      notes.push('The new world page keeps Ellie\'s shared save keys.');
+    }
   }
 
   const addsInteraction = hasFile(files, (p) => p === 'world/nos-station.js' || p === 'world/resume.js') ||
@@ -1329,6 +1449,74 @@ function runSelfTest() {
   expect('plan resume is covered by the build', !plan.gaps.some((g) => g.id === 'layout-resume'));
   expect('plan weather stays open', plan.gaps.some((g) => g.id === 'layout-weather'));
   expect('plan span follows the build', plan.gaps.some((g) => g.id === 'layout-minimap-span' && g.severity === 'follow'));
+  expect('bundle plan is not a frozen-world redesign', !plan.gaps.some((g) => g.id === 'frozen-world'));
+  expect('bundle build is not a frozen-world redesign', !boulevards.gaps.some((g) => g.id === 'frozen-world'));
+
+  const sampler = checkOne({
+    pr: 81,
+    title: 'style sampler',
+    branch: 'cursor/style-sampler-52fc',
+    files: [
+      { status: 'A', path: 'world/style-sampler.js' },
+      { status: 'M', path: 'world.html' },
+      { status: 'M', path: 'world-split.html' }
+    ],
+    pages: {
+      world: '<script src="world/style-sampler.js?v=31"></script>',
+      split: '<script src="world/style-sampler.js?v=31"></script>'
+    },
+    versionHead: { world: '31', stamp: '2', sw: 'b' },
+    versionBase: { world: '30', stamp: '1', sw: 'a' }
+  });
+  expect('sampler is a frozen-world redesign', sampler.gaps.some((g) => g.id === 'frozen-world' && /new building designs/.test(g.detail)));
+
+  const plannerPlan = checkOne({
+    pr: 82,
+    title: 'planner',
+    branch: 'cursor/planner-port-plan-cbd5',
+    files: [
+      { status: 'A', path: 'docs/PLANNER-PORT-PLAN.md' },
+      { status: 'A', path: 'docs/planner/PROP-CATALOG.json' },
+      { status: 'A', path: 'test/planner-port/catalog.js' }
+    ]
+  });
+  expect('planner plan must leave the frozen world', plannerPlan.gaps.some((g) => g.id === 'frozen-world' && /planner objects/.test(g.detail)));
+
+  const fps = checkOne({
+    pr: 56,
+    title: 'fps',
+    branch: 'cursor/ipad-fps-9e5c',
+    files: [{ status: 'M', path: 'world/boot.js' }, { status: 'M', path: 'world.html' }],
+    pages: { world: '<script src="world/boot.js?v=30"></script>', split: '<script src="world/boot.js?v=30"></script>' },
+    versionHead: { world: '31', stamp: '2', sw: 'b' },
+    versionBase: { world: '30', stamp: '1', sw: 'a' }
+  });
+  expect('fps fix stays on the frozen world', !fps.gaps.some((g) => g.id === 'frozen-world'));
+
+  const nextWorld = checkOne({
+    pr: 90,
+    title: 'new world',
+    branch: 'cursor/world-next-example',
+    files: [
+      { status: 'A', path: 'world-builder.html' },
+      { status: 'A', path: 'world/planner-props.js' }
+    ],
+    keyDiff: "-  const KEY='zdash.kid.v1';\n+  const KEY='zdash.kid.v2';\n",
+    versionHead: { world: '31', stamp: '2', sw: 'b' },
+    versionBase: { world: '30', stamp: '1', sw: 'a' }
+  });
+  expect('new world page is not the frozen pages', !nextWorld.gaps.some((g) => g.id === 'frozen-world'));
+  expect('new world page keeps shared saves', nextWorld.gaps.some((g) => g.id === 'shared-saves' && /zdash\.kid\.v1/.test(g.detail) && /zdash\.kid\.v2/.test(g.detail)));
+
+  const nextOk = checkOne({
+    pr: 91,
+    title: 'new world keeps keys',
+    files: [{ status: 'A', path: 'world-builder.html' }, { status: 'A', path: 'world/style-sampler.js' }],
+    keyDiff: "+  const KEY='zdash.kid.v1';\n",
+    versionHead: { world: '31', stamp: '2', sw: 'b' },
+    versionBase: { world: '30', stamp: '1', sw: 'a' }
+  });
+  expect('shared keys on the new page are clean', !nextOk.gaps.some((g) => g.id === 'shared-saves' || g.id === 'frozen-world'));
 
   const mapDoc = fs.readFileSync(path.join(ROOT, 'docs/INTEGRATION-MAP.md'), 'utf8');
   Object.keys(OWNERS).forEach((id) => {
