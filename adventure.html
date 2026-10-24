@@ -25,7 +25,12 @@
       position: fixed; left: 18px; bottom: 78px; width: 108px; height: 108px; border-radius: 54px;
       border: 3px solid #3ee6ff; background: rgba(255,255,255,.35); touch-action: none; z-index: 3;
     }
-    body.anatomy #hint, body.anatomy #stick, body.shot #stick, body.shot #hint { display: none; }
+    body.anatomy #hint, body.anatomy #stick, body.shot #stick, body.shot #hint, body.anatomy #acts, body.shot #acts { display: none; }
+    #acts { position: fixed; right: 14px; bottom: 18px; z-index: 3; display: flex; gap: 8px; }
+    #acts button {
+      min-width: 56px; min-height: 56px; border-radius: 12px; border: 3px solid #3ee6ff;
+      background: #fff; color: #142033; font: 700 14px/1 system-ui, sans-serif;
+    }
   </style>
 </head>
 <body>
@@ -33,6 +38,12 @@
   <div id="boot">Opening the courtyard…</div>
   <div id="hint">WASD walks. Shift runs.</div>
   <div id="stick" aria-label="Move"></div>
+  <div id="acts">
+    <button type="button" data-act="swing">Swing</button>
+    <button type="button" data-act="spark">Spark</button>
+    <button type="button" data-act="bow">Bow</button>
+    <button type="button" data-act="gust">Gust</button>
+  </div>
   <div id="fps" hidden></div>
   <div id="label" hidden></div>
   <script type="module" src="adventure/app.js"></script>

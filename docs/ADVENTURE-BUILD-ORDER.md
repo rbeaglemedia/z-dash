@@ -1,12 +1,24 @@
 # Adventure build order
 
-Plan only. No code in this step. Story, jobs, and the car key stay in `docs/ADVENTURE-WORLD-PLAN.md`. This page is the order we build in, and how we catch a slow frame before it becomes a mystery like Neon World.
+Story, jobs, and the car key stay in `docs/ADVENTURE-WORLD-PLAN.md`. This page is the order we build in, and how we catch a slow frame before it becomes a mystery like Neon World.
 
 Buy nothing. Do not deploy. Do not edit Neon World files. No menu tile.
 
+M0b through M8 are in `adventure.html` now. The order below is still the rule for whatever comes next. The phone gate was run on that combined scene, and again after the play camera was moved off a lamp. It was green both times. Nothing in this step was added on a red gate. The steps were not separate commits.
+
 ## One-page summary
 
-Milestone 0 is already in `adventure.html`: one courtyard, Ellie, and one pet (fox by default). The lab phone hitch after the opening curtain is 4.4 ms. The curtain's own first draw is still 86 ms. That 86 ms has to be under 80 ms, and the on-screen meter has to exist, before any new art.
+Milestone 0 is in `adventure.html`: one courtyard, Ellie on the pack head, and one pet (fox by default). The curtain's first draw on the throttled phone was 58.7 ms (under 80). An earlier run of this same scene was 74.3 ms, so the margin moves. A new skinned material, or binding the fox texture, can put it back over.
+
+Measured on this tree, 360 frames, first 30 warmup. Phone CPU slowed 4×. iPad and PC were not.
+
+| | Curtain first draw | Hitch after curtain | p95 | p99 | Worst after warmup |
+| --- | --- | --- | --- | --- | --- |
+| Phone 844×390, CPU 4× | 58.7 ms | 27 ms | 2.8 ms | 6.3 ms | 15.5 ms |
+| iPad 1024×768 | 25.8 ms | 10.6 ms | 0.6 ms | 1.1 ms | 3.1 ms |
+| PC 1366×768 | 24.2 ms | 13.2 ms | 1.2 ms | 3.1 ms | 3.9 ms |
+
+Phone walk slices, average: world 0.08 ms, player 0.07, pet 0.03, swing 0, spark 0, bow 0, foes 0.03, meter 0.06, draw 0.98, spare 0.00. Draws 38. Triangles 14,680. One warmup frame of 27 ms was logged on the meter slice (first paint, while she was walking). Steady dips were 0. Logs: `test-results/adventure-m0/gate-phone.json`, `gate-ipad.json`, `gate-pc.json`.
 
 Build one small thing at a time, in this order: the meter, one house, one neighbor, Swing, Spark, the bow, one foe, then the foe cap and one pet move, then one extra meadow. Each step is measured alone. If the frame test goes red, we bisect that step the same day. We do not start the next step on a red gate.
 
@@ -97,7 +109,7 @@ The automated phone is throttled: viewport 844×390, pixel ratio locked at 1, CP
 | iPad | at most 33 ms | at most 50 ms | at most 50 ms | under 80 ms |
 | PC | at most 16.7 ms | at most 33 ms | at most 33 ms | under 80 ms |
 
-Warmup hitch means two numbers, and both have to be under 80 ms: the worst of the first 30 frames after the curtain, and the curtain's own first draw. M0's after-curtain hitch is 4.4 ms. Its curtain draw is 86 ms, so M0b is not allowed to add art until that draw is under 80 ms.
+Warmup hitch means two numbers, and both have to be under 80 ms: the worst of the first 30 frames after the curtain, and the curtain's own first draw. On this tree those are 27 ms and 58.7 ms on the throttled phone.
 
 If a new commit fails and its parent passed, bisect that range before writing the next feature. The bisect uses the same throttled phone test. Fix the first bad commit. Do not stack a second system on a red gate.
 

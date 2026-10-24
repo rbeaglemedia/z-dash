@@ -1,0 +1,52 @@
+{
+  "kind": "phone",
+  "throttle": 4,
+  "pass": true,
+  "reasons": [],
+  "stats": {
+    "n": 330,
+    "p50": 1,
+    "p95": 2.799999998882413,
+    "p99": 6.300000000745058,
+    "worst": 15.5,
+    "onePctLowFps": 95.46539379390063,
+    "p95Fps": 357.14285728540654,
+    "buckets": {
+      "lt8": 327,
+      "lt16": 3,
+      "lt33": 0,
+      "lt50": 0,
+      "gte50": 0
+    },
+    "bootHitch": 27,
+    "warmup": 30,
+    "shaderMs": 100.59999999962747,
+    "compileMs": 39.100000001490116,
+    "warmMs": 58.69999999925494,
+    "warmTinyMs": 58.69999999925494,
+    "slices": {
+      "world": 0.076,
+      "player": 0.072,
+      "pet": 0.032,
+      "swing": 0,
+      "spark": 0,
+      "bow": 0.001,
+      "foes": 0.031,
+      "meter": 0.059,
+      "draw": 0.977,
+      "spare": 0.004
+    },
+    "dips": 1,
+    "calls": 38,
+    "tris": 14680,
+    "dipLog": [
+      {
+        "ms": 27,
+        "slice": "meter",
+        "what": "walk",
+        "calls": 38,
+        "tris": 14680
+      }
+    ]
+  }
+}

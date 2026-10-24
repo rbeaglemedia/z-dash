@@ -38,6 +38,9 @@ Rigging and animation by tomkranis, CC BY 4.0.
 glTF conversion by @AsoboStudio and @scurest, CC BY 4.0.
 Clips used: Survey (idle) and Walk.
 https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/Fox
+The coat picture stays in the file for that credit. The page does not
+bind it. A second skinned program (the fox texture) pushed the curtain's
+first draw over 80 ms, so the fox is a flat #d9783a.
 
 Bunny and Australian Shepherd
 

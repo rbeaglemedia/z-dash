@@ -34,15 +34,15 @@ The iPad floor is 30 because that tablet is 60 Hz and already the strict machine
 
 Lab numbers are software GL on this agent (SwiftShader). They are not his phone and not the 2018 iPad. A lab pass means the scene is cheap enough to grow in the lab. His phone is still the column that matters before a later milestone is called done.
 
-Milestone 0, lab, 360 frames, first 30 dropped as warmup, fox loaded (the default pet). Every steady frame was under 8 ms. The steady gate passed on all three. The phone job is the first page in a fresh browser. Shader compile and one warm draw finish while the opening curtain is up, so they are not in the warmup frames. On that phone load the compile was 17 ms and the warm draw was 86 ms. The warmup hitch after the curtain was 4.4 ms. iPad and PC in that same browser were a 5.2 ms and a 2.3 ms hitch, with warm draws of 39 ms and 43 ms.
+M0 through M8, lab, 360 frames, first 30 dropped as warmup, fox loaded (the default pet). The phone column slows the CPU 4×. iPad and PC do not. Shader compile and the curtain's first draw finish while the opening curtain is up. That first draw has to stay under 80 ms. On this run it was 58.7 ms on the throttled phone, 25.8 ms on the iPad, and 24.2 ms on the PC. An earlier phone run of the same scene was 74.3 ms, so the margin moves. The earlier Lambert pass, with the fox picture bound, left that first draw at 86 ms. Flat materials with no texture bound are what got it under 80.
 
-| Viewport | p50 | p95 | 1% low | Worst steady | Boot hitch | Gate |
-| --- | --- | --- | --- | --- | --- | --- |
-| Phone 844×390 | 0.3 ms | 0.8 ms | 421 fps | 2.6 ms | 4.4 ms | Pass |
-| iPad 1024×768 | 0.3 ms | 0.9 ms | 272 fps | 4.8 ms | 5.2 ms | Pass |
-| PC 1366×768 | 0.3 ms | 0.8 ms | 294 fps | 4.1 ms | 2.3 ms | Pass |
+| Viewport | p50 | p95 | p99 | 1% low | Worst after warmup | Hitch after curtain | Curtain first draw | Gate |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Phone 844×390, CPU 4× | 1.0 ms | 2.8 ms | 6.3 ms | 95 fps | 15.5 ms | 27 ms | 58.7 ms | Pass |
+| iPad 1024×768 | 0.3 ms | 0.6 ms | 1.1 ms | 426 fps | 3.1 ms | 10.6 ms | 25.8 ms | Pass |
+| PC 1366×768 | 0.3 ms | 1.2 ms | 3.1 ms | 267 fps | 3.9 ms | 13.2 ms | 24.2 ms | Pass |
 
-The histogram is in `test-results/adventure-m0/bench.json`. The overlay that produced it is `?fps=1`.
+Phone walk slices, average: world 0.08 ms, player 0.07, pet 0.03, swing 0, spark 0, bow 0, foes 0.03, meter 0.06, draw 0.98, spare 0.00. Draws 38. Triangles 14,680. One warmup frame of 27 ms was named on the meter slice. Steady dips were 0. Logs: `test-results/adventure-m0/gate-phone.json`, `gate-ipad.json`, `gate-pc.json`. Shots: `test-results/adventure-m0/build/`.
 
 ## Anatomy on Milestone 0
 
@@ -60,7 +60,7 @@ Result: **PASS** (exit 0).
 | Cat | 0.34 m tall, 0.42 m long. Top 0.34 m. Feet at 0.00 m. |
 | Puppy | 0.31 m tall, 0.49 m long. Top 0.31 m. Feet at 0.00 m. |
 
-Ellie is the CC0 Casual Female, scaled to 1.50 m. Her shirt, pants, body mesh, pack face, and pack hair are the ones in the file. The extra head was removed. Body and pet materials are Lambert, so the first frame does not compile a skinned Phong program and a skinned Standard program. Shader compile and one warm draw run while the opening curtain is up. The suited pug is not the follower. It is saved at `adventure/assets/later/Pug.fbx` for a later town character.
+Ellie is the CC0 Casual Female, scaled to 1.50 m. Her shirt, pants, body mesh, pack face, and pack hair are the ones in the file. The extra head was removed. Body and pet materials are MeshBasic, flat colors, no texture bound. Lights are in the scene and do not shade these materials, so the courtyard reads flatter than the earlier Lambert shots. The fox coat picture stays in the file and is not bound; the page paints her `#d9783a`. Binding that picture compiled a second skinned program and the curtain's first draw stayed over 80 ms. Shader compile and one warm draw run while the opening curtain is up. The suited pug is not the follower. It is saved at `adventure/assets/later/Pug.fbx` for a later town character.
 
 `?pet=fox|cat|puppy|bunny|aussie` picks the follower. Fox, cat, and puppy are in the scene, one at a time, at her heel, with idle and walk. Bunny and Australian Shepherd are accepted by the switch and are not loaded. Shots are in `test-results/adventure-m0/`. Before shots of the old head and the suited pug are in `test-results/adventure-m0/before/`.
 
@@ -70,7 +70,7 @@ No free model was shipped for either, and nothing was purchased.
 
 Bunny. The Quaternius Ultimate Monsters bunny is CC0 and animated, and the pack sheet shows it on two legs, so it is not a heel pet. https://quaternius.com/packs/ultimatemonsters.html Sketchfab has CC-BY bunnies (for example Bunny Detective, six clips) that this run could not download without an account, and several are characters rather than a plain four-legged rabbit. OpenGameArt rabbits found in the search were flat sprites.
 
-Australian Shepherd. The animation job is still blocked on the file. Luckypon's Low Australian Shepherd is CC BY 4.0, rigged, and has no clips, which is the model Bob picked. Sketchfab's download API returns 401 without an account, this environment has no Sketchfab token, and the public viewer file is encrypted. It was not decrypted. Aigei asks for a login. No copy showed up on GitHub or archive.org. The ribbon_bee model has no license. Nothing was purchased, and no other dog was renamed into the aussie slot. `?pet=aussie` still shows the note and loads nothing. Idle, walk, run, sit, and jump are waiting on that FBX.
+Australian Shepherd. The animation job is still blocked on the file. Luckypon's Low Australian Shepherd is CC BY 4.0, rigged, and has no clips, which is the model Bob picked. Sketchfab's download API returns 401 without an account, this environment has no Sketchfab token, and the public viewer file is encrypted. It was not decrypted. Aigei asks for a login. No copy showed up on GitHub or archive.org. The ribbon_bee model has no license. Nothing was purchased, and no other dog was renamed into the aussie slot. `?pet=aussie` still shows the note and loads nothing. Idle, walk, run, sit, and jump are waiting on that FBX. Anatomy Check was not run on an Aussie, because that mesh is not in the scene.
 
 | Candidate | License | Why it is not in the build |
 | --- | --- | --- |
@@ -94,6 +94,8 @@ Each step is one addition. The car is still absent. Sky, traffic, and the Boulev
 | M5 | One gate into a second, tiny meadow chunk. The courtyard unloads detail while she is through the gate. | No ridge, no ruins, no car key. |
 
 M1 does not start until M0's gate passes. The same rule repeats. The later story phases in section 10 (jobs 6 and 7, the car key, the cape) sit after M5.
+
+The page has since followed `docs/ADVENTURE-BUILD-ORDER.md` through M8: the meter, one glass house, Nia, Swing, Spark, the bow, one crate crab, Gust (the fox's move), and one meadow. The table above is the story shape. The build-order file is the perf order, and it is what is on screen.
 
 The shape is borrowed from two games she might already know the feel of. A town, jobs, choices, a partner at her side, then a blade, a spark, and a bow: that is the Fable idea. A pet with a few elemental tricks that grow because of stories: that is the Pokémon idea. The names, the clothes, the creatures, the type list, and the models are ours. Nothing is copied from those games, from Brookhaven, or from a pack.
 
