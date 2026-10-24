@@ -27,9 +27,21 @@ window.TRAFFIC_TUNE = {
   bumpDrop: 0,         // unused: the old subtract-a-floor stall is gone; wrecks use bumpKeep only
   bumpYaw: 0.045,      // rad, small sideways kick
   spritePx: 160,       // baked once per paint x view; the mesh is not redrawn per car
-  bakePerFrame: 2,     // two new pitch/yaw views a frame; cache holds the finer grid
-  cacheMax: 140,       // paint x 24 yaw steps x pitch buckets
+  bakePerFrame: 1,     // one new photo a frame while driving. The yaw rows are prewarmed so this stays rare.
+  cacheMax: 480,       // 9 paints x 24 yaw x 2 chase elevations, plus a few misses
   yawStep: Math.PI / 12, // 15° sprite yaw (was 22.5°)
+  // Chassis pose on the photo. Same spring as the player (phys-air step). No second mesh, no wings.
+  susK: 140,
+  susD: 8,
+  susLo: -0.18,        // metres the body may squat
+  susHi: 0.10,
+  susBrake: -0.07,     // spring target while braking, so the squat is the same spring as a landing
+  rollGain: 0.28,      // body lean from yaw rate
+  rollMax: 0.42,       // rad, about 24 degrees. The old cap was 0.16 (about 9).
+  noseBrake: 0.30,     // rad, brake dive drawn on the sprite
+  noseAccel: 0.10,     // rad, nose up while speeding up
+  pitchDraw: 0.95,     // sprite squash per radian. 0.10 was invisible.
+  wheelR: 0.33,        // metres, ZDM.wr. Spin is a decal, not a bake key.
   cornerFrac: 0.58,    // cornering speed as a fraction of the car's cruise roll
   cornerDist: 18,      // metres before a turn where the car starts braking
   accel: 5.5,          // m/s² back up to cruise after the corner
