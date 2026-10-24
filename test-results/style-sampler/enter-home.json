@@ -1,0 +1,18 @@
+{
+  "home": {
+    "ready": "1",
+    "entered": "1",
+    "purpose": "HOME",
+    "style": "house",
+    "blurb": "[E] WELCOME HOME",
+    "heart": "hidden",
+    "openHidden": "1",
+    "href": "file:///workspace/tools/sampler-enter.html?room=home",
+    "tools": "4",
+    "pixel": "28,40,60|255,254,241",
+    "houseSame": "1",
+    "kidSame": "1",
+    "catalog": "15"
+  },
+  "errors": []
+}

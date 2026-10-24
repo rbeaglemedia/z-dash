@@ -16,13 +16,14 @@ const WALK_DOOR={
   ARCADE:{purposeLabel:'RETRO PIXEL ARCADE',actionLabel:'[E] ARCADE JACKPOT',color:'#ffe14d'},
   SKY_DROP:{purposeLabel:'SKY-DROP ELEVATOR TOWER',actionLabel:'[E] ROOFTOP ELEVATOR',color:'#3ee6ff'},
   SOCCER:{purposeLabel:'STADIUM PRO SHOP & ARENA',actionLabel:'[E] STADIUM ARENA',color:'#7dfff2'},
-  BUILDER:{purposeLabel:'CITY BUILDER ARCHITECT HQ',actionLabel:'[E] CITY BUILDER HQ',color:'#ffb020'}
+  BUILDER:{purposeLabel:'CITY BUILDER ARCHITECT HQ',actionLabel:'[E] CITY BUILDER HQ',color:'#ffb020'},
+  SAMPLER:{purposeLabel:'STYLE SAMPLER',actionLabel:'[E] WALK IN',color:'#3ee6ff'}
 };
 const WALK_UG=['#ff4fd8','#3ee6ff','#7dff6b','#ffe14d','#9b5cff'];
 const WALK_PILL_M=6,WALK_AUTO_M=4.5;
 const WALK_V=3.6,RUN_V=7.6,WALK_ACCEL=14,WALK_BRAKE=32,WALK_STRIDE=2.4,DANCE_STRIDE=6;
 const WALK_PARK_M=9,WALK_PARK_PAD=1.5,WALK_BAY_M=1.35,WALK_BAY_STAND=1.7;
-const WALK_INDOOR={HOME:1,SHOWROOM:1,NEON_PAINT:1,GARAGE:1,DANCE:1,PETS:1,CAFE:1,ARCADE:1,BUILDER:1,NOS:1,SOCCER:1};
+const WALK_INDOOR={HOME:1,SHOWROOM:1,NEON_PAINT:1,GARAGE:1,DANCE:1,PETS:1,CAFE:1,ARCADE:1,BUILDER:1,NOS:1,SOCCER:1,SAMPLER:1};
 const WALK_PAGE={NEON_PAINT:'neon-paint.html',DANCE:'dance-stage.html',GARAGE:'jr.html#garage',PETS:'crew.html'};
 const WALK_HOUSE_KEY='zdash.house.v1',WALK_KID_KEY='zdash.kid.v1';
 const WALK_THEMES=['#ff4fd8','#3ee6ff','#7dff6b','#ffb020','#9b5cff'];
@@ -436,6 +437,14 @@ function walkPaintCrew(g,foot,W,H){
   g.drawImage(walkCrewBuf,foot[0]-dw*0.40,foot[1]-dh*0.90,dw,dh);
   return true;
 }
+function walkHomeCatalog(save){
+  // Saved furniture reads docs/planner/PROP-CATALOG.json through PLANNER_PROPS.
+  if(typeof PLANNER_PROPS==='undefined'||!PLANNER_PROPS)return null;
+  const furn=save&&save.furniture;
+  const id=furn==='arcade'?'tv-stand':(furn==='dj'||furn==='trophy'?'table':'sofa');
+  const parts=PLANNER_PROPS.parts(id,{color:'#f4efe6',glow:(save&&save.theme)||'#3ee6ff'});
+  return parts&&parts.length?parts[0]:null;
+}
 function walkPaintRoom(){
   const cv=typeof document!=='undefined'&&document.getElementById('walk-room-cv');
   const door=WALK_MODE.insideDoor;
@@ -464,8 +473,12 @@ function walkPaintRoom(){
   const lampL=cam(-1.4,3.0,4),lampR=cam(1.4,3.0,4);
   g.fillStyle=theme.accent;g.fillRect(lampL[0],lampL[1],Math.max(18,lampL[2]*80),6);g.fillRect(lampR[0],lampR[1],Math.max(18,lampR[2]*80),6);
   if(purpose==='HOME'){
-    walkBox(g,-2.3,0,6.2,0.9,0.7,0.4,theme.accent,'#fff',W,H);
-    if(!house||house.petBed)walkBox(g,-2.6,0,3.2,0.7,0.22,0.45,'#7dff6b','#e9fff2',W,H);
+    const seat=walkHomeCatalog(house);
+    if(!seat||seat.sx>0)walkBox(g,-2.3,0,6.2,0.9,0.7,0.4,theme.accent,'#fff',W,H);
+    if(!house||house.petBed){
+      const bed=(typeof PLANNER_PROPS!=='undefined'&&PLANNER_PROPS)?PLANNER_PROPS.parts('table',{w:1.15,d:0.75,top:0.28,color:'#7dff6b'}):[1];
+      if(bed.length)walkBox(g,-2.6,0,3.2,0.7,0.22,0.45,'#7dff6b','#e9fff2',W,H);
+    }
     walkBox(g,2.3,0,5.4,0.7,0.9,0.4,'#3ee6ff','#fff',W,H);
     const sign=cam(0.1,2.35,7.2);
     g.fillStyle=theme.accent;g.font='800 22px sans-serif';g.textAlign='center';g.fillText((house&&house.sign)||'ELLIE',sign[0],sign[1]);
@@ -884,7 +897,7 @@ function walkEntryTarget(){
   return door?{door,garage:null}:null;
 }
 function walkShortBld(door){
-  const map={HOME:'HOUSE',SHOWROOM:'SHOWROOM',NEON_PAINT:'PAINT',GARAGE:'GARAGE',NOS:'NOS',DANCE:'DANCE',PETS:'PETS',CAFE:'CAFE',ARCADE:'ARCADE',SKY_DROP:'SKY',SOCCER:'STADIUM',BUILDER:'BUILDER'};
+  const map={HOME:'HOUSE',SHOWROOM:'SHOWROOM',NEON_PAINT:'PAINT',GARAGE:'GARAGE',NOS:'NOS',DANCE:'DANCE',PETS:'PETS',CAFE:'CAFE',ARCADE:'ARCADE',SKY_DROP:'SKY',SOCCER:'STADIUM',BUILDER:'BUILDER',SAMPLER:'STYLE'};
   return (door&&map[door.purpose])||'';
 }
 function walkEnsureEnterBtn(){
