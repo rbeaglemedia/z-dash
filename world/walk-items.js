@@ -47,11 +47,11 @@
   let bake = null;
   let bakeSig = '';
   let propDyn = null;
+  let raisedAt = 0;
   let lowSince = 0;
   let highSince = 0;
   let lastTick = 0;
-  let winMs = 0;
-  let winN = 0;
+  const recent = [];
   let menuMsAcc = 0;
   let menuN = 0;
   let fullMsAcc = 0;
@@ -442,7 +442,7 @@
     css.id = 'walkItemsCss';
     css.textContent = '#walkItemsBtn,#walkItems,#walkItems button,#walkItems span{text-align:center;text-decoration:none}' +
       '#walkItemsBtn{position:fixed;left:8px;top:5px;z-index:96;height:44px;min-width:72px;margin:0;padding:0 12px;border-radius:14px;border:2px solid #243044;background:#f4f7fb;color:#243044;font:900 12px/1 Orbitron,sans-serif;letter-spacing:.4px;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:none;transition:none}' +
-      '#walkItems{position:fixed;left:8px;top:54px;z-index:96;width:min(220px,40vw);max-height:42vh;overflow:auto;display:none;flex-direction:column;gap:6px;padding:8px;border-radius:14px;border:2px solid #243044;background:rgba(244,247,251,.96);color:#243044;box-sizing:border-box;transition:none}' +
+      '#walkItems{position:fixed;left:8px;top:64px;z-index:96;width:min(168px,32vw);max-height:42vh;overflow:auto;display:none;flex-direction:column;gap:6px;padding:8px;border-radius:14px;border:2px solid #243044;background:rgba(244,247,251,.96);color:#243044;box-sizing:border-box;transition:none}' +
       '#walkItems button{display:flex;align-items:center;justify-content:center;min-height:36px;border-radius:10px;border:1.5px solid #243044;background:#fff;color:#243044;font:800 11px/1.1 Orbitron,sans-serif;padding:4px 6px;cursor:pointer;transition:none}' +
       '#walkItems .wi-cats{display:flex;flex-wrap:wrap;gap:4px}#walkItems .wi-cats button{flex:1 1 30%}' +
       '#walkItems .wi-cats button.on{background:#243044;color:#f4f7fb}' +
@@ -569,30 +569,31 @@
     if (!benched) { bench(); benched = true; }
     const budget = 1000 / 36;
     const frame = stats.fullMs || stats.frameMs || 16.7;
-    const per = Math.max(stats.perPropMs || 0, 0.02);
+    const per = Math.max(stats.perPropMs || 0, 0.05);
     stats.suggestMore = Math.max(0, Math.floor((budget - frame) / per));
     stats.catalogHeadroom = 5;
   }
   function applyGate(now) {
     const fps = stats.fps;
+    let changed = false;
     if (fps < 36) {
       highSince = 0;
       if (!lowSince) lowSince = now;
       if (now - lowSince > 1000) {
-        let changed = false;
         if (cap !== 4) { cap = 4; changed = true; }
         if (scale !== 0.5) { scale = 0.5; changed = true; }
-        if (changed) retune();
         lowSince = now;
       }
     } else if (fps > 55) {
       lowSince = 0;
       if (!highSince) highSince = now;
       if (now - highSince > 1000) {
-        let changed = false;
-        if (cap < 12) { cap = Math.min(12, cap + 4); changed = true; }
         if (scale < 1) { scale = 1; changed = true; }
-        if (changed) retune();
+        if (cap < 12 && now - raisedAt > 1000) {
+          cap = Math.min(12, cap + 4);
+          raisedAt = now;
+          changed = true;
+        }
         highSince = now;
       }
     } else {
@@ -601,24 +602,20 @@
     }
     stats.cap = cap;
     stats.scale = scale;
+    if (changed) retune();
   }
   function sample(now) {
     if (lastTick) {
       const dt = now - lastTick;
-      if (dt > 0 && dt < 250) {
-        winMs += dt;
-        winN++;
+      if (dt > 0 && dt < 2000) {
+        recent.push({ t: now, dt: dt });
         if (stats.menuOpen) { menuMsAcc += dt; menuN++; }
         if (stats.atCap) { fullMsAcc += dt; fullN++; }
       }
     }
     lastTick = now;
-    if (winN < 20) return;
-    const ms = winMs / winN;
-    stats.frameMs = ms;
-    stats.fps = ms > 0 ? (1000 / ms) : 60;
-    winMs = 0;
-    winN = 0;
+    const cut = now - 1000;
+    while (recent.length && recent[0].t < cut) recent.shift();
     if (menuN >= 12) {
       stats.menuMs = menuMsAcc / menuN;
       stats.menuFps = 1000 / stats.menuMs;
@@ -632,15 +629,61 @@
       fullN = 0;
       noteHeadroom();
     }
+    if (recent.length < 3) return;
+    if (recent.length < 8 && now - recent[0].t < 600) return;
+    let acc = 0;
+    for (let i = 0; i < recent.length; i++) acc += recent[i].dt;
+    const ms = acc / recent.length;
+    stats.frameMs = ms;
+    stats.fps = ms > 0 ? (1000 / ms) : 60;
     applyGate(now);
   }
   function resetSamples() {
-    winMs = winN = menuMsAcc = menuN = fullMsAcc = fullN = 0;
+    recent.length = 0;
+    menuMsAcc = menuN = fullMsAcc = fullN = 0;
     lastTick = 0;
     stats.menuFps = 0;
     stats.menuMs = 0;
     stats.fullFps = 0;
     stats.fullMs = 0;
+  }
+  function measure(ms) {
+    const wait = Math.max(300, +ms || 1000);
+    return new Promise(function (resolve) {
+      const t0 = performance.now();
+      let last = t0, n = 0, acc = 0, menuAcc = 0, mN = 0, fullAcc = 0, fN = 0;
+      function tick(now) {
+        const dt = now - last;
+        last = now;
+        if (dt > 0 && dt < 2000) {
+          acc += dt;
+          n++;
+          if (stats.menuOpen) { menuAcc += dt; mN++; }
+          if (stats.atCap) { fullAcc += dt; fN++; }
+        }
+        if (now - t0 < wait) requestAnimationFrame(tick);
+        else {
+          const frame = n ? acc / n : 0;
+          resolve({
+            fps: frame ? 1000 / frame : 0,
+            frameMs: frame,
+            n: n,
+            menuFps: mN ? 1000 / (menuAcc / mN) : 0,
+            menuMs: mN ? menuAcc / mN : 0,
+            menuN: mN,
+            fullFps: fN ? 1000 / (fullAcc / fN) : 0,
+            fullMs: fN ? fullAcc / fN : 0,
+            fullN: fN,
+            cap: cap,
+            scale: scale,
+            placed: stats.placed,
+            atCap: stats.atCap,
+            menuOpen: stats.menuOpen
+          });
+        }
+      }
+      requestAnimationFrame(tick);
+    });
   }
   function bench() {
     ensureCat('seating');
@@ -708,6 +751,7 @@
     openMenu: function () { open = true; ensureUi(); showCat(currentCat); sync(); },
     closeMenu: function () { open = false; sync(); },
     resetSamples: resetSamples,
+    measure: measure,
     bench: bench,
     stats: stats,
     cats: CATS,
