@@ -1078,8 +1078,9 @@ const TRAFFIC = (() => {
       return false;
     }
   }
-  // Front tyres, rims, and calipers yaw about the upright through the hub.
-  // The mesh origin is the car, so the turn is T(hub) * Ry * T(-hub), then put back.
+  // Front tyres, rims, rotors, and calipers yaw about world up through the hub.
+  // A parent-local yaw spins the axle instead, and the wheel still looks straight
+  // from the nose. The GLB node is turned so the nose is +X; world Y stays up.
   function steerFrontWheels(angle) {
     const restores = [];
     if (!angle) return restores;
@@ -1090,28 +1091,43 @@ const TRAFFIC = (() => {
     X.car.traverse(o => {
       if (!o.isMesh || !o.geometry || skipped(o)) return;
       const kind = partKind(o.userData && o.userData.mat, o.name);
-      if (kind !== 'tyre' && kind !== 'rim' && kind !== 'brake') return;
+      if (kind !== 'tyre' && kind !== 'rim' && kind !== 'brake' && kind !== 'silver') return;
       if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
       const c = o.geometry.boundingSphere.center.clone().applyMatrix4(o.matrixWorld);
-      if (c.x > 0.3) hits.push({mesh:o, c});
+      if (c.x > 0.6 && c.x < 2.2 && c.y < 0.7) hits.push({mesh:o, kind, c});
     });
+    const hubs = [];
+    for (const w of hits) {
+      if (w.kind !== 'tyre' && w.kind !== 'rim') continue;
+      let hub = null;
+      for (const h of hubs) if (Math.abs(h.z - w.c.z) < 0.35) hub = h;
+      if (!hub) hubs.push({x: w.c.x, y: w.c.y, z: w.c.z, n: 1});
+      else { hub.x += w.c.x; hub.y += w.c.y; hub.z += w.c.z; hub.n++; }
+    }
+    for (const h of hubs) { h.x /= h.n; h.y /= h.n; h.z /= h.n; }
     for (const w of hits) {
       const mesh = w.mesh, parent = mesh.parent;
       if (!parent) continue;
-      const center = w.c.clone();
-      parent.worldToLocal(center);
+      let hub = hubs[0];
+      for (const h of hubs) if (Math.abs(h.z - w.c.z) < Math.abs(hub.z - w.c.z)) hub = h;
+      if (!hub) continue;
       const saved = mesh.matrix.clone();
       const auto = mesh.matrixAutoUpdate;
-      mesh.updateMatrix();
-      const M = mesh.matrix.clone();
-      const T1 = new M.constructor().makeTranslation(center.x, center.y, center.z);
-      const R = new M.constructor().makeRotationY(angle);
-      const T2 = new M.constructor().makeTranslation(-center.x, -center.y, -center.z);
+      mesh.updateMatrixWorld(true);
+      const world = mesh.matrixWorld.clone();
+      const M = world.constructor;
+      const next = new M().makeTranslation(hub.x, hub.y, hub.z)
+        .multiply(new M().makeRotationY(angle))
+        .multiply(new M().makeTranslation(-hub.x, -hub.y, -hub.z))
+        .multiply(world);
+      const local = new M().copy(parent.matrixWorld).invert().multiply(next);
       mesh.matrixAutoUpdate = false;
-      mesh.matrix.copy(T1.multiply(R).multiply(T2).multiply(M));
+      mesh.matrix.copy(local);
+      mesh.matrixWorldNeedsUpdate = true;
       restores.push(() => {
         mesh.matrix.copy(saved);
         mesh.matrixAutoUpdate = auto;
+        mesh.matrixWorldNeedsUpdate = true;
         if (auto && mesh.matrix.decompose) mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
       });
     }
@@ -1170,11 +1186,16 @@ const TRAFFIC = (() => {
     const px = T.spritePx || 256;
     let yaw = yb * (T.yawStep || Math.PI / 12);
     let elev = eb * (T.elevStep || 0.1);
-    // The hub stays as modeled. Turning it in the photo lifts the rim face toward
-    // the lens and the checker counts that as a camera-facing wheel.
-    const steer = 0;
+    // The front close shot asks for 0.45 rad. The bin is the same angle when
+    // no car is holding an exact value yet.
+    let steer = sb * (T.steerStep || 0.15);
     for (const c of cars) {
-      if (c._key === key && c._relExact != null) { yaw = c._relExact; elev = c._elevExact; break; }
+      if (c._key === key && c._relExact != null) {
+        yaw = c._relExact;
+        elev = c._elevExact;
+        if (c.steer) steer = c.steer;
+        break;
+      }
     }
     const dist = (window.ZV && ZV.win ? ZV.win : 7) / (2 * Math.tan(13 * Math.PI / 180));
     // The showroom photo is the same shell the player draws. Front wheels yaw
