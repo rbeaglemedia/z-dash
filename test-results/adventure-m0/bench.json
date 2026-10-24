@@ -1,0 +1,980 @@
+[
+  {
+    "kind": "phone",
+    "query": "bench=1&fps=1&frames=360&kind=phone",
+    "file": null,
+    "value": {
+      "ready": true,
+      "petId": "fox",
+      "petNote": null,
+      "clips": {
+        "hero": [
+          "CharacterArmature|Victory",
+          "CharacterArmature|SitDown",
+          "CharacterArmature|Shoot_OneHanded",
+          "CharacterArmature|PickUp",
+          "CharacterArmature|RecieveHit",
+          "CharacterArmature|Idle",
+          "CharacterArmature|Defeat",
+          "CharacterArmature|Walk",
+          "CharacterArmature|Walk_Carry",
+          "CharacterArmature|StandUp",
+          "CharacterArmature|Punch"
+        ],
+        "pet": [
+          "Survey",
+          "Walk",
+          "Run"
+        ]
+      },
+      "bones": {},
+      "measure": {},
+      "walkSamples": {},
+      "pose": {},
+      "stats": {
+        "n": 330,
+        "p50": 0.30000000074505806,
+        "p95": 0.7999999988824129,
+        "worst": 2.599999999627471,
+        "onePctLowFps": 421.05263157894734,
+        "p95Fps": 1250.0000017462298,
+        "buckets": {
+          "lt8": 330,
+          "lt16": 0,
+          "lt33": 0,
+          "lt50": 0,
+          "gte50": 0
+        },
+        "bootHitch": 4.400000000372529,
+        "warmup": 30,
+        "shaderMs": 103,
+        "compileMs": 16.800000000745058,
+        "warmMs": 86.19999999925494
+      },
+      "gate": {
+        "pass": true,
+        "kind": "phone",
+        "need": "1% low >= 50 fps, p95 <= 20 ms, worst <= 40 ms"
+      },
+      "benchDone": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "kind": "ipad",
+    "query": "bench=1&fps=1&frames=360&kind=ipad",
+    "file": null,
+    "value": {
+      "ready": true,
+      "petId": "fox",
+      "petNote": null,
+      "clips": {
+        "hero": [
+          "CharacterArmature|Victory",
+          "CharacterArmature|SitDown",
+          "CharacterArmature|Shoot_OneHanded",
+          "CharacterArmature|PickUp",
+          "CharacterArmature|RecieveHit",
+          "CharacterArmature|Idle",
+          "CharacterArmature|Defeat",
+          "CharacterArmature|Walk",
+          "CharacterArmature|Walk_Carry",
+          "CharacterArmature|StandUp",
+          "CharacterArmature|Punch"
+        ],
+        "pet": [
+          "Survey",
+          "Walk",
+          "Run"
+        ]
+      },
+      "bones": {},
+      "measure": {},
+      "walkSamples": {},
+      "pose": {},
+      "stats": {
+        "n": 330,
+        "p50": 0.30000000074505806,
+        "p95": 0.900000000372529,
+        "worst": 4.799999998882413,
+        "onePctLowFps": 272.10884358568563,
+        "p95Fps": 1111.1111106511987,
+        "buckets": {
+          "lt8": 330,
+          "lt16": 0,
+          "lt33": 0,
+          "lt50": 0,
+          "gte50": 0
+        },
+        "bootHitch": 5.199999999254942,
+        "warmup": 30,
+        "shaderMs": 53.899999998509884,
+        "compileMs": 14.5,
+        "warmMs": 39.399999998509884
+      },
+      "gate": {
+        "pass": true,
+        "kind": "ipad",
+        "need": "1% low >= 30 fps, p95 <= 33 ms, worst <= 50 ms"
+      },
+      "benchDone": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "kind": "pc",
+    "query": "bench=1&fps=1&frames=360&kind=pc",
+    "file": null,
+    "value": {
+      "ready": true,
+      "petId": "fox",
+      "petNote": null,
+      "clips": {
+        "hero": [
+          "CharacterArmature|Victory",
+          "CharacterArmature|SitDown",
+          "CharacterArmature|Shoot_OneHanded",
+          "CharacterArmature|PickUp",
+          "CharacterArmature|RecieveHit",
+          "CharacterArmature|Idle",
+          "CharacterArmature|Defeat",
+          "CharacterArmature|Walk",
+          "CharacterArmature|Walk_Carry",
+          "CharacterArmature|StandUp",
+          "CharacterArmature|Punch"
+        ],
+        "pet": [
+          "Survey",
+          "Walk",
+          "Run"
+        ]
+      },
+      "bones": {},
+      "measure": {},
+      "walkSamples": {},
+      "pose": {},
+      "stats": {
+        "n": 330,
+        "p50": 0.30000000074505806,
+        "p95": 0.7999999988824129,
+        "worst": 4.100000001490116,
+        "onePctLowFps": 294.1176470265978,
+        "p95Fps": 1250.0000017462298,
+        "buckets": {
+          "lt8": 330,
+          "lt16": 0,
+          "lt33": 0,
+          "lt50": 0,
+          "gte50": 0
+        },
+        "bootHitch": 2.300000000745058,
+        "warmup": 30,
+        "shaderMs": 57.59999999962747,
+        "compileMs": 14.5,
+        "warmMs": 43.09999999962747
+      },
+      "gate": {
+        "pass": true,
+        "kind": "pc",
+        "need": "1% low >= 60 fps, p95 <= 16.7 ms, worst <= 33 ms"
+      },
+      "benchDone": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "kind": "phone",
+    "query": "shot=hero&kind=phone",
+    "file": "phone-hero.png",
+    "value": {
+      "hero": {
+        "height": 1.4995334220999126,
+        "minY": 0.0003067470300241199,
+        "maxY": 1.4998401691299368,
+        "length": 0.7158278321969803,
+        "headFrac": 0.24382745846695641,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
+        "footY": [
+          0.01961406975702337,
+          0.01961406975701966
+        ],
+        "bones": {
+          "head": true,
+          "neck": true,
+          "hips": true,
+          "upperArmL": true,
+          "lowerArmL": true,
+          "upperLegL": true,
+          "lowerLegL": true,
+          "footL": true,
+          "footR": true
+        }
+      },
+      "pet": {
+        "height": 0.38742384956996556,
+        "minY": -1.9398223274132587e-7,
+        "maxY": 0.38742365558773284,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773284,
+        "neckY": 0.38742365558773284,
+        "hipY": 0.19371173080275003,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "fox"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "kind": "phone",
+    "query": "shot=pet&kind=phone",
+    "file": "phone-pet.png",
+    "value": {
+      "hero": {
+        "height": 1.499533422099913,
+        "minY": 0.0003067470300241199,
+        "maxY": 1.4998401691299372,
+        "length": 0.7105480639067485,
+        "headFrac": 0.24382745846695636,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
+        "footY": [
+          0.01961406975702337,
+          0.01961406975701966
+        ],
+        "bones": {
+          "head": true,
+          "neck": true,
+          "hips": true,
+          "upperArmL": true,
+          "lowerArmL": true,
+          "upperLegL": true,
+          "lowerLegL": true,
+          "footL": true,
+          "footR": true
+        }
+      },
+      "pet": {
+        "height": 0.38742384956996556,
+        "minY": -1.9398223274132587e-7,
+        "maxY": 0.38742365558773284,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773284,
+        "neckY": 0.38742365558773284,
+        "hipY": 0.19371173080275003,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "fox"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "kind": "phone",
+    "query": "shot=1&kind=phone&pet=fox",
+    "file": "phone-fox.png",
+    "value": {
+      "hero": {
+        "height": 1.4995334220999121,
+        "minY": 0.0003067470300241251,
+        "maxY": 1.4998401691299363,
+        "length": 0.7132403453563629,
+        "headFrac": 0.2438274584669565,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
+        "footY": [
+          0.01961406975702337,
+          0.01961406975701966
+        ],
+        "bones": {
+          "head": true,
+          "neck": true,
+          "hips": true,
+          "upperArmL": true,
+          "lowerArmL": true,
+          "upperLegL": true,
+          "lowerLegL": true,
+          "footL": true,
+          "footR": true
+        }
+      },
+      "pet": {
+        "height": 0.38742384956996545,
+        "minY": -1.9398223274121745e-7,
+        "maxY": 0.38742365558773273,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773273,
+        "neckY": 0.38742365558773273,
+        "hipY": 0.19371173080274998,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "fox"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "kind": "phone",
+    "query": "shot=1&kind=phone&pet=cat",
+    "file": "phone-cat.png",
+    "value": {
+      "hero": {
+        "height": 1.4995334220999121,
+        "minY": 0.0003067470300241251,
+        "maxY": 1.4998401691299363,
+        "length": 0.7132403453563629,
+        "headFrac": 0.2438274584669565,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
+        "footY": [
+          0.01961406975702337,
+          0.01961406975701966
+        ],
+        "bones": {
+          "head": true,
+          "neck": true,
+          "hips": true,
+          "upperArmL": true,
+          "lowerArmL": true,
+          "upperLegL": true,
+          "lowerLegL": true,
+          "footL": true,
+          "footR": true
+        }
+      },
+      "pet": {
+        "height": 0.33612073909063583,
+        "minY": -0.0013376228166667903,
+        "maxY": 0.33478311627396906,
+        "length": 0.4224505683033546,
+        "headFrac": 0,
+        "headY": 0.33478311627396906,
+        "neckY": 0.33478311627396906,
+        "hipY": 0.16672274672865112,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "cat"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "kind": "phone",
+    "query": "shot=1&kind=phone&pet=puppy",
+    "file": "phone-puppy.png",
+    "value": {
+      "hero": {
+        "height": 1.4995334220999121,
+        "minY": 0.0003067470300241251,
+        "maxY": 1.4998401691299363,
+        "length": 0.7132403453563629,
+        "headFrac": 0.2438274584669565,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
+        "footY": [
+          0.01961406975702337,
+          0.01961406975701966
+        ],
+        "bones": {
+          "head": true,
+          "neck": true,
+          "hips": true,
+          "upperArmL": true,
+          "lowerArmL": true,
+          "upperLegL": true,
+          "lowerLegL": true,
+          "footL": true,
+          "footR": true
+        }
+      },
+      "pet": {
+        "height": 0.31362393017286927,
+        "minY": -0.0005975879779214419,
+        "maxY": 0.31302634219494785,
+        "length": 0.4933432192838647,
+        "headFrac": 0,
+        "headY": 0.31302634219494785,
+        "neckY": 0.31302634219494785,
+        "hipY": 0.15621437710851319,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "puppy"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "kind": "phone",
+    "query": "shot=1&kind=phone&pet=fox",
+    "file": "phone-both.png",
+    "value": {
+      "hero": {
+        "height": 1.4995334220999121,
+        "minY": 0.0003067470300241251,
+        "maxY": 1.4998401691299363,
+        "length": 0.7132403453563629,
+        "headFrac": 0.2438274584669565,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
+        "footY": [
+          0.01961406975702337,
+          0.01961406975701966
+        ],
+        "bones": {
+          "head": true,
+          "neck": true,
+          "hips": true,
+          "upperArmL": true,
+          "lowerArmL": true,
+          "upperLegL": true,
+          "lowerLegL": true,
+          "footL": true,
+          "footR": true
+        }
+      },
+      "pet": {
+        "height": 0.38742384956996545,
+        "minY": -1.9398223274121745e-7,
+        "maxY": 0.38742365558773273,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773273,
+        "neckY": 0.38742365558773273,
+        "hipY": 0.19371173080274998,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "fox"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "kind": "ipad",
+    "query": "shot=hero&kind=ipad",
+    "file": "ipad-hero.png",
+    "value": {
+      "hero": {
+        "height": 1.4995334220999126,
+        "minY": 0.0003067470300241199,
+        "maxY": 1.4998401691299368,
+        "length": 0.7158278321969803,
+        "headFrac": 0.24382745846695641,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
+        "footY": [
+          0.01961406975702337,
+          0.01961406975701966
+        ],
+        "bones": {
+          "head": true,
+          "neck": true,
+          "hips": true,
+          "upperArmL": true,
+          "lowerArmL": true,
+          "upperLegL": true,
+          "lowerLegL": true,
+          "footL": true,
+          "footR": true
+        }
+      },
+      "pet": {
+        "height": 0.38742384956996556,
+        "minY": -1.9398223274132587e-7,
+        "maxY": 0.38742365558773284,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773284,
+        "neckY": 0.38742365558773284,
+        "hipY": 0.19371173080275003,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "fox"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "kind": "ipad",
+    "query": "shot=pet&kind=ipad",
+    "file": "ipad-pet.png",
+    "value": {
+      "hero": {
+        "height": 1.499533422099913,
+        "minY": 0.0003067470300241199,
+        "maxY": 1.4998401691299372,
+        "length": 0.7105480639067485,
+        "headFrac": 0.24382745846695636,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
+        "footY": [
+          0.01961406975702337,
+          0.01961406975701966
+        ],
+        "bones": {
+          "head": true,
+          "neck": true,
+          "hips": true,
+          "upperArmL": true,
+          "lowerArmL": true,
+          "upperLegL": true,
+          "lowerLegL": true,
+          "footL": true,
+          "footR": true
+        }
+      },
+      "pet": {
+        "height": 0.38742384956996556,
+        "minY": -1.9398223274132587e-7,
+        "maxY": 0.38742365558773284,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773284,
+        "neckY": 0.38742365558773284,
+        "hipY": 0.19371173080275003,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "fox"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "kind": "ipad",
+    "query": "shot=1&kind=ipad",
+    "file": "ipad-both.png",
+    "value": {
+      "hero": {
+        "height": 1.4995334220999121,
+        "minY": 0.0003067470300241251,
+        "maxY": 1.4998401691299363,
+        "length": 0.7132403453563629,
+        "headFrac": 0.2438274584669565,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
+        "footY": [
+          0.01961406975702337,
+          0.01961406975701966
+        ],
+        "bones": {
+          "head": true,
+          "neck": true,
+          "hips": true,
+          "upperArmL": true,
+          "lowerArmL": true,
+          "upperLegL": true,
+          "lowerLegL": true,
+          "footL": true,
+          "footR": true
+        }
+      },
+      "pet": {
+        "height": 0.38742384956996545,
+        "minY": -1.9398223274121745e-7,
+        "maxY": 0.38742365558773273,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773273,
+        "neckY": 0.38742365558773273,
+        "hipY": 0.19371173080274998,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "fox"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "kind": "pc",
+    "query": "shot=hero&kind=pc",
+    "file": "pc-hero.png",
+    "value": {
+      "hero": {
+        "height": 1.4995334220999126,
+        "minY": 0.0003067470300241199,
+        "maxY": 1.4998401691299368,
+        "length": 0.7158278321969803,
+        "headFrac": 0.24382745846695641,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
+        "footY": [
+          0.01961406975702337,
+          0.01961406975701966
+        ],
+        "bones": {
+          "head": true,
+          "neck": true,
+          "hips": true,
+          "upperArmL": true,
+          "lowerArmL": true,
+          "upperLegL": true,
+          "lowerLegL": true,
+          "footL": true,
+          "footR": true
+        }
+      },
+      "pet": {
+        "height": 0.38742384956996556,
+        "minY": -1.9398223274132587e-7,
+        "maxY": 0.38742365558773284,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773284,
+        "neckY": 0.38742365558773284,
+        "hipY": 0.19371173080275003,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "fox"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "kind": "pc",
+    "query": "shot=pet&kind=pc",
+    "file": "pc-pet.png",
+    "value": {
+      "hero": {
+        "height": 1.499533422099913,
+        "minY": 0.0003067470300241199,
+        "maxY": 1.4998401691299372,
+        "length": 0.7105480639067485,
+        "headFrac": 0.24382745846695636,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
+        "footY": [
+          0.01961406975702337,
+          0.01961406975701966
+        ],
+        "bones": {
+          "head": true,
+          "neck": true,
+          "hips": true,
+          "upperArmL": true,
+          "lowerArmL": true,
+          "upperLegL": true,
+          "lowerLegL": true,
+          "footL": true,
+          "footR": true
+        }
+      },
+      "pet": {
+        "height": 0.38742384956996556,
+        "minY": -1.9398223274132587e-7,
+        "maxY": 0.38742365558773284,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773284,
+        "neckY": 0.38742365558773284,
+        "hipY": 0.19371173080275003,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "fox"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "kind": "pc",
+    "query": "shot=1&kind=pc",
+    "file": "pc-both.png",
+    "value": {
+      "hero": {
+        "height": 1.4995334220999121,
+        "minY": 0.0003067470300241251,
+        "maxY": 1.4998401691299363,
+        "length": 0.7132403453563629,
+        "headFrac": 0.2438274584669565,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
+        "footY": [
+          0.01961406975702337,
+          0.01961406975701966
+        ],
+        "bones": {
+          "head": true,
+          "neck": true,
+          "hips": true,
+          "upperArmL": true,
+          "lowerArmL": true,
+          "upperLegL": true,
+          "lowerLegL": true,
+          "footL": true,
+          "footR": true
+        }
+      },
+      "pet": {
+        "height": 0.38742384956996545,
+        "minY": -1.9398223274121745e-7,
+        "maxY": 0.38742365558773273,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773273,
+        "neckY": 0.38742365558773273,
+        "hipY": 0.19371173080274998,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "fox"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  }
+]

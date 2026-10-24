@@ -1,0 +1,3 @@
+phone pass=true p50=0.3 p95=0.8 low=421 worst=2.6 hitch=4.4 compile=17 warm=86
+ipad pass=true p50=0.3 p95=0.9 low=272 worst=4.8 hitch=5.2 compile=15 warm=39
+pc pass=true p50=0.3 p95=0.8 low=294 worst=4.1 hitch=2.3 compile=15 warm=43

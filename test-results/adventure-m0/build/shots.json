@@ -1,0 +1,218 @@
+[
+  {
+    "file": "phone-hero.png",
+    "query": "shot=hero&kind=phone",
+    "value": {
+      "ready": true,
+      "warmMs": null,
+      "calls": null,
+      "tris": null,
+      "note": null,
+      "label": "Phone 844×390 · Ellie · Ellie 1.50 m, hip 0.44 m · fox 0.39 m × 0.77 m, feet -0.00 m",
+      "hint": "WASD walks. Shift runs. The fox stays at your heel.",
+      "boot": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "file": "phone-play.png",
+    "query": "kind=phone",
+    "value": {
+      "ready": true,
+      "warmMs": null,
+      "calls": null,
+      "tris": null,
+      "note": null,
+      "label": "",
+      "hint": "WASD walks. Shift runs. The fox stays at your heel.",
+      "boot": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "file": "phone-meter.png",
+    "query": "fps=1&perf=1&kind=phone",
+    "value": {
+      "ready": true,
+      "warmMs": null,
+      "calls": null,
+      "tris": null,
+      "note": null,
+      "label": "",
+      "hint": "WASD walks. Shift runs. The fox stays at your heel.",
+      "boot": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "file": "phone-house.png",
+    "query": "shot=house&kind=phone",
+    "value": {
+      "ready": true,
+      "warmMs": null,
+      "calls": null,
+      "tris": null,
+      "note": null,
+      "label": "Phone 844×390 · Ellie and fox · Ellie 1.50 m, hip 0.44 m · fox 0.39 m × 0.77 m, feet -0.00 m",
+      "hint": "WASD walks. Shift runs. The fox stays at your heel.",
+      "boot": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "file": "phone-nia.png",
+    "query": "shot=nia&kind=phone",
+    "value": {
+      "ready": true,
+      "warmMs": null,
+      "calls": null,
+      "tris": null,
+      "note": null,
+      "label": "Phone 844×390 · Ellie and fox · Ellie 1.50 m, hip 0.44 m · fox 0.39 m × 0.77 m, feet -0.00 m",
+      "hint": "WASD walks. Shift runs. The fox stays at your heel.",
+      "boot": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "file": "phone-swing.png",
+    "query": "shot=swing&kind=phone",
+    "value": {
+      "ready": true,
+      "warmMs": null,
+      "calls": null,
+      "tris": null,
+      "note": null,
+      "label": "Phone 844×390 · Ellie and fox · Ellie 1.50 m, hip 0.44 m · fox 0.39 m × 0.77 m, feet -0.00 m",
+      "hint": "WASD walks. Shift runs. The fox stays at your heel.",
+      "boot": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "file": "phone-spark.png",
+    "query": "shot=spark&kind=phone",
+    "value": {
+      "ready": true,
+      "warmMs": null,
+      "calls": null,
+      "tris": null,
+      "note": null,
+      "label": "Phone 844×390 · Ellie and fox · Ellie 1.50 m, hip 0.44 m · fox 0.39 m × 0.77 m, feet -0.00 m",
+      "hint": "WASD walks. Shift runs. The fox stays at your heel.",
+      "boot": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "file": "phone-bow.png",
+    "query": "shot=bow&kind=phone",
+    "value": {
+      "ready": true,
+      "warmMs": null,
+      "calls": null,
+      "tris": null,
+      "note": null,
+      "label": "Phone 844×390 · Ellie and fox · Ellie 1.50 m, hip 0.44 m · fox 0.39 m × 0.77 m, feet -0.00 m",
+      "hint": "WASD walks. Shift runs. The fox stays at your heel.",
+      "boot": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "file": "phone-crab.png",
+    "query": "shot=crab&kind=phone",
+    "value": {
+      "ready": true,
+      "warmMs": null,
+      "calls": null,
+      "tris": null,
+      "note": null,
+      "label": "Phone 844×390 · Ellie and fox · Ellie 1.50 m, hip 0.44 m · fox 0.39 m × 0.77 m, feet -0.00 m",
+      "hint": "WASD walks. Shift runs. The fox stays at your heel.",
+      "boot": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "file": "phone-gust.png",
+    "query": "shot=gust&kind=phone",
+    "value": {
+      "ready": true,
+      "warmMs": null,
+      "calls": null,
+      "tris": null,
+      "note": null,
+      "label": "Phone 844×390 · Ellie and fox · Ellie 1.50 m, hip 0.44 m · fox 0.39 m × 0.77 m, feet -0.00 m",
+      "hint": "WASD walks. Shift runs. The fox stays at your heel.",
+      "boot": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "file": "phone-meadow.png",
+    "query": "shot=meadow&kind=phone",
+    "value": {
+      "ready": true,
+      "warmMs": null,
+      "calls": null,
+      "tris": null,
+      "note": null,
+      "label": "Phone 844×390 · Ellie and fox · Ellie 1.50 m, hip 0.44 m · fox 0.39 m × 0.77 m, feet -0.00 m",
+      "hint": "WASD walks. Shift runs. The fox stays at your heel.",
+      "boot": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  {
+    "file": "phone-aussie.png",
+    "query": "pet=aussie&kind=phone",
+    "value": {
+      "ready": true,
+      "warmMs": null,
+      "calls": null,
+      "tris": null,
+      "note": "No free animated Australian Shepherd is in this build.",
+      "label": "No free animated Australian Shepherd is in this build.",
+      "hint": "WASD walks. Shift runs. No free animated Australian Shepherd is in this build.",
+      "boot": true
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  }
+]

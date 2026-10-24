@@ -1,0 +1,51 @@
+Casual_Female.fbx
+
+Source: Quaternius, Ultimate Animated Character Pack (November 2019).
+Downloaded from OpenGameArt, "Animated Characters Pack" by quaternius:
+https://opengameart.org/content/animated-characters-pack
+Author page: https://quaternius.com/packs/ultimatedanimatedcharacter.html
+
+License: Creative Commons Zero 1.0 Universal (CC0)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Ellie's body is this file, including the pack Face and Hair. The extra
+head that was tried on the Head bone was removed. Nothing was purchased.
+
+The FBX materials arrived with opacity 0. The page sets opacity to 1
+and paints flat colors by material name.
+
+adventure/assets/later/Pug.fbx
+
+The suited, standing pug from the same character pack. CC0. It is not
+a follower. Saved for a later town character. See later/NOTE.txt.
+The farm-pack Pug.glb was not downloaded and is not used.
+
+adventure/assets/pets/Cat.glb
+adventure/assets/pets/Puppy.glb
+
+Source: Quaternius, CC0 animal models mirrored with their license file.
+Cat.glb is the cat (clips Idle and Walking).
+Puppy.glb is the generic Dog from that same CC0 set (clips Idle and
+Walking), scaled as a puppy. It is not a pug.
+License file from the pack mirror: CC0 1.0.
+https://creativecommons.org/publicdomain/zero/1.0/
+Author: https://quaternius.com/
+
+adventure/assets/pets/Fox.glb
+
+The glTF sample fox. Model by PixelMannen, CC0.
+Rigging and animation by tomkranis, CC BY 4.0.
+glTF conversion by @AsoboStudio and @scurest, CC BY 4.0.
+Clips used: Survey (idle) and Walk.
+https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/Fox
+The coat picture stays in the file for that credit. The page does not
+bind it. A second skinned program (the fox texture) pushed the curtain's
+first draw over 80 ms, so the fox is a flat #d9783a.
+
+Bunny and Australian Shepherd
+
+No free four-legged model with an idle and a walk, under CC0 or CC-BY,
+was available to ship. Candidates are listed in
+docs/ADVENTURE-WORLD-PLAN.md. Nothing was purchased.
+
+The courtyard meshes are original to this page.
