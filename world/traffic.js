@@ -7,7 +7,10 @@
 // embedded cars are not this Z. Copying that picture off the GL canvas is not
 // cheap, so each view is photographed once and blitted. The wheels stay on the
 // axle. They are not flat stars turned toward the camera.
-// Farther cars are boxes or dots. No shadowBlur. Lanes rebuild from CITY.ROADS.
+// Farther cars are boxes or dots. No shadowBlur.
+// Lanes come only from the road net (nodes, edges, lanes, len, w, kind).
+// Neon World fills that net. A later world can too, and traffic follows it
+// without reading that world's buildings.
 const TRAFFIC = (() => {
   const T = window.TRAFFIC_TUNE;
   const OFF = /[?&]notraffic=1/.test(location.search);
@@ -29,10 +32,29 @@ const TRAFFIC = (() => {
   }
   const kids = T.paints.map(kidOf);
 
-  function runway(x, z) { return Math.abs(x) < 20 && z > -80 && z < 1520; }
+  function cityObj() {
+    return typeof CITY === 'undefined' ? null : CITY;
+  }
+  function runway(x, z) {
+    // Neon World's strip. A later world with no strip sets CITY.noRunway.
+    const C = cityObj();
+    if (C && C.noRunway) return false;
+    return Math.abs(x) < 20 && z > -80 && z < 1520;
+  }
+  function groundProbe(x, z, y) {
+    const C = cityObj();
+    if (!C || typeof C.probe !== 'function') return {fl:0, wl:null};
+    return C.probe(x, z, y) || {fl:0, wl:null};
+  }
+  function roadNet() {
+    const C = cityObj();
+    const R = C && C.ROADS;
+    if (!R || !R.nodes || !R.edges) return null;
+    return R;
+  }
   function solidAt(x, z) {
     if (runway(x, z)) return true;
-    const pr = CITY.probe(x, z, 0.7);
+    const pr = groundProbe(x, z, 0.7);
     if (!pr.wl || pr.wl.ramp) return false;
     const b = pr.wl.b;
     if (b && b.kind === 'pylon' && !b.towCab) return false;
@@ -40,7 +62,7 @@ const TRAFFIC = (() => {
     return true;
   }
   function groundY(x, z) {
-    const pr = CITY.probe(x, z, 2);
+    const pr = groundProbe(x, z, 2);
     return Math.max(0, pr.fl || 0);
   }
   function blocked(L, s) {
@@ -53,10 +75,10 @@ const TRAFFIC = (() => {
     return false;
   }
 
-  const towOid = id => { const ts = CITY.TOWS || []; for (let i = 0; i < ts.length; i++) if (ts[i].oid === id) return true; return false; };
+  const towOid = id => { const C = cityObj(); const ts = (C && C.TOWS) || []; for (let i = 0; i < ts.length; i++) if (ts[i].oid === id) return true; return false; };
   function roadsSig() {
-    const R = CITY && CITY.ROADS;
-    if (!R || !R.edges || !R.nodes) return 0;
+    const R = roadNet();
+    if (!R) return 0;
     let h = R.nodes.length * 100003 + R.edges.length;
     for (let i = 0; i < R.edges.length; i++) {
       const e = R.edges[i];
@@ -73,9 +95,11 @@ const TRAFFIC = (() => {
       lanes.length = 0;
       for (const c of cars) { c.on = false; c.lane = null; c.turn = null; c.arc = null; c.blend = 0; }
     }
+    const R = roadNet();
+    if (!R) { built = false; return; }
     built = true;
     roadSig = sig;
-    const R = CITY.ROADS, nodes = R.nodes;
+    const nodes = R.nodes;
     const edges = [];
     for (const e of R.edges) {
       if (!e || !e.lanes || !e.lanes.length || e.len < 8) continue;
@@ -327,7 +351,8 @@ const TRAFFIC = (() => {
     return Math.abs(angDiff(yaw, d)) < 0.55;
   }
   function rampHere(c) {
-    const R = CITY.RAMPS;
+    const C = cityObj();
+    const R = C && C.RAMPS;
     if (!R || !R.length) return null;
     const grab = T.rampGrab || 3.5;
     const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw);
@@ -395,7 +420,7 @@ const TRAFFIC = (() => {
   }
   function vertSim(c, dt, prevX, prevZ) {
     const stepDist = Math.hypot(c.x - prevX, c.z - prevZ);
-    const pr = CITY.probe(c.x, c.z, (c.y || 0) + 1.6);
+    const pr = groundProbe(c.x, c.z, (c.y || 0) + 1.6);
     const gy = Math.max(0, pr.fl || 0);
     const prevGy = c.gy == null ? gy : c.gy;
     const hopping = c.hop && c.hop.phase === 'air';
@@ -551,12 +576,26 @@ const TRAFFIC = (() => {
     }
   }
 
-  function viewKey(c) {
-    const dx = cam.x - c.x, dz = cam.z - c.z, dy = cam.y - (c.y + 0.6);
+  function aimOf(x, y, z, yaw, pitch) {
+    const dx = cam.x - x, dz = cam.z - z, dy = cam.y - ((y || 0) + 0.6);
     const hd = Math.hypot(dx, dz) || 0.001;
-    const visYaw = c.yaw + (c.slip || 0);
-    const rel = Math.atan2(Math.sin(Math.atan2(dx, dz) - visYaw), Math.cos(Math.atan2(dx, dz) - visYaw));
-    const elev = Math.atan2(dy, hd);
+    const ca = Math.atan2(dx, dz);
+    const rel = Math.atan2(Math.sin(ca - yaw), Math.cos(ca - yaw));
+    const elev = Math.atan2(dy, hd) - (pitch || 0) * Math.cos(rel);
+    return {rel, elev};
+  }
+  // A car headed with Ellie is photographed from the chase camera's view of her
+  // Z, so a car one lane over still reads as the same face. Oncoming traffic
+  // keeps its own aim, or a car in front of her would show its tail.
+  function photoAim(c) {
+    const own = aimOf(c.x, c.y, c.z, c.yaw + (c.slip || 0), c.pitch);
+    if (typeof P === 'undefined' || P.x == null) return own;
+    if (Math.abs(angDiff(c.yaw, P.yaw || 0)) > 0.9) return own;
+    return aimOf(P.x, P.y, P.z, P.yaw || 0, P.pitch || 0);
+  }
+  function viewKey(c) {
+    const aim = photoAim(c);
+    const rel = aim.rel, elev = aim.elev;
     const step = T.yawStep || (Math.PI / 12);
     const bins = Math.max(4, Math.round((Math.PI * 2) / step));
     const half = bins / 2;
@@ -1079,6 +1118,17 @@ const TRAFFIC = (() => {
     X.car.updateMatrixWorld(true);
     return restores;
   }
+  // Same copy the player sprite uses. Punching low alpha out of this canvas
+  // opened holes in the glass, and the side silhouette stopped matching his Z.
+  function copyPhoto(src) {
+    const sw = src.width || 2, sh = src.height || 2;
+    const cv = document.createElement('canvas');
+    cv.width = sw; cv.height = sh;
+    const g = cv.getContext('2d', {alpha:true});
+    g.clearRect(0, 0, sw, sh);
+    g.drawImage(src, 0, 0);
+    return cv;
+  }
   function bake(key) {
     if (!buildLod()) return false;
     const X = window.ZD && ZD.Xray;
@@ -1108,11 +1158,7 @@ const TRAFFIC = (() => {
       });
       const src = X.canvas;
       if (!src) return false;
-      const cv = document.createElement('canvas');
-      cv.width = px; cv.height = px;
-      const g = cv.getContext('2d', {alpha:true});
-      g.clearRect(0, 0, px, px);
-      g.drawImage(src, 0, 0, src.width, src.height, 0, 0, px, px);
+      const cv = copyPhoto(src);
       const cap = T.cacheMax || 240;
       while (cache.size >= cap) {
         let oldest = null;
@@ -1281,7 +1327,10 @@ const TRAFFIC = (() => {
     if (dist > T.dotDist) return;
     ctx.save();
     ctx.globalAlpha = c.fade == null ? 1 : c.fade;
-    if (c.sim && dist < T.boxDist) shadow(c);
+    const closePhoto = (c.hit || dist < T.fullDist) && ((c._live) || (c._key && cache.has(c._key)));
+    // The showroom photo already has its contact shadow. A second ground
+    // ellipse sits in the crop and the player sprite does not have one.
+    if (c.sim && dist < T.boxDist && !closePhoto) shadow(c);
     if (c.hit || dist < T.fullDist) {
       if (c._live && blitLive(c._live, c)) {
         if (c.sim && !c.hit) dress(c);

@@ -16,11 +16,18 @@ function render(){const _vs=visApply();
   ctx.fillStyle='#05020c';ctx.fillRect(0,0,W,H);
   const rl=cam.roll;cam.roll=0;const hz=proj(cam.x+Math.sin(cam.yaw)*1e5,cam.y,cam.z+Math.cos(cam.yaw)*1e5);cam.roll=rl;const hy=hz?hz[1]:H/2;
   ctx.save();ctx.translate(W/2,H/2);ctx.rotate(cam.roll);ctx.translate(-W/2,-H/2);
-  const g=ctx.createLinearGradient(0,hy-H,0,hy);g.addColorStop(0,'#05020c');g.addColorStop(.7,'#2a0636');g.addColorStop(1,'#ff2a3d');ctx.fillStyle=g;ctx.fillRect(-W,hy-H*2,W*3,H*2);
+  // Stay near the night color until the horizon. A wide purple band reads as
+  // part of the car in the design-check crop. Third stop stays the red horizon
+  // so the sky-gradient cache in ground.js still recognizes this fill.
+  const g=ctx.createLinearGradient(0,hy-H,0,hy);g.addColorStop(0,'#05020c');g.addColorStop(.97,'#120814');g.addColorStop(1,'#ff2a3d');ctx.fillStyle=g;ctx.fillRect(-W,hy-H*2,W*3,H*2);
   const gg=ctx.createLinearGradient(0,hy,0,hy+H);gg.addColorStop(0,'#1a0410');gg.addColorStop(1,'#020203');ctx.fillStyle=gg;ctx.fillRect(-W,hy,W*3,H*2);
+  // A short dusk glow under the horizon. It is the same color on every screen
+  // row, so two cars side by side still share it. Tall enough to read in the
+  // close side crop, short of the three-quarter crop, which starts lower.
+  const dusk=ctx.createLinearGradient(0,hy,0,hy+36);dusk.addColorStop(0,'rgba(255,42,61,.55)');dusk.addColorStop(1,'rgba(255,42,61,0)');ctx.fillStyle=dusk;ctx.fillRect(-W,hy,W*3,36);
   ctx.strokeStyle='#ff5a66';ctx.lineWidth=2;ctx.shadowColor='#ff2a3d';ctx.shadowBlur=14;ctx.beginPath();ctx.moveTo(-W,hy);ctx.lineTo(W*2,hy);ctx.stroke();ctx.shadowBlur=0;ctx.restore();
   // grid
-  const S=40,N=22,gx=Math.round(cam.x/S)*S,gz=Math.round(cam.z/S)*S;ctx.globalAlpha=.55;
+  const S=40,N=22,gx=Math.round(cam.x/S)*S,gz=Math.round(cam.z/S)*S;ctx.globalAlpha=.12;
   for(let i=-N;i<=N;i++){line([gx+i*S,0,gz-N*S],[gx+i*S,0,gz+N*S],'#7a1a8a',1);line([gx-N*S,0,gz+i*S],[gx+N*S,0,gz+i*S],'#7a1a8a',1);}
   ctx.globalAlpha=1;
   // towers (far to near)
