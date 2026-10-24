@@ -1,7 +1,7 @@
 'use strict';
-// Walking-only item menu. Add a future item by appending one object to
-// WALK_ITEM_LIST. kind defaults to 'box'. Icons and model thumbnails bake
-// the first time that item's category is opened (or a placed prop needs it).
+// Walking-only item menu for Ellie's rooms. Add a future item by appending
+// one object to WALK_ITEM_LIST. kind defaults to 'box'. Icons and model
+// thumbnails bake the first time that item's category is opened.
 (function () {
   const HEX = { 'neon-grid': '#3ee6ff', bubblegum: '#ff4fd8', midnight: '#9b5cff', 'lime-loft': '#7dff6b' };
   const SIGN = { ellie: "ELLIE'S Z", arts: 'Z COMPANY ARTS', home: 'WELCOME HOME', glow: 'NEON DREAMS' };
@@ -15,22 +15,25 @@
     danceFloor: { x: -1.2, z: 4.25 }
   };
   const CATS = [
-    { id: 'seating', name: 'SEATING' },
-    { id: 'surfaces', name: 'SURFACES' },
-    { id: 'plants', name: 'PLANTS' },
-    { id: 'pets', name: 'PETS' },
-    { id: 'fun', name: 'FUN' }
+    { id: 'furniture', name: 'FURNITURE', glyph: 'seat' },
+    { id: 'kitchen', name: 'KITCHEN', glyph: 'counter' },
+    { id: 'pets', name: 'PETS', glyph: 'bed' },
+    { id: 'decor', name: 'DECOR', glyph: 'plant' },
+    { id: 'lights', name: 'LIGHTS', glyph: 'lamp' },
+    { id: 'signs', name: 'SIGNS', glyph: 'sign' }
   ];
-  // Starter set is smaller than a full Brookhaven catalog. menu:false rows
-  // stay out of the picker (the dance floor is a saved Home flag only).
+  // Small starter set. menu:false rows stay out of the picker (the dance
+  // floor is a saved Home flag only). One new row is enough to add an item.
   const LIST = [
-    { id: 'chair', cat: 'seating', name: 'CHAIR', kind: 'chair', color: '#f7f4ef' },
-    { id: 'sofa', cat: 'seating', name: 'SOFA', kind: 'sofa', color: '#ff4fd8', save: 'sofa' },
-    { id: 'counter', cat: 'surfaces', name: 'COUNTER', kind: 'counter', color: '#ffffff', save: 'counter' },
-    { id: 'plant', cat: 'plants', name: 'PLANT', kind: 'plant', color: '#7dff6b' },
+    { id: 'chair', cat: 'furniture', name: 'CHAIR', kind: 'chair', color: '#f7f4ef' },
+    { id: 'sofa', cat: 'furniture', name: 'SOFA', kind: 'sofa', color: '#ff4fd8', save: 'sofa' },
+    { id: 'arcade', cat: 'furniture', name: 'ARCADE', kind: 'arcade', color: '#ffe14d', save: 'arcade' },
+    { id: 'counter', cat: 'kitchen', name: 'COUNTER', kind: 'counter', color: '#ffffff', save: 'counter' },
     { id: 'petBed', cat: 'pets', name: 'PET BED', kind: 'bed', color: '#7dff6b', save: 'petBed' },
-    { id: 'arcade', cat: 'fun', name: 'ARCADE', kind: 'arcade', color: '#ffe14d', save: 'arcade' },
-    { id: 'danceFloor', cat: 'fun', name: 'DANCE FLOOR', kind: 'pad', color: '#ff4fd8', save: 'danceFloor', menu: false }
+    { id: 'plant', cat: 'decor', name: 'PLANT', kind: 'plant', color: '#7dff6b' },
+    { id: 'lamp', cat: 'lights', name: 'LAMP', kind: 'lamp', color: '#3ee6ff' },
+    { id: 'plaque', cat: 'signs', name: 'SIGN', kind: 'plaque', color: '#ff4fd8' },
+    { id: 'danceFloor', cat: 'decor', name: 'DANCE FLOOR', kind: 'pad', color: '#ff4fd8', save: 'danceFloor', menu: false }
   ];
 
   const cache = {};
@@ -42,8 +45,14 @@
   let cap = 8;
   let scale = 1;
   let open = false;
-  let currentCat = 'seating';
+  let currentCat = 'furniture';
   let builtCat = '';
+  let armed = '';
+  let armRot = 0;
+  let preview = { x: 0, z: 4.6 };
+  let selected = -1;
+  let drag = null;
+  let skipDraw = -1;
   let bake = null;
   let bakeSig = '';
   let propDyn = null;
@@ -100,52 +109,74 @@
     return out;
   }
 
-  function drawKind(g, kind, color, x, z, W, H) {
+  function drawKind(g, kind, color, x, z, W, H, rot) {
     const fill = color || '#ffffff';
     const k = kind || 'box';
+    const r = ((rot | 0) % 4 + 4) % 4;
+    const turn = function (ox, oz) {
+      if (r === 1) return [oz, -ox];
+      if (r === 2) return [-ox, -oz];
+      if (r === 3) return [-oz, ox];
+      return [ox, oz];
+    };
+    const box = function (ox, oy, oz, w, h, d, f, stroke) {
+      const p = turn(ox, oz);
+      const swap = r === 1 || r === 3;
+      walkBox(g, x + p[0], oy, z + p[1], swap ? d : w, h, swap ? w : d, f, stroke, W, H);
+    };
     if (k === 'chair') {
-      walkBox(g, x, 0, z, 0.26, 0.4, 0.26, fill, '#d5dbe3', W, H);
-      walkBox(g, x, 0.4, z + 0.16, 0.26, 0.38, 0.06, fill, '#d5dbe3', W, H);
+      box(0, 0, 0, 0.26, 0.4, 0.26, fill, '#d5dbe3');
+      box(0, 0.4, 0.16, 0.26, 0.38, 0.06, fill, '#d5dbe3');
       return;
     }
     if (k === 'sofa') {
-      walkBox(g, x, 0, z, 0.78, 0.42, 0.34, fill, '#fff', W, H);
-      walkBox(g, x, 0.42, z + 0.2, 0.78, 0.32, 0.08, fill, '#fff', W, H);
+      box(0, 0, 0, 0.78, 0.42, 0.34, fill, '#fff');
+      box(0, 0.42, 0.2, 0.78, 0.32, 0.08, fill, '#fff');
       return;
     }
     if (k === 'counter') {
-      walkBox(g, x, 0, z, 0.85, 0.7, 0.36, '#ffffff', '#d7dee6', W, H);
-      walkBox(g, x - 0.55, 0, z - 0.62, 0.16, 0.46, 0.16, '#f7f4ef', '#d5dbe3', W, H);
-      walkBox(g, x + 0.55, 0, z - 0.62, 0.16, 0.46, 0.16, '#f7f4ef', '#d5dbe3', W, H);
+      box(0, 0, 0, 0.85, 0.7, 0.36, '#ffffff', '#d7dee6');
+      box(-0.55, 0, -0.62, 0.16, 0.46, 0.16, '#f7f4ef', '#d5dbe3');
+      box(0.55, 0, -0.62, 0.16, 0.46, 0.16, '#f7f4ef', '#d5dbe3');
       return;
     }
     if (k === 'plant') {
-      walkBox(g, x, 0, z, 0.18, 0.26, 0.18, '#f4f7fb', '#c5d0dc', W, H);
-      walkBox(g, x, 0.26, z, 0.32, 0.5, 0.32, '#7dff6b', '#1c6b32', W, H);
+      box(0, 0, 0, 0.18, 0.26, 0.18, '#f4f7fb', '#c5d0dc');
+      box(0, 0.26, 0, 0.32, 0.5, 0.32, '#7dff6b', '#1c6b32');
       return;
     }
     if (k === 'bed') {
-      walkBox(g, x, 0, z, 0.52, 0.14, 0.36, fill, '#e9fff2', W, H);
+      box(0, 0, 0, 0.52, 0.14, 0.36, fill, '#e9fff2');
       return;
     }
     if (k === 'arcade') {
-      walkBox(g, x, 0, z, 0.36, 1.05, 0.3, '#241434', fill, W, H);
-      walkBox(g, x, 0.62, z - 0.22, 0.28, 0.22, 0.05, '#3ee6ff', '#fff', W, H);
+      box(0, 0, 0, 0.36, 1.05, 0.3, '#241434', fill);
+      box(0, 0.62, -0.22, 0.28, 0.22, 0.05, '#3ee6ff', '#fff');
       return;
     }
     if (k === 'pad') {
-      walkBox(g, x, 0, z, 0.7, 0.04, 0.7, fill, '#fff', W, H);
+      box(0, 0, 0, 0.7, 0.04, 0.7, fill, '#fff');
+      return;
+    }
+    if (k === 'lamp') {
+      box(0, 0, 0, 0.08, 0.85, 0.08, '#243044', '#3ee6ff');
+      box(0, 0.85, 0, 0.22, 0.16, 0.22, fill, '#fff');
+      return;
+    }
+    if (k === 'plaque') {
+      box(0, 0, 0, 0.08, 0.7, 0.08, '#243044', '#d5dbe3');
+      box(0, 0.72, 0, 0.42, 0.28, 0.04, '#ffffff', fill);
       return;
     }
     if (k === 'dj') {
-      walkBox(g, x, 0, z, 0.62, 0.8, 0.32, '#1a1028', fill, W, H);
+      box(0, 0, 0, 0.62, 0.8, 0.32, '#1a1028', fill);
       return;
     }
     if (k === 'trophy') {
-      walkBox(g, x, 0, z, 0.48, 0.85, 0.26, fill, '#fff', W, H);
+      box(0, 0, 0, 0.48, 0.85, 0.26, fill, '#fff');
       return;
     }
-    walkBox(g, x, 0, z, 0.36, 0.42, 0.3, fill, '#d5dbe3', W, H);
+    box(0, 0, 0, 0.36, 0.42, 0.3, fill, '#d5dbe3');
   }
 
   function paintThumb(item, w, h) {
@@ -254,9 +285,10 @@
     }
     if (purpose === 'HOME' && house && !house.hasPlaced) drawLegacy(g, W, H, house);
     for (let i = 0; i < placed.length; i++) {
+      if (i === skipDraw) continue;
       const p = placed[i];
       const item = byId(p.id);
-      drawKind(g, item ? (item.kind || 'box') : 'box', item && item.color, p.x, p.z, W, H);
+      drawKind(g, item ? (item.kind || 'box') : 'box', item && item.color, p.x, p.z, W, H, p.rot || 0);
     }
     if (purpose === 'HOME' && house && house.furniture === 'dj') drawKind(g, 'dj', accent, 2.55, 6.4, W, H);
     if (purpose === 'HOME' && house && house.furniture === 'trophy') drawKind(g, 'trophy', '#ffe14d', 2.55, 6.4, W, H);
@@ -278,7 +310,7 @@
       house && house.wall, house && house.sign, house && house.furniture,
       house && house.sofa, house && house.arcade, house && house.petBed,
       house && house.danceFloor, house && house.counter, house && house.hasPlaced,
-      JSON.stringify(placed)
+      skipDraw, JSON.stringify(placed)
     ].join('|');
   }
   function present(g, W, H, purpose, drawCb) {
@@ -299,6 +331,36 @@
     g.drawImage(bake, 0, 0, W, H);
   }
   function invalidate() { bakeSig = ''; }
+  function drawMarker(g, x, z, W, H) {
+    const p = walkCam(x, 0.04, z, W, H);
+    g.shadowBlur = 0;
+    g.strokeStyle = '#3ee6ff';
+    g.lineWidth = 2;
+    g.beginPath();
+    g.ellipse(p[0], p[1], 16, 7, 0, 0, 7);
+    g.stroke();
+  }
+  function drawLive(g, W, H, purpose) {
+    if (!g || !isKit(purpose)) return;
+    g.save();
+    g.shadowBlur = 0;
+    if (armed) {
+      const item = byId(armed);
+      if (item) drawKind(g, item.kind || 'box', item.color, preview.x, preview.z, W, H, armRot);
+      drawMarker(g, preview.x, preview.z, W, H);
+    }
+    if (drag) {
+      const item = byId(drag.id);
+      drawKind(g, item ? (item.kind || 'box') : 'box', item && item.color, drag.x, drag.z, W, H, drag.rot || 0);
+      drawMarker(g, drag.x, drag.z, W, H);
+    } else if (selected >= 0 && !armed) {
+      let house = null;
+      try { house = walkHouseLoad(); } catch (e) {}
+      const p = house && house.placed && house.placed[selected];
+      if (p && p.space === 'room' && (!p.purpose || p.purpose === purpose)) drawMarker(g, p.x, p.z, W, H);
+    }
+    g.restore();
+  }
   function still(canvas, house) {
     if (!canvas || !canvas.getContext) return;
     const W = canvas.width || 640;
@@ -336,7 +398,7 @@
       const item = LIST[i];
       if (!item.save || !house[item.save]) continue;
       const slot = SLOTS[item.id] || { x: 0, z: 5 };
-      out.push({ id: item.id, space: 'room', purpose: 'HOME', x: slot.x, z: slot.z });
+      out.push({ id: item.id, space: 'room', purpose: 'HOME', x: slot.x, z: slot.z, rot: 0 });
     }
     return out;
   }
@@ -355,7 +417,17 @@
       z: ((WALK_MODE && WALK_MODE.z) || 0) + Math.cos(yaw) * 1.6 + ((n % 3) - 1) * 0.8
     };
   }
-  function place(id) {
+  function clampRoom(x, z) {
+    return {
+      x: Math.max(-3.4, Math.min(3.4, x)),
+      z: Math.max(1.8, Math.min(6.8, z))
+    };
+  }
+  function inKitRoom() {
+    const door = WALK_MODE && WALK_MODE.insideBuilding && WALK_MODE.insideDoor;
+    return !!(door && isKit(door.purpose || ''));
+  }
+  function place(id, at) {
     const item = byId(id);
     if (!item || item.menu === false) return false;
     const house = walkHouseLoad();
@@ -365,27 +437,55 @@
       return false;
     }
     const inside = !!(WALK_MODE && WALK_MODE.insideBuilding);
-    const spot = inside ? roomSpot(base.length) : worldSpot(base.length);
+    const spot = (at && at.x != null) ? clampRoom(at.x, at.z) : (inside ? roomSpot(base.length) : worldSpot(base.length));
     base.push({
       id: item.id,
       space: inside ? 'room' : 'world',
       purpose: inside && WALK_MODE.insideDoor ? (WALK_MODE.insideDoor.purpose || '') : '',
       x: spot.x,
-      z: spot.z
+      z: spot.z,
+      rot: (at && at.rot) || 0
     });
     const patch = { placed: base };
     if (item.save) patch[item.save] = true;
     walkHouseSave(patch);
+    selected = base.length - 1;
     try { if (inside && typeof walkPaintRoom === 'function') walkPaintRoom(); } catch (e) {}
     refreshCount();
+    refreshActs();
+    return true;
+  }
+  function arm(id) {
+    const item = byId(id);
+    if (!item || item.menu === false) return false;
+    if (!inKitRoom()) {
+      try { walkToast('STEP INTO A ROOM', '#ffe14d'); } catch (e) {}
+      return false;
+    }
+    armed = item.id;
+    armRot = 0;
+    preview = { x: 0, z: 4.6 };
+    selected = -1;
+    drag = null;
+    skipDraw = -1;
+    refreshActs();
+    showCat(item.cat);
+    try { walkPaintRoom(); } catch (e) {}
     return true;
   }
   function lift() {
     const house = walkHouseLoad();
     if (!house.hasPlaced || !house.placed.length) return false;
-    walkHouseSave({ placed: house.placed.slice(0, -1) });
+    const next = house.placed.slice();
+    const i = selected >= 0 && selected < next.length ? selected : next.length - 1;
+    next.splice(i, 1);
+    selected = -1;
+    drag = null;
+    skipDraw = -1;
+    walkHouseSave({ placed: next });
     try { if (WALK_MODE && WALK_MODE.insideBuilding && typeof walkPaintRoom === 'function') walkPaintRoom(); } catch (e) {}
     refreshCount();
+    refreshActs();
     return true;
   }
 
@@ -397,10 +497,66 @@
       const house = walkHouseLoad();
       n = house.hasPlaced ? house.placed.length : 0;
     } catch (e) {}
-    node.textContent = n + ' / ' + cap;
+    node.textContent = n + '/' + cap + ' props';
+  }
+  function refreshActs() {
+    const hint = document.getElementById('walkItemHint');
+    if (hint) {
+      hint.textContent = armed ? 'TAP THE FLOOR' : (selected >= 0 ? 'DRAG TO MOVE' : 'TAP AN ITEM');
+    }
+    const grid = document.getElementById('walkItemGrid');
+    if (grid) {
+      const buttons = grid.querySelectorAll('button');
+      for (let i = 0; i < buttons.length; i++) {
+        buttons[i].classList.toggle('on', buttons[i].dataset.item === armed);
+      }
+    }
+  }
+  function bumpCap() {
+    if (cap >= 12) {
+      try { walkToast('LIMIT 12', '#ffe14d'); } catch (e) {}
+      return false;
+    }
+    if (!(stats.fps > 55)) {
+      try { walkToast('SLOW DEVICE', '#ffe14d'); } catch (e) {}
+      return false;
+    }
+    cap = Math.min(12, cap + 4);
+    stats.cap = cap;
+    raisedAt = performance.now();
+    try { walkToast(cap + ' PROPS', '#7dff6b'); } catch (e) {}
+    refreshCount();
+    return true;
+  }
+  function rotatePick() {
+    if (armed) {
+      armRot = (armRot + 1) % 4;
+      try { walkPaintRoom(); } catch (e) {}
+      return true;
+    }
+    const house = walkHouseLoad();
+    if (!house.hasPlaced || selected < 0 || !house.placed[selected]) return false;
+    const next = house.placed.slice();
+    const p = Object.assign({}, next[selected]);
+    p.rot = ((p.rot | 0) + 1) % 4;
+    next[selected] = p;
+    if (drag && drag.index === selected) drag.rot = p.rot;
+    walkHouseSave({ placed: next });
+    try { walkPaintRoom(); } catch (e) {}
+    return true;
+  }
+  function removePick() {
+    if (armed) {
+      armed = '';
+      armRot = 0;
+      refreshActs();
+      try { walkPaintRoom(); } catch (e) {}
+      return true;
+    }
+    return lift();
   }
   function showCat(catId) {
-    currentCat = catId || currentCat || 'seating';
+    currentCat = catId || currentCat || 'furniture';
     const pack = ensureCat(currentCat);
     const cats = document.getElementById('walkItemCats');
     if (cats) {
@@ -410,7 +566,7 @@
       }
     }
     const grid = document.getElementById('walkItemGrid');
-    if (!grid || builtCat === currentCat) return;
+    if (!grid || builtCat === currentCat) { refreshActs(); return; }
     builtCat = currentCat;
     grid.replaceChildren();
     for (let i = 0; i < LIST.length; i++) {
@@ -429,10 +585,53 @@
       b.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        place(item.id);
+        arm(item.id);
       });
       grid.appendChild(b);
     }
+    refreshActs();
+  }
+  const GLYPH = {};
+  function glyphUrl(kind) {
+    if (GLYPH[kind]) return GLYPH[kind];
+    const c = document.createElement('canvas');
+    c.width = 32;
+    c.height = 32;
+    const g = c.getContext('2d');
+    g.fillStyle = '#243044';
+    g.fillRect(0, 0, 32, 32);
+    if (kind === 'seat') {
+      g.fillStyle = '#ff4fd8';
+      g.fillRect(8, 16, 16, 8);
+      g.fillRect(8, 8, 5, 12);
+    } else if (kind === 'counter') {
+      g.fillStyle = '#ffffff';
+      g.fillRect(5, 14, 22, 10);
+      g.fillStyle = '#ff9a2e';
+      g.fillRect(5, 11, 22, 4);
+    } else if (kind === 'bed') {
+      g.fillStyle = '#7dff6b';
+      g.fillRect(6, 16, 20, 8);
+    } else if (kind === 'plant') {
+      g.fillStyle = '#f4f7fb';
+      g.fillRect(13, 18, 6, 8);
+      g.fillStyle = '#7dff6b';
+      g.beginPath();
+      g.arc(16, 13, 7, 0, 7);
+      g.fill();
+    } else if (kind === 'lamp') {
+      g.fillStyle = '#3ee6ff';
+      g.fillRect(14, 12, 4, 14);
+      g.fillStyle = '#ffe14d';
+      g.fillRect(9, 6, 14, 7);
+    } else {
+      g.fillStyle = '#ffffff';
+      g.fillRect(6, 9, 20, 14);
+      g.fillStyle = '#ff4fd8';
+      g.fillRect(6, 9, 20, 4);
+    }
+    GLYPH[kind] = c.toDataURL('image/png');
+    return GLYPH[kind];
   }
   function ensureUi() {
     if (typeof document === 'undefined') return null;
@@ -442,14 +641,21 @@
     css.id = 'walkItemsCss';
     css.textContent = '#walkItemsBtn,#walkItems,#walkItems button,#walkItems span{text-align:center;text-decoration:none}' +
       '#walkItemsBtn{position:fixed;left:8px;top:5px;z-index:96;height:44px;min-width:72px;margin:0;padding:0 12px;border-radius:14px;border:2px solid #243044;background:#f4f7fb;color:#243044;font:900 12px/1 Orbitron,sans-serif;letter-spacing:.4px;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:none;transition:none}' +
-      '#walkItems{position:fixed;left:8px;top:64px;z-index:96;width:min(168px,32vw);max-height:42vh;overflow:auto;display:none;flex-direction:column;gap:6px;padding:8px;border-radius:14px;border:2px solid #243044;background:rgba(244,247,251,.96);color:#243044;box-sizing:border-box;transition:none}' +
+      '#walkItems{position:fixed;left:8px;top:56px;z-index:96;width:min(240px,46vw);max-height:min(240px,calc(100vh - 160px));overflow:hidden;display:none;flex-direction:column;gap:8px;padding:8px;border-radius:16px;border:2px solid #243044;background:rgba(244,247,251,.96);color:#243044;box-sizing:border-box;transition:none}' +
       '#walkItems button{display:flex;align-items:center;justify-content:center;min-height:36px;border-radius:10px;border:1.5px solid #243044;background:#fff;color:#243044;font:800 11px/1.1 Orbitron,sans-serif;padding:4px 6px;cursor:pointer;transition:none}' +
-      '#walkItems .wi-cats{display:flex;flex-wrap:wrap;gap:4px}#walkItems .wi-cats button{flex:1 1 30%}' +
+      '#walkItems .wi-body{display:flex;gap:8px;min-height:0;flex:1 1 auto;overflow:hidden}' +
+      '#walkItems .wi-cats{display:flex;flex-direction:column;gap:8px;width:48px;flex:0 0 48px;overflow-x:hidden;overflow-y:auto;max-height:100%}' +
+      '#walkItems .wi-cats button{width:48px;min-height:44px;padding:4px 0}' +
       '#walkItems .wi-cats button.on{background:#243044;color:#f4f7fb}' +
-      '#walkItems .wi-items{display:flex;flex-direction:column;gap:4px}' +
-      '#walkItems .wi-item{flex-direction:column;gap:2px}' +
-      '#walkItems .wi-item img{width:72px;height:48px;object-fit:contain;display:block}' +
-      '#walkItems #walkItemCount{font:800 11px/1.2 Orbitron,sans-serif;text-align:center}';
+      '#walkItems .wi-cats img{width:26px;height:26px;display:block;border-radius:6px}' +
+      '#walkItems .wi-items{display:grid;grid-template-columns:1fr 1fr;gap:8px;overflow:auto;flex:1;min-width:0;align-content:start}' +
+      '#walkItems .wi-item{flex-direction:column;gap:2px;min-height:72px}' +
+      '#walkItems .wi-item.on{background:#243044;color:#f4f7fb}' +
+      '#walkItems .wi-item img{width:64px;height:48px;object-fit:contain;display:block}' +
+      '#walkItems .wi-foot,#walkItems .wi-acts{display:flex;align-items:center;justify-content:center;gap:8px}' +
+      '#walkItems #walkItemPlus{width:36px;min-width:36px;height:36px;min-height:36px;padding:0;font:900 18px/1 Orbitron,sans-serif}' +
+      '#walkItems #walkItemCount,#walkItems #walkItemHint{font:800 11px/1.2 Orbitron,sans-serif;text-align:center}' +
+      '#walkItems .wi-acts button{flex:1}';
     document.head.appendChild(css);
     btn = document.createElement('button');
     btn.id = 'walkItemsBtn';
@@ -476,7 +682,11 @@
       const b = document.createElement('button');
       b.type = 'button';
       b.dataset.cat = c.id;
-      b.textContent = c.name;
+      b.setAttribute('aria-label', c.name);
+      const icon = document.createElement('img');
+      icon.alt = '';
+      icon.src = glyphUrl(c.glyph);
+      b.appendChild(icon);
       b.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -488,22 +698,149 @@
     const grid = document.createElement('div');
     grid.id = 'walkItemGrid';
     grid.className = 'wi-items';
-    const liftBtn = document.createElement('button');
-    liftBtn.type = 'button';
-    liftBtn.id = 'walkItemLift';
-    liftBtn.textContent = 'LIFT LAST';
-    liftBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      lift();
-    });
+    const body = document.createElement('div');
+    body.className = 'wi-body';
+    body.append(cats, grid);
+    const foot = document.createElement('div');
+    foot.className = 'wi-foot';
     const count = document.createElement('div');
     count.id = 'walkItemCount';
-    panel.append(cats, grid, liftBtn, count);
+    const plus = document.createElement('button');
+    plus.type = 'button';
+    plus.id = 'walkItemPlus';
+    plus.textContent = '+';
+    plus.setAttribute('aria-label', 'More props');
+    plus.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      bumpCap();
+    });
+    foot.append(count, plus);
+    const acts = document.createElement('div');
+    acts.className = 'wi-acts';
+    const rotBtn = document.createElement('button');
+    rotBtn.type = 'button';
+    rotBtn.id = 'walkItemRotate';
+    rotBtn.textContent = 'ROTATE';
+    rotBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      rotatePick();
+    });
+    const rmBtn = document.createElement('button');
+    rmBtn.type = 'button';
+    rmBtn.id = 'walkItemRemove';
+    rmBtn.textContent = 'REMOVE';
+    rmBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      removePick();
+    });
+    const hint = document.createElement('div');
+    hint.id = 'walkItemHint';
+    hint.textContent = 'TAP AN ITEM';
+    acts.append(rotBtn, rmBtn);
+    panel.append(body, foot, acts, hint);
     panel.addEventListener('click', function (e) { e.stopPropagation(); });
     const root = document.body || document.documentElement;
     root.append(btn, panel);
+    bindRoom();
     return btn;
+  }
+  function floorAt(px, py, W, H) {
+    const s = (py / H - 0.60) / (1.4 * 0.58);
+    if (!(s > 0.04) || !isFinite(s)) return null;
+    const used = Math.min(s, 1.45 / 0.38);
+    const z = 1.45 / used - 1.7;
+    const x = (px - W * 0.5) / (used * H * 0.58);
+    if (!isFinite(x) || !isFinite(z)) return null;
+    return clampRoom(x, z);
+  }
+  function roomPointer(e) {
+    const cv = e.currentTarget;
+    const rect = cv.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / Math.max(1, rect.width) * cv.width;
+    const py = (e.clientY - rect.top) / Math.max(1, rect.height) * cv.height;
+    return floorAt(px, py, cv.width, cv.height);
+  }
+  function hitProp(pt, purpose) {
+    let house = null;
+    try { house = walkHouseLoad(); } catch (e) { return -1; }
+    if (!house || !house.hasPlaced) return -1;
+    let best = -1;
+    let bd = 0.75;
+    const n = Math.min(house.placed.length, cap);
+    for (let i = 0; i < n; i++) {
+      const p = house.placed[i];
+      if (!p || p.space !== 'room') continue;
+      if (purpose && p.purpose && p.purpose !== purpose) continue;
+      const d = Math.hypot((p.x || 0) - pt.x, (p.z || 0) - pt.z);
+      if (d < bd) { bd = d; best = i; }
+    }
+    return best;
+  }
+  function onRoomDown(e) {
+    if (!inKitRoom() || !open) return;
+    const pt = roomPointer(e);
+    if (!pt) return;
+    const purpose = WALK_MODE.insideDoor.purpose || '';
+    if (armed) {
+      e.preventDefault();
+      e.stopPropagation();
+      const id = armed;
+      const rot = armRot;
+      if (place(id, { x: pt.x, z: pt.z, rot: rot })) armed = '';
+      refreshActs();
+      return;
+    }
+    const i = hitProp(pt, purpose);
+    if (i < 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const house = walkHouseLoad();
+    const p = house.placed[i];
+    selected = i;
+    drag = { index: i, id: p.id, x: p.x, z: p.z, rot: p.rot || 0 };
+    skipDraw = i;
+    refreshActs();
+    try { walkPaintRoom(); } catch (err) {}
+  }
+  function onRoomMove(e) {
+    if (!inKitRoom()) return;
+    const pt = roomPointer(e);
+    if (!pt) return;
+    if (armed) { preview = pt; return; }
+    if (!drag) return;
+    drag.x = pt.x;
+    drag.z = pt.z;
+  }
+  function onRoomUp() {
+    if (!drag) return;
+    const house = walkHouseLoad();
+    const kept = drag;
+    drag = null;
+    skipDraw = -1;
+    if (house.hasPlaced && house.placed[kept.index]) {
+      const next = house.placed.slice();
+      const p = Object.assign({}, next[kept.index]);
+      p.x = kept.x;
+      p.z = kept.z;
+      p.rot = kept.rot || 0;
+      next[kept.index] = p;
+      selected = kept.index;
+      walkHouseSave({ placed: next });
+    }
+    try { if (WALK_MODE && WALK_MODE.insideBuilding) walkPaintRoom(); } catch (err) {}
+    refreshActs();
+  }
+  function bindRoom() {
+    const cv = document.getElementById('walk-room-cv');
+    if (!cv || cv.dataset.wiPlace) return;
+    cv.dataset.wiPlace = '1';
+    cv.addEventListener('pointerdown', onRoomDown, true);
+    cv.addEventListener('pointermove', onRoomMove, true);
+    cv.addEventListener('pointerup', onRoomUp, true);
+    cv.addEventListener('pointercancel', onRoomUp, true);
   }
 
   function drawWorldProps() {
@@ -686,8 +1023,8 @@
     });
   }
   function bench() {
-    ensureCat('seating');
-    const icon = cache.seating && cache.seating.icons.chair;
+    ensureCat('furniture');
+    const icon = cache.furniture && cache.furniture.icons.chair;
     if (!icon) { stats.perPropMs = 0.02; return stats.perPropMs; }
     const c = document.createElement('canvas');
     c.width = 320;
@@ -724,11 +1061,59 @@
     const mapW = Math.min(196, Math.max(96, (W / s) / 2 - 79));
     return { r: (12 + mapW) * s * sx, b: 144 * s * sy };
   }
+  function obstacleRects() {
+    const ids = ['enterBldBtn', 'brk', 'tup', 'wng', 'nos', 'emoteBtn', 'walk-step-out', 'walk-room-tools', 'walk-open-page', 'walkItemsBtn'];
+    const out = [];
+    for (let i = 0; i < ids.length; i++) {
+      const el = document.getElementById(ids[i]);
+      if (!el || getComputedStyle(el).display === 'none') continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2) continue;
+      out.push({ id: ids[i], x: r.left, y: r.top, r: r.right, b: r.bottom });
+    }
+    return out;
+  }
+  function boxHits(box, obs) {
+    for (let i = 0; i < obs.length; i++) {
+      const o = obs[i];
+      const iw = Math.min(box.r, o.r) - Math.max(box.x, o.x);
+      const ih = Math.min(box.b, o.b) - Math.max(box.y, o.y);
+      if (iw > 2 && ih > 2) return true;
+    }
+    return false;
+  }
   function placeChrome(btn, panel) {
     const inside = !!(window.WALK_MODE && WALK_MODE.insideBuilding);
     if (inside) {
       if (btn.style.left) { btn.style.left = ''; btn.style.top = ''; }
-      if (panel && panel.style.left) { panel.style.left = ''; panel.style.top = ''; }
+      if (!panel) return;
+      const obs = obstacleRects();
+      let enterB = 49, brkR = 8, sideL = window.innerWidth - 8, lowT = window.innerHeight - 8;
+      for (let i = 0; i < obs.length; i++) {
+        const o = obs[i];
+        if (o.id === 'enterBldBtn') enterB = Math.max(enterB, o.b);
+        if (o.id === 'brk' || o.id === 'nos') brkR = Math.max(brkR, o.r);
+        if (o.id === 'wng' || o.id === 'tup' || o.id === 'emoteBtn') sideL = Math.min(sideL, o.x);
+        if (o.id === 'walk-step-out' || o.id === 'walk-room-tools' || o.id === 'walk-open-page') lowT = Math.min(lowT, o.y);
+      }
+      const gap = 10;
+      const top = Math.round(enterB + gap);
+      const left = Math.round(brkR + gap);
+      const width = Math.max(168, Math.min(420, Math.round(sideL - gap - left)));
+      const height = Math.max(120, Math.min(300, Math.round(lowT - gap - top)));
+      let box = { x: left, y: top, w: width, h: height, r: left + width, b: top + height };
+      if (boxHits(box, obs)) {
+        const fitTop = 56;
+        const fitH = Math.max(96, Math.min(height, Math.round(lowT - gap - fitTop)));
+        box = { x: 8, y: fitTop, w: Math.min(width, 240), h: fitH, r: 8 + Math.min(width, 240), b: fitTop + fitH };
+      }
+      panel.style.left = box.x + 'px';
+      panel.style.top = box.y + 'px';
+      panel.style.width = box.w + 'px';
+      panel.style.height = box.h + 'px';
+      panel.style.maxHeight = box.h + 'px';
+      const grid = document.getElementById('walkItemGrid');
+      if (grid) grid.style.gridTemplateColumns = box.w < 220 ? '1fr' : '1fr 1fr';
       return;
     }
     const map = mapEdge();
@@ -748,12 +1133,22 @@
     if (panel) {
       if (panel.style.left !== left) panel.style.left = left;
       if (panel.style.top !== pTop) panel.style.top = pTop;
+      panel.style.width = '168px';
+      panel.style.height = '';
+      const brk = document.getElementById('brk');
+      let maxH = 160;
+      if (brk && getComputedStyle(brk).display !== 'none') {
+        const r = brk.getBoundingClientRect();
+        if (r.height > 2) maxH = Math.max(96, Math.min(160, r.top - (y + 54) - 10));
+      }
+      panel.style.maxHeight = Math.round(maxH) + 'px';
     }
   }
   function sync() {
     const now = performance.now();
     const show = menuAllowed();
     if (!show) open = false;
+    if (!open) { armed = ''; if (drag) { drag = null; skipDraw = -1; } }
     let placedN = 0;
     try {
       const house = (typeof walkHouseLoad === 'function') ? walkHouseLoad() : null;
@@ -770,6 +1165,7 @@
     if (btn) btn.style.display = show ? 'flex' : 'none';
     if (panel) panel.style.display = (show && open) ? 'flex' : 'none';
     if (show && btn) placeChrome(btn, panel);
+    try { bindRoom(); } catch (e) {}
     refreshCount();
     moveDyn();
   }
@@ -790,11 +1186,16 @@
   window.WALK_ITEMS = {
     isKit: isKit,
     drawKit: drawKit,
+    drawLive: drawLive,
     present: present,
     invalidate: invalidate,
     sync: sync,
     still: still,
     place: place,
+    arm: arm,
+    rotatePick: rotatePick,
+    removePick: removePick,
+    bumpCap: bumpCap,
     lift: lift,
     ensureCat: ensureCat,
     openMenu: function () { open = true; ensureUi(); showCat(currentCat); sync(); },

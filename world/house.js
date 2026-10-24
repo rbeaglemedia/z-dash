@@ -535,6 +535,7 @@ function walkPaintRoom(){
     WALK_ITEMS.present(g,W,H,purpose,function(bg){
       if(!(kit&&WALK_ITEMS.drawKit(bg,W,H,purpose)))drawStatic(bg);
     });
+    if(typeof WALK_ITEMS.drawLive==='function')WALK_ITEMS.drawLive(g,W,H,purpose);
   }else if(!(kit&&window.WALK_ITEMS&&WALK_ITEMS.drawKit(g,W,H,purpose))){
     drawStatic(g);
   }
