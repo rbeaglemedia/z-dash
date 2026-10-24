@@ -109,3 +109,22 @@ The surface is on the Weather agent's PR #89 (`world/weather.js`, branch `cursor
 A car with `inZone(x, z)` set can drop its target speed as `density` rises, and a spawn roll can skip slots so the zone holds fewer cars. `kind` picks the flavour: rain lengthens the following gap and uses the low end of the speed band; fog keeps the despawn distance where it is so a car does not appear out of the fog in front of her; sand uses the same density throttle. `thick` and `viewDist` say when the far draw has already closed in, so respawns stay inside that distance. `onHeadroom` is the hook for a spawn catch-up, not a per-frame scan.
 
 Clear air (`inZone` null, `density` 0) keeps the dry-road options Bob picked. No weather branch until those dry-road rules are the ones he chose.
+
+## 9. Detail tiers
+
+One source for every tier: `assets/370z.glb`, loaded by `shared/assets/370z-glb.js`. The guard counts 369 meshes and 26,549 triangles. A second file, a Kenney body, or a hand-built stand-in is not a tier. Neon World stays on the cheap ceiling. The next world, with slower and rarer cars, raises that ceiling. It does not get its own model.
+
+Distance still steps down inside the ceiling. A world only chooses how high the close car is allowed to go.
+
+| Tier | Draw | When |
+| --- | --- | --- |
+| D | Headlight and taillight dots | Past the box range. Neon World: past 400 m, gone past 800 m. |
+| B | Flat body in the car's paint, plus lights | Neon World: 150–400 m. No wheel cards. No `shadowBlur`. |
+| P | One cached showroom photo of the full GLB. 480 px. Wheels are in the photo, on the axle, and the front axle yaws when that view was steered. `liveCap` stays 0, so a frame does not read the GL canvas back. | Neon World's close car, inside 150 m. This is the ceiling on `world.html` and `world-split.html`. It is also the next world's fallback if a live pair misses its frame budget. |
+| L | A live mesh cut from that same GLB. Wheels stay whole. The body is the lighter cut, not a second download. Both cars share one body. Wheel spin and steer are matrices on that shared wheel geometry. | Next world only, and only while the page is rare. Not copied back onto Neon World. |
+
+Neon World's numbers stay in `shared/traffic-tune.js` (`spritePx` 480, `liveCap` 0, `fullDist` 150, `boxDist` 400, `dotDist` 800). The next world must not write that file. A shared edit would thin the live city. The next page brings its own car count and its own ceiling.
+
+The next world's own plan (PR #90) asks for two cars, slower than Ellie, and a live pair inside about 2.5 ms. Their probe on PR #93 (`next-traffic-lod.html`, commit `feb4211`) cut the body at 1 cm, left the wheels whole, and landed at 8,912 triangles a car. That cut is the candidate for tier L. The earlier 2 cm weld missed the 0.55 silhouette bar, so it is not the cut. Tier L still has to pass the 370Z Design Check before it replaces tier P on a page that checker scores. The official tool opens `world.html`. A pass on the test page is a lab signal, not that exit code.
+
+Raising detail means moving the close car from P to L. It does not mean a new GLB, a denser Neon World, or a per-frame photo of all twelve simulated cars. Twelve live meshes do not fit the live city's frame. Two can, on the next page only. If those two miss the budget, the near one stays on L and the other drops to D, or both drop to P. Dots and the box tier stay available underneath either ceiling.
