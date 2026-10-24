@@ -1,7 +1,6 @@
 /* DEV Builder, M2, on the current Neon World.
-   Bob only. On /test/ a DEV button and a 2 s press on the in-game minimap
-   open it. The two-corner hold and Ctrl+Shift+B still open it. The button
-   is not on the live page.
+   Bob only. A DEV button and a 2 s press on the in-game minimap open it.
+   The two-corner hold and Ctrl+Shift+B still open it.
    Map edits save to zdash.city.editor.v1. They change the drive only on /test/.
    Q2 tools: roof, measure, align, group, 15 degree rotate.
    Draws with flat fills. The closed editor does not run its own frame loop.
@@ -18,6 +17,7 @@
    sits over the game canvas and keeps the pointer. */
 'use strict';
 (function () {
+  if (window.DEV_BUILDER) return;
   if (typeof CITY === 'undefined' || !window.PLANNER_TOOLS) return;
   var T = window.PLANNER_TOOLS;
   var KEY = 'zdash.city.editor.v1';

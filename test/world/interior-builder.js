@@ -1,11 +1,11 @@
-/* Interior Builder on /test/ only.
-   The event planner (build mode and place objects) is the tool.
+/* Interior Builder. The event planner (build mode and place objects) is the tool.
    A saved layout is that building's walk-in room. Its size is its own,
    in feet, and it may be larger than the building outside.
    Until a layout is saved, the current Interiors room stays the walk default.
    This file does not write zdash.house.v1. */
 'use strict';
 (function () {
+  if (window.INTERIOR_BUILDER) return;
   var STORE = 'zdash.interior.layout.v1';
   var FT = 0.3048;
   var RAD = 0.35;
@@ -170,6 +170,11 @@
     return !!WALK[purpose];
   }
 
+  function plannerPage() {
+    if (/\/test\//.test(location.pathname)) return 'planner/dist/index.html';
+    return '/test/planner/dist/index.html';
+  }
+
   function openFrame(opts) {
     if (typeof document === 'undefined') return;
     openOpts = opts;
@@ -188,7 +193,7 @@
       if (document.body) document.body.appendChild(frame);
     }
     var iframe = frame.querySelector ? frame.querySelector('iframe') : null;
-    var src = 'planner/dist/index.html?embed=1&room=' + encodeURIComponent(opts.room)
+    var src = plannerPage() + '?embed=1&room=' + encodeURIComponent(opts.room)
       + '&fw=' + encodeURIComponent(opts.fw) + '&fd=' + encodeURIComponent(opts.fd)
       + '&title=' + encodeURIComponent(opts.title || 'Room')
       + '&from=' + encodeURIComponent(opts.from || 'dev');

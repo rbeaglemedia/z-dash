@@ -32,7 +32,7 @@ if (!/interior-try\.js\?v=40/.test(house)) fail('try script is not injected at w
 if (!/function interiorTryOn\(/.test(house)) fail('try flag helper missing');
 if (!/interiorTryOn\(\)&&purpose!=='HOME'/.test(house)) fail('single rooms are not gated on the try flag');
 if (!/INTERIOR_TRY_HOUSE=0/.test(house)) fail('a real door does not clear the house hold');
-if (!version.includes("ZD_WORLD = '40'")) fail('world cache is not 40');
+if (!version.includes("ZD_WORLD = '41'")) fail('world cache is not 41');
 if (!/interiorTry/.test(house)) fail('try flag missing from the house painter');
 if (!/noindex/.test(world)) fail('kid page is indexable');
 if (!world.includes('interior-try-map.js?v=40')) fail('kid page does not load the try map');
