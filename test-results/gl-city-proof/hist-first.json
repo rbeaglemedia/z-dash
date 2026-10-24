@@ -1,0 +1,214 @@
+{
+  "stamp": "2026-10-24T17:54:21.224Z",
+  "note": "SwiftShader phone 844x390 dpr 2. Not a device FPS. 1% low is the mean of the slowest 1% of frames after a 40-frame warmup.",
+  "rows": [
+    {
+      "mode": "2d",
+      "run": "still",
+      "place": {
+        "x": -1044,
+        "z": -80,
+        "yaw": 1.5707963267948966,
+        "id": 18
+      },
+      "raf": {
+        "n": 280,
+        "avg": 33.3,
+        "p50": 18.6,
+        "p95": 57.2,
+        "p99": 62.6,
+        "low1": 63.4,
+        "worst": 63.8,
+        "best": 8
+      },
+      "js": {
+        "n": 280,
+        "avg": 23.4,
+        "p50": 3.4,
+        "p95": 49,
+        "p99": 56,
+        "low1": 56.9,
+        "worst": 57.5,
+        "best": 1.6
+      },
+      "comp": {
+        "n": 280,
+        "avg": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0,
+        "low1": 0,
+        "worst": 0,
+        "best": 0
+      },
+      "buildings": 0,
+      "cams": 3294,
+      "canvas": {
+        "w": 1688,
+        "h": 780
+      },
+      "gl": {
+        "ready": false,
+        "glow": false,
+        "webgl": "",
+        "error": ""
+      }
+    },
+    {
+      "mode": "2d",
+      "run": "drive",
+      "place": {
+        "x": -1044,
+        "z": -80,
+        "yaw": 1.5707963267948966,
+        "id": 18
+      },
+      "raf": {
+        "n": 280,
+        "avg": 44.3,
+        "p50": 41.1,
+        "p95": 86.1,
+        "p99": 98.4,
+        "low1": 106.4,
+        "worst": 111.9,
+        "best": 9.1
+      },
+      "js": {
+        "n": 280,
+        "avg": 34,
+        "p50": 29,
+        "p95": 78.4,
+        "p99": 90.1,
+        "low1": 97.9,
+        "worst": 102.9,
+        "best": 1.2
+      },
+      "comp": {
+        "n": 280,
+        "avg": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0,
+        "low1": 0,
+        "worst": 0,
+        "best": 0
+      },
+      "buildings": 0,
+      "cams": 3097,
+      "canvas": {
+        "w": 1688,
+        "h": 780
+      },
+      "gl": {
+        "ready": false,
+        "glow": false,
+        "webgl": "",
+        "error": ""
+      }
+    },
+    {
+      "mode": "gl",
+      "run": "still",
+      "place": {
+        "x": -1044,
+        "z": -80,
+        "yaw": 1.5707963267948966,
+        "id": 18
+      },
+      "raf": {
+        "n": 280,
+        "avg": 36.3,
+        "p50": 21.4,
+        "p95": 60.6,
+        "p99": 66.8,
+        "low1": 68.8,
+        "worst": 72,
+        "best": 13.3
+      },
+      "js": {
+        "n": 280,
+        "avg": 23.5,
+        "p50": 7.8,
+        "p95": 47.8,
+        "p99": 53.1,
+        "low1": 54.8,
+        "worst": 57.3,
+        "best": 1.6
+      },
+      "comp": {
+        "n": 280,
+        "avg": 0.1,
+        "p50": 0.1,
+        "p95": 0.2,
+        "p99": 0.2,
+        "low1": 0.2,
+        "worst": 0.2,
+        "best": 0
+      },
+      "buildings": 1,
+      "cams": 3321,
+      "canvas": {
+        "w": 1688,
+        "h": 780
+      },
+      "gl": {
+        "ready": true,
+        "glow": false,
+        "webgl": "WebGL 1.0 (OpenGL ES 2.0 Chromium)",
+        "error": ""
+      }
+    },
+    {
+      "mode": "gl",
+      "run": "drive",
+      "place": {
+        "x": -1044,
+        "z": -80,
+        "yaw": 1.5707963267948966,
+        "id": 18
+      },
+      "raf": {
+        "n": 280,
+        "avg": 48.5,
+        "p50": 69.6,
+        "p95": 94.6,
+        "p99": 120.9,
+        "low1": 125.5,
+        "worst": 133,
+        "best": 12.5
+      },
+      "js": {
+        "n": 280,
+        "avg": 35,
+        "p50": 53,
+        "p95": 81.2,
+        "p99": 102.4,
+        "low1": 105.3,
+        "worst": 108.6,
+        "best": 1.3
+      },
+      "comp": {
+        "n": 280,
+        "avg": 0.2,
+        "p50": 0.1,
+        "p95": 0.3,
+        "p99": 0.3,
+        "low1": 1.2,
+        "worst": 2.8,
+        "best": 0
+      },
+      "buildings": 9,
+      "cams": 3326,
+      "canvas": {
+        "w": 1688,
+        "h": 780
+      },
+      "gl": {
+        "ready": true,
+        "glow": false,
+        "webgl": "WebGL 1.0 (OpenGL ES 2.0 Chromium)",
+        "error": ""
+      }
+    }
+  ]
+}
