@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Style sampler preview</title>
+<style>
+  html,body{margin:0;background:#111;width:1280px;height:720px;overflow:hidden;}
+  #c{display:block;width:1280px;height:720px;}
+</style>
+</head>
+<body>
+<canvas id="c" width="1280" height="720"></canvas>
+<script src="../world/style-sampler.js"></script>
+<script>
+const q = new URLSearchParams(location.search);
+const room = q.get('room') || 'glass';
+const cv = document.getElementById('c');
+const g = cv.getContext('2d');
+if (room === 'picks') {
+  cv.style.display = 'none';
+  localStorage.removeItem(SAMPLER.key);
+  SAMPLER.toggle('glass');
+  SAMPLER.toggle('plants');
+  SAMPLER.toggle('future');
+  SAMPLER.showPicks();
+  document.body.dataset.likes = localStorage.getItem(SAMPLER.key) || '';
+} else {
+  const N = 40;
+  const t0 = performance.now();
+  const who = { x: 0, z: 3.6, petX: 1.35, petZ: 3.85 };
+  for (let i = 0; i < N; i++) SAMPLER.paint(g, 1280, 720, room, who);
+  const ms = (performance.now() - t0) / N;
+  SAMPLER.paint(g, 1280, 720, room, who);
+  const shot = document.createElement('img');
+  shot.src = cv.toDataURL('image/png');
+  shot.width = 1280;
+  shot.height = 720;
+  shot.style.cssText = 'position:absolute;left:0;top:0;width:1280px;height:720px;';
+  document.body.appendChild(shot);
+  cv.style.display = 'none';
+  SAMPLER.styleId = room;
+  SAMPLER.attach();
+  const fps = document.getElementById('sampler-fps');
+  if (fps) fps.textContent = (ms < 9 ? '110+ · ' : '') + ms.toFixed(1) + ' ms';
+  if (room === 'wood') SAMPLER.toggle('wood');
+  document.body.dataset.ms = ms.toFixed(2);
+  document.body.dataset.room = room;
+}
+</script>
+</body>
+</html>

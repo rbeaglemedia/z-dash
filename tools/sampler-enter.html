@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sampler enter</title>
+<style>html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#111;}</style>
+</head>
+<body>
+<script>
+window.P = { x: -259.9, z: -56, y: 0, v: 0, ground: true, pitch: 0, driveMode: 'street', nosTank: 1, score: 0 };
+window.K = {};
+window.B = {};
+</script>
+<script src="../shared/tune.js"></script>
+<script src="../world/towtruck.js"></script>
+<script src="../world/city.js"></script>
+<script src="../world/house.js"></script>
+<script src="../world/style-sampler.js"></script>
+<script>
+(function () {
+  const row = CITY.BL.filter((b) => b && b.sampler);
+  const glass = row.find((b) => b.sampler === 'glass');
+  const door = glass && glass.doors && glass.doors[0];
+  P.x = door[0] + door[2] * 1.2;
+  P.z = door[1] + door[3] * 1.2;
+  WALK_MODE.onFoot = true;
+  WALK_MODE.x = P.x;
+  WALK_MODE.z = P.z;
+  WALK_MODE.y = 0;
+  const entered = WALK_MODE.enterDoor();
+  const card = document.getElementById('walk-interior');
+  const heart = document.getElementById('sampler-heart');
+  document.body.dataset.ready = '1';
+  document.body.dataset.entered = entered ? '1' : '0';
+  document.body.dataset.count = String(row.length);
+  document.body.dataset.purpose = (WALK_MODE.insideDoor && WALK_MODE.insideDoor.purpose) || '';
+  document.body.dataset.style = SAMPLER.styleId || '';
+  document.body.dataset.blurb = (card && card.querySelector('[data-k="act"]') && card.querySelector('[data-k="act"]').textContent) || '';
+  document.body.dataset.heart = heart ? heart.textContent : '';
+  document.body.dataset.openHidden = document.getElementById('walk-open-page').hidden ? '1' : '0';
+  document.body.dataset.href = location.href;
+})();
+</script>
+</body>
+</html>
