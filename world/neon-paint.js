@@ -90,6 +90,8 @@
   let editingVinylId = null;
   let editorName = '';
   let vinylFollow = '';
+  let paintKept = null;
+  let studioFromWorld = false;
   let grafFrame = 0;
   let grafArmed = false;
   const ui = {
@@ -452,6 +454,58 @@
     editingVinylId = null;
     editorName = '';
     fillEditor(active ? active.strokes : []);
+  }
+  function readStoreRaw(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  }
+  function writeStoreRaw(key, val) {
+    try {
+      if (val == null) localStorage.removeItem(key);
+      else localStorage.setItem(key, val);
+    } catch (e) {}
+  }
+  function capturePaintKept() {
+    paintKept = {
+      vinyl: readStoreRaw(VINYL_KEY),
+      wall: readStoreRaw(WALL_KEY),
+      neon: readStoreRaw(NEON_KEY)
+    };
+  }
+  function restorePaintKept() {
+    if (!paintKept) return;
+    writeStoreRaw(VINYL_KEY, paintKept.vinyl);
+    writeStoreRaw(WALL_KEY, paintKept.wall);
+    writeStoreRaw(NEON_KEY, paintKept.neon);
+    try { vinylStore = normalizeVinyls(paintKept.vinyl ? JSON.parse(paintKept.vinyl) : blankVinyls()); }
+    catch (e) { vinylStore = blankVinyls(); }
+    wallState = readWall();
+    wallJson = JSON.stringify(wallState);
+    live = null;
+    liveMirror = null;
+    wallLive = null;
+    wallLiveMirror = null;
+    vinylFollow = 'force';
+    reloadVinylMeshes();
+  }
+  function backToNeonWorld() {
+    try { restorePaintKept(); } catch (e) {}
+    const fromWorld = !!studioFromWorld;
+    closeStudio();
+    studioFromWorld = false;
+    if (fromWorld && window.WALK_MODE && typeof window.WALK_MODE.stepBackOutside === 'function') {
+      try { window.WALK_MODE.stepBackOutside(); } catch (e2) {}
+      return;
+    }
+    if (fromWorld) return;
+    let page = 'world.html';
+    try {
+      const raw = sessionStorage.getItem('zdash.neonworld.session.v1');
+      const snap = raw ? JSON.parse(raw) : null;
+      if (snap && (snap.page === 'world.html' || snap.page === 'world-split.html')) page = snap.page;
+    } catch (e3) {}
+    let file = '';
+    try { file = (location.pathname || '').split('/').pop() || ''; } catch (e4) { file = ''; }
+    if (file === 'neon-paint.html') location.assign(page + '?npreturn=1');
   }
   function saveCurrentVinyl() {
     if (!studio || ui.canvas !== 'car') return null;
@@ -1527,7 +1581,8 @@
       '#np-studio .np-vchip button[data-vinyl-act="edit"]{flex:1 1 100%;text-align:center;white-space:normal}',
       '#np-studio .np-vchip button[data-vinyl-act="equip"],#np-studio .np-vchip button[data-vinyl-act="del"]{flex:0 0 auto}',
       '#np-studio .np-vchip.eq button[data-vinyl-act="edit"]{border-color:#ffe14d;box-shadow:0 0 8px #ffe14d}',
-      '#np-studio #vinylNameInp{width:100%;min-height:42px;font:800 14px Orbitron,sans-serif;color:#fff;background:#120818;border:2px solid #ffe14d;border-radius:12px;padding:8px 10px;letter-spacing:.3px}'
+      '#np-studio #vinylNameInp{width:100%;min-height:42px;font:800 14px Orbitron,sans-serif;color:#fff;background:#120818;border:2px solid #ffe14d;border-radius:12px;padding:8px 10px;letter-spacing:.3px}',
+      '#np-studio .np-back{flex:none;width:100%;min-height:44px;padding:8px 8px;border-radius:12px;border:2px solid #fff;background:#7dff6b;color:#04140c;font:900 12px/1.15 Orbitron,sans-serif;letter-spacing:.2px;text-align:center;white-space:normal;cursor:pointer}'
     ].join('');
     document.head.appendChild(s);
   }
@@ -1562,6 +1617,7 @@
       '<div class="np-status" id="np-status-wall">DRAW THE SIGN</div></div>' +
       '<div class="np-main"><div class="np-stage spin"><canvas data-canvas="spin"></canvas></div>' +
       '<div class="np-tools" data-panel="car">' +
+      '<button type="button" class="np-back" data-act="world-back">BACK TO NEON WORLD</button>' +
       '<p class="np-lab">VINYLS</p><div class="np-vinyls" id="npVinylBar"></div>' +
       '<p class="np-lab">VINYL NAME</p>' +
       '<input id="vinylNameInp" type="text" maxlength="28" autocomplete="off" placeholder="NAME YOUR VINYL" aria-label="Vinyl name">' +
@@ -1580,6 +1636,7 @@
       '<div class="np-row"><button type="button" data-act="undo">UNDO</button>' +
       '<button type="button" data-act="clear">CLEAR</button></div></div>' +
       '<div class="np-tools np-off" data-panel="wall">' +
+      '<button type="button" class="np-back" data-act="world-back">BACK TO NEON WORLD</button>' +
       '<p class="np-lab">COLOR</p><div class="np-row np-colors">' + colors + '</div>' +
       '<p class="np-lab">BRUSH</p><div class="np-row">' +
       '<button type="button" data-brush="neon">TUBE</button>' +
@@ -1793,8 +1850,8 @@
         const vid = t.getAttribute('data-vinyl-id');
         if (vact === 'new') startNewVinyl();
         if (vact === 'edit') loadVinylIntoEditor(vid);
-        if (vact === 'equip') equipVinyl(readVinyls().activeId === vid ? null : vid);
-        if (vact === 'del') deleteVinyl(vid);
+        if (vact === 'equip') { equipVinyl(readVinyls().activeId === vid ? null : vid); capturePaintKept(); }
+        if (vact === 'del') { deleteVinyl(vid); capturePaintKept(); }
         syncUI();
         return;
       }
@@ -1841,7 +1898,8 @@
         editorCommit('UNDID');
       }
       if (act === 'clear' && ui.canvas === 'car') { live = null; liveMirror = null; slot().strokes = []; editorCommit('CLEARED'); }
-      if (act === 'save' && ui.canvas === 'car') saveCurrentVinyl();
+      if (act === 'world-back') { backToNeonWorld(); return; }
+      if (act === 'save' && ui.canvas === 'car') { if (saveCurrentVinyl()) capturePaintKept(); }
       if (act === 'wall-slot') { wallState.activeSlot = +t.getAttribute('data-slot') || 0; saveWall(); setStatus('Slot ' + (wallState.activeSlot + 1)); }
       if (act === 'wall-undo') {
         const g = wallSlot().strokes.length ? wallSlot().strokes[wallSlot().strokes.length - 1].group : 0;
@@ -1858,7 +1916,7 @@
         setStatus('WALL CLEARED');
       }
       if (act === 'wall-demo') loadDemoWall();
-      if (act === 'wall-apply') { saveWall(); setStatus('ON THE Z COMPANY ARTS BUILDING'); }
+      if (act === 'wall-apply') { saveWall(); capturePaintKept(); setStatus('ON THE Z COMPANY ARTS BUILDING'); }
       if (act === 'wall-mirror') { ui.wallMirror = !ui.wallMirror; setStatus(ui.wallMirror ? 'MIRROR IS ON' : 'MIRROR IS OFF'); }
       if (act === 'wall-look') { ui.wallLook = true; ui.stamp = ''; ui.stencil = ''; setStatus('DRAG TO TURN THE WALL'); }
       if (act === 'wall-draw') { ui.wallLook = false; setStatus('DRAW THE SIGN'); }
@@ -2822,6 +2880,8 @@
     if (typeof document === 'undefined') return;
     if (typeof opts === 'string') opts = { page: true, canvas: opts === 'wall' ? 'wall' : 'car' };
     opts = opts || {};
+    studioFromWorld = !!opts.fromWorld;
+    capturePaintKept();
     ui.canvas = (opts.canvas === 'wall' || opts.mode === 'wall') ? 'wall' : 'car';
     closeStudio();
     parkMenuButton();
@@ -2921,6 +2981,7 @@
       applyToCar: applyToCar,
       openStudio: openStudio,
       closeStudio: closeStudio,
+      backToWorld: backToNeonWorld,
       drawBuildingGraffiti: drawBuildingGraffiti,
       drawAllWallGraffiti: drawAllWallGraffiti,
       getVinyls: getVinyls,
