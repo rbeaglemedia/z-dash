@@ -31,6 +31,7 @@
     compose: compose,
     beginUnder: beginUnder,
     beginOver: beginOver,
+    withUnder: withUnder,
     stats: function () {
       const s = {};
       for (const k in api.statsFrame) s[k] = api.statsFrame[k];
@@ -194,10 +195,14 @@
     '    if(m>vDashOn) discard;',
     '  }',
     '  float a=vCol.a;',
+    '  float x=abs(vCross);',
     '  if(uCore<0.999){',
-    '    float x=abs(vCross);',
     '    float halo=x<=uCore?1.0:(1.0-(x-uCore)/max(0.001,1.0-uCore));',
     '    a*=halo;',
+    '  }else{',
+    '    // Canvas strokes fade across the outer half of the quad. A hard edge',
+    '    // paints a full extra pixel, which reads as a line across the car.',
+    '    a*=1.0-smoothstep(0.72,1.0,x);',
     '  }',
     '  if(a<0.004) discard;',
     '  gl_FragColor=vec4(vCol.rgb*a,a);',
@@ -379,6 +384,16 @@
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = 'source-over';
     ctx.clearRect(0, 0, W || 1, H || 1);
+  }
+
+  // One callback on #cback, then the painter returns to #c. Used so a nearer
+  // wall covers a street line with the same fill the 2D path already uses.
+  function withUnder(fn) {
+    if (!backCtx || typeof ctx === 'undefined' || typeof fn !== 'function') return;
+    const prev = ctx;
+    ctx = backCtx;
+    try { fn(); }
+    finally { ctx = prev; }
   }
 
   function bindFillAttribs() {

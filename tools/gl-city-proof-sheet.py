@@ -118,7 +118,8 @@ def main():
                 stats = channel(ia, ib)
                 note = (
                     'Same camera. Exact pixels %s%%. Within a small step %s%%. Visibly different %s%%. '
-                    'The difference is canvas antialiasing against a hard WebGL edge. No shadowBlur.'
+                    'Nearer walls cover the boost rings. One soft pixel under a neon edge still differs. '
+                    'The minimap and the FPS number move between shots. No shadowBlur.'
                     % (stats['exact'], stats['near'], stats['hot'])
                 )
                 if shot == 'nos':

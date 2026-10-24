@@ -8,25 +8,27 @@ The colored NOS station stays on the 2D painter in both modes. Copying its fills
 
 Today's building strokes set `shadowBlur` to 0. The matching glow is that hard neon edge. `?glow=1` widens the edge by 7 px. That wider halo is not today's picture, and it stays off unless the query is present. `world/gl-city.js` does not call `shadowBlur`.
 
-The picture is close and it is not identical. On the kid page, share of pixels within a channel-sum of 12, and the share that differ by more than 24:
+A nearer wall covers what the 2D fill covered. Boost rings stay on the 2D painter. Where a nearer solid overlaps one, that solid punches the ring out, so the ring does not paint across the wall. The same box fill is stamped on the ground canvas when the wall is opaque, so a street line behind that wall stays behind it. The WebGL edge fades across its outer pixels so it does not paint a hard extra row. One soft pixel under a neon edge still does not match. The moving minimap and the FPS number also differ between the two shots.
+
+The picture is close and it is not identical. On the kid page, share of pixels within a channel-sum of 12, and the share that differ by more than 24 (sampled every second pixel):
 
 | view | canvas | face ≤12 / >24 | NOS ≤12 / >24 | air ≤12 / >24 |
 |---|---|---|---|---|
-| phone | 1688×780 DPR 2 | 93.5% / 4.1% | 99.1% / 0.8% | 98.5% / 0.7% |
-| iPad | 1024×768 DPR 1 | 94.3% / 4.7% | 97.3% / 2.0% | 99.4% / 0.4% |
-| PC | 1280×720 inside 1366×768 | 96.0% / 3.4% | 98.1% / 1.3% | 98.4% / 1.0% |
+| phone | 1688×780 DPR 2 | 98.2% / 1.5% | 99.2% / 0.7% | 97.9% / 0.8% |
+| iPad | 1024×768 DPR 1 | 97.2% / 2.4% | 98.9% / 0.9% | 98.0% / 1.6% |
+| PC | 1280×720 inside 1366×768 | 95.7% / 3.7% | 98.3% / 1.3% | 98.2% / 1.3% |
 
-Exact pixels are lower than that, especially on PC (the NOS pair is 39% identical and 98% within a small step). Most of those are 1–4 levels, from canvas antialiasing against a hard quad, and from the desktop canvas being scaled into the window. The three-canvas stack (sky, WebGL, overlay) does not resample the same as the single 2D canvas. The PC face pair is 67.5% identical. The iPad face pair is 92.2% identical. Labeled zooms are in `test-results/gl-city-proof/`.
+Exact pixels are lower than that, especially on PC (the NOS pair is 39.1% identical and 98.3% within a small step). The desktop canvas is scaled into the window. The iPad face pair is 94.0% identical. The phone face pair is 88.7% identical. The iPad air pair is 96.5% identical, and its visibly different share is 1.6%, which is higher than the first proof's 0.4% on that one shot. Labeled zooms are in `test-results/gl-city-proof/`.
 
-`?glow=1` on the phone face is 92.9% within a small step and 4.6% visibly different. It is labeled as a different picture.
+`?glow=1` on the phone face is 94.5% within a small step and 4.7% visibly different. It is labeled as a different picture.
 
-Frame times are SwiftShader with the player car draw stubbed. They are not a Galaxy and not an iPad. Compose (submit plus the GL draw) is 0.1–0.3 ms. Blit is 0. Whole-frame `raf` on the kid page, 2D then WebGL:
+Frame times are SwiftShader with the player car draw stubbed. They are not a Galaxy and not an iPad. Compose (submit plus the GL draw) is 0.1–0.3 ms, and 0.5 ms on the PC glow shot. Blit is 0. Whole-frame `raf` on the kid page, 2D then WebGL:
 
 | view | face | NOS | air |
 |---|---|---|---|
-| phone | 17.5 ms then 16.6 ms | 16.9 then 18.9 | 16.6 then 16.0 |
-| iPad | 16.8 then 15.1 | 16.3 then 16.7 | 15.5 then 16.7 |
-| PC | 14.0 then 14.9 | 13.8 then 14.7 | 16.7 then 15.8 |
+| phone | 14.5 ms then 18.0 ms | 16.2 then 18.7 | 16.6 then 16.1 |
+| iPad | 15.2 then 14.1 | 16.7 then 13.7 | 16.7 then 13.8 |
+| PC | 15.9 then 14.8 | 14.5 then 16.4 | 16.7 then 16.6 |
 
 Nothing here deploys.
 
