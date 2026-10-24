@@ -1,0 +1,68 @@
+[
+  {
+    "shot": "house",
+    "style": 1,
+    "view": "phone",
+    "ok": true,
+    "name": "Glass loft",
+    "styleName": "1",
+    "buffer": "844x390",
+    "world": "",
+    "file": "/workspace/test-results/southeast-row/live/house-1-phone.png"
+  },
+  {
+    "shot": "house",
+    "style": 1,
+    "view": "ipad",
+    "ok": true,
+    "name": "Glass loft",
+    "styleName": "1",
+    "buffer": "1024x768",
+    "world": "",
+    "file": "/workspace/test-results/southeast-row/live/house-1-ipad.png"
+  },
+  {
+    "shot": "house",
+    "style": 1,
+    "view": "pc",
+    "ok": true,
+    "name": "Glass loft",
+    "styleName": "1",
+    "buffer": "1280x720",
+    "world": "",
+    "file": "/workspace/test-results/southeast-row/live/house-1-pc.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 1,
+    "view": "phone",
+    "ok": true,
+    "name": "Beach shack",
+    "styleName": "1",
+    "buffer": "844x390",
+    "world": "",
+    "file": "/workspace/test-results/southeast-row/live/cafe-1-phone.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 1,
+    "view": "ipad",
+    "ok": true,
+    "name": "Beach shack",
+    "styleName": "1",
+    "buffer": "1024x768",
+    "world": "",
+    "file": "/workspace/test-results/southeast-row/live/cafe-1-ipad.png"
+  },
+  {
+    "shot": "cafe",
+    "style": 1,
+    "view": "pc",
+    "ok": true,
+    "name": "Beach shack",
+    "styleName": "1",
+    "buffer": "1280x720",
+    "world": "",
+    "file": "/workspace/test-results/southeast-row/live/cafe-1-pc.png"
+  }
+]

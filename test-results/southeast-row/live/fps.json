@@ -1,0 +1,86 @@
+{
+  "mode": "street",
+  "views": [
+    {
+      "id": "phone",
+      "css": "844x390",
+      "file": "/workspace/test-results/southeast-row/live/se-street-phone.png",
+      "renderMs": 7.5,
+      "fps": 133,
+      "passMs": 0.6,
+      "neighbors": 8,
+      "baySolids": 8,
+      "liveSolids": 33,
+      "buffer": "844x390",
+      "cam": {
+        "x": 840,
+        "z": -717,
+        "y": 20.3
+      },
+      "signs": [
+        "HOME 1",
+        "CAFE 1",
+        "HOME 2",
+        "CAFE 2",
+        "HOME 3",
+        "CAFE 3",
+        "HOME 4",
+        "CAFE 4"
+      ]
+    },
+    {
+      "id": "ipad",
+      "css": "1024x768",
+      "file": "/workspace/test-results/southeast-row/live/se-street-ipad.png",
+      "renderMs": 4.6,
+      "fps": 217,
+      "passMs": 0.3,
+      "neighbors": 8,
+      "baySolids": 8,
+      "liveSolids": 33,
+      "buffer": "1024x768",
+      "cam": {
+        "x": 840,
+        "z": -717,
+        "y": 20.3
+      },
+      "signs": [
+        "HOME 1",
+        "CAFE 1",
+        "HOME 2",
+        "CAFE 2",
+        "HOME 3",
+        "CAFE 3",
+        "HOME 4",
+        "CAFE 4"
+      ]
+    },
+    {
+      "id": "pc",
+      "css": "1280x720",
+      "file": "/workspace/test-results/southeast-row/live/se-street-pc.png",
+      "renderMs": 8.3,
+      "fps": 120,
+      "passMs": 0.3,
+      "neighbors": 8,
+      "baySolids": 8,
+      "liveSolids": 33,
+      "buffer": "1280x720",
+      "cam": {
+        "x": 840,
+        "z": -717,
+        "y": 20.3
+      },
+      "signs": [
+        "HOME 1",
+        "CAFE 1",
+        "HOME 2",
+        "CAFE 2",
+        "HOME 3",
+        "CAFE 3",
+        "HOME 4",
+        "CAFE 4"
+      ]
+    }
+  ]
+}
