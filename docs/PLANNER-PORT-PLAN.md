@@ -33,8 +33,11 @@ Interiors agent `bc-80a1fc6f` (walk-in rooms and the southwest style sampler) sh
 PLANNER_PROPS.list()              → every entry in the JSON
 PLANNER_PROPS.get(id)             → one entry, or null
 PLANNER_PROPS.parts(id, params)   → local boxes, facing +z, y up, metres
+PLANNER_PROPS.place(id, params, pose) → those boxes moved to a room pose
 PLANNER_PROPS.remix(id)           → local boxes for a remix id
 ```
+
+`pose` is `{ x, y, z, yaw }` in the room frame from Interiors' `docs/ROOM-PLACE-HOOK.md` on PR #87. Yaw 0 faces +z. Yaw pi turns a screen toward the door. `place` is the call that hook already names. The proof bakers grow it when the real modules arrive.
 
 `params` is size, color, glow, and proportions. One base mesh, many variants. `saveKey` is null on every entry. Do not write `zdash.house.v1` or the `house` object inside `zdash.kid.v1`.
 
@@ -304,13 +307,19 @@ How she opens it:
 
 The words are Place, Turn, Done, and Undo. Palette groups are Screens, Sound, Seats, and Tables, with the tech first. A full room stops at the interior budget (under 48 instances, one video) and says "This room is full." The hero pieces the garage already saves (sofa, arcade, pet bed, dance floor) stay those checkboxes. They are not a second copy in this palette, so her builder cannot clear them.
 
-Her save is a new key, `zdash.ellie.builder.v1`. One list per room purpose, so a TV in the house does not appear in the arcade:
+Her save is the key Interiors already reads, `zdash.ellie.builder.v1`. This tool is the writer. `ROOM_PLACE.read` is the reader. A flat value `{ v: 1, area: "house", props: [...] }` still means the house only. A rooms map covers the house, the eight sampler rooms, and the five later rooms:
 
 ```text
-{ v: 1, rooms: { HOME: [{ prop, x, z, yaw, params }], ARCADE: [], CAFE: [], PETS: [], SOCCER: [], BUILDER: [] } }
+{
+  v: 1,
+  rooms: {
+    house: { props: [{ prop, x, y, z, yaw, wall, slot, params }] },
+    glass: { props: [] }
+  }
+}
 ```
 
-`x` and `z` are metres on that room's floor, not city coordinates. `params` is the catalog size, color, glow, and proportions. The write path is this key only. It does not call `saveHouse` or `walkHouseSave`. It does not patch `house` inside `zdash.kid.v1`. Clearing the site data clears this list the same way it clears her other device saves. There is no account in the cloud. DEV publish does not read or write this key. Both worlds read this key. The current world draws it only while a walk-in room is open. The new world draws the same list in the matching room.
+Room ids are `house`, `glass`, `wood`, `pop`, `pastel`, `loft`, `plants`, `future`, `neon`, `arcade`, `cafe`, `pets`, `soccer`, and `builder`. `prop` is a catalog id. `params` is size, color, glow, and proportions. `wall` is `far`, `left`, `right`, or null on a floor piece. `y` is 0 on the floor, or the bottom of a wall piece. `slot` is the slot id from the hook. The write path is this key only. It does not call `saveHouse` or `walkHouseSave`. It does not patch `zdash.house.v1`, the `house` object inside `zdash.kid.v1`, or `zdash.sampler.likes.v1`. Clearing the site data clears this list the same way it clears her other device saves. There is no account in the cloud. DEV publish does not read or write this key. The current walk-in draws a room's list while that room is open. The new world draws the same list when it has that room.
 
 ### Planner tools as the DEV base
 
@@ -443,7 +452,7 @@ Agent `bc-3ff1a27b` keeps ownership of Option 1. DEV consumes their file. Their 
 7. Her tools: pack A (move and turn only), **pack B** (plus duplicate, align, three sizes, measure, Floor view, four neon swatches), or pack C (B plus stick-together).
 8. New DEV tools: pack N1 (roads, stamp, NOS and spawns, minimap, FPS meter), **pack N2** (N1 plus bulk move, traffic preview, color picker), or pack N3 (N2 plus prop scatter).
 9. New world name: **Neon Bay**, The Boulevards, Z City, or Neon World 2. The section below is the full choice.
-10. Drop-objects first test: **R1** (current house, tech only), R2 (house, tech plus seats and tables), or R3 (all six current rooms at once). Same save on the new world.
+10. Drop-objects first test: **R1** (current house, tech only, snap to drop slots), R2 (house, tech plus seats and tables, still on drop slots), or R3 (house plus the eight sampler rooms). The five later rooms stay stubbed.
 
 Bold items are the recommendation. Nothing here is built. The object swap and the review shots still wait on the planner zip. The tool names above are the ones Bob listed. The zip confirms the real functions.
 
@@ -494,7 +503,7 @@ One device, one Ellie. The new page reads the keys the current world already rea
 | Car, paint, parts | `zdash.kid.v1` → `eq` | Same 370Z mesh. Garage Z still changes nothing except `eq`. A paint she sets in either place shows in both |
 | Pet | `zdash.kid.v1` → `pet`, and the crew data the current world already loads | Same pet, same height 0.74 m. No second pet key |
 | Home choices | `zdash.house.v1`, and the `house` object inside `zdash.kid.v1` | Wall, sign, sofa, arcade, pet bed, and dance floor stay those checkboxes. Both pages read them. The builder does not write them |
-| Her placed props | `zdash.ellie.builder.v1` | New key, one list per room purpose. The current walk-in and the new world both draw it. It is not a field on the house save |
+| Her placed props | `zdash.ellie.builder.v1` | The drop tool writes it. A flat value is the house. A `rooms` map covers the sampler and the later ids. It is not a field on the house save or the sampler likes |
 | DEV test layout | `zdash.city.editor.v1` | This browser. `/test/world.html` reads it for ordinary edits. The new world reads it only while a new look is on that page |
 
 The new page may include the existing garage and house controls, and those controls keep their current write path. A new field inside `zdash.kid.v1` or `zdash.house.v1` is not how the builder stores props. Old readers keep working because the keys they already understand are unchanged.
@@ -507,55 +516,52 @@ She can open NEON WORLD and the new tile from the same menu. NEON WORLD loads `w
 
 Plan only. This is the house object-placement mode: Ellie drops planner objects into a room, tech first. It is planned for the current Neon World, and the same tool runs on the new world when that page has the room. The first test is the current house. The DEV Builder and the rest of Ellie's Builder are planned for the current Neon World too. A new building look still waits on the new world.
 
-The tool is the simple form of select, move, quarter-turn, snap, undo, and Done. Pack B's extra buttons can come later. Wall drawing, layers, roads, stamps, and the color picker stay off this tool. The words are Place, Turn, Done, and Undo. Palette order is Screens, Sound, then Seats and Tables. The saved hero piece (sofa, arcade, dj, or trophy), the pet bed, the sign, and the wall theme stay the garage checkboxes. This palette does not offer a second copy of those.
+The tool is the simple form of select, move, quarter-turn, snap, undo, and Done. Pack B's extra buttons can come later. Wall drawing, layers, roads, stamps, and the color picker stay off this tool. The words are Place, Turn, Done, and Undo. Palette order is Screens, Sound, then Seats and Tables. The saved hero piece (sofa, arcade, dj, or trophy), the pet bed, the sign, and the wall theme stay the garage checkboxes. This palette does not offer a second copy of those, and it does not fill a slot marked `hero`.
 
-Both pages call one function. A prop she drops in the current house is in the new world's house, because the save is room-local and keyed by purpose.
+### The room contract
+
+Interiors shipped the room side on PR #87, branch `cursor/room-place-hook-52fc`, commit `5a7f5a7`. The write-up is `docs/ROOM-PLACE-HOOK.md`. The machine copy is `docs/room-place/HOOK.json`. This plan matches that contract. It does not edit that PR.
+
+The origin is the floor at the center of the door wall. x points right, y points up, z points into the room. A prop at yaw 0 faces +z, so a seat looks at the far wall. A prop at yaw pi faces the door, so a screen's lit face points back into the room. Catalog boxes come from `PLANNER_PROPS.parts` and `PLANNER_PROPS.place`.
+
+Their three calls read. They do not write.
 
 ```text
-PLANNER_DROPS.list(purpose)                 → the props in zdash.ellie.builder.v1 for that purpose
-PLANNER_DROPS.parts(purpose)                → boxes in room space, facing +z, y up, metres
-PLANNER_DROPS.clamp(purpose, floor)         → pull a prop back inside that floor
+ROOM_PLACE.describe(id) → bounds, blocked boxes, floor slots, wall slots
+ROOM_PLACE.read(id)     → the props saved for that room, or []
+ROOM_PLACE.snap(id, hit) → the nearest free slot within 0.75 m, or null
 ```
 
-`floor` is `{ w, d, h }` in metres, the kit she is standing in, inset 0.4 m. The tool does not store a city x or z. Enter already opens the kit for the door's purpose and remembers that door. This tool reads that purpose. Step outside still returns her to that door. The drop list does not change the door.
+`hit` is `{ x, y, z, kind }` with `kind` of `floor` or `wall`. A null snap means this tool does not place. `snap` skips a `hero` slot, a blocked box, and the door gap. The door gap is x from −1.2 to 1.2 and z from 0 to 2.2. Objects sit at least 0.4 m inside the walls. A new wall screen's bottom stays at or above 1.05 m, so the 0.74 m pet is not inside it. The neon room's standing screens are already in that shell, with bottoms at 0.55 m. Those are samples, not a new screen this tool drops.
 
-While the room is open the city loop stays held, the way Interiors already planned. The room painter draws the shell, then the saved hero piece, then `PLANNER_DROPS.parts`. Flat fills. Glow is a brighter box. No `shadowBlur`. One video element, 256×144, and only in the room she is in. A second screen in the same room is a baked color.
+A slot's `holds` value:
 
-The cap is the shell plus the drops, together at or under 48 boxes, and one video. Interiors keeps each shell at or under 32 boxes (PR #74). A house shell of about 24 to 28 boxes leaves room for about 20 drops. Past the cap, Place says "This room is full." The meter counts boxes. It does not run a stress frame.
+| holds | What the drop tool does |
+| --- | --- |
+| hero | Leaves it. The four saved home controls fill the house sofa, table, pet bed, and far screen |
+| sample | Leaves it until she saves a prop in that sampler room. Then the samples hide and her props draw. The shell stays. `zdash.sampler.likes.v1` stays |
+| drop | Places here. This is the empty slot |
+
+The walk painter draws the shell, then the hero or sample pieces, then `ROOM_PLACE.read`, then `PLANNER_PROPS.place` for each saved prop. Flat fills. Glow is a brighter box. No `shadowBlur`. One video element, 256×144, and only in the room she is in. A second screen in the same room is a baked color. The cap is 48 catalog parts in that room, plus the one video. The shell's blocked boxes do not count toward the 48. Past the cap, Place says "This room is full."
+
+The writer stores the slot it snapped to, that slot's yaw, and `wall` when the slot is on a wall. A wall snap keeps yaw pi so the lit face stays toward the door. Turn, after a floor snap, still steps by a quarter turn. A floor piece keeps `y` at 0, except the loft's upper slot, which is already at y 3.64.
 
 ### Where she tests it
 
+Slots that exist today are the house and the eight sampler rooms: glass, wood, pop, pastel, loft, plants, future, and neon. Arcade, cafe, pets, soccer, and Builder HQ are stubbed. Each has bounds and one floor slot plus one far-wall slot, and `shell` is `later`. This tool does not open Place in a stub.
+
 | Choice | First test | Later, same tool |
 | --- | --- | --- |
-| R1 | Current Neon World, HOME only, tech only: TV, wall screen, speaker. Recommended | The other five walk-in rooms, then the same lists on the new world |
-| R2 | Current HOME, tech plus seats and tables | Same, still skipping the saved hero pieces |
-| R3 | All six walk-in rooms on the current world at once | The new world reads the lists that already exist |
+| R1 | Current house, tech only, on drop slots. Recommended. Wall screens use `wall-far-left` and `wall-far-right` (y 1.15, yaw pi). A speaker uses a free floor slot | The eight sampler rooms, then the stub rooms when their shells exist |
+| R2 | Current house, tech plus seats and tables, still only on `drop` slots | Same. Hero slots stay the saved controls |
+| R3 | House and the eight sampler rooms in one pass | The stub rooms when their shells exist |
 
-This plan recommends **R1**. HOME is the room she already knows. Tech is the piece Bob asked to see. Arcade is the second room when he wants it, because that room can hold the one video on the jackpot screen. Cafe, pets, soccer shop, and Builder HQ stay empty until he says the house test is good. Paint, the garage, and the dance hall stay apps. NOS, the showroom, and the sky pad stay drive-up. Those doors do not get a Place button.
+This plan recommends **R1**, and it adopts their snap: a tap snaps to a free slot within 0.75 m. A free drop on the open floor, inside the same bounds and outside the door gap, can come later. They already named that as a later step. The walk view already turns a tap into a floor point.
 
-The Place control sits on the house interior, after she is inside (H1). UI Polish places it. It stays off the driver HUD. The current world gets this button, the room-painter call, and, on Bob's unlock, the DEV Builder. A new building look or a new city art style is the piece the current world does not get.
+House drop slots for the first test: `floor-free` at (0, 0, 10), `floor-left` at (−5, 0, 8), `floor-right` at (5, 0, 9), `wall-far-left` at (−5.5, 1.15, 17.4), and `wall-far-right` at (5.5, 1.15, 17.4). The house is 24 × 18 × 4.8 m. Paint, the garage, and the dance hall stay apps. NOS, the showroom, and the sky pad stay drive-up. Those doors do not get a Place button.
 
-### What Interiors needs to hook
-
-Interiors agent `bc-80a1fc6f`, PR #74, branch `cursor/interiors-plan-52fc`, owns the six rooms. This plan does not edit that PR. Bob carries the notes below. The rooms are not built yet. The hook lands when Bob writes "plan approved, build it" for both plans.
-
-What their plan already gives this tool:
-
-- A kit per purpose: HOME, ARCADE, CAFE, PETS, SOCCER, BUILDER. No city id and no world coordinate in the kit. Both worlds can share it.
-- House A is 24 × 18 × 4.8 m. House B is 22 × 16 × 4.6 m. The floor size comes from the concept Bob picks. This tool reads that size. It does not bake 24 × 18 into the save.
-- The city loop is held while the room is open. Drops draw in that same painter, so they do not put the outdoor city back on the frame.
-- Saved home keys stay `zdash.house.v1` and the house object inside `zdash.kid.v1`. Theme, furniture, pet bed, and sign stay theirs. If the prop sheet from PR #60 has landed, that sheet keeps its own cap. Drops sit on the new floor beside it. They do not replace it.
-
-What to ask them for, through Bob:
-
-1. At the end of the room painter, call `PLANNER_DROPS.parts(purpose)` and draw those boxes with the same flat fills as the shell. Purpose is the door she entered.
-2. Pass the floor `{ w, d, h }` for the concept that was picked, A or B. One letter per room is their pick list. This tool follows that letter.
-3. Leave a spot for a Place control on the interior, for UI Polish. Their plaque, hero piece, and pet bed stay their draw.
-4. Keep the shell at or under 32 boxes so the shared cap of 48 still has room for her drops.
-5. Do not write `zdash.ellie.builder.v1`. This plan owns that key. Do not read it from inside the house save.
-
-What this plan will not ask them to do: move a shop, add a door, or change a saved home key. New building looks and new city art styles from the object study stay on the new world, for Bob to pick from. The rooms they are already planning stay on the current Neon World, and this tool drops props into those rooms.
+The Place control sits on the house interior, after she is inside (H1). UI Polish places it. It stays off the driver HUD. The sampler rooms expose the same hook, so the same control can show there when Bob wants R3. The current world gets this button, the room-painter read, and, on Bob's unlock, the DEV Builder. A new building look or a new city art style is the piece the current world does not get.
 
 ## What this phase does not do
 
-It does not copy the planner. It does not edit the live world, the adult page, the driver screens, Ellie's saved home, or the Garage Z link. It does not place the trailer pad in `city.js`. It does not build the City Editor, the drop-objects tool, or the new world page. It does not add the JR tile. It does not post on the Interiors PR. It does not deploy.
+It does not copy the planner. It does not edit the live world, the adult page, the driver screens, Ellie's saved home, or the Garage Z link. It does not place the trailer pad in `city.js`. It does not build the City Editor, the drop-objects tool, or the new world page. It does not add the JR tile. It does not post on the Interiors PRs. It does not deploy.
