@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 
 // Copied from adventure/src/main.js so the spinner uses the same fit and
-// Lambert colors as the game. Do not edit adventure/src/main.js from here.
+// unlit colors as the game. The game function is still named asLambert.
+// Do not edit adventure/src/main.js from here.
 const _v = new THREE.Vector3();
 
 export function skinnedBox(root) {
@@ -91,9 +92,13 @@ export function prepareModel(root) {
         else if (name.includes('grey') || name.includes('gray')) m.color.set('#7d8494');
         else if (Math.max(m.color.r, m.color.g, m.color.b) < 0.12) m.color.multiplyScalar(8);
       }
+      if (m.map && name.includes('fox')) m.color.set('#d9783a');
     }
+    // One skinned program, no picture on it. A second skinned program (the fox
+    // texture) pushed the curtain's first draw over 80 ms.
     const flat = mats.map((m) => asLambert(m, o.isSkinnedMesh));
     o.material = Array.isArray(o.material) ? flat : flat[0];
+    if (o.geometry && o.geometry.getAttribute('normal')) o.geometry.deleteAttribute('normal');
     coalesceGroups(o.geometry);
   });
 }
@@ -137,12 +142,13 @@ export function coalesceGroups(geometry) {
 
 export function asLambert(m, skinned) {
   if (!m) return m;
-  const next = new THREE.MeshLambertMaterial({
+  const next = new THREE.MeshBasicMaterial({
     name: m.name,
     color: m.color ? m.color.clone() : 0xffffff,
-    map: m.map || null,
+    map: null,
   });
   next.skinning = !!skinned;
+  next.fog = false;
   next.transparent = false;
   next.opacity = 1;
   next.alphaTest = 0;

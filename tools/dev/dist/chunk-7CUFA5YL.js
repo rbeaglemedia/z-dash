@@ -10,7 +10,6 @@ import {
   HemisphereLight,
   Mesh,
   MeshBasicMaterial,
-  MeshLambertMaterial,
   OrbitControls,
   PerspectiveCamera,
   RingGeometry,
@@ -195,7 +194,8 @@ function resolveColor(opt, eq, catalog) {
 }
 function attachParts(root, boneName, parts, color, colorSlot, height) {
   const k = Math.max(0.2, (height || 1.5) / 1.5);
-  const mat = new MeshLambertMaterial({ color: color || "#ffffff", name: "attach" });
+  const mat = new MeshBasicMaterial({ color: color || "#ffffff", name: "attach" });
+  mat.fog = false;
   mat.userData.attach = true;
   const list = root.userData.attached || (root.userData.attached = []);
   for (const parent of hosts(root, boneName)) {

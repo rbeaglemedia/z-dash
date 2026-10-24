@@ -9,7 +9,7 @@ import {
   scanMaps,
   setWire,
   stamp
-} from "./chunk-4ZZADRW3.js";
+} from "./chunk-7CUFA5YL.js";
 import {
   AmbientLight,
   AnimationClip,
@@ -5791,9 +5791,11 @@ function prepareModel(root) {
         else if (name.includes("grey") || name.includes("gray")) m.color.set("#7d8494");
         else if (Math.max(m.color.r, m.color.g, m.color.b) < 0.12) m.color.multiplyScalar(8);
       }
+      if (m.map && name.includes("fox")) m.color.set("#d9783a");
     }
     const flat = mats.map((m) => asLambert(m, o.isSkinnedMesh));
     o.material = Array.isArray(o.material) ? flat : flat[0];
+    if (o.geometry && o.geometry.getAttribute("normal")) o.geometry.deleteAttribute("normal");
     coalesceGroups(o.geometry);
   });
 }
@@ -5835,12 +5837,13 @@ function coalesceGroups(geometry) {
 }
 function asLambert(m, skinned) {
   if (!m) return m;
-  const next = new MeshLambertMaterial({
+  const next = new MeshBasicMaterial({
     name: m.name,
     color: m.color ? m.color.clone() : 16777215,
-    map: m.map || null
+    map: null
   });
   next.skinning = !!skinned;
+  next.fog = false;
   next.transparent = false;
   next.opacity = 1;
   next.alphaTest = 0;
