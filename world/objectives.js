@@ -2,14 +2,19 @@
 // Optional 25s Hot Drop beacon. Spawned once on the first grounded touchdown after a Sky Drop.
 window.HOTDROP={active:false,x:0,z:0,y:0,r:16,tLeft:0,maxT:25,overchargeT:0,claimed:0,spawned:0,
   spawn(fromX,fromZ,yaw){
+    if(this.active&&this.tLeft>0)return;
     const spot=hotDropSpot(fromX,fromZ,yaw||0);
     this.x=spot.x;this.y=0;this.z=spot.z;this.r=16;
-    this.active=true;this.tLeft=25;this.maxT=25;this.spawned++;
+    this.active=true;this.tLeft=25;this.maxT=25;this.hold=false;this.spawned++;
     if(typeof wMsg==='function')wMsg('⚡ HOT DROP NEARBY!','#ffe14d','optional 25s sprint · follow the ★ on the map!');
   },
   update(dt){
     if(this.overchargeT>0){this.overchargeT=Math.max(0,this.overchargeT-dt);P.nosTank=1;}
     if(!this.active)return;
+    if(this.hold){
+      if(Math.hypot(P.x-this.x,P.z-this.z)<=80){this.hold=false;if(window.RESUME&&RESUME.onNear)RESUME.onNear();}
+      else return;
+    }
     this.tLeft-=dt;
     if(Math.hypot(P.x-this.x,P.z-this.z)<=18&&Math.abs(P.y-this.y)<=22){
       this.active=false;this.claimed++;this.overchargeT=15;P.nosTank=1;
@@ -49,6 +54,22 @@ window.HOTDROP={active:false,x:0,z:0,y:0,r:16,tLeft:0,maxT:25,overchargeT:0,clai
     line([x,cy+3.2,z],[x-2.4,cy,z],'#ffe14d',2.6);line([x,cy+3.2,z],[x+2.4,cy,z],'#3ee6ff',2.6);
     line([x-2.4,cy,z],[x,cy-1.4,z],'#ffe14d',2);line([x+2.4,cy,z],[x,cy-1.4,z],'#3ee6ff',2);
     ctx.restore();
+  },
+  pack(){
+    const place=!!(this.active&&this.tLeft>0);
+    if(!place&&!(this.overchargeT>0))return null;
+    return {id:'hotdrop',name:'Hot Drop',needsPlace:place,active:place,x:+this.x||0,y:+this.y||0,z:+this.z||0,r:+this.r||16,tLeft:Math.max(0,+this.tLeft||0),maxT:+this.maxT||25,overchargeT:Math.max(0,+this.overchargeT||0),claimed:+this.claimed||0,spawned:+this.spawned||0,hold:!!this.hold};
+  },
+  applyPack(pack,opt){
+    opt=opt||{};
+    if(!pack)return;
+    this.claimed=+pack.claimed||0;this.spawned=+pack.spawned||0;this.maxT=+pack.maxT||25;this.r=+pack.r||16;
+    this.overchargeT=Math.max(0,+pack.overchargeT||0);
+    if(opt.unplaced){this.active=false;this.tLeft=0;this.hold=false;return;}
+    this.x=opt.x!=null?+opt.x:+pack.x||0;this.y=opt.y!=null?+opt.y:+pack.y||0;this.z=opt.z!=null?+opt.z:+pack.z||0;
+    this.tLeft=Math.max(0,+pack.tLeft||0);
+    this.active=!!pack.active&&this.tLeft>0;
+    this.hold=!!opt.hold&&this.active;
   }};
 function hotDropSpot(fromX,fromZ,yaw){
   const R=(typeof CITY!=='undefined'&&CITY.ROADS)?CITY.ROADS:null,fx=Math.sin(yaw),fz=Math.cos(yaw);
@@ -64,3 +85,5 @@ function hotDropSpot(fromX,fromZ,yaw){
   if(R){let nd=1e9,nn=null;for(const n of R.nodes){if(!n||n.kind==='tunnel'||n.kind==='track')continue;const od=Math.hypot(n.x-fromX,n.z-fromZ);if(od<200||od>340)continue;const d=Math.hypot(n.x-px,n.z-pz);if(d<nd){nd=d;nn=n;}}
     if(nn)return{x:nn.x,z:nn.z};}
   return{x:px,z:pz};}
+window.ZOBJ=window.ZOBJ||[];
+ZOBJ.push({id:'hotdrop',pack(){return HOTDROP.pack();},apply(pack,opt){HOTDROP.applyPack(pack,opt);}});

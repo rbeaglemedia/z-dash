@@ -306,8 +306,16 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
       if(inR(x,z,PARK)){const sx=((Math.abs(x)-150)%100+100)%100,sz=((z+300)%200+200)%200;return(sx<=10||sx>=90||sz<=10||sz>=190)?'paved':'park';}return'paved';}
     return'grass';}
   const padAt=(x,z,y)=>PADS.find(p=>Math.abs(p.y-y)<1&&inR(x,z,p))||null;
+  // Layout fingerprint. A city redesign (new blocks, roads, or bounds) changes it.
+  // Resume stores this with her spot so an old coordinate is not trusted after the map moves.
+  function mapStamp(){let h=2166136261;const mix=v=>{h^=(v|0);h=Math.imul(h,16777619);};
+    mix(XS0);mix(XS1);mix(ZS0);mix(ZS1);mix(BL.length);mix(ROADS.nodes.length);mix(ROADS.edges.length);
+    mix(STAD.x);mix(STAD.z|0);mix(TRACK.cx);mix(TRACK.cz);mix(HW.x);mix(DT.x);mix(DT.z);mix(RIV.z0|0);mix(RIV.z1|0);
+    const step=Math.max(1,(BL.length/7)|0);
+    for(let i=0;i<BL.length;i+=step){const b=BL[i];if(!b)continue;mix(b.cx|0);mix(b.cz|0);mix((b.top||0)|0);}
+    return (h>>>0).toString(36);}
   function hit(x,z,r,y){const pr=probe(x,z,y==null?0:y);if(!pr.wl)return null;const pk=pr.wl.b&&pr.wl.b.parking;if(pk&&pk.type==='garage'&&!pr.wl.bay&&garageZone(pk,x,z,y||0,r||0)===2)return null;return pr.wl;}
-  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,hit,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,buildings:BL,BX,roadsX,roadsZ,RAMPS,PADS,TREES,LOTS,HOOPS,RINGS:rings,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,BUILDER_ZONE,DISTRICTS,XS0,XS1,ZS0,ZS1,
+  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,hit,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,buildings:BL,BX,roadsX,roadsZ,RAMPS,PADS,TREES,LOTS,HOOPS,RINGS:rings,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,BUILDER_ZONE,DISTRICTS,XS0,XS1,ZS0,ZS1,mapStamp,
     probe,gnd,riverY,pipeY,rampH,trackPts,trackDist,surfaceAt,padAt,inTunnel:(x,z)=>x>TUN.bx0&&x<TUN.bx1&&z>TUN.z0&&z<TUN.z1};})();
 const surfaceAt=CITY.surfaceAt;
 // walls: glancing scrapes along the tangent (keeps tangential speed, sparks), square hits bounce 2.5–4.5 m/s off the normal, airborne grazes deflect outward. Pushed out of q: no reset, no trap.
