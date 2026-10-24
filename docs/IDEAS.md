@@ -23,16 +23,18 @@ A line marked **scales up** is safe on the phone and is also a prototype for the
 
 ## Top 5 picks
 
-1. **Z Company class cards.** Three real class names inside the studio she already walks into. The dance clock she already has grades the 8-count. This is the idea that is hers, and it is cheap.
-2. **Pizza run.** One box from the cafe to a door on a timer. Brookhaven errands, with no new cars and no new people.
-3. **Selfie frames.** Four fixed spots, one saved picture. The photo habit from Roblox, using a snapshot the page can already take.
-4. **Her best lap, drawn as a neon ribbon** on the track that already exists. A rival she can see, made of that one line.
-5. **One local friend in the passenger seat** who dances when she honks. The biggest of the five, still one extra person, and the seed of a PC crew.
+Bob, 24 Oct 2026: picks 1–4 are approved and parked. Nothing in this file gets built until the city layout and building designs are done. Pick 5 was not chosen.
+
+1. **Z Company class cards.** Approved, parked until the city layout and building designs are done. Three real class names inside the studio she already walks into. The dance clock she already has grades the 8-count. This is the idea that is hers, and it is cheap.
+2. **Pizza run.** Approved, parked until the city layout and building designs are done. One box from the cafe to a door on a timer. Brookhaven errands, with no new cars and no new people.
+3. **Selfie frames.** Approved, parked until the city layout and building designs are done. Four fixed spots, one saved picture. The photo habit from Roblox, using a snapshot the page can already take.
+4. **Her best lap, drawn as a neon ribbon** on the track that already exists. Approved, parked until the city layout and building designs are done. A rival she can see, made of that one line.
+5. **One local friend in the passenger seat** who dances when she honks. Not picked. The biggest of the five, still one extra person, and the seed of a PC crew.
 
 ## Quick wins
 
 1. **Bumper plate.** She types a short plate (up to 7 letters) and it sits on the bumper in the same sign style as the city. She would love the Z to say her name the way a Brookhaven house does. FPS low. Effort small.
-2. **Selfie frames.** Four marks she can stand in: the glass house, the Z Company steps, the stadium tunnel, the sky-tower pad. A tap saves one picture of that view. She would love posting a fit-check and a landing the way she does in Roblox. FPS low. Effort small. Scales up.
+2. **Selfie frames.** Approved, parked until the city layout and building designs are done. Four marks she can stand in: the glass house, the Z Company steps, the stadium tunnel, the sky-tower pad. A tap saves one picture of that view. She would love posting a fit-check and a landing the way she does in Roblox. FPS low. Effort small. Scales up.
 3. **Studio beeps.** A new small horn button with three short sounds: a "5, 6, 7, 8" count-in, a two-note hello, and a NOS chirp. `world/sound.js` is still an empty stub, and the garage "horn" tab is the unicorn-horn hat, so this is the first real car horn. She would love counting herself in and calling the pet. FPS low. Effort small.
 4. **Clean-bay star.** Stopping inside a parking bay that already exists, under a calm speed, awards one star in the save she already has, with the usual toast. She would love the driveway flex from Brookhaven. FPS low. Effort small.
 5. **Dance-name billboard.** One highway billboard reads the name of the dance she last saved, and falls back to Z COMPANY ARTS. She would love seeing her own routine on the skyline. FPS low. Effort small.
@@ -42,9 +44,9 @@ A line marked **scales up** is safe on the phone and is also a prototype for the
 
 ## Medium
 
-9. **Z Company class cards.** Hip-hop, contemporary, and freestyle, each an 8-count on the studio floor. Floor lines tick with the beat. A grade (clean, close, miss) comes from timing, and the best grade sticks on the personal-records card. She would love a class from her real studio inside the game. FPS low. Effort medium. Scales up.
-10. **Pizza run.** Pick up one box sprite at Neon Pizza & Boba, drive it to a marked door, beat a clock. The box is one picture, the door is one she already has, and there is no new driver. She would love a Fortnite-style drop with a Brookhaven chore. FPS low. Effort medium. Scales up.
-11. **Lap ribbon.** Her best loop of the existing track is saved as positions and drawn as one neon line she can chase. She would love racing herself the way a time trial does, and she can read the line. FPS low. Effort medium. Scales up.
+9. **Z Company class cards.** Approved, parked until the city layout and building designs are done. Hip-hop, contemporary, and freestyle, each an 8-count on the studio floor. Floor lines tick with the beat. A grade (clean, close, miss) comes from timing, and the best grade sticks on the personal-records card. She would love a class from her real studio inside the game. FPS low. Effort medium. Scales up.
+10. **Pizza run.** Approved, parked until the city layout and building designs are done. Pick up one box sprite at Neon Pizza & Boba, drive it to a marked door, beat a clock. The box is one picture, the door is one she already has, and there is no new driver. She would love a Fortnite-style drop with a Brookhaven chore. FPS low. Effort medium. Scales up.
+11. **Lap ribbon.** Approved, parked until the city layout and building designs are done. Her best loop of the existing track is saved as positions and drawn as one neon line she can chase. She would love racing herself the way a time trial does, and she can read the line. FPS low. Effort medium. Scales up.
 12. **Rooftop pose course.** Three marks on the sky-tower pad. She gets out, hits an emote she already owns, and the next mark lights. She would love a fashion walk on a roof, which is the Brookhaven and Fortnite overlap. FPS low. Effort medium.
 13. **Dance ghost.** Inside Z Company only, a second copy of her figure plays her last saved take beside her. The outdoor city stays paused, which interiors already do. She would love dancing against herself the way the improve app compares a clip, now on the floor. FPS med. Effort medium. Scales up.
 14. **Showroom meet.** A row of parked traffic pictures (already baked) lines the showroom lot. Cruising past them slowly earns a horn reply and a meet star. None of them are simulated. She would love a car meet for the 370Z. FPS low. Effort medium. Scales up.
@@ -53,7 +55,7 @@ A line marked **scales up** is safe on the phone and is also a prototype for the
 
 ## Big
 
-17. **Passenger friend.** One local kid sits in the passenger seat the crew rig already knows, with a name, a hair, and an outfit from the colors she already has. A studio beep makes them dance in the seat. They are not on the network. She would love driving up with a studio friend. FPS med. Effort large. Scales up.
+17. **Passenger friend.** Not picked. One local kid sits in the passenger seat the crew rig already knows, with a name, a hair, and an outfit from the colors she already has. A studio beep makes them dance in the seat. They are not on the network. She would love driving up with a studio friend. FPS med. Effort large. Scales up.
 18. **Z Company parade.** On a button outside the studio, her pet and two baked traffic pictures follow a fixed line down the arts street while she dances. The line is a fixed path. She would love leading a dance line the way a recital ends. FPS med. Effort large. Scales up.
 19. **Street of regulars.** Four buildings that already stand (her house, the downtown studio, the arcade, the cafe) each gain a named regular and a short room card: a hello, one favor, one emote. The outdoor city does not grow. She would love a block of people who know her, which is the Brookhaven loop. FPS low. Effort large. Scales up.
 20. **Recital night.** A one-minute script inside Z Company: lights, her class card, the pet groove, a bow, then a toast and a star. It chains systems she already has. She would love a show with a start and an end. FPS med. Effort large. Scales up.
