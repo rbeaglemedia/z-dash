@@ -2,7 +2,10 @@
    Bob only. Hidden until the corner latch. Not a driver-HUD button.
    Map edits save to zdash.city.editor.v1. They change the drive only on /test/.
    Q2 tools: roof, measure, align, group, 15 degree rotate.
-   Draws with flat fills. Closed editor does no per-frame work.
+   Draws with flat fills. The closed editor does not run its own frame loop.
+   A saved move rebuilds the solid box and the road-block list, and the
+   in-game map names every building. The test page loads the shared FPS
+   counter, which stays quiet where the world already draws its own.
    Hold-and-drag: the old hit snapped the finger onto the 2 m grid and then
    tested the exact footprint. At town zoom a building is smaller than a
    finger, so the hold missed and the drag never started. Hits are screen
@@ -21,6 +24,9 @@
   var STREET_PITCH = 0.72;
   var base = null;
   var doc = null;
+  var applied = null;
+  var placeBind = null;
+  var miniSpanNow = 300;
   var hist = T.createHistory(100);
   var ui = null;
   var tool = 'move';
@@ -293,30 +299,144 @@
     return a && b && Math.abs(a.x - b.x) < 0.05 && Math.abs(a.z - b.z) < 0.05 && (a.yaw || 0) === (b.yaw || 0) && (a.rot || 0) === (b.rot || 0) && a.roof === b.roof;
   }
 
+  function dropOid(id) {
+    ['BX', 'BL', 'PADS', 'HOOPS', 'RAMPS'].forEach(function (key) {
+      var list = CITY[key];
+      if (!list || !list.length) return;
+      for (var i = list.length - 1; i >= 0; i--) {
+        if (list[i] && list[i].oid === id) list.splice(i, 1);
+      }
+    });
+  }
+
+  function rehashNow() {
+    if (!CITY.add || !CITY.remove) return;
+    var id = CITY.add({ prefab: 'lamp', x: 1000000, z: 1000000, h: 2, w: 1, d: 1 });
+    if (id) CITY.remove(id);
+  }
+
+  function refitNos(id) {
+    if (typeof NOS_STATION === 'undefined' || !NOS_STATION || typeof NOS_STATION.fit !== 'function') return;
+    var host = null;
+    (CITY.BL || []).forEach(function (q) {
+      if (q && q.oid === id && q.purpose === 'NOS') host = q;
+    });
+    if (!host) return;
+    try {
+      NOS_STATION.fit(host, function (b, o) {
+        var q = Object.assign({ y0: 0 }, o, { b: b, oid: b.oid });
+        if (b.boxes) b.boxes.push(q);
+        if (CITY.BX) CITY.BX.push(q);
+        return q;
+      });
+    } catch (e) {}
+    rehashNow();
+  }
+
+  function solidOf(b) {
+    var o = null;
+    (CITY.OBJS || []).forEach(function (q) { if (q.id === b.objId) o = q; });
+    var p = o ? Object.assign({}, o.p || {}) : { purpose: b.purpose || '', purposeLabel: b.name || '' };
+    if (p.purposeLabel == null && b.name) p.purposeLabel = b.name;
+    return {
+      prefab: (o && o.prefab) || b.kind || 'shop_low',
+      w: b.prefabW != null ? b.prefabW : (o && o.w != null ? o.w : b.w),
+      d: b.prefabD != null ? b.prefabD : (o && o.d != null ? o.d : b.d),
+      h: b.h != null ? b.h : (o && o.h),
+      rot: b.prefabRot != null ? b.prefabRot : ((o && o.rot) || b.rot || 0),
+      p: p,
+      id: b.objId || (o && o.id)
+    };
+  }
+
+  /* placePrefab pushes the new box into the lists and skips the spatial hash.
+     The car, a person on foot, and traffic all read that hash and the road
+     block list. remove + add rebuilds both, then leftover bay slabs at the
+     old spot are dropped so the old ground is open. */
+  function moveSolid(b) {
+    var spec = solidOf(b);
+    var id = spec.id;
+    if (id && CITY.remove) CITY.remove(id);
+    if (id) dropOid(id);
+    if (!CITY.add) {
+      if (CITY.placePrefab) CITY.placePrefab(spec.prefab, b.x, b.z, { id: id, w: spec.w, d: spec.d, h: spec.h, rot: spec.rot, p: spec.p });
+      return id;
+    }
+    var nid = CITY.add({
+      prefab: spec.prefab,
+      x: b.x, z: b.z, id: id,
+      w: spec.w, d: spec.d, h: spec.h, rot: spec.rot, p: spec.p
+    });
+    refitNos(nid || id);
+    return nid || id;
+  }
+
+  function bindPlaces() {
+    if (placeBind) return placeBind;
+    placeBind = [];
+    var lay = CITY.LAYOUT;
+    var places = (lay && lay.minimap && lay.minimap.places) || (lay && lay.places) || [];
+    (base && base.buildings || []).forEach(function (b) {
+      var hit = null, best = 1e9;
+      places.forEach(function (p) {
+        if (!p || p.kind === 'arch' || p.type === 'arch' || p._devBound) return;
+        var cx = isFinite(p.cx) ? p.cx : (p.x0 + p.x1) / 2;
+        var cz = isFinite(p.cz) ? p.cz : (p.z0 + p.z1) / 2;
+        var d = Math.hypot(cx - b.x, cz - b.z);
+        if (d < best && d < 12) { best = d; hit = p; }
+      });
+      if (!hit) return;
+      hit._devBound = b.id;
+      if (!hit._boot) hit._boot = { x0: hit.x0, x1: hit.x1, z0: hit.z0, z1: hit.z1 };
+      placeBind.push({ id: b.id, place: hit });
+    });
+    return placeBind;
+  }
+
+  function syncPlaces(next) {
+    bindPlaces().forEach(function (link) {
+      var b = null;
+      (next.buildings || []).forEach(function (q) { if (q.id === link.id) b = q; });
+      if (!b) return;
+      var p = link.place;
+      p.x0 = b.x0; p.x1 = b.x1; p.z0 = b.z0; p.z1 = b.z1;
+      p.cx = b.x; p.cz = b.z;
+      p._label = b.name || p.sign || p.name || 'building';
+    });
+  }
+
+  function syncTraffic() {
+    var traffic = window.TRAFFIC;
+    var roads = CITY.ROADS;
+    if (!traffic || !traffic.lanes || !roads || !roads.edges) return;
+    traffic.lanes.forEach(function (L) {
+      var e = roads.edges[L.edge];
+      if (!e) return;
+      var blocks = [];
+      (e.blockedBy || []).forEach(function (seg) {
+        var s0, s1;
+        if (!L.li) { s0 = seg.d0 - 4; s1 = seg.d1 + 4; }
+        else { s0 = e.len - (seg.d1 + 4); s1 = e.len - (seg.d0 - 4); }
+        var len = L.len || e.len || 0;
+        s0 = Math.max(0, Math.min(len, s0));
+        s1 = Math.max(0, Math.min(len, s1));
+        if (s1 - s0 > 1) blocks.push([s0, s1, seg.oid]);
+      });
+      L.blocks = blocks;
+    });
+  }
+
   function applyToCity(next) {
     var moved = 0, addedRoads = 0;
+    var prev = applied || base;
     (next.buildings || []).forEach(function (b) {
-      if (!b.objId) {
-        if (CITY.placePrefab) {
-          CITY.placePrefab(b.kind || 'shop_low', b.x, b.z, { w: b.w, d: b.d, h: b.h, rot: b.rot || 0, p: { purpose: b.purpose, purposeLabel: b.name } });
-          moved++;
-        }
-        return;
-      }
-      var prev = (base.buildings || []).find(function (q) { return q.objId === b.objId; });
-      if (prev && sameBuilding(prev, b)) return;
-      var o = (CITY.OBJS || []).find(function (q) { return q.id === b.objId; });
-      if (!o || !CITY.remove || !CITY.placePrefab) return;
-      var p = Object.assign({}, o.p || {});
-      CITY.remove(o.id);
-      CITY.placePrefab(o.prefab, b.x, b.z, {
-        id: o.id,
-        w: b.prefabW != null ? b.prefabW : b.w,
-        d: b.prefabD != null ? b.prefabD : b.d,
-        h: b.h,
-        rot: b.prefabRot != null ? b.prefabRot : (b.rot || 0),
-        p: p
+      var was = null;
+      (prev && prev.buildings || []).forEach(function (q) {
+        if (!was && q.id === b.id) was = q;
       });
+      if (was && sameBuilding(was, b)) return;
+      if (!CITY.add && !CITY.placePrefab) return;
+      moveSolid(b);
       moved++;
     });
     (next.roads || []).forEach(function (r) {
@@ -331,6 +451,9 @@
       CITY.ROADS.addRoad(r.x0, r.z0, r.x1, r.z1, { w: r.w || 20, kind: 'street', step: 100 });
       addedRoads++;
     });
+    syncPlaces(next);
+    syncTraffic();
+    applied = clone(next);
     return { moved: moved, addedRoads: addedRoads };
   }
 
@@ -830,10 +953,11 @@
         });
       }
       var wide = box.r - box.l;
-      if (on || wide > 48) {
+      if (on || wide >= 16) {
         ctx.fillStyle = '#ffffff';
-        ctx.font = '700 12px Orbitron, sans-serif';
-        ctx.fillText(b.name || 'building', box.l + 4, Math.max(16, box.t + 14));
+        ctx.font = wide >= 36 ? '700 12px Orbitron, sans-serif' : '700 10px Orbitron, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(b.name || 'building', box.l + 2, Math.max(12, box.t - 2));
       }
     });
     (doc.spawns || []).forEach(function (s) {
@@ -921,6 +1045,8 @@
 
   function attachFps() {
     if (!ui || !ui.fps) return;
+    var shared = window.ZD_FPS_COUNTER;
+    if (shared && shared.skipped) return;
     var api = window.ZD_DEV_FPS || window.DEV_TEST_FPS;
     if (api && typeof api.attach === 'function') {
       try { api.attach(ui.fps); } catch (e) {}
@@ -1020,13 +1146,23 @@
         if (act === 'view') setMode(view.mode === 'street' ? 'top' : 'street');
         if (act === 'undo') {
           var u = hist.undo();
-          if (u) { doc = u; selected = []; draw(); status('Undone.'); }
-          else status('Nothing to undo.');
+          if (u) {
+            doc = u;
+            selected = [];
+            if (applies()) editorDoc(clone(doc));
+            draw();
+            status('Undone.');
+          } else status('Nothing to undo.');
         }
         if (act === 'redo') {
           var r = hist.redo();
-          if (r) { doc = r; selected = []; draw(); status('Redone.'); }
-          else status('Nothing to redo.');
+          if (r) {
+            doc = r;
+            selected = [];
+            if (applies()) editorDoc(clone(doc));
+            draw();
+            status('Redone.');
+          } else status('Nothing to redo.');
         }
         if (act === 'save') saveNow();
         if (act === 'export') exportFile();
@@ -1102,7 +1238,7 @@
   function show() {
     mount();
     if (!doc) {
-      base = exportDoc();
+      if (!base) base = exportDoc();
       var stored = readLocal();
       doc = stored && stored.v === 1 ? stored : clone(base);
       hist.push(doc);
@@ -1301,9 +1437,114 @@
     });
   }
 
+  function miniPoint(wx, wz, mx, my, mw, mh) {
+    var span = miniSpanNow > 1 ? miniSpanNow : 300;
+    var ppm = mw / span;
+    var yaw = (typeof P !== 'undefined' && P && P.yaw) || 0;
+    var co = Math.cos(yaw), si = Math.sin(yaw);
+    var dx = wx - P.x, dz = wz - P.z;
+    return {
+      x: mx + mw / 2 + (dx * co - dz * si) * ppm,
+      y: my + mh / 2 + (-dx * si - dz * co) * ppm
+    };
+  }
+
+  function miniPath(ctx, box, mx, my, mw, mh) {
+    var pts = [[box.x0, box.z0], [box.x1, box.z0], [box.x1, box.z1], [box.x0, box.z1]];
+    pts.forEach(function (p, i) {
+      var s = miniPoint(p[0], p[1], mx, my, mw, mh);
+      if (i) ctx.lineTo(s.x, s.y);
+      else ctx.moveTo(s.x, s.y);
+    });
+    ctx.closePath();
+  }
+
+  function paintMiniNames(mx, my, mw, mh) {
+    if (typeof ctx === 'undefined' || !ctx || typeof P === 'undefined' || !P || !CITY.BL) return;
+    var span = miniSpanNow > 1 ? miniSpanNow : 300;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(mx, my, mw, mh);
+    ctx.clip();
+    var places = (CITY.LAYOUT && CITY.LAYOUT.minimap && CITY.LAYOUT.minimap.places) || [];
+    places.forEach(function (p) {
+      if (!p || !p._boot) return;
+      var cx = isFinite(p.cx) ? p.cx : (p.x0 + p.x1) / 2;
+      var cz = isFinite(p.cz) ? p.cz : (p.z0 + p.z1) / 2;
+      var bx = (p._boot.x0 + p._boot.x1) / 2, bz = (p._boot.z0 + p._boot.z1) / 2;
+      if (Math.hypot(cx - bx, cz - bz) < 2) return;
+      ctx.beginPath();
+      miniPath(ctx, p._boot, mx, my, mw, mh);
+      ctx.fillStyle = '#070314';
+      ctx.fill();
+    });
+    var named = 0;
+    CITY.BL.forEach(function (b) {
+      if (!b || (b.kind !== 'b' && b.kind !== 'landmark')) return;
+      var name = b.purposeLabel || b.label || b.purpose || '';
+      if (!name) return;
+      var mxw = (b.x0 + b.x1) / 2, mzw = (b.z0 + b.z1) / 2;
+      if (Math.hypot(mxw - P.x, mzw - P.z) > span) return;
+      ctx.beginPath();
+      miniPath(ctx, b, mx, my, mw, mh);
+      ctx.fillStyle = 'rgba(7,8,16,0.88)';
+      ctx.fill();
+      ctx.strokeStyle = b.c || '#3ee6ff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      var at = miniPoint(mxw, mzw, mx, my, mw, mh);
+      if (at.x < mx + 4 || at.x > mx + mw - 4 || at.y < my + 10 || at.y > my + mh - 4) return;
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 11px Orbitron, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(String(name).slice(0, 18), at.x, at.y - 1);
+      named++;
+    });
+    ctx.restore();
+    paintMiniNames.named = named;
+    try { window.__devMiniNamed = named; } catch (e) {}
+  }
+
+  function hookMini() {
+    if (hookMini.done || typeof drawMini !== 'function') return;
+    hookMini.done = 1;
+    if (typeof miniZoom === 'function') {
+      var zoom = miniZoom;
+      miniZoom = function (dt) {
+        var span = zoom(dt);
+        if (span > 1) miniSpanNow = span;
+        return span;
+      };
+    }
+    var orig = drawMini;
+    drawMini = function (mx, my, mw, mh, dt) {
+      orig(mx, my, mw, mh, dt);
+      paintMiniNames(mx, my, mw, mh);
+    };
+  }
+
+  function worldMarks() {
+    var out = [];
+    (CITY.BL || []).forEach(function (b) {
+      if (!b || (b.kind !== 'b' && b.kind !== 'landmark')) return;
+      var name = b.purposeLabel || b.label || b.purpose || '';
+      if (!name) return;
+      out.push({
+        name: name,
+        x: (b.x0 + b.x1) / 2,
+        z: (b.z0 + b.z1) / 2,
+        x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1,
+        oid: b.oid
+      });
+    });
+    return out;
+  }
+
   function boot() {
     base = exportDoc();
     CITY._editorBase = base;
+    hookMini();
     if (applies()) {
       var stored = readLocal();
       if (stored && stored.v === 1) {
@@ -1328,6 +1569,7 @@
     cam: CAM,
     frame: frame,
     screenOf: screenOf,
+    worldMarks: worldMarks,
     selfCheck: function () {
       var src = '';
       try { src = Function.prototype.toString.call(draw); } catch (e) {}
