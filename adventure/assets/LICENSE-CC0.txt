@@ -8,10 +8,8 @@ Author page: https://quaternius.com/packs/ultimatedanimatedcharacter.html
 License: Creative Commons Zero 1.0 Universal (CC0)
 https://creativecommons.org/publicdomain/zero/1.0/
 
-Ellie's body is this file. Shirt, pants, and the body mesh are unchanged.
-The pack's Face and Hair materials are hidden. The face and hair drawn
-on the Head bone are original geometry in adventure/src/main.js.
-Nothing was purchased.
+Ellie's body is this file, including the pack Face and Hair. The extra
+head that was tried on the Head bone was removed. Nothing was purchased.
 
 The FBX materials arrived with opacity 0. The page sets opacity to 1
 and paints flat colors by material name.

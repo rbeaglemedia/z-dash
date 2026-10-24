@@ -29137,7 +29137,7 @@ var hemi = new HemisphereLight(16774884, 9425092, 0.85);
 var sun = new DirectionalLight(16777215, 1.15);
 sun.position.set(4, 10, 6);
 scene.add(hemi, sun);
-if (ANATOMY || SHOT === "heads") {
+if (ANATOMY) {
   const fill = new DirectionalLight(16777215, 0.9);
   fill.position.set(0, 1.6, 5);
   scene.add(fill);
@@ -29233,18 +29233,67 @@ function prepareModel(root) {
         else if (name.includes("shirt") || name.includes("top") || name.includes("jacket")) m.color.set("#3a7bd5");
         else if (name.includes("pant")) m.color.set("#2a3358");
         else if (name.includes("belt") || name.includes("shoe") || name.includes("boot")) m.color.set("#2a211c");
-        else if (name.includes("dog") || name.includes("fur")) {
-          m.color.set("#e0b060");
-          if (m.metalness !== void 0) {
-            m.metalness = 0;
-            m.roughness = 0.82;
-          }
-        } else if (name.includes("grey") || name.includes("gray")) m.color.set("#7d8494");
+        else if (name.includes("dog") || name.includes("fur")) m.color.set("#e0b060");
+        else if (name.includes("grey") || name.includes("gray")) m.color.set("#7d8494");
         else if (Math.max(m.color.r, m.color.g, m.color.b) < 0.12) m.color.multiplyScalar(8);
       }
-      m.needsUpdate = true;
     }
+    const flat = mats.map((m) => asLambert(m, o.isSkinnedMesh));
+    o.material = Array.isArray(o.material) ? flat : flat[0];
+    coalesceGroups(o.geometry);
   });
+}
+function coalesceGroups(geometry) {
+  const groups = geometry && geometry.groups;
+  if (!groups || groups.length < 8 || geometry.index) return;
+  if (geometry.morphAttributes && Object.keys(geometry.morphAttributes).length) return;
+  const names = Object.keys(geometry.attributes);
+  const byMat = /* @__PURE__ */ new Map();
+  for (const g of groups) {
+    if (!byMat.has(g.materialIndex)) byMat.set(g.materialIndex, []);
+    byMat.get(g.materialIndex).push(g);
+  }
+  const copies = {};
+  for (const name of names) {
+    const src = geometry.attributes[name].array;
+    copies[name] = new src.constructor(src.length);
+  }
+  const next = [];
+  let cursor = 0;
+  for (const mi of [...byMat.keys()].sort((a, b) => a - b)) {
+    const start = cursor;
+    for (const g of byMat.get(mi)) {
+      for (const name of names) {
+        const attr = geometry.attributes[name];
+        const item = attr.itemSize;
+        copies[name].set(attr.array.subarray(g.start * item, (g.start + g.count) * item), cursor * item);
+      }
+      cursor += g.count;
+    }
+    next.push({ start, count: cursor - start, materialIndex: mi });
+  }
+  for (const name of names) {
+    geometry.attributes[name].array.set(copies[name]);
+    geometry.attributes[name].needsUpdate = true;
+  }
+  geometry.clearGroups();
+  for (const g of next) geometry.addGroup(g.start, g.count, g.materialIndex);
+}
+function asLambert(m, skinned) {
+  if (!m) return m;
+  const next = new MeshLambertMaterial({
+    name: m.name,
+    color: m.color ? m.color.clone() : 16777215,
+    map: m.map || null
+  });
+  next.skinning = !!skinned;
+  next.transparent = false;
+  next.opacity = 1;
+  next.alphaTest = 0;
+  next.depthWrite = true;
+  if (next.map) next.map.colorSpace = SRGBColorSpace;
+  if (m !== next) m.dispose();
+  return next;
 }
 function clipNamed(clips, fragment2) {
   const f = fragment2.toLowerCase();
@@ -29254,71 +29303,6 @@ function clipNamed(clips, fragment2) {
     const n = c.name.toLowerCase();
     return n.includes(f) && !n.includes("carry");
   }) || null;
-}
-function lambert(color) {
-  return new MeshLambertMaterial({ color });
-}
-function addPart(parent, geo, mat, x, y, z, sx, sy, sz) {
-  const mesh = new Mesh(geo, mat);
-  mesh.position.set(x, y, z);
-  if (sx) mesh.scale.set(sx, sy == null ? sx : sy, sz == null ? sx : sz);
-  mesh.castShadow = false;
-  mesh.receiveShadow = false;
-  mesh.frustumCulled = false;
-  parent.add(mesh);
-  return mesh;
-}
-function hideOldFace(root) {
-  root.traverse((o) => {
-    if (!o.isMesh) return;
-    const mats = Array.isArray(o.material) ? o.material : [o.material];
-    for (const m of mats) {
-      if (!m) continue;
-      const name = (m.name || "").toLowerCase();
-      if (name.includes("face")) m.visible = false;
-    }
-  });
-}
-function dressHead(root) {
-  const head = findBone(root, "Head");
-  if (!head) return;
-  hideOldFace(root);
-  const kit = new Group();
-  kit.name = "EllieHead";
-  kit.position.z = -0.28;
-  head.add(kit);
-  const skin = lambert("#f0c2a0");
-  const hair = lambert("#e0a84a");
-  const hairDark = lambert("#a56b28");
-  const white = lambert("#fbf8f4");
-  const iris = lambert("#5c4636");
-  const pupil = lambert("#1a120e");
-  const brow = lambert("#6a4322");
-  const lip = lambert("#c47874");
-  addPart(kit, new SphereGeometry(0.18, 20, 16), skin, 0, 0.34, -0.02, 0.92, 1.34, 1);
-  addPart(kit, new SphereGeometry(0.07, 10, 8), skin, 0, 0.14, -0.1, 0.85, 0.7, 0.9);
-  addPart(kit, new CylinderGeometry(0.068, 0.086, 0.12, 12), skin, 0, 0.04, 0.02);
-  addPart(kit, new SphereGeometry(0.048, 10, 8), skin, -0.175, 0.32, 0.02, 0.42, 0.78, 0.38);
-  addPart(kit, new SphereGeometry(0.048, 10, 8), skin, 0.175, 0.32, 0.02, 0.42, 0.78, 0.38);
-  addPart(kit, new SphereGeometry(0.2, 16, 12), hair, 0, 0.46, 0.06, 1.08, 1.02, 1.05);
-  addPart(kit, new SphereGeometry(0.14, 12, 10), hairDark, 0, 0.34, 0.14, 1.05, 1.15, 0.72);
-  addPart(kit, new SphereGeometry(0.09, 12, 8), hair, -0.03, 0.48, -0.2, 1.7, 0.42, 0.7);
-  addPart(kit, new SphereGeometry(0.042, 8, 6), hairDark, -0.155, 0.2, -0.02, 0.85, 2.05, 0.8);
-  addPart(kit, new SphereGeometry(0.036, 8, 6), hair, 0.15, 0.3, 0.02, 0.8, 1.25, 0.7);
-  addPart(kit, new BoxGeometry(0.01, 0.18, 0.12), hairDark, 0.04, 0.52, 0.04);
-  for (const s of [-1, 1]) {
-    addPart(kit, new SphereGeometry(0.038, 14, 12), white, s * 0.07, 0.345, -0.2);
-    addPart(kit, new SphereGeometry(0.018, 10, 8), iris, s * 0.07, 0.342, -0.232);
-    addPart(kit, new SphereGeometry(9e-3, 8, 6), pupil, s * 0.07, 0.342, -0.248);
-    addPart(kit, new SphereGeometry(45e-4, 6, 4), white, s * 0.06, 0.354, -0.254);
-    const browMesh = addPart(kit, new BoxGeometry(0.068, 0.012, 0.014), brow, s * 0.072, 0.408, -0.228);
-    browMesh.rotation.z = s * -0.18;
-  }
-  addPart(kit, new SphereGeometry(0.03, 10, 8), skin, 0, 0.265, -0.225, 0.62, 0.72, 1.35);
-  const nostril = lambert("#b57870");
-  addPart(kit, new SphereGeometry(7e-3, 6, 4), nostril, -0.011, 0.248, -0.262);
-  addPart(kit, new SphereGeometry(7e-3, 6, 4), nostril, 0.011, 0.248, -0.262);
-  addPart(kit, new BoxGeometry(0.052, 0.01, 0.012), lip, 0, 0.168, -0.228);
 }
 var PET_CATALOG = {
   fox: {
@@ -29364,11 +29348,10 @@ function actorBox(root) {
   });
   return box;
 }
-async function loadActor(url, height, dress) {
+async function loadActor(url, height) {
   const obj = await loader.loadAsync(url);
   prepareModel(obj);
   const box = fitHeight(obj, height);
-  if (dress !== false) dressHead(obj);
   const mixer = new AnimationMixer(obj);
   const idleClip = clipNamed(obj.animations, "idle");
   const walkClip = clipNamed(obj.animations, "walk");
@@ -29457,9 +29440,7 @@ function buildCourtyard() {
 }
 var heroRig = new Group();
 var petRig = new Group();
-var oldRig = new Group();
-scene.add(heroRig, petRig, oldRig);
-oldRig.visible = false;
+scene.add(heroRig, petRig);
 var tmp = new Vector3();
 var follow = new Vector3();
 var camTarget = new Vector3();
@@ -29506,130 +29487,7 @@ function frameSubject(root, yawBias) {
   camera.position.set(c.x + Math.sin(bias) * dist * 0.22, c.y, c.z + dist);
   camera.lookAt(c.x, c.y, c.z);
 }
-function faceState(root) {
-  let face = null;
-  let hair = null;
-  let kit = false;
-  root.traverse((o) => {
-    if (o.name === "EllieHead") kit = true;
-    if (!o.isMesh) return;
-    const mats = Array.isArray(o.material) ? o.material : [o.material];
-    for (const m of mats) {
-      if (!m) continue;
-      const name = (m.name || "").toLowerCase();
-      if (name.includes("face")) face = m.visible !== false;
-      if (name.includes("hair")) hair = m.visible !== false;
-    }
-  });
-  return { kit, face, hair };
-}
-function headViewName() {
-  const view = (params.get("view") || "front").toLowerCase();
-  if (view === "back") return "back";
-  if (view === "side") return "side";
-  if (view.startsWith("three") || view === "3q") return "3/4 front";
-  return "front";
-}
-function headOrbit() {
-  const name = headViewName();
-  if (name === "back") return Math.PI;
-  if (name === "side") return Math.PI / 2;
-  if (name === "3/4 front") return 0.62;
-  return 0;
-}
-function packFaceLocalZ(root) {
-  const head = findBone(root, "Head");
-  if (!head) return -1;
-  head.updateWorldMatrix(true, true);
-  const inv = new Matrix4().copy(head.matrixWorld).invert();
-  const acc = new Vector3();
-  let n = 0;
-  root.updateMatrixWorld(true);
-  root.traverse((o) => {
-    if (!o.isSkinnedMesh || !o.geometry || !o.geometry.attributes.position) return;
-    const mats = Array.isArray(o.material) ? o.material : [o.material];
-    const pos = o.geometry.attributes.position;
-    const index = o.geometry.index;
-    for (const group of o.geometry.groups || []) {
-      const m = mats[group.materialIndex];
-      if (!m || !(m.name || "").toLowerCase().includes("face")) continue;
-      const step = Math.max(1, Math.floor(group.count / 60));
-      for (let i = group.start; i < group.start + group.count; i += step) {
-        const vi = index ? index.getX(i) : i;
-        _v.fromBufferAttribute(pos, vi);
-        o.applyBoneTransform(vi, _v);
-        _v.applyMatrix4(o.matrixWorld);
-        acc.add(_v);
-        n++;
-      }
-    }
-  });
-  if (!n) return -1;
-  return acc.multiplyScalar(1 / n).applyMatrix4(inv).z;
-}
-function headPad(rig) {
-  const box = new Box3();
-  const head = findBone(rig, "Head");
-  if (!head) return box;
-  let kit = false;
-  head.updateWorldMatrix(true, true);
-  head.traverse((o) => {
-    if (!o.isMesh) return;
-    kit = true;
-    box.union(new Box3().setFromObject(o));
-  });
-  const p = bonePos(head, new Vector3());
-  if (!kit) {
-    box.expandByPoint(p.clone().add(new Vector3(0.16, 0.48, 0.16)));
-    box.expandByPoint(p.clone().add(new Vector3(-0.16, -0.06, -0.16)));
-  }
-  return box;
-}
-function frameHeads() {
-  const turn = headOrbit();
-  const box = new Box3();
-  box.union(headPad(oldRig));
-  box.union(headPad(heroRig));
-  if (box.isEmpty()) return;
-  const c = box.getCenter(new Vector3());
-  const size = box.getSize(new Vector3());
-  const vFov = MathUtils.degToRad(camera.fov);
-  const hFov = 2 * Math.atan(Math.tan(vFov / 2) * Math.max(0.2, camera.aspect));
-  const dist = Math.max(
-    size.y * 0.5 / Math.tan(vFov / 2),
-    size.x * 0.5 / Math.tan(hFov / 2)
-  ) * 1.2;
-  camera.position.set(c.x + Math.sin(turn) * dist, c.y + size.y * 0.04, c.z + Math.cos(turn) * dist);
-  camera.lookAt(c.x, c.y, c.z);
-  placeHeadChips();
-}
-function placeHeadChips() {
-  const angle = headViewName();
-  const rows = [[oldRig, "head-old", "OLD \xB7 " + angle], [heroRig, "head-new", "NEW \xB7 " + angle]];
-  for (const [rig, id, text] of rows) {
-    let el = document.getElementById(id);
-    if (!el) {
-      el = document.createElement("div");
-      el.id = id;
-      el.textContent = text;
-      el.style.cssText = "position:fixed;z-index:4;transform:translate(-50%,0);background:#fff;color:#142033;font:700 16px/1.2 ui-sans-serif,system-ui,sans-serif;padding:5px 10px;border-radius:8px;";
-      document.body.appendChild(el);
-    }
-    el.textContent = text;
-    const head = findBone(rig, "Head");
-    if (!head) continue;
-    const p = bonePos(head, new Vector3());
-    p.project(camera);
-    const x = (p.x * 0.5 + 0.5) * window.innerWidth;
-    el.style.left = x + "px";
-    el.style.top = window.innerHeight - 40 + "px";
-  }
-}
 function frameCamera(mode) {
-  if (mode === "heads") {
-    frameHeads();
-    return;
-  }
   if (mode === "hero") {
     frameSubject(heroRig, 0.2);
     return;
@@ -29799,6 +29657,9 @@ function stats() {
   const hitch = samples.slice(0, WARMUP).reduce((a, b) => Math.max(a, b), 0);
   scored.bootHitch = hitch;
   scored.warmup = WARMUP;
+  scored.shaderMs = world.shaderMs || 0;
+  scored.compileMs = world.compileMs || 0;
+  scored.warmMs = world.warmMs || 0;
   return scored;
 }
 function gate(st, kind) {
@@ -29886,7 +29747,6 @@ function publish(extra) {
   const st = stats();
   window.__ADV = Object.assign({
     ready: world.ready,
-    headCompare: world.headCompare || null,
     petId: world.petId,
     petNote: world.petNote || null,
     clips: world.hero ? { hero: world.hero.clips, pet: world.pet ? world.pet.clips : null } : null,
@@ -29917,41 +29777,21 @@ function publish(extra) {
 }
 async function boot() {
   if (!ANATOMY) buildCourtyard();
-  const compare = SHOT === "heads";
-  const hero = await loadActor("adventure/assets/Casual_Female.fbx", 1.5, true);
-  let oldHero = null;
-  if (compare) {
-    oldHero = await loadActor("adventure/assets/Casual_Female.fbx", 1.5, false);
-    oldRig.add(oldHero.obj);
-    oldRig.visible = true;
-  }
+  const hero = await loadActor("adventure/assets/Casual_Female.fbx", 1.5);
   const petId = petChoice();
   const spec = PET_CATALOG[petId];
-  const pet = !compare && spec ? await loadPet(spec) : null;
+  const pet = spec ? await loadPet(spec) : null;
   heroRig.add(hero.obj);
   if (pet) petRig.add(pet.obj);
   world.hero = hero;
   world.pet = pet;
   world.petId = petId;
   world.petNote = spec ? null : PET_NOTE[petId] || null;
-  world.ready = true;
   const hint = document.getElementById("hint");
-  if (hint && !compare) {
+  if (hint) {
     hint.textContent = pet ? "WASD walks. Shift runs. The " + spec.label.toLowerCase() + " stays at your heel." : "WASD walks. Shift runs. " + world.petNote;
   }
-  if (compare) {
-    petRig.visible = false;
-    document.body.classList.add("shot");
-    oldRig.position.set(-0.42, 0, 0);
-    heroRig.position.set(0.42, 0, 0);
-    oldRig.rotation.set(0, 0, 0);
-    oldRig.updateMatrixWorld(true);
-    const faceZ = packFaceLocalZ(oldRig);
-    oldRig.rotation.y = faceZ > 0 ? 0 : Math.PI;
-    heroRig.rotation.y = Math.PI;
-    world.faceZ = faceZ;
-    seek(oldHero, "idle", 0.15);
-  } else if (SHOT === "pet") {
+  if (SHOT === "pet") {
     heroRig.visible = false;
     petRig.position.set(0, 0, 0);
   } else if (SHOT === "hero") {
@@ -29984,33 +29824,29 @@ async function boot() {
   }
   if (SHOT) {
     yaw = 0.35;
-    const mode = SHOT === "hero" || SHOT === "pet" || SHOT === "heads" ? SHOT : "shot";
-    frameCamera(mode);
-    renderer.render(scene, camera);
+    frameCamera(SHOT === "hero" || SHOT === "pet" ? SHOT : "shot");
     const label = document.getElementById("label");
     if (label) {
       const w = window.innerWidth;
       const h = window.innerHeight;
       const kind = deviceKind();
       const title = kind === "ipad" ? "iPad" : kind === "pc" ? "PC" : "Phone";
+      const petLabel = spec ? spec.label : petId;
+      const who = SHOT === "pet" ? petLabel : SHOT === "hero" ? "Ellie" : "Ellie and " + petLabel.toLowerCase();
       label.hidden = false;
-      if (SHOT === "heads") {
-        label.textContent = title + " " + w + "\xD7" + h + " \xB7 " + headViewName() + " \xB7 OLD left, NEW right \xB7 hair on both";
-      } else {
-        const petLabel = spec ? spec.label : petId;
-        const who = SHOT === "pet" ? petLabel : SHOT === "hero" ? "Ellie" : "Ellie and " + petLabel.toLowerCase();
-        label.textContent = title + " " + w + "\xD7" + h + " \xB7 " + who + " \xB7 Ellie " + hm.height.toFixed(2) + " m, hip " + hm.hipY.toFixed(2) + " m" + (pm ? " \xB7 " + petLabel.toLowerCase() + " " + pm.height.toFixed(2) + " m \xD7 " + pm.length.toFixed(2) + " m, feet " + pm.minY.toFixed(2) + " m" : " \xB7 " + (world.petNote || "")) + (SHOT === "1" ? " \xB7 pink = hip, gold = ground" : "");
-      }
+      label.textContent = title + " " + w + "\xD7" + h + " \xB7 " + who + " \xB7 Ellie " + hm.height.toFixed(2) + " m, hip " + hm.hipY.toFixed(2) + " m" + (pm ? " \xB7 " + petLabel.toLowerCase() + " " + pm.height.toFixed(2) + " m \xD7 " + pm.length.toFixed(2) + " m, feet " + pm.minY.toFixed(2) + " m" : " \xB7 " + (world.petNote || "")) + (SHOT === "1" ? " \xB7 pink = hip, gold = ground" : "");
     }
+  } else if (!ANATOMY) {
+    frameCamera("play");
   }
-  world.headCompare = compare ? {
-    view: headViewName(),
-    faceZ: world.faceZ,
-    old: faceState(oldRig),
-    fresh: faceState(heroRig),
-    oldX: +oldRig.position.x.toFixed(3),
-    newX: +heroRig.position.x.toFixed(3)
-  } : null;
+  const shadeT = performance.now();
+  await renderer.compileAsync(scene, camera);
+  world.compileMs = performance.now() - shadeT;
+  const warmT = performance.now();
+  renderer.render(scene, camera);
+  world.warmMs = performance.now() - warmT;
+  world.shaderMs = world.compileMs + world.warmMs;
+  world.ready = true;
   publish({
     heroMeasure: hm,
     petMeasure: pm,
@@ -30078,7 +29914,7 @@ function tick() {
       }
       frameCamera("play");
     } else {
-      frameCamera(SHOT === "hero" || SHOT === "pet" || SHOT === "heads" ? SHOT : "shot");
+      frameCamera(SHOT === "hero" || SHOT === "pet" ? SHOT : "shot");
     }
     renderer.render(scene, camera);
   }

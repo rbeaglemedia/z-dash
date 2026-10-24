@@ -121,28 +121,28 @@
     }
   },
   "chest": {
-    "front": 93,
-    "threeQuarter": 143,
-    "side": 67,
+    "front": 161,
+    "threeQuarter": 151,
+    "side": 104,
     "back": 160
   },
   "head": [
     {
       "view": "front",
-      "ratio": 0.376,
+      "ratio": 0.353,
       "neck": true,
       "centered": true
     },
     {
       "view": "three-quarter",
-      "ratio": 0.358,
+      "ratio": 0.35,
       "neck": true,
       "centered": true
     },
     {
       "view": "side",
-      "ratio": 0.237,
-      "neck": false,
+      "ratio": 0.354,
+      "neck": true,
       "centered": true
     },
     {

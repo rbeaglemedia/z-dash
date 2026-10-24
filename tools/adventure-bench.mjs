@@ -158,8 +158,6 @@ async function main() {
     { kind: 'phone', w: 844, h: 390, query: 'bench=1&fps=1&frames=360&kind=phone', shot: false },
     { kind: 'ipad', w: 1024, h: 768, query: 'bench=1&fps=1&frames=360&kind=ipad', shot: false },
     { kind: 'pc', w: 1366, h: 768, query: 'bench=1&fps=1&frames=360&kind=pc', shot: false },
-    { kind: 'phone', w: 844, h: 390, query: 'shot=heads&view=front&kind=phone', shot: true, file: 'head-compare-front.png', wait: shotWait },
-    { kind: 'phone', w: 844, h: 390, query: 'shot=heads&view=three-quarter&kind=phone', shot: true, file: 'head-compare-three-quarter.png', wait: shotWait },
     { kind: 'phone', w: 844, h: 390, query: 'shot=hero&kind=phone', shot: true, file: 'phone-hero.png', wait: shotWait },
     { kind: 'phone', w: 844, h: 390, query: 'shot=pet&kind=phone', shot: true, file: 'phone-pet.png', wait: shotWait },
     { kind: 'phone', w: 844, h: 390, query: 'shot=1&kind=phone&pet=fox', shot: true, file: 'phone-fox.png', wait: shotWait },

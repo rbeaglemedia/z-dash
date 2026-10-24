@@ -34,13 +34,13 @@ The iPad floor is 30 because that tablet is 60 Hz and already the strict machine
 
 Lab numbers are software GL on this agent (SwiftShader). They are not his phone and not the 2018 iPad. A lab pass means the scene is cheap enough to grow in the lab. His phone is still the column that matters before a later milestone is called done.
 
-Milestone 0, lab, 360 frames, first 30 dropped as warmup, fox loaded (the default pet). Every steady frame was under 8 ms. The steady gate passed on all three. The phone job is the first page in a fresh browser, and its warmup frame was 168 ms, over the 80 ms hitch line, while the iPad and PC loads in that same browser were 51 ms and 51 ms.
+Milestone 0, lab, 360 frames, first 30 dropped as warmup, fox loaded (the default pet). Every steady frame was under 8 ms. The steady gate passed on all three. The phone job is the first page in a fresh browser. Shader compile and one warm draw finish while the opening curtain is up, so they are not in the warmup frames. On that phone load the compile was 17 ms and the warm draw was 86 ms. The warmup hitch after the curtain was 4.4 ms. iPad and PC in that same browser were a 5.2 ms and a 2.3 ms hitch, with warm draws of 39 ms and 43 ms.
 
 | Viewport | p50 | p95 | 1% low | Worst steady | Boot hitch | Gate |
 | --- | --- | --- | --- | --- | --- | --- |
-| Phone 844×390 | 0.5 ms | 2.3 ms | 250 fps | 4.8 ms | 168 ms | Pass on steady frames |
-| iPad 1024×768 | 0.5 ms | 1.3 ms | 215 fps | 5.6 ms | 51 ms | Pass |
-| PC 1366×768 | 0.6 ms | 1.5 ms | 205 fps | 6.6 ms | 51 ms | Pass |
+| Phone 844×390 | 0.3 ms | 0.8 ms | 421 fps | 2.6 ms | 4.4 ms | Pass |
+| iPad 1024×768 | 0.3 ms | 0.9 ms | 272 fps | 4.8 ms | 5.2 ms | Pass |
+| PC 1366×768 | 0.3 ms | 0.8 ms | 294 fps | 4.1 ms | 2.3 ms | Pass |
 
 The histogram is in `test-results/adventure-m0/bench.json`. The overlay that produced it is `?fps=1`.
 
@@ -53,16 +53,16 @@ Result: **PASS** (exit 0).
 | | Measured |
 | --- | --- |
 | Ellie | 1.50 m. Feet at 0.00 m. Hip bone 0.44 m. |
-| Head, front | 38% of the figure. On a neck. Centered. Three-quarter 36%, side 24%, back 36%. |
-| Chest width | Front 93 px, three-quarter 143, side 67 (72% of the front), back 160. |
+| Head, front | 35% of the figure. On a neck. Centered. Three-quarter 35%, side 35%, back 36%. |
+| Chest width | Front 161 px, three-quarter 151, side 104 (65% of the front), back 160. |
 | Walk | Side step 182 px, arm swing 72 px, opposition 0.48, bob 15 px, feet trade a plant. |
 | Fox | 0.39 m tall, 0.77 m long. Top 0.39 m, under the 0.44 m hip. Feet at 0.00 m. |
 | Cat | 0.34 m tall, 0.42 m long. Top 0.34 m. Feet at 0.00 m. |
 | Puppy | 0.31 m tall, 0.49 m long. Top 0.31 m. Feet at 0.00 m. |
 
-Ellie is the CC0 Casual Female, scaled to 1.50 m. Her shirt, pants, body mesh, and pack hair stay. The pack Face is hidden, and a new head (longer face, brows, eyes, nose, mouth, side-swept hair) sits on the Head bone, forward of the pack skin so the face is not buried in the old helmet. The side head percentage is the outline fallback: the bun widens that silhouette, so the neck test misses on the side only. Front, three-quarter, and back still show a neck, and 24% is inside the 16–45% bar. The suited pug is not the follower. It is saved at `adventure/assets/later/Pug.fbx` for a later town character.
+Ellie is the CC0 Casual Female, scaled to 1.50 m. Her shirt, pants, body mesh, pack face, and pack hair are the ones in the file. The extra head was removed. Body and pet materials are Lambert, so the first frame does not compile a skinned Phong program and a skinned Standard program. Shader compile and one warm draw run while the opening curtain is up. The suited pug is not the follower. It is saved at `adventure/assets/later/Pug.fbx` for a later town character.
 
-`?pet=fox|cat|puppy|bunny|aussie` picks the follower. Fox, cat, and puppy are in the scene, one at a time, at her heel, with idle and walk. Bunny and Australian Shepherd are accepted by the switch and are not loaded. Shots are in `test-results/adventure-m0/`. Before shots of the old head and the suited pug are in `test-results/adventure-m0/before/`. `shot=heads` puts the pack head and the new head side by side, hair on both, same camera orbit: front, 3/4 front, side, and back (`head-fair-front.png`, `head-fair-three-quarter.png`, `head-fair-side.png`, `head-fair-back.png`, contact sheet `head-fair-sheet.png`). The pack face looks along the head bone's +Z, so that rig is turned to match the new face. `head-compare-front.png` and `head-compare-three-quarter.png` are the same pair at the short phone bench viewport, so more of the body is in frame.
+`?pet=fox|cat|puppy|bunny|aussie` picks the follower. Fox, cat, and puppy are in the scene, one at a time, at her heel, with idle and walk. Bunny and Australian Shepherd are accepted by the switch and are not loaded. Shots are in `test-results/adventure-m0/`. Before shots of the old head and the suited pug are in `test-results/adventure-m0/before/`.
 
 ### Bunny and Australian Shepherd
 
@@ -70,7 +70,7 @@ No free model was shipped for either, and nothing was purchased.
 
 Bunny. The Quaternius Ultimate Monsters bunny is CC0 and animated, and the pack sheet shows it on two legs, so it is not a heel pet. https://quaternius.com/packs/ultimatemonsters.html Sketchfab has CC-BY bunnies (for example Bunny Detective, six clips) that this run could not download without an account, and several are characters rather than a plain four-legged rabbit. OpenGameArt rabbits found in the search were flat sprites.
 
-Australian Shepherd. No CC0 or CC-BY file with a merle coat, four legs, and an idle plus a walk was found.
+Australian Shepherd. The animation job is still blocked on the file. Luckypon's Low Australian Shepherd is CC BY 4.0, rigged, and has no clips, which is the model Bob picked. Sketchfab's download API returns 401 without an account, this environment has no Sketchfab token, and the public viewer file is encrypted. It was not decrypted. Aigei asks for a login. No copy showed up on GitHub or archive.org. The ribbon_bee model has no license. Nothing was purchased, and no other dog was renamed into the aussie slot. `?pet=aussie` still shows the note and loads nothing. Idle, walk, run, sit, and jump are waiting on that FBX.
 
 | Candidate | License | Why it is not in the build |
 | --- | --- | --- |
