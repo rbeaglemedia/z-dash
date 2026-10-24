@@ -1,0 +1,26 @@
+{
+  "state": {
+    "entered": "1",
+    "count": "8",
+    "purpose": "SAMPLER",
+    "style": "glass",
+    "blurb": "Open room. Tall glass. A few pieces.",
+    "heart": "♡ I like this one",
+    "openHidden": "1",
+    "href": "file:///workspace/tools/sampler-enter.html",
+    "inside": true,
+    "likesKey": "zdash.sampler.likes.v1"
+  },
+  "after": {
+    "liked": true,
+    "saved": "{\"glass\":true}",
+    "house": null,
+    "kid": null,
+    "inside": false,
+    "x": -259.3,
+    "z": -56,
+    "href": "file:///workspace/tools/sampler-enter.html",
+    "heartHidden": true
+  },
+  "errors": []
+}

@@ -1,0 +1,64 @@
+[
+  {
+    "room": "glass",
+    "info": "glass 0.42",
+    "bytes": 23926
+  },
+  {
+    "room": "wood",
+    "info": "wood 0.21",
+    "bytes": 22907
+  },
+  {
+    "room": "pop",
+    "info": "pop 0.23",
+    "bytes": 26599
+  },
+  {
+    "room": "pastel",
+    "info": "pastel 0.18",
+    "bytes": 24049
+  },
+  {
+    "room": "loft",
+    "info": "loft 0.42",
+    "bytes": 26888
+  },
+  {
+    "room": "plants",
+    "info": "plants 0.39",
+    "bytes": 22268
+  },
+  {
+    "room": "future",
+    "info": "future 0.19",
+    "bytes": 18361
+  },
+  {
+    "room": "neon",
+    "info": "neon 0.20",
+    "bytes": 21555
+  },
+  {
+    "room": "house",
+    "info": "house 0.27",
+    "bytes": 17107
+  },
+  {
+    "room": "picks",
+    "info": "{\"glass\":true,\"plants\":true,\"future\":true}",
+    "bytes": 51182
+  },
+  {
+    "room": "heart-click",
+    "info": {
+      "once": "{\"pastel\":true}",
+      "twice": "{\"pastel\":false}",
+      "kept": "{\"pastel\":true}",
+      "house": null,
+      "kid": null,
+      "pressed": "true",
+      "label": "♥ I like this one"
+    }
+  }
+]
