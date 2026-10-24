@@ -1,0 +1,47 @@
+{
+  "what": "Kid App background Spotify, OBD, and other-app connections stay idle unless that feature is open. /test/ only. index.html untouched.",
+  "probe": "headless Chrome, evaluateOnNewDocument wraps setInterval/setTimeout/fetch/WebSocket/BroadcastChannel/geolocation/bluetooth/serial/postMessage and deviceorientation/devicemotion. One browser. Wait about 4.5s after domcontentloaded.",
+  "before": {
+    "world.html start card and driving": {
+      "intervals": ["400ms house walkLockEnter x12-16", "1000ms dance-stage hook x5-7", "250ms neon-paint hook x14-23"],
+      "channels": ["zdash-crew", "zdash-customdance x2", "zdash-petdance x2", "zdash-neonpaint", "zdash-wallgraffiti"],
+      "network": "one finished fetch of world/warm-manifest.json, no Spotify, no OBD, no WebSocket",
+      "sensors": "deviceorientation (tilt) only"
+    },
+    "jr.html menu, saved Spotify token": {
+      "intervals": ["500ms phone-link reconnect", "250ms neon-paint hook", "30min service-worker update"],
+      "channels": ["zdash-neonpaint", "zdash-wallgraffiti"],
+      "network": "POST https://accounts.spotify.com/api/token (refresh) even though the menu is idle",
+      "sensors": "devicemotion plus deviceorientation"
+    },
+    "jr.html road, saved Spotify token": {
+      "intervals": ["500ms link", "250ms neon-paint", "500ms tilt status", "20ms beat clock", "4000ms Spotify poll", "16ms sim", "30min service worker"],
+      "network": "Spotify token refresh"
+    },
+    "jr.html dashboard, saved Spotify token": {
+      "intervals": ["500ms link", "250ms neon-paint", "20ms beat", "4000ms Spotify poll", "200ms music paint", "16ms sim", "30min service worker"],
+      "network": "Spotify token refresh",
+      "sensors": "devicemotion"
+    }
+  },
+  "after": {
+    "world.html start card and driving, ?perf=1": "idle iv 0 · ch 0 · net 0 · sensor 0 · tilt on. warm-manifest.json fetched once and finished (status 200, not live). No page errors.",
+    "world-split.html": "same: iv 0, ch 0, net 0, tilt on",
+    "jr.html menu, saved Spotify token": "idle iv 0 · ch 0 · net 0 · sensor 0 · tilt on. No Spotify request.",
+    "jr.html road, saved Spotify token": "idle iv 500ms,20ms,16ms · ch 0 · net 0 · sensor 0 · tilt on. 500ms is the road card tilt-status text, 20ms is the local ROAD beat clock, 16ms is the practice sim. No Spotify request.",
+    "jr.html dashboard, saved Spotify token": "idle iv 20ms,4000ms,200ms,16ms · ch 0 · net 0 · sensor devicemotion · tilt on. Spotify token refresh runs only because the dashboard music player is open and the saved source is Spotify.",
+    "paint studio inside Neon World": "opening it starts a 200ms wait and zdash-neonpaint plus zdash-wallgraffiti. Closing it returns to iv 0, ch 0.",
+    "neon-paint.html": "channels open because that page is the paint feature. The car-wait interval stops once the car is ready.",
+    "fly3.html": "one 500ms tilt-button refresh. No channels, no network.",
+    "dance-stage.html": "iv 0, ch 0 while the stage is open. A channel is created only when a dance is saved."
+  },
+  "left_running": [
+    "Tilt (deviceorientation) on Neon World and the kid games.",
+    "The city requestAnimationFrame loop.",
+    "One finished local fetch of world/warm-manifest.json at Neon World startup.",
+    "ROAD's local beat clock and practice sim, and the road card's tilt-status refresh.",
+    "Dashboard music clock, Spotify poll, and phone motion only while the dashboard tile is open.",
+    "Phone-link, OBD bluetooth/serial, and battery read only after the user starts that feature.",
+    "?perf=1 paints its own 500ms line. That timer is absent without the flag."
+  ]
+}

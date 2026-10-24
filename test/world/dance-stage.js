@@ -3713,7 +3713,6 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
-  setInterval(function () { const t = window.perfAdd ? performance.now() : 0; try { hookWalk(); wrapInput(); } catch (e) {} if (t) window.perfAdd('timer', performance.now() - t); }, 1000);
   window.addEventListener('keydown', function (e) {
     if (!api.isOpen()) return;
     if (e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'Space') {

@@ -1178,8 +1178,6 @@ window.WALK_MODE={
 walkEnsurePill();
 walkEnsureEnterBtn();
 walkLockEnter();
-setTimeout(walkLockEnter,0);
-setInterval(function(){const t=window.perfAdd?performance.now():0;walkLockEnter();if(t)window.perfAdd('timer',performance.now()-t);},400);
 addEventListener('keydown',e=>{
   if(e.code==='ShiftLeft'||e.code==='ShiftRight'){WALK_MODE._shift=true;walkSyncGait();return;}
   if(e.repeat||e.code!=='KeyE'||WALK_MODE.insideBuilding)return;

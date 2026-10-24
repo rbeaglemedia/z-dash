@@ -69,8 +69,7 @@ window.addEventListener('storage',e=>{
   if(!e.key||e.key===PETDANCE)petCache.raw=null;
   if(!e.key||e.key===KEY){const s=readSaved();if(s){if(s.who==='girl'||s.who==='boy')S.who=s.who;S.charDanceOpt=normOpt(s.charDanceOpt);S.petDanceOpt=normOpt(s.petDanceOpt);}}
 });
-try{const ch=new BroadcastChannel('zdash-customdance');ch.onmessage=()=>{danceCache.raw=null;dance();};}catch(e){}
-try{const ch=new BroadcastChannel('zdash-petdance');ch.onmessage=()=>{petCache.raw=null;petDance();};}catch(e){}
+/* Other tabs already arrive through the storage listener. Stay off BroadcastChannel until a dance page is open. */
 S.setWho=function(w){S.who=w==='boy'?'boy':'girl';save();};
 S.setGait=function(g){S.gait=(g==='walk'||g==='run'||g==='dance')?g:'idle';S.dancing=S.gait==='dance';};
 S.setCharDanceOpt=function(opt){if(window.CREW&&CREW.setCharDanceOpt)return CREW.setCharDanceOpt(opt);S.charDanceOpt=normOpt(opt);save();return S.charDanceOpt;};
