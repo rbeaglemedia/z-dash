@@ -23,22 +23,29 @@ Every room is larger than the shared room in use today (8.4 by 6.3 by 3.1 meters
 | Loft | 28 x 24 x 7.4 | Stairs and an upper floor | High windows, one lamp | A few crates | Mixed |
 | Plants | 36 x 26 x 5.6 | One long garden room | Daylight through glass | Many pots | Big and small pots |
 | Future | 30 x 16 x 8 | Open and very tall | A thin cyan line | Almost empty | Low seats |
-| Neon | 24 x 18 x 5.2 | Open night room | Thin glow strips | A cabinet row | Everyday cabinets |
+| Neon | 24 x 18 x 5.2 | Open night room | Thin glow strips | A row of screens | Everyday screens |
 
 Paint time for one frame at 1280 by 720, averaged over 40 paints in headless Chrome on this machine:
 
 | Style | ms |
 | --- | --- |
-| Glass | 0.29 |
-| Wood | 0.18 |
-| Pop | 0.15 |
-| Pastel | 0.15 |
-| Loft | 0.22 |
-| Plants | 0.25 |
-| Future | 0.14 |
-| Neon | 0.16 |
+| Glass | 0.38 |
+| Wood | 0.21 |
+| Pop | 0.23 |
+| Pastel | 0.19 |
+| Loft | 0.28 |
+| Plants | 0.32 |
+| Future | 0.16 |
+| Neon | 0.20 |
+| House | 0.25 |
 
 110 frames a second is a 9.1 ms budget. Every room above is under that. The room painter does not set shadowBlur. While any walk-in room is open, the outdoor city loop stays held, so the cost is the room itself. The corner chip shows the live rate from the walk frame. These times are from this machine, not from a Galaxy handset.
+
+## Furniture and tech
+
+Sofas, tables, screens, TV stands, and speakers come from `PLANNER_PROPS` in `world/planner-props.js`. That file is the kid-page door for the catalog in Planner Port [PR #82](https://github.com/rbeaglemedia/z-dash/pull/82). The call is `list`, `get`, `parts(id, params)`, `remix(id)`, and `place(list, parts, x, y, z, yaw)`. Published ids are `screen`, `sofa`, `table`, `tv-stand`, `speaker`, `truss-seg`, and `led-trailer`. `parts` also accepts the baker names `tvStand`, `trussSeg`, and `ledTrailer`. The meshes are that proof's stand-in boxes. A screen faces +z, so a wall screen is placed with yaw of pi and the lit face points into the room. Glow is optional. The room shell is drawn before the furniture, so a short sofa stays in front of the floor.
+
+Ellie's house uses the same painter at 24 by 18 by 4.8 meters. The saved furniture choice picks a catalog set: a sofa, a TV stand, speakers on a table, or a screen on a table. The saved color tints that screen. The pet bed is a low catalog table. The four saved controls and their keys stay as they are.
 
 ## The heart
 

@@ -42,8 +42,6 @@ const SAMPLER_STYLES = [
     w: 26, d: 18, h: 4.8, floor: '#f3ecdf', wall: '#f7f4ef', ceil: '#fffdf8', glass: '#d7f4fb',
     props: [
       samplerBox(0, 8, 0.02, 7, 0.04, 4.2, '#e7d7c3', null),
-      samplerBox(-3.2, 12.2, 0, 3.6, 0.85, 1.35, '#f7f4ee', '#e0d6ca'),
-      samplerBox(0.6, 9.2, 0, 1.6, 0.42, 0.95, '#ffffff', '#e4dcd2'),
       samplerBox(8.2, 14, 0, 0.7, 0.42, 0.7, '#efe6d8', null),
       samplerBox(8.2, 14, 0.42, 1.15, 1.15, 1.15, '#7dff6b', null)
     ].concat(samplerPanes(17.85, 0.4, 3.6, [-7.5, -2.5, 2.5, 7.5], '#d7f4fb', '#9ad4e2'))
@@ -56,13 +54,8 @@ const SAMPLER_STYLES = [
       samplerBox(-5.5, 8, 0, 9, 3.35, 0.22, '#e6d0b0', '#c4a078'),
       samplerBox(5.5, 8, 0, 9, 3.35, 0.22, '#e6d0b0', '#c4a078'),
       samplerBox(0, 4.2, 0.02, 5.2, 0.05, 2.8, '#a33b2c', null),
-      samplerBox(0, 5.1, 0, 3.1, 1.05, 1.35, '#7a3428', '#5c241c'),
       samplerBox(-6.2, 3.2, 0, 0.28, 1.55, 0.28, '#5c3b22', null),
       samplerBox(-6.2, 3.2, 1.5, 0.75, 0.28, 0.75, '#ffb020', null),
-      samplerBox(0, 12.6, 0, 4.2, 1.7, 0.5, '#a56b3c', '#8a552c'),
-      samplerBox(0, 10.6, 0, 1.7, 0.78, 1.05, '#d7a56a', null),
-      samplerBox(-1.5, 10.6, 0, 0.5, 0.52, 0.5, '#8c5a32', null),
-      samplerBox(1.5, 10.6, 0, 0.5, 0.52, 0.5, '#8c5a32', null),
       samplerBox(6.4, 12.2, 0, 0.28, 1.45, 0.28, '#5c3b22', null),
       samplerBox(6.4, 12.2, 1.4, 0.65, 0.24, 0.65, '#ffd27a', null)
     ]
@@ -74,12 +67,8 @@ const SAMPLER_STYLES = [
     props: [
       samplerBox(-8, 8, 0.03, 6, 0.06, 5, '#ffb3e6', null),
       samplerBox(8, 14, 0.03, 7, 0.06, 4.5, '#9ff3ff', null),
-      samplerBox(-6, 13, 0, 3.4, 2.5, 2.6, '#ff2a3d', '#ff7a8a'),
-      samplerBox(2, 10, 0, 4.2, 1.15, 2.3, '#ffe14d', null),
       samplerBox(11, 16, 0, 1.8, 4.6, 1.8, '#3ee6ff', null),
       samplerBox(-12, 16.5, 0, 2.2, 3.3, 2.2, '#7dff6b', null),
-      samplerBox(8, 6, 0, 2.4, 1.7, 2.4, '#ff4fd8', null),
-      samplerBox(-1, 5.5, 0, 3.2, 0.45, 1.5, '#ffb020', null),
       samplerBox(0, 21.7, 1.5, 7, 3.2, 0.16, '#ff4fd8', null),
       samplerBox(-11, 21.7, 1.6, 4.2, 2.5, 0.16, '#3ee6ff', null),
       samplerBox(11, 21.7, 1.8, 4.2, 2.8, 0.16, '#ffe14d', null)
@@ -93,13 +82,7 @@ const SAMPLER_STYLES = [
       samplerBox(-4.6, 9, 0, 7.2, 2.05, 0.16, '#f6e4ee', '#f0d0e0'),
       samplerBox(4.6, 9, 0, 7.2, 2.05, 0.16, '#f6e4ee', '#f0d0e0'),
       samplerBox(0, 4.2, 0.02, 3.2, 0.04, 2.1, '#fde8f0', null),
-      samplerBox(-3.1, 4.2, 0, 0.55, 0.48, 0.55, '#f7d6e4', null),
-      samplerBox(-1.7, 4.6, 0, 0.55, 0.48, 0.55, '#d9f3ea', null),
-      samplerBox(-2.4, 5.5, 0, 0.7, 0.32, 0.7, '#fff6dc', null),
-      samplerBox(1.2, 13.2, 0.02, 2.6, 0.04, 1.7, '#e5f7f1', null),
-      samplerBox(2.1, 13.2, 0, 0.5, 0.42, 0.5, '#efe4ff', null),
-      samplerBox(-4.2, 14, 0, 1.5, 0.7, 0.38, '#f3d7c4', null),
-      samplerBox(5.2, 13.4, 0, 0.4, 0.55, 0.4, '#b7e4c7', null)
+      samplerBox(1.2, 13.2, 0.02, 2.6, 0.04, 1.7, '#e5f7f1', null)
     ]
   },
   {
@@ -111,7 +94,6 @@ const SAMPLER_STYLES = [
       samplerBox(-7, 14.3, 3.64, 12, 0.9, 0.12, '#5c564e', null),
       samplerBox(6.2, 6.2, 0, 1.25, 1.25, 1.25, '#a89880', null),
       samplerBox(7.5, 7.3, 0, 0.85, 0.85, 0.85, '#8d7b68', null),
-      samplerBox(-2, 6.2, 0, 3.4, 0.9, 1.25, '#6e675f', null),
       samplerBox(-8.2, 5, 0, 0.32, 1.7, 0.32, '#4a453f', null),
       samplerBox(-8.2, 5, 1.65, 0.75, 0.22, 0.75, '#ffb020', null),
       samplerBox(11, 16, 0, 0.7, 7.1, 0.7, '#9a938a', null)
@@ -121,9 +103,7 @@ const SAMPLER_STYLES = [
     id: 'plants', name: 'Plants', sign: 'GREEN', color: '#7dff6b', exteriorH: 13,
     blurb: 'A long garden room. Big and small pots.',
     w: 36, d: 26, h: 5.6, floor: '#e7f2df', wall: '#f4f7f2', ceil: '#f7fbf4',
-    props: [
-      samplerBox(0, 8, 0, 2, 0.5, 0.65, '#d7c4a8', null)
-    ].concat(samplerPots(-14, 4, 6, 3.4, '#efe6d4', '#5fa86a'))
+    props: [].concat(samplerPots(-14, 4, 6, 3.4, '#efe6d4', '#5fa86a'))
       .concat(samplerPots(14, 4.6, 6, 3.4, '#e7d8c4', '#7dff6b'))
       .concat(samplerPots(0, 14, 3, 3.2, '#f3ead8', '#3e8f55'))
       .concat(samplerPanes(25.75, 1.2, 3.2, [-12, -6, 0, 6, 12], '#e5f6ea', '#b7d7c0'))
@@ -133,9 +113,6 @@ const SAMPLER_STYLES = [
     blurb: 'Very tall. Almost empty. Low seats.',
     w: 30, d: 16, h: 8, floor: '#e8eef4', wall: '#f4f7fb', ceil: '#f8fbfe',
     props: [
-      samplerBox(0, 9, 0, 8, 0.35, 5, '#f7fbff', '#3ee6ff'),
-      samplerBox(-6, 8, 0.35, 2.4, 0.35, 0.7, '#ffffff', '#3ee6ff'),
-      samplerBox(6, 8, 0.35, 2.4, 0.35, 0.7, '#ffffff', '#3ee6ff'),
       samplerBox(0, 8, 7.72, 26, 0.08, 0.14, '#3ee6ff', null),
       samplerBox(0, 2.2, 0.04, 18, 0.06, 0.12, '#3ee6ff', null),
       samplerBox(0, 15.8, 2.2, 10, 4.2, 0.1, '#e7f7ff', '#3ee6ff')
@@ -143,24 +120,22 @@ const SAMPLER_STYLES = [
   },
   {
     id: 'neon', name: 'Neon', sign: 'NEON', color: '#ff4fd8', exteriorH: 14,
-    blurb: 'Night room. Thin glow strips. A row of cabinets.',
+    blurb: 'Night room. Thin glow strips. A row of screens.',
     w: 24, d: 18, h: 5.2, floor: '#241433', wall: '#321c4c', ceil: '#1a1028',
     props: [
       samplerBox(0, 9, 4.95, 20, 0.1, 0.14, '#3ee6ff', null),
       samplerBox(-11.8, 9, 2.2, 0.12, 0.12, 14, '#ff4fd8', null),
-      samplerBox(11.8, 9, 2.2, 0.12, 0.12, 14, '#7dff6b', null),
-      samplerBox(-6, 14.2, 0, 1.3, 1.9, 0.7, '#1a1028', '#3ee6ff'),
-      samplerBox(-6, 13.8, 1.15, 0.95, 0.7, 0.06, '#3ee6ff', null),
-      samplerBox(-2.6, 14.2, 0, 1.3, 1.9, 0.7, '#1a1028', '#ff4fd8'),
-      samplerBox(-2.6, 13.8, 1.15, 0.95, 0.7, 0.06, '#ff4fd8', null),
-      samplerBox(0.8, 14.2, 0, 1.3, 1.9, 0.7, '#1a1028', '#ffe14d'),
-      samplerBox(0.8, 13.8, 1.15, 0.95, 0.7, 0.06, '#ffe14d', null),
-      samplerBox(4.2, 14.2, 0, 1.3, 1.9, 0.7, '#1a1028', '#7dff6b'),
-      samplerBox(4.2, 13.8, 1.15, 0.95, 0.7, 0.06, '#7dff6b', null),
-      samplerBox(8, 8, 0, 2.2, 1.05, 0.85, '#120818', '#ffb020')
+      samplerBox(11.8, 9, 2.2, 0.12, 0.12, 14, '#7dff6b', null)
     ]
   }
 ];
+
+const HOUSE_ROOM = {
+  id: 'house', name: 'Home', sign: 'HOME', color: '#7dff6b', exteriorH: 12,
+  blurb: 'Ellie’s house. Glass, daylight, and the saved pieces.',
+  w: 24, d: 18, h: 4.8, floor: '#f3ecdf', wall: '#f7f4ef', ceil: '#fffdf8', glass: '#d7f4fb',
+  props: [].concat(samplerPanes(17.85, 0.4, 3.6, [-7, -2.4, 2.4, 7], '#d7f4fb', '#9ad4e2'))
+};
 
 const SAMPLER = {
   row: SAMPLER_ROW,
@@ -173,8 +148,100 @@ const SAMPLER = {
 };
 
 function samplerById(id) {
+  if (id === 'house') return HOUSE_ROOM;
   for (let i = 0; i < SAMPLER_STYLES.length; i++) if (SAMPLER_STYLES[i].id === id) return SAMPLER_STYLES[i];
   return SAMPLER_STYLES[0];
+}
+
+function samplerHex(p) {
+  const c = (v) => { const n = Math.round(Math.max(0, Math.min(1, v)) * 255); return (n < 16 ? '0' : '') + n.toString(16); };
+  return '#' + c(p.r) + c(p.g) + c(p.b);
+}
+
+function samplerFromParts(parts) {
+  const out = [];
+  for (let i = 0; i < parts.length; i++) {
+    const p = parts[i];
+    out.push({
+      x: p.x, z: p.z, y: p.y - p.sy / 2, w: p.sx, h: p.sy, d: p.sz,
+      fill: samplerHex(p), stroke: null, yaw: p.yaw || 0
+    });
+  }
+  return out;
+}
+
+function samplerDrop(bag, id, params, x, z, yaw, lift) {
+  if (typeof PLANNER_PROPS === 'undefined' || !PLANNER_PROPS) return;
+  PLANNER_PROPS.place(bag, PLANNER_PROPS.parts(id, params), x, lift || 0, z, yaw || 0);
+}
+
+function samplerTech(id) {
+  const bag = [];
+  const face = Math.PI;
+  if (id === 'glass') {
+    samplerDrop(bag, 'sofa', { w: 2.4, color: '#f7f4ee' }, -2.4, 6.6, 0);
+    samplerDrop(bag, 'table', { w: 1.3, d: 0.7, color: '#ffffff', leg: '#d9cfc4' }, 1.6, 6.2, 0);
+    samplerDrop(bag, 'screen', { w: 2.4, h: 1.3, color: '#d7e3ea', face: '#e7f6fb' }, 0, 16.6, face, 1.15);
+  } else if (id === 'wood') {
+    samplerDrop(bag, 'sofa', { w: 2.8, d: 0.95, h: 0.9, color: '#7a3428' }, -2.4, 6.2, face);
+    samplerDrop(bag, 'table', { w: 1.6, d: 0.9, top: 0.74, color: '#c4894a', leg: '#5c3b22' }, 2.2, 6.4, 0);
+  } else if (id === 'pop') {
+    samplerDrop(bag, 'sofa', { w: 4.4, d: 1.4, h: 1.35, color: '#ff2a3d' }, -1.6, 6.8, 0.15);
+    samplerDrop(bag, 'table', { w: 2.4, d: 1.2, top: 0.95, color: '#ffe14d', leg: '#ffb020' }, 3.2, 7.2, 0);
+    samplerDrop(bag, 'screen', { w: 5.5, h: 2.8, color: '#ff4fd8', glow: '#3ee6ff' }, 0, 20.4, face, 1.6);
+  } else if (id === 'pastel') {
+    samplerDrop(bag, 'sofa', { w: 1.2, d: 0.62, h: 0.5, color: '#f7d6e4' }, -1.8, 5.6, 0.2);
+    samplerDrop(bag, 'table', { w: 0.7, d: 0.5, top: 0.42, color: '#fff6dc', leg: '#f3d7c4' }, 2.0, 7.4, 0);
+  } else if (id === 'loft') {
+    samplerDrop(bag, 'sofa', { w: 2.2, d: 0.9, color: '#6e675f' }, -2.2, 6.4, 0);
+    samplerDrop(bag, 'table', { w: 1.8, d: 0.8, top: 0.78, color: '#b7b1a8', leg: '#4a453f' }, 2.2, 7.6, 0);
+    samplerDrop(bag, 'speaker', { color: '#4a453f', glow: '#ffb020' }, -4.2, 6.8, face);
+  } else if (id === 'plants') {
+    samplerDrop(bag, 'sofa', { w: 2.1, d: 0.8, h: 0.7, color: '#d7c4a8' }, -1.4, 7.2, 0);
+    samplerDrop(bag, 'table', { w: 0.9, d: 0.6, color: '#efe6d4', leg: '#8a7360' }, 1.8, 6.6, 0);
+  } else if (id === 'future') {
+    samplerDrop(bag, 'sofa', { w: 3.2, d: 1.1, h: 0.42, color: '#f7fbff' }, 0, 6.4, 0);
+    samplerDrop(bag, 'screen', { w: 8, h: 0.35, d: 0.04, color: '#e7f7ff', glow: '#3ee6ff', bezel: 0.04 }, 0, 15.2, face, 2.4);
+  } else if (id === 'neon') {
+    const glows = ['#3ee6ff', '#ff4fd8', '#ffe14d', '#7dff6b'];
+    for (let i = 0; i < glows.length; i++) {
+      samplerDrop(bag, 'screen', { w: 1.15, h: 1.7, color: '#1a1028', glow: glows[i] }, -3.9 + i * 2.6, 12.4, face, 0.55);
+    }
+    samplerDrop(bag, 'speaker', { glow: '#ff4fd8' }, 3.6, 6.6, face);
+  }
+  return samplerFromParts(bag);
+}
+
+function samplerHouseSave(opts) {
+  if (opts && opts.save) return opts.save;
+  if (typeof walkHouseLoad === 'function') return walkHouseLoad();
+  return { theme: '#3ee6ff', furniture: 'sofa', petBed: true, sign: 'ELLIE' };
+}
+
+function samplerHouseParts(save) {
+  const bag = [];
+  const theme = save.theme || '#3ee6ff';
+  const furn = save.furniture || 'sofa';
+  const face = Math.PI;
+  if (furn === 'arcade') {
+    samplerDrop(bag, 'tv-stand', { w: 1.35, h: 0.72, screenH: 0.95, color: '#1b1e26', glow: theme }, 0, 8.4, face);
+    samplerDrop(bag, 'screen', { w: 1.05, h: 1.35, color: '#1b1e26', glow: theme }, -2.4, 8.2, face, 0.2);
+  } else if (furn === 'dj') {
+    samplerDrop(bag, 'table', { w: 2.4, d: 0.85, top: 0.95, color: '#2a241c', leg: '#1c140c' }, 0, 7.6, 0);
+    samplerDrop(bag, 'speaker', { h: 1.25, glow: theme }, -2.2, 7.2, face);
+    samplerDrop(bag, 'speaker', { h: 1.25, glow: theme }, 2.2, 7.2, face);
+  } else if (furn === 'trophy') {
+    samplerDrop(bag, 'table', { w: 1.7, d: 0.55, top: 1.05, color: '#f7f4ee', leg: '#cfc6b8' }, 0, 8.2, 0);
+    samplerDrop(bag, 'screen', { w: 1.45, h: 0.72, color: '#1b1e26', glow: theme }, 0, 8.35, face, 1.12);
+  } else {
+    samplerDrop(bag, 'sofa', { w: 2.6, d: 0.95, h: 0.82, color: '#f4efe6' }, -2.6, 6.6, 0);
+    samplerDrop(bag, 'table', { w: 1.2, d: 0.7, color: '#d9c7a6' }, 1.4, 6.4, 0);
+    samplerDrop(bag, 'screen', { w: 2.4, h: 1.25, color: '#1b1e26', glow: theme }, 0, 16.8, face, 1.15);
+  }
+  if (save.petBed !== false) {
+    samplerDrop(bag, 'table', { w: 1.15, d: 0.75, top: 0.28, color: '#7dff6b', leg: '#3d6b48' }, 3.1, 5.2, 0);
+  }
+  return samplerFromParts(bag);
 }
 
 function samplerShade(hex, amt) {
@@ -215,14 +282,15 @@ function samplerQuad(g, pts, fill, stroke) {
 }
 
 function samplerDrawBox(g, b, view) {
-  const x0 = b.x - b.w / 2, x1 = b.x + b.w / 2, z0 = b.z - b.d / 2, z1 = b.z + b.d / 2, y0 = b.y, y1 = b.y + b.h;
-  const P = (x, y, z) => samplerProject(x, y, z, view);
+  const y0 = b.y, y1 = b.y + b.h, hx = b.w / 2, hz = b.d / 2;
+  const yaw = b.yaw || 0, c = Math.cos(yaw), s = Math.sin(yaw);
+  const P = (lx, y, lz) => samplerProject(b.x + lx * c + lz * s, y, b.z - lx * s + lz * c, view);
   const edge = b.stroke;
-  samplerQuad(g, [P(x0, y0, z1), P(x1, y0, z1), P(x1, y1, z1), P(x0, y1, z1)], b.fill, edge);
-  samplerQuad(g, [P(x0, y0, z0), P(x0, y0, z1), P(x0, y1, z1), P(x0, y1, z0)], samplerShade(b.fill, -22), edge);
-  samplerQuad(g, [P(x1, y0, z0), P(x1, y0, z1), P(x1, y1, z1), P(x1, y1, z0)], samplerShade(b.fill, -12), edge);
-  samplerQuad(g, [P(x0, y1, z0), P(x1, y1, z0), P(x1, y1, z1), P(x0, y1, z1)], samplerShade(b.fill, 18), edge);
-  samplerQuad(g, [P(x0, y0, z0), P(x1, y0, z0), P(x1, y1, z0), P(x0, y1, z0)], samplerShade(b.fill, -8), edge);
+  samplerQuad(g, [P(-hx, y0, hz), P(hx, y0, hz), P(hx, y1, hz), P(-hx, y1, hz)], b.fill, edge);
+  samplerQuad(g, [P(-hx, y0, -hz), P(-hx, y0, hz), P(-hx, y1, hz), P(-hx, y1, -hz)], samplerShade(b.fill, -22), edge);
+  samplerQuad(g, [P(hx, y0, -hz), P(hx, y0, hz), P(hx, y1, hz), P(hx, y1, -hz)], samplerShade(b.fill, -12), edge);
+  samplerQuad(g, [P(-hx, y1, -hz), P(hx, y1, -hz), P(hx, y1, hz), P(-hx, y1, hz)], samplerShade(b.fill, 18), edge);
+  samplerQuad(g, [P(-hx, y0, -hz), P(hx, y0, -hz), P(hx, y1, -hz), P(-hx, y1, -hz)], samplerShade(b.fill, -8), edge);
 }
 
 function samplerShell(room) {
@@ -309,8 +377,12 @@ SAMPLER.paint = function (g, W, H, id, opts) {
   opts = opts || {};
   g.fillStyle = room.ceil;
   g.fillRect(0, 0, W, H);
-  const boxes = samplerShell(room).concat(room.props);
+  const save = room.id === 'house' ? samplerHouseSave(opts) : null;
+  const gear = save ? samplerHouseParts(save) : samplerTech(room.id);
+  const shell = samplerShell(room);
+  const boxes = room.props.concat(gear);
   boxes.sort((a, b) => (b.z - b.d / 2) - (a.z - a.d / 2));
+  for (let i = 0; i < shell.length; i++) samplerDrawBox(g, shell[i], view);
   for (let i = 0; i < boxes.length; i++) samplerDrawBox(g, boxes[i], view);
   const who = samplerActors(opts);
   samplerPet(g, who.petX, who.petZ, view);
@@ -319,7 +391,7 @@ SAMPLER.paint = function (g, W, H, id, opts) {
   g.fillStyle = room.id === 'neon' ? '#e9fff2' : '#243044';
   g.font = '700 28px sans-serif';
   g.textAlign = 'center';
-  g.fillText(room.name, label[0], label[1]);
+  g.fillText(save ? (save.sign || 'ELLIE') : room.name, label[0], label[1]);
   if (opts.showChrome) {
     const ms = opts.ms != null ? opts.ms : 0;
     g.fillStyle = 'rgba(233,255,242,.92)';
@@ -356,8 +428,17 @@ function samplerStyleFromDoor(door) {
   return SAMPLER.styleId || 'glass';
 }
 
+function samplerPurpose() {
+  return typeof WALK_MODE !== 'undefined' && WALK_MODE && WALK_MODE.insideBuilding && WALK_MODE.insideDoor && WALK_MODE.insideDoor.purpose;
+}
+
 function samplerInside() {
-  return typeof WALK_MODE !== 'undefined' && WALK_MODE && WALK_MODE.insideBuilding && WALK_MODE.insideDoor && WALK_MODE.insideDoor.purpose === 'SAMPLER';
+  return samplerPurpose() === 'SAMPLER';
+}
+
+function samplerBig() {
+  const p = samplerPurpose();
+  return p === 'SAMPLER' || p === 'HOME';
 }
 
 function samplerClamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -477,6 +558,24 @@ SAMPLER.hidePicks = function () {
 
 SAMPLER.attach = function () { samplerEnsureUi(); };
 
+SAMPLER.onHome = function () {
+  samplerEnsureUi();
+  SAMPLER.styleId = 'house';
+  SAMPLER.stamps = [];
+  SAMPLER.fps = 0;
+  if (typeof WALK_MODE !== 'undefined' && WALK_MODE) {
+    WALK_MODE.room = { x: 0, z: 3.6, yaw: 0, petX: 1.35, petZ: 3.85, tx: null, tz: null };
+  }
+  const card = document.getElementById('walk-interior');
+  const heart = document.getElementById('sampler-heart');
+  const fps = document.getElementById('sampler-fps');
+  const picks = document.getElementById('sampler-picks-open');
+  if (card && fps && fps.parentElement !== card) card.appendChild(fps);
+  if (heart) heart.hidden = true;
+  if (picks) picks.hidden = true;
+  if (fps) fps.hidden = false;
+};
+
 SAMPLER.onEnter = function (door) {
   samplerEnsureUi();
   SAMPLER.styleId = samplerStyleFromDoor(door);
@@ -538,7 +637,7 @@ function samplerHook() {
   if (typeof walkPaintRoom !== 'function' || walkPaintRoom._sampler) return;
   const prevPaint = walkPaintRoom;
   walkPaintRoom = function () {
-    if (samplerInside()) {
+    if (samplerBig()) {
       const cv = document.getElementById('walk-room-cv');
       const card = document.getElementById('walk-interior');
       if (!cv) return;
@@ -547,7 +646,11 @@ function samplerHook() {
       if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
       const g = cv.getContext('2d');
       if (!g) return;
-      SAMPLER.paint(g, W, H, samplerStyleFromDoor(WALK_MODE.insideDoor), { live: true });
+      const home = samplerPurpose() === 'HOME';
+      SAMPLER.paint(g, W, H, home ? 'house' : samplerStyleFromDoor(WALK_MODE.insideDoor), {
+        live: true,
+        save: home && typeof walkHouseLoad === 'function' ? walkHouseLoad() : null
+      });
       return;
     }
     return prevPaint();
@@ -555,12 +658,12 @@ function samplerHook() {
   walkPaintRoom._sampler = 1;
   if (typeof walkRoomStep === 'function') {
     const prevStep = walkRoomStep;
-    walkRoomStep = function (w, d) { if (samplerInside()) return samplerStep(w, d); return prevStep(w, d); };
+    walkRoomStep = function (w, d) { if (samplerBig()) return samplerStep(w, d); return prevStep(w, d); };
   }
   if (typeof walkUniso === 'function') {
     const prevUn = walkUniso;
     walkUniso = function (px, py, W, H) {
-      if (samplerInside()) {
+      if (samplerBig()) {
         const hit = samplerUnproject(px, py, W, H);
         const st = samplerById(SAMPLER.styleId);
         if (hit) return { x: samplerClamp(hit.x, -st.w / 2, st.w / 2), z: samplerClamp(hit.z, 0.4, st.d) };
@@ -573,6 +676,7 @@ function samplerHook() {
     walkShowInterior = function (door) {
       prevShow(door);
       if (door && door.purpose === 'SAMPLER') SAMPLER.onEnter(door);
+      else if (door && door.purpose === 'HOME') SAMPLER.onHome();
       else SAMPLER.onLeave();
     };
   }
@@ -587,5 +691,7 @@ if (typeof document !== 'undefined') {
   if (typeof CITY !== 'undefined') SAMPLER.place();
 }
 
+SAMPLER.tech = samplerTech;
+SAMPLER.houseParts = samplerHouseParts;
 if (typeof window !== 'undefined') window.SAMPLER = SAMPLER;
 if (typeof globalThis !== 'undefined') globalThis.SAMPLER = SAMPLER;

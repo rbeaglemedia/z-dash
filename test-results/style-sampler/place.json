@@ -9,42 +9,42 @@
     {
       "id": "glass",
       "m": "26x18x4.8",
-      "props": 9
+      "props": 7
     },
     {
       "id": "wood",
       "m": "22x16x3.6",
-      "props": 12
+      "props": 7
     },
     {
       "id": "pop",
       "m": "32x22x6.8",
-      "props": 11
+      "props": 7
     },
     {
       "id": "pastel",
       "m": "20x18x4.2",
-      "props": 10
+      "props": 4
     },
     {
       "id": "loft",
       "m": "28x24x7.4",
-      "props": 21
+      "props": 20
     },
     {
       "id": "plants",
       "m": "36x26x5.6",
-      "props": 36
+      "props": 35
     },
     {
       "id": "future",
       "m": "30x16x8",
-      "props": 6
+      "props": 3
     },
     {
       "id": "neon",
       "m": "24x18x5.2",
-      "props": 12
+      "props": 3
     }
   ],
   "shells": [

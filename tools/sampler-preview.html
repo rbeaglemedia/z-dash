@@ -10,6 +10,7 @@
 </head>
 <body>
 <canvas id="c" width="1280" height="720"></canvas>
+<script src="../world/planner-props.js"></script>
 <script src="../world/style-sampler.js"></script>
 <script>
 const q = new URLSearchParams(location.search);
@@ -43,6 +44,12 @@ if (room === 'picks') {
   const fps = document.getElementById('sampler-fps');
   if (fps) fps.textContent = (ms < 9 ? '110+ · ' : '') + ms.toFixed(1) + ' ms';
   if (room === 'wood') SAMPLER.toggle('wood');
+  if (room === 'house') {
+    const heart = document.getElementById('sampler-heart');
+    const picks = document.getElementById('sampler-picks-open');
+    if (heart) heart.hidden = true;
+    if (picks) picks.hidden = true;
+  }
   document.body.dataset.ms = ms.toFixed(2);
   document.body.dataset.room = room;
 }
