@@ -1,8 +1,27 @@
-# Building FPS proof — saved plan, not run
+# Building FPS proof — v28 baseline measured, proof not built
 
-Status: stopped before any proof code or Chrome run. Bob's rule (Oct 23): the phone FPS fix on split-pc-fps (interiors load only on entry, plus the clipping fix) ships to main first. When that is live, rebase this branch onto that main and measure against it. Do not measure against 8777eb8.
+Status: rebased onto main `a4425e1` (v28: interiors load only on entry, near-plane clip, off-screen glow clip, car-sprite skip, traffic cache eviction). The v28 baseline below is the number to beat. No facade code, no deploy, no building-look screenshots. Waiting on Bob's screenshots and opinions.
 
-Nothing in this branch changes the game. No `world/bldg-fps-proof.js`, no script tag, no screenshots, no FPS numbers.
+Nothing in this branch changes the game. No `world/bldg-fps-proof.js`, no script tag. Game files match `a4425e1`.
+
+## v28 baseline (2026-10-24)
+
+Headless Chrome 156, one browser. Viewport 844×390, emulated DPR 3, touch, mobile UA. The page capped the canvas at DPR 2: backing store 1688×780, `pc-mode` off. CPU throttle 4×. Physics paused so the scripted path does not fight the car. Traffic still updates (about 30 alive; sprite cache sits at its 140 cap). No baked building textures, so texture-upload cost is zero.
+
+Frame times are raw wall-clock milliseconds. The in-game HUD clamps each frame at 50 ms, so it read 20 on every route and cannot show a slower result. An earlier capture that stored that clamped step was discarded.
+
+| Route | Avg FPS | 1% low | Worst FPS | Median frame | p90 frame | Frames | JS heap |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Street, 60 mph (26.8 m/s), x=-140, z 340→780 | 7.9 | 3.4 | 3.2 | 138 ms | 210 ms | 320 | 49 MB |
+| Arcade, 90 m/s, same path | 7.9 | 4.0 | 4.0 | 136 ms | 208 ms | 92 | 42 MB |
+| Flying, y=70, x=-200, z 280→920, 45 m/s | 8.2 | 3.9 | 3.7 | 137 ms | 193 ms | 276 | 43 MB |
+| On foot, 3.6 m/s, past Z Company Arts | 2.6 | 1.5 | 1.5 | 389 ms | 554 ms | 434 | 66 MB |
+
+Heap at load was 46 MB and 68 MB after the walk. No walk frame was over 1 s (worst 681 ms). 86 of 434 walk frames were over 500 ms.
+
+The walk is the expensive route because it is the only one that turns on the existing storefront lines (speed under 12 m/s) and the on-foot detail pass (38 m). Street, arcade, and flying at these speeds leave those passes off, and they match each other. This harness (this VM plus 4× throttle) is the yardstick for a later facade test. It is not a reading of the HUD on a phone.
+
+Full stats: `test-results/bldg-fps-baseline-v28.json`. Measured game tree: `a4425e1`.
 
 ## Do not touch
 
