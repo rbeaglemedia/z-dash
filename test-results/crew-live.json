@@ -1,0 +1,20 @@
+{
+  "note": "Avatar and pet stay live with the car sprite. Save keys and shapes were not changed. Anatomy checker (tools used by bc-bfc8fc93) passed on this tree before the commit; the recorded sha below is the commit the screenshots match after this file lands.",
+  "drawOrder": ["trails", "car", "person-pet", "fx", "hud"],
+  "live": {
+    "before": { "hair": "ponytail", "skin": "#f2c7a5", "top": "#ff3df2", "bottom": "#2a6fdb", "pet": "fox", "petGlow": "#ffb020" },
+    "after": { "hair": "long", "skin": "#8d5524", "top": "#3ee6ff", "bottom": "#fff04d", "pet": "cat", "petGlow": "#3ee6ff" },
+    "roomPixelsChanged": "1995 px (0.61%)",
+    "walkPhasePixelsChanged": "579 px (0.41%)",
+    "reloadVsStyledRoom": "7 px"
+  },
+  "scale": {
+    "characterMetres": 1.49,
+    "foxTopMetres": 0.6,
+    "foxRatio": 0.4,
+    "foxFeetMetres": -0.08,
+    "hipMetres": 0.78,
+    "petDrawScale": 1.6
+  },
+  "anatomy": "PASS findings=0. Head, limbs, walk, pets, and scale."
+}

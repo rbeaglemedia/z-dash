@@ -502,7 +502,11 @@ const SOCCER = (() => {
   }
 
   function frame(dt) {
-    if (typeof flying !== 'undefined' && flying && !(typeof paused !== 'undefined' && paused)) sim(dt);
+    if (typeof flying !== 'undefined' && flying && !(typeof paused !== 'undefined' && paused)) {
+      const far = Math.hypot((P.x || 0) - S.x, (P.z || 0) - S.z) > 420;
+      const still = Math.hypot(S.vx, S.vy, S.vz) < 0.05 && !(S.hold > 0) && !(S.flash > 0);
+      if (!(far && still)) sim(dt);
+    }
     if (ballItem) { ballItem.x = S.x; ballItem.y = S.y; ballItem.z = S.z; }
   }
 

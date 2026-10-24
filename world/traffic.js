@@ -15,8 +15,15 @@ const TRAFFIC = (() => {
   const lanes = [];
   const cars = [];
   const cache = new Map();
+  // Sprites on screen this frame. Eviction may drop an old angle, not one of these.
+  const hot = new Set();
   const sparks = [];
-  let bakes = 0, bakeErr = '', cloned = 0, built = false, sparkN = 0;
+  let bakes = 0, bakeMs = 0, bakeErr = '', cloned = 0, built = false, sparkN = 0;
+  // Raised only while this visit is filling the view grid. Phone and PC stay
+  // on cacheMax until the warm-up asks for the grid, so a short visit does
+  // not evict the sprites it just paid for.
+  let warmCapOn = 0, warmKeys = null, warmAt = 0, warmFail = 0;
+  const WARM_BYTE_CAP = 170 * 1024 * 1024;
   let wingHinges = 0, crewN = 0;
 
   function kidOf(p) {
@@ -145,7 +152,7 @@ const TRAFFIC = (() => {
   }
   function blank(sim) {
     const c = {sim, on:false, lane:null, s:0, v:0, v0:0, yaw:0, x:0, z:0, y:0, pi:0, turn:null, rollS:-1, blend:0, blend0:0, bx:0, bz:0, by:0, utT:0, was:false, tick:0, hit:false, hitT:0, fade:1, vx:0, vy:0, vz:0, spin:0, roll:0, vroll:0, braking:false, yawRate:0, accel:0, bodyRoll:0, pitch:0, slip:0, suspY:0, suspV:0, ground:true, gy:0, airVx:0, airVz:0, arc:null, rampSeen:0, rampYes:false};
-    c.slot = {draw:() => drawOne(c)};
+    c.slot = {draw:() => drawOne(c), traffic:1};
     return c;
   }
   function rollSpeed(kind) {
@@ -701,6 +708,7 @@ const TRAFFIC = (() => {
     } catch (e) { bakeErr = String(e); try { ZGL.set(g0); } catch (e2) {} cloned = -1; return false; }
   }
   function bake(key) {
+    const tB = performance.now();
     const X = window.ZD && ZD.Xray;
     if (!X || !X.renderer) return false;
     if (!TRAFFIC._clone && !ensureClone()) return false;
@@ -736,9 +744,13 @@ const TRAFFIC = (() => {
       const cv = document.createElement('canvas');
       cv.width = px; cv.height = px;
       cv.getContext('2d', {alpha:true}).drawImage(src, 0, 0, src.width, src.height, 0, 0, px, px);
-      const cap = T.cacheMax || 140;
+      const pxN = px | 0 || 160;
+      const bytes = cache.size * pxN * pxN * 4;
+      let cap = warmCapOn || T.cacheMax || 140;
+      if (bytes >= WARM_BYTE_CAP) cap = cache.size;
       while (cache.size >= cap) {
-        const oldest = cache.keys().next().value;
+        let oldest = null;
+        for (const k of cache.keys()) { if (!hot.has(k)) { oldest = k; break; } }
         if (oldest == null) break;
         cache.delete(oldest);
       }
@@ -746,6 +758,11 @@ const TRAFFIC = (() => {
       return true;
     } catch (e) { bakeErr = String(e); return false; }
     finally {
+      bakeMs += performance.now() - tB;
+      if (window.Z_PERF && window.Z_PERF.on && window.Z_WARM && window.Z_WARM.phase === 'done') {
+        window.Z_PERF.trafficBake = (window.Z_PERF.trafficBake || 0) + 1;
+        window.Z_PERF.trafficBakeAt = performance.now();
+      }
       try {
         if (R.setPixelRatio) R.setPixelRatio(dpr);
         R.setSize(box.w || 1, box.h || 1, false);
@@ -896,10 +913,22 @@ const TRAFFIC = (() => {
     for (const c of cars) if (c.on && c.sim && !c.hit) bump(c);
     } catch (e) { runErr = String(e && e.stack || e); }
   }
+  // collect runs before the player car. A bake on the car's own frame stacks the dip
+  // that presents at ~55 FPS. One miss may bake on a skipped car frame instead.
+  function flightBakeCap() {
+    if (typeof ZV === 'undefined') return 1;
+    const warm = window.Z_WARM;
+    if (warm && warm.phase === 'done' && warm.total > 0 && warm.at >= warm.total) return 0;
+    const every = ZV.every | 0 || 1;
+    const heavyNext = every <= 1 || ((ZV.frame + 1) % every) === 0;
+    if (heavyNext) return 0;
+    return 1;
+  }
   function collect(items) {
     if (OFF || !built) return;
     try {
-    let baked = 0;
+    hot.clear();
+    const misses = [];
     for (const c of cars) {
       if (!c.on) continue;
       const dx = c.x - cam.x, dy = (c.y + 0.6) - cam.y, dz = c.z - cam.z;
@@ -908,11 +937,19 @@ const TRAFFIC = (() => {
       if (dist > T.dotDist) continue;
       if (dist < T.fullDist) {
         c._key = viewKey(c);
-        if (!cache.has(c._key) && baked < T.bakePerFrame) { if (bake(c._key)) baked++; }
+        hot.add(c._key);
+        if (!cache.has(c._key)) misses.push(c._key);
       }
-      items.push([dx * dx + dz * dz, 't', c.slot]);
+      if (typeof itemPush === 'function') itemPush(items, dx * dx + dz * dz, 't', c.slot);
+      else items.push([dx * dx + dz * dz, 't', c.slot]);
     }
-    if (sparks.length) items.push([0, 't', sparkSlot]);
+    const cap = flightBakeCap();
+    let baked = 0;
+    for (let i = 0; i < misses.length && baked < cap; i++) { if (bake(misses[i])) baked++; }
+    if (sparks.length) {
+      if (typeof itemPush === 'function') itemPush(items, 0, 't', sparkSlot);
+      else items.push([0, 't', sparkSlot]);
+    }
     } catch (e) { runErr = String(e && e.stack || e); }
   }
   function stats() {
@@ -924,7 +961,8 @@ const TRAFFIC = (() => {
       sim, dots, alive:sim + dots, lanes:lanes.length, straight, turns,
       fullDist:T.fullDist, boxDist:T.boxDist, dotDist:T.dotDist,
       speedMin:T.speedMin, speedMax:T.speedMax, highwayAdd:T.highwayAdd,
-      paints:T.paints.map(p => p.id), cache:cache.size, bakes, bakeErr, runErr,
+      paints:T.paints.map(p => p.id), cache:cache.size, bakes, bakeMs:Math.round(bakeMs), bakeErr, runErr,
+      warmAt, warmTotal: warmKeys ? warmKeys.length : 0, cacheBytes: cache.size * (T.spritePx | 0 || 160) * (T.spritePx | 0 || 160) * 4,
       wingHinges, crewN, sparkN, sparks:sparks.length
     };
   }
@@ -942,6 +980,87 @@ const TRAFFIC = (() => {
     return {n, onRunway, inSolid, offLane};
   }
   function ensure() { build(); }
-  return {update, collect, stats, audit, ensure, _bake:bake, get cars(){ return cars; }, get lanes(){ return lanes; }, get _cache(){ return cache; }};
+  // View grid in the order a chase cam actually needs: street and a mild
+  // climb first, steep look-down last. A CDN sheet can skip this and call
+  // warmFromUrl instead. One sheet is one paint: 24 columns of yaw
+  // (-12..11) by one row per elev bucket.
+  function warmGrid(elevs) {
+    const ebs = elevs && elevs.length ? elevs : [0, 1, 2, 3, 4, -1, 5];
+    const keys = [];
+    for (let e = 0; e < ebs.length; e++) {
+      const eb = ebs[e] | 0;
+      for (let yb = -12; yb <= 11; yb++) {
+        for (let pi = 0; pi < T.paints.length; pi++) keys.push(pi + ':' + yb + ':' + eb);
+      }
+    }
+    warmKeys = keys;
+    warmAt = 0;
+    warmFail = 0;
+    warmCapOn = keys.length;
+    return keys.length;
+  }
+  function cacheBytes() {
+    const px = T.spritePx | 0 || 160;
+    return cache.size * px * px * 4;
+  }
+  function warmStep(budgetMs) {
+    if (!warmKeys) warmGrid();
+    const px = T.spritePx | 0 || 160;
+    const t0 = performance.now();
+    let n = 0;
+    while (warmAt < warmKeys.length && performance.now() - t0 < (budgetMs || 8)) {
+      if (cacheBytes() + px * px * 4 > WARM_BYTE_CAP) break;
+      const k = warmKeys[warmAt];
+      if (cache.has(k)) { warmAt++; continue; }
+      if (!bake(k)) {
+        warmFail++;
+        if (warmFail > 12) { warmAt++; warmFail = 0; continue; }
+        break;
+      }
+      warmFail = 0;
+      warmAt++;
+      n++;
+    }
+    return {
+      at: warmAt, total: warmKeys.length, n: n, cache: cache.size, bytes: cacheBytes(),
+      done: warmAt >= warmKeys.length || cacheBytes() + px * px * 4 > WARM_BYTE_CAP,
+      bakeMs: Math.round(bakeMs)
+    };
+  }
+  function installAtlas(img, pack, paintIndex) {
+    const cell = (pack.atlas && pack.atlas.cell) || (T.spritePx | 0) || 160;
+    const cols = (pack.atlas && pack.atlas.columns) || 24;
+    const elev = (pack && pack.elev) || [0, 1, 2, 3, 4, -1, 5];
+    const rows = (pack.atlas && pack.atlas.rows) || elev.length;
+    if (!warmKeys) warmGrid(elev);
+    warmCapOn = Math.max(warmCapOn, warmKeys.length);
+    const pi0 = paintIndex | 0;
+    for (let row = 0; row < rows; row++) {
+      const eb = elev[row];
+      if (eb == null) continue;
+      for (let col = 0; col < cols; col++) {
+        const cv = document.createElement('canvas');
+        cv.width = cell; cv.height = cell;
+        cv.getContext('2d').drawImage(img, col * cell, row * cell, cell, cell, 0, 0, cell, cell);
+        cache.set(pi0 + ':' + (col - 12) + ':' + eb, cv);
+      }
+    }
+  }
+  function warmFromUrl(pack) {
+    const sheets = pack && pack.atlas && pack.atlas.sheets;
+    if (!sheets || !sheets.length) return Promise.resolve(false);
+    const loadOne = sh => new Promise(res => {
+      if (!sh || !sh.url) { res(false); return; }
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => { try { installAtlas(img, pack, sh.paintIndex | 0); res(true); } catch (e) { res(false); } };
+      img.onerror = () => res(false);
+      img.src = sh.url;
+    });
+    let chain = Promise.resolve(true);
+    for (let i = 0; i < sheets.length; i++) chain = chain.then(ok => ok ? loadOne(sheets[i]) : false);
+    return chain.then(ok => { if (ok && warmKeys) warmAt = warmKeys.length; return ok; });
+  }
+  return {update, collect, stats, audit, ensure, warmGrid, warmStep, warmFromUrl, _bake:bake, get cars(){ return cars; }, get lanes(){ return lanes; }, get _cache(){ return cache; }};
 })();
 window.TRAFFIC = TRAFFIC;

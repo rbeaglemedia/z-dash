@@ -1304,7 +1304,7 @@
     b._footGen = FOOT_GEN;
     return rec;
   }
-  let indoorRec = null, indoorId = null;
+  let indoorRec = null, indoorId = null, preI = 0, preDone = false;
   function buildingOfDoor(door) {
     if (!door) return null;
     if (door.building && door.building.boxes) return door.building;
@@ -1398,8 +1398,11 @@
   drawBldg = function (b, d) {
     _drawBldg(b, d);
     if (!active) return;
+    if (!anyWin && !anyTrim) return;
+    const t = window.perfAdd ? performance.now() : 0;
     if (anyWin) windowPass(b);
     if (anyTrim) roofPass(b);
+    if (t) window.perfAdd('windows', performance.now() - t);
   };
 
   // Street paint gaps. Built once from the same blocked spans traffic already skips.
@@ -1727,16 +1730,23 @@
 
   const _drawCityGround = drawCityGround;
   drawCityGround = function () {
+    const add = window.perfAdd;
+    let t = add ? performance.now() : 0;
     detailDraw();
+    if (t) add('detail', performance.now() - t);
+    t = add ? performance.now() : 0;
     _drawCityGround();
+    if (t) add('ground', performance.now() - t);
     // Storefronts and the eye-level pass are stroked once, after the building
     // fills, from the tunnel wrapper. A second copy here only doubled the cost.
     if (!active) return;
     if (on.lanes || on.crosswalks || on.sidewalks || on.grass || on.river) {
+      t = add ? performance.now() : 0;
       drawRoads();
       drawGrass();
       drawRiver();
       clean();
+      if (t) add('roads', performance.now() - t);
     }
   };
 
@@ -1745,8 +1755,13 @@
   if (typeof drawTunnelInside === 'function') {
     const _drawTunnelInside = drawTunnelInside;
     drawTunnelInside = function () {
+      const add = window.perfAdd;
+      let t = add ? performance.now() : 0;
       _drawTunnelInside();
+      if (t) add('tunnel', performance.now() - t);
+      t = add ? performance.now() : 0;
       pass(ctx);
+      if (t) add('windows', performance.now() - t);
     };
   }
 
@@ -1900,6 +1915,23 @@
     inFoot: inFoot,
     band: function () { return mode === 0 ? 'crawl' : mode === 1 ? 'street' : 'off'; },
     cruise: function () { return stat.cruise === 1; },
+    // Shop fronts and the eye-level trim are the lazy geometry. Baking them
+    // here writes the same segment buffers the first drive-by would.
+    prewarm: function (ms) {
+      if (preDone) return { done: true, at: preI, total: BL.length };
+      const t0 = performance.now();
+      const budget = ms > 0 ? ms : 8;
+      while (preI < BL.length && performance.now() - t0 < budget) {
+        const b = BL[preI++];
+        try {
+          if (!b || !shopOk(b)) continue;
+          bakeStore(b);
+          bakeFoot(b);
+        } catch (e) {}
+      }
+      preDone = preI >= BL.length;
+      return { done: preDone, at: preI, total: BL.length };
+    },
     wallSlots: function (u0, u1) {
       const n = fillSlots(u0, u1), o = [];
       for (let i = 0; i < n; i++) o.push(WSLOT[i]);

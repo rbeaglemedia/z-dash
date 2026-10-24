@@ -199,14 +199,24 @@ function applyFootMode(mode){const tup=document.getElementById('tup'),nos=docume
       const lead=wng.childNodes[0]&&wng.childNodes[0].nodeType===3?wng.childNodes[0].textContent:'';
       if(lead!=='WINGS')setBtnFace(wng,'WINGS','ARCADE','wngS');
       paintDriveWings();}}}
+let footDriveSig='';
 function syncOnFootButtons(){ensureEmote();ensureExitBtn();const mode=onFootNow()?'walk':'drive';
+  if(mode!=='walk'){B.walk=0;B.run=0;if(!B.brk)B.jump=0;}
+  const W0=window.WALK_MODE;if(W0)W0.runMode=!!(mode==='walk'&&B.run&&B.walk);
+  if(mode==='drive'){
+    const hasP=typeof P!=='undefined'&&!!P;
+    const near=hasP&&P.ground&&!P.wreck&&P.v<10;
+    if(!near){
+      const sig=(hasP&&P.wings?1:0)+':'+(hasP?P.driveMode:'')+':'+(hasP&&P.y>0.15?1:0);
+      if(sig===footDriveSig)return;
+      footDriveSig=sig;
+    }else footDriveSig='';
+  }else footDriveSig='';
   const em=document.getElementById('emoteBtn'),wheel=document.getElementById('emoteWheel');
   if(em)em.style.display=mode==='walk'?'flex':'none';
   if(wheel&&mode!=='walk'){wheel.classList.remove('show');wheel.setAttribute('aria-hidden','true');}
   if(mode!==footMode){applyFootMode(mode);footMode=mode;}
   else if(mode==='drive')paintDriveWings();
-  const W=window.WALK_MODE;if(W)W.runMode=!!(mode==='walk'&&B.run&&B.walk);
-  if(mode!=='walk'){B.walk=0;B.run=0;if(!B.brk)B.jump=0;}
   paintExitBtn();
   syncEnterBldBtn();
   syncBrakeLabel();
@@ -405,8 +415,9 @@ function syncBrakeLabel(){const el=document.getElementById('brk');if(!el)return;
     if(air)setBtnFace(el,'AIR','BRAKE');
     else{const can=el.querySelector('.nfxcan'),keep=el.querySelector(':scope > small.pc-key');[...el.childNodes].forEach(n=>{if(n!==can&&n!==keep)n.remove();});el.insertBefore(document.createTextNode('BRAKE'),el.firstChild);}}
   stampPcKey(el);}
-function footLoop(){try{syncOnFootButtons();}catch(e){}requestAnimationFrame(footLoop);}
-if(document.getElementById('wng')){ensureEmote();ensureExitBtn();ensureEnterBldBtn();syncOnFootButtons();requestAnimationFrame(footLoop);}
+// The city frame calls syncOnFootButtons. A second animation callback here
+// was another turn on the same paint, which showed up as uneven frame gaps.
+if(document.getElementById('wng')){ensureEmote();ensureExitBtn();ensureEnterBldBtn();syncOnFootButtons();}
 // PC keyboard: W/↑ throttle, S/↓ brake, Space e-brake, G mode, C car, Esc/P pause, 1-4 emotes.
 // F wings and Shift NOS already exist. Labels stay off touch screens.
 addEventListener('keydown',e=>{

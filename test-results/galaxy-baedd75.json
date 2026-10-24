@@ -1,0 +1,295 @@
+{
+  "sha": "baedd75d2e283ae44e061179fd02ac65edeabbab",
+  "pose": {
+    "x": 0,
+    "y": 42,
+    "z": 180,
+    "yaw": 0.05,
+    "pitch": -0.18,
+    "ground": false,
+    "v": 36,
+    "wings": 1,
+    "bank": 0.12,
+    "driveMode": "arcade"
+  },
+  "devices": {
+    "phone": {
+      "errors": [
+        "Failed to load resource: the server responded with a status of 404 (File not found)"
+      ],
+      "read": {
+        "work": {
+          "n": 273,
+          "min": 1.9,
+          "med": 8,
+          "max": 73.6,
+          "low": 71.7,
+          "medFps": 125,
+          "lowFps": 13.9,
+          "maxFps": 13.6,
+          "minFps": 526.3
+        },
+        "gap": {
+          "n": 273,
+          "min": 13.7,
+          "med": 69.1,
+          "max": 86.6,
+          "low": 84.3,
+          "medFps": 14.5,
+          "lowFps": 11.9,
+          "maxFps": 11.5,
+          "minFps": 73
+        },
+        "heavyN": 136,
+        "lightN": 137,
+        "heavyAvg": 60.67,
+        "lightAvg": 2.32,
+        "carAvg": 58.19,
+        "collectAvg": 0.01,
+        "restAvg": 2.39,
+        "pass": {
+          "sky": 0.09999999776482582,
+          "collect": 0,
+          "city": 0.5999999977648258,
+          "car": 0,
+          "hud": 0.19999999925494194
+        },
+        "worst": {
+          "name": "city",
+          "ms": 0.6
+        },
+        "every": 2,
+        "switches": 1,
+        "ema": 40,
+        "buf": [
+          1688,
+          780
+        ],
+        "W": 844,
+        "H": 390,
+        "DPR": 2,
+        "ipadSized": false,
+        "scale": {
+          "boost": 1,
+          "step": 0,
+          "ema": 0.016,
+          "lock": 99
+        },
+        "warm": {
+          "phase": "done",
+          "pct": 100,
+          "slow": false,
+          "budget": 10000,
+          "ms": 10004,
+          "label": "Cars  318 / 1512",
+          "cache": 318,
+          "bytes": 32563200,
+          "bakeMs": 9886,
+          "at": 318,
+          "total": 1512,
+          "pack": "traffic",
+          "probeN": 4,
+          "probeMs": 0.24
+        },
+        "traffic": {
+          "enabled": true,
+          "model": "z370",
+          "clonedMeshes": 423,
+          "simCap": 12,
+          "dotCap": 18,
+          "sim": 12,
+          "dots": 18,
+          "alive": 30,
+          "lanes": 810,
+          "straight": 718,
+          "turns": 2016,
+          "fullDist": 150,
+          "boxDist": 400,
+          "dotDist": 800,
+          "speedMin": 13,
+          "speedMax": 19,
+          "highwayAdd": 4,
+          "paints": [
+            "cyan",
+            "pink",
+            "lime",
+            "purple",
+            "gold",
+            "tuner-orange",
+            "blackout",
+            "gunmetal",
+            "red40"
+          ],
+          "cache": 318,
+          "bakes": 318,
+          "bakeMs": 9886,
+          "bakeErr": "",
+          "runErr": "",
+          "warmAt": 318,
+          "warmTotal": 1512,
+          "cacheBytes": 32563200,
+          "wingHinges": 0,
+          "crewN": 0,
+          "sparkN": 0,
+          "sparks": 0
+        },
+        "flick": {
+          "n": 273,
+          "blank": 0,
+          "drop": 0,
+          "maxDrop": 0,
+          "skipped": 45
+        },
+        "perf": true,
+        "perfText": "13.7 ms gap   58.9 ms work\nworst car 56.9   car gl 56.8\nmed 26.4   1% 84.3   max 86.6\nsprite x2"
+      },
+      "zrate": {
+        "steady18": {
+          "every": 2,
+          "flips": 1,
+          "ema": 18
+        },
+        "steady7": {
+          "every": 1,
+          "flips": 0,
+          "ema": 7
+        },
+        "alt": {
+          "every": 2,
+          "flips": 1,
+          "ema": 18
+        }
+      }
+    },
+    "ipad": {
+      "errors": [],
+      "read": {
+        "work": {
+          "n": 154,
+          "min": 1.7,
+          "med": 3,
+          "max": 91.4,
+          "low": 71.3,
+          "medFps": 333.3,
+          "lowFps": 14,
+          "maxFps": 10.9,
+          "minFps": 588.2
+        },
+        "gap": {
+          "n": 154,
+          "min": 5.5,
+          "med": 18.7,
+          "max": 97.3,
+          "low": 77.1,
+          "medFps": 53.5,
+          "lowFps": 13,
+          "maxFps": 10.3,
+          "minFps": 181.8
+        },
+        "heavyN": 77,
+        "lightN": 77,
+        "heavyAvg": 62.27,
+        "lightAvg": 1.98,
+        "carAvg": 60.02,
+        "collectAvg": 0.01,
+        "restAvg": 2.11,
+        "pass": {
+          "sky": 0.10000000149011612,
+          "collect": 0,
+          "city": 0.5,
+          "car": 57.399999998509884,
+          "hud": 0.30000000074505806
+        },
+        "worst": {
+          "name": "car",
+          "ms": 57.4
+        },
+        "every": 2,
+        "switches": 1,
+        "ema": 40,
+        "buf": [
+          492,
+          369
+        ],
+        "W": 492,
+        "H": 369,
+        "DPR": 1,
+        "ipadSized": true,
+        "scale": {
+          "boost": 0.48,
+          "step": 4,
+          "ema": 0.0313,
+          "lock": 4
+        },
+        "warm": {
+          "phase": "done",
+          "pct": 100,
+          "slow": true,
+          "budget": 26000,
+          "ms": 26009,
+          "label": "Cars  814 / 1512",
+          "cache": 814,
+          "bytes": 83353600,
+          "bakeMs": 24706,
+          "at": 814,
+          "total": 1512,
+          "pack": "traffic",
+          "probeN": 4,
+          "probeMs": 0.24
+        },
+        "traffic": {
+          "enabled": true,
+          "model": "z370",
+          "clonedMeshes": 423,
+          "simCap": 12,
+          "dotCap": 18,
+          "sim": 12,
+          "dots": 18,
+          "alive": 30,
+          "lanes": 810,
+          "straight": 718,
+          "turns": 2016,
+          "fullDist": 150,
+          "boxDist": 400,
+          "dotDist": 800,
+          "speedMin": 13,
+          "speedMax": 19,
+          "highwayAdd": 4,
+          "paints": [
+            "cyan",
+            "pink",
+            "lime",
+            "purple",
+            "gold",
+            "tuner-orange",
+            "blackout",
+            "gunmetal",
+            "red40"
+          ],
+          "cache": 814,
+          "bakes": 814,
+          "bakeMs": 24706,
+          "bakeErr": "",
+          "runErr": "",
+          "warmAt": 814,
+          "warmTotal": 1512,
+          "cacheBytes": 83353600,
+          "wingHinges": 0,
+          "crewN": 0,
+          "sparkN": 0,
+          "sparks": 0
+        },
+        "flick": {
+          "n": 154,
+          "blank": 0,
+          "drop": 0,
+          "maxDrop": 0,
+          "skipped": 45
+        },
+        "perf": true,
+        "perfText": "6.3 ms gap   59.3 ms work\nworst car 57.4   car gl 57.2\nmed 18.7   1% 77.1   max 97.3\nsprite x2   rung 4 / 0.48"
+      },
+      "zrate": null
+    }
+  }
+}

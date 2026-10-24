@@ -18,8 +18,12 @@ function zSyncIPad(){
 }
 // CSS-pixel slots for the iPad top bar. Canvas HUD scales these into the
 // backing store; DOM buttons use the CSS-pixel boxes so touch stays 1:1.
+let zChrome=null,zChromeK='';
 function zIpadChrome(vw,vh){
   vw=vw||window.innerWidth;vh=vh||window.innerHeight;
+  const k=vw+'x'+vh;
+  if(zChrome&&zChromeK===k)return zChrome;
+  zChromeK=k;
   const portrait=vh>vw;
   const edge=16,top=12,btnH=56;
   const pause={x:vw-edge-64,y:top,w:64,h:btnH};
@@ -48,7 +52,8 @@ function zIpadChrome(vw,vh){
     const telW=160;
     tel={x:vw-edge-telW,y:Math.max(exit.y+exit.h,enter.y+enter.h)+10,w:telW,h:86};
   }
-  return {portrait:portrait,map:map,enter:enter,exit:exit,pause:pause,tilt:tilt,tel:tel};
+  zChrome={portrait:portrait,map:map,enter:enter,exit:exit,pause:pause,tilt:tilt,tel:tel};
+  return zChrome;
 }
 window.zReadIPad=zReadIPad;
 window.zSyncIPad=zSyncIPad;

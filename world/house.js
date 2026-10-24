@@ -412,29 +412,18 @@ function walkDrawPetBody(g,x,z,W,H){
 }
 function walkPaintCrew(g,foot,W,H){
   const crew=window.CREW;
-  if(!crew||typeof crew.preview!=='function'||typeof document==='undefined')return false;
-  const bw=360,bh=480;
-  if(!walkCrewBuf)walkCrewBuf=document.createElement('canvas');
-  if(walkCrewBuf.width!==bw){walkCrewBuf.width=bw;walkCrewBuf.height=bh;}
-  const c=walkCrewBuf.getContext('2d',{willReadFrequently:true});
-  if(!c)return false;
-  const state=window.CREW_STATE,prev=state&&state.gait;
+  if(!crew||typeof crew.paintCompanion!=='function')return false;
+  const room=WALK_MODE.room||{x:0,z:1.2,petX:1.1,petZ:1.6};
+  const rz=4.6-room.z*0.55,pz=4.6-(room.petZ==null?room.z+0.4:room.petZ)*0.55;
+  const px=room.petX==null?room.x+0.9:room.petX;
+  const moving=WALK_MODE.speed>0.3||room.tx!=null;
+  const project=(x,y,z)=>{
+    const p=walkCam(x,y,z,W,H),f=H*0.58;
+    return [p[0],p[1],1/Math.max(0.05,p[2]),f];
+  };
   try{
-    if(state)state.gait=(WALK_MODE.speed>0.3||(WALK_MODE.room&&WALK_MODE.room.tx!=null))?'walk':'idle';
-    crew.preview(c,bw,bh,performance.now());
+    return crew.paintCompanion(g,project,{x:room.x,y:0,z:rz,yaw:WALK_MODE.yaw||0,gait:moving?'walk':'idle',phase:WALK_MODE.stridePhase},{x:px,y:0,z:pz,yaw:WALK_MODE.yaw||0})!==false;
   }catch(e){return false;}
-  finally{if(state&&prev!=null)state.gait=prev;}
-  let img;try{img=c.getImageData(0,0,bw,bh);}catch(e){return false;}
-  const d=img.data;let ink=0;
-  for(let i=0;i<d.length;i+=4){
-    if(d[i]<18&&d[i+1]<14&&d[i+2]<32)d[i+3]=0;
-    else ink++;
-  }
-  if(ink<80)return false;
-  c.putImageData(img,0,0);
-  const dh=Math.min(H*0.78,W*0.92),dw=dh*(bw/bh);
-  g.drawImage(walkCrewBuf,foot[0]-dw*0.40,foot[1]-dh*0.90,dw,dh);
-  return true;
 }
 function walkPaintRoom(){
   const cv=typeof document!=='undefined'&&document.getElementById('walk-room-cv');
@@ -1143,12 +1132,18 @@ window.WALK_MODE={
     if(typeof P!=='undefined'&&P.hotDropNosT>0){P.hotDropNosT=Math.max(0,P.hotDropNosT-d);P.nosTank=1;}
     if(!this.onFoot){
       // A bay ENTER opens the room while she is still in the seat. Keep that room up.
-      if(this.insideBuilding){walkSyncPill();walkSyncGait();walkSyncDyn();return;}
+      if(this.insideBuilding){this._cruiseSync=false;walkSyncPill();walkSyncGait();walkSyncDyn();return;}
       this.vx=0;this.vz=0;this.speed=0;this.dancing=false;this.gait='idle';
       this._holdParking();
+      // Arcade flight already hid the walk pills. Skip the DOM write until she
+      // lands, parks, or the underglow ring still has to follow the car.
+      const cruise=typeof P!=='undefined'&&P&&!P.ground&&!this.parking;
+      if(cruise&&this._cruiseSync){if(this.ugT>0)walkSyncDyn();return;}
       walkSyncPill();walkSyncGait();walkSyncDyn();
+      this._cruiseSync=!!cruise;
       return;
     }
+    this._cruiseSync=false;
     const leave=typeof P==='undefined'||P.driveMode!=='street'||!!P.wreck||(!P.ground&&this._roofY==null);
     if(leave){
       this.onFoot=false;this.door=null;this._roofY=null;this._autoBld=null;this._parkLatch=null;
@@ -1173,7 +1168,7 @@ walkEnsurePill();
 walkEnsureEnterBtn();
 walkLockEnter();
 setTimeout(walkLockEnter,0);
-setInterval(walkLockEnter,400);
+setInterval(function(){const t=window.perfAdd?performance.now():0;walkLockEnter();if(t)window.perfAdd('timer',performance.now()-t);},400);
 addEventListener('keydown',e=>{
   if(e.code==='ShiftLeft'||e.code==='ShiftRight'){WALK_MODE._shift=true;walkSyncGait();return;}
   if(e.repeat||e.code!=='KeyE'||WALK_MODE.insideBuilding)return;
@@ -1195,13 +1190,25 @@ if(typeof CITY!=='undefined'&&CITY&&CITY.DYN){
 // boot.js owns the city loop. Hold that one callback while an interior is open so the
 // outdoor draw, traffic, and flight step do not spend frames behind the room card.
 const walkNativeRAF=window.requestAnimationFrame.bind(window);
-let walkCityLoop=null;
+let walkCityLoop=null,walkT=performance.now();
 window.requestAnimationFrame=function(fn){
+  if(window.Z_PERF&&window.Z_PERF.on)window.Z_PERF.raf=(window.Z_PERF.raf||0)+1;
   if(typeof fn==='function'&&fn.name==='loop'){
     if(!walkCityLoop){
       const game=fn;
       walkCityLoop=function(t){
-        if(WALK_MODE.insideBuilding){WALK_MODE.cityHoldFrames=(WALK_MODE.cityHoldFrames||0)+1;walkNativeRAF(walkCityLoop);return;}
+        const hidden=typeof document!=='undefined'&&document.hidden;
+        if(!hidden){
+          if(typeof window.perfBegin==='function')window.perfBegin();
+          const dt=Math.min(0.05,Math.max(0,(t-walkT)/1000));walkT=t;
+          const tw=window.perfAdd?performance.now():0;
+          try{WALK_MODE.update(dt);}catch(e){}
+          if(tw)window.perfAdd('walk',performance.now()-tw);
+          const td=window.perfAdd?performance.now():0;
+          try{if(typeof syncOnFootButtons==='function')syncOnFootButtons();}catch(e){}
+          if(td)window.perfAdd('dom',performance.now()-td);
+          if(WALK_MODE.insideBuilding){WALK_MODE.cityHoldFrames=(WALK_MODE.cityHoldFrames||0)+1;walkNativeRAF(walkCityLoop);return;}
+        }
         game(t);
       };
     }
@@ -1209,10 +1216,3 @@ window.requestAnimationFrame=function(fn){
   }
   return walkNativeRAF(fn);
 };
-let walkT=performance.now();
-function walkFrame(t){
-  const dt=Math.min(0.05,Math.max(0,(t-walkT)/1000));walkT=t;
-  try{WALK_MODE.update(dt);}catch(e){}
-  walkNativeRAF(walkFrame);
-}
-walkNativeRAF(walkFrame);

@@ -1,0 +1,47 @@
+{
+  "note": "Phone-sized headless Chrome. WebGL context creation failed in this VM, so car gl reads 0 here and 1 on a device. The dashboard page is kept in the back-forward cache (pageshow persisted=true) and is parked on the way out.",
+  "before": {
+    "jr_visible": {
+      "loops_per_sec": { "dad_or_kid_loop": [55.8, 54.4], "avg_ms": [0.13, 0.43] },
+      "music_tick_per_sec": 45.8,
+      "music_tick_avg_ms": 0.014,
+      "demo_sim_per_sec": 35.4,
+      "demo_sim_avg_ms": 0.028,
+      "music_playing": true,
+      "audio_contexts": 0,
+      "iframes": 0,
+      "webgl_contexts": 0
+    },
+    "neon_world_after_launch": {
+      "city_loop_per_sec": 55.2,
+      "city_loop_avg_ms": 0.6,
+      "dance_raf_per_sec": 54.4,
+      "dance_raf_avg_ms": 0,
+      "dashboard_globals": false,
+      "music": false,
+      "iframes": 0,
+      "targets": ["world-split.html", "sw.js"]
+    }
+  },
+  "after": {
+    "jr_visible_unchanged": {
+      "loops_per_sec": [55.7, 54.6],
+      "avg_ms": [0.12, 0.41],
+      "music_tick_per_sec": 45.6,
+      "demo_sim_per_sec": 35.6
+    },
+    "neon_world_after_launch": {
+      "city_loop_per_sec": 55.8,
+      "city_loop_avg_ms": 0.53,
+      "dance_raf_per_sec": 0,
+      "dashboard_globals": false,
+      "overlay": "dash off · music off · car gl 0 · bg off"
+    },
+    "back_to_dashboard": {
+      "parked": false,
+      "music_playing": true,
+      "loop_schedules_in_0_8s": 96,
+      "note": "both dashboard loops resumed; demo clock still playing"
+    }
+  }
+}
