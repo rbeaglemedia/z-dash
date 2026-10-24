@@ -1143,12 +1143,18 @@ window.WALK_MODE={
     if(typeof P!=='undefined'&&P.hotDropNosT>0){P.hotDropNosT=Math.max(0,P.hotDropNosT-d);P.nosTank=1;}
     if(!this.onFoot){
       // A bay ENTER opens the room while she is still in the seat. Keep that room up.
-      if(this.insideBuilding){walkSyncPill();walkSyncGait();walkSyncDyn();return;}
+      if(this.insideBuilding){this._cruiseSync=false;walkSyncPill();walkSyncGait();walkSyncDyn();return;}
       this.vx=0;this.vz=0;this.speed=0;this.dancing=false;this.gait='idle';
       this._holdParking();
+      // Arcade flight already hid the walk pills. Skip the DOM write until she
+      // lands, parks, or the underglow ring still has to follow the car.
+      const cruise=typeof P!=='undefined'&&P&&!P.ground&&!this.parking;
+      if(cruise&&this._cruiseSync){if(this.ugT>0)walkSyncDyn();return;}
       walkSyncPill();walkSyncGait();walkSyncDyn();
+      this._cruiseSync=!!cruise;
       return;
     }
+    this._cruiseSync=false;
     const leave=typeof P==='undefined'||P.driveMode!=='street'||!!P.wreck||(!P.ground&&this._roofY==null);
     if(leave){
       this.onFoot=false;this.door=null;this._roofY=null;this._autoBld=null;this._parkLatch=null;
@@ -1211,6 +1217,7 @@ window.requestAnimationFrame=function(fn){
 };
 let walkT=performance.now();
 function walkFrame(t){
+  if(typeof document!=='undefined'&&document.hidden){walkNativeRAF(walkFrame);return;}
   const dt=Math.min(0.05,Math.max(0,(t-walkT)/1000));walkT=t;
   try{WALK_MODE.update(dt);}catch(e){}
   walkNativeRAF(walkFrame);

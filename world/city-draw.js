@@ -134,8 +134,9 @@ function drawLoop(L,d){if(d>CDRAW.dist)return;ctx.beginPath();const n=40;for(con
 function drawHoop(h,d){if(d>700)return;ctx.beginPath();const pts=[];for(let i=0;i<20;i++){const a=i/20*Math.PI*2;pts.push([h.x+h.nz*Math.cos(a)*h.r,h.y+Math.sin(a)*h.r,h.z-h.nx*Math.cos(a)*h.r]);}wpoly(pts);const flash=h.hitT!=null&&((P.simT||0)-h.hitT)<1.5;ctx.strokeStyle=flash?'#7dff6b':'#ff4fd8';ctx.lineWidth=d<200?3:1.6;ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=0;ctx.stroke();ctx.shadowBlur=0;}
 {for(const t of CITY.TOWS)CITY.DYN.push({x:t.x,z:t.z,y:1.5,rad:9,draw:d=>drawTow(t,d)});for(const Pp of CITY.PIPES)CITY.DYN.push({x:Pp.cx,z:(Pp.z0+Pp.z1)/2,y:0,rad:70,draw:d=>drawPipe(Pp,d)});for(const L of CITY.LOOPS)CITY.DYN.push({x:L.x+L.ux*0+L.uz*L.off/2,z:L.z,y:L.R,rad:20,draw:d=>drawLoop(L,d)});for(const h of CITY.HOOPS)CITY.DYN.push({x:h.x,z:h.z,y:h.y,rad:8,draw:d=>drawHoop(h,d)});}
 // cyan street edges, split where a blockedBy building footprint crosses the span (pad decks that cover a side street)
-function roadFeet(){const ids=new Set();for(const e of (CITY.ROADS&&CITY.ROADS.edges)||[]){if(!e)continue;for(const b of e.blockedBy||[])if(b&&b.oid!=null)ids.add(b.oid);}const out=[];
-  for(const b of CITY.buildings||CITY.BL){if(!ids.has(b.oid)||!b.boxes)continue;for(const q of b.boxes)if((q.y0||0)<=1.2&&q.y1>1)out.push(q);}return out;}
+let roadFeetCache=null,roadFeetN=-1;
+function roadFeet(){const edges=(CITY.ROADS&&CITY.ROADS.edges)||[],bl=CITY.buildings||CITY.BL||[],n=bl.length+(edges.length<<16);if(roadFeetCache&&roadFeetN===n)return roadFeetCache;const ids=new Set();for(const e of edges){if(!e)continue;for(const b of e.blockedBy||[])if(b&&b.oid!=null)ids.add(b.oid);}const out=[];
+  for(const b of bl){if(!ids.has(b.oid)||!b.boxes)continue;for(const q of b.boxes)if((q.y0||0)<=1.2&&q.y1>1)out.push(q);}roadFeetN=n;roadFeetCache=out;return out;}
 function cutSpan(a,b,cuts){let seg=[[a,b]];for(const[c0,c1]of cuts){if(!(c1>c0))continue;const next=[];for(const[s0,s1]of seg){if(c1<=s0||c0>=s1){next.push([s0,s1]);continue;}if(c0>s0+0.05)next.push([s0,c0]);if(c1<s1-0.05)next.push([c1,s1]);}seg=next;if(!seg.length)break;}return seg;}
 function drawRoads(cx,cz){cx=cx==null?cam.x:cx;cz=cz==null?cam.z:cz;const C=CITY,RS=CDRAW.streets,feet=roadFeet(),z0=Math.max(C.ZS0,cz-RS),z1=Math.min(C.ZS1,cz+RS),x0=Math.max(C.XS0,cx-RS),x1=Math.min(C.XS1,cx+RS);
   const emitZ=(x,za,zb)=>{if(!(zb>za))return;const cuts=[];for(const q of feet)if(x>q.x0&&x<q.x1&&q.z1>za&&q.z0<zb)cuts.push([Math.max(za,q.z0),Math.min(zb,q.z1)]);for(const[s0,s1]of cutSpan(za,zb,cuts))if(s1-s0>0.4)pathSeg([x,0.02,s0],[x,0.02,s1]);};
@@ -177,7 +178,10 @@ function drawTunnelInside(){const C=CITY,T=C.TUN;if(!(cam.x>T.bx0-2&&cam.x<T.bx1
   for(let z=T.z0+6;z<T.z1;z+=12)for(const x of[T.bx0+.6,T.bx1-.6])pathSeg([x,T.ceil-1.2,z],[x,T.ceil-1.2,z+4]);ctx.strokeStyle='#ffb020';ctx.shadowColor='#ffb020';ctx.shadowBlur=0;ctx.lineWidth=4;ctx.stroke();ctx.shadowBlur=0;
   ctx.beginPath();for(let z=T.z0+12;z<T.z1;z+=24)pathSeg([C.HW.x,T.ceil-.1,z],[C.HW.x,T.ceil-.1,z+8]);ctx.strokeStyle='#fff2c0';ctx.lineWidth=3;ctx.stroke();
   ctx.beginPath();for(const x of[T.bx0+.3,T.bx1-.3])pathSeg([x,1,T.z0],[x,1,T.z1]);ctx.strokeStyle='#3ee6ff';ctx.lineWidth=2;ctx.stroke();ctx.restore();}
-function cityItems(items){const R2=CDRAW.dist**2,O2=CDRAW.outline**2,fx=W/(H*0.9)/2*1.3+.2;for(const b of CITY.BL){const dx=b.cx-cam.x,dz=b.cz-cam.z,d=dx*dx+dz*dz;if(d>(b.kind==='outline'?O2:R2))continue;const c=camS(b.cx,Math.min(b.top,Math.max(0,cam.y)),b.cz),r=b.rad+4;if(c[2]<-r)continue;if(Math.abs(c[0])-r>(Math.max(c[2],0)+r)*fx)continue;items.push([d,'t',b]);}for(const m of CITY.DYN){const d=(m.x-cam.x)**2+(m.z-cam.z)**2;if(d<R2)items.push([d,'t',m]);}}
+const ITEM_POOL=[];let itemN=0;
+function itemReset(){itemN=0;}
+function itemPush(items,d,k,o){let s=ITEM_POOL[itemN];if(!s)s=ITEM_POOL[itemN]=[0,'',null];s[0]=d;s[1]=k;s[2]=o;itemN++;items.push(s);}
+function cityItems(items){const R2=CDRAW.dist**2,O2=CDRAW.outline**2,fx=W/(H*0.9)/2*1.3+.2;for(const b of CITY.BL){const dx=b.cx-cam.x,dz=b.cz-cam.z,d=dx*dx+dz*dz;if(d>(b.kind==='outline'?O2:R2))continue;const c=camS(b.cx,Math.min(b.top,Math.max(0,cam.y)),b.cz),r=b.rad+4;if(c[2]<-r)continue;if(Math.abs(c[0])-r>(Math.max(c[2],0)+r)*fx)continue;itemPush(items,d,'t',b);}for(const m of CITY.DYN){const d=(m.x-cam.x)**2+(m.z-cam.z)**2;if(d<R2)itemPush(items,d,'t',m);}}
 
 function drawRunway(){const L0=-40,L1=1500,hw=15;ctx.save();ctx.shadowColor='#3ee6ff';ctx.shadowBlur=0;
   line([-hw,0,L0],[-hw,0,L1],'#3ee6ff',2.5);line([hw,0,L0],[hw,0,L1],'#3ee6ff',2.5);ctx.shadowBlur=0;

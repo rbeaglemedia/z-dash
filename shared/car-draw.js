@@ -14,9 +14,10 @@ function drawZ(){if(window.NOZ)return;const X=window.ZD&&ZD.Xray;if(!X||!X.ready
   ZV.frame++;
   // Open air on the phone sits near 57fps, inside the old 50–58 gap, so this skip never
   // armed and a one-frame recovery flipped straight back. Every 2nd frame is the same
-  // sprite. Stay there until the rate is actually above 115.
+  // sprite. A device that only recovered into the 60s stays skipped. One that holds
+  // about 90, the Oct 22 full-rate range, draws the sprite every frame again.
   if(fps<58){ZV.highT=0;ZV.lowT+=1/Math.max(fps,1);if(ZV.lowT>1)ZV.every=2;}
-  else if(fps>115){ZV.highT+=1/Math.max(fps,1);if(ZV.highT>0.5){ZV.lowT=0;ZV.every=1;}}
+  else if(fps>90){ZV.highT+=1/Math.max(fps,1);if(ZV.highT>0.5){ZV.lowT=0;ZV.every=1;}}
   else ZV.highT=0;
   if(!ZV.cv){ZV.cv=document.createElement('canvas');ZV.cvg=ZV.cv.getContext('2d',{alpha:true});}
   // Traffic bakes share this GL buffer and zero _w/_h. That is not a player-size change.

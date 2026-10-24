@@ -16,16 +16,17 @@ function render(){const _vs=visApply();
   ctx.fillStyle='#05020c';ctx.fillRect(0,0,W,H);
   const rl=cam.roll;cam.roll=0;const hz=proj(cam.x+Math.sin(cam.yaw)*1e5,cam.y,cam.z+Math.cos(cam.yaw)*1e5);cam.roll=rl;const hy=hz?hz[1]:H/2;
   ctx.save();ctx.translate(W/2,H/2);ctx.rotate(cam.roll);ctx.translate(-W/2,-H/2);
-  const g=ctx.createLinearGradient(0,hy-H,0,hy);g.addColorStop(0,'#05020c');g.addColorStop(.7,'#2a0636');g.addColorStop(1,'#ff2a3d');ctx.fillStyle=g;ctx.fillRect(-W,hy-H*2,W*3,H*2);
-  const gg=ctx.createLinearGradient(0,hy,0,hy+H);gg.addColorStop(0,'#1a0410');gg.addColorStop(1,'#020203');ctx.fillStyle=gg;ctx.fillRect(-W,hy,W*3,H*2);
+  if(!skyGrad||gradHy!==hy||gradH!==H){gradHy=hy;gradH=H;skyGrad=ctx.createLinearGradient(0,hy-H,0,hy);skyGrad.addColorStop(0,'#05020c');skyGrad.addColorStop(.7,'#2a0636');skyGrad.addColorStop(1,'#ff2a3d');groundGrad=ctx.createLinearGradient(0,hy,0,hy+H);groundGrad.addColorStop(0,'#1a0410');groundGrad.addColorStop(1,'#020203');}
+  ctx.fillStyle=skyGrad;ctx.fillRect(-W,hy-H*2,W*3,H*2);
+  ctx.fillStyle=groundGrad;ctx.fillRect(-W,hy,W*3,H*2);
   ctx.strokeStyle='#ff5a66';ctx.lineWidth=2;ctx.shadowColor='#ff2a3d';ctx.shadowBlur=14;ctx.beginPath();ctx.moveTo(-W,hy);ctx.lineTo(W*2,hy);ctx.stroke();ctx.shadowBlur=0;ctx.restore();
   // grid
   const S=40,N=22,gx=Math.round(cam.x/S)*S,gz=Math.round(cam.z/S)*S;ctx.globalAlpha=.55;
   for(let i=-N;i<=N;i++){line([gx+i*S,0,gz-N*S],[gx+i*S,0,gz+N*S],'#7a1a8a',1);line([gx-N*S,0,gz+i*S],[gx+N*S,0,gz+i*S],'#7a1a8a',1);}
   ctx.globalAlpha=1;
   // towers (far to near)
-  drawCityGround();if(!RWXRAY.on)drawRunway();const items=[];cityItems(items);if(window.TRAFFIC)TRAFFIC.collect(items);for(const r of rings)items.push([(r.x-cam.x)**2+(r.z-cam.z)**2,'r',r]);items.sort((a,b)=>b[0]-a[0]);
-  for(const[d,k,o]of items){if(d>2200*2200)continue;ctx.globalAlpha=clamp(1.4-Math.sqrt(d)/1800,0.15,1);
+  drawCityGround();if(!RWXRAY.on)drawRunway();frameItems.length=0;if(typeof itemReset==='function')itemReset();cityItems(frameItems);if(window.TRAFFIC)TRAFFIC.collect(frameItems);for(const r of rings){if(typeof itemPush==='function')itemPush(frameItems,(r.x-cam.x)**2+(r.z-cam.z)**2,'r',r);else frameItems.push([(r.x-cam.x)**2+(r.z-cam.z)**2,'r',r]);}frameItems.sort(itemFarther);
+  for(const[d,k,o]of frameItems){if(d>2200*2200)continue;ctx.globalAlpha=clamp(1.4-Math.sqrt(d)/1800,0.15,1);
     if(k==='t'){ctx.globalAlpha=1;if(o.draw)o.draw(Math.sqrt(d));else drawBldg(o,Math.sqrt(d));}
     else{ctx.shadowColor='#ffb020';ctx.shadowBlur=8;let prev=null;for(let i=0;i<=16;i++){const a=i/16*Math.PI*2,px=o.x+Math.cos(o.yaw)*Math.cos(a)*o.r,pz=o.z+Math.sin(o.yaw)*Math.cos(a)*o.r,p=[px,o.y+Math.sin(a)*o.r,pz];if(prev)line(prev,p,'#ffb020',3);prev=p;}ctx.shadowBlur=0;}}
   ctx.globalAlpha=1;farFlush();drawTunnelInside();
@@ -34,8 +35,25 @@ function render(){const _vs=visApply();
   if(RWXRAY.on)drawRunway();drawSkids();P.y+=P.sus||0;if(window.CREW)CREW.update();drawZ();P.y-=P.sus||0;drawWaterline();drawFX();
   if(window.HOTDROP)HOTDROP.draw();
   visRestore(_vs);drawHud(hudDt);}
-let last=performance.now(),hudDt=1/60;
-function loop(t){const dt=Math.min(0.05,(t-last)/1000);last=t;fpsAcc+=dt;fpsN++;if(fpsAcc>0.5){fps=fpsN/fpsAcc;fpsAcc=0;fpsN=0;}
+let last=performance.now(),hudDt=1/60,fpsWall=performance.now(),loopHidden=false;
+const frameItems=[];
+function itemFarther(a,b){return b[0]-a[0];}
+let skyGrad=null,groundGrad=null,gradHy=NaN,gradH=0;
+function loop(t){
+  // A hidden tab keeps the callback armed and does not step or draw. The next
+  // visible frame starts a fresh clock so one background gap is not a stall.
+  if(typeof document!=='undefined'&&document.hidden){loopHidden=true;requestAnimationFrame(loop);return;}
+  const now=performance.now();
+  if(loopHidden){loopHidden=false;last=t;fpsWall=now;}
+  const wall=now-fpsWall;fpsWall=now;
+  const raw=Math.max(0,t-last);last=t;const dt=Math.min(0.05,raw/1000);
+  if(typeof camLookTick==='function')camLookTick(t);
+  // Physics keeps the 50ms cap. Phone and PC keep that same clock for the HUD.
+  // An iPad uses the wall gap, so a frame slower than 50ms is not shown as 20.
+  const onIpad=typeof ipadSized!=='undefined'&&ipadSized;
+  const clock=onIpad?(wall>250?dt:wall/1000):dt;
+  fpsAcc+=clock;fpsN++;if(fpsAcc>0.5){fps=fpsN/fpsAcc;fpsAcc=0;fpsN=0;}
+  if(onIpad&&wall<=250&&typeof ipadFit==='function')ipadFit(wall/1000);
   hudDt=dt;if(flying&&!paused)step(dt);if(window.TOWDRIVE&&!paused)TOWDRIVE.update(dt);if(window.TRAFFIC&&!paused)TRAFFIC.update(dt);if(window.SOCCER)SOCCER.frame(dt);render();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 function syncStartButtons(){const row=document.getElementById('kStartMode');if(!row)return;row.querySelectorAll('[data-sm]').forEach(b=>b.classList.toggle('on',b.dataset.sm===P.startMode));}

@@ -910,9 +910,13 @@ const TRAFFIC = (() => {
         c._key = viewKey(c);
         if (!cache.has(c._key) && baked < T.bakePerFrame) { if (bake(c._key)) baked++; }
       }
-      items.push([dx * dx + dz * dz, 't', c.slot]);
+      if (typeof itemPush === 'function') itemPush(items, dx * dx + dz * dz, 't', c.slot);
+      else items.push([dx * dx + dz * dz, 't', c.slot]);
     }
-    if (sparks.length) items.push([0, 't', sparkSlot]);
+    if (sparks.length) {
+      if (typeof itemPush === 'function') itemPush(items, 0, 't', sparkSlot);
+      else items.push([0, 't', sparkSlot]);
+    }
     } catch (e) { runErr = String(e && e.stack || e); }
   }
   function stats() {
