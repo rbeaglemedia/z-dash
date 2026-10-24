@@ -222,7 +222,7 @@ async function run() {
       await cdp.send('Emulation.setDeviceMetricsOverride', {
         width: vp.width, height: vp.height, deviceScaleFactor: vp.dpr, mobile: vp.mobile
       }, sessionId);
-      await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: vp.touch, maxTouchPoints: vp.touch ? 1 : 0 }, sessionId);
+      await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: !!vp.touch, maxTouchPoints: 1 }, sessionId);
       await cdp.send('Network.setUserAgentOverride', { userAgent: vp.ua }, sessionId);
       for (const mode of [0, 1]) {
         const url = 'http://127.0.0.1:' + port + '/world-split.html?gl=' + mode;
