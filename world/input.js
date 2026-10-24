@@ -324,7 +324,8 @@ function paintEnterFace(b,inside){
 }
 function syncEnterBldBtn(){ensureEnterBldBtn();installSafeEnter();
   const b=document.getElementById('enterBldBtn');if(!b)return;
-  if(document.getElementById('np-studio')){b.style.display='none';return;}
+  const ds=document.getElementById('zd-ds');
+  if(document.getElementById('np-studio')||(ds&&ds.classList.contains('zd-ds-on'))){b.style.display='none';return;}
   const kh=document.getElementById('kHome'),ko=document.getElementById('kOver');
   if((kh&&!kh.classList.contains('hidden'))||(ko&&!ko.classList.contains('hidden'))){b.style.display='none';return;}
   const W=window.WALK_MODE;
@@ -370,8 +371,11 @@ function enterBldTap(){
   installSafeEnter();
   const W=window.WALK_MODE;if(!W)return;
   if(W.insideBuilding){
+    const stage=document.getElementById('zd-ds');
     if(document.getElementById('np-studio')&&window.NEON_PAINT&&typeof window.NEON_PAINT.backToWorld==='function'){
       window.NEON_PAINT.backToWorld();
+    }else if(stage&&stage.classList.contains('zd-ds-on')&&window.DANCE_STAGE&&typeof window.DANCE_STAGE.backToWorld==='function'){
+      window.DANCE_STAGE.backToWorld();
     }else{
       if(window.DANCE_STAGE&&typeof window.DANCE_STAGE.close==='function'){try{window.DANCE_STAGE.close();}catch(e){}}
       if(window.NEON_PAINT&&typeof window.NEON_PAINT.closeStudio==='function'){try{window.NEON_PAINT.closeStudio();}catch(e){}}

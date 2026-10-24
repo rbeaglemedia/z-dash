@@ -191,9 +191,11 @@
       '.zd-ds.zd-ds-on{display:block}',
       '.zd-ds canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}',
       '.zd-ds-vid{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}',
-      '.zd-ds-top{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;gap:6px;pointer-events:auto;padding:3px 8px;background:linear-gradient(rgba(5,0,16,.94),rgba(5,0,16,.72))}',
+      '.zd-ds-top{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;flex-direction:column;align-items:stretch;gap:8px;pointer-events:auto;padding:6px 8px;background:linear-gradient(rgba(5,0,16,.94),rgba(5,0,16,.72))}',
+      '.zd-ds-toprow{display:flex;align-items:center;gap:6px;min-width:0}',
+      '.zd-ds button.zd-ds-world{display:block;width:100%;min-height:44px;box-sizing:border-box;font:900 12px/1.15 Orbitron,sans-serif;letter-spacing:.2px;text-align:center;white-space:normal;color:#04140c;background:#7dff6b;border:2px solid #fff;border-radius:12px;padding:8px 10px;cursor:pointer}',
       '.zd-ds-top[hidden],.zd-ds-foot[hidden]{display:none !important}',
-      '.zd-ds-tabs{display:flex;flex:1;gap:4px;justify-content:center;min-width:0}',
+      '.zd-ds-tabs{display:flex;flex:1;gap:8px;justify-content:center;min-width:0}',
       '.zd-ds-tab,.zd-ds-back,.zd-ds-util{font-size:10px;padding:3px 7px;white-space:nowrap}',
       '.zd-ds-util{margin-left:auto;white-space:nowrap;border-color:#ff4fd8 !important;background:rgba(255,79,216,.16) !important}',
       '.zd-ds-foot{position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;justify-content:center;align-items:center;gap:8px;padding:4px 10px calc(6px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(5,0,16,.94) 30%)}',
@@ -250,6 +252,7 @@
     video.muted = true;
     video.autoplay = true;
     topEl = el('div', 'zd-ds-top');
+    var topRow = el('div', 'zd-ds-toprow');
     backBtn = el('button', 'zd-ds-back', '← BACK');
     backBtn.type = 'button';
     backBtn.addEventListener('click', onBack);
@@ -264,9 +267,14 @@
     improveBtn = el('button', 'zd-ds-util', '📹 RECORD TO IMPROVE APP');
     improveBtn.type = 'button';
     improveBtn.addEventListener('click', function () { openImprove(state.tab === 'pet' ? 'pet' : 'char'); });
-    topEl.appendChild(backBtn);
-    topEl.appendChild(tabs);
-    topEl.appendChild(improveBtn);
+    topRow.appendChild(backBtn);
+    topRow.appendChild(tabs);
+    topRow.appendChild(improveBtn);
+    topEl.appendChild(topRow);
+    var worldBack = el('button', 'zd-ds-world', 'BACK TO NEON WORLD');
+    worldBack.type = 'button';
+    worldBack.addEventListener('click', onBack);
+    topEl.appendChild(worldBack);
     waveBox = el('div', 'zd-ds-wavebox');
     waveCap = el('div', 'zd-ds-wavecap', 'WAVE HAND HERE FOR 1s TO START HANDS-FREE');
     waveBtn = el('button', 'zd-ds-wave', '');
@@ -617,7 +625,7 @@
       if (panel && !portrait) waveBox.style.right = (W - stage.w + wr) + 'px';
       else waveBox.style.right = (wr + 56) + 'px';
       waveBox.style.left = 'auto';
-      waveBox.style.top = (head + 4) + 'px';
+      waveBox.style.top = (head + 8) + 'px';
     }
     if (waveBtn) waveBtn.style.setProperty('--p', Math.round(clamp(state.waveHold, 0, 1) * 100) + '%');
     return box;
@@ -1671,11 +1679,24 @@
     if (id === 'FREEZE') api.simulateFreezePose();
     else pressZone(id);
   }
+  function sessionReturnPage() {
+    try {
+      var snap = JSON.parse(sessionStorage.getItem('zdash.neonworld.session.v1') || 'null');
+      if (snap && (snap.page === 'world.html' || snap.page === 'world-split.html')) return snap.page;
+    } catch (e) {}
+    return '';
+  }
   function onBack() {
+    var wm = window.WALK_MODE;
     var world = inWorld();
+    if (world && wm && wm.insideBuilding && typeof wm.stepBackOutside === 'function') {
+      try { wm.stepBackOutside(); } catch (e) {}
+      return;
+    }
     api.close();
     if (!world) {
-      try { location.href = 'world-split.html'; } catch (e) {}
+      var page = sessionReturnPage();
+      try { location.assign(page ? (page + '?npreturn=1') : 'world-split.html'); } catch (e2) {}
     }
   }
   function awardReturn() {
@@ -3467,6 +3488,7 @@
         o = { building: building };
       }
       state.building = (o && o.building) || building || state.building;
+      state.fromWorld = !!(o && o.fromWorld) || !!state.fromWorld;
       state.open = true;
       rewarded = false;
       if (root) {
@@ -3485,6 +3507,7 @@
       updateChrome();
       return true;
     },
+    backToWorld: function () { onBack(); return true; },
     close: function () {
       if (state.open && inWorld()) awardReturn();
       stopCamera();

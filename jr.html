@@ -527,6 +527,7 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
 .kgarage .gsecs + .gcats button { font-size: 9px; padding: 3px 9px; }
 
 /* 3-level Garage / Home drill-down */
+.kgarage .gz-world-back { flex: none; width: 100%; min-height: 52px; box-sizing: border-box; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 12px; line-height: 1.15; letter-spacing: .2px; text-align: center; white-space: normal; color: #04140c; background: #7dff6b; border: 2px solid #fff; border-radius: 12px; padding: 8px 10px; cursor: pointer; }
 .kgarage .gbackbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .kgarage .gback { flex: none; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 16px; letter-spacing: 1px; color: #12052a; background: #ffe14d; border: 0; border-radius: 12px; padding: 10px 14px; cursor: pointer; box-shadow: 0 0 14px #ffe14d; }
 .kgarage .gcrumbs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 11px; color: #efe7ff; }
@@ -13510,8 +13511,27 @@ var qrcode = function() {
     el.querySelectorAll('.glevel [data-groot]').forEach((b) => b.addEventListener('click', () => { gNav = { lvl: 2, root: b.dataset.groot, broad: null, sub: null }; renderGarage(); }));
     el.querySelectorAll('[data-gbroad]').forEach((b) => b.addEventListener('click', () => gOpenBroad(gNav.root, b.dataset.gbroad)));
   }
+  function gzBackToWorld() {
+    let page = 'world.html';
+    try {
+      const snap = JSON.parse(sessionStorage.getItem('zdash.neonworld.session.v1') || 'null');
+      if (snap && (snap.page === 'world.html' || snap.page === 'world-split.html')) page = snap.page;
+    } catch (e) {}
+    try { save(); } catch (e) {}
+    location.assign(page + '?npreturn=1');
+  }
+  function gWorldBackHtml() {
+    return '<button type="button" id="gzWorldBack" class="gz-world-back">BACK TO NEON WORLD</button>';
+  }
+  document.addEventListener('click', (e) => {
+    const b = e.target && e.target.closest && e.target.closest('#gzWorldBack');
+    if (!b) return;
+    e.preventDefault();
+    e.stopPropagation();
+    gzBackToWorld();
+  }, true);
   function gHeadHtml() {
-    return `<div class="ghead"><span class="kcount kcoin">● ${P.coins}</span><span class="kcount kstar">★ ${P.stars}</span>
+    return gWorldBackHtml() + `<div class="ghead"><span class="kcount kcoin">● ${P.coins}</span><span class="kcount kstar">★ ${P.stars}</span>
         <button id="gBox" class="kpill ${P.boxes ? 'hot' : ''}" ${P.boxes ? '' : 'disabled'}>OPEN PART BOX (${P.boxes})</button><button id="gName" class="kpill">RENAME</button></div>`;
   }
   function renderGarageNav() {
@@ -13559,7 +13579,7 @@ var qrcode = function() {
   function renderGarage() {
     if (gNav.lvl < 3 || gNav.root === 'home') { renderGarageNav(); return; }
     const el = $('#kGarage'), oc = el.querySelector('.gcats'), oi = el.querySelector('.gitems'), keepL = oc ? oc.scrollLeft : 0, keepT = oi ? oi.scrollTop : 0, secChanged = gLastCat != null && secOf(gLastCat) !== secOf(gCat), catChanged = gLastCat !== gCat; gLastCat = gCat;
-    el.innerHTML = `<div class="ghead"><span class="kcount kcoin">● ${P.coins}</span><span class="kcount kstar">★ ${P.stars}</span>
+    el.innerHTML = gWorldBackHtml() + `<div class="ghead"><span class="kcount kcoin">● ${P.coins}</span><span class="kcount kstar">★ ${P.stars}</span>
         <button id="gBox" class="kpill ${P.boxes ? 'hot' : ''}" ${P.boxes ? '' : 'disabled'}>OPEN PART BOX (${P.boxes})</button><button id="gName" class="kpill">RENAME</button></div>
       ${gDrillChrome()}
       ${gCat === 'rims' ? `<div class="gsize">SIZE ${[17, 18, 19, 20].map((z) => `<button data-sz="${z}" class="${(P.eq.size || 19) === z ? 'on' : ''}">${z}"</button>`).join('')}<span>bigger wheel = thinner tyre</span></div>` : ''}
