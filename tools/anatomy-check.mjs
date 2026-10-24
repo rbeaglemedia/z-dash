@@ -74,7 +74,8 @@ function exportCrew(code) {
     'worldProject:typeof worldProject==="function"?worldProject:null,',
     'lookGirl:typeof LOOK!=="undefined"&&LOOK.girl?LOOK.girl:null,',
     'petScale:typeof PET_DRAW_SCALE==="number"?PET_DRAW_SCALE:null,',
-    'paintGaragePet:typeof paintGaragePet==="function"?paintGaragePet:null',
+    'paintGaragePet:typeof paintGaragePet==="function"?paintGaragePet:null,',
+    'wingsPose:typeof wingsPose==="function"?wingsPose:null',
     '};}catch(err){window.__ANATOMY={error:String(err&&err.stack||err)};}',
     ''
   ].join('');
@@ -1869,6 +1870,113 @@ var ANATOMY = (function () {
     return out;
   }
 
+  function judgeWings(box, label) {
+    var probs = [];
+    if (!box || box.missing.length) {
+      probs.push({ id: 'scale-missing', priority: 4, msg: label + ' is missing ' + ((box && box.missing.join(', ')) || 'its body') });
+      return probs;
+    }
+    if (!(box.ext > 0.12 && box.ext < 0.95)) probs.push({ id: 'pet-scale', priority: 4, msg: label + ' is ' + box.ext.toFixed(2) + 'm tall. In the car it should stay under about 0.9m.' });
+    if (box.minY < -0.05 || box.maxY > 1.4 || box.minX < -1.55 || box.maxX > 1.65 || box.minZ < -1.9 || box.maxZ > 1.45) {
+      probs.push({ id: 'pet-clip', priority: 4, msg: label + ' leaves the car. x ' + box.minX.toFixed(2) + ' to ' + box.maxX.toFixed(2) + ', y ' + box.minY.toFixed(2) + ' to ' + box.maxY.toFixed(2) + ', z ' + box.minZ.toFixed(2) + ' to ' + box.maxZ.toFixed(2) });
+    }
+    return probs;
+  }
+
+  function runGarageWings() {
+    var out = { problems: [], shots: [], stats: [], note: '', ready: true };
+    var api = window.__ANATOMY;
+    var D = window.CREWDATA;
+    if (!D || typeof D.petFk !== 'function') {
+      out.problems.push({ id: 'scale-missing', priority: 4, msg: 'Garage wings pose has no pet skeleton' });
+      return out;
+    }
+    var fake = judgeWings({ minX: 0, maxX: 0.2, minY: 2.2, maxY: 3.4, minZ: 0, maxZ: 0.2, ext: 1.2, missing: [] }, 'A giant garage pet');
+    if (!fake.length) out.problems.push({ id: 'pet-scale', priority: 4, msg: 'The garage check missed a pet that leaves the car' });
+    var rw = 900, rh = 420;
+    var project = (function () {
+      var ox = rw * 0.42, oy = rh * 0.78, f = rh * 1.35, dist = 3.6, lookY = 0.62;
+      return function (x, y, z) {
+        var Z = dist - z * 0.25;
+        if (Z < 0.35) return null;
+        return [ox + x * f / Z, oy - (y - lookY) * f / Z, Z, f];
+      };
+    })();
+    function boxOf(q, rig) {
+      var J, parts;
+      try { J = D.petFk(q, rig); parts = D.petParts(rig); } catch (e) { J = null; parts = null; }
+      var b = { minX: 9, maxX: -9, minY: 9, maxY: -9, minZ: 9, maxZ: -9, ext: 0, missing: [] };
+      if (!J || !parts) { b.missing = ['body']; return b; }
+      ['head', 'S', 'Hp', 'pawFL', 'pawFR', 'pawBL', 'pawBR'].forEach(function (n) { if (!J[n]) b.missing.push(n); });
+      var seen = {};
+      parts.forEach(function (part) {
+        [part[0], part[1]].forEach(function (k) {
+          if (seen[k]) return;
+          seen[k] = 1;
+          var v = J[k];
+          if (!v || v.length < 3 || !isFinite(v[0] + v[1] + v[2])) { b.missing.push(k); return; }
+          if (v[0] < b.minX) b.minX = v[0];
+          if (v[0] > b.maxX) b.maxX = v[0];
+          if (v[1] < b.minY) b.minY = v[1];
+          if (v[1] > b.maxY) b.maxY = v[1];
+          if (v[2] < b.minZ) b.minZ = v[2];
+          if (v[2] > b.maxZ) b.maxZ = v[2];
+        });
+      });
+      b.ext = b.maxY - b.minY;
+      return b;
+    }
+    var types = ['dog', 'cat', 'bunny', 'dragon', 'fox'];
+    var samples = [['start', 0.08, 0], ['fling', 0.5, 0], ['hang', 1.2, 0], ['land', 2.78, 0], ['ride', 3.4, 0], ['fly', 3.4, 1]];
+    types.forEach(function (type) {
+      samples.forEach(function (sample) {
+        var pose = null;
+        try { pose = api.wingsPose(type, sample[1], sample[2]); } catch (e) { pose = null; }
+        var box = pose && pose.q ? boxOf(pose.q, pose.rig) : { missing: ['pose'], ext: 0, minX: 0, maxX: 0, minY: 0, maxY: 0, minZ: 0, maxZ: 0 };
+        var label = 'Garage ' + type + ' ' + sample[0];
+        var probs = judgeWings(box, label);
+        if (sample[0] === 'ride' || sample[0] === 'land' || sample[0] === 'start') {
+          if (box.missing.length === 0 && (box.minY < 0.68 || box.minY > 0.98)) probs.push({ id: 'pet-floor', priority: 4, msg: label + ' lowest point is ' + box.minY.toFixed(2) + 'm. The cargo floor is 0.79m.' });
+        }
+        if (sample[0] === 'fly' && box.missing.length === 0 && (box.minY < 0.68 || box.minY > 1.05)) {
+          probs.push({ id: 'pet-floor', priority: 4, msg: label + ' lowest point is ' + box.minY.toFixed(2) + 'm. With the hatch open it should still stand on the cargo floor.' });
+        }
+        var c = canvas(rw, rh);
+        var ctx = c.getContext('2d');
+        ctx.fillStyle = '#10141c';
+        ctx.fillRect(0, 0, rw, rh);
+        var ink = false;
+        try { api.paintGaragePet(ctx, project, pose); ink = !!inkBox(c, [16, 20, 28]); } catch (e) { ink = false; }
+        if (!ink) probs.push({ id: 'scale-missing', priority: 4, msg: label + ' did not draw' });
+        probs.forEach(function (p) { out.problems.push(p); });
+        if (sample[0] === 'hang' || sample[0] === 'ride' || (type === 'fox' && (sample[0] === 'fling' || sample[0] === 'fly'))) {
+          var name = 'garage-' + type + '-' + sample[0] + '.png';
+          store(name, c, null, label);
+          out.shots.push(name);
+        }
+        out.stats.push({
+          type: type,
+          pose: sample[0],
+          mode: 'wings',
+          petTop: +box.maxY.toFixed(3),
+          petBot: +box.minY.toFixed(3),
+          charTop: +box.ext.toFixed(3),
+          hip: 0.79,
+          ratio: null
+        });
+      });
+    });
+    var blank = canvas(rw, rh);
+    var bg = blank.getContext('2d');
+    bg.fillStyle = '#10141c';
+    bg.fillRect(0, 0, rw, rh);
+    var none = null;
+    try { none = api.wingsPose('none', 1.2, 0); } catch (e) { none = { q: {} }; }
+    try { api.paintGaragePet(bg, project, none); } catch (e) {}
+    if (none || inkBox(blank, [16, 20, 28])) out.problems.push({ id: 'scale-missing', priority: 4, msg: 'Garage None still drew a pet' });
+    return out;
+  }
+
   function runGarage() {
     var out = { problems: [], shots: [], stats: [], note: '', ready: false };
     var api = window.__ANATOMY;
@@ -1876,6 +1984,7 @@ var ANATOMY = (function () {
       out.note = 'This tree has no garage turntable pet, so that scale check was not run here.';
       return out;
     }
+    if (typeof api.wingsPose === 'function') return runGarageWings();
     out.ready = true;
     var hip = hipMetres();
     var rw = 844, rh = 390, z = 3.3;
@@ -2199,6 +2308,7 @@ var ANATOMY = (function () {
       });
       (garage.stats || []).forEach(function (s) {
         if (s.type === 'clearance') bits.push('garage clearance side ' + s.petTop + 'm, gap ' + s.petBot + 'm on axis ' + s.pose);
+        else if (s.mode === 'wings') bits.push('garage ' + s.type + ' ' + s.pose + ' y ' + s.petBot + ' to ' + s.petTop + 'm, tall ' + s.charTop + 'm');
         else bits.push('garage ' + s.type + ' ' + s.pose + ' top ' + s.petTop + 'm (' + s.ratio + ' of her), feet ' + s.petBot + 'm');
       });
       findings.push({
@@ -2236,7 +2346,9 @@ var ANATOMY = (function () {
       'Pets: ' + (window.CREWDATA && CREWDATA.PET_RIG ? Object.keys(CREWDATA.PET_RIG).join(', ') : 'none') + ' joint check',
       'Scale: pet beside the character in the house, the showroom shop, and outdoors, plus room props on the floor'
     ];
-    if (garage.ready) coverage.push('Garage turntable: dog, cat, bunny, dragon, and fox in the signature pose and at idle, standing outside the car');
+    if (garage.ready) coverage.push((garage.stats || []).some(function (s) { return s.mode === 'wings'; })
+      ? 'Garage turntable: dog, cat, bunny, dragon, and fox through the wings takeoff, the cargo ride, and the open-hatch stand'
+      : 'Garage turntable: dog, cat, bunny, dragon, and fox in the signature pose and at idle, standing outside the car');
     return {
       ok: calib.ok && blocking.length === 0 && petFindings.length === 0 && scaleFails === 0,
       calib: calib,
