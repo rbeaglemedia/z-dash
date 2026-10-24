@@ -575,12 +575,22 @@ function chain(forward,bend,l1,l2,out){
   const ankle=add(knee,mul(applyB(B,rx(V(0,-1,0),bend)),l2));
   return {knee,ankle};
 }
+function midP(a,b){return V((a.x+b.x)*.5,(a.y+b.y)*.5,(a.z+b.z)*.5);}
+function torsoRing(center,side,fwd,halfW,halfD){
+  const lx=mul(side,-halfW),rx=mul(side,halfW),fz=mul(fwd,halfD),bz=mul(fwd,-halfD);
+  return [add(add(center,lx),fz),add(add(center,rx),fz),add(add(center,rx),bz),add(add(center,lx),bz)];
+}
 function figurePoints(look,spec){
   const hip=V((spec.sway||0)*.04,look.thigh+look.shin+(spec.bob||0),0);
   const sway=spec.sway||0,lean=spec.lean||0;
-  const up=rz(rx(V(0,1,0),lean),sway),side=rz(rx(V(1,0,0),lean),sway);
+  const up=rz(rx(V(0,1,0),lean),sway),side=rz(rx(V(1,0,0),lean),sway),fwd=rz(rx(V(0,0,1),lean),sway);
   const chest=add(hip,mul(up,look.torso)),neck=add(chest,mul(up,look.neck)),head=add(neck,mul(up,look.head*.85));
-  const shL=add(chest,mul(side,-look.shoulder)),shR=add(chest,mul(side,look.shoulder));
+  const halfW=look.shoulder,chestD=halfW*.72;
+  const chestR=torsoRing(chest,side,fwd,halfW,chestD);
+  const bellyR=torsoRing(add(hip,mul(up,look.torso*.48)),side,fwd,halfW*.86,halfW*.98);
+  const hipR=torsoRing(hip,side,fwd,Math.max(look.hip*1.15,halfW*.72),halfW*.62);
+  const shL=add(midP(chestR[0],chestR[3]),mul(side,-look.armR));
+  const shR=add(midP(chestR[1],chestR[2]),mul(side,look.armR));
   const hpL=add(hip,V(-look.hip,-.02,0)),hpR=add(hip,V(look.hip,-.02,0));
   const out=spec.armOut==null?0.2:spec.armOut;
   const aL=chain(spec.armL||0,spec.elbL||0,look.uarm,look.farm,-out);
@@ -592,7 +602,11 @@ function figurePoints(look,spec){
   const ftL=add(anL,V(0,-.02,.09)),ftR=add(anR,V(0,-.02,.09));
   const pony0=add(head,V(0,look.head*.1,-look.head*.75));
   const pony1=add(pony0,V(0,-.16,-.06)),pony2=add(pony1,V((spec.sway||0)*.2,-.14,-.03));
-  return {hip,chest,neck,head,shL,shR,hpL,hpR,elL,wrL,elR,wrR,knL,anL,knR,anR,ftL,ftR,pony0,pony1,pony2};
+  return {hip,chest,neck,head,neckBase:chest,shL,shR,hpL,hpR,elL,wrL,elR,wrR,knL,anL,knR,anR,ftL,ftR,pony0,pony1,pony2,
+    cFL:chestR[0],cFR:chestR[1],cBR:chestR[2],cBL:chestR[3],
+    bFL:bellyR[0],bFR:bellyR[1],bBR:bellyR[2],bBL:bellyR[3],
+    yFL:hipR[0],yFR:hipR[1],yBR:hipR[2],yBL:hipR[3],
+    chestF:midP(chestR[0],chestR[1]),hipF:midP(hipR[0],hipR[1])};
 }
 function xform(p,ox,oy,oz,yaw){
   const c=Math.cos(yaw||0),s=Math.sin(yaw||0);
@@ -605,10 +619,16 @@ function bone(ctx,a,b,r,fill,glow){
   ctx.globalAlpha=1;ctx.strokeStyle=fill;ctx.lineWidth=w;
   ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
 }
+function shadeHex(hex,amt){
+  const n=parseInt(String(hex||'#888888').replace('#',''),16)||0;
+  const ch=v=>{v=Math.max(0,Math.min(255,Math.round(v+amt)));return ('0'+v.toString(16)).slice(-2);};
+  return '#'+ch((n>>16)&255)+ch((n>>8)&255)+ch(n&255);
+}
 function paintFigure(ctx,look,spec,project,yaw,origin){
   const pts=figurePoints(look,spec),o=origin||{x:0,y:0,z:0},P={};
   for(const k in pts){const w=xform(pts[k],o.x,o.y,o.z,yaw||0);P[k]=project(w[0],w[1],w[2]);}
   const items=[];
+  ctx.shadowBlur=0;
   const push=(a,b,r,fill,glow)=>{if(P[a]&&P[b])items.push({z:(P[a][2]+P[b][2])*.5,draw(){bone(ctx,P[a],P[b],r,fill,glow);}});};
   push('hpL','knL',look.legR,look.cloth,look.trim);push('knL','anL',look.legR*.82,look.cloth2,look.trim);
   push('hpR','knR',look.legR,look.cloth,look.trim);push('knR','anR',look.legR*.82,look.cloth2,look.trim);
@@ -617,15 +637,29 @@ function paintFigure(ctx,look,spec,project,yaw,origin){
   push('shR','elR',look.armR,look.cloth,look.trim);push('elR','wrR',look.armR*.85,look.cloth2,look.accent);
   if(look.pony){push('pony0','pony1',.03,look.hair,look.trim);push('pony1','pony2',.022,look.hair,look.accent);
     if(P.pony0)items.push({z:P.pony0[2],draw(){const rad=Math.max(2,.03*P.pony0[3]/Math.max(.2,P.pony0[2]));ctx.fillStyle=look.accent;ctx.beginPath();ctx.arc(P.pony0[0],P.pony0[1],rad,0,7);ctx.fill();}});}
-  if(P.shL&&P.shR&&P.hpL&&P.hpR){
-    const z=(P.shL[2]+P.shR[2]+P.hpL[2]+P.hpR[2])/4;
+  const bands=[['cFL','cFR','cBR','cBL'],['bFL','bFR','bBR','bBL'],['yFL','yFR','yBR','yBL']];
+  const faceFill=[shadeHex(look.cloth,42),look.cloth2,look.cloth,shadeHex(look.cloth,16)];
+  const quad=(a,b,c,d,fill)=>{
+    if(!P[a]||!P[b]||!P[c]||!P[d])return;
+    const z=(P[a][2]+P[b][2]+P[c][2]+P[d][2])*.25;
     items.push({z,draw(){
-      ctx.beginPath();ctx.moveTo(P.shL[0],P.shL[1]);ctx.lineTo(P.shR[0],P.shR[1]);ctx.lineTo(P.hpR[0],P.hpR[1]);ctx.lineTo(P.hpL[0],P.hpL[1]);ctx.closePath();
-      ctx.fillStyle=look.cloth;ctx.fill();ctx.strokeStyle=look.trim;ctx.lineWidth=2;ctx.stroke();
-      ctx.strokeStyle=look.accent;ctx.lineWidth=1.5;ctx.beginPath();
-      ctx.moveTo((P.shL[0]+P.shR[0])/2,(P.shL[1]+P.shR[1])/2);ctx.lineTo((P.hpL[0]+P.hpR[0])/2,(P.hpL[1]+P.hpR[1])/2);ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(P[a][0],P[a][1]);ctx.lineTo(P[b][0],P[b][1]);ctx.lineTo(P[c][0],P[c][1]);ctx.lineTo(P[d][0],P[d][1]);ctx.closePath();
+      ctx.fillStyle=fill;ctx.fill();
+      ctx.lineJoin='round';ctx.strokeStyle=look.trim;ctx.lineWidth=1.5;ctx.stroke();
     }});
+  };
+  for(let i=0;i<bands.length-1;i++){
+    const A=bands[i],B=bands[i+1];
+    for(let s=0;s<4;s++){const t=(s+1)%4;quad(A[s],A[t],B[t],B[s],faceFill[s]);}
   }
+  quad('cBL','cBR','cFR','cFL',shadeHex(look.cloth,18));
+  quad('yFL','yFR','yBR','yBL',shadeHex(look.cloth,-18));
+  if(P.chestF&&P.hipF)items.push({z:Math.min(P.chestF[2],P.hipF[2])-0.02,draw(){
+    ctx.strokeStyle=look.accent;ctx.lineWidth=1.5;ctx.beginPath();
+    ctx.moveTo(P.chestF[0],P.chestF[1]);ctx.lineTo(P.hipF[0],P.hipF[1]);ctx.stroke();
+  }});
+  push('neckBase','neck',.032,look.cloth2,look.trim);
   if(P.head){
     items.push({z:P.head[2]-(look.hood?0.04:0),draw(){
       const rad=Math.max(4,look.head*P.head[3]/Math.max(.2,P.head[2]));
@@ -883,6 +917,11 @@ window.CREW={
   preview,
   parts(who){const w=who==='boy'?'boy':who==='girl'?'girl':whoNow();return (st.rigs&&st.rigs[w]&&st.rigs[w].parts)||logical[w];},
   debugHuman(gait,tSec,phase){syncDanceOpts();return humanSpec(gait,phase==null?tSec:phase,tSec,true);},
+  debugPaint(ctx,who,gait,phase,yaw,w,h){
+    if(!ctx)return;
+    const W=w||360,H=h||480;
+    drawOne(ctx,who==='boy'?'boy':'girl',humanSpec(gait||'walk',phase==null?0:phase,0,false),W*.5,H*.62,Math.min(H*.9,W*.7),yaw||0);
+  },
   debugPet(type,tSec){syncDanceOpts();st.pet=type;return petDanceQ(type,tSec);},
   debugGround(type,gait,phase,tSec){syncDanceOpts();return groundPetQ(type,gait,phase==null?0.2:phase,tSec,null);},
   debugSeat(base,tSec){const rec=recordedSample(tSec);return rec?seatRecorded(base||{},rec):null;},

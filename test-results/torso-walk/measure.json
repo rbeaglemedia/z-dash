@@ -1,0 +1,246 @@
+{
+  "before": {
+    "front": [
+      {
+        "phase": 0,
+        "bodyW": 71,
+        "bodyH": 191,
+        "torsoW": 71,
+        "torsoY": 274
+      },
+      {
+        "phase": 0.25,
+        "bodyW": 68,
+        "bodyH": 195,
+        "torsoW": 67,
+        "torsoY": 263
+      },
+      {
+        "phase": 0.5,
+        "bodyW": 71,
+        "bodyH": 191,
+        "torsoW": 71,
+        "torsoY": 274
+      },
+      {
+        "phase": 0.75,
+        "bodyW": 68,
+        "bodyH": 195,
+        "torsoW": 67,
+        "torsoY": 263
+      }
+    ],
+    "three-quarter": [
+      {
+        "phase": 0,
+        "bodyW": 64,
+        "bodyH": 193,
+        "torsoW": 60,
+        "torsoY": 274
+      },
+      {
+        "phase": 0.25,
+        "bodyW": 89,
+        "bodyH": 195,
+        "torsoW": 87,
+        "torsoY": 261
+      },
+      {
+        "phase": 0.5,
+        "bodyW": 64,
+        "bodyH": 193,
+        "torsoW": 60,
+        "torsoY": 274
+      },
+      {
+        "phase": 0.75,
+        "bodyW": 112,
+        "bodyH": 188,
+        "torsoW": 63,
+        "torsoY": 292
+      }
+    ],
+    "side": [
+      {
+        "phase": 0,
+        "bodyW": 42,
+        "bodyH": 193,
+        "torsoW": 30,
+        "torsoY": 276
+      },
+      {
+        "phase": 0.25,
+        "bodyW": 133,
+        "bodyH": 184,
+        "torsoW": 68,
+        "torsoY": 260
+      },
+      {
+        "phase": 0.5,
+        "bodyW": 42,
+        "bodyH": 193,
+        "torsoW": 30,
+        "torsoY": 276
+      },
+      {
+        "phase": 0.75,
+        "bodyW": 133,
+        "bodyH": 176,
+        "torsoW": 66,
+        "torsoY": 262
+      }
+    ],
+    "back": [
+      {
+        "phase": 0,
+        "bodyW": 73,
+        "bodyH": 188,
+        "torsoW": 73,
+        "torsoY": 272
+      },
+      {
+        "phase": 0.25,
+        "bodyW": 71,
+        "bodyH": 171,
+        "torsoW": 70,
+        "torsoY": 262
+      },
+      {
+        "phase": 0.5,
+        "bodyW": 73,
+        "bodyH": 188,
+        "torsoW": 73,
+        "torsoY": 272
+      },
+      {
+        "phase": 0.75,
+        "bodyW": 71,
+        "bodyH": 171,
+        "torsoW": 70,
+        "torsoY": 262
+      }
+    ]
+  },
+  "after": {
+    "front": [
+      {
+        "phase": 0,
+        "bodyW": 79,
+        "bodyH": 191,
+        "torsoW": 79,
+        "torsoY": 272
+      },
+      {
+        "phase": 0.25,
+        "bodyW": 77,
+        "bodyH": 195,
+        "torsoW": 76,
+        "torsoY": 265
+      },
+      {
+        "phase": 0.5,
+        "bodyW": 79,
+        "bodyH": 191,
+        "torsoW": 79,
+        "torsoY": 272
+      },
+      {
+        "phase": 0.75,
+        "bodyW": 77,
+        "bodyH": 195,
+        "torsoW": 76,
+        "torsoY": 265
+      }
+    ],
+    "three-quarter": [
+      {
+        "phase": 0,
+        "bodyW": 71,
+        "bodyH": 193,
+        "torsoW": 67,
+        "torsoY": 271
+      },
+      {
+        "phase": 0.25,
+        "bodyW": 96,
+        "bodyH": 195,
+        "torsoW": 94,
+        "torsoY": 261
+      },
+      {
+        "phase": 0.5,
+        "bodyW": 71,
+        "bodyH": 193,
+        "torsoW": 67,
+        "torsoY": 271
+      },
+      {
+        "phase": 0.75,
+        "bodyW": 112,
+        "bodyH": 188,
+        "torsoW": 63,
+        "torsoY": 292
+      }
+    ],
+    "side": [
+      {
+        "phase": 0,
+        "bodyW": 45,
+        "bodyH": 193,
+        "torsoW": 34,
+        "torsoY": 253
+      },
+      {
+        "phase": 0.25,
+        "bodyW": 133,
+        "bodyH": 184,
+        "torsoW": 68,
+        "torsoY": 261
+      },
+      {
+        "phase": 0.5,
+        "bodyW": 45,
+        "bodyH": 193,
+        "torsoW": 34,
+        "torsoY": 253
+      },
+      {
+        "phase": 0.75,
+        "bodyW": 133,
+        "bodyH": 176,
+        "torsoW": 66,
+        "torsoY": 266
+      }
+    ],
+    "back": [
+      {
+        "phase": 0,
+        "bodyW": 83,
+        "bodyH": 188,
+        "torsoW": 83,
+        "torsoY": 274
+      },
+      {
+        "phase": 0.25,
+        "bodyW": 81,
+        "bodyH": 171,
+        "torsoW": 79,
+        "torsoY": 261
+      },
+      {
+        "phase": 0.5,
+        "bodyW": 83,
+        "bodyH": 188,
+        "torsoW": 83,
+        "torsoY": 274
+      },
+      {
+        "phase": 0.75,
+        "bodyW": 81,
+        "bodyH": 171,
+        "torsoW": 79,
+        "torsoY": 261
+      }
+    ]
+  }
+}
