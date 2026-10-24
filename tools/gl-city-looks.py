@@ -218,11 +218,19 @@ def bilerp(quad, u, v):
     return mix(mix(quad[0], quad[1], u), mix(quad[3], quad[2], u), v)
 
 
-def dance(dr, proj, tier, kind):
-    # Z Company Arts. One rectangle in both tiers. The mural quad does not move.
-    x, z, w, d, h = 6, -6, 12, 5, 10
+def dance(dr, proj, tier, kind, shape='box', origin=None):
+    # One flat mural wall, same size and facing in every shape. Extra mass sits behind it.
+    if origin is None:
+        x, z, w, d, h = 6, -6, 12, 5, 10
+    else:
+        x, z, w, d, h = origin
     wall = (36, 12, 32) if kind != 'b' else (196, 150, 148)
-    box(dr, proj, x, z, w, d, h, 'glass' if kind != 'b' else 'pastel')
+    style = 'pastel' if kind == 'b' else 'glass'
+    if shape == 'shoulder':
+        box(dr, proj, x + w * 0.62, z - d * 0.55, w * 0.55, d * 1.15, h * 1.38, style)
+    elif shape == 'crown':
+        box(dr, proj, x + w * 0.24, z - d * 0.7, w * 0.52, d * 0.85, h * 1.55, style)
+    box(dr, proj, x, z, w, d, h, style)
     front = [proj(x, 0, z + 0.05), proj(x + w, 0, z + 0.05),
              proj(x + w, h, z + 0.05), proj(x, h, z + 0.05)]
     dr.polygon(front, fill=wall)
@@ -232,6 +240,30 @@ def dance(dr, proj, tier, kind):
     x0 = x + w * 0.04
     x1 = x + w * 0.96
     mz = z + 0.12
+    # Trim, sign, and entrance sit outside the mural quad. The mural is painted last.
+    trim_w = 2 if tier == 'arcade' else 4
+    dr.line(front + [front[0]], fill=MAG, width=trim_w)
+    sign = [proj(x0, y1 + 0.15, mz), proj(x1, y1 + 0.15, mz),
+            proj(x1, min(h - 0.3, y1 + 0.7), mz), proj(x0, min(h - 0.3, y1 + 0.7), mz)]
+    dr.polygon(sign, fill=(12, 4, 20) if tier == 'arcade' else MAG)
+    dr.line(sign + [sign[0]], fill=CYAN, width=2)
+    roof_cap(dr, proj, x, z, w, d, h, CYAN if kind != 'b' else (180, 90, 78))
+    mast = proj(x + w * 0.72, h, z + d * 0.5)
+    tip = proj(x + w * 0.72, h + 1.6, z + d * 0.5)
+    dr.line([mast, tip], fill=CYAN, width=2)
+    # Side face runs away from the camera (toward -z), behind the mural plane.
+    zs = z - d * 0.42
+    ze = z - d * 0.72
+    side = [proj(x - 0.05, 0, zs), proj(x - 0.05, 0, ze),
+            proj(x - 0.05, h * 0.28, ze), proj(x - 0.05, h * 0.28, zs)]
+    dr.polygon(side, fill=(20, 8, 16))
+    dr.line(side + [side[0]], fill=CYAN, width=2)
+    if tier == 'street':
+        y = h * 0.32
+        lip = [proj(x, y, zs), proj(x, y, ze),
+               proj(x - 1.4, y - 0.35, ze - 0.05), proj(x - 1.4, y - 0.35, zs + 0.05)]
+        dr.polygon(lip, fill=MAG)
+        dr.line(lip + [lip[0]], fill=MAG, width=2)
     mural = [proj(x0, y0, mz), proj(x1, y0, mz), proj(x1, y1, mz), proj(x0, y1, mz)]
     dr.polygon(mural, fill=(22, 11, 40))
 
@@ -247,36 +279,17 @@ def dance(dr, proj, tier, kind):
     mline([(0.52, 0.40), (0.42, 0.22)], CYAN, 3)
     mline([(0.52, 0.40), (0.64, 0.22)], AMBER, 3)
     head = mpt(0.52, 0.74)
-    dr.ellipse([head[0] - 5, head[1] - 5, head[0] + 5, head[1] + 5], outline=MAG, width=2)
+    span = abs(mural[1][0] - mural[0][0])
+    rad = max(3, int(span * 0.028))
+    dr.ellipse([head[0] - rad, head[1] - rad, head[0] + rad, head[1] + rad], outline=MAG, width=2)
     band = [mpt(0.02, 0.86), mpt(0.98, 0.86), mpt(0.98, 0.98), mpt(0.02, 0.98)]
     dr.polygon(band, fill=(6, 2, 16))
     dr.line(band + [band[0]], fill=CYAN, width=2)
     label = mpt(0.50, 0.92)
-    dr.text((label[0] - 52, label[1] - 6), 'Z COMPANY ARTS', fill=CYAN)
+    word = 'Z COMPANY ARTS' if span > 150 else 'Z ARTS'
+    tw = 52 if span > 150 else 22
+    dr.text((label[0] - tw, label[1] - 6), word, fill=CYAN)
     dr.line(mural + [mural[0]], fill=MAG, width=3)
-    # Trim, sign, and entrance sit outside the mural quad.
-    trim_w = 2 if tier == 'arcade' else 4
-    dr.line(front + [front[0]], fill=MAG, width=trim_w)
-    sign = [proj(x0, y1 + 0.15, mz), proj(x1, y1 + 0.15, mz),
-            proj(x1, min(h - 0.3, y1 + 0.7), mz), proj(x0, min(h - 0.3, y1 + 0.7), mz)]
-    dr.polygon(sign, fill=(12, 4, 20) if tier == 'arcade' else MAG)
-    dr.line(sign + [sign[0]], fill=CYAN, width=2)
-    roof_cap(dr, proj, x, z, w, d, h, CYAN if kind != 'b' else (180, 90, 78))
-    mast = proj(x + w * 0.72, h, z + d * 0.5)
-    tip = proj(x + w * 0.72, h + 1.6, z + d * 0.5)
-    dr.line([mast, tip], fill=CYAN, width=2)
-    # Entrance on the side wall, clear of the mural face.
-    side = [proj(x - 0.05, 0, z + 0.4), proj(x - 0.05, 0, z + 1.8),
-            proj(x - 0.05, h * 0.28, z + 1.8), proj(x - 0.05, h * 0.28, z + 0.4)]
-    dr.polygon(side, fill=(20, 8, 16))
-    dr.line(side + [side[0]], fill=CYAN, width=2)
-    if tier == 'street':
-        # Side-wall awning only. It does not cross the mural face.
-        y = h * 0.32
-        lip = [proj(x, y, z + 0.25), proj(x, y, z + 1.95),
-               proj(x - 1.5, y - 0.35, z + 2.05), proj(x - 1.5, y - 0.35, z + 0.15)]
-        dr.polygon(lip, fill=MAG)
-        dr.line(lip + [lip[0]], fill=MAG, width=2)
 
 
 def awning(dr, proj, x, z, w, h, color):
@@ -326,7 +339,7 @@ def scene(kind, w, h, tier):
         house(dr, proj, -10, -16, 9, 7, 11)
         stadium(dr, proj, -24, -22, 12, 7)
     # Doors, garages, and the baked roof cap match. Street only adds the storefront.
-    # The Z dance rectangle is drawn after these so its flat mural face stays whole.
+    # Z dance: one full mural wall. The shape around it follows the look.
     door(dr, proj, -8, -18, 8, 16)
     if kind == 'c':
         garage(dr, proj, 18, -36, 8, 7)
@@ -337,18 +350,56 @@ def scene(kind, w, h, tier):
         roof_cap(dr, proj, spec[0], spec[1], spec[2], spec[3], spec[4], cap)
     if tier == 'street':
         awning(dr, proj, -8, -18, 8, 16, AMBER)
-    dance(dr, proj, tier, kind)
+    dance_shape = {'a': 'box', 'b': 'shoulder', 'c': 'crown'}[kind]
+    dance(dr, proj, tier, kind, dance_shape)
     titles = {
-        'a': '(a) procedural',
-        'b': '(b) free kit palette',
-        'c': '(c) hybrid',
+        'a': '(a) procedural  DANCE box',
+        'b': '(b) free kit  DANCE shoulder',
+        'c': '(c) hybrid  DANCE crown',
     }
-    tier_name = 'ARCADE  lighter windows, static roof' if tier == 'arcade' else 'STREET  same shape, storefronts on'
+    tier_name = 'ARCADE  lighter trim' if tier == 'arcade' else 'STREET  richer trim'
     bar_h = 54 if h < 500 else 62
     dr.rectangle([0, h - bar_h, w, h], fill=(8, 2, 16))
     dr.text((12, h - bar_h + 6), 'MOCKUP  ' + titles[kind] + '   ' + tier_name, fill=(233, 227, 228))
     dr.text((12, h - bar_h + 22), MS[(kind, tier)] + '   building pass only, not measured on a phone', fill=(62, 230, 255))
-    dr.text((12, h - bar_h + 36), 'Z DANCE wall stays flat. Mural matches both tiers.', fill=(138, 122, 125))
+    dr.text((12, h - bar_h + 36), 'Z DANCE keeps one full flat mural wall. Facing unchanged.', fill=(138, 122, 125))
+    return img
+
+
+def options_scene(tier, w, h):
+    """Three legal Z dance shapes. The mural wall is the same size and facing in each."""
+    global TIER
+    TIER = tier
+    img = Image.new('RGB', (w, h))
+    hy = sky(img)
+    dr = ImageDraw.Draw(img)
+    grid(dr, w, h, hy)
+    cam_z = 18
+
+    def proj(x, y, z):
+        zz = cam_z - z
+        if zz < 0.4:
+            zz = 0.4
+        f = h * 0.85
+        return (w * 0.50 + x * f / zz, hy - y * f / zz)
+
+    # Left to right: box, shoulder, crown. Same mural-wall footprint.
+    slots = [
+        (-16, -6, 8, 4, 8, 'box'),
+        (-4, -6, 8, 4, 8, 'shoulder'),
+        (8, -6, 8, 4, 8, 'crown'),
+    ]
+    for spec in slots:
+        dance(dr, proj, tier, 'a', spec[5], spec[:5])
+        name = spec[5].upper()
+        foot = proj(spec[0] + spec[2] * 0.5, 0, spec[1] + 0.2)
+        dr.text((foot[0] - 28, min(h - 70, foot[1] + 8)), name, fill=(233, 227, 228))
+    tier_name = 'ARCADE  lighter trim around the wall' if tier == 'arcade' else 'STREET  richer trim around the wall'
+    bar_h = 54 if h < 500 else 62
+    dr.rectangle([0, h - bar_h, w, h], fill=(8, 2, 16))
+    dr.text((12, h - bar_h + 6), 'Z DANCE OPTIONS   BOX  ·  SHOULDER  ·  CROWN    ' + tier_name, fill=(233, 227, 228))
+    dr.text((12, h - bar_h + 22), 'Same mural, same facing. The flat wall stays full size.', fill=(62, 230, 255))
+    dr.text((12, h - bar_h + 36), 'Extra mass sits behind that wall. Not in the game.', fill=(138, 122, 125))
     return img
 
 
@@ -365,6 +416,13 @@ def main():
                 img.save(os.path.join(ART, '%s-%s-%s.png' % (kind, tier, name)))
                 made.append(path)
                 print(path, img.size)
+    for tier in ('arcade', 'street'):
+        for name, w, h in VIEWS:
+            img = options_scene(tier, w, h)
+            path = os.path.join(ROOT, 'dance-options-%s-%s.png' % (tier, name))
+            img.save(path)
+            img.save(os.path.join(ART, 'dance-options-%s-%s.png' % (tier, name)))
+            print(path, img.size)
     # contact sheet: each look, Arcade then Street, iPad frame
     cell_h = 200
     gap = 8
@@ -388,6 +446,23 @@ def main():
     sheet.save(sheet_path)
     sheet.save(os.path.join(ART, 'sheet.png'))
     print(sheet_path, sheet.size)
+    # Dance shape options: Arcade over Street, iPad frame.
+    opt_thumbs = []
+    opt_w = []
+    for tier in ('arcade', 'street'):
+        im = Image.open(os.path.join(ROOT, 'dance-options-%s-ipad.png' % tier))
+        th = im.resize((int(im.size[0] * cell_h / im.size[1]), cell_h), Image.BILINEAR)
+        opt_thumbs.append(th)
+        opt_w.append(th.size[0])
+    opt = Image.new('RGB', (max(opt_w) + gap * 2, cell_h * 2 + gap * 3), (8, 2, 16))
+    yy = gap
+    for th in opt_thumbs:
+        opt.paste(th, (gap, yy))
+        yy += cell_h + gap
+    opt_path = os.path.join(ROOT, 'dance-options-sheet.png')
+    opt.save(opt_path)
+    opt.save(os.path.join(ART, 'dance-options-sheet.png'))
+    print(opt_path, opt.size)
 
 
 if __name__ == '__main__':

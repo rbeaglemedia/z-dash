@@ -20,16 +20,26 @@ The WINGS control is the live A/B. `toggleDrive()` / `setDriveMode()` in `world/
 
 ### Z dance building (mural wall)
 
-Both `purpose: 'DANCE'` shops stay one big rectangle. `isTaggedArts` paints the graffiti mural on every DANCE building, so this rule covers both:
+The building may take a new shape. It keeps at least one flat wall as large as the wall the mural uses today, and the mural stays on that face, facing the same way. `isTaggedArts` paints the mural on every DANCE building, so this covers both shops.
 
-| Shop | Footprint | Face the mural uses |
+| Shop | Flat wall that stays | Facing |
 |---|---|---|
-| Arts & Garage, `shop(-224,-164,360,424,18)` | 60 m × 64 m × 18 m, one tier | East (`face: 'e'`) |
-| Downtown, `shop(264,324,1160,1224,20)` | 60 m × 64 m × 20 m, one tier | West (`face: 'w'`) |
+| Arts & Garage, `shop(-224,-164,360,424,18)` | East face, 64 m wide × 18 m tall | East (`face: 'e'`) |
+| Downtown, `shop(264,324,1160,1224,20)` | West face, 64 m wide × 20 m tall | West (`face: 'w'`) |
 
-`tower()` is called with `tiers: 1`, so the box is the full footprint. The `inset` is applied only after that single tier and does not step the wall. Color and detail may sit around the mural: edge trim, the roof (including the existing roof antenna), the sign in the band above the mural, and an entrance. The wall itself stays a flat rectangle. No curves, no setbacks, no bay, and no awning or trim that crosses the mural quad.
+Today each shop is one tier, so that face is the whole building. A later shape may add a side mass, a deeper body, or a set-back crown. That extra geometry stays behind this rectangle. It does not inset, curve, or cover the mural wall. Trim, the sign in the band above the mural, and the entrance stay off the mural quad, as they do now.
 
-The mural quad and its placement stay the ones `muralFrame` in `world/neon-paint.js` already computes: on the sign face, `y0` 3.2 m, height `min(14, h * 0.55)` and also capped by `h - 3.5`, width `min(min(dx, dz) * 1.55, face span * 0.92)` centered on that face, painted `0.04` m off the wall. The strokes and that quad are the same in Arcade and in Street. The mockups draw that wall in every look, both tiers, with the same mural and with the entrance on the side face. Pitched roofs, the spire, and the stadium in look (c) are other buildings.
+The mural quad and its placement stay the ones `muralFrame` in `world/neon-paint.js` already computes: on that same face, `y0` 3.2 m, height `min(14, h * 0.55)` and also capped by `h - 3.5`, width `min(min(dx, dz) * 1.55, face span * 0.92)` centered on the face, painted `0.04` m off the wall. The strokes are the same in Arcade and in Street, and the same on every shape.
+
+Shape options, each drawn in Arcade and in Street. The flat wall in front is the same size in all three:
+
+| Option | What changes around the wall |
+|---|---|
+| Box | The wall is the whole building, as it is today. |
+| Shoulder | A taller mass sits behind the right edge. The front wall is still the full rectangle. |
+| Crown | A set-back roof rises behind the top of the same wall. |
+
+Files: `test-results/gl-city/looks/dance-options-{arcade|street}-{phone|ipad|pc}.png` and `dance-options-sheet.png`. The city looks use one option each so the shape is not tied to the art source: (a) box, (b) shoulder, (c) crown.
 
 ### `?perf=1` readout (specified, not built)
 
@@ -42,7 +52,7 @@ The readout is off unless the query is present, so a normal session pays nothing
 
 ## Building source proposal (still on hold)
 
-Bob asked whether Neon World needs more free 3D building models or should build them in-game. Three options, each drawn in Arcade and in Street. Every frame includes the Z dance rectangle with the same mural. Mockups are drawings at the phone (844×390), iPad (1024×768), and PC (1366×768) sizes. They are drawings, not screenshots of the game. Files: `test-results/gl-city/looks/` named `{a|b|c}-{arcade|street}-{phone|ipad|pc}.png`, plus `sheet.png` (six iPad frames, Arcade then Street for each look).
+Bob asked whether Neon World needs more free 3D building models or should build them in-game. Three options, each drawn in Arcade and in Street. Every frame includes the Z dance mural on a full-size flat wall; the shape around that wall is box, shoulder, or crown as noted above. Mockups are drawings at the phone (844×390), iPad (1024×768), and PC (1366×768) sizes. They are drawings, not screenshots of the game. Files: `test-results/gl-city/looks/` named `{a|b|c}-{arcade|street}-{phone|ipad|pc}.png`, plus `sheet.png` (six iPad frames, Arcade then Street for each look).
 
 Millisecond figures are estimates for the building pass on a Galaxy-class GPU. They were not measured on a phone or an iPad. The basis is the black-solid spike: 4–27 buildings submitted in 0.1–0.5 ms of JS on SwiftShader, while the whole software frame was 14–24 ms. That software frame does not transfer to a device. The budget is the whole frame: under about 9 ms on the Galaxy (steady 110+), and 16.7 ms or 33 ms on iPad (steady 60 or 30). The car, ground, and HUD still share that frame. Glow is baked into the window atlas. No `shadowBlur`. On-foot detail is a further small add inside 38 m, and it is not the number the WINGS toggle is for.
 
