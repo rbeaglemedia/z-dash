@@ -208,13 +208,14 @@
       '.zd-ds-improve[hidden]{display:none !important}',
       '.zd-ds-improve-top,.zd-ds-improve-bot{pointer-events:auto}',
       '.zd-ds-improve-top{padding:6px 10px 4px;background:linear-gradient(rgba(5,0,16,.96),rgba(5,0,16,.78));text-align:center}',
-      '.zd-ds-improve-title{font:800 12px/1.3 Orbitron,sans-serif;color:#fff;text-shadow:0 0 10px #ff4fd8,0 0 14px #3ee6ff}',
+      '.zd-ds-improve-title{font:800 clamp(11px,2.2vw,14px)/1.3 Orbitron,sans-serif;color:#fff;text-shadow:0 0 10px #ff4fd8,0 0 14px #3ee6ff}',
       '.zd-ds-improve-caps{display:flex;gap:8px;margin-top:4px}',
       '.zd-ds-improve-caps span{flex:1;font:800 12px/1.2 Orbitron,sans-serif;letter-spacing:.3px}',
       '.zd-ds-improve-caps .l{color:#3ee6ff;text-shadow:0 0 8px #3ee6ff}',
       '.zd-ds-improve-caps .r{color:#ff4fd8;text-shadow:0 0 8px #ff4fd8}',
       '.zd-ds-improve-kf{margin-top:2px;font:700 10px/1.2 Orbitron,sans-serif;color:#ffe14d}',
-      '.zd-ds-improve-bot{margin-top:auto;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:6px 8px calc(8px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(5,0,16,.96) 28%)}',
+      '.zd-ds-improve-bot{margin-top:auto;display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 8px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(5,0,16,.96) 28%)}',
+      '.zd-ds-improve-bot button{min-height:44px;padding:10px 14px;font-size:12px;white-space:nowrap}',
       '.zd-ds button.on{color:#12052a;background:linear-gradient(90deg,#ffe14d,#ff9a2e);border-color:#ffe14d;box-shadow:0 0 12px rgba(255,225,77,.45)}',
       '.zd-ds-program{width:100%;border-color:#ff4fd8;background:rgba(255,79,216,.16);letter-spacing:.4px}',
       '.zd-ds-program.on{color:#fff;background:linear-gradient(90deg,#ff4fd8,#3ee6ff);border-color:#fff;box-shadow:0 0 16px rgba(255,79,216,.55)}',
@@ -343,7 +344,7 @@
     replayBtn.addEventListener('click', replayImprove);
     saveTuneBtn = el('button', '', '💾 SAVE / DOWNLOAD CLIP FOR TUNING');
     saveTuneBtn.type = 'button';
-    saveTuneBtn.addEventListener('click', downloadTune);
+    saveTuneBtn.addEventListener('click', onSaveClip);
     closeImproveBtn = el('button', '', '✕ CLOSE');
     closeImproveBtn.type = 'button';
     closeImproveBtn.addEventListener('click', closeImprove);
@@ -2610,9 +2611,10 @@
       cy: c.cy,
       spreadX: c.spreadX,
       spreadY: c.spreadY,
-      jpg: ''
+      jpg: '',
+      cam: null
     };
-    rec.jpg = jpgFor(rec);
+    if (state.improve && state.improvePhase === 'rec') rec.cam = captureCamFrame();
     takeFrames.push(rec);
     return rec;
   }
@@ -2667,33 +2669,248 @@
     state.improveIndex = 0;
     updateChrome();
   }
-  function downloadTune() {
-    var slim = [];
-    for (var i = 0; i < takeFrames.length; i++) {
-      var f = takeFrames[i];
-      slim.push({
-        i: f.i, t: f.t, kind: f.kind, cx: f.cx, cy: f.cy,
-        spreadX: f.spreadX, spreadY: f.spreadY, zones: f.zones, pose: f.pose, pet: f.pet
-      });
+  var CLIP_TYPES = [
+    'video/mp4;codecs=avc1.42E01E',
+    'video/mp4;codecs=avc1.4D401E',
+    'video/mp4;codecs=avc1',
+    'video/mp4',
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm'
+  ];
+  var SAVE_LABEL = '💾 SAVE / DOWNLOAD CLIP FOR TUNING';
+  var clipBusy = false, clipQueued = false, pendingClip = null, pendingNeedsTap = false;
+  var compareDancerId = '';
+  /* Right pane slot. fn(cx, cy, sc, sample, now, ctx). 'ingame' is today's dancer.
+     registerCompareDancer('player', fn) can swap in the player's character later. */
+  var compareSlots = {
+    ingame: function (cx, cy, sc, sample, now) {
+      drawFigure(cx, cy, sc, (sample && sample.pose) || sample, now, 1);
+    },
+    pet: function (cx, cy, sc, sample, now) {
+      drawPup(cx, cy, sc, (sample && sample.pet) || sample, now, 1);
     }
+  };
+  function activeCompareSlot() {
+    if (compareDancerId && compareSlots[compareDancerId]) return compareDancerId;
+    return state.improveKind === 'pet' ? 'pet' : 'ingame';
+  }
+  function pickClipMime() {
+    if (typeof MediaRecorder === 'undefined' || !MediaRecorder.isTypeSupported) return '';
+    for (var i = 0; i < CLIP_TYPES.length; i++) {
+      try { if (MediaRecorder.isTypeSupported(CLIP_TYPES[i])) return CLIP_TYPES[i]; } catch (e) {}
+    }
+    return '';
+  }
+  function openClipRecorder(stream) {
+    var order = [];
+    var first = pickClipMime();
+    if (first) order.push(first);
+    for (var i = 0; i < CLIP_TYPES.length; i++) if (order.indexOf(CLIP_TYPES[i]) < 0) order.push(CLIP_TYPES[i]);
+    order.push('');
+    for (var j = 0; j < order.length; j++) {
+      try {
+        var opts = { videoBitsPerSecond: 1200000 };
+        if (order[j]) opts.mimeType = order[j];
+        var rec = order[j] ? new MediaRecorder(stream, opts) : new MediaRecorder(stream);
+        return { rec: rec, mime: rec.mimeType || order[j] || 'video/webm' };
+      } catch (e) {}
+    }
+    return null;
+  }
+  function anchorDownload(blob, name) {
+    var a = document.createElement('a');
+    var url = URL.createObjectURL(blob);
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 8000);
+  }
+  function restoreSaveLabel() {
+    if (saveTuneBtn && !pendingNeedsTap) saveTuneBtn.textContent = SAVE_LABEL;
+  }
+  function handoffClip() {
+    if (!pendingClip) return;
+    var blob = pendingClip.blob;
+    var name = pendingClip.name;
+    var file = null;
+    try { file = new File([blob], name, { type: blob.type || 'video/webm' }); } catch (e) {}
+    var touch = (navigator.maxTouchPoints || 0) > 1;
+    var canShare = !!(file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] }));
+    if (touch && canShare) {
+      pendingNeedsTap = true;
+      if (saveTuneBtn) saveTuneBtn.textContent = '⬇ TAP TO SAVE VIDEO';
+      return;
+    }
+    anchorDownload(blob, name);
+    pendingClip = null;
+    pendingNeedsTap = false;
+    restoreSaveLabel();
+  }
+  function onSaveClip() {
+    if (pendingNeedsTap && pendingClip) {
+      var blob = pendingClip.blob;
+      var name = pendingClip.name;
+      var file = null;
+      try { file = new File([blob], name, { type: blob.type || 'video/webm' }); } catch (e) {}
+      var finish = function () {
+        pendingNeedsTap = false;
+        pendingClip = null;
+        if (saveTuneBtn) saveTuneBtn.textContent = SAVE_LABEL;
+      };
+      if (file && navigator.share) {
+        navigator.share({ files: [file], title: name }).then(finish, function () {
+          anchorDownload(blob, name);
+          finish();
+        });
+        return;
+      }
+      anchorDownload(blob, name);
+      finish();
+      return;
+    }
+    if (clipBusy) return;
+    if (!takeFrames.length || state.improvePhase !== 'play') {
+      clipQueued = true;
+      if (saveTuneBtn) saveTuneBtn.textContent = '⏺ SAVING VIDEO…';
+      return;
+    }
+    exportClip();
+  }
+  function exportClip() {
+    if (clipBusy || !takeFrames.length) return;
+    if (!canvas || !canvas.captureStream || typeof MediaRecorder === 'undefined') {
+      fault('video export unavailable');
+      clipQueued = false;
+      restoreSaveLabel();
+      return;
+    }
+    clipBusy = true;
+    clipQueued = false;
+    if (saveTuneBtn) saveTuneBtn.textContent = '⏺ SAVING VIDEO…';
+    var w = 960, h = 540;
+    var exp = document.createElement('canvas');
+    exp.width = w;
+    exp.height = h;
+    var xctx = exp.getContext('2d', { alpha: false });
+    paintCompare(xctx, 0, 0, w, h, takeFrames[0], performance.now(), true);
+    var stream = null;
+    var manual = false;
     try {
-      var blob = new Blob([JSON.stringify({ version: 1, kind: state.improveKind, frames: slim })], { type: 'application/json' });
-      var a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'ellie-mirror-tune.json';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    } catch (e) { fault(e); }
-    try {
-      if (!canvas) return;
-      var a2 = document.createElement('a');
-      a2.href = canvas.toDataURL('image/png');
-      a2.download = 'ellie-mirror-tune.png';
-      document.body.appendChild(a2);
-      a2.click();
-      a2.remove();
-    } catch (e2) {}
+      stream = exp.captureStream(0);
+      manual = !!(stream.getVideoTracks()[0] && stream.getVideoTracks()[0].requestFrame);
+    } catch (e0) { stream = null; }
+    if (!manual) {
+      if (stream) { try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (eStop) {} }
+      try { stream = exp.captureStream(10); } catch (e1) { stream = null; }
+    }
+    if (!stream) {
+      clipBusy = false;
+      fault('captureStream unavailable');
+      restoreSaveLabel();
+      return;
+    }
+    var opened = openClipRecorder(stream);
+    if (!opened) {
+      clipBusy = false;
+      try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e2) {}
+      fault('MediaRecorder unavailable');
+      restoreSaveLabel();
+      return;
+    }
+    var chunks = [];
+    opened.rec.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+    opened.rec.onstop = function () {
+      var mime = opened.mime || 'video/webm';
+      var base = /mp4/i.test(mime) ? 'video/mp4' : 'video/webm';
+      var ext = base === 'video/mp4' ? 'mp4' : 'webm';
+      var blob = new Blob(chunks, { type: base });
+      try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e3) {}
+      clipBusy = false;
+      pendingClip = { blob: blob, name: 'ellie-mirror-tune.' + ext, mime: base };
+      handoffClip();
+    };
+    var track = stream.getVideoTracks()[0];
+    var i = 0;
+    var n = takeFrames.length;
+    function frame() {
+      var rec = takeFrames[Math.min(i, n - 1)];
+      paintCompare(xctx, 0, 0, w, h, rec, performance.now(), true);
+      if (manual && track) { try { track.requestFrame(); } catch (e4) {} }
+      i++;
+      if (i < n) setTimeout(frame, 100);
+      else setTimeout(function () { try { opened.rec.stop(); } catch (e5) {} }, 160);
+    }
+    try { opened.rec.start(); }
+    catch (e6) {
+      clipBusy = false;
+      try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e7) {}
+      fault(e6);
+      restoreSaveLabel();
+      return;
+    }
+    frame();
+  }
+  function captureCamFrame() {
+    if (!video || video.readyState < 2 || !video.videoWidth) return null;
+    var frame = document.createElement('canvas');
+    frame.width = 320;
+    frame.height = 240;
+    var fc = frame.getContext('2d', { alpha: false });
+    fc.fillStyle = '#07010f';
+    fc.fillRect(0, 0, 320, 240);
+    fc.save();
+    fc.translate(320, 0);
+    fc.scale(-1, 1);
+    fc.drawImage(video, 0, 0, 320, 240);
+    fc.restore();
+    return frame;
+  }
+  function drawCameraInto(c, x, y, w, h, source, mirror) {
+    c.save();
+    c.beginPath();
+    c.rect(x, y, w, h);
+    c.clip();
+    c.fillStyle = '#07010f';
+    c.fillRect(x, y, w, h);
+    if (source) {
+      if (mirror) {
+        c.translate(x + w, y);
+        c.scale(-1, 1);
+        c.drawImage(source, 0, 0, w, h);
+      } else c.drawImage(source, x, y, w, h);
+    }
+    c.restore();
+  }
+  function drawTrackOverlay(c, x, y, w, h, pose) {
+    if (!pose) return;
+    var headX = x + w * (0.5 + (pose.sway || 0) * 0.06);
+    var headY = y + h * (0.18 - ((pose.bounce || 0.4) - 0.4) * 0.06);
+    var hipX = x + w * (0.5 + (pose.sway || 0) * 0.08);
+    var hipY = y + h * 0.58;
+    c.save();
+    c.strokeStyle = '#3ee6ff';
+    c.lineWidth = Math.max(2, w * 0.008);
+    c.lineCap = 'round';
+    c.shadowColor = '#3ee6ff';
+    c.shadowBlur = 8;
+    c.globalAlpha = 0.9;
+    c.beginPath();
+    c.arc(headX, headY, Math.max(5, h * 0.055), 0, 6.3);
+    c.moveTo(headX, headY + h * 0.07);
+    c.lineTo(hipX, hipY);
+    c.moveTo(headX, headY + h * 0.14);
+    c.lineTo(x + w * (0.32 - (pose.armL || 0) * 0.1), y + h * (0.4 - (pose.armL || 0) * 0.22));
+    c.moveTo(headX, headY + h * 0.14);
+    c.lineTo(x + w * (0.68 + (pose.armR || 0) * 0.1), y + h * (0.4 - (pose.armR || 0) * 0.22));
+    c.moveTo(hipX, hipY);
+    c.lineTo(x + w * (0.4 + (pose.legL || 0) * 0.06), y + h * (0.9 - Math.max(0, pose.legL || 0) * 0.12));
+    c.moveTo(hipX, hipY);
+    c.lineTo(x + w * (0.6 + (pose.legR || 0) * 0.06), y + h * (0.9 - Math.max(0, pose.legR || 0) * 0.12));
+    c.stroke();
+    c.restore();
   }
   function stepImprove(dt) {
     var cap = 40;
@@ -2716,6 +2933,7 @@
         state.improvePhase = 'play';
         state.improvePlay = true;
         state.improveIndex = 0;
+        if (clipQueued) exportClip();
       }
     } else if (state.improvePlay && takeFrames.length) {
       state.improveIndex += dt / 0.1;
@@ -2726,40 +2944,68 @@
     if (!takeFrames.length) return null;
     return takeFrames[clamp(Math.floor(state.improveIndex), 0, takeFrames.length - 1)];
   }
+  function paintCompare(c, x, y, w, h, rec, now, forVideo) {
+    var prev = ctx;
+    ctx = c;
+    try {
+      var gap = Math.max(8, Math.round(w * 0.012));
+      var pw = (w - gap) / 2;
+      var x1 = x;
+      var x2 = x + pw + gap;
+      function pane(px, col) {
+        c.save();
+        c.fillStyle = 'rgba(8,2,18,.92)';
+        c.strokeStyle = col;
+        c.lineWidth = 2;
+        c.shadowColor = col;
+        c.shadowBlur = 10;
+        roundRect(px, y, pw, h, 14);
+        c.fill();
+        c.stroke();
+        c.restore();
+      }
+      pane(x1, '#3ee6ff');
+      pane(x2, '#ff4fd8');
+      var live = !forVideo && state.cameraActive && video && video.readyState >= 2 && (state.improvePhase !== 'play' || !(rec && rec.cam));
+      var source = live ? video : (rec && rec.cam);
+      drawCameraInto(c, x1 + 8, y + 8, pw - 16, h - 16, source, !!live);
+      var pose = rec && (rec.pose || null);
+      if (!pose && rec && rec.pet) pose = null;
+      if (pose) drawTrackOverlay(c, x1 + 8, y + 8, pw - 16, h - 16, pose);
+      var slot = activeCompareSlot();
+      var drawSlot = compareSlots[slot] || compareSlots.ingame;
+      var sc = Math.max(0.62, Math.min(1.05, pw / 280, h / 230));
+      var sample = rec || {};
+      if (slot === 'pet') drawSlot(x2 + pw / 2, y + h * 0.74, sc, sample.pet ? sample : { pet: livePetPose(now) }, now, c);
+      else drawSlot(x2 + pw / 2, y + h * 0.8, sc, sample.pose ? sample : { pose: livePose(now) }, now, c);
+      if (forVideo) {
+        c.save();
+        c.font = '800 18px Orbitron,sans-serif';
+        c.textAlign = 'center';
+        c.textBaseline = 'top';
+        c.fillStyle = '#3ee6ff';
+        c.fillText('Left: Camera Take', x1 + pw / 2, y + 12);
+        c.fillStyle = '#ff4fd8';
+        c.fillText(slot === 'pet' ? 'Right: In-Game Pet' : 'Right: In-Game Dancer', x2 + pw / 2, y + 12);
+        c.restore();
+      }
+    } finally {
+      ctx = prev;
+    }
+  }
   function drawImproveView(L, now) {
     var S = L.stage;
     var top = L.head + 6;
     var bot = state.H - L.foot - 6;
     var ph = Math.max(70, bot - top);
-    var gap = 12;
-    var pw = (S.w - 16 - gap) / 2;
-    var x1 = 8;
-    var x2 = 8 + pw + gap;
-    function pane(x, col) {
-      ctx.save();
-      ctx.fillStyle = 'rgba(8,2,18,.9)';
-      ctx.strokeStyle = col;
-      ctx.lineWidth = 2;
-      ctx.shadowColor = col;
-      ctx.shadowBlur = 12;
-      roundRect(x, top, pw, ph, 14);
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-    pane(x1, '#3ee6ff');
-    pane(x2, '#ff4fd8');
     var rec = currentTake();
     if (!rec) {
       var tt = state.improvePhase === 'rec' ? clamp(state.improveRecT / 4, 0, 1) : 0;
       var s = sampleImprovePose(tt);
-      var c = centroidOf(s.zones);
-      rec = { kind: state.improveKind, pose: s.pose, pet: s.pet, zones: s.zones, cx: c.cx, cy: c.cy };
+      var cen = centroidOf(s.zones);
+      rec = { kind: state.improveKind, pose: s.pose, pet: s.pet, zones: s.zones, cx: cen.cx, cy: cen.cy, cam: null };
     }
-    paintSilhouette(ctx, x1 + 8, top + 10, pw - 16, ph - 20, rec);
-    var sc = Math.max(0.62, Math.min(1.05, pw / 280, ph / 230));
-    if (state.improveKind === 'pet') drawPup(x2 + pw / 2, top + ph * 0.74, sc, rec.pet || livePetPose(now), now, 1);
-    else drawFigure(x2 + pw / 2, top + ph * 0.8, sc, rec.pose || livePose(now), now, 1);
+    paintCompare(ctx, 8, top, S.w - 16, ph, rec, now, false);
     if (state.improvePhase === 'count') {
       ctx.save();
       ctx.font = '900 64px Orbitron,sans-serif';
@@ -3666,6 +3912,17 @@
       fillTakeFromFrames('char', frames);
       updateChrome();
       return saved;
+    },
+    pickClipMime: function () { return pickClipMime(); },
+    registerCompareDancer: function (id, drawFn) {
+      if (!id || typeof drawFn !== 'function') return false;
+      compareSlots[id] = drawFn;
+      return true;
+    },
+    setCompareDancer: function (id) {
+      if (!compareSlots[id]) return false;
+      compareDancerId = id;
+      return true;
     },
     openCompareReplay: function (opts) {
       if (!state.open) api.open({});
