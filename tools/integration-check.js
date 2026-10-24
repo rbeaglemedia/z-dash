@@ -227,12 +227,20 @@ function selfText(ctx) {
   return (ctx.agent || ctx.title || 'This PR') + ' (' + branch + pr + ')';
 }
 
+function isTrafficFile(filePath) {
+  const p = String(filePath || '').replace(/\\/g, '/');
+  if (p === 'world/traffic.js' || p === 'shared/traffic-tune.js' || p === 'world/towdrive.js' || p === 'docs/TRAFFIC-PLAN.md' || p === 'docs/traffic-profile.json') return true;
+  if (/^world\/traffic[^/]*\.js$/.test(p)) return true;
+  if (/^shared\/traffic[^/]*\.js$/.test(p)) return true;
+  return false;
+}
+
 function classify(filePath) {
   const p = filePath.replace(/\\/g, '/');
   const ids = [];
   if (p === 'world/city.js' || p === 'world/city-layout.js' || p === 'world/city-draw.js' || p === 'world/ground.js' || p === 'world/ramps.js' || p === 'world/landings.js' || p === 'docs/CITY-LAYOUT-PLAN.md' || p.startsWith('docs/city-layout/')) ids.push('layout');
   if (p === 'world/hud.js' || p === 'shared/minimap-tune.js') ids.push('minimap');
-  if (p === 'world/traffic.js' || p === 'shared/traffic-tune.js' || p === 'world/towdrive.js' || p === 'docs/TRAFFIC-PLAN.md' || p === 'docs/traffic-profile.json') ids.push('traffic');
+  if (isTrafficFile(p)) ids.push('traffic');
   if (p === 'world/nos-station.js' || p.startsWith('tools/nos-station')) ids.push('nos');
   if (p === 'world/resume.js' || p === 'world/resume-safe.js' || p === 'tools/resume-check.js') ids.push('resume');
   if (/weather/i.test(p) && !p.startsWith('test-results/')) ids.push('weather');
@@ -351,6 +359,25 @@ function aestheticKinds(texts) {
     if (/\b(designs below are the looks|purpose designs above are the look|purpose designs)\b/i.test(text)) add('new building look');
     if (!routesAway && /\b(new art style|art[- ]style)\b/i.test(text)) add('art-style change');
     if (!routesAway && /\b(new look for the city|redesign the city|whole new city)\b/i.test(text)) add('new city look');
+  });
+  return kinds;
+}
+
+function wantedBorrowKinds(texts) {
+  const kinds = [];
+  function add(kind) {
+    if (kinds.indexOf(kind) === -1) kinds.push(kind);
+  }
+  Object.keys(texts || {}).forEach((file) => {
+    if (!isTrafficFile(file)) return;
+    String(texts[file] || '').split('\n').forEach((line) => {
+      if (/does not (import|copy|borrow)|do not (import|copy|borrow)|traffic is its own|not (?:a |the )?WANTED|never (?:a |the )?WANTED|no WANTED|WANTED stays/i.test(line)) return;
+      if (/\bWANTED\b/.test(line) || /\b(wKnock|wFlip|wRamTD|wRam|bumpTraffic|w4Knock|w3Step|wSpawn)\b/.test(line)) add('WANTED behavior');
+      if (/\bpursuit\b/i.test(line) || /\b(cop chase|police chase|chase AI)\b/i.test(line)) add('pursuit or chase');
+      if (/\b(police AI|cop AI)\b/i.test(line)) add('police AI');
+      if (/\bramming\b/i.test(line) || /\brams\b/i.test(line) || /\brammed\b/i.test(line)) add('ramming');
+      if (/\b(?:cop|police|WANTED)\s+spawns?\b/i.test(line) || /\bspawn(?:s|ed)?\s+(?:a\s+)?(?:cops?|police)\b/i.test(line)) add('WANTED spawns');
+    });
   });
   return kinds;
 }
@@ -594,6 +621,17 @@ function checkOne(ctx) {
       owner: selfText(ctx),
       ownerId: 'self',
       detail: 'The current Neon World still takes features, fixes, FPS work, traffic, interiors, the drop-objects tool, and gameplay. This PR adds ' + aesthetic.join(' and ') + ', which is a huge aesthetic redesign.' + where + ' Build that look on a new world page, and keep Ellie\'s shared save keys (' + PROFILE_KEYS.join(', ') + ').'
+    });
+  }
+  const borrowed = wantedBorrowKinds(ctx.fileTexts);
+  if (borrowed.length) {
+    gap(gaps, {
+      id: 'traffic-own',
+      system: 'traffic',
+      summary: 'Neon World traffic must be its own',
+      owner: ownerText('traffic'),
+      ownerId: 'traffic',
+      detail: 'Neon World traffic does not import, copy, or borrow the WANTED game (pursuit, chase, police AI, ramming, or WANTED spawns). This branch adds ' + borrowed.join(' and ') + '. Ordinary cars spawning on a lane stay. Write that behavior in the traffic files, not from jr.html.'
     });
   }
   if (newWorldPages.length) {
@@ -1122,7 +1160,7 @@ function loadBranch(meta, base) {
   const fileTexts = {};
   files.forEach((f) => {
     const p = f.path.replace(/\\/g, '/');
-    const interesting = p === 'world/GL-CITY.md' || p === 'world/gl-city.js' || p === 'world/builder.js' || p === 'docs/PLANNER-PORT-PLAN.md' || /^docs\/.+\.md$/.test(p) || /^world\/.+\.md$/.test(p) || /^world\/.+\.js$/.test(p);
+    const interesting = isTrafficFile(p) || p === 'world/GL-CITY.md' || p === 'world/gl-city.js' || p === 'world/builder.js' || p === 'docs/PLANNER-PORT-PLAN.md' || /^docs\/.+\.md$/.test(p) || /^world\/.+\.md$/.test(p) || /^world\/.+\.js$/.test(p);
     if (!interesting || f.status === 'D') return;
     let text = '';
     if (f.status === 'A') text = gitShow(head + ':' + p) || '';
@@ -1819,6 +1857,47 @@ function runSelfTest() {
     trafficHead: 'const R = CITY.ROADS;'
   });
   expect('traffic changes stay on the current world', !trafficChange.gaps.some((g) => g.id === 'frozen-world'));
+  expect('plain traffic edit is its own', !trafficChange.gaps.some((g) => g.id === 'traffic-own'));
+
+  const wantedTraffic = checkOne({
+    pr: 78,
+    title: 'traffic copies WANTED',
+    branch: 'cursor/traffic-option-b-2bdb',
+    files: [{ status: 'M', path: 'world/traffic.js' }, { status: 'M', path: 'shared/traffic-tune.js' }],
+    fileTexts: {
+      'world/traffic.js': 'A hit wrecks the traffic car (WANTED wKnock / wFlip).\n',
+      'shared/traffic-tune.js': 'bumpKeep: 0.92, // WANTED bumpTraffic\n'
+    }
+  });
+  expect('WANTED wreck and bump are flagged', wantedTraffic.gaps.some((g) => g.id === 'traffic-own' && /WANTED behavior/.test(g.detail)));
+
+  const wantedChase = checkOne({
+    pr: 92,
+    title: 'traffic police',
+    files: [{ status: 'A', path: 'world/traffic-cops.js' }],
+    fileTexts: {
+      'world/traffic-cops.js': 'police AI pursuit\nramming the player\nspawn cops behind her\n'
+    }
+  });
+  expect('pursuit, ramming, and cop spawns are flagged', ['pursuit or chase', 'police AI', 'ramming', 'WANTED spawns'].every((kind) => wantedChase.gaps.some((g) => g.id === 'traffic-own' && g.detail.indexOf(kind) !== -1)));
+
+  const ownTraffic = checkOne({
+    pr: 93,
+    title: 'traffic stays its own',
+    files: [{ status: 'M', path: 'world/traffic.js' }],
+    fileTexts: {
+      'world/traffic.js': 'Neon World traffic is its own and does not borrow WANTED.\nspawn a car on the lane\nramp climb\n'
+    }
+  });
+  expect('own traffic and a lane spawn stay', !ownTraffic.gaps.some((g) => g.id === 'traffic-own'));
+
+  const wantedElsewhere = checkOne({
+    pr: 94,
+    title: 'wanted stays in the kid game',
+    files: [{ status: 'M', path: 'world/objectives.js' }],
+    fileTexts: { 'world/objectives.js': 'WANTED wKnock stays in jr.html\n' }
+  });
+  expect('WANTED outside traffic files is not traffic', !wantedElsewhere.gaps.some((g) => g.id === 'traffic-own'));
 
   const nextWorld = checkOne({
     pr: 90,
@@ -1849,7 +1928,7 @@ function runSelfTest() {
   Object.keys(OWNERS).forEach((id) => {
     expect('map mentions ' + OWNERS[id].title, mapDoc.indexOf(OWNERS[id].title) !== -1);
   });
-  ['world.html', 'world-split.html', 'PROP-CATALOG', 'ZD_WORLD', 'index.html', 'traffic testing and changes', 'd4deed1', 'huge aesthetic'].forEach((token) => {
+  ['world.html', 'world-split.html', 'PROP-CATALOG', 'ZD_WORLD', 'index.html', 'traffic testing and changes', 'd4deed1', 'huge aesthetic', 'Neon World traffic must be its own'].forEach((token) => {
     expect('map mentions ' + token, mapDoc.indexOf(token) !== -1);
   });
 

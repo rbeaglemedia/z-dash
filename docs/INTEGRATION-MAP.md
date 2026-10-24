@@ -46,6 +46,7 @@ Most systems do not copy coordinates into a second file. They read `CITY` at run
 | Owner | Neon World Traffic Physics · `cursor/traffic-option-b-2bdb` (pose) and `cursor/traffic-plan-2bdb` (plan) · PR #78 and #73 · `bc-2af9e871-f1de-59fc-9680-264931312bdb`. Earlier lanes: `split-traffic` PR #35. |
 | Reads | `CITY.ROADS` edges and lanes. `build()` walks `R.edges`. On main, `build()` returns immediately once `built` is set, so a reload picks up new roads and a mid-session graph edit does not. |
 | Must update | PR #78 adds `roadsSig()` so lanes rebuild when the road signature changes. That rebuild is not on main. Cache and a matching `?v=` when the script changes. Sprite pose does not move the minimap. |
+| Own code | Neon World traffic must be its own. Flag a traffic file that imports, copies, or borrows the WANTED game: pursuit, chase, police AI, ramming, or WANTED spawns (`wKnock`, `wFlip`, `bumpTraffic`, and the rest of that chase). A car spawned onto a lane is ordinary traffic, not a WANTED spawn. A line that says the traffic is its own and does not borrow WANTED is not a borrow. The checker reads the lines a branch adds, or the whole file when the file is new. Main already says a hit wrecks the traffic car like WANTED `wKnock` / `wFlip`, and `shared/traffic-tune.js` cites WANTED `bumpTraffic` for `bumpKeep`. |
 
 ### NOS stations
 
