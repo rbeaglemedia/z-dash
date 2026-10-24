@@ -1,0 +1,53 @@
+{
+  "world": "37",
+  "base": "cf0b405 world files, branch off cd80610",
+  "cause": "viewKey added per-frame slip into a 15 degree sprite bucket, so a car near the bucket edge swapped baked photos every frame",
+  "before_keys": [
+    "2:1:0",
+    "2:0:0"
+  ],
+  "after_keys": [
+    "2:0:0"
+  ],
+  "before_frame_diff": {
+    "0vs2": 0,
+    "1vs3": 0,
+    "0vs1": 3.391
+  },
+  "after_frame_diff": {
+    "0vs1": 0,
+    "0vs2": 0,
+    "0vs3": 0
+  },
+  "fps_cpu4x": {
+    "on": {
+      "mean": 287.5,
+      "p50": 24.7,
+      "p95": 1886.5,
+      "max": 2991.2,
+      "over50": 5,
+      "frames": 24,
+      "bakeN": 0,
+      "bakeMs": 0,
+      "alive": 30,
+      "cache": 21,
+      "traffic": true
+    },
+    "off": {
+      "mean": 24,
+      "p50": 22.7,
+      "p95": 42.3,
+      "max": 46.6,
+      "over50": 0,
+      "frames": 24,
+      "bakeN": 0,
+      "bakeMs": 0,
+      "alive": 0,
+      "cache": 0,
+      "traffic": false
+    },
+    "cpu": "4x",
+    "viewport": "844x390 dpr2",
+    "note": "Same scripted street pass. Bake time is inside the frame."
+  }
+}

@@ -40,6 +40,9 @@ window.TRAFFIC_TUNE = {
   bakePerFrame: 2,     // two new pitch/yaw views a frame; cache holds the finer grid
   cacheMax: 140,       // paint x 24 yaw steps x pitch buckets
   yawStep: Math.PI / 12, // 15° sprite yaw (was 22.5°)
+  yawHold: 0.62,       // keep the current photo until the heading is this far across a bucket
+  elevHold: 0.22,      // radians. camera-height bucket. slip and pitch do not change the photo
+  bandHold: 12,        // metres past a sprite/box/lights edge before the picture changes
   cornerFrac: 0.58,    // cornering speed as a fraction of the car's cruise roll
   cornerDist: 18,      // metres before a turn where the car starts braking
   accel: 5.5,          // m/s² back up to cruise after the corner

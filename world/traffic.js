@@ -350,6 +350,7 @@ const TRAFFIC = (() => {
     if (!sp) { c.on = false; return; }
     c.on = true; c.lane = sp.L; c.s = sp.s; c.x = sp.x; c.z = sp.z; c.yaw = sp.L.yaw; c.y = c.sim ? groundY(sp.x, sp.z) : 0;
     c.pi = (rnd() * T.paints.length) | 0; c.v0 = rollSpeed(sp.L.kind); c.v = c.v0;
+    c._yb = null; c._eb = null; c._band = ''; c._held = null; c._key = '';
     c.turn = null; c.rollS = -1; c.blend = 0; c.was = false; c.utT = 0; c.arc = null;
     c.braking = false; c.yawRate = 0; c.accel = 0; c.bodyRoll = 0; c.pitch = 0; c.slip = 0;
     c.suspY = 0; c.suspV = 0; c.ground = true; c.gy = c.y; c.airVx = 0; c.airVz = 0;
@@ -758,16 +759,39 @@ const TRAFFIC = (() => {
   }
 
   function viewKey(c) {
-    const dx = cam.x - c.x, dz = cam.z - c.z, dy = cam.y - (c.y + 0.6);
+    const dx = cam.x - c.x, dz = cam.z - c.z, dy = cam.y - ((c.y || 0) + 0.6);
     const hd = Math.hypot(dx, dz) || 0.001;
-    const visYaw = c.yaw + (c.slip || 0);
-    const rel = Math.atan2(Math.sin(Math.atan2(dx, dz) - visYaw), Math.cos(Math.atan2(dx, dz) - visYaw));
-    const elev = Math.atan2(dy, hd) - (c.pitch || 0) * 0.9;
+    // The photo is the car's heading and the camera height, not this frame's
+    // slip or pitch. Those move a few degrees every frame and used to cross
+    // the 15° bucket, so the baked picture swapped every other frame.
+    const rel = Math.atan2(Math.sin(Math.atan2(dx, dz) - c.yaw), Math.cos(Math.atan2(dx, dz) - c.yaw));
+    const elev = Math.atan2(dy, hd);
     const step = T.yawStep || (Math.PI / 12);
     let yb = Math.round(rel / step);
     yb = ((yb + 12) % 24 + 24) % 24 - 12;
-    const eb = lim(Math.round(elev / 0.35), -1, 5);
+    let eb = lim(Math.round(elev / 0.35), -1, 5);
+    const yawHold = (T.yawHold == null ? 0.62 : T.yawHold) * step;
+    const elevHold = T.elevHold == null ? 0.22 : T.elevHold;
+    if (c._yb != null && Math.abs(angDiff(rel, c._yb * step)) < yawHold) yb = c._yb;
+    if (c._eb != null && Math.abs(elev - c._eb * 0.35) < elevHold) eb = c._eb;
+    c._yb = yb; c._eb = eb;
     return c.pi + ':' + yb + ':' + eb;
+  }
+  function band(c, dist) {
+    const h = T.bandHold == null ? 12 : T.bandHold;
+    const raw = dist < T.fullDist ? 'sprite' : dist < T.boxDist ? 'box' : dist < T.dotDist ? 'lights' : 'off';
+    const prev = c._band;
+    const order = {off:0, lights:1, box:2, sprite:3};
+    if (!prev || prev === raw || Math.abs(order[raw] - order[prev]) > 1) { c._band = raw; return raw; }
+    const keep = (prev === 'sprite' && raw === 'box' && dist < T.fullDist + h)
+      || (prev === 'box' && raw === 'sprite' && dist > T.fullDist - h)
+      || (prev === 'box' && raw === 'lights' && dist < T.boxDist + h)
+      || (prev === 'lights' && raw === 'box' && dist > T.boxDist - h)
+      || (prev === 'lights' && raw === 'off' && dist < T.dotDist + h)
+      || (prev === 'off' && raw === 'lights' && dist > T.dotDist - h);
+    if (keep) return prev;
+    c._band = raw;
+    return raw;
   }
   const packs = [];
   function stdMat() {
@@ -1064,16 +1088,21 @@ const TRAFFIC = (() => {
   function drawOne(c) {
     if (!c.on) return;
     const dist = c._dist || Math.hypot(c.x - cam.x, c.y - cam.y, c.z - cam.z);
-    if (dist > T.dotDist) return;
+    const b = c._band || band(c, dist);
+    if (b === 'off') return;
     ctx.save();
     ctx.globalAlpha = c.fade == null ? 1 : c.fade;
-    if (c.sim && dist < T.boxDist) shadow(c);
-    if (c.hit || dist < T.fullDist) {
-      const cv = cache.get(c._key);
-      if (cv) { cache.delete(c._key); cache.set(c._key, cv); }
-      if (cv && blit(cv, c)) { if (c.sim && !c.hit) dress(c); ctx.restore(); return; }
+    if (c.sim && (b === 'sprite' || b === 'box')) shadow(c);
+    if (c.hit || b === 'sprite') {
+      const cv = c._key && cache.get(c._key);
+      if (cv) {
+        cache.delete(c._key); cache.set(c._key, cv);
+        c._held = cv;
+      }
+      const show = cv || c._held;
+      if (show && blit(show, c)) { if (c.sim && !c.hit) dress(c); ctx.restore(); return; }
       drawBox(c); lights(c, dist);
-    } else if (dist < T.boxDist) { drawBox(c); lights(c, dist); }
+    } else if (b === 'box') { drawBox(c); lights(c, dist); }
     else lights(c, dist);
     if (c.sim && !c.hit) dress(c);
     ctx.restore();
@@ -1102,8 +1131,9 @@ const TRAFFIC = (() => {
       const dx = c.x - cam.x, dy = (c.y + 0.6) - cam.y, dz = c.z - cam.z;
       const dist = Math.hypot(dx, dy, dz);
       c._dist = dist;
-      if (dist > T.dotDist) continue;
-      if (dist < T.fullDist) {
+      const b = band(c, dist);
+      if (b === 'off') continue;
+      if (b === 'sprite') {
         c._key = viewKey(c);
         if (!cache.has(c._key) && baked < T.bakePerFrame) { if (bake(c._key)) baked++; }
       }
