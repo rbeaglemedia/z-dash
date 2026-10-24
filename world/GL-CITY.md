@@ -1,5 +1,35 @@
 # Neon World WebGL buildings (prototype)
 
+## Boulevard proof (this branch)
+
+This proof sits on the boulevard map (`d4deed1`, PR #85). `?gl=1` draws the black building solids and the hard neon edges in WebGL1. Default play stays the 2D canvas. `world.html` and `world-split.html` are the same page on this commit, and both load `world/gl-city.js` and `world/nos-station.js`. The pass reads `CITY.BL`, so a later lot move does not need a second geometry list.
+
+The colored NOS station stays on the 2D painter in both modes. Copying its fills into WebGL would be a second palette. A later station change stays in `world/city-draw.js`.
+
+Today's building strokes set `shadowBlur` to 0. The matching glow is that hard neon edge. `?glow=1` widens the edge by 7 px. That wider halo is not today's picture, and it stays off unless the query is present. `world/gl-city.js` does not call `shadowBlur`.
+
+The picture is close and it is not identical. On the kid page, share of pixels within a channel-sum of 12, and the share that differ by more than 24:
+
+| view | canvas | face ≤12 / >24 | NOS ≤12 / >24 | air ≤12 / >24 |
+|---|---|---|---|---|
+| phone | 1688×780 DPR 2 | 93.5% / 4.1% | 99.1% / 0.8% | 98.5% / 0.7% |
+| iPad | 1024×768 DPR 1 | 94.3% / 4.7% | 97.3% / 2.0% | 99.4% / 0.4% |
+| PC | 1280×720 inside 1366×768 | 96.0% / 3.4% | 98.1% / 1.3% | 98.4% / 1.0% |
+
+Exact pixels are lower than that, especially on PC (the NOS pair is 39% identical and 98% within a small step). Most of those are 1–4 levels, from canvas antialiasing against a hard quad, and from the desktop canvas being scaled into the window. The three-canvas stack (sky, WebGL, overlay) does not resample the same as the single 2D canvas. The PC face pair is 67.5% identical. The iPad face pair is 92.2% identical. Labeled zooms are in `test-results/gl-city-proof/`.
+
+`?glow=1` on the phone face is 92.9% within a small step and 4.6% visibly different. It is labeled as a different picture.
+
+Frame times are SwiftShader with the player car draw stubbed. They are not a Galaxy and not an iPad. Compose (submit plus the GL draw) is 0.1–0.3 ms. Blit is 0. Whole-frame `raf` on the kid page, 2D then WebGL:
+
+| view | face | NOS | air |
+|---|---|---|---|
+| phone | 17.5 ms then 16.6 ms | 16.9 then 18.9 | 16.6 then 16.0 |
+| iPad | 16.8 then 15.1 | 16.3 then 16.7 | 15.5 then 16.7 |
+| PC | 14.0 then 14.9 | 13.8 then 14.7 | 16.7 then 15.8 |
+
+Nothing here deploys.
+
 **Only the NOS station is built.** The other building looks stay drawings until the city layout is nailed. The City Layout agent (`bc-3ff1a27b`, branch `cursor/city-layout-plan-ef23`) owns placement and can keep using today's black buildings for those. The drawings below fit today's footprints. They do not move a shop.
 
 Once that layout is nailed with the placeholder buildings, more building ideas can follow. Some of those will depend on the lot. A shop beside a river is a different brief than the same shop on a street. Those location variants are not in this set.

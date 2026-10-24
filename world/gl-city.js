@@ -600,6 +600,10 @@
 
   function submitBuilding(b, d) {
     if (!b || !b.boxes) return false;
+    // The colored NOS station stays on the 2D painter. Copying its fills into
+    // this pass would be a second palette, and a later station change would have
+    // to be made twice. Black solids and neon edges are the WebGL proof.
+    if (b.nosStation) return false;
     if (b.towCab && window.TOW3 && TOW3.on && TOW3.on(d)) return false;
     const ol = b.kind === 'outline';
     if (window.CDRAW && CDRAW.nonear && d <= CDRAW.far && !ol) return false;
