@@ -337,17 +337,20 @@ function isNewWorldPage(filePath) {
   return /^world-.+\.html$/i.test(base);
 }
 
-function redesignKinds(files) {
+function redesignKinds(files, texts) {
   const kinds = [];
   function add(kind) {
     if (kinds.indexOf(kind) === -1) kinds.push(kind);
   }
+  const blob = Object.keys(texts || {}).map((k) => texts[k] || '').join('\n');
   files.forEach((f) => {
     const p = f.path.replace(/\\/g, '/');
-    if (p === 'world/planner-props.js' || p.startsWith('docs/planner/') || p === 'docs/PLANNER-PORT-PLAN.md' || p.startsWith('test/planner-port') || p === 'docs/ROOM-PLACE-HOOK.md' || p.startsWith('docs/room-place/')) add('planner objects');
-    if (p === 'world/style-sampler.js' || p === 'docs/STYLE-SAMPLER.md' || p === 'docs/INTERIORS-PLAN.md' || p.startsWith('docs/interiors/')) add('new building designs');
-    if ((p.startsWith('world/') || p.startsWith('docs/')) && /builder/i.test(p) && p.indexOf('city-layout') === -1 && p !== 'world/city.js' && p !== 'world/hud.js') add('builders');
+    if (p === 'world/city-layout.js' || p === 'docs/CITY-LAYOUT-PLAN.md' || p.startsWith('docs/city-layout/')) add('city redesign');
+    if (p === 'world/gl-city.js' || p === 'world/gl-city-manifest.json') add('building redesign');
+    if (p === 'world/builder.js') add('builders');
   });
+  if (/Builder HQ design tool|City Editor|design tool is the planner editor/i.test(blob)) add('builders');
+  if (/bakeBuilding/.test(blob)) add('building redesign');
   return kinds;
 }
 
@@ -575,22 +578,21 @@ function checkOne(ctx) {
     });
   }
 
-  const redesign = redesignKinds(files);
+  const redesign = redesignKinds(files, ctx.fileTexts);
   const newWorldPages = files.filter((f) => isNewWorldPage(f.path)).map((f) => f.path);
-  const redesignScripts = ['world/planner-props.js', 'world/style-sampler.js'];
-  const loadedByFrozen = redesignScripts.some((src) => worldScripts.indexOf(src) !== -1 || splitScripts.indexOf(src) !== -1);
+  const loadedByFrozen = ['world/gl-city.js', 'world/city-layout.js'].some((src) => worldScripts.indexOf(src) !== -1 || splitScripts.indexOf(src) !== -1);
   const wiresFrozen = hasFile(files, (p) => p === 'world.html' || p === 'world-split.html') || loadedByFrozen;
   if (redesign.length && !isBundleBranch(ctx.branch) && (wiresFrozen || !newWorldPages.length)) {
     const where = wiresFrozen
-      ? ' This branch wires it into world.html and world-split.html (the frozen Neon World). Take it back off those pages.'
-      : ' This branch does not add the new page yet, so the work still points at the frozen Neon World.';
+      ? ' This branch wires it into world.html and world-split.html. Take that part off the frozen pages.'
+      : ' This branch does not add the new page yet, so that part still points at the frozen Neon World.';
     gap(gaps, {
       id: 'frozen-world',
       system: 'pages',
-      summary: 'Major redesign belongs on a new world page, not the frozen Neon World',
+      summary: 'Builders, building redesigns, or a city redesign belong on a new world page',
       owner: selfText(ctx),
       ownerId: 'self',
-      detail: 'After the Option 1 Boulevards bundle, world.html and world-split.html take bug and FPS fixes only. This PR adds ' + redesign.join(' and ') + '.' + where + ' Build it on a new world page, and keep Ellie\'s shared save keys (' + PROFILE_KEYS.join(', ') + ').'
+      detail: 'After the Option 1 Boulevards bundle, world.html and world-split.html take bug fixes, FPS fixes, Ellie\'s interiors, and the planner drop-objects placement tool. This PR adds ' + redesign.join(' and ') + '.' + where + ' Build that part on a new world page, and keep Ellie\'s shared save keys (' + PROFILE_KEYS.join(', ') + ').'
     });
   }
   if (newWorldPages.length) {
@@ -1116,6 +1118,13 @@ function loadBranch(meta, base) {
     const hit = gitQuiet(['grep', '-l', '-E', 'PROP-CATALOG|PLANNER_PROPS|planner-port/catalog', head, '--', 'world/house.js', 'world/detail.js', 'world/walk-items.js', 'world/style-sampler.js', 'world/planner-props.js']);
     catalogUsed = !!hit.trim();
   }
+  const fileTexts = {};
+  files.forEach((f) => {
+    const p = f.path.replace(/\\/g, '/');
+    if (p === 'docs/PLANNER-PORT-PLAN.md' || p === 'world/builder.js' || p.startsWith('world/planner/')) {
+      fileTexts[p] = gitShow(head + ':' + p) || '';
+    }
+  });
   let soccerMoved = false;
   if (files.some((f) => f.path === 'shared/soccer-tune.js' || f.path === 'world/soccer.js')) {
     const soccerDiff = gitQuiet(['diff', '-U0', base + '...' + head, '--', 'shared/soccer-tune.js', 'world/soccer.js']);
@@ -1142,7 +1151,8 @@ function loadBranch(meta, base) {
     hotDropUsesRoads,
     catalogUsed: catalogTouch ? catalogUsed : undefined,
     soccerMoved,
-    weatherDeclared
+    weatherDeclared,
+    fileTexts
   });
 }
 
@@ -1468,7 +1478,38 @@ function runSelfTest() {
     versionHead: { world: '31', stamp: '2', sw: 'b' },
     versionBase: { world: '30', stamp: '1', sw: 'a' }
   });
-  expect('sampler is a frozen-world redesign', sampler.gaps.some((g) => g.id === 'frozen-world' && /new building designs/.test(g.detail)));
+  expect('style sampler stays on the current world', !sampler.gaps.some((g) => g.id === 'frozen-world'));
+
+  const dropTool = checkOne({
+    pr: 87,
+    title: 'room place',
+    branch: 'cursor/room-place-hook-52fc',
+    files: [
+      { status: 'A', path: 'world/planner-props.js' },
+      { status: 'A', path: 'docs/ROOM-PLACE-HOOK.md' },
+      { status: 'A', path: 'world/style-sampler.js' },
+      { status: 'M', path: 'world.html' },
+      { status: 'M', path: 'world-split.html' }
+    ],
+    pages: {
+      world: '<script src="world/planner-props.js?v=33"></script><script src="world/style-sampler.js?v=33"></script>',
+      split: '<script src="world/planner-props.js?v=33"></script><script src="world/style-sampler.js?v=33"></script>'
+    },
+    versionHead: { world: '33', stamp: '2', sw: 'b' },
+    versionBase: { world: '30', stamp: '1', sw: 'a' }
+  });
+  expect('drop-objects tool stays on the current world', !dropTool.gaps.some((g) => g.id === 'frozen-world'));
+
+  const interiorsPlan = checkOne({
+    pr: 74,
+    title: 'interiors',
+    branch: 'cursor/interiors-plan-52fc',
+    files: [
+      { status: 'A', path: 'docs/INTERIORS-PLAN.md' },
+      { status: 'A', path: 'docs/interiors/builder-a-daylight.jpg' }
+    ]
+  });
+  expect('interiors plan stays on the current world', !interiorsPlan.gaps.some((g) => g.id === 'frozen-world'));
 
   const plannerPlan = checkOne({
     pr: 82,
@@ -1478,9 +1519,39 @@ function runSelfTest() {
       { status: 'A', path: 'docs/PLANNER-PORT-PLAN.md' },
       { status: 'A', path: 'docs/planner/PROP-CATALOG.json' },
       { status: 'A', path: 'test/planner-port/catalog.js' }
+    ],
+    fileTexts: {
+      'docs/PLANNER-PORT-PLAN.md': 'The design tool is the planner editor. Builder HQ design tool only.\nbakeBuilding(doc) exports a new shell.\n'
+    }
+  });
+  expect('builder tool must leave the frozen world', plannerPlan.gaps.some((g) => g.id === 'frozen-world' && /builders/.test(g.detail) && /building redesign/.test(g.detail)));
+
+  const catalogOnly = checkOne({
+    pr: 82,
+    title: 'catalog only',
+    files: [
+      { status: 'A', path: 'docs/planner/PROP-CATALOG.json' },
+      { status: 'A', path: 'test/planner-port/catalog.js' }
     ]
   });
-  expect('planner plan must leave the frozen world', plannerPlan.gaps.some((g) => g.id === 'frozen-world' && /planner objects/.test(g.detail)));
+  expect('drop catalog alone is not a redesign', !catalogOnly.gaps.some((g) => g.id === 'frozen-world'));
+
+  const glCity = checkOne({
+    pr: 59,
+    title: 'gl city',
+    branch: 'cursor/split-webgl-58d4',
+    files: [
+      { status: 'A', path: 'world/gl-city.js' },
+      { status: 'M', path: 'world-split.html' }
+    ],
+    pages: {
+      world: '<script src="world/boot.js?v=30"></script>',
+      split: '<script src="world/gl-city.js?v=30"></script>'
+    },
+    versionHead: { world: '31', stamp: '2', sw: 'b' },
+    versionBase: { world: '30', stamp: '1', sw: 'a' }
+  });
+  expect('gl-city is a building redesign', glCity.gaps.some((g) => g.id === 'frozen-world' && /building redesign/.test(g.detail)));
 
   const fps = checkOne({
     pr: 56,

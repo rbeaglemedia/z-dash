@@ -218,15 +218,20 @@ flowchart TD
 
 ## Frozen Neon World
 
-After the Option 1 Boulevards bundle (plan PR #68, build PR #85), `world.html` and `world-split.html` are frozen except for bug fixes and FPS fixes. The minimap follow-through for that same map (PR #86) is part of the bundle.
+After the Option 1 Boulevards bundle (plan PR #68, build PR #85), `world.html` and `world-split.html` take bug fixes, FPS fixes, Ellie's interiors, and the planner drop-objects placement tool. The minimap follow-through for that same map (PR #86) is part of the bundle.
 
-Major redesigns belong on a new world page, not on those two files:
+Allowed on the current pages:
 
-- Builder mode
-- Planner objects (`world/planner-props.js`, `docs/planner/`, `docs/PLANNER-PORT-PLAN.md`, `test/planner-port/`, the room-place hook)
-- New building and room designs (`world/style-sampler.js`, `docs/STYLE-SAMPLER.md`, `docs/INTERIORS-PLAN.md`, `docs/interiors/`)
+- Interiors (`world/house.js`, `world/style-sampler.js`, `world/walk-items.js`, `docs/INTERIORS-PLAN.md`, `docs/interiors/`, `docs/STYLE-SAMPLER.md`)
+- The drop-objects placement tool (`world/planner-props.js`, `docs/planner/PROP-CATALOG.json`, `docs/ROOM-PLACE-HOOK.md`, `docs/room-place/`, `test/planner-port/catalog.js`)
 
-A plan that only has docs still counts. If it does not add the new page, the checker flags it before the build lands on the frozen pages.
+These still belong on a new world page:
+
+- Builders (the Builder HQ design tool, the planner editor for walls and roofs)
+- Building redesigns (`world/gl-city.js`, `bakeBuilding` export of new shells)
+- City redesigns (`world/city-layout.js`, `docs/CITY-LAYOUT-PLAN.md`, `docs/city-layout/`) beyond the Option 1 bundle
+
+A plan that only has docs still counts. If the builder tool or a new city layout does not add the new page, the checker flags it before that work lands on the frozen pages. The drop-objects catalog in the same plan is not the part that has to move.
 
 The new world page has to keep Ellie's shared saves. Same keys: `zdash.kid.v1`, `zdash.house.v1`, `zdash.char.v1`, `zdash.pet.v1`, `zdash.crew.v1`, `zdash.neonpaint.v1`, `zdash_vinyls_v1`, `zdash_neon_paint_v1`, `zdash_garage_v1`, `zdash_paint3d_v1`, `zdash.customdance.v1`, `zdash.petdance.v1`. A new `zdash.kid.v2` (or any sibling key) splits Garage, Home, paint, crew, and pets from the current world. The world spot key `zdash.world.resume.v1` and the door-return key `zdash.neonworld.session.v1` are per visit, not those shared profile saves.
 
