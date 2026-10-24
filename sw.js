@@ -28,7 +28,7 @@ const isSplitPath = (url) => { const p = url.pathname; return p.endsWith('/world
 // Adventure World is its own page. Its HTML and /adventure/ files live in ADV_CACHE only.
 // They are not in ASSETS and must not be stored under the index.html key. Bump ADV_CACHE
 // when those files change. Do not bump ZD_WORLD for an adventure-only deploy.
-const ADV_CACHE = 'adventure-v1';
+const ADV_CACHE = 'adventure-v2';
 const isAdvPath = (url) => { const p = url.pathname; return p.endsWith('/adventure.html') || p.includes('/adventure/'); };
 function fromNetwork(req, key) { // revalidate with the server (bypasses the 10-min HTTP cache on GitHub Pages; an unchanged page is a cheap 304)
   return fetch(new Request(req.url, { cache: 'no-cache', credentials: 'same-origin' })).then((res) => {
