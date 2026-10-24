@@ -106,7 +106,19 @@ function drawBldgGLDeco(b,d,ol){
   if(d<180)drawParking(b,d);
   if(typeof NEON_PAINT!=='undefined'&&NEON_PAINT&&typeof NEON_PAINT.drawBuildingGraffiti==='function'&&d<260)NEON_PAINT.drawBuildingGraffiti(ctx,b);
   ctx.restore();}
-function drawBldg(b,d){if(b.towCab&&TOW3.on(d))return;const ol=b.kind==='outline';if(window.GLCITY&&GLCITY.skipSolid(b)){drawBldgGLDeco(b,d,ol);return;}if(CDRAW.nonear&&d<=CDRAW.far&&!ol)return;if(d>CDRAW.far||ol){if(CDRAW.nofar||(!ol&&d>CDRAW.far*3.5&&b.top<12))return;if(!FARF){FARF=new Path2D();FARD=d;}FARN=d;farSil.o=ol;let p=FARB.get(b.c);if(!p){p=new Path2D();FARB.set(b.c,p);}farSil.o=false;PT=p;for(const q of b.boxes)farSil(q);PT=null;farFlush();
+// The WebGL solid sits on the middle canvas. Rings and the street line are not
+// on that canvas, so a nearer wall has to cover them or they paint across the Z.
+// The cover is the same box fill drawBldg already uses. No second palette, no blur.
+function coverGLSolid(b,d){
+  const a=clamp(1.5-d/CDRAW.dist,0.25,1);
+  ctx.save();ctx.globalCompositeOperation='destination-out';ctx.globalAlpha=a;ctx.shadowBlur=0;ctx.beginPath();
+  for(const q of b.boxes)boxFaces(q);ctx.fill();ctx.restore();
+  if(a>=0.999&&window.GLCITY&&GLCITY.withUnder)GLCITY.withUnder(function(){
+    ctx.save();ctx.globalAlpha=1;ctx.shadowBlur=0;ctx.beginPath();
+    for(const q of b.boxes)boxFaces(q);ctx.fillStyle=b.kind==='hill'?'#05100a':'#0a0612';ctx.fill();ctx.restore();
+  });
+}
+function drawBldg(b,d){if(b.towCab&&TOW3.on(d))return;const ol=b.kind==='outline';if(window.GLCITY&&GLCITY.skipSolid(b)){coverGLSolid(b,d);drawBldgGLDeco(b,d,ol);return;}if(CDRAW.nonear&&d<=CDRAW.far&&!ol)return;if(d>CDRAW.far||ol){if(CDRAW.nofar||(!ol&&d>CDRAW.far*3.5&&b.top<12))return;if(!FARF){FARF=new Path2D();FARD=d;}FARN=d;farSil.o=ol;let p=FARB.get(b.c);if(!p){p=new Path2D();FARB.set(b.c,p);}farSil.o=false;PT=p;for(const q of b.boxes)farSil(q);PT=null;farFlush();
     if(!ol&&d<520)for(const k of b.deco)if(k[0]==='sign'){farFlush();drawSign(k[1],d);}
     if(!ol&&d<180){farFlush();drawParking(b,d);}
     if(!ol&&typeof NEON_PAINT!=='undefined'&&NEON_PAINT&&typeof NEON_PAINT.drawBuildingGraffiti==='function'&&d<260)NEON_PAINT.drawBuildingGraffiti(ctx,b);
