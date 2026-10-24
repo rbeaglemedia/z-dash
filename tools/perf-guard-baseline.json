@@ -1,0 +1,636 @@
+{
+  "schemaVersion": 1,
+  "enforce": false,
+  "enforceNote": "Set true after FPS PR #56 merges and this file is refreshed with --write-baseline. While false, PERF-GUARD comments on PRs and does not fail the check.",
+  "rebaselineAfter": "PR #56 (flicker, Galaxy pacing, iPad scale). PR #59 is the WebGL prototype and is not the default renderer.",
+  "softwareGl": true,
+  "softwareGlNote": "Headless Chrome --disable-gpu uses software GL. Milliseconds are relative to this host, not device FPS.",
+  "capturedAt": "2026-10-24T04:40:53.163Z",
+  "git": {
+    "sha": "371defb606f5afc2063be7338b3ea81d8fe7c5e5",
+    "branch": "cursor/perf-guard-a3ad"
+  },
+  "host": {
+    "chrome": "Chrome/156.0.8078.47",
+    "cpuModel": "Intel(R) Xeon(R) Processor",
+    "cpuCount": 4,
+    "calib": 2573673,
+    "platform": "linux",
+    "node": "v22.23.4"
+  },
+  "viewports": {
+    "phone": {
+      "width": 844,
+      "height": 390,
+      "dpr": 2,
+      "cpuThrottle": 1,
+      "touch": true
+    },
+    "ipad": {
+      "width": 1024,
+      "height": 768,
+      "dpr": 2,
+      "cpuThrottle": 4,
+      "touch": true,
+      "note": "CPU throttle ×4 stands in for an A10. The game may still cap the iPad buffer at DPR 1; buffer is recorded per row."
+    },
+    "pc": {
+      "width": 1280,
+      "height": 720,
+      "dpr": 1,
+      "cpuThrottle": 1,
+      "touch": false
+    }
+  },
+  "thresholds": {
+    "medianPct": 0.05,
+    "low1Pct": 0.1,
+    "flickerFrames": 0,
+    "heapSteady": true
+  },
+  "pages": {
+    "world.html": "d2a93df0bb4b7e05",
+    "world-split.html": "d2a93df0bb4b7e05",
+    "sameBytes": true,
+    "jr": "jr.html"
+  },
+  "quick": false,
+  "rows": {
+    "phone/air": {
+      "viewport": "phone",
+      "scene": "air",
+      "label": "Open-air flight",
+      "page": "world-split.html",
+      "medianMs": 64,
+      "low1Ms": 75,
+      "maxMs": 75,
+      "frames": 72,
+      "flickerFrames": 0,
+      "domStart": 488,
+      "domEnd": 488,
+      "rafPerSec": 17.57,
+      "rafPerFrame": 5,
+      "buffer": "1688x780",
+      "css": "844x390",
+      "dpr": 2,
+      "gameDpr": 2,
+      "hook": "orbit-south",
+      "note": "",
+      "error": ""
+    },
+    "phone/face": {
+      "viewport": "phone",
+      "scene": "face",
+      "label": "Building face",
+      "page": "world-split.html",
+      "medianMs": 68.9,
+      "low1Ms": 260.5,
+      "maxMs": 260.5,
+      "frames": 54,
+      "flickerFrames": 0,
+      "domStart": 488,
+      "domEnd": 488,
+      "rafPerSec": 13.4,
+      "rafPerFrame": 5,
+      "buffer": "1688x780",
+      "css": "844x390",
+      "dpr": 2,
+      "gameDpr": 2,
+      "hook": "sky-tower-west",
+      "note": "",
+      "error": ""
+    },
+    "phone/shops": {
+      "viewport": "phone",
+      "scene": "shops",
+      "label": "City Builder shops",
+      "page": "world-split.html",
+      "medianMs": 62.05,
+      "low1Ms": 70.7,
+      "maxMs": 70.7,
+      "frames": 100,
+      "flickerFrames": 0,
+      "domStart": 488,
+      "domEnd": 488,
+      "rafPerSec": 24.22,
+      "rafPerFrame": 5,
+      "buffer": "1688x780",
+      "css": "844x390",
+      "dpr": 2,
+      "gameDpr": 2,
+      "hook": "builder-hq",
+      "note": "",
+      "error": ""
+    },
+    "phone/drive": {
+      "viewport": "phone",
+      "scene": "drive",
+      "label": "Downtown drive",
+      "page": "world-split.html",
+      "medianMs": 63.75,
+      "low1Ms": 108.1,
+      "maxMs": 108.1,
+      "frames": 72,
+      "flickerFrames": 0,
+      "domStart": 487,
+      "domEnd": 487,
+      "rafPerSec": 18.13,
+      "rafPerFrame": 5,
+      "buffer": "1688x780",
+      "css": "844x390",
+      "dpr": 2,
+      "gameDpr": 2,
+      "hook": "downtown-x250",
+      "note": "",
+      "error": ""
+    },
+    "phone/house": {
+      "viewport": "phone",
+      "scene": "house",
+      "label": "Ellie's House + item menu",
+      "page": "world-split.html",
+      "medianMs": 2,
+      "low1Ms": 3.47,
+      "maxMs": 5.1,
+      "frames": 239,
+      "flickerFrames": 0,
+      "domStart": 500,
+      "domEnd": 500,
+      "rafPerSec": 59.87,
+      "rafPerFrame": 5,
+      "buffer": "1688x780",
+      "css": "844x390",
+      "dpr": 2,
+      "gameDpr": 2,
+      "hook": "room-item-menu",
+      "note": "",
+      "error": ""
+    },
+    "phone/closet": {
+      "viewport": "phone",
+      "scene": "closet",
+      "label": "Closet",
+      "page": "world-split.html",
+      "medianMs": 2,
+      "low1Ms": 2.43,
+      "maxMs": 2.5,
+      "frames": 240,
+      "flickerFrames": 0,
+      "domStart": 515,
+      "domEnd": 515,
+      "rafPerSec": 59.9,
+      "rafPerFrame": 5,
+      "buffer": "1688x780",
+      "css": "844x390",
+      "dpr": 2,
+      "gameDpr": 2,
+      "hook": "furniture-drill",
+      "note": "no closet control on this build; furniture item list is open inside the house",
+      "error": ""
+    },
+    "ipad/air": {
+      "viewport": "ipad",
+      "scene": "air",
+      "label": "Open-air flight",
+      "page": "world-split.html",
+      "medianMs": 169.25,
+      "low1Ms": 192.2,
+      "maxMs": 192.2,
+      "frames": 39,
+      "flickerFrames": 0,
+      "domStart": 488,
+      "domEnd": 488,
+      "rafPerSec": 5.66,
+      "rafPerFrame": 5,
+      "buffer": "1024x768",
+      "css": "1024x768",
+      "dpr": 2,
+      "gameDpr": 1,
+      "hook": "orbit-south",
+      "note": "",
+      "error": ""
+    },
+    "ipad/face": {
+      "viewport": "ipad",
+      "scene": "face",
+      "label": "Building face",
+      "page": "world-split.html",
+      "medianMs": 170.05,
+      "low1Ms": 188.9,
+      "maxMs": 188.9,
+      "frames": 40,
+      "flickerFrames": 0,
+      "domStart": 488,
+      "domEnd": 488,
+      "rafPerSec": 9.27,
+      "rafPerFrame": 5,
+      "buffer": "1024x768",
+      "css": "1024x768",
+      "dpr": 2,
+      "gameDpr": 1,
+      "hook": "sky-tower-west",
+      "note": "",
+      "error": ""
+    },
+    "ipad/shops": {
+      "viewport": "ipad",
+      "scene": "shops",
+      "label": "City Builder shops",
+      "page": "world-split.html",
+      "medianMs": 158.2,
+      "low1Ms": 180,
+      "maxMs": 180,
+      "frames": 39,
+      "flickerFrames": 0,
+      "domStart": 488,
+      "domEnd": 488,
+      "rafPerSec": 9.96,
+      "rafPerFrame": 5,
+      "buffer": "1024x768",
+      "css": "1024x768",
+      "dpr": 2,
+      "gameDpr": 1,
+      "hook": "builder-hq",
+      "note": "",
+      "error": ""
+    },
+    "ipad/drive": {
+      "viewport": "ipad",
+      "scene": "drive",
+      "label": "Downtown drive",
+      "page": "world-split.html",
+      "medianMs": 181.7,
+      "low1Ms": 249.3,
+      "maxMs": 249.3,
+      "frames": 39,
+      "flickerFrames": 0,
+      "domStart": 487,
+      "domEnd": 487,
+      "rafPerSec": 6.52,
+      "rafPerFrame": 5,
+      "buffer": "1024x768",
+      "css": "1024x768",
+      "dpr": 2,
+      "gameDpr": 1,
+      "hook": "downtown-x250",
+      "note": "",
+      "error": ""
+    },
+    "ipad/house": {
+      "viewport": "ipad",
+      "scene": "house",
+      "label": "Ellie's House + item menu",
+      "page": "world-split.html",
+      "medianMs": 6.9,
+      "low1Ms": 10.4,
+      "maxMs": 12.9,
+      "frames": 249,
+      "flickerFrames": 0,
+      "domStart": 500,
+      "domEnd": 500,
+      "rafPerSec": 60.04,
+      "rafPerFrame": 5,
+      "buffer": "1024x768",
+      "css": "1024x768",
+      "dpr": 2,
+      "gameDpr": 1,
+      "hook": "room-item-menu",
+      "note": "",
+      "error": ""
+    },
+    "ipad/closet": {
+      "viewport": "ipad",
+      "scene": "closet",
+      "label": "Closet",
+      "page": "world-split.html",
+      "medianMs": 7.7,
+      "low1Ms": 13.53,
+      "maxMs": 16.7,
+      "frames": 239,
+      "flickerFrames": 0,
+      "domStart": 515,
+      "domEnd": 515,
+      "rafPerSec": 59.82,
+      "rafPerFrame": 5,
+      "buffer": "1024x768",
+      "css": "1024x768",
+      "dpr": 2,
+      "gameDpr": 1,
+      "hook": "furniture-drill",
+      "note": "no closet control on this build; furniture item list is open inside the house",
+      "error": ""
+    },
+    "pc/air": {
+      "viewport": "pc",
+      "scene": "air",
+      "label": "Open-air flight",
+      "page": "world-split.html",
+      "medianMs": 65.5,
+      "low1Ms": 105,
+      "maxMs": 105,
+      "frames": 70,
+      "flickerFrames": 0,
+      "domStart": 500,
+      "domEnd": 500,
+      "rafPerSec": 17.96,
+      "rafPerFrame": 5,
+      "buffer": "1280x720",
+      "css": "1280x720",
+      "dpr": 1,
+      "gameDpr": 1,
+      "hook": "orbit-south",
+      "note": "",
+      "error": ""
+    },
+    "pc/face": {
+      "viewport": "pc",
+      "scene": "face",
+      "label": "Building face",
+      "page": "world-split.html",
+      "medianMs": 65.2,
+      "low1Ms": 78.2,
+      "maxMs": 78.2,
+      "frames": 94,
+      "flickerFrames": 0,
+      "domStart": 500,
+      "domEnd": 500,
+      "rafPerSec": 23.96,
+      "rafPerFrame": 5,
+      "buffer": "1280x720",
+      "css": "1280x720",
+      "dpr": 1,
+      "gameDpr": 1,
+      "hook": "sky-tower-west",
+      "note": "",
+      "error": ""
+    },
+    "pc/shops": {
+      "viewport": "pc",
+      "scene": "shops",
+      "label": "City Builder shops",
+      "page": "world-split.html",
+      "medianMs": 60.1,
+      "low1Ms": 65.3,
+      "maxMs": 65.3,
+      "frames": 100,
+      "flickerFrames": 0,
+      "domStart": 500,
+      "domEnd": 500,
+      "rafPerSec": 25.25,
+      "rafPerFrame": 5,
+      "buffer": "1280x720",
+      "css": "1280x720",
+      "dpr": 1,
+      "gameDpr": 1,
+      "hook": "builder-hq",
+      "note": "",
+      "error": ""
+    },
+    "pc/drive": {
+      "viewport": "pc",
+      "scene": "drive",
+      "label": "Downtown drive",
+      "page": "world-split.html",
+      "medianMs": 59.45,
+      "low1Ms": 98.9,
+      "maxMs": 98.9,
+      "frames": 79,
+      "flickerFrames": 0,
+      "domStart": 499,
+      "domEnd": 499,
+      "rafPerSec": 20.4,
+      "rafPerFrame": 5,
+      "buffer": "1280x720",
+      "css": "1280x720",
+      "dpr": 1,
+      "gameDpr": 1,
+      "hook": "downtown-x250",
+      "note": "",
+      "error": ""
+    },
+    "pc/house": {
+      "viewport": "pc",
+      "scene": "house",
+      "label": "Ellie's House + item menu",
+      "page": "world-split.html",
+      "medianMs": 1.8,
+      "low1Ms": 3.17,
+      "maxMs": 3.6,
+      "frames": 240,
+      "flickerFrames": 0,
+      "domStart": 512,
+      "domEnd": 512,
+      "rafPerSec": 59.9,
+      "rafPerFrame": 5,
+      "buffer": "1280x720",
+      "css": "1280x720",
+      "dpr": 1,
+      "gameDpr": 1,
+      "hook": "room-item-menu",
+      "note": "",
+      "error": ""
+    },
+    "pc/closet": {
+      "viewport": "pc",
+      "scene": "closet",
+      "label": "Closet",
+      "page": "world-split.html",
+      "medianMs": 2.1,
+      "low1Ms": 2.97,
+      "maxMs": 3,
+      "frames": 240,
+      "flickerFrames": 0,
+      "domStart": 527,
+      "domEnd": 527,
+      "rafPerSec": 59.89,
+      "rafPerFrame": 5,
+      "buffer": "1280x720",
+      "css": "1280x720",
+      "dpr": 1,
+      "gameDpr": 1,
+      "hook": "furniture-drill",
+      "note": "no closet control on this build; furniture item list is open inside the house",
+      "error": ""
+    },
+    "phone/jr-shell": {
+      "viewport": "phone",
+      "scene": "jr-shell",
+      "label": "Kid App shell (jr.html)",
+      "page": "jr.html",
+      "medianMs": 108.85,
+      "low1Ms": 141,
+      "maxMs": 141,
+      "frames": 40,
+      "flickerFrames": 0,
+      "domStart": 463,
+      "domEnd": 463,
+      "rafPerSec": 7.43,
+      "rafPerFrame": 3,
+      "buffer": "1688x720",
+      "css": "844x390",
+      "dpr": 2,
+      "gameDpr": null,
+      "hook": "jr-shell",
+      "note": "",
+      "error": ""
+    }
+  },
+  "heap": {
+    "viewport": "phone",
+    "scenario": "air",
+    "durationMs": 180006,
+    "steady": false,
+    "reason": "not a steady climb (27.5 MB → 31.7 MB → 29.3 MB)",
+    "first": 28807148,
+    "mid": 33198242,
+    "last": 30736060,
+    "samples": [
+      {
+        "t": 14,
+        "bytes": 32513548
+      },
+      {
+        "t": 5019,
+        "bytes": 30749740
+      },
+      {
+        "t": 10079,
+        "bytes": 26291632
+      },
+      {
+        "t": 15099,
+        "bytes": 44715836
+      },
+      {
+        "t": 20112,
+        "bytes": 30213000
+      },
+      {
+        "t": 25120,
+        "bytes": 29759136
+      },
+      {
+        "t": 30132,
+        "bytes": 27855160
+      },
+      {
+        "t": 35166,
+        "bytes": 43366464
+      },
+      {
+        "t": 40187,
+        "bytes": 24583500
+      },
+      {
+        "t": 45192,
+        "bytes": 18715380
+      },
+      {
+        "t": 50219,
+        "bytes": 25210712
+      },
+      {
+        "t": 55259,
+        "bytes": 26120040
+      },
+      {
+        "t": 60302,
+        "bytes": 40072292
+      },
+      {
+        "t": 65319,
+        "bytes": 21641640
+      },
+      {
+        "t": 70325,
+        "bytes": 41622136
+      },
+      {
+        "t": 75332,
+        "bytes": 31939044
+      },
+      {
+        "t": 80377,
+        "bytes": 34063440
+      },
+      {
+        "t": 85383,
+        "bytes": 32333044
+      },
+      {
+        "t": 90390,
+        "bytes": 26290028
+      },
+      {
+        "t": 95430,
+        "bytes": 36601384
+      },
+      {
+        "t": 100454,
+        "bytes": 19436576
+      },
+      {
+        "t": 105505,
+        "bytes": 34300016
+      },
+      {
+        "t": 110511,
+        "bytes": 43410776
+      },
+      {
+        "t": 115535,
+        "bytes": 25380400
+      },
+      {
+        "t": 120544,
+        "bytes": 31215384
+      },
+      {
+        "t": 125554,
+        "bytes": 19086756
+      },
+      {
+        "t": 130573,
+        "bytes": 30256736
+      },
+      {
+        "t": 135604,
+        "bytes": 46293876
+      },
+      {
+        "t": 140608,
+        "bytes": 20984396
+      },
+      {
+        "t": 145611,
+        "bytes": 26617444
+      },
+      {
+        "t": 150667,
+        "bytes": 24826512
+      },
+      {
+        "t": 155708,
+        "bytes": 36523564
+      },
+      {
+        "t": 160737,
+        "bytes": 38072976
+      },
+      {
+        "t": 165789,
+        "bytes": 39107500
+      },
+      {
+        "t": 170821,
+        "bytes": 45921508
+      },
+      {
+        "t": 175878,
+        "bytes": 21286496
+      }
+    ]
+  },
+  "baselineEnforce": false,
+  "baselineSha": "371defb606f5afc2063be7338b3ea81d8fe7c5e5"
+}

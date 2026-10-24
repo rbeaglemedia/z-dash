@@ -1,0 +1,72 @@
+PERF-GUARD  heap 180000ms
+Software GL numbers are relative, not device FPS.
+— world-split.html  Phone 844x390 dpr2
+  phone/air  median 64.0 ms  1% 75.0  max 75.0  flicker 0  1688x780  [orbit-south]
+  phone/face  median 68.9 ms  1% 260.5  max 260.5  flicker 0  1688x780  [sky-tower-west]
+  phone/shops  median 62.1 ms  1% 70.7  max 70.7  flicker 0  1688x780  [builder-hq]
+  phone/drive  median 63.7 ms  1% 108.1  max 108.1  flicker 0  1688x780  [downtown-x250]
+  phone/house  median 2.0 ms  1% 3.5  max 5.1  flicker 0  1688x780  [room-item-menu]
+  phone/closet  median 2.0 ms  1% 2.4  max 2.5  flicker 0  1688x780  [furniture-drill]
+— heap flight 180s on phone
+  heap phone 180s  not a steady climb (27.5 MB → 31.7 MB → 29.3 MB)
+— world-split.html  iPad A10-class 1024x768 dpr2 cpu×4
+  ipad/air  median 169.3 ms  1% 192.2  max 192.2  flicker 0  1024x768  [orbit-south]
+  ipad/face  median 170.1 ms  1% 188.9  max 188.9  flicker 0  1024x768  [sky-tower-west]
+  ipad/shops  median 158.2 ms  1% 180.0  max 180.0  flicker 0  1024x768  [builder-hq]
+  ipad/drive  median 181.7 ms  1% 249.3  max 249.3  flicker 0  1024x768  [downtown-x250]
+  ipad/house  median 6.9 ms  1% 10.4  max 12.9  flicker 0  1024x768  [room-item-menu]
+  ipad/closet  median 7.7 ms  1% 13.5  max 16.7  flicker 0  1024x768  [furniture-drill]
+— world-split.html  PC 1280x720 dpr1
+  pc/air  median 65.5 ms  1% 105.0  max 105.0  flicker 0  1280x720  [orbit-south]
+  pc/face  median 65.2 ms  1% 78.2  max 78.2  flicker 0  1280x720  [sky-tower-west]
+  pc/shops  median 60.1 ms  1% 65.3  max 65.3  flicker 0  1280x720  [builder-hq]
+  pc/drive  median 59.4 ms  1% 98.9  max 98.9  flicker 0  1280x720  [downtown-x250]
+  pc/house  median 1.8 ms  1% 3.2  max 3.6  flicker 0  1280x720  [room-item-menu]
+  pc/closet  median 2.1 ms  1% 3.0  max 3.0  flicker 0  1280x720  [furniture-drill]
+— jr.html  Phone 844x390 dpr2
+  phone/jr-shell  median 108.8 ms  1% 141.0  max 141.0  flicker 0  1688x720  [jr-shell]
+## PERF-GUARD
+
+**Advisory.** The check does not fail the PR. Frame-time gates start failing the job after the FPS fixes merge, the baseline is refreshed, and `enforce` is set to `true`.
+
+Software GL (`--disable-gpu`, SwiftShader). These milliseconds are relative to the host, not a phone, Galaxy, or iPad A10 frame rate.
+
+Host CPU calib matches the baseline. Gates use raw frame times.
+
+| View | Scene | Median ms | vs base | 1% low | vs base | Max | Flicker | DOM | rAF/s | Buffer | Result |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
+| phone | Open-air flight | 64.0 | — | 75.0 | — | 75.0 | 0 | 488 | 17.6 | 1688x780 | NO-BASE |
+| phone | Building face | 68.9 | — | 260.5 | — | 260.5 | 0 | 488 | 13.4 | 1688x780 | NO-BASE |
+| phone | City Builder shops | 62.0 | — | 70.7 | — | 70.7 | 0 | 488 | 24.2 | 1688x780 | NO-BASE |
+| phone | Downtown drive | 63.8 | — | 108.1 | — | 108.1 | 0 | 487 | 18.1 | 1688x780 | NO-BASE |
+| phone | Ellie's House + item menu | 2.0 | — | 3.5 | — | 5.1 | 0 | 500 | 59.9 | 1688x780 | NO-BASE |
+| phone | Closet | 2.0 | — | 2.4 | — | 2.5 | 0 | 515 | 59.9 | 1688x780 | NO-BASE |
+| ipad | Open-air flight | 169.3 | — | 192.2 | — | 192.2 | 0 | 488 | 5.7 | 1024x768 | NO-BASE |
+| ipad | Building face | 170.1 | — | 188.9 | — | 188.9 | 0 | 488 | 9.3 | 1024x768 | NO-BASE |
+| ipad | City Builder shops | 158.2 | — | 180.0 | — | 180.0 | 0 | 488 | 10.0 | 1024x768 | NO-BASE |
+| ipad | Downtown drive | 181.7 | — | 249.3 | — | 249.3 | 0 | 487 | 6.5 | 1024x768 | NO-BASE |
+| ipad | Ellie's House + item menu | 6.9 | — | 10.4 | — | 12.9 | 0 | 500 | 60.0 | 1024x768 | NO-BASE |
+| ipad | Closet | 7.7 | — | 13.5 | — | 16.7 | 0 | 515 | 59.8 | 1024x768 | NO-BASE |
+| pc | Open-air flight | 65.5 | — | 105.0 | — | 105.0 | 0 | 500 | 18.0 | 1280x720 | NO-BASE |
+| pc | Building face | 65.2 | — | 78.2 | — | 78.2 | 0 | 500 | 24.0 | 1280x720 | NO-BASE |
+| pc | City Builder shops | 60.1 | — | 65.3 | — | 65.3 | 0 | 500 | 25.3 | 1280x720 | NO-BASE |
+| pc | Downtown drive | 59.5 | — | 98.9 | — | 98.9 | 0 | 499 | 20.4 | 1280x720 | NO-BASE |
+| pc | Ellie's House + item menu | 1.8 | — | 3.2 | — | 3.6 | 0 | 512 | 59.9 | 1280x720 | NO-BASE |
+| pc | Closet | 2.1 | — | 3.0 | — | 3.0 | 0 | 527 | 59.9 | 1280x720 | NO-BASE |
+| phone | Kid App shell (jr.html) | 108.8 | — | 141.0 | — | 141.0 | 0 | 463 | 7.4 | 1688x720 | NO-BASE |
+
+**Heap** (phone, 180s flight): PASS — not a steady climb (27.5 MB → 31.7 MB → 29.3 MB)
+
+Frame ms is the work inside the animation callbacks for that frame (summed when the page schedules more than one). The median is the median of the slower half of those frames, so a cheap frame between paints does not hide the loaded one. It is not the vsync gap, and it is not a Galaxy or A10 frame rate.
+Fail rules: that median worse than 5%, the 1% low (mean of the slowest 1% of frames) worse than 10%, any flicker frame, or a heap that climbs through all three thirds of the flight and does not come back.
+
+Run `371defb606f5` on `cursor/perf-guard-a3ad`. Baseline `enforce` is **false** (baseline sha 371defb606f5).
+
+Pages: world.html and world-split.html are the same bytes (one bench covers both). jr.html is the Kid App shell sample. Closet uses a real closet control when the page has one; otherwise the in-house furniture item list.
+
+Local: `node tools/perf-guard.mjs --measure`. Refresh after FPS PR #56 merges: `node tools/perf-guard.mjs --write-baseline`, then set `"enforce": true`.
+
+**No failing rows.**
+wrote /workspace/test-results/perf-guard-baseline-run.json
+wrote baseline /workspace/tools/perf-guard-baseline.json (enforce false)
+no failing rows
