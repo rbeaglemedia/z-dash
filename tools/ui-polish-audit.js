@@ -1097,12 +1097,16 @@ function auditMenuReachability(root) {
   }
   // Garage/Home is a real path for crew, dance, and the paint apps. It does not
   // cover street/builder/stunt/takeover; those stay unreachable until Bob decides.
+  function menuHref(blob, page) {
+    const esc = page.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp('href=["\']' + esc).test(blob) || new RegExp('gLink\\(["\']' + esc).test(blob);
+  }
   function liveInGarage(game) {
     const blob = jr + '\n' + icon;
-    if (game.id === 'crew') return /href="crew\.html"/.test(blob) && /PETS & CREW/.test(blob);
-    if (game.id === 'dance' || game.id === 'petdance') return /href="dance-stage\.html/.test(blob);
-    if (game.id === 'paint') return /href="neon-paint\.html"/.test(blob);
-    if (game.id === 'wall') return /neon-paint\.html\?mode=wall/.test(blob);
+    if (game.id === 'crew') return menuHref(blob, 'crew.html') && /PETS & CREW/.test(blob);
+    if (game.id === 'dance' || game.id === 'petdance') return menuHref(blob, 'dance-stage.html');
+    if (game.id === 'paint') return menuHref(blob, 'neon-paint.html');
+    if (game.id === 'wall') return menuHref(blob, 'neon-paint.html?mode=wall');
     return false;
   }
 
