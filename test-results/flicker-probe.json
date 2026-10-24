@@ -1,0 +1,12 @@
+{
+  "commit_note": "Probe of the flicker detector before the play-only bake counter. Headless Chrome, phone viewport 844x390 DPR 2, canvas 1688x780.",
+  "url": "http://127.0.0.1:8788/world-split.html?perf=1&nocarskip=1",
+  "webgl": "context came up this run (car gl 1, pdb 1, aa 1). Car copy was about 79 ms. That is this VM, not the Galaxy.",
+  "overlay": "sprite x1 nocarskip  skip 0 / flicker 0 / sw none / pdb 1 aa 1 / build flick-1",
+  "nocarskip": {"ZV.every": 1, "zRate_30ms": 1},
+  "same_size_resize": {"flickerN": 2, "last": "hud resize city 1688x780→1688x780", "resizeSame": 1},
+  "empty_cache": {"cause": "car skip+cache-resize+traffic-bake", "alpha": 0},
+  "opaque_cache_added_flicker": false,
+  "without_flags": {"overlay": false, "canvas_wrapper": false, "nocarskip": false, "perf_on": false},
+  "page_errors": ["favicon.ico 404 only"]
+}

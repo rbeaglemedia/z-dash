@@ -759,6 +759,10 @@ const TRAFFIC = (() => {
     } catch (e) { bakeErr = String(e); return false; }
     finally {
       bakeMs += performance.now() - tB;
+      if (window.Z_PERF && window.Z_PERF.on && window.Z_WARM && window.Z_WARM.phase === 'done') {
+        window.Z_PERF.trafficBake = (window.Z_PERF.trafficBake || 0) + 1;
+        window.Z_PERF.trafficBakeAt = performance.now();
+      }
       try {
         if (R.setPixelRatio) R.setPixelRatio(dpr);
         R.setSize(box.w || 1, box.h || 1, false);
