@@ -1,7 +1,7 @@
 [
   {
     "room": "glass",
-    "info": "glass 0.38",
+    "info": "glass 0.42",
     "bytes": 23926
   },
   {
@@ -16,22 +16,22 @@
   },
   {
     "room": "pastel",
-    "info": "pastel 0.19",
+    "info": "pastel 0.18",
     "bytes": 24049
   },
   {
     "room": "loft",
-    "info": "loft 0.28",
-    "bytes": 26944
+    "info": "loft 0.42",
+    "bytes": 26888
   },
   {
     "room": "plants",
-    "info": "plants 0.32",
-    "bytes": 22322
+    "info": "plants 0.39",
+    "bytes": 22268
   },
   {
     "room": "future",
-    "info": "future 0.16",
+    "info": "future 0.19",
     "bytes": 18361
   },
   {
@@ -41,7 +41,7 @@
   },
   {
     "room": "house",
-    "info": "house 0.25",
+    "info": "house 0.27",
     "bytes": 17107
   },
   {

@@ -29,15 +29,15 @@ Paint time for one frame at 1280 by 720, averaged over 40 paints in headless Chr
 
 | Style | ms |
 | --- | --- |
-| Glass | 0.38 |
+| Glass | 0.42 |
 | Wood | 0.21 |
 | Pop | 0.23 |
-| Pastel | 0.19 |
-| Loft | 0.28 |
-| Plants | 0.32 |
-| Future | 0.16 |
+| Pastel | 0.18 |
+| Loft | 0.42 |
+| Plants | 0.39 |
+| Future | 0.19 |
 | Neon | 0.20 |
-| House | 0.25 |
+| House | 0.27 |
 
 110 frames a second is a 9.1 ms budget. Every room above is under that. The room painter does not set shadowBlur. While any walk-in room is open, the outdoor city loop stays held, so the cost is the room itself. The corner chip shows the live rate from the walk frame. These times are from this machine, not from a Galaxy handset.
 
