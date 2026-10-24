@@ -1582,7 +1582,8 @@
       '#np-studio .np-vchip button[data-vinyl-act="equip"],#np-studio .np-vchip button[data-vinyl-act="del"]{flex:0 0 auto}',
       '#np-studio .np-vchip.eq button[data-vinyl-act="edit"]{border-color:#ffe14d;box-shadow:0 0 8px #ffe14d}',
       '#np-studio #vinylNameInp{width:100%;min-height:42px;font:800 14px Orbitron,sans-serif;color:#fff;background:#120818;border:2px solid #ffe14d;border-radius:12px;padding:8px 10px;letter-spacing:.3px}',
-      '#np-studio .np-back{flex:none;width:100%;min-height:44px;padding:8px 8px;border-radius:12px;border:2px solid #fff;background:#7dff6b;color:#04140c;font:900 12px/1.15 Orbitron,sans-serif;letter-spacing:.2px;text-align:center;white-space:normal;cursor:pointer}'
+      '#np-studio .np-back{flex:none;width:100%;min-height:44px;padding:8px 8px;border-radius:12px;border:2px solid #fff;background:#7dff6b;color:#04140c;font:900 12px/1.15 Orbitron,sans-serif;letter-spacing:.2px;text-align:center;white-space:normal;cursor:pointer}',
+      '#np-studio [data-act="wall-clear"]{white-space:normal;line-height:1.15}'
     ].join('');
     document.head.appendChild(s);
   }
