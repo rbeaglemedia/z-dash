@@ -1,190 +1,174 @@
 # Interiors plan
 
-Plan only. No room is built in this change. Nothing deploys. Bob picks one concept for each room, then writes "plan approved, build it".
+Bob picks one number per room, then writes "plan approved, build it". The live rooms are not built in this change. Nothing deploys. Adult `index.html`, `world.html`, and `world-split.html` stay as they are.
 
-Kid App only. Adult `index.html` stays untouched.
+These six rooms replace the one shared shell in `world/house.js` (`walkPaintRoom`) when a later build is approved. That shell is about 8.4 m wide, 6.3 m deep, and 3.1 m tall. That size is retired. Each option below is the space behind the door. The meters do not grow the shop on the map.
 
-These six rooms replace the one shared shell in `world/house.js` (`walkPaintRoom`). That shell is about 8.4 m wide, 6.3 m deep, and 3.1 m tall, and the walk stays inside a smaller patch. That size is retired. Each room below is large for its use. The meters are the space behind the door. They do not grow the shop on the map, and they do not change the building height.
+Paint, the garage, and the dance hall launch an app, so they are out of this plan. NOS, the showroom, and the sky pad are drive-up, so they are out of this plan. The Garage Z link stays `jr.html#garage`.
 
-The modes come from the building sense audit (PR #69). Paint, the garage, and the dance hall launch an app, so they are out of this plan. NOS, the showroom, and the sky pad are drive-up, so they are out of this plan. The Garage Z link stays `jr.html#garage`.
+## How to look
 
-## Bob's steer
+Open the review page. It uses the live interior painter (`world/style-sampler.js`), the shared prop catalog (`PLANNER_PROPS`), and `PLANNER_TOOLS.roof` for the stacked caps. Ellie and her pet are the same pair that painter already draws.
 
-Interiors are free of the night-city glow. Each room has two concepts.
+```text
+test/interiors-review.html?room=house&style=2
+```
 
-- **A** is a daylight room: wood, paint, glass, and plants. The glow strip is left off.
-- **B** is the same kind of clean modern room, with one thin lit strip as an accent.
+`room` is `house`, `arcade`, `cafe`, `pets`, `soccer`, or `builder`. `style` is 1, 2, 3, or 4.
 
-Brookhaven is the feeling to aim at: clean, bright, and modern. The rooms are our own boxes and flat color. The outdoor city stays the neon night city. This file does not edit `docs/NEON-WORLD-STYLE.md`. The style guide still asks a home for a glass face and a cyan strip. Both house concepts keep the glass. Only concept B keeps the strip. If Bob picks a daylight home, that home line should be updated before the build is reviewed, so the review judges the room he picked.
+Each shot is that page, with the room name, the style name, a one-line description, and the paint time burned in. The contact sheet for a room is those four shots on one iPad-sized page (`1180 × 820`).
 
-Ellie is 10 and advanced. The rooms stay smart. Short words on a plaque are enough.
+## What changed from the first plan
 
-## How a room is built
+The first pass offered two photos of the same modern room, one with a glow strip. Ellie needs looks that differ in layout, color, materials, light, and one signature piece. Each room now has four rough in-engine options.
 
-Straight boxes, flat walls, and flat color. Glass is a pale pane with a brighter edge. Wood is a flat tan fill. A plant is a square planter and a few flat green cards. Daylight is a bright ceiling fill and a pale window pane. On concept B, the glow is a thin lit box. These rooms do not set shadowBlur.
+Straight boxes and flat color. Glass is a pale pane with a brighter edge. Wood is a flat tan fill. A plant is a square planter and flat green cards. A glow is a thin lit box. These review files do not set shadowBlur.
 
-The pictures are the feeling Bob is picking. They are not a model to import. A cabinet screen in a picture is a flat bright panel in the build.
+Every house option keeps a glass wall. The outdoor city stays the neon night city.
 
-Ellie is drawn at 1.7 m with a visible torso. Her pet stands on the floor at 0.74 m, between her knee and her waist. Anatomy Check reviews that pair. This plan does not change the pet rig or the character. The close-up pet card that makes the pet look huge is left out of these rooms. Extra animals in a picture are stand-ins for that one pet, at the same size, on the floor. The build does not add pet species.
+## People
+
+Ellie is drawn at 1.7 m with a filled torso (`#2f7f96`), legs on the floor, and a head on the shoulders. Her pet stands on the same floor. The ears land at 0.74 m, about 0.43 of her height. On the glass-loft shot the pet's pixels are 0.42 of her full height, and both stand on the same floor line. Anatomy Check reviews that pair. This plan does not change the pet rig or the character.
 
 ## Doors
 
-A kit is keyed by purpose. It stores no city id and no world x or z. Both copies of a purpose share one kit. City layout PR #68 can land either option. The ids in the audit (house 5 and 13, arcade 12 and 19, cafe 16 and 18, pets 14 and 15, soccer 20 and 21, builder 22 and 23) are names for the copies. PR #68 numbers the same shops on its own table. The kit follows the door she used.
-
-Enter opens the kit for that door's purpose and remembers the door. She starts just inside, on the local floor. Step back outside returns her to that door's stand point. The door code already does this. The near wall has a 2 m opening. It is not a new door on the map.
+A kit is keyed by purpose. It stores no city id and no world x or z. Both copies of a purpose share one kit. City layout PR #68 can land either option. The door code already opens the kit and returns her to that door. The near wall has a 2 m opening. Props stay out of the door gap (x from -1.2 to 1.2, z from 0 to 2.2).
 
 ## Frame cost
 
-While a room is open, the city loop is held (`requestAnimationFrame` keeps the callback named `loop` from drawing). The outdoor building pass does not run. The indoor frame is the room painter. Floor area does not add cost. Box count does.
+While a room is open, the city loop is held. The indoor frame is the room painter. Floor area does not add cost. Box count does.
 
-Each concept stays at or under 32 boxes. One box is five flat faces.
-
-A phone harness on the day-room branch (PR #57, a different commit) drew an indoor room at the 60 fps ceiling of that harness, 16.6 ms, while the city was out of the frame. The same harness with the city in the frame fell to about 7 fps. That split is why these rooms can be huge. It is not a measurement of this commit.
-
-Estimated indoor cost on Bob's Galaxy, city pass held, flat fills, no blur:
-
-| Concept | Boxes | Estimate |
-| --- | --- | --- |
-| Smaller kits (house B, arcade B, cafe B, pets B, builder B) | 18–20 | about 0.8 ms |
-| Mid kits (house A, cafe A, pets A, arcade A, builder A) | 20–28 | about 1.0–1.2 ms |
-| Soccer shop | 28–32 | about 1.2–1.5 ms |
-
-The 110 fps line is 9.1 ms. The estimate for every concept is **110+**, with margin. A and B of the same room differ by a few boxes, not by a frame. This plan does not add an FPS bench. FPS Guard reviews the build.
+Paint time below is 40 paints in headless Chrome on this machine, then one labeled frame. It is not a Galaxy measurement. The 110 fps line is 9.1 ms. Every option is under 0.5 ms, so the estimate is about 110 fps, with margin. FPS Guard reviews the real build.
 
 ## Saved home
 
-Both house concepts read the saved home and do not add keys.
+House options show the saved pieces (sofa or the hero prop, a pet bed, a screen) and do not write keys.
 
 - Keys stay `zdash.house.v1` and the house object inside `zdash.kid.v1`.
-- Theme stays one of `#ff4fd8`, `#3ee6ff`, `#7dff6b`, `#ffb020`, `#9b5cff`.
-- Furniture stays `sofa`, `arcade`, `dj`, or `trophy`.
-- The pet bed stays on or off.
-- The sign stays `ELLIE`, `Z COMPANY`, `370Z`, or `HOME`.
+- Theme, furniture, pet bed, and sign stay the fields they are now.
 
-Concept A uses the saved theme on the plaque and one cushion. Concept B uses it on the ceiling strip. The furniture field picks the one hero piece. The pet bed field shows or hides the bed. The sign field is the word on the plaque.
-
-The Home menu preview (PR #70), the day-room item menu (PR #57), and the prop sheet (PR #60) keep their files. A later build replaces the tiny shell. It does not take those menus over. If the prop sheet has landed, placed props sit on the new floor, and that sheet keeps its own cap.
+The review page does not write those keys, and it does not write `zdash.ellie.builder.v1`.
 
 ## Pick list
 
-Reply with one letter per room. A mix is fine.
+Reply with one number per room. A mix is fine.
 
-| Room | A, daylight | B, one glow strip | Floor vs the 8.4×6.3 m room |
-| --- | --- | --- | --- |
-| House | 24 × 18 × 4.8 m | 22 × 16 × 4.6 m | about 8× / about 7× |
-| Arcade | 36 × 18 × 5.2 m | 32 × 16 × 5.0 m | about 12× / about 10× |
-| Cafe | 28 × 18 × 4.6 m | 26 × 16 × 4.5 m | about 10× / about 8× |
-| Pet lounge | 32 × 22 × 5.0 m | 30 × 20 × 4.8 m | about 13× / about 11× |
-| Soccer shop | 48 × 30 × 6.8 m | 42 × 28 × 6.5 m | about 27× / about 22× |
-| Builder HQ | 28 × 18 × 5.5 m | 26 × 18 × 5.2 m | about 10× / about 9× |
+| Room | 1 | 2 | 3 | 4 |
+| --- | --- | --- | --- | --- |
+| House | Glass loft, 24×18×4.8, 0.41 ms | Timber cabin, 22×16×4.2, 0.26 ms | Sky penthouse, 30×20×7.2, 0.33 ms | Block home, 24×18×5.4, 0.30 ms |
+| Arcade | Retro lane, 36×16×5.2, 0.35 ms | Pop hall, 32×22×6.8, 0.24 ms | Space pit, 30×16×8, 0.26 ms | Block arcade, 28×18×5.6, 0.28 ms |
+| Cafe | Beach shack, 28×18×4.8, 0.41 ms | Wood bakery, 24×16×4.2, 0.27 ms | Pop diner, 32×18×5.4, 0.28 ms | Night counter, 26×16×4.8, 0.37 ms |
+| Pet lounge | Garden yard, 36×24×5.4, 0.32 ms | Cabin den, 26×18×4.2, 0.26 ms | Aqua bay, 34×20×5.2, 0.29 ms | Block park, 30×22×5.2, 0.19 ms |
+| Soccer shop | Shop pitch, 48×30×6.8, 0.25 ms | Beach pitch, 44×28×5.6, 0.23 ms | Cup night, 46×28×7, 0.22 ms | Block field, 40×26×6.2, 0.17 ms |
+| Builder HQ | Glass studio, 28×18×5.5, 0.21 ms | Space lab, 30×16×8, 0.24 ms | Wood workshop, 26×18×4.6, 0.27 ms | Sky office, 32×18×7.2, 0.25 ms |
 
-Every ceiling is taller than 3.1 m. The soccer shop is the largest because the kick happens inside. It is still a shop with a small pitch, far smaller than the outdoor dome.
+The soccer shop is the largest because the kick happens inside. It is still a shop with a small pitch. It does not move the car to the outdoor dome.
 
-## House — Ellie's home
+## House
 
-Walk the room. The four saved controls stay: wall theme, furniture, pet bed, and sign. When she stands still and the pet bed is on, the pet goes to the bed. Step outside when she is done. There is no house app.
+Walk the room. The four saved controls stay. Step outside when she is done.
 
-**A. Daylight glass house.** 24 m wide, 18 m deep, 4.8 m tall. About 24 boxes. About 1.0 ms. 110+.
+1. **Glass loft.** A bright glass house with a cyan light and a soft sofa.
+2. **Timber cabin.** A warm wood cabin with a big window and a stone hearth. A timber partition splits the room. The cap is stacked boxes from `PLANNER_TOOLS.roof`.
+3. **Sky penthouse.** A tall glass room with a gold edge and a low lounge.
+4. **Block home.** Chunky wood blocks, a glass window, and a cube seat.
 
-White walls, a tan wood floor, a long glass wall, three square planters, a sofa, a low table, the pet bed by the glass, and the plaque.
+![House, four looks](interiors/house-sheet.png)
 
-![House A, daylight glass living room](interiors/house-a-daylight.jpg)
-
-**B. Evening glass loft.** 22 m wide, 16 m deep, 4.6 m tall. About 20 boxes. About 0.8 ms. 110+.
-
-The same glass house. One cyan strip along the ceiling. The saved theme colors that strip. The plaque uses the saved word.
-
-![House B, evening loft with one cyan strip](interiors/house-b-neon.jpg)
+![House 1, Glass loft](interiors/house-1-glass.png)
+![House 2, Timber cabin](interiors/house-2-cabin.png)
+![House 3, Sky penthouse](interiors/house-3-sky.png)
+![House 4, Block home](interiors/house-4-block.png)
 
 ## Arcade
 
-Walk the aisle. The jackpot sits on the far cabinet. Using it adds 500 points, the toast the cabinet already gives. Step outside. There is no arcade app.
+Walk the aisle. The jackpot sits on the far cabinet. Using it adds 500 points. Step outside.
 
-**A. Daylight hall.** 36 m long, 18 m wide, 5.2 m tall. About 28 boxes. About 1.2 ms. 110+.
+1. **Retro lane.** A purple hall of bright cabinets and a gold jackpot.
+2. **Pop hall.** A tall room of pink, mint, and lemon game cabinets.
+3. **Space pit.** A very tall pale hall with a cyan strip and a screen row.
+4. **Block arcade.** Giant red, blue, and yellow cube machines.
 
-A skylight, a pale floor, two rows of cabinets in coral, teal, yellow, and cream, and a prize counter at the far end. Screens are flat bright panels.
+![Arcade, four looks](interiors/arcade-sheet.png)
 
-![Arcade A, daylight cabinet hall](interiors/arcade-a-daylight.jpg)
-
-**B. Evening lane.** 32 m long, 16 m wide, 5.0 m tall. About 18 boxes. About 0.9 ms. 110+.
-
-One row of cabinets, flat cyan and magenta screens, one cyan strip along the floor edge, and a gold jackpot cabinet at the end.
-
-![Arcade B, evening lane with one cyan strip](interiors/arcade-b-neon.jpg)
+![Arcade 1, Retro lane](interiors/arcade-1-retro.png)
+![Arcade 2, Pop hall](interiors/arcade-2-pop.png)
+![Arcade 3, Space pit](interiors/arcade-3-space.png)
+![Arcade 4, Block arcade](interiors/arcade-4-block.png)
 
 ## Cafe
 
-Walk in. Order at the counter. The order adds 250 points and the NOS bump the counter already gives. The tables are places to stand. Step outside. There is no cafe app.
+Order at the counter. The order adds 250 points and the NOS bump the counter already gives. Step outside.
 
-**A. Daylight pizza room.** 28 m wide, 18 m deep, 4.6 m tall. About 26 boxes. About 1.1 ms. 110+.
+1. **Beach shack.** Sand, aqua glass, palms, and a long snack counter.
+2. **Wood bakery.** Warm wood, a long counter, and two tables.
+3. **Pop diner.** A mint room with cherry booths and a big menu screen.
+4. **Night counter.** A bright counter, a gold lip, and glass on the night. The room stays light. The panes look out on a dark blue night.
 
-A tan wood floor, cream walls, a long counter, two square tables, a glass wall, and square planters.
+![Cafe, four looks](interiors/cafe-sheet.png)
 
-![Cafe A, daylight pizza room](interiors/cafe-a-daylight.jpg)
-
-**B. Evening counter.** 26 m wide, 16 m deep, 4.5 m tall. About 20 boxes. About 0.9 ms. 110+.
-
-The same counter and two tables. One gold strip under the counter lip, and one cyan strip at the ceiling. Glass looks onto the night city. The room itself stays bright.
-
-![Cafe B, evening counter with a gold lip and a cyan strip](interiors/cafe-b-neon.jpg)
+![Cafe 1, Beach shack](interiors/cafe-1-beach.png)
+![Cafe 2, Wood bakery](interiors/cafe-2-wood.png)
+![Cafe 3, Pop diner](interiors/cafe-3-pop.png)
+![Cafe 4, Night counter](interiors/cafe-4-night.png)
 
 ## Pet lounge
 
-Walk the open floor. Greet at a pen. That is the hello the lounge already gives. The pet with her, and any pet in a pen, stands on the floor at 0.74 m. Step outside. The crew page is not required. If a link to it remains, its back button returns to this door, which the audit already decided.
+Greet at a pen. The pet with her stands on the floor at 0.74 m. Step outside.
 
-**A. Daylight yard.** 32 m wide, 22 m deep, 5.0 m tall. About 22 boxes. About 1.0 ms. 110+.
+1. **Garden yard.** A long garden with pots, glass, and two low pens.
+2. **Cabin den.** A wood pet room with a window and two pens.
+3. **Aqua bay.** A bright teal bay with glass and cyan pen rails.
+4. **Block park.** Cube pens and a green play pad.
 
-A pale wood floor, cream walls, a glass wall, two low pens, and square planters. Most of the floor is open.
+![Pet lounge, four looks](interiors/pets-sheet.png)
 
-![Pet lounge A, daylight yard with two low pens](interiors/pets-a-daylight.jpg)
-
-**B. Evening yard.** 30 m wide, 20 m deep, 4.8 m tall. About 18 boxes. About 0.8 ms. 110+.
-
-Pens at the far end. One cyan strip along the ceiling. A lime edge on the pen rails. The walls stay white.
-
-![Pet lounge B, evening yard with a cyan ceiling strip](interiors/pets-b-neon.jpg)
+![Pet lounge 1, Garden yard](interiors/pets-1-garden.png)
+![Pet lounge 2, Cabin den](interiors/pets-2-cabin.png)
+![Pet lounge 3, Aqua bay](interiors/pets-3-aqua.png)
+![Pet lounge 4, Block park](interiors/pets-4-block.png)
 
 ## Soccer shop
 
-Walk the shop wall and the turf. Kick off stands her on foot at the goal in this room and puts a ball there. The car stays at the shop. The outdoor dome stays where it is. Entering does not teleport. The street word SOCCER is the sign the audit already decided. This room shows that word on the shop wall. This plan does not edit the street sign.
+Kick off stands her on foot at the goal in this room and puts a ball there. The car stays at the shop. The outdoor dome stays where it is. The street word SOCCER stays the sign the audit already decided.
 
-**A. Daylight shop and small pitch.** 48 m long, 30 m wide, 6.8 m tall. About 32 boxes. About 1.5 ms. 110+.
+1. **Shop pitch.** A bright shop, a green pitch, and one goal.
+2. **Beach pitch.** Sand around a turquoise pitch and a wood goal.
+3. **Cup night.** A lit green pitch, blue seats, and a cyan goal.
+4. **Block field.** Chunky seats, a cube goal, and a green pitch.
 
-White walls, high windows, a shelf of balls, a bench, a green turf rectangle, and one goal.
+![Soccer shop, four looks](interiors/soccer-sheet.png)
 
-![Soccer shop A, daylight shop and small pitch](interiors/soccer-a-daylight.jpg)
-
-**B. Evening shop.** 42 m long, 28 m wide, 6.5 m tall. About 28 boxes. About 1.2 ms. 110+.
-
-The same shop and one goal. A cyan edge along the turf, and a thin cyan strip on the goal frame.
-
-![Soccer shop B, evening pitch with a cyan goal frame](interiors/soccer-b-neon.jpg)
+![Soccer shop 1, Shop pitch](interiors/soccer-1-pitch.png)
+![Soccer shop 2, Beach pitch](interiors/soccer-2-beach.png)
+![Soccer shop 3, Cup night](interiors/soccer-3-cup.png)
+![Soccer shop 4, Block field](interiors/soccer-4-block.png)
 
 ## Builder HQ
 
-Walk up to the desk. Tap a blueprint board. The toast still points at the sandbox outside. The sandbox stays outside. Both HQs stay on their pads. The street word BUILD is the sign the audit already decided. This room shows BUILD on the plaque. This plan does not move a building, and it does not add a blueprint app.
+Tap a blueprint board. The toast still points at the sandbox outside. The sandbox stays outside. The street word BUILD stays the sign the audit already decided.
 
-**A. Daylight studio.** 28 m wide, 18 m deep, 5.5 m tall. About 20 boxes. About 0.9 ms. 110+.
+1. **Glass studio.** A bright desk, three boards, and a tiny block city.
+2. **Space lab.** A very tall pale lab with a cyan strip and a desk model.
+3. **Wood workshop.** Wood benches, a tool wall, and a high window.
+4. **Sky office.** Tall glass, a gold edge, and one model on a stand.
 
-White walls, a tan wood floor, a long desk, three flat blueprint boards, a small city of white boxes on the desk, square planters, and a glass wall.
+![Builder HQ, four looks](interiors/builder-sheet.png)
 
-![Builder HQ A, daylight studio](interiors/builder-a-daylight.jpg)
-
-**B. Evening studio.** 26 m wide, 18 m deep, 5.2 m tall. About 18 boxes. About 0.8 ms. 110+.
-
-The same desk and boards. One cyan strip along the front edge of the desk.
-
-![Builder HQ B, evening studio with a cyan desk strip](interiors/builder-b-neon.jpg)
+![Builder HQ 1, Glass studio](interiors/builder-1-studio.png)
+![Builder HQ 2, Space lab](interiors/builder-2-space.png)
+![Builder HQ 3, Wood workshop](interiors/builder-3-wood.png)
+![Builder HQ 4, Sky office](interiors/builder-4-sky.png)
 
 ## Who reviews the build
 
 After Bob picks and writes "plan approved, build it":
 
-- The interiors build replaces the shared shell for these six purposes. One editor, and the paint door and the dance door stay with their owners.
-- Architecture Check reviews the rooms once they exist. It does not build them, and this plan does not loosen a check.
-- Anatomy Check reviews Ellie at 1.7 m with a torso, and the pet at 0.74 m on the floor.
+- The interiors build replaces the shared shell for these six purposes. One editor. The paint door and the dance door stay with their owners.
+- Architecture Check reviews the rooms once they exist. This pass already keeps straight boxes, flat color, a glass face on every house, the door gap clear, and ceilings above 4.2 m.
+- Anatomy Check reviews Ellie at 1.7 m with a torso, and the pet at 0.74 m on the floor. The shots use that live pair.
 - FPS Guard reviews the frame. This plan does not add a bench.
 
 ## What this plan does not do
 
-It does not edit `world/`, `jr.html`, or `index.html`. It does not build a room, deploy, or pick city layout option A or B. It does not change a saved home key, the Garage Z link, a pet rig, or a character. It does not add a shop. The count stays 24.
+It does not edit `world.html`, `world-split.html`, `jr.html`, or `index.html`. It does not build a live room, deploy, or pick city layout option A or B. It does not change a saved home key, the Garage Z link, a pet rig, or a character. It does not add a shop. The count stays 24.
