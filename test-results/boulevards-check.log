@@ -1,0 +1,19 @@
+{
+  "places": 36,
+  "roads": 57,
+  "districts": 8,
+  "bridges": 2,
+  "nos": [
+    "depot@540,2320",
+    "station@-900,-80",
+    "station@1180,200",
+    "station@-1480,800",
+    "station@1180,1340"
+  ],
+  "lanes": 548,
+  "bridgeEdges": 6,
+  "runwayLaneSamples": 0,
+  "cars": 30,
+  "stamp": "1dxhsa7",
+  "fail": []
+}
