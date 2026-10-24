@@ -313,7 +313,7 @@ async function main() {
       };
       tick();
     })`, 100000);
-    const car = await cdp.eval('window.__SPIN.car.sweep()', 120000);
+    const car = await cdp.eval('window.__SPIN.car.sweep()', 180000);
     report.car = car;
     note('car sweep fails ' + (car && car.fails ? car.fails.length : 'none'));
     for (const f of (car && car.fails) || ['car sweep missing']) report.fails.push('car ' + f);
@@ -322,7 +322,7 @@ async function main() {
 
     const buildingOpen = await cdp.eval('window.__SPIN.open("building")');
     if (!buildingOpen || buildingOpen.failed) report.fails.push('building module failed to mount');
-    const building = await cdp.eval('window.__SPIN.building && window.__SPIN.building.sweep()', 60000);
+    const building = await cdp.eval('window.__SPIN.building && window.__SPIN.building.sweep()', 90000);
     report.building = building;
     note('building sweep fails ' + (building && building.fails ? building.fails.length : 'none'));
     for (const f of (building && building.fails) || ['building sweep missing']) report.fails.push('building ' + f);

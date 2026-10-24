@@ -22,7 +22,7 @@ import {
   Vector3,
   WebGLRenderer,
   eachMaterial
-} from "./chunk-JNBKNBFJ.js";
+} from "./chunk-BZ6ZX5PL.js";
 
 // tools/dev/src/bones.js
 function boneKey(name) {

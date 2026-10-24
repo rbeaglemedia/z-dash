@@ -26278,6 +26278,7 @@ export {
   QuaternionKeyframeTrack,
   VectorKeyframeTrack,
   AnimationClip,
+  LoadingManager,
   Loader,
   FileLoader,
   TextureLoader,

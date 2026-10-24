@@ -3,13 +3,14 @@
   "note": "Metres and colors copied from the Neon World drawers (world/city-draw.js door, world/house.js rooms). The game draws these on a 2D canvas. This spinner builds the same box so the door can be checked against the 370Z.",
   "defaults": {
     "purpose": "garage",
+    "style": "city",
     "door": "game",
     "roof": "slab",
     "wall": "game"
   },
   "bay": { "w": 10, "d": 9, "h": 4.4 },
   "sections": [
-    { "id": "purpose", "name": "PLACE", "slots": ["purpose"] },
+    { "id": "purpose", "name": "PLACE", "slots": ["purpose", "style"] },
     { "id": "door", "name": "DOOR", "slots": ["door"] },
     { "id": "roof", "name": "ROOF", "slots": ["roof", "wall"] },
     { "id": "looks", "name": "LOOKS", "slots": ["favorites"] }
@@ -28,7 +29,55 @@
     "soccer": { "name": "SOCCER", "sign": "TURBO", "accent": "#7dff6b", "floor": "#14301c", "wall": "#1c4030", "ceil": "#0c1810" },
     "builder": { "name": "BUILDER", "sign": "PIXEL", "accent": "#ffe14d", "floor": "#2a2614", "wall": "#3a3418", "ceil": "#14120c" }
   },
+  "rooms": {
+    "home": { "styles": [
+      { "id": "1", "name": "GLASS LOFT", "w": 24, "d": 18, "h": 4.8, "floor": "#e7fff6", "wall": "#f7fbff", "accent": "#3ee6ff", "roof": "glass", "roofName": "GLASS" },
+      { "id": "2", "name": "TIMBER CABIN", "w": 22, "d": 16, "h": 4.2, "floor": "#c4a574", "wall": "#8a5a3a", "accent": "#ffb020", "roof": "stack", "roofName": "STACK" },
+      { "id": "3", "name": "SKY PENTHOUSE", "w": 30, "d": 20, "h": 7.2, "floor": "#d8ecff", "wall": "#f4f7fb", "accent": "#ffe14d", "roof": "glass", "roofName": "GLASS" },
+      { "id": "4", "name": "BLOCK HOME", "w": 24, "d": 18, "h": 5.4, "floor": "#d7c4a3", "wall": "#a67c52", "accent": "#3ee6ff", "roof": "blocks", "roofName": "BLOCKS" }
+    ]},
+    "arcade": { "styles": [
+      { "id": "1", "name": "RETRO LANE", "w": 36, "d": 16, "h": 5.2, "floor": "#2a1844", "wall": "#4a1840", "accent": "#ff4fd8", "roof": "glass", "roofName": "GLASS" },
+      { "id": "2", "name": "POP HALL", "w": 32, "d": 22, "h": 6.8, "floor": "#ffd0ea", "wall": "#7dff6b", "accent": "#ffe14d", "roof": "glass", "roofName": "GLASS" },
+      { "id": "3", "name": "SPACE PIT", "w": 30, "d": 16, "h": 8, "floor": "#e8fbff", "wall": "#d8fff4", "accent": "#3ee6ff", "roof": "glass", "roofName": "GLASS" },
+      { "id": "4", "name": "BLOCK ARCADE", "w": 28, "d": 18, "h": 5.6, "floor": "#ff2a3d", "wall": "#3a7bff", "accent": "#ffe14d", "roof": "blocks", "roofName": "BLOCKS" }
+    ]},
+    "cafe": { "styles": [
+      { "id": "1", "name": "BEACH SHACK", "w": 28, "d": 18, "h": 4.8, "floor": "#f3e2b3", "wall": "#7ee0d0", "accent": "#3ee6ff", "roof": "stack", "roofName": "STACK" },
+      { "id": "2", "name": "WOOD BAKERY", "w": 24, "d": 16, "h": 4.2, "floor": "#e7c8a0", "wall": "#8a5a3a", "accent": "#ffb020", "roof": "stack", "roofName": "STACK" },
+      { "id": "3", "name": "POP DINER", "w": 32, "d": 18, "h": 5.4, "floor": "#d8fff4", "wall": "#ff4fd8", "accent": "#ff2a3d", "roof": "glass", "roofName": "GLASS" },
+      { "id": "4", "name": "NIGHT COUNTER", "w": 26, "d": 16, "h": 4.8, "floor": "#f7fbff", "wall": "#1a2744", "accent": "#ffe14d", "roof": "glass", "roofName": "GLASS" }
+    ]},
+    "pets": { "styles": [
+      { "id": "1", "name": "GARDEN YARD", "w": 36, "d": 24, "h": 5.4, "floor": "#b6f2c4", "wall": "#e7fff6", "accent": "#7dff6b", "roof": "glass", "roofName": "GLASS" },
+      { "id": "2", "name": "CABIN DEN", "w": 26, "d": 18, "h": 4.2, "floor": "#e7c8a0", "wall": "#8a5a3a", "accent": "#ffb020", "roof": "stack", "roofName": "STACK" },
+      { "id": "3", "name": "AQUA BAY", "w": 34, "d": 20, "h": 5.2, "floor": "#d8fff4", "wall": "#3ee6ff", "accent": "#3ee6ff", "roof": "glass", "roofName": "GLASS" },
+      { "id": "4", "name": "BLOCK PARK", "w": 30, "d": 22, "h": 5.2, "floor": "#7dff6b", "wall": "#3a7bd5", "accent": "#ffe14d", "roof": "blocks", "roofName": "BLOCKS" }
+    ]},
+    "soccer": { "styles": [
+      { "id": "1", "name": "SHOP PITCH", "w": 48, "d": 30, "h": 6.8, "floor": "#7dff6b", "wall": "#f7fbff", "accent": "#3ee6ff", "roof": "glass", "roofName": "GLASS" },
+      { "id": "2", "name": "BEACH PITCH", "w": 44, "d": 28, "h": 5.6, "floor": "#f3e2b3", "wall": "#7ee0d0", "accent": "#c4a574", "roof": "stack", "roofName": "STACK" },
+      { "id": "3", "name": "CUP NIGHT", "w": 46, "d": 28, "h": 7, "floor": "#14301c", "wall": "#1c4860", "accent": "#3ee6ff", "roof": "glass", "roofName": "GLASS" },
+      { "id": "4", "name": "BLOCK FIELD", "w": 40, "d": 26, "h": 6.2, "floor": "#7dff6b", "wall": "#3a7bd5", "accent": "#ffe14d", "roof": "blocks", "roofName": "BLOCKS" }
+    ]},
+    "builder": { "styles": [
+      { "id": "1", "name": "GLASS STUDIO", "w": 28, "d": 18, "h": 5.5, "floor": "#e7fff6", "wall": "#f7fbff", "accent": "#3ee6ff", "roof": "glass", "roofName": "GLASS" },
+      { "id": "2", "name": "SPACE LAB", "w": 30, "d": 16, "h": 8, "floor": "#e8fbff", "wall": "#d8fff4", "accent": "#3ee6ff", "roof": "glass", "roofName": "GLASS" },
+      { "id": "3", "name": "WOOD WORKSHOP", "w": 26, "d": 18, "h": 4.6, "floor": "#e7c8a0", "wall": "#8a5a3a", "accent": "#ffb020", "roof": "stack", "roofName": "STACK" },
+      { "id": "4", "name": "SKY OFFICE", "w": 32, "d": 18, "h": 7.2, "floor": "#d8ecff", "wall": "#f4f7fb", "accent": "#ffe14d", "roof": "glass", "roofName": "GLASS" }
+    ]}
+  },
   "slots": {
+    "style": {
+      "name": "ROOM STYLE",
+      "options": [
+        { "id": "city", "name": "CITY SHELL" },
+        { "id": "1", "name": "STYLE 1" },
+        { "id": "2", "name": "STYLE 2" },
+        { "id": "3", "name": "STYLE 3" },
+        { "id": "4", "name": "STYLE 4" }
+      ]
+    },
     "door": {
       "name": "GARAGE DOOR",
       "options": [
@@ -59,6 +108,21 @@
     "checker": "tools/arch-check.mjs",
     "carClear": { "w": 1.85, "h": 1.32, "spare": 0.15 },
     "ellieDoor": 1.9,
-    "signMinPx": 10
+    "signMinPx": 10,
+    "agent": "bc-c7ace59c-0b6f-55c0-add1-b929c9e1652e",
+    "branch": "cursor/arch-check-652e",
+    "planEllie": 1.7,
+    "findings": [
+      "Garage door is not car-sized",
+      "Two window systems share the wall",
+      "Sign is not readable from the street",
+      "Roof is a blank slab from the air",
+      "Purpose is not readable from the air",
+      "Purpose is not readable at street level",
+      "Buildings are still all-black",
+      "Home is not a glass house yet",
+      "Building pass set shadowBlur",
+      "Beyond the stack: blur"
+    ]
   }
 }

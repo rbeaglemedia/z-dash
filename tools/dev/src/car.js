@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import GUI from 'lil-gui';
 import { el, clear, devUrl, repoUrl, fetchJson, readFavs, writeFav } from './dom.js';
 import { shotLabel } from './shot.js';
+import { guestGroup, modelById, scanGroup } from './car-guests.js';
 
 const ANGLES = [
   { id: 'front', name: 'Front', yaw: 0, pitch: 0.22 },
@@ -83,6 +84,12 @@ export function createModule() {
   const errors = [];
   const ui = {};
   let last = { yaw: 0.7, pitch: 0.24, dist: 10.5 };
+  let guestRenderer = null;
+  let guestScene = null;
+  let guestCam = null;
+  let guestJob = null;
+  let sweeping = false;
+  const shown = { a: null, b: null };
   const samples = [];
 
   function defaults() { return Object.assign({}, catalog.defaults); }
@@ -108,30 +115,38 @@ export function createModule() {
     return spec.options.find((o) => o.id === id) || spec.options[0];
   }
 
+  function currentModel(eq) {
+    return modelById(catalog, (eq && eq.model) || '370z');
+  }
+
   function kidOf(eq) {
     const paint = opt('paint', eq.paint);
     const wheels = opt('wheels', eq.wheels);
     const spoiler = opt('spoiler', eq.spoiler);
     const caliper = opt('caliper', eq.caliper);
     const glow = opt('underglow', eq.underglow);
-    const plain = paint.kind === 'game' && wheels.kind === 'game' && !spoiler.spoiler && caliper.kind === 'game' && !glow.underglow;
+    const vinyl = opt('vinyl', eq.vinyl);
+    const kit = opt('kit', eq.kit);
+    const bumper = opt('bumper', eq.bumper);
+    const dressed = !!(kit.lip || kit.skirts || kit.diffuser || kit.spoiler || kit.tips || bumper.bumper || vinyl.grid);
+    const plain = paint.kind === 'game' && wheels.kind === 'game' && !spoiler.spoiler && caliper.kind === 'game' && !glow.underglow && !dressed;
     if (plain) return null;
     return {
       paint: paint.paint || base.paint,
       glow: paint.glow || base.glow,
-      grid: paint.grid || base.grid,
+      grid: vinyl.grid || paint.grid || base.grid,
       wheel: wheels.wheel || base.wheel,
       wheelGlow: !!wheels.wheelGlow,
-      spoiler: spoiler.spoiler || null,
+      spoiler: kit.spoiler || spoiler.spoiler || null,
       wings: null,
       extra: null,
       extras: [],
-      lip: null,
-      skirts: null,
-      diffuser: null,
-      tips: null,
+      lip: kit.lip || null,
+      skirts: kit.skirts || null,
+      diffuser: kit.diffuser || null,
+      tips: kit.tips || null,
       underglow: glow.underglow || null,
-      bumper: null,
+      bumper: bumper.bumper || null,
       caliper: caliper.caliper || base.caliper,
     };
   }
@@ -165,7 +180,89 @@ export function createModule() {
 
   function makeLabel() {
     const angle = ANGLES.find((a) => a.id === angleId) || ANGLES[0];
-    return '370Z · ' + angle.name + ' · ' + paintName(eqA) + ' · f0';
+    return currentModel(eqA).name + ' · ' + angle.name + ' · ' + paintName(eqA) + ' · f0';
+  }
+
+  function spanOf(eq) {
+    const model = currentModel(eq);
+    if (model.kind === 'tow') return model.l;
+    if (model.kind === 'xray') return catalog.facts.l;
+    const which = eq === eqB ? 'b' : 'a';
+    const size = shown[which] && shown[which].userData.size;
+    return size ? Math.max(size.x, size.z) : 4;
+  }
+
+  function sharedDist(orbit) {
+    const need = Math.max(spanOf(eqA), compare ? spanOf(eqB) : 0);
+    if (need < 6) return orbit.dist;
+    return Math.max(orbit.dist, need * 1.15);
+  }
+
+  function aimGuest(orbit, targetY) {
+    const dist = sharedDist(orbit);
+    guestCam.fov = 26;
+    guestCam.aspect = canvas.width / Math.max(1, canvas.height);
+    guestCam.position.set(
+      Math.cos(orbit.yaw) * Math.cos(orbit.pitch) * dist,
+      targetY + Math.sin(orbit.pitch) * dist,
+      Math.sin(orbit.yaw) * Math.cos(orbit.pitch) * dist,
+    );
+    guestCam.lookAt(0, targetY, 0);
+    guestCam.updateProjectionMatrix();
+  }
+
+  function paintGuest(group, x, w, h, orbit) {
+    if (!group || !guestRenderer || w < 2 || h < 2) return;
+    for (const child of guestScene.children) child.visible = child === group;
+    group.visible = true;
+    aimGuest(orbit, (group.userData.size && group.userData.size.y * 0.45) || 0.6);
+    guestRenderer.setSize(w, h, false);
+    guestRenderer.render(guestScene, guestCam);
+    ctx2.drawImage(guestRenderer.domElement, x, 0, w, h);
+  }
+
+  function guestReady() {
+    const list = compare ? [eqA, eqB] : [eqA];
+    for (const eq of list) {
+      const model = currentModel(eq);
+      if (model.kind === 'xray') continue;
+      const which = eq === eqB ? 'b' : 'a';
+      if (!shown[which] || shown[which].userData.modelId !== model.id) return false;
+    }
+    return true;
+  }
+
+  function ensureDraw(depth) {
+    depth = depth || 0;
+    if (guestJob) {
+      return guestJob.then(() => (guestReady() || depth > 2 ? null : ensureDraw(depth + 1)));
+    }
+    if (guestReady()) {
+      draw();
+      designText();
+      return Promise.resolve();
+    }
+    guestJob = (async () => {
+      const list = compare ? [['a', eqA], ['b', eqB]] : [['a', eqA]];
+      for (const [which, eq] of list) {
+        const model = currentModel(eq);
+        if (model.kind === 'xray') {
+          if (shown[which]) shown[which].visible = false;
+          continue;
+        }
+        const group = await guestGroup(Object.assign({}, model, { url: model.file ? repoUrl(model.file) : '' }));
+        group.userData.modelId = model.id;
+        if (guestScene && !group.parent) guestScene.add(group);
+        shown[which] = group;
+      }
+      if (alive) {
+        draw();
+        designText();
+      }
+    })().catch((err) => {
+      errors.push(String(err && err.message || err));
+    }).finally(() => { guestJob = null; });
+    return guestJob;
   }
 
   function blit(look, x, w, h, orbit) {
@@ -184,6 +281,12 @@ export function createModule() {
     ctx2.drawImage(X.canvas, x, 0, w, h);
   }
 
+  function paintSide(eq, which, x, w, h, orbit) {
+    const model = currentModel(eq);
+    if (model.kind === 'xray') blit(kidOf(eq), x, w, h, Object.assign({}, orbit, { dist: sharedDist(orbit) }));
+    else paintGuest(shown[which], x, w, h, orbit);
+  }
+
   function draw() {
     if (!X || !X.ready || !canvas) return;
     const orbit = readOrbit();
@@ -193,11 +296,11 @@ export function createModule() {
     ctx2.fillRect(0, 0, w, h);
     if (compare) {
       const hw = Math.floor(w / 2);
-      blit(kidOf(eqA), 0, hw, h, orbit);
-      blit(kidOf(eqB), hw, w - hw, h, orbit);
+      paintSide(eqA, 'a', 0, hw, h, orbit);
+      paintSide(eqB, 'b', hw, w - hw, h, orbit);
       ui.syncYaw = orbit.yaw;
     } else {
-      blit(kidOf(eqA), 0, w, h, orbit);
+      paintSide(eqA, 'a', 0, w, h, orbit);
     }
   }
 
@@ -261,19 +364,36 @@ export function createModule() {
   }
 
   function designText() {
-    const cfg = window.ZD_EMBED && window.ZD_EMBED.cfg;
+    const facts = catalog.facts;
+    const model = currentModel(eqA);
     const lines = [];
-    lines.push(cfg && cfg.file === catalog.cfgFile ? 'PASS  same GLB path ' + cfg.file : 'FAIL  GLB path ' + (cfg && cfg.file));
-    const size = visibleSize();
-    const length = Math.max(size.x, size.z);
-    lines.push(Math.abs(length - 4.25) < 0.2 ? 'PASS  length ' + length.toFixed(2) + ' m (4.25)' : 'FAIL  length ' + length.toFixed(2) + ' m');
-    lines.push(Math.abs(size.y - 1.315) < 0.25 ? 'PASS  height ' + size.y.toFixed(2) + ' m (1.315)' : 'FAIL  height ' + size.y.toFixed(2) + ' m');
-    const bad = finiteCar();
-    lines.push(bad.length ? 'FAIL  ' + bad.slice(0, 3).join(', ') : 'PASS  matrices and textures finite');
+    lines.push(facts.car + '  ' + facts.l + ' × ' + facts.w + ' × ' + facts.h + ' m · wheelbase ' + facts.wb + ' m');
+    lines.push(facts.paint + ' · ' + facts.wheels + ' · tips ' + facts.tips);
+    lines.push(facts.bumper);
+    if (model.kind === 'xray') {
+      const cfg = window.ZD_EMBED && window.ZD_EMBED.cfg;
+      lines.push(cfg && cfg.file === catalog.cfgFile ? 'PASS  same GLB path ' + cfg.file : 'FAIL  GLB path ' + (cfg && cfg.file));
+      const size = visibleSize();
+      const length = Math.max(size.x, size.z);
+      lines.push(Math.abs(length - facts.l) < 0.2 ? 'PASS  length ' + length.toFixed(2) + ' m (' + facts.l + ')' : 'FAIL  length ' + length.toFixed(2) + ' m');
+      lines.push(Math.abs(size.y - facts.h) < 0.25 ? 'PASS  height ' + size.y.toFixed(2) + ' m (' + facts.h + ')' : 'FAIL  height ' + size.y.toFixed(2) + ' m');
+      const bad = finiteCar();
+      lines.push(bad.length ? 'FAIL  ' + bad.slice(0, 3).join(', ') : 'PASS  matrices and textures finite');
+      if (opt('bumper', eqA.bumper).bumper) lines.push('CHECK  Stillen is on hold. The shipped look forces bumper null.');
+    } else {
+      const size = shown.a && shown.a.userData.size;
+      const measured = size ? Math.max(size.x, size.z).toFixed(2) + ' × ' + size.y.toFixed(2) + ' × ' + Math.min(size.x, size.z).toFixed(2) + ' m' : 'not loaded';
+      lines.push('CHECK  ' + model.name + ' native ' + measured + ' · not ' + catalog.cfgFile);
+      lines.push('CHECK  rule 6: a close copy has to be the 370Z GLB');
+      if (model.kind === 'tow') lines.push('PASS  tow wheels are discs facing the side, radius 0.55 m');
+      const bad = scanGroup(shown.a);
+      lines.push(bad.length ? 'FAIL  ' + bad.slice(0, 3).join(', ') : 'PASS  matrices and textures finite');
+    }
     lines.push('PASS  this spinner does not call shadowBlur');
-    lines.push('Ellie 1.50 m · 370Z ' + size.y.toFixed(2) + ' m tall');
+    lines.push('Ellie 1.50 m beside this car');
     lines.push(checkerNote);
     for (const rule of catalog.design.rules) lines.push('· ' + rule);
+    for (const finding of catalog.design.findings || []) lines.push('CHECK  ' + finding);
     ui.bar.textContent = lines.join('\n');
     return lines;
   }
@@ -326,6 +446,7 @@ export function createModule() {
             if (ui.ctrls[slot]) ui.ctrls[slot].setValue(opt.id);
             ui.silent = false;
             paintChips();
+            ensureDraw();
             if (ctx && ctx.onSave) ctx.onSave();
           });
           row.appendChild(b);
@@ -360,6 +481,14 @@ export function createModule() {
     menu.append(ui.status, ui.chips, ui.gui, ui.bar);
     spin.append(stageHost, menu);
     host.appendChild(spin);
+    guestRenderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, preserveDrawingBuffer: true });
+    guestRenderer.setPixelRatio(1);
+    guestRenderer.outputColorSpace = THREE.SRGBColorSpace;
+    guestRenderer.shadowMap.enabled = false;
+    guestRenderer.setClearColor(0x07010f, 1);
+    guestScene = new THREE.Scene();
+    guestScene.background = new THREE.Color(0x07010f);
+    guestCam = new THREE.PerspectiveCamera(26, 1, 0.08, 200);
     camera = new THREE.PerspectiveCamera(26, 1, 0.1, 80);
     controls = new OrbitControls(camera, canvas);
     controls.enableDamping = true;
@@ -419,6 +548,7 @@ export function createModule() {
         if (ui.silent) return;
         eqOf(edit)[slot] = value;
         paintChips();
+        ensureDraw();
         if (ctx && ctx.onSave) ctx.onSave();
       });
     }
@@ -434,7 +564,8 @@ export function createModule() {
       prev = now;
       controls.update(dt);
       const t1 = performance.now();
-      draw();
+      if (!sweeping && !guestReady()) ensureDraw();
+      else draw();
       samples.push(performance.now() - t1);
       if (samples.length > 8) samples.shift();
       raf = requestAnimationFrame(loop);
@@ -473,6 +604,7 @@ export function createModule() {
     const fails = [];
     const notes = [];
     const before = errors.length;
+    sweeping = true;
     wantTurn = false;
     controls.autoRotate = false;
     compare = false;
@@ -480,7 +612,21 @@ export function createModule() {
     draw();
     captureBase();
     const tint0 = hex(X.shell.uniforms.tint.value);
+    for (const model of catalog.models) {
+      eqA = defaults();
+      eqA.model = model.id;
+      try { await ensureDraw(); } catch (err) {
+        fails.push('model ' + model.id + ' ' + (err && err.message || err));
+        continue;
+      }
+      const bad = model.kind === 'xray' ? finiteCar() : scanGroup(shown.a);
+      if (bad.length) fails.push('model ' + model.id + ' ' + bad.slice(0, 4).join(','));
+      if (model.kind !== 'xray' && (!shown.a || shown.a.userData.modelId !== model.id)) fails.push('model ' + model.id + ' did not show');
+    }
+    eqA = defaults();
+    await ensureDraw();
     for (const [slot, spec] of Object.entries(catalog.slots)) {
+      if (slot === 'model') continue;
       for (const item of spec.options) {
         eqA = defaults();
         eqA[slot] = item.id;
@@ -501,9 +647,12 @@ export function createModule() {
     eqA = mixed;
     try { draw(); } catch (err) { fails.push('mixed ' + err.message); }
     eqA = defaults();
+    await ensureDraw();
     draw();
     const tint1 = hex(X.shell.uniforms.tint.value);
     if (tint1 !== tint0) fails.push('paint leftover ' + tint1 + ' vs ' + tint0);
+    const stillen = X.kidParts && X.kidParts.stillen;
+    if (stillen && stillen.visible && X.kidGrp && X.kidGrp.visible) fails.push('stillen leftover');
     const lines = designText();
     if (lines.some((l) => l.startsWith('FAIL'))) fails.push('design ' + lines.filter((l) => l.startsWith('FAIL')).join(' | '));
     compare = true;
@@ -522,6 +671,7 @@ export function createModule() {
     for (const e of fresh) fails.push('error ' + e);
     wantTurn = turn;
     controls.autoRotate = turn;
+    sweeping = false;
     return { fails, notes, label: shot.label, errors: fresh };
   }
 
@@ -565,6 +715,7 @@ export function createModule() {
       unhook = hook();
       try {
         catalog = await fetchJson(devUrl('catalogs/car.json'));
+        catalog.slots.model.options = catalog.models.map((m) => ({ id: m.id, name: m.name }));
         try {
           const res = await fetch(repoUrl(catalog.design.checker));
           checkerNote = res.ok
@@ -600,6 +751,14 @@ export function createModule() {
       cancelAnimationFrame(raf);
       if (resumeTimer) clearTimeout(resumeTimer);
       if (controls) controls.dispose();
+      if (guestScene) {
+        for (const child of guestScene.children.slice()) guestScene.remove(child);
+      }
+      if (guestRenderer) guestRenderer.dispose();
+      guestRenderer = null;
+      guestScene = null;
+      shown.a = null;
+      shown.b = null;
       if (gui) gui.destroy();
       if (ui.obs) ui.obs.disconnect();
       controls = null;

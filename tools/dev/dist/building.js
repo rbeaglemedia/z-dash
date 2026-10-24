@@ -1,7 +1,7 @@
 import {
   createStage,
   scanFinite
-} from "./chunk-7CUFA5YL.js";
+} from "./chunk-W4X5YMVY.js";
 import {
   BoxGeometry,
   CanvasTexture,
@@ -22,7 +22,7 @@ import {
   repoUrl,
   shotLabel,
   writeFav
-} from "./chunk-JNBKNBFJ.js";
+} from "./chunk-BZ6ZX5PL.js";
 
 // tools/dev/src/building.js
 var ANGLES = [
@@ -76,10 +76,20 @@ function createModule() {
   function purpose(eq) {
     return catalog.purposes[eq.purpose] || catalog.purposes.garage;
   }
+  function roomStyle(eq) {
+    if (!eq || !eq.style || eq.style === "city") return null;
+    const pack = catalog.rooms && catalog.rooms[eq.purpose];
+    if (!pack) return null;
+    return (pack.styles || []).find((s) => s.id === eq.style) || null;
+  }
   function door(eq) {
+    const room = roomStyle(eq);
+    if (room) return { id: "room", name: room.name, w: 2, h: 2.2 };
     return catalog.slots.door.options.find((o) => o.id === eq.door) || catalog.slots.door.options[0];
   }
   function roof(eq) {
+    const room = roomStyle(eq);
+    if (room) return { id: room.roof, name: room.roofName, kind: room.roof };
     return catalog.slots.roof.options.find((o) => o.id === eq.roof) || catalog.slots.roof.options[0];
   }
   function wall(eq) {
@@ -112,7 +122,101 @@ function createModule() {
     tex.colorSpace = SRGBColorSpace;
     return tex;
   }
+  function markers(g, d, doorW, frontZ) {
+    const z = scale.z;
+    const car = new Mesh(
+      new BoxGeometry(z.l, z.h, z.w),
+      new MeshBasicMaterial({ color: 4122367, wireframe: true })
+    );
+    car.position.set(0, z.h / 2, frontZ + 2.4);
+    car.name = "zd-z";
+    const pole = new Mesh(new BoxGeometry(0.08, scale.ellie, 0.08), new MeshBasicMaterial({ color: 16732120 }));
+    pole.position.set(doorW / 2 + 0.5, scale.ellie / 2, frontZ + 0.5);
+    pole.name = "zd-ellie-pole";
+    g.add(car, pole);
+    if (d) {
+      const planH = catalog.architecture.planEllie || 1.7;
+      const plan = new Mesh(new BoxGeometry(0.05, planH, 0.05), new MeshBasicMaterial({ color: 16774907, wireframe: true }));
+      plan.position.set(doorW / 2 + 0.85, planH / 2, frontZ + 0.5);
+      plan.name = "zd-plan-ellie";
+      g.add(plan);
+    }
+  }
+  function buildRoom(eq, room) {
+    const g = new Group();
+    const bay = { w: room.w, d: room.d, h: room.h };
+    const d = door(eq);
+    const mat = (color) => new MeshLambertMaterial({ color });
+    const basic = (color) => new MeshBasicMaterial({ color });
+    const floor = new Mesh(new BoxGeometry(bay.w, 0.08, bay.d), mat(room.floor));
+    floor.position.y = 0.04;
+    const shell = room.wall;
+    const left = new Mesh(new BoxGeometry(0.16, bay.h, bay.d), mat(shell));
+    left.position.set(-bay.w / 2, bay.h / 2, 0);
+    const right = left.clone();
+    right.material = mat(shell);
+    right.position.x = bay.w / 2;
+    const back = new Mesh(new BoxGeometry(bay.w, bay.h, 0.16), mat(shell));
+    back.position.set(0, bay.h / 2, -bay.d / 2);
+    const sideW = (bay.w - d.w) / 2;
+    const frontL = new Mesh(new BoxGeometry(sideW, bay.h, 0.16), mat(shell));
+    frontL.position.set(-(d.w / 2 + sideW / 2), bay.h / 2, bay.d / 2);
+    const frontR = frontL.clone();
+    frontR.material = mat(shell);
+    frontR.position.x *= -1;
+    const lintelH = Math.max(0.08, bay.h - d.h);
+    const lintel = new Mesh(new BoxGeometry(d.w, lintelH, 0.16), mat(shell));
+    lintel.position.set(0, d.h + lintelH / 2, bay.d / 2);
+    const doorMesh = new Mesh(new BoxGeometry(d.w, d.h, 0.08), basic("#3ee6ff"));
+    doorMesh.position.set(0, d.h / 2, bay.d / 2 + 0.02);
+    doorMesh.name = "zd-door";
+    doorMesh.userData.size = { w: d.w, h: d.h };
+    doorMesh.userData.role = "door";
+    g.add(floor, left, right, back, frontL, frontR, lintel, doorMesh);
+    const slab = new Mesh(new BoxGeometry(bay.w + 0.4, 0.12, bay.d + 0.4), mat(room.floor));
+    slab.position.y = bay.h + 0.06;
+    slab.userData.role = "roof";
+    const edge = new Mesh(
+      new BoxGeometry(bay.w + 0.5, 0.08, bay.d + 0.5),
+      new MeshBasicMaterial({ color: 16732120, wireframe: true })
+    );
+    edge.position.y = bay.h + 0.16;
+    edge.userData.role = "roof";
+    g.add(slab, edge);
+    if (room.roof === "glass") {
+      const pane = new Mesh(new BoxGeometry(bay.w * 0.4, 0.04, bay.d * 0.35), basic(room.accent));
+      pane.position.y = bay.h + 0.2;
+      pane.userData.role = "roof";
+      g.add(pane);
+    } else if (room.roof === "stack") {
+      const cap = new Mesh(new BoxGeometry(bay.w * 0.35, 0.5, bay.d * 0.28), mat(room.accent));
+      cap.position.y = bay.h + 0.4;
+      cap.userData.role = "roof";
+      g.add(cap);
+    } else if (room.roof === "blocks") {
+      for (let i = 0; i < 3; i++) {
+        const cube = new Mesh(new BoxGeometry(0.8, 0.8, 0.8), mat(room.accent));
+        cube.position.set(-1.2 + i * 1.2, bay.h + 0.5, 0);
+        cube.userData.role = "roof";
+        g.add(cube);
+      }
+    }
+    const light = new Mesh(new BoxGeometry(0.4, 0.12, 0.4), basic("#ffe14d"));
+    light.position.set(0, bay.h - 0.55, 0);
+    light.userData.role = "float";
+    light.name = "zd-float";
+    g.add(light);
+    const p = purpose(eq);
+    const sign = new Mesh(new PlaneGeometry(Math.min(6, bay.w * 0.4), 0.8), new MeshBasicMaterial({ map: signTexture(room.name, room.accent) }));
+    sign.position.set(0, bay.h - 0.7, bay.d / 2 + 0.2);
+    g.add(sign);
+    markers(g, true, d.w, bay.d / 2);
+    g.userData.sign = p.sign;
+    return g;
+  }
   function build(eq) {
+    const room = roomStyle(eq);
+    if (room) return buildRoom(eq, room);
     const g = new Group();
     const bay = catalog.bay;
     const p = purpose(eq);
@@ -139,10 +243,11 @@ function createModule() {
     const lintelH = Math.max(0.08, bay.h - d.h);
     const lintel = new Mesh(new BoxGeometry(d.w, lintelH, 0.16), mat(shell));
     lintel.position.set(0, d.h + lintelH / 2, bay.d / 2);
-    const doorMesh = new Mesh(new BoxGeometry(d.w, d.h, 0.08), mat("#14081c"));
+    const doorMesh = new Mesh(new BoxGeometry(d.w, d.h, 0.08), basic("#3ee6ff"));
     doorMesh.position.set(0, d.h / 2, bay.d / 2 + 0.02);
     doorMesh.name = "zd-door";
     doorMesh.userData.size = { w: d.w, h: d.h };
+    doorMesh.userData.role = "door";
     g.add(floor, left, right, back, frontL, frontR, lintel, doorMesh);
     const winMat = basic(p.accent);
     for (let i = 0; i < 3; i++) {
@@ -153,7 +258,14 @@ function createModule() {
     const roofMat = mat(p.ceil || "#14120c");
     const slab = new Mesh(new BoxGeometry(bay.w + 0.4, 0.12, bay.d + 0.4), roofMat);
     slab.position.y = bay.h + 0.06;
-    g.add(slab);
+    slab.userData.role = "roof";
+    const edge = new Mesh(
+      new BoxGeometry(bay.w + 0.5, 0.08, bay.d + 0.5),
+      new MeshBasicMaterial({ color: 16732120, wireframe: true })
+    );
+    edge.position.y = bay.h + 0.16;
+    edge.userData.role = "roof";
+    g.add(slab, edge);
     if (r.kind === "pad") {
       const pad = new Mesh(new RingGeometry(1.2, 1.7, 24), basic(p.accent));
       pad.rotation.x = -Math.PI / 2;
@@ -171,18 +283,12 @@ function createModule() {
     const sign = new Mesh(new PlaneGeometry(2.4, 0.6), new MeshBasicMaterial({ map: signTexture(p.sign, p.accent) }));
     sign.position.set(0, bay.h - 0.5, bay.d / 2 + 0.18);
     g.add(sign);
-    const z = scale.z;
-    const car = new Mesh(
-      new BoxGeometry(z.l, z.h, z.w),
-      new MeshBasicMaterial({ color: 4122367, wireframe: true })
-    );
-    car.position.set(0, z.h / 2, bay.d / 2 + 2.4);
-    car.name = "zd-z";
-    g.add(car);
-    const pole = new Mesh(new BoxGeometry(0.06, scale.ellie, 0.06), basic(16732120));
-    pole.position.set(d.w / 2 + 0.4, scale.ellie / 2, bay.d / 2 + 0.4);
-    pole.name = "zd-ellie-pole";
-    g.add(pole);
+    const light = new Mesh(new BoxGeometry(0.35, 0.1, 0.35), basic("#ffe14d"));
+    light.position.set(0, bay.h - 0.4, 0);
+    light.userData.role = "float";
+    light.name = "zd-float";
+    g.add(light);
+    markers(g, false, d.w, bay.d / 2);
     return g;
   }
   function show(which) {
@@ -196,9 +302,10 @@ function createModule() {
     groups[which] = g;
     stage.scene.add(g);
     if (which === "a") {
-      const bay = catalog.bay;
-      const dist = Math.max(bay.w, bay.h) * 0.9;
-      stage.setTarget("a", bay.h * 0.45, dist);
+      const room = roomStyle(eqOf("a"));
+      const span = room ? Math.max(room.w, room.d) : Math.max(catalog.bay.w, catalog.bay.h);
+      const look = room ? room.h * 0.4 : catalog.bay.h * 0.45;
+      stage.setTarget("a", look, span * 0.9);
       stage.ruler.visible = false;
     }
   }
@@ -217,8 +324,11 @@ function createModule() {
     const fov = 32 * Math.PI / 180;
     const px = 0.6 / Math.max(0.1, dist) / (2 * Math.tan(fov / 2)) * 760;
     lines.push((px >= rules.signMinPx ? "PASS  " : "FAIL  ") + "sign about " + Math.round(px) + " px");
+    lines.push("HIGHLIGHT door cyan \xB7 roof edge \xB7 floating hung light");
     lines.push("Ellie pole " + scale.ellie.toFixed(2) + " m \xB7 370Z " + scale.z.l + " \xD7 " + scale.z.w + " \xD7 " + scale.z.h + " m");
+    if (roomStyle(eq)) lines.push("Room plan draws Ellie at " + (rules.planEllie || 1.7).toFixed(2) + " m. The pink pole stays 1.50 m.");
     lines.push(checkerNote);
+    for (const finding of rules.findings || []) lines.push("CHECK  " + finding);
     return lines;
   }
   function paintBar() {
@@ -311,7 +421,8 @@ function createModule() {
   function makeLabel() {
     const angle = ANGLES.find((a) => a.id === angleId) || ANGLES[1];
     const p = purpose(eqA);
-    return p.name + " \xB7 " + angle.name + " \xB7 " + door(eqA).name + " \xB7 f0";
+    const room = roomStyle(eqA);
+    return p.name + " \xB7 " + angle.name + " \xB7 " + (room ? room.name : door(eqA).name) + " \xB7 f0";
   }
   function capture(download) {
     show(compare ? "a" : "a");
@@ -445,6 +556,28 @@ function createModule() {
     rebuild("a");
     let bad = scanFinite(groups.a);
     if (bad.length) fails.push("base " + bad.join(","));
+    for (const [id, pack] of Object.entries(catalog.rooms || {})) {
+      for (const st of pack.styles) {
+        eqA = defaults();
+        eqA.purpose = id;
+        eqA.style = st.id;
+        try {
+          rebuild("a");
+        } catch (err) {
+          fails.push("room " + id + " " + st.id + " " + err.message);
+          continue;
+        }
+        bad = scanFinite(groups.a);
+        if (bad.length) fails.push("room " + id + " " + st.id + " " + bad.join(","));
+        const mesh = groups.a.getObjectByName("zd-door");
+        const size = mesh && mesh.userData.size;
+        if (!size || Math.abs(size.w - 2) > 1e-3 || Math.abs(size.h - 2.2) > 1e-3) fails.push("room door " + id + " " + st.id);
+        if (!groups.a.getObjectByName("zd-float")) fails.push("room float highlight " + id + " " + st.id);
+        if (!groups.a.getObjectByName("zd-z") || !groups.a.getObjectByName("zd-ellie-pole")) fails.push("room scale marks " + id);
+      }
+    }
+    eqA = defaults();
+    rebuild("a");
     for (const id of Object.keys(catalog.purposes)) {
       eqA = defaults();
       eqA.purpose = id;
