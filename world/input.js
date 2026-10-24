@@ -81,9 +81,11 @@ function startRoll(d){return;/* Bob: no barrel rolls */if(!flying||P.ground||P.r
 {const tap={};addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='KeyZ')startRoll(-1);if(e.code==='KeyC')startRoll(1);const d=(e.code==='ArrowLeft'||e.code==='KeyA')?-1:(e.code==='ArrowRight'||e.code==='KeyD')?1:0;if(!d)return;const n=performance.now();if(n-(tap[d]||0)<300){startRoll(d);tap[d]=0;}else tap[d]=n;});}
 const K={};addEventListener('keydown',e=>{K[e.code]=1;if(e.code.startsWith('Arrow')||e.code==='Space')e.preventDefault();});addEventListener('keyup',e=>{K[e.code]=0;});
 const B={tup:0,nos:0,brk:0,brkDx:0,brkX:null,ebLatch:0,walk:0,run:0,jump:0,emote:0};
-// Each button keeps its own pointer and its own touch so AIR BRAKE and THROTTLE can be held together.
-// Touch is handled on touch events (two fingers). Mouse/pen use pointer events. A touch does not also
-// take the mouse-compat pointer that some browsers fire afterwards.
+// Each button keeps its own pointer and its own touch so BRAKE and THROTTLE can be held together.
+// Touch starts the hold. Mouse/pen use pointer events. A touch does not also take the mouse-compat
+// pointer some browsers fire afterwards.
+// pointerup/pointercancel for that same touch still releases. A second finger on THROTTLE can drop
+// touchend, and ignoring the touch pointer used to leave B.brk latched, so brake marks kept laying.
 // On the ground the button reads BRAKE. In the air (P.y > 0.15) it reads AIR BRAKE.
 // The label is rewritten only when that ground/air state changes. Past the drag threshold,
 // on the ground or in the air, a separate E-BRAKE pad pops up under the finger, to the right
@@ -122,15 +124,22 @@ function bindHold(id){const el=document.getElementById(id);let ptr=null,touchId=
     if(wasFoot){if(id==='tup')B.walk=0;else if(id==='nos'){B.run=0;if(jumpLatched){jumpLatched=false;const brk=document.getElementById('brk');if(brk&&!brk.classList.contains('nfxp')){B.jump=0;brk.classList.remove('on');}}}else if(id==='brk')B.jump=0;
       if(window.WALK_MODE)WALK_MODE.runMode=!!(onFootNow()&&B.run&&B.walk);return;}
     B[id]=0;if(id==='brk'){B.brkDx=0;B.brkX=null;B.ebLatch=0;syncEb();}};
-  el.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||performance.now()-ebTouchAt<700)return;e.preventDefault();ptr=e.pointerId;try{el.setPointerCapture(e.pointerId);}catch(_){}down(e.clientX,e.clientY);});
+  el.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='touch'){if(ptr==null)ptr=e.pointerId;return;}
+    if(performance.now()-ebTouchAt<700)return;
+    e.preventDefault();ptr=e.pointerId;try{el.setPointerCapture(e.pointerId);}catch(_){}down(e.clientX,e.clientY);});
   el.addEventListener('pointermove',e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;move(e.clientX,e.clientY);});
-  const pup=e=>{if(e.pointerType==='touch'||ptr!==e.pointerId)return;ptr=null;up();};
+  const pup=e=>{if(ptr!==e.pointerId)return;ptr=null;touchId=null;up();};
   el.addEventListener('pointerup',pup);el.addEventListener('pointercancel',pup);
+  addEventListener('pointerup',pup,true);addEventListener('pointercancel',pup,true);
   el.addEventListener('touchstart',e=>{ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}
     for(const t of e.changedTouches)if(touchId==null){touchId=t.identifier;down(t.clientX,t.clientY);}},{passive:false});
   el.addEventListener('touchmove',e=>{for(const t of e.changedTouches)if(t.identifier===touchId){ebTouchAt=performance.now();try{e.preventDefault();}catch(_){}move(t.clientX,t.clientY);}},{passive:false});
-  const tup=e=>{ebTouchAt=performance.now();for(const t of e.changedTouches)if(t.identifier===touchId){touchId=null;up();}};
-  el.addEventListener('touchend',tup,{passive:false});el.addEventListener('touchcancel',tup,{passive:false});}
+  const tup=e=>{if(touchId==null)return;let hit=false;for(const t of e.changedTouches)if(t.identifier===touchId)hit=true;
+    if(!hit&&e.type==='touchcancel'){let still=false;for(const t of e.touches)if(t.identifier===touchId)still=true;hit=!still;}
+    if(!hit)return;ebTouchAt=performance.now();ptr=null;touchId=null;up();};
+  el.addEventListener('touchend',tup,{passive:false});el.addEventListener('touchcancel',tup,{passive:false});
+  addEventListener('touchend',tup,true);addEventListener('touchcancel',tup,true);}
 for(const id of['tup','nos','brk'])bindHold(id);
 // WINGS: a quick tap (pad never shown, drag under 24px) opens or closes the wings.
 // Slide left at least 36px in unflipped coords (flip180 mapped like the E-BRAKE pad) and #mdpad
