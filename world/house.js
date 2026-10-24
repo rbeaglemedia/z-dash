@@ -412,29 +412,18 @@ function walkDrawPetBody(g,x,z,W,H){
 }
 function walkPaintCrew(g,foot,W,H){
   const crew=window.CREW;
-  if(!crew||typeof crew.preview!=='function'||typeof document==='undefined')return false;
-  const bw=360,bh=480;
-  if(!walkCrewBuf)walkCrewBuf=document.createElement('canvas');
-  if(walkCrewBuf.width!==bw){walkCrewBuf.width=bw;walkCrewBuf.height=bh;}
-  const c=walkCrewBuf.getContext('2d',{willReadFrequently:true});
-  if(!c)return false;
-  const state=window.CREW_STATE,prev=state&&state.gait;
+  if(!crew||typeof crew.paintCompanion!=='function')return false;
+  const room=WALK_MODE.room||{x:0,z:1.2,petX:1.1,petZ:1.6};
+  const rz=4.6-room.z*0.55,pz=4.6-(room.petZ==null?room.z+0.4:room.petZ)*0.55;
+  const px=room.petX==null?room.x+0.9:room.petX;
+  const moving=WALK_MODE.speed>0.3||room.tx!=null;
+  const project=(x,y,z)=>{
+    const p=walkCam(x,y,z,W,H),f=H*0.58;
+    return [p[0],p[1],1/Math.max(0.05,p[2]),f];
+  };
   try{
-    if(state)state.gait=(WALK_MODE.speed>0.3||(WALK_MODE.room&&WALK_MODE.room.tx!=null))?'walk':'idle';
-    crew.preview(c,bw,bh,performance.now());
+    return crew.paintCompanion(g,project,{x:room.x,y:0,z:rz,yaw:WALK_MODE.yaw||0,gait:moving?'walk':'idle',phase:WALK_MODE.stridePhase},{x:px,y:0,z:pz,yaw:WALK_MODE.yaw||0})!==false;
   }catch(e){return false;}
-  finally{if(state&&prev!=null)state.gait=prev;}
-  let img;try{img=c.getImageData(0,0,bw,bh);}catch(e){return false;}
-  const d=img.data;let ink=0;
-  for(let i=0;i<d.length;i+=4){
-    if(d[i]<18&&d[i+1]<14&&d[i+2]<32)d[i+3]=0;
-    else ink++;
-  }
-  if(ink<80)return false;
-  c.putImageData(img,0,0);
-  const dh=Math.min(H*0.78,W*0.92),dw=dh*(bw/bh);
-  g.drawImage(walkCrewBuf,foot[0]-dw*0.40,foot[1]-dh*0.90,dw,dh);
-  return true;
 }
 function walkPaintRoom(){
   const cv=typeof document!=='undefined'&&document.getElementById('walk-room-cv');

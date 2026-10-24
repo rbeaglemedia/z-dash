@@ -443,24 +443,27 @@ function customSpec(sm){
   return spec;
 }
 function humanSpec(gait,phase,tSec,allowCustom){
+  let spec;
   if(gait==='dance'){
-    if(allowCustom!==false){const sm=sampleHumanSelected(tSec);if(sm)return customSpec(sm);}
-    return builtinDance(((tSec%8)+8)%8/8);
+    if(allowCustom!==false){const sm=sampleHumanSelected(tSec);if(sm)spec=customSpec(sm);}
+    if(!spec)spec=builtinDance(((tSec%8)+8)%8/8);
+  }else{
+    spec=baseSpec();const s=Math.sin((phase||0)*Math.PI*2);
+    if(gait!=='walk'&&gait!=='run'){
+      const b=Math.sin((phase||0)*Math.PI*2);
+      spec.bob=.016*b;spec.headYaw=.18*Math.sin((phase||0)*Math.PI*2*.37);spec.headPitch=.04*b;
+      spec.sway=.03*b;spec.armL=.12;spec.armR=.1;spec.elbL=spec.elbR=.28;spec.kneeL=spec.kneeR=.06;
+    }else{
+      const run=gait==='run',A=(run?48:28)*Math.PI/180;
+      spec.armL=-A*s;spec.armR=A*s;spec.legL=A*s;spec.legR=-A*s;
+      spec.sway=(run?0.05:0.07)*Math.sin((phase||0)*Math.PI*4);
+      spec.lean=run?12*Math.PI/180:.04;
+      spec.elbL=spec.elbR=run?0.7:0.4;
+      spec.kneeL=.1+Math.max(0,-spec.legL)*1.05;spec.kneeR=.1+Math.max(0,-spec.legR)*1.05;
+      spec.bob=(run?0.04:0.02)*Math.abs(s);spec.headPitch=run?-.12:-.04;
+    }
   }
-  const spec=baseSpec(),s=Math.sin((phase||0)*Math.PI*2);
-  if(gait!=='walk'&&gait!=='run'){
-    const b=Math.sin((phase||0)*Math.PI*2);
-    spec.bob=.016*b;spec.headYaw=.18*Math.sin((phase||0)*Math.PI*2*.37);spec.headPitch=.04*b;
-    spec.sway=.03*b;spec.armL=.12;spec.armR=.1;spec.elbL=spec.elbR=.28;spec.kneeL=spec.kneeR=.06;
-    return spec;
-  }
-  const run=gait==='run',A=(run?48:28)*Math.PI/180;
-  spec.armL=-A*s;spec.armR=A*s;spec.legL=A*s;spec.legR=-A*s;
-  spec.sway=(run?0.05:0.07)*Math.sin((phase||0)*Math.PI*4);
-  spec.lean=run?12*Math.PI/180:.04;
-  spec.elbL=spec.elbR=run?0.7:0.4;
-  spec.kneeL=.1+Math.max(0,-spec.legL)*1.05;spec.kneeR=.1+Math.max(0,-spec.legR)*1.05;
-  spec.bob=(run?0.04:0.02)*Math.abs(s);spec.headPitch=run?-.12:-.04;
+  spec.gait=gait;spec.phase=phase||0;
   return spec;
 }
 function qFill(o){
@@ -534,6 +537,43 @@ function groundPetQ(type,gait,phase,tSec,human){
   if(human&&gait==='dance')q.bob+=(human.bob||0)*.35;
   return q;
 }
+/* Standing pet, paws on the floor. 1.6 puts the ears at about 0.41 of her height. */
+const PET_DRAW_SCALE=1.6;
+function petFloorLift(type,q){
+  let J;try{J=D.petFk(q,type);}catch(e){return 0;}
+  let low=0;
+  ['pawFL','pawFR','pawBL','pawBR'].forEach(k=>{if(J[k])low=Math.min(low,J[k][1]);});
+  return low<0?-low:0;
+}
+function paintPetStanding(ctx,type,q,project,color,origin){
+  if(!origin||!D.PET_RIG[type])return false;
+  const placed=Object.assign({},q,{x:0,y:0,z:0});
+  const lift=petFloorLift(type,placed),sc=PET_DRAW_SCALE,oy=origin.y||0;
+  paintPet(ctx,type,placed,(x,y,z)=>project(origin.x+x*sc,oy+(y+lift)*sc,origin.z+z*sc),color);
+  return true;
+}
+function companionPetQ(type,gait,phase,tSec,human){
+  const q=groundPetQ(type,gait==='idle'?'walk':gait,phase,tSec,human);
+  if(gait!=='idle')return q;
+  q.ph=0;q.amp=0;q.sit=0;q.tuck=0;q.bob=.012*Math.sin((phase||0)*2);q.wag=.2*Math.sin((phase||0)*3);
+  return q;
+}
+function paintCompanion(ctx,project,person,pet){
+  if(!ctx||typeof project!=='function'||!person)return false;
+  const who=st.who||whoNow(),look=LOOK[who]||LOOK.girl;
+  const gait=person.gait||(footMove&&footMove.gait)||'idle';
+  const phase=person.phase!=null?person.phase:(footMove&&footMove.phase)||0.2;
+  const tSec=(footNow||(typeof performance!=='undefined'?performance.now():0))/1000;
+  const spec=humanSpec(gait,phase,tSec,true);
+  paintFigure(ctx,look,spec,project,person.yaw||0,{x:person.x,y:person.y||0,z:person.z});
+  const type=activePet();
+  if(pet&&D.PET_RIG[type]){
+    const q=companionPetQ(type,pet.gait||petFollow.gait||'idle',pet.phase!=null?pet.phase:petFollow.phase||0,tSec,null);
+    q.yaw=(pet.yaw!=null?pet.yaw:petFollow.yaw||0)*180/Math.PI;
+    paintPetStanding(ctx,type,q,project,(D.pet&&D.pet.glow)||'#ffb020',pet);
+  }
+  return true;
+}
 function seatRecorded(base,s){
   const q=Object.assign({},base),hop=+s.hop||0,wag=+s.wag||0,bow=+s.bow||0,sway=+s.sway||0;
   q.wag=wag*.42;
@@ -606,6 +646,10 @@ function bone(ctx,a,b,r,fill,glow){
   ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
 }
 function paintFigure(ctx,look,spec,project,yaw,origin){
+  if(window.CHARCLOSET&&CHARCLOSET.paintWorld){
+    CHARCLOSET.paintWorld(ctx,spec,project,yaw||0,origin||{x:0,y:0,z:0});
+    return;
+  }
   const pts=figurePoints(look,spec),o=origin||{x:0,y:0,z:0},P={};
   for(const k in pts){const w=xform(pts[k],o.x,o.y,o.z,yaw||0);P[k]=project(w[0],w[1],w[2]);}
   const items=[];
@@ -810,11 +854,24 @@ function drawWorldWalker(W,dt,now){
     for(let i=rings.length-1;i>=0;i--){const age=(footNow-rings[i].t)/1000;if(age>.9){rings.splice(i,1);continue;}drawRing(rings[i].x,(W.y||0)+.03,rings[i].z,.16,rings[i].col,1-age/.9);}
     if(dancing)drawRing(W.x,(W.y||0)+.03,W.z,.5+.14*Math.abs(Math.sin(tSec*Math.PI*4)),look.trim,.7);
     paintFigure(ctx,look,spec,worldProject,yaw,{x:W.x,y:(W.y||0)+(W.jumpY||0),z:W.z});
-    const q=groundPetQ(st.pet,petFollow.gait,petFollow.phase,tSec,petFollow.gait==='dance'?{bob:spec.bob}:null);
+    const q=companionPetQ(st.pet,petFollow.gait,petFollow.phase,tSec,petFollow.gait==='dance'?{bob:spec.bob}:null);
     q.yaw=petFollow.yaw*180/Math.PI+(q.yaw||0);
-    const pScale=1.25,py=(W.y||0)+(petFollow.jumpY||0);
-    paintPet(ctx,st.pet,q,(x,y,z)=>worldProject(petFollow.x+x*pScale,py+y*pScale,petFollow.z+z*pScale),(D.pet&&D.pet.glow)||'#ffb020');
+    paintPetStanding(ctx,st.pet,q,worldProject,(D.pet&&D.pet.glow)||'#ffb020',{x:petFollow.x,y:(W.y||0)+(petFollow.jumpY||0),z:petFollow.z,yaw:petFollow.yaw});
   }finally{ctx.restore();}
+}
+let crewSig='';
+function crewAppearance(){
+  const w=window.CHARCLOSET&&CHARCLOSET.key?CHARCLOSET.key():'';
+  const p=D.pet||{},c=D.char||{};
+  return w+'|'+(p.type||'')+'|'+(p.glow||'')+'|'+(c.glow||'')+'|'+(c.hair||'')+'|'+(c.gender||'');
+}
+function noteCrewAppearance(){
+  const s=crewAppearance();
+  if(s===crewSig)return;
+  crewSig=s;
+  const top=window.CHARCLOSET&&CHARCLOSET.wear&&CHARCLOSET.wear().colors&&CHARCLOSET.wear().colors.top;
+  paint('c',top||(D.char&&D.char.glow)||'#ff3df2');
+  bustCarSprite();
 }
 function drawDriver(who){
   if(!st.rigs)return;
@@ -831,6 +888,7 @@ function update(){
   const now=(typeof performance!=='undefined'?performance.now():Date.now());
   const dt=Math.min(.05,clock?(now-clock)/1000:0);clock=now;
   syncDanceOpts();
+  noteCrewAppearance();
   const sim=!(typeof flying!=='undefined'&&flying&&typeof paused!=='undefined'&&paused);
   if(sim)t+=dt;
   const W=window.WALK_MODE;
@@ -866,6 +924,7 @@ window.addEventListener&&window.addEventListener('storage',e=>{
   if(!e.key||e.key===HKEY){hRaw=null;hObjRaw='';}
   if(!e.key||e.key===PKEY){pRaw=null;pObjRaw='';}
   if(!e.key||e.key===CKEY)modeRaw=null;
+  if(!e.key||e.key==='zdash.char.v1'||e.key==='zdash.pet.v1'){D.reload();charHex='';petHex='';crewSig='';}
 });
 try{new BroadcastChannel('zdash-customdance').onmessage=()=>{hRaw=null;hObjRaw='';};}catch(e){}
 try{new BroadcastChannel('zdash-petdance').onmessage=()=>{pRaw=null;pObjRaw='';};}catch(e){}
@@ -889,7 +948,8 @@ window.CREW={
   debugSig(type,u){return sigDance(type,u);},
   getCharDanceOptions,setCharDanceOpt,cycleCharDance,getPetDanceOptions,setPetDanceOpt,syncDanceOpts,
   get state(){return {phase:st.phase,tk:st.tkOn?+st.tk.toFixed(3):0,hatch:+(st.hatch||0).toFixed(3),type:st.type||(st.pet||D.pet.type),ready:st.ready,fx:AX.fx,fz:AX.fz,axis:AX.ok,head:st.headX!=null?[+st.headX.toFixed(3),+st.headY.toFixed(3),+st.headZ.toFixed(3)]:null,pet:st.petX!=null?[+st.petX.toFixed(3),+st.petY.toFixed(3),+st.petZ.toFixed(3)]:null,petType:st.pet||(D.pet&&D.pet.type)||'fox',char:D.char.glow,hair:D.char.hair,petGlow:D.pet.glow,spot:D.pet.spot,who:st.who||whoNow(),gait:st.gait,dance:st.danceName,charDanceOpt:st.charDanceOpt||'default',petDanceOpt:st.petDanceOpt||'default',onFoot:!!st.onFoot,rootVisible:!!(root&&root.visible),petWorld:st.onFoot?{x:+petFollow.x.toFixed(2),z:+petFollow.z.toFixed(2),yaw:+petFollow.yaw.toFixed(2),speed:+petFollow.speed.toFixed(2),gait:petFollow.gait}:null};},
-  reload(){const r=D.reload();charHex='';petHex='';return r;},
+  reload(){const r=D.reload();charHex='';petHex='';crewSig='';try{window.dispatchEvent(new StorageEvent('storage',{key:'zdash.char.v1'}));}catch(e){}try{window.dispatchEvent(new StorageEvent('storage',{key:'zdash.pet.v1'}));}catch(e){}return r;},
+  paintCompanion,paintPetStanding,petScale:PET_DRAW_SCALE,
   axis(fx,fz){AX.fx=fx;AX.fz=fz==null?fx:fz;AX.ok=true;}
 };
 })();
