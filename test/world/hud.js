@@ -261,11 +261,11 @@ function drawHud(dt){const t=performance.now()/1000,w=W,h=H,ipad=zIpadOn(),s=ipa
   if(window.Z_PERF&&window.Z_PERF.on)window.Z_PERF.hudDrew=(window.Z_PERF.hudDrew||0)+1;}
 let nosCan=null,hudFade=null,hudFadeK='',hudThr=null,hudThrK='';
 // ===== pause menu (WANTED ⏸ → RESUME / row / HOME) =====
-let paused=false;function kPause(on){paused=on;document.getElementById('kHome').classList.toggle('hidden',!on);document.getElementById('kPzBg').classList.toggle('hidden',!on);document.getElementById('kMenuB').classList.toggle('kopen',on);}
+let paused=false;function kPause(on){paused=on;document.getElementById('kHome').classList.toggle('hidden',!on);document.getElementById('kPzBg').classList.toggle('hidden',!on);document.getElementById('kMenuB').classList.toggle('kopen',on);try{if(window.RESUME&&RESUME.onPause)RESUME.onPause(!!on);}catch(e){}}
 document.getElementById('kMenuB').addEventListener('click',e=>{e.preventDefault();e.stopPropagation();kPause(!paused);});
 document.getElementById('kPzX').addEventListener('click',e=>{e.stopPropagation();kPause(false);});
 document.getElementById('kPzBg').addEventListener('click',()=>kPause(false));
 document.getElementById('kHome').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;const m=b.dataset.m;
-  if(m==='resume')kPause(false);else if(m==='home')location.replace('jr.html');else if(m==='full'){goFull();kPause(false);}else if(m==='recal'){tiltCenter();kPause(false);kToast('TILT CENTERED ✓');}else if(m==='xray'){RWXRAY.on=!RWXRAY.on;localStorage.setItem('zdw_rwxray',RWXRAY.on?'1':'0');b.textContent='RUNWAY X-RAY '+(RWXRAY.on?'ON':'OFF');kToast(b.textContent);}else if(m==='runway'){reset();kPause(false);kToast('BACK ON THE RUNWAY');}});
+  if(m==='resume')kPause(false);else if(m==='home')location.replace('jr.html');else if(m==='full'){goFull();kPause(false);}else if(m==='recal'){tiltCenter();kPause(false);kToast('TILT CENTERED ✓');}else if(m==='xray'){RWXRAY.on=!RWXRAY.on;localStorage.setItem('zdw_rwxray',RWXRAY.on?'1':'0');b.textContent='RUNWAY X-RAY '+(RWXRAY.on?'ON':'OFF');kToast(b.textContent);}else if(m==='challenge'){try{if(window.RESUME)RESUME.beginResume();}catch(e){}kPause(false);}else if(m==='runway'){reset();try{if(window.RESUME)RESUME.beginAside();}catch(e){}kPause(false);kToast('BACK ON THE RUNWAY');}});
 
 {const xb=document.querySelector('#kTabs [data-m=xray]');if(xb)xb.textContent='RUNWAY X-RAY '+(RWXRAY.on?'ON':'OFF');}

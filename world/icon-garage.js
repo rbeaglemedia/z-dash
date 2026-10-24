@@ -729,6 +729,7 @@
     try { paused = false; } catch (e) {}
     wakeWorld();
     try { fn(); } catch (e) { console.error(e); }
+    try { if (window.RESUME && RESUME.beginAside) RESUME.beginAside(); } catch (e) {}
   }
   function parkAt(x, z, yaw, street) {
     if (typeof P === 'undefined') return false;
@@ -1931,7 +1932,7 @@
     else if (entry === 'soccer') playSoccer();
     else if (entry === 'builder') playCity();
     else if (entry === 'stunt') playStunt();
-    else if (entry === 'hub') open();
+    else if (entry === 'hub') { open(); try { if (window.RESUME && RESUME.remind) RESUME.remind(); } catch (e) {} }
   }
   function listenCrew() {
     try {

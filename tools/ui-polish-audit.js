@@ -71,6 +71,91 @@ try {
 } catch (e) {}
 `;
 
+const RESUME_SEED = `
+try {
+  var keep = {
+    'zdash.kid.v1': '{"v":1,"car":"ellie","eq":{"nos":2}}',
+    'zdash.char.v1': '{"v":1,"name":"Ellie"}',
+    'zdash.pet.v1': '{"v":1,"type":"fox"}',
+    'zdash.house.v1': '{"v":1,"home":"loft"}',
+    'zdash.neonpaint.v1': '{"version":1,"enabled":true}'
+  };
+  window.__zdResumeKeep = keep;
+  Object.keys(keep).forEach(function (k) { localStorage.setItem(k, keep[k]); });
+  localStorage.setItem('zdash.world.resume.v1', JSON.stringify({
+    v: 1,
+    map: 'old-map',
+    pose: { x: 0, y: 0, z: 400, yaw: 0, pitch: 0, v: 0, ground: true, wings: 0, driveMode: 'arcade', mode: 'car' },
+    nos: { tank: 0.42, left: 0, hotDropNosT: 0 },
+    challenges: [{
+      id: 'hotdrop', name: 'Hot Drop', needsPlace: true, active: true,
+      x: 0, y: 0, z: 680, r: 16, tLeft: 18, maxT: 25, overchargeT: 0,
+      claimed: 0, spawned: 1, hold: false,
+      home: { x: 0, y: 0, z: 400, yaw: 0, pitch: 0, v: 0, ground: true, wings: 0, driveMode: 'arcade', mode: 'car' }
+    }]
+  }));
+} catch (e) {}
+`;
+
+function resumeKeepIssues() {
+  return `
+    var keep = window.__zdResumeKeep || {};
+    Object.keys(keep).forEach(function (k) {
+      if (localStorage.getItem(k) !== keep[k]) bad('resume-save', 'profile save changed: ' + k);
+    });
+  `;
+}
+
+const RESUME_PROMPT_PROBE = `
+(function () {
+  const issues = [];
+  function bad(kind, msg) { issues.push({ severity: 'error', kind: kind, msg: msg }); }
+  const note = document.getElementById('kResumeNote');
+  const sky = document.querySelector('#kStartMode [data-sm="skydrop"]');
+  const cont = document.getElementById('kContinue');
+  const go = document.getElementById('kResumeGo');
+  if (!note || note.hidden) bad('resume', 'Resume prompt is hidden on the start card');
+  if (!sky) bad('resume', 'Sky Drop is missing from the start card');
+  if (!go || go.hidden) bad('resume', 'RESUME button is hidden');
+  if (cont && !cont.hidden) bad('resume', 'CONTINUE is showing beside a challenge at the same spot');
+  ${resumeKeepIssues()}
+  let bag = null;
+  try { bag = JSON.parse(localStorage.getItem('zdash.world.resume.v1') || 'null'); } catch (e) { bag = null; }
+  const ch = bag && bag.challenges && bag.challenges[0];
+  if (!ch || ch.id !== 'hotdrop' || !(ch.tLeft > 10)) bad('resume', 'saved challenge was dropped before she started');
+  return issues;
+})()
+`;
+
+const RESUME_GO_PROBE = `
+(function () {
+  const issues = [];
+  function bad(kind, msg) { issues.push({ severity: 'error', kind: kind, msg: msg }); }
+  if (!(typeof P !== 'undefined' && P.z > 360 && P.z < 440 && Math.abs(P.x) < 30)) bad('resume', 'continue did not restore her saved spot');
+  if (!(typeof P !== 'undefined' && Math.abs(P.nosTank - 0.42) < 0.03)) bad('resume', 'NOS bottle was not restored');
+  if (!(window.HOTDROP && HOTDROP.active && HOTDROP.tLeft > 10 && HOTDROP.tLeft < 22)) bad('resume', 'Hot Drop was not kept after continue');
+  const pop = document.getElementById('kResumePop');
+  if (pop && !pop.hidden) bad('resume', 'resume prompt stayed up after she went back');
+  ${resumeKeepIssues()}
+  return issues;
+})()
+`;
+
+const RESUME_SKY_PROBE = `
+(function () {
+  const issues = [];
+  function bad(kind, msg) { issues.push({ severity: 'error', kind: kind, msg: msg }); }
+  if (!(typeof P !== 'undefined' && P.y > 200)) bad('resume', 'Sky Drop did not leave her in the air');
+  if (!(window.HOTDROP && HOTDROP.active && HOTDROP.hold && HOTDROP.tLeft > 10 && HOTDROP.tLeft < 22)) bad('resume', 'Sky Drop reset or dropped the Hot Drop');
+  const pop = document.getElementById('kResumePop');
+  if (!pop || pop.hidden) bad('resume', 'RESUME prompt is hidden during Sky Drop');
+  const sky = document.querySelector('#kStartMode [data-sm="skydrop"]');
+  if (!sky) bad('resume', 'Sky Drop control is missing');
+  ${resumeKeepIssues()}
+  return issues;
+})()
+`;
+
 const ADULT_PROBE = `
 (async function () {
   const issues = [];
@@ -723,7 +808,52 @@ const SCREENS = [
   {
     id: 'world-start', title: 'Neon World start card',
     url: '/world-split.html', viewports: PHONE_WIDE.concat(PC_LAP),
-    budget: 12, wait: '#kOver #ready', settle: 600, flagScrollCards: true
+    budget: 12, wait: '#kOver #ready', settle: 600, flagScrollCards: true,
+    probe: `(function () {
+      const issues = [];
+      const note = document.getElementById('kResumeNote');
+      const cont = document.getElementById('kContinue');
+      if (note && !note.hidden) issues.push({ severity: 'error', kind: 'resume', msg: 'empty start card shows a Resume prompt' });
+      if (cont && !cont.hidden) issues.push({ severity: 'error', kind: 'resume', msg: 'empty start card shows CONTINUE' });
+      return issues;
+    })()`
+  },
+  {
+    id: 'world-resume', title: 'Neon World resume prompt',
+    url: '/world-split.html', viewports: PHONE_WIDE.concat(PC_LAP),
+    budget: 16, wait: '#kResumeNote:not([hidden])', settle: 700, flagScrollCards: true,
+    seedScript: RESUME_SEED,
+    probe: RESUME_PROMPT_PROBE
+  },
+  {
+    id: 'world-resume-go', title: 'Neon World continue at saved spot',
+    url: '/world-split.html', viewports: PHONE_WIDE.concat(PC_LAP),
+    budget: 14, wait: '#kResumeNote:not([hidden])', settle: 800,
+    seedScript: RESUME_SEED,
+    after: 'body[data-resume-shot="1"]',
+    setup: inject(`
+      document.getElementById('kResumeGo').click();
+      flying = false;
+      document.body.dataset.resumeShot = '1';
+    `),
+    probe: RESUME_GO_PROBE
+  },
+  {
+    id: 'world-resume-sky', title: 'Neon World sky drop keeps the challenge',
+    url: '/world-split.html', viewports: PHONE_WIDE.concat(PC_LAP),
+    budget: 16, wait: '#kOver #ready', settle: 800,
+    seedScript: RESUME_SEED,
+    after: '#kResumePop:not([hidden])',
+    setup: inject(`
+      document.getElementById('kOver').classList.add('hidden');
+      document.getElementById('kMenuB').classList.remove('hidden');
+      setStartMode('skydrop');
+      beginSky();
+      if (window.RESUME) RESUME.beginAside();
+      flying = true;
+      document.body.dataset.resumeShot = 'sky';
+    `),
+    probe: RESUME_SKY_PROBE
   },
   {
     id: 'world-drive', title: 'Neon World driving HUD',

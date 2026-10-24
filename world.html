@@ -105,7 +105,7 @@ html,body{margin:0;height:100%;background:#000;color:var(--txt);font-family:'Orb
 .kcard2 .kact{min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 8px; background: rgba(18,5,42,.94); border: 2px solid #ff4fd8; border-radius: 20px; padding: 12px 14px; box-shadow: 0 0 22px rgba(255,79,216,.35); color: #fff; overflow: hidden;}
 .kcard2 .kact h2{margin: 0; font: 900 clamp(18px, 5.4vh, 32px) 'Orbitron', sans-serif; letter-spacing: 2px; text-shadow: 0 0 14px #ff4fd8; line-height: 1.05;}
 .kcard2 .kopts{flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; overscroll-behavior: contain;}
-.kcard2 .kopts .kdiff{position: static; margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; justify-content: flex-start;}
+.kcard2 .kopts .kdiff{position: static; margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: flex-start;}
 .kcard2 .kopts .kdiff > span{flex: 0 0 100%; font: 800 10px 'Orbitron', sans-serif; letter-spacing: 1.5px; color: #3ee6ff;}
 .kcard2 .kopts .kdiff .ktstat{flex: 1 0 100%; font-size: 12px;}
 .kcard2 .kready{color: #ffd0f4; font: 700 14px 'Rajdhani', sans-serif;}
@@ -186,6 +186,19 @@ html.pc-mode .kcard2 .kstart{flex:none}
 html.pc-mode .kcard2 .kact h2{font-size:24px}
 html.pc-mode .kcard2 .kline{font-size:14px}
 html.pc-mode .khome{top:4vh;transform:translate(-50%,0);max-height:92vh;overflow-y:auto;width:min(1120px,calc(100vw - 24px))}
+.kresume-note,.kresumepop{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;box-sizing:border-box}
+.kresume-note{width:100%;padding:8px 10px;border-radius:14px;border:2px solid #ffe14d;background:rgba(8,4,20,.78);box-shadow:0 0 16px rgba(255,225,77,.35)}
+.kresume-note[hidden],.kresumepop[hidden],#kContinue[hidden],#kResumeGo[hidden],#kChallenge[hidden]{display:none !important}
+.kresume-kicker{margin:0;font:800 11px 'Orbitron',sans-serif;letter-spacing:1.2px;color:#ffe14d}
+.kresume-title{margin:0;font:900 14px 'Orbitron',sans-serif;letter-spacing:.4px;color:#fff;line-height:1.2}
+.kresume-sub{margin:0;font:700 13px 'Rajdhani',sans-serif;color:#ffd0f4;line-height:1.25}
+.kresume-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%}
+.kresume-row button,.kstart #kResumeGo{flex:1 1 128px;max-width:100%;min-height:44px;padding:8px 14px;border:0;border-radius:999px;cursor:pointer;text-align:center;text-decoration:none;font:900 13px 'Orbitron',sans-serif;letter-spacing:.5px;color:#12052a;background:linear-gradient(90deg,#ffe14d,#ff9a2e);box-shadow:0 0 14px rgba(255,225,77,.45)}
+.kresume-row button.kquiet{color:#fff;background:rgba(62,230,255,.14);border:2px solid #3ee6ff;box-shadow:none}
+.kresumepop{position:absolute;z-index:6;left:50%;transform:translateX(-50%);bottom:calc(min(112px, 28vh) + 36px);width:min(340px, calc(100vw - 300px));padding:8px 10px 10px;border-radius:16px;border:2px solid #ffe14d;background:rgba(8,2,15,.94);box-shadow:0 0 18px rgba(255,225,77,.45);pointer-events:auto}
+#kChallenge{color:#12052a;background:linear-gradient(90deg,#ffe14d,#ff9a2e);border:0;min-height:44px;text-align:center;text-decoration:none}
+@media (max-width: 720px){.kresumepop{width:min(300px, calc(100vw - 240px));bottom:calc(min(100px, 26vh) + 16px)}}
+@media (min-width: 1100px){.kresumepop{bottom:auto;top:176px;width:min(360px, 36vw)}}
 </style><link rel="stylesheet" href="shared/menu-tiles.css"></head><body>
 <div id="kid" class="kid" data-tab="wanted"><div class="kbody">
 <canvas id="c"></canvas>
@@ -195,13 +208,15 @@ html.pc-mode .khome{top:4vh;transform:translate(-50%,0);max-height:92vh;overflow
 <div id="mdpad" class="kround" aria-hidden="true"><span id="mdpadT">STREET</span><small id="mdpadS">MODE</small></div>
 <button id="tup" class="kround kfthr nfxa">THROTTLE<small>HOLD</small></button>
 <button id="nos" class="kround kwnos ready nfxa">NOS<small>HOLD</small></button>
-<div id="kPzBg" class="kpzbg hidden"></div><div id="kHome" class="khome hidden"><button id="kPzX" class="kpzx" aria-label="Close menu">✕</button><div id="kPzRow" class="kpzrow"><button data-m="resume">▶ RESUME</button><button data-m="home">⌂ HOME / EXIT</button></div><div id="kTabs" class="ktabs"><button data-m="recal">⊙ TILT CENTER</button><button data-m="full">⛶ FULLSCREEN</button><button data-m="runway">↺ BACK TO RUNWAY</button><button data-m="skydrop">🪂 SKY DROP</button><button data-m="xray">RUNWAY X-RAY ON</button></div></div><button id="kMenuB" class="kmenub hidden" aria-label="Pause"><span>⏸</span></button>
+<div id="kPzBg" class="kpzbg hidden"></div><div id="kHome" class="khome hidden"><button id="kPzX" class="kpzx" aria-label="Close menu">✕</button><div id="kPzRow" class="kpzrow"><button data-m="resume">▶ RESUME</button><button data-m="home">⌂ HOME / EXIT</button></div><div id="kTabs" class="ktabs"><button data-m="recal">⊙ TILT CENTER</button><button data-m="full">⛶ FULLSCREEN</button><button data-m="runway">↺ BACK TO RUNWAY</button><button data-m="skydrop">🪂 SKY DROP</button><button type="button" data-m="challenge" id="kChallenge" hidden>▶ RESUME CHALLENGE</button><button data-m="xray">RUNWAY X-RAY ON</button></div></div><button id="kMenuB" class="kmenub hidden" aria-label="Pause"><span>⏸</span></button>
+<div id="kResumePop" class="kresumepop" hidden role="status"><p class="kresume-kicker" id="kPopKicker">CHALLENGE WAITING</p><p class="kresume-title" id="kPopTitle">Hot Drop</p><p class="kresume-sub" id="kPopSub">Other starts keep it. Resume goes back.</p><div class="kresume-row"><button type="button" id="kPopGo">▶ RESUME</button><button type="button" id="kPopStay" class="kquiet">NOT NOW</button></div></div>
 <div id="kOver" class="kover"><div class="kcard kcard2"><div class="kact"><h2>NEON WORLD!</h2><div class="kopts">
+<div id="kResumeNote" class="kresume-note" hidden role="status"><p class="kresume-kicker" id="kResumeKicker">CHALLENGE WAITING</p><p class="kresume-title" id="kResumeTitle">Hot Drop</p><p class="kresume-sub" id="kResumeSub">Other starts keep it. Resume goes back.</p></div>
 <div class="kdiff"><span>SETUP</span><button class="on">STARTER WINGS</button></div>
 <div class="kdiff" id="kStartMode"><span>START</span><button data-sm="skydrop">🪂 SKY DROP</button><button data-sm="runway" class="on">🛫 RUNWAY</button><button data-sm="soccer">⚽ CAR SOCCER</button><button data-sm="wall">🧱 GRAFFITI WALL</button><button data-sm="paint">🎨 NEON PAINT</button></div>
 <div class="kdiff"><span>TILT</span><button id="kCalHint" class="on">📱 HOLD IT COMFY</button></div>
 <div class="kready">Hold the phone however is comfy, then tap START. Let go of THROTTLE to coast and slow down. That's your level: all tilt is from there. Re-center any time in ⏸.</div>
-</div><div class="kstart"><button id="ready" class="kbig">START</button></div></div>
+</div><div class="kstart"><button type="button" id="kResumeGo" hidden>▶ RESUME</button><button type="button" id="kContinue" class="kbig" hidden>▶ CONTINUE</button><button id="ready" class="kbig">START</button></div></div>
 <div class="khow"><h4>HOW TO PLAY</h4>
 <div class="kline"><span class="ki">🛫</span><span>You start on the RUNWAY. Hold THROTTLE and build speed: <em>no lift until ROTATE speed</em> (the green mark).</span></div>
 <div class="kline"><span class="ki">🚪</span><span>WINGS start <em>CLOSED</em> (no lift, any speed). Tap WINGS to open the doors + hatch. Open early = gentle takeoff; stay closed, build speed, then open = <em>FAST LAUNCH</em>.</span></div>
@@ -269,6 +284,7 @@ html.pc-mode .khome{top:4vh;transform:translate(-50%,0);max-height:92vh;overflow
 <script src="world/icon-garage.js?v=30"></script>
 <script src="world/house.js?v=30"></script>
 <script src="world/objectives.js?v=30"></script>
+<script src="world/resume.js?v=30"></script>
 <script src="world/sound.js?v=30"></script>
 <script src="shared/traffic-tune.js?v=30"></script>
 <script src="world/traffic.js?v=30"></script>
