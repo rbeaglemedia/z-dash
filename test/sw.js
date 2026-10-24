@@ -15,7 +15,7 @@ function scrub() {
   return caches.keys().then(function (keys) {
     return Promise.all(keys.map(function (k) {
       return caches.open(k).then(function (c) {
-        var logical = ['/jr.html', '/index.html', '/world.html', '/fly3.html'].map(function (p) {
+        var logical = ['/jr.html', '/index.html', '/world.html', '/world-split.html', '/fly3.html'].map(function (p) {
           var req = new Request(self.location.origin + p);
           return c.match(req).then(function (hit) {
             if (hit && String(hit.url).indexOf('/test/') !== -1) return c.delete(req);
