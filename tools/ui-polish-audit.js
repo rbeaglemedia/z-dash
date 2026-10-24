@@ -11,6 +11,8 @@
  *   5. PNG screenshots (and a contact sheet when Pillow is available)
  *   6. adult index.html never loads Kid App scripts or storage, and the
  *      Kid Z launcher stays clickable above the CONNECT LIVE landing screen
+ *   7. every app page links a fullscreen manifest whose scope covers the
+ *      whole directory, and nothing calls exitFullscreen on its own
  *
  * Usage:
  *   node tools/ui-polish-audit.js --out /opt/cursor/artifacts/ui-polish/before
@@ -186,6 +188,7 @@ function parseArgs(argv) {
     else if (a === '--base') out.base = argv[++i];
     else if (a === '--root') out.root = path.resolve(argv[++i]);
     else if (a === '--menus-only') out.menusOnly = true;
+    else if (a === '--pwa-only') out.pwaOnly = true;
     else if (a === '--help') out.help = true;
     else throw new Error('Unknown arg ' + a);
   }
@@ -1180,6 +1183,157 @@ function appendDrillTree(lines, source, name) {
   }
 }
 
+const PWA_PAGES = [
+  { file: 'index.html', manifest: 'manifest.webmanifest' },
+  { file: 'jr.html', manifest: 'manifest-jr.webmanifest' },
+  { file: 'world.html', manifest: 'manifest-jr.webmanifest' },
+  { file: 'world-split.html', manifest: 'manifest-jr.webmanifest' },
+  { file: 'neon-paint.html', manifest: 'manifest-jr.webmanifest' },
+  { file: 'crew.html', manifest: 'manifest-jr.webmanifest' },
+  { file: 'dance-stage.html', manifest: 'manifest-jr.webmanifest' },
+  { file: 'fly3.html', manifest: 'manifest-jr.webmanifest' },
+  { file: 'char.html', manifest: 'manifest-jr.webmanifest' },
+  { file: 'garage-hub.html', manifest: 'manifest-jr.webmanifest' }
+];
+
+function tagAttr(tag, name) {
+  const m = tag.match(new RegExp('\\b' + name + '\\s*=\\s*["\']([^"\']*)["\']', 'i'));
+  return m ? m[1] : '';
+}
+
+function metaContents(html, name) {
+  const tags = html.match(/<meta\b[^>]*>/gi) || [];
+  const vals = [];
+  tags.forEach(function (tag) {
+    if (tagAttr(tag, 'name').toLowerCase() !== name.toLowerCase()) return;
+    vals.push(tagAttr(tag, 'content'));
+  });
+  return vals;
+}
+
+function manifestHref(html) {
+  const tags = html.match(/<link\b[^>]*>/gi) || [];
+  const hrefs = [];
+  tags.forEach(function (tag) {
+    if (tagAttr(tag, 'rel').toLowerCase() !== 'manifest') return;
+    hrefs.push(tagAttr(tag, 'href').split('?')[0]);
+  });
+  return hrefs;
+}
+
+function scopePath(scope) {
+  let s = String(scope || '').split('#')[0].split('?')[0];
+  if (s.startsWith('./')) s = s.slice(2);
+  if (s.startsWith('/')) s = s.slice(1);
+  return s;
+}
+
+function scopeCoversDirectory(scope) {
+  const s = scopePath(scope);
+  return s === '' || s.endsWith('/');
+}
+
+function startInScope(start, scope) {
+  const sc = scopePath(scope);
+  const st = scopePath(start);
+  if (sc === '' || sc.endsWith('/')) return st.indexOf('..') === -1;
+  return st === sc;
+}
+
+function scanPwaDisplay(root) {
+  const issues = [];
+  const lines = ['pwa display'];
+  function bad(kind, msg) {
+    issues.push({ severity: 'error', kind: kind, msg: msg });
+    lines.push('  ERROR  ' + msg);
+  }
+  const manifests = {};
+  ['manifest.webmanifest', 'manifest-jr.webmanifest'].forEach(function (name) {
+    const file = path.join(root, name);
+    let data;
+    try { data = JSON.parse(fs.readFileSync(file, 'utf8')); }
+    catch (e) { bad('manifest', name + ' is not readable JSON'); return; }
+    manifests[name] = data;
+    const display = data.display;
+    const over = Array.isArray(data.display_override) ? data.display_override : [];
+    if (display !== 'fullscreen') bad('display', name + ' display is ' + JSON.stringify(display) + ' (need fullscreen)');
+    if (over[0] !== 'fullscreen') bad('display', name + ' display_override must start with fullscreen');
+    if (!scopeCoversDirectory(data.scope)) bad('scope', name + ' scope ' + JSON.stringify(data.scope) + ' does not cover the app directory');
+    if (!startInScope(data.start_url, data.scope)) bad('scope', name + ' start_url ' + JSON.stringify(data.start_url) + ' is outside scope ' + JSON.stringify(data.scope));
+    if (String(data.theme_color || '').toLowerCase() !== '#000000') bad('theme', name + ' theme_color must be #000000');
+    if (String(data.background_color || '').toLowerCase() !== '#000000') bad('theme', name + ' background_color must be #000000');
+    if (data.orientation !== 'landscape') bad('display', name + ' orientation must be landscape');
+    lines.push('  ' + name + '  scope ' + data.scope + '  start ' + data.start_url + '  display ' + display + '  id ' + data.id);
+  });
+  const adult = manifests['manifest.webmanifest'];
+  const kid = manifests['manifest-jr.webmanifest'];
+  if (adult && kid) {
+    const fields = ['display', 'orientation', 'theme_color', 'background_color'];
+    fields.forEach(function (key) {
+      if (adult[key] !== kid[key]) bad('display', 'manifest mismatch ' + key + ': ' + adult[key] + ' vs ' + kid[key]);
+    });
+    if (JSON.stringify(adult.display_override || []) !== JSON.stringify(kid.display_override || [])) {
+      bad('display', 'manifest display_override mismatch');
+    }
+  }
+  PWA_PAGES.forEach(function (page) {
+    const file = path.join(root, page.file);
+    let html;
+    try { html = fs.readFileSync(file, 'utf8'); }
+    catch (e) { bad('page', page.file + ' is missing'); return; }
+    const hrefs = manifestHref(html);
+    if (hrefs.length !== 1 || hrefs[0] !== page.manifest) {
+      bad('manifest', page.file + ' manifest link is ' + JSON.stringify(hrefs) + ' (need ' + page.manifest + ')');
+    }
+    const man = manifests[page.manifest];
+    if (man && !startInScope(page.file, man.scope)) bad('scope', page.file + ' is outside ' + page.manifest + ' scope ' + man.scope);
+    const apple = metaContents(html, 'apple-mobile-web-app-capable');
+    const mobile = metaContents(html, 'mobile-web-app-capable');
+    const bar = metaContents(html, 'apple-mobile-web-app-status-bar-style');
+    const theme = metaContents(html, 'theme-color');
+    if (apple.length !== 1 || String(apple[0]).toLowerCase() !== 'yes') bad('meta', page.file + ' needs apple-mobile-web-app-capable=yes');
+    if (mobile.length !== 1 || String(mobile[0]).toLowerCase() !== 'yes') bad('meta', page.file + ' needs mobile-web-app-capable=yes');
+    if (bar.length !== 1 || String(bar[0]).toLowerCase() !== 'black-translucent') bad('meta', page.file + ' needs apple-mobile-web-app-status-bar-style=black-translucent');
+    if (!theme.length || theme.some(function (v) { return String(v).toLowerCase() !== '#000000'; })) bad('theme', page.file + ' theme-color must be #000000');
+    if (!issues.some(function (i) { return i.msg.indexOf(page.file + ' ') === 0; })) {
+      lines.push('  ' + page.file + '  ' + page.manifest + '  apple yes  theme #000000');
+    }
+  });
+  const skip = new Set(['node_modules', 'test-results', 'tools', '.git']);
+  function walk(dir) {
+    fs.readdirSync(dir).forEach(function (name) {
+      if (skip.has(name)) return;
+      const p = path.join(dir, name);
+      let st;
+      try { st = fs.statSync(p); } catch (e) { return; }
+      if (st.isDirectory()) walk(p);
+      else if (/\.(html|js)$/.test(name)) scanFsFile(p);
+    });
+  }
+  function scanFsFile(file) {
+    const text = fs.readFileSync(file, 'utf8');
+    const rel = path.relative(root, file);
+    const exitRe = /\.(?:webkit)?exitFullscreen\s*\(/g;
+    let m;
+    while ((m = exitRe.exec(text))) {
+      const prev = text.slice(Math.max(0, m.index - 500), m.index);
+      if (!/click|pointerup|onclick/i.test(prev)) bad('exit-fullscreen', rel + ' calls exitFullscreen without a user gesture');
+    }
+    const reqRe = /\.(?:webkit)?requestFullscreen\s*\(/g;
+    while ((m = reqRe.exec(text))) {
+      const prev = text.slice(Math.max(0, m.index - 900), m.index);
+      if (!/display-mode:\s*standalone/.test(prev) && !/display-mode:\s*fullscreen/.test(prev)) {
+        bad('display-guard', rel + ' calls requestFullscreen without a standalone/fullscreen display-mode guard');
+      }
+    }
+    const openRe = /window\.open\s*\([^)]{0,240}_blank/g;
+    while ((m = openRe.exec(text))) bad('pwa-popup', rel + ' opens a same-app window with window.open _blank');
+  }
+  walk(root);
+  lines.push('pwa errors ' + issues.length);
+  return { issues: issues, text: lines.join('\n'), errors: issues.length };
+}
+
 function writeMenuReport(outDir, report) {
   fs.mkdirSync(outDir, { recursive: true });
   const body = report.tree + '\n';
@@ -1190,10 +1344,18 @@ function writeMenuReport(outDir, report) {
 async function main() {
   const args = parseArgs(process.argv);
   if (args.help) {
-    console.log('node tools/ui-polish-audit.js [--out dir] [--port n] [--only a,b] [--base url] [--root dir] [--menus-only]');
+    console.log('node tools/ui-polish-audit.js [--out dir] [--port n] [--only a,b] [--base url] [--root dir] [--menus-only] [--pwa-only]');
     return;
   }
   const menuRoot = args.root || ROOT;
+  fs.mkdirSync(args.out, { recursive: true });
+  const pwaReport = scanPwaDisplay(menuRoot);
+  fs.writeFileSync(path.join(args.out, 'pwa-display.txt'), pwaReport.text + '\n');
+  console.log(pwaReport.text);
+  if (args.pwaOnly) {
+    process.exitCode = pwaReport.errors ? 1 : 0;
+    return;
+  }
   const wantMenus = args.menusOnly || !args.only || args.only.includes('menu-reach');
   let menuReport = null;
   if (wantMenus) {
@@ -1203,7 +1365,7 @@ async function main() {
     console.log(menuReport.tree);
     console.log('menu-reach errors ' + menuReport.errors + '  root ' + menuRoot);
     if (args.menusOnly) {
-      process.exitCode = menuReport.errors ? 1 : 0;
+      process.exitCode = (menuReport.errors || pwaReport.errors) ? 1 : 0;
       return;
     }
   }
@@ -1263,8 +1425,8 @@ async function main() {
     await contactSheet(args.out);
     console.log('Wrote ' + path.join(args.out, 'audit.md'));
     const menuErrors = menuReport ? menuReport.errors : 0;
-    console.log('errors ' + summary.errors + ' warnings ' + summary.warns + ' menu-reach ' + menuErrors);
-    process.exitCode = (summary.errors || menuErrors) ? 1 : 0;
+    console.log('errors ' + summary.errors + ' warnings ' + summary.warns + ' menu-reach ' + menuErrors + ' pwa ' + pwaReport.errors);
+    process.exitCode = (summary.errors || menuErrors || pwaReport.errors) ? 1 : 0;
   } finally {
     kill();
     server.close();

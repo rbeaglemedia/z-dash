@@ -54,7 +54,8 @@ function relTilt(){const g0=TL.g0,g=TL.gv;if(!g0||!g)return null;
   const ey=[ex[1]*g0[2]-ex[2]*g0[1],ex[2]*g0[0]-ex[0]*g0[2],ex[0]*g0[1]-ex[1]*g0[0]],dot=(u,v)=>u[0]*v[0]+u[1]*v[1]+u[2]*v[2],c=dot(g,g0);
   return[Math.atan2(dot(g,ex),c)/D,Math.atan2(dot(g,ey),c)/D];}
 function goFull(){const lk=()=>{try{const o=screen.orientation;if(o&&o.lock&&/^landscape/.test(o.type||''))o.lock(o.type).catch(()=>{});}catch(e){}};
-  try{const d=document.documentElement,fs=document.fullscreenElement||document.webkitFullscreenElement;if(fs){lk();return;}
+  try{if(matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches){lk();return;}
+    const d=document.documentElement,fs=document.fullscreenElement||document.webkitFullscreenElement;if(fs){lk();return;}
     const r=d.requestFullscreen?d.requestFullscreen({navigationUI:'hide'}):d.webkitRequestFullscreen?d.webkitRequestFullscreen():null;
     if(r&&r.then)r.then(lk,lk);else lk();}catch(e){lk();}}
 function tiltCenter(){if(TL.a0!=null&&((screenAngle()-TL.a0)%180!==0)){TL.a0=screenAngle();orientFix();TL.calNext=true;TL.sl=0;TL.sf=0;return;}if(TL.have){TL.n0={lr:TL.lr,fb:TL.fb};TL.g0=TL.gv;TL.sl=0;TL.sf=0;TL.calNext=false;}else TL.calNext=true;}
