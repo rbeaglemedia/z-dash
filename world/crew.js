@@ -523,6 +523,44 @@ function lineupQ(type){
   const u={fox:.22,cat:.25,dragon:.08,robo:.12,dog:.12,bunny:.18}[type];
   const q=sigDance(type,u==null?0.2:u);q.yaw=(q.yaw||0)-18;return q;
 }
+/* Knee-to-waist next to Ellie (hip ~0.78m, knee ~0.38m). The rig itself is ~0.32m
+   tall; 1.7 puts ears around 0.65m, between her knee and her waist, on the floor. */
+const PET_DRAW_SCALE=1.7;
+function petFloorLift(type,q){
+  let J;try{J=D.petFk(q,type);}catch(e){return 0;}
+  let low=0;
+  ['pawFL','pawFR','pawBL','pawBR'].forEach(k=>{if(J[k])low=Math.min(low,J[k][1]);});
+  return low<0?-low:0;
+}
+function paintPetStanding(ctx,type,q,project,color,origin){
+  if(!origin||!D.PET_RIG[type])return false;
+  const placed=Object.assign({},q,{x:0,y:0,z:0});
+  const lift=petFloorLift(type,placed),sc=PET_DRAW_SCALE,oy=origin.y||0;
+  paintPet(ctx,type,placed,(x,y,z)=>project(origin.x+x*sc,oy+(y+lift)*sc,origin.z+z*sc),color);
+  return true;
+}
+/* Idle used to sit. On foot and in rooms she stands, feet on the floor. */
+function companionPetQ(type,gait,phase,tSec,human){
+  const q=groundPetQ(type,gait==='idle'?'walk':gait,phase,tSec,human);
+  if(gait!=='idle')return q;
+  q.ph=0;q.amp=0;q.sit=0;q.tuck=0;q.bob=.012*Math.sin((phase||0)*2);q.wag=.2*Math.sin((phase||0)*3);
+  return q;
+}
+function paintCompanion(ctx,project,person,pet){
+  if(!ctx||typeof project!=='function'||!person)return false;
+  const who=st.who||whoNow(),look=LOOK[who]||LOOK.girl;
+  const move=footMove||{gait:st.gait||'idle',phase:.2};
+  const tSec=(footNow||(typeof performance!=='undefined'?performance.now():0))/1000;
+  const spec=humanSpec(move.gait,move.phase,tSec,true);
+  paintFigure(ctx,look,spec,project,person.yaw||0,{x:person.x,y:person.y||0,z:person.z});
+  const type=st.pet||activePet();
+  if(pet&&D.PET_RIG[type]){
+    const q=companionPetQ(type,petFollow.gait||'idle',petFollow.phase||0,tSec,null);
+    q.yaw=(pet.yaw||0)*180/Math.PI;
+    paintPetStanding(ctx,type,q,project,(D.pet&&D.pet.glow)||'#ffb020',pet);
+  }
+  return true;
+}
 function groundPetQ(type,gait,phase,tSec,human){
   const rec=(gait==='dance'||gait==='idle')?recordedSample(tSec):null;
   let q;
@@ -810,10 +848,10 @@ function drawWorldWalker(W,dt,now){
     for(let i=rings.length-1;i>=0;i--){const age=(footNow-rings[i].t)/1000;if(age>.9){rings.splice(i,1);continue;}drawRing(rings[i].x,(W.y||0)+.03,rings[i].z,.16,rings[i].col,1-age/.9);}
     if(dancing)drawRing(W.x,(W.y||0)+.03,W.z,.5+.14*Math.abs(Math.sin(tSec*Math.PI*4)),look.trim,.7);
     paintFigure(ctx,look,spec,worldProject,yaw,{x:W.x,y:(W.y||0)+(W.jumpY||0),z:W.z});
-    const q=groundPetQ(st.pet,petFollow.gait,petFollow.phase,tSec,petFollow.gait==='dance'?{bob:spec.bob}:null);
+    const q=companionPetQ(st.pet,petFollow.gait,petFollow.phase,tSec,petFollow.gait==='dance'?{bob:spec.bob}:null);
     q.yaw=petFollow.yaw*180/Math.PI+(q.yaw||0);
-    const pScale=1.25,py=(W.y||0)+(petFollow.jumpY||0);
-    paintPet(ctx,st.pet,q,(x,y,z)=>worldProject(petFollow.x+x*pScale,py+y*pScale,petFollow.z+z*pScale),(D.pet&&D.pet.glow)||'#ffb020');
+    const py=(W.y||0)+(petFollow.jumpY||0);
+    paintPetStanding(ctx,st.pet,q,(x,y,z)=>worldProject(x,y,z),(D.pet&&D.pet.glow)||'#ffb020',{x:petFollow.x,y:py,z:petFollow.z});
   }finally{ctx.restore();}
 }
 function drawDriver(who){
@@ -881,6 +919,8 @@ if(typeof drawWaterline==='function'&&!drawWaterline.__crewHooked){
 window.CREW={
   update,
   preview,
+  paintCompanion,
+  petScale:PET_DRAW_SCALE,
   parts(who){const w=who==='boy'?'boy':who==='girl'?'girl':whoNow();return (st.rigs&&st.rigs[w]&&st.rigs[w].parts)||logical[w];},
   debugHuman(gait,tSec,phase){syncDanceOpts();return humanSpec(gait,phase==null?tSec:phase,tSec,true);},
   debugPet(type,tSec){syncDanceOpts();st.pet=type;return petDanceQ(type,tSec);},

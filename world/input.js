@@ -276,7 +276,7 @@ function exitCarTap(){
   if(typeof syncOnFootButtons==='function')syncOnFootButtons();}
 function ensureExitBtn(){if(document.getElementById('exitCarBtn'))return;
   const css=document.createElement('style');css.id='exitCarCss';css.textContent=''
-    +'#exitCarBtn{position:absolute;top:5px;right:calc(var(--pzr, calc(21vw + 2px)) + 52px);z-index:25;display:none;'
+    +'#exitCarBtn{position:absolute;top:5px;right:calc(var(--pzr, calc(21vw + 2px)) + 56px);z-index:25;display:none;'
     +'height:44px;min-width:78px;padding:0 12px;border-radius:14px;border:2.5px solid #fff;margin:0;'
     +'background:radial-gradient(circle at 40% 32%,#f4fff6,#39ff7a 38%,#ff2bd6 78%);'
     +'box-shadow:0 0 16px #7dff6b,0 0 12px #ff2bd6;color:#140018;'

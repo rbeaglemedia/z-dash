@@ -773,6 +773,7 @@ const SCREENS = [
       WALK_MODE.onFoot = true; WALK_MODE.insideBuilding = true; WALK_MODE.insideDoor = door; WALK_MODE.door = door;
       if (typeof walkShowInterior === 'function') walkShowInterior(door);
       if (typeof syncOnFootButtons === 'function') syncOnFootButtons();
+      if (window.WALK_ITEMS && WALK_ITEMS.openMenu) WALK_ITEMS.openMenu();
     `)
   },
   {

@@ -1,0 +1,18 @@
+Room prop sheet leftovers
+Measured on commit d8e6ed32aaccd37bbdf81f0b12fe97a7d089a37a
+Headless Chrome. Phone 844x390, iPad 1180x820, PC 1366x768.
+
+Pet
+The giant pet was the crew preview billboard. That preview's pet camera sits 0.82m away, so the pet was a close-up in front of the room, not a body on the floor. Ellie and the pet are now drawn in the room camera. The pet stands on the floor at her side, scaled 1.7 so the ears land between her knee and her waist. The same scale is used in every walk-in room, including the pet shop, and in the outside follow view.
+Drawn height, pet / Ellie: phone 44/104 (0.42), iPad 90/220 (0.41), PC 84/206 (0.41).
+
+Icons and labels
+Item tiles crop the baked model into the icon, so the chair, sofa, and arcade read on the tile. Icon ink is 486 samples on a 160x120 thumb.
+ELLIE'S HOUSE and ENTER sit in a 112px column at the top left. Overlap with the sheet, STEP BACK OUTSIDE, and the page button: 0 on phone, iPad, and PC. Those two room buttons hide while the sheet is open and come back when it closes.
+
+Place, move, rotate, remove
+Tap CHAIR, then tap the floor: a chair is saved with rot 0. ROTATE sets rot to 1. Dragging changes x. REMOVE drops the count. A save with sofa, arcade, pet bed, and dance floor migrates those four, then the new lamp. Kid coins stayed 77. The ITEMS button hides when she is back in the car. The sheet does not overlap enter, jump, throttle, wings, or ITEMS.
+
+UI polish
+world-drive, world-walk, world-interior (sheet open), wz-l2h: 0 errors, 0 warnings.
+Phone Exit/Pause gap warning is gone. Interior controls with the sheet open: 10 on phone, 11 on PC, budget 12.
