@@ -363,7 +363,15 @@ function launchChrome(port) {
     '--window-size=1280,720', 'about:blank'
   ];
   const child = spawn(CHROME, args, { stdio: ['ignore', 'pipe', 'pipe'] });
-  return { child, dir };
+  let log = '';
+  const keep = (buf) => {
+    log += buf.toString();
+    if (log.length > 4000) log = log.slice(-4000);
+  };
+  // An unread pipe fills and Chrome stops before the debug port opens.
+  child.stdout.on('data', keep);
+  child.stderr.on('data', keep);
+  return { child, dir, log: () => log };
 }
 
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
@@ -560,18 +568,34 @@ function writeReport(dir, payload) {
 async function reviewVisual(root, shotDir, canon) {
   const server = await startServer(root, 0, shotDir);
   const port = server.address().port;
-  const debugPort = 9300 + Math.floor(Math.random() * 500);
-  const chrome = launchChrome(debugPort);
+  const debugPort = 9300 + Math.floor(Math.random() * 400);
+  let chrome = null;
   let cdp = null;
+  let ver = null;
+  let lastLaunch = '';
+  for (let attempt = 0; attempt < 2 && !ver; attempt++) {
+    const port = debugPort + attempt * 17;
+    chrome = launchChrome(port);
+    try {
+      ver = await waitJson('http://127.0.0.1:' + port + '/json/version', 100);
+      ver._port = port;
+    } catch (e) {
+      lastLaunch = e.message + (chrome.log() ? ' ' + chrome.log().trim().slice(-400) : '');
+      try { chrome.child.kill('SIGKILL'); } catch (e2) {}
+      try { fs.rmSync(chrome.dir, { recursive: true, force: true }); } catch (e2) {}
+      chrome = null;
+      await sleep(500);
+    }
+  }
+  if (!ver) throw new Error('Chrome debug endpoint not ready: ' + lastLaunch);
   try {
-    const ver = await waitJson('http://127.0.0.1:' + debugPort + '/json/version', 80);
     cdp = new Cdp(ver.webSocketDebuggerUrl);
     await cdp.send('Target.setDiscoverTargets', { discover: true });
     const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
     const { targetInfos } = await cdp.send('Target.getTargets', {});
     const page = (targetInfos || []).find((t) => t.targetId === targetId) || (targetInfos || []).find((t) => t.type === 'page');
     if (!page) throw new Error('no page target');
-    const { webSocketDebuggerUrl } = await (await fetch('http://127.0.0.1:' + debugPort + '/json/list')).json().then((list) => {
+    const { webSocketDebuggerUrl } = await (await fetch('http://127.0.0.1:' + ver._port + '/json/list')).json().then((list) => {
       const hit = list.find((t) => t.id === page.targetId);
       if (!hit) throw new Error('page socket missing');
       return hit;
