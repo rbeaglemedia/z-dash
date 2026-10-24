@@ -1,6 +1,6 @@
 {
   "ok": false,
-  "sha": "9061196bca872171e584c8647283fa37431e79be",
+  "sha": "a9371bcce864d6b673f27cb656fbb1760f3657ea",
   "branch": "cursor/arch-check-652e",
   "findings": [
     {
@@ -618,7 +618,8 @@
     "Shape, doors, and garages match on Arcade, Street, and on foot.",
     "Dance mural walls are flat, on the face, and at least as big as the recorded floor.",
     "Lots of ramps (70). No upper limit. The small river-edge jump stays the one that clears the river at about 80 mph.",
-    "24 solid buildings sit on the locked footprints from main. None were added, removed, or merged.",
+    "24 solid buildings, the approved count. A move does not change it. Ideas for Bob are not buildings.",
+    "Districts, roads, spawn, purpose placement, and walkable doors still read as a city.",
     "Finished buildings are straight boxes on the shared drawer. Curves, organic shells, and photoreal skins are not in this city.",
     "Every reviewed building uses the shared neon palette and the shared box drawer.",
     "Person doors sit on the street, wide enough and tall enough for a 1.7 m person.",
@@ -1717,11 +1718,11 @@
       "neighbors": 37,
       "one": {
         "median": 0.1,
-        "max": 0.4,
+        "max": 0.2,
         "n": 11
       },
       "pass": {
-        "median": 0.4,
+        "median": 0.3,
         "max": 0.6,
         "n": 9
       },
@@ -1737,13 +1738,13 @@
       },
       "neighbors": 37,
       "one": {
-        "median": 0.3,
-        "max": 1,
+        "median": 0.1,
+        "max": 0.7,
         "n": 11
       },
       "pass": {
         "median": 1.1,
-        "max": 1.2,
+        "max": 1.9,
         "n": 9
       },
       "blurHits": 0
@@ -1764,7 +1765,7 @@
       },
       "pass": {
         "median": 0.3,
-        "max": 0.6,
+        "max": 0.4,
         "n": 9
       },
       "blurHits": 0

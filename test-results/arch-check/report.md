@@ -1,12 +1,16 @@
 # Architecture check
 
-Target `cursor/arch-check-652e` `9061196bca87`
+Target `cursor/arch-check-652e` `a9371bcce864`
 
 Result: **FAIL**
 
 Reviewed 24 solid buildings. Shots: 288. Style guide: `docs/NEON-WORLD-STYLE.md`.
 
-## Placements
+## Count
+
+Pass.
+
+## Layout
 
 Pass.
 
@@ -113,8 +117,8 @@ Software GL. Milliseconds are this host, same idea as PERF-GUARD. Source for the
 
 | View | One building ms | Pass ms | Buildings | Cap one | Cap pass | Buffer |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| phone | 0.1 | 0.4 | 37 | 8 | 40 | 1688x780 |
-| ipad | 0.3 | 1.1 | 37 | 16 | 90 | 1024x768 |
+| phone | 0.1 | 0.3 | 37 | 8 | 40 | 1688x780 |
+| ipad | 0.1 | 1.1 | 37 | 16 | 90 | 1024x768 |
 | pc | 0.1 | 0.3 | 37 | 8 | 40 | 1280x720 |
 
 ## What held
@@ -122,7 +126,8 @@ Software GL. Milliseconds are this host, same idea as PERF-GUARD. Source for the
 - Shape, doors, and garages match on Arcade, Street, and on foot.
 - Dance mural walls are flat, on the face, and at least as big as the recorded floor.
 - Lots of ramps (70). No upper limit. The small river-edge jump stays the one that clears the river at about 80 mph.
-- 24 solid buildings sit on the locked footprints from main. None were added, removed, or merged.
+- 24 solid buildings, the approved count. A move does not change it. Ideas for Bob are not buildings.
+- Districts, roads, spawn, purpose placement, and walkable doors still read as a city.
 - Finished buildings are straight boxes on the shared drawer. Curves, organic shells, and photoreal skins are not in this city.
 - Every reviewed building uses the shared neon palette and the shared box drawer.
 - Person doors sit on the street, wide enough and tall enough for a 1.7 m person.
