@@ -6,9 +6,9 @@ Screens: 13
 
 - URL: `/world-split.html`
 - Ready: yes
-- Controls: 6 · errors 0 · warnings 1
+- Controls: 6 · errors 0 · warnings 0
 - Screenshot: `/workspace/test-results/prop-menu/ui-polish/screenshots/world-drive__phone-844x390.png`
-- **warn / gap:** 1 touch targets sit under 6px apart
+- Clean.
 
 ## Neon World driving HUD — pc-1366x768
 
@@ -22,9 +22,9 @@ Screens: 13
 
 - URL: `/world-split.html`
 - Ready: yes
-- Controls: 9 · errors 0 · warnings 1
+- Controls: 9 · errors 0 · warnings 0
 - Screenshot: `/workspace/test-results/prop-menu/ui-polish/screenshots/world-walk__phone-844x390.png`
-- **warn / gap:** 1 touch targets sit under 6px apart
+- Clean.
 
 ## Neon World on-foot HUD — pc-1366x768
 
@@ -38,17 +38,17 @@ Screens: 13
 
 - URL: `/world-split.html`
 - Ready: yes
-- Controls: 13 · errors 0 · warnings 1
+- Controls: 10 · errors 0 · warnings 0
 - Screenshot: `/workspace/test-results/prop-menu/ui-polish/screenshots/world-interior__phone-844x390.png`
-- **warn / clutter:** 13 controls visible (budget 12)
+- Clean.
 
 ## Neon World building interior — pc-1366x768
 
 - URL: `/world-split.html`
 - Ready: yes
-- Controls: 16 · errors 0 · warnings 1
+- Controls: 11 · errors 0 · warnings 0
 - Screenshot: `/workspace/test-results/prop-menu/ui-polish/screenshots/world-interior__pc-1366x768.png`
-- **warn / clutter:** 16 controls visible (budget 12)
+- Clean.
 
 ## World pause Home Level 2 — phone-844x390
 
@@ -107,4 +107,4 @@ Screens: 13
 - Clean.
 
 ---
-Total errors: 0. Total warnings: 4.
+Total errors: 0. Total warnings: 0.

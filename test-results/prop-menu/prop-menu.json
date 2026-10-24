@@ -1,5 +1,5 @@
 {
-  "commit": "9f2db83cb24c9c52928770e0870917c669ae280f",
+  "commit": "d8e6ed32aaccd37bbdf81f0b12fe97a7d089a37a",
   "devices": [
     {
       "id": "phone",
@@ -33,9 +33,9 @@
           "x": 140,
           "y": 59,
           "w": 227,
-          "h": 222,
+          "h": 221,
           "r": 367,
-          "b": 281
+          "b": 280
         },
         "obstacles": [
           {
@@ -72,6 +72,49 @@
           }
         ],
         "coins": 77
+      },
+      "measure": {
+        "person": {
+          "n": 713,
+          "h": 104,
+          "w": 40
+        },
+        "pet": {
+          "n": 264,
+          "h": 44,
+          "w": 56
+        },
+        "ratio": 0.42,
+        "scale": 1.7,
+        "icon": {
+          "ink": 486,
+          "w": 160,
+          "h": 120
+        },
+        "title": {
+          "id": "walk-room-label",
+          "d": "flex",
+          "x": 12,
+          "y": 54,
+          "w": 112,
+          "h": 64,
+          "r": 124,
+          "b": 118
+        },
+        "titleText": "ELLIE'S HOUSE",
+        "actText": "ENTER",
+        "labelVsStep": 0,
+        "labelVsPage": 0,
+        "labelVsSheet": 0,
+        "step": {
+          "id": "walk-step-out",
+          "d": "none"
+        },
+        "page": {
+          "id": "walk-open-page",
+          "d": "none"
+        },
+        "exitPauseGap": null
       },
       "afterLights": [
         "furniture",
@@ -152,11 +195,11 @@
         "catDeco": "none",
         "panel": {
           "d": "flex",
-          "x": 135,
+          "x": 134,
           "y": 78,
           "w": 420,
           "h": 300,
-          "r": 555,
+          "r": 554,
           "b": 378
         },
         "obstacles": [
@@ -194,6 +237,49 @@
           }
         ],
         "coins": 77
+      },
+      "measure": {
+        "person": {
+          "n": 3099,
+          "h": 220,
+          "w": 82
+        },
+        "pet": {
+          "n": 1143,
+          "h": 90,
+          "w": 120
+        },
+        "ratio": 0.41,
+        "scale": 1.7,
+        "icon": {
+          "ink": 486,
+          "w": 160,
+          "h": 120
+        },
+        "title": {
+          "id": "walk-room-label",
+          "d": "flex",
+          "x": 12,
+          "y": 54,
+          "w": 112,
+          "h": 64,
+          "r": 124,
+          "b": 118
+        },
+        "titleText": "ELLIE'S HOUSE",
+        "actText": "ENTER",
+        "labelVsStep": 0,
+        "labelVsPage": 0,
+        "labelVsSheet": 0,
+        "step": {
+          "id": "walk-step-out",
+          "d": "none"
+        },
+        "page": {
+          "id": "walk-open-page",
+          "d": "none"
+        },
+        "exitPauseGap": null
       },
       "afterLights": [
         "furniture",
@@ -274,11 +360,11 @@
         "catDeco": "none",
         "panel": {
           "d": "flex",
-          "x": 138,
+          "x": 136,
           "y": 70,
           "w": 420,
           "h": 300,
-          "r": 558,
+          "r": 556,
           "b": 370
         },
         "obstacles": [
@@ -316,6 +402,49 @@
           }
         ],
         "coins": 77
+      },
+      "measure": {
+        "person": {
+          "n": 2718,
+          "h": 206,
+          "w": 76
+        },
+        "pet": {
+          "n": 999,
+          "h": 84,
+          "w": 112
+        },
+        "ratio": 0.41,
+        "scale": 1.7,
+        "icon": {
+          "ink": 486,
+          "w": 160,
+          "h": 120
+        },
+        "title": {
+          "id": "walk-room-label",
+          "d": "flex",
+          "x": 12,
+          "y": 54,
+          "w": 112,
+          "h": 64,
+          "r": 124,
+          "b": 118
+        },
+        "titleText": "ELLIE'S HOUSE",
+        "actText": "ENTER",
+        "labelVsStep": 0,
+        "labelVsPage": 0,
+        "labelVsSheet": 0,
+        "step": {
+          "id": "walk-step-out",
+          "d": "none"
+        },
+        "page": {
+          "id": "walk-open-page",
+          "d": "none"
+        },
+        "exitPauseGap": null
       },
       "afterLights": [
         "furniture",
