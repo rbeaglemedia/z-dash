@@ -38,7 +38,12 @@ function resize(){
     if(W*H>cap){const fit=Math.sqrt(cap/(W*H));W=Math.max(1,Math.floor(W*fit));H=Math.max(1,Math.floor(H*fit));}
     if(ipadSized){cv.style.width='';cv.style.height='';ipadSized=false;}
   }
-  cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
+  // Assigning width or height clears the bitmap, including a repeat of the same
+  // numbers. ?perf=1 counts that clear. The assignment stays, so the picture
+  // on a real size change is the one this function already drew.
+  const bw=W*DPR,bh=H*DPR;
+  if(window.Z_PERF&&window.Z_PERF.on){window.Z_PERF.resizeN=(window.Z_PERF.resizeN||0)+1;if(cv.width===bw&&cv.height===bh)window.Z_PERF.resizeSame=(window.Z_PERF.resizeSame||0)+1;}
+  cv.width=bw;cv.height=bh;ctx.setTransform(DPR,0,0,DPR,0,0);
 }
 function ipadScale(){return {boost:ipadBoost,step:ipadStepI,ema:+ipadEma.toFixed(4),lock:ipadLock};}
 function ipadPause(s){

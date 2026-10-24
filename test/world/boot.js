@@ -9,7 +9,67 @@ function paceGap(ms){const p=Z_PACE;if(p.gaps.length<p.cap)p.gaps.push(ms);}
 // ?perf=1 draws the frame-time graph and names the systems in that frame.
 // Off that flag, none of these timers run.
 const PERF=/[?&]perf=1/.test(location.search);
-const Z_PERF=window.Z_PERF={on:PERF,gap:0,work:0,worst:'',worstMs:0,pass:{},top:[],frames:0,sum:{},slowN:0,slowSum:{},slow:[],raf:0,gcPending:0,gcN:0,gcWatch:false,heapDrop:0};
+const Z_PERF=window.Z_PERF={on:PERF,gap:0,work:0,worst:'',worstMs:0,pass:{},top:[],frames:0,sum:{},slowN:0,slowSum:{},slow:[],raf:0,gcPending:0,gcN:0,gcWatch:false,heapDrop:0,flickerN:0,flickerLast:'',flicker:[],flickerBy:{},flickerLayer:{},build:'flick-1'};
+// One row per layer per frame. A later cause on the same layer is appended.
+function flickNote(layer,cause,detail){
+  if(!PERF)return;
+  if(!(window.Z_WARM&&Z_WARM.phase==='done'))return;
+  const frame=Z_PERF.opened||0;
+  let row=Z_PERF.flicker.length&&Z_PERF.flicker[Z_PERF.flicker.length-1].frame===frame&&Z_PERF.flicker[Z_PERF.flicker.length-1].layer===layer?Z_PERF.flicker[Z_PERF.flicker.length-1]:null;
+  if(!row){
+    row={frame,layer,cause,detail:detail||'',t:Math.round(performance.now())};
+    Z_PERF.flickerN++;
+    Z_PERF.flickerLayer[layer]=(Z_PERF.flickerLayer[layer]||0)+1;
+    if(Z_PERF.flicker.length>=48)Z_PERF.flicker.shift();
+    Z_PERF.flicker.push(row);
+    if(Z_PERF.flickerN<=16)console.log('[flicker]',layer,cause,detail||'');
+  }else{
+    if(cause&&row.cause.indexOf(cause)<0)row.cause+='+'+cause;
+    if(detail)row.detail=detail;
+  }
+  Z_PERF.flickerLast=row.layer+' '+row.cause+(row.detail?(' '+row.detail):'');
+  const key=layer+':'+cause;
+  Z_PERF.flickerBy[key]=(Z_PERF.flickerBy[key]||0)+1;
+}
+function flickCanvas(cv,prevW,prevH,w,h){
+  let kind='';
+  if(cv&&cv.id==='c')kind='city';
+  else if(window.ZD&&ZD.Xray&&cv===ZD.Xray.canvas)kind='gl';
+  else if(typeof ZV!=='undefined'&&ZV&&cv===ZV.cv)kind='cache';
+  else return;
+  if(!Z_PERF.clears)Z_PERF.clears={city:0,gl:0,cache:0};
+  Z_PERF.clears[kind]++;
+  Z_PERF.clearLast=kind+' '+prevW+'x'+prevH+'→'+w+'x'+h;
+  if(kind==='gl')Z_PERF.glResizeFrame=Z_PERF.opened||0;
+  if(kind==='cache')Z_PERF.cacheResizeFrame=Z_PERF.opened||0;
+  // The city canvas is the picture. A width write clears the city and the HUD
+  // together, and the browser can show that blank frame before the next draw.
+  if(kind==='city'){flickNote('city','resize',Z_PERF.clearLast);flickNote('hud','resize',Z_PERF.clearLast);}
+}
+window.flickNote=flickNote;
+window.flickCanvas=flickCanvas;
+// A width or height write clears the bitmap, even when the number does not change.
+// Wrapped only for ?perf=1, and only after the first real size, so the fast path
+// and the first allocation stay out of the count.
+if(PERF&&typeof HTMLCanvasElement==='function'){
+  const proto=HTMLCanvasElement.prototype;
+  const dw=Object.getOwnPropertyDescriptor(proto,'width');
+  const dh=Object.getOwnPropertyDescriptor(proto,'height');
+  if(dw&&dw.set&&dh&&dh.set&&!window._zFlickWrap){
+    window._zFlickWrap=1;
+    let guard=null;
+    function arm(cv,prevW,prevH){
+      if(guard===cv)return;
+      guard=cv;
+      queueMicrotask(function(){if(guard===cv)guard=null;});
+      if(!(prevW>0||prevH>0))return;
+      if(!(window.Z_WARM&&Z_WARM.phase==='done'))return;
+      flickCanvas(cv,prevW,prevH,dw.get.call(cv),dh.get.call(cv));
+    }
+    Object.defineProperty(proto,'width',{configurable:true,enumerable:dw.enumerable,get:dw.get,set:function(v){const w=dw.get.call(this),h=dh.get.call(this);dw.set.call(this,v);arm(this,w,h);}});
+    Object.defineProperty(proto,'height',{configurable:true,enumerable:dh.enumerable,get:dh.get,set:function(v){const w=dw.get.call(this),h=dh.get.call(this);dh.set.call(this,v);arm(this,w,h);}});
+  }
+}
 let perfTextAt=0,perfBoxEl=null;
 const PERF_SHORT={buildings:'bldg',trafficDraw:'cars',traffic:'ai',windows:'wins',objectives:'goal',collect:'bake',detail:'detail',ground:'ground',trails:'trails',fx:'fx',hud:'hud',map:'map',car:'car',carGl:'car gl',carCopy:'car copy',carBlit:'car blit',flame:'flame',sky:'sky',step:'step',dyn:'dyn',rings:'rings',crew:'crew',water:'water',hotdrop:'drop',walk:'walk',dom:'dom',timer:'timer',gc:'gc',other:'other',soccer:'ball',tow:'tow',runway:'runway',sort:'sort',tunnel:'tunnel',roads:'roads'};
 function perfBegin(){
@@ -112,7 +172,7 @@ function render(){const _vs=visApply();const tR=performance.now();
   if(PERF){const t=performance.now();drawWaterline();perfAdd('water',performance.now()-t);const t2=performance.now();drawFX();perfAdd('fx',performance.now()-t2);}else{drawWaterline();drawFX();}
   if(window.HOTDROP){if(PERF){const t=performance.now();HOTDROP.draw();perfAdd('hotdrop',performance.now()-t);}else HOTDROP.draw();}
   visRestore(_vs);
-  if(PERF){const t=performance.now(),m0=Z_PERF.pass.map||0;drawHud(hudDt);perfAdd('hud',Math.max(0,performance.now()-t-((Z_PERF.pass.map||0)-m0)));}else drawHud(hudDt);
+  if(PERF){const t=performance.now(),m0=Z_PERF.pass.map||0,hd=Z_PERF.hudDrew||0;drawHud(hudDt);perfAdd('hud',Math.max(0,performance.now()-t-((Z_PERF.pass.map||0)-m0)));if((Z_PERF.hudDrew||0)===hd&&window.Z_WARM&&Z_WARM.phase==='done')flickNote('hud','not-drawn','');}else drawHud(hudDt);
   // Train the car rate on heavy frames only, and only once play has started.
   // A 70–90 blended average is not a signal: it is the cheap frame mixed with this one.
   if(window.Z_WARM&&Z_WARM.phase==='done'){
@@ -281,7 +341,7 @@ function loop(t){
 function perfBox(){
   if(perfBoxEl)return perfBoxEl;
   const css=document.createElement('style');
-  css.textContent='#zPerf{position:fixed;left:8px;bottom:8px;z-index:400;pointer-events:none;padding:6px 8px;border:1px solid #3ee6ff;border-radius:8px;background:rgba(5,2,12,.88);color:#d7fff8;font:700 11px/1.35 ui-monospace,monospace;text-shadow:0 1px 0 #000;white-space:pre-line;max-width:280px}#zPerf canvas{display:block;width:192px;height:48px;margin-bottom:4px;background:#12081c}';
+  css.textContent='#zPerf{position:fixed;left:8px;bottom:8px;z-index:400;pointer-events:none;padding:6px 8px;border:1px solid #3ee6ff;border-radius:8px;background:rgba(5,2,12,.88);color:#d7fff8;font:700 11px/1.35 ui-monospace,monospace;text-shadow:0 1px 0 #000;white-space:pre-line;max-width:340px}#zPerf canvas{display:block;width:192px;height:48px;margin-bottom:4px;background:#12081c}';
   document.head.appendChild(css);
   const el=document.createElement('div');
   el.id='zPerf';
@@ -314,8 +374,36 @@ function perfPaint(){
     +'now '+(Z_PERF.top.length?line(Z_PERF.top):'—')+'\n'
     +(avg.length?('avg '+line(avg.slice(0,3).map(r=>({n:r.n,ms:r.ms})))+'\n'):'')
     +(stats?('med '+stats.med.toFixed(1)+'   1% '+stats.low.toFixed(1)+'   slow '+Z_PERF.slowN+'\n'):'')
-    +'sprite x'+every+(rung?'   rung '+rung.step+' / '+rung.boost:'')+'\n'
-    +perfBg();
+    +'sprite x'+every+(window.Z_NOCARSKIP?' nocarskip':'')+'  skip '+(Z_PERF.skipN||0)+(rung?'   rung '+rung.step+' / '+rung.boost:'')+'\n'
+    +flickLine()+'\n'
+    +perfSw()+' · '+perfPdb()+' · bakes '+(Z_PERF.trafficBake||0)+' · glsize '+((Z_PERF.clears&&Z_PERF.clears.gl)||0)+' · rsz '+(Z_PERF.resizeN||0)+(Z_PERF.resizeSame?('/'+Z_PERF.resizeSame+' same'):'')+'\n'
+    +perfBg()+' · '+Z_PERF.build;
+}
+function flickLine(){
+  const n=Z_PERF.flickerN||0,by=Z_PERF.flickerBy||{},rows=[];
+  for(const k in by)rows.push([k,by[k]]);
+  rows.sort(function(a,b){return b[1]-a[1];});
+  const top=rows.slice(0,3).map(function(r){return r[0]+' '+r[1];}).join(' · ');
+  return 'flicker '+n+(top?('  '+top):'  —')+(Z_PERF.flickerLast?('\nlast '+Z_PERF.flickerLast):'');
+}
+function perfSw(){
+  let url='none';
+  try{const c=navigator.serviceWorker&&navigator.serviceWorker.controller;url=c&&c.scriptURL?c.scriptURL:'none';}catch(e){}
+  Z_PERF.sw=url;
+  if(url.indexOf('/test/sw.js')>=0)return 'sw test';
+  if(/\/sw\.js(?:\?|$)/.test(url))return 'sw ROOT';
+  if(url!=='none')return 'sw other';
+  return 'sw none';
+}
+function perfPdb(){
+  try{
+    const R=window.ZD&&ZD.Xray&&ZD.Xray.renderer;
+    const gl=R&&R.getContext&&R.getContext();
+    if(!gl)return 'pdb ?';
+    const a=gl.getContextAttributes()||{};
+    Z_PERF.pdb=a.preserveDrawingBuffer?1:0;
+    return 'pdb '+(a.preserveDrawingBuffer?1:0)+' aa '+(a.antialias?1:0);
+  }catch(e){return 'pdb ?';}
 }
 function perfBg(){
   const dash=!!(window.ZDKID||document.getElementById('kCv')||(window.ZD&&ZD.Music));

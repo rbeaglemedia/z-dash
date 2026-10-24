@@ -257,7 +257,8 @@ function drawHud(dt){const t=performance.now()/1000,w=W,h=H,ipad=zIpadOn(),s=ipa
   // NOS bottle on the NOS button (WANTED's .nfxcan)
   if(!nosCan){nosCan=document.createElement('div');nosCan.className='nfxcan';nosCan.innerHTML='<i></i><b></b>';document.getElementById('nos').appendChild(nosCan);}
   const f=Math.round(P.nosTank*200)/200;if(f!==nosCan.f){nosCan.f=f;nosCan.style.setProperty('--cf',f);document.getElementById('nos').classList.toggle('ready',f>=.99);document.getElementById('nos').classList.toggle('empty',f<.05);}
-  syncPcFps();}
+  syncPcFps();
+  if(window.Z_PERF&&window.Z_PERF.on)window.Z_PERF.hudDrew=(window.Z_PERF.hudDrew||0)+1;}
 let nosCan=null,hudFade=null,hudFadeK='',hudThr=null,hudThrK='';
 // ===== pause menu (WANTED ⏸ → RESUME / row / HOME) =====
 let paused=false;function kPause(on){paused=on;document.getElementById('kHome').classList.toggle('hidden',!on);document.getElementById('kPzBg').classList.toggle('hidden',!on);document.getElementById('kMenuB').classList.toggle('kopen',on);}
