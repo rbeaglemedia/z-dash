@@ -1,0 +1,777 @@
+{
+  "sha": "92d1bd3e0fa8e8a42cf7b384190c0e98b67965b1",
+  "flying": [
+    {
+      "t": 49328,
+      "heap": {
+        "used": 46850315,
+        "total": 78349795
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0314,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 64363,
+      "heap": {
+        "used": 49243840,
+        "total": 75466204
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.036,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 79382,
+      "heap": {
+        "used": 52391659,
+        "total": 104826323
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0351,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 11,
+        "dots": 18,
+        "alive": 29
+      }
+    },
+    {
+      "t": 94444,
+      "heap": {
+        "used": 51082771,
+        "total": 105612771
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0313,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 109457,
+      "heap": {
+        "used": 67065475,
+        "total": 106399203
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0319,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 124467,
+      "heap": {
+        "used": 63866575,
+        "total": 106923491
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0352,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 139522,
+      "heap": {
+        "used": 68895543,
+        "total": 107709923
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0317,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 154538,
+      "heap": {
+        "used": 48220563,
+        "total": 108234211
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0316,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 169572,
+      "heap": {
+        "used": 64508483,
+        "total": 109020643
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0316,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 184587,
+      "heap": {
+        "used": 59228779,
+        "total": 107972067
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0314,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 199653,
+      "heap": {
+        "used": 44485551,
+        "total": 109020643
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0391,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 214671,
+      "heap": {
+        "used": 57051719,
+        "total": 109282787
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0316,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 229723,
+      "heap": {
+        "used": 63213399,
+        "total": 110326187
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0317,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 244746,
+      "heap": {
+        "used": 38148439,
+        "total": 110850359
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0318,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 259783,
+      "heap": {
+        "used": 44263790,
+        "total": 110325654
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0316,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 11,
+        "dots": 18,
+        "alive": 29
+      }
+    },
+    {
+      "t": 274839,
+      "heap": {
+        "used": 64616506,
+        "total": 110849942
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0315,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 289856,
+      "heap": {
+        "used": 51623910,
+        "total": 110587798
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0351,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 304874,
+      "heap": {
+        "used": 52455634,
+        "total": 109539222
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.035,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 319887,
+      "heap": {
+        "used": 47642194,
+        "total": 110063510
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0351,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    {
+      "t": 334949,
+      "heap": {
+        "used": 45729706,
+        "total": 110063494
+      },
+      "fx": 0,
+      "dom": 490,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0317,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": false,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    }
+  ],
+  "beforePause": {
+    "t": 334954,
+    "heap": {
+      "used": 47225110,
+      "total": 110063494
+    },
+    "fx": 0,
+    "dom": 490,
+    "buf": [
+      389,
+      292
+    ],
+    "scale": {
+      "boost": 0.38,
+      "step": 5,
+      "ema": 0.0352,
+      "lock": 5
+    },
+    "hidden": false,
+    "paused": false,
+    "traffic": {
+      "cache": 1003,
+      "bytes": 102707200,
+      "bakes": 1003,
+      "bakeMs": 25190,
+      "sparks": 0,
+      "sparkN": 0,
+      "sim": 12,
+      "dots": 18,
+      "alive": 30
+    }
+  },
+  "pausedSnap": {
+    "snap": {
+      "t": 342972,
+      "heap": {
+        "used": 38885008,
+        "total": 108228780
+      },
+      "fx": 0,
+      "dom": 491,
+      "buf": [
+        389,
+        292
+      ],
+      "scale": {
+        "boost": 0.38,
+        "step": 5,
+        "ema": 0.0316,
+        "lock": 5
+      },
+      "hidden": false,
+      "paused": true,
+      "traffic": {
+        "cache": 1003,
+        "bytes": 102707200,
+        "bakes": 1003,
+        "bakeMs": 25190,
+        "sparks": 0,
+        "sparkN": 0,
+        "sim": 12,
+        "dots": 18,
+        "alive": 30
+      }
+    },
+    "renders": 239
+  },
+  "hiddenOk": true,
+  "hide0": {
+    "t": 343038,
+    "heap": {
+      "used": 43621266,
+      "total": 108228810
+    },
+    "fx": 0,
+    "dom": 492,
+    "buf": [
+      389,
+      292
+    ],
+    "scale": {
+      "boost": 0.38,
+      "step": 5,
+      "ema": 0.0349,
+      "lock": 5
+    },
+    "hidden": false,
+    "paused": false,
+    "traffic": {
+      "cache": 1003,
+      "bytes": 102707200,
+      "bakes": 1003,
+      "bakeMs": 25190,
+      "sparks": 0,
+      "sparkN": 0,
+      "sim": 12,
+      "dots": 18,
+      "alive": 30
+    }
+  },
+  "hiddenSnap": {
+    "t": 347044,
+    "heap": {
+      "used": 43656490,
+      "total": 108228826
+    },
+    "fx": 0,
+    "dom": 492,
+    "buf": [
+      389,
+      292
+    ],
+    "scale": {
+      "boost": 0.38,
+      "step": 5,
+      "ema": 0.0349,
+      "lock": 5
+    },
+    "hidden": true,
+    "paused": false,
+    "traffic": {
+      "cache": 1003,
+      "bytes": 102707200,
+      "bakes": 1003,
+      "bakeMs": 25190,
+      "sparks": 0,
+      "sparkN": 0,
+      "sim": 12,
+      "dots": 18,
+      "alive": 30
+    }
+  }
+}
