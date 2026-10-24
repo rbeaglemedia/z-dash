@@ -54,7 +54,8 @@ function relTilt(){const g0=TL.g0,g=TL.gv;if(!g0||!g)return null;
   const ey=[ex[1]*g0[2]-ex[2]*g0[1],ex[2]*g0[0]-ex[0]*g0[2],ex[0]*g0[1]-ex[1]*g0[0]],dot=(u,v)=>u[0]*v[0]+u[1]*v[1]+u[2]*v[2],c=dot(g,g0);
   return[Math.atan2(dot(g,ex),c)/D,Math.atan2(dot(g,ey),c)/D];}
 function goFull(){const lk=()=>{try{const o=screen.orientation;if(o&&o.lock&&/^landscape/.test(o.type||''))o.lock(o.type).catch(()=>{});}catch(e){}};
-  try{const d=document.documentElement,fs=document.fullscreenElement||document.webkitFullscreenElement;if(fs){lk();return;}
+  try{if(matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches){lk();return;}
+    const d=document.documentElement,fs=document.fullscreenElement||document.webkitFullscreenElement;if(fs){lk();return;}
     const r=d.requestFullscreen?d.requestFullscreen({navigationUI:'hide'}):d.webkitRequestFullscreen?d.webkitRequestFullscreen():null;
     if(r&&r.then)r.then(lk,lk);else lk();}catch(e){lk();}}
 function tiltCenter(){if(TL.a0!=null&&((screenAngle()-TL.a0)%180!==0)){TL.a0=screenAngle();orientFix();TL.calNext=true;TL.sl=0;TL.sf=0;return;}if(TL.have){TL.n0={lr:TL.lr,fb:TL.fb};TL.g0=TL.gv;TL.sl=0;TL.sf=0;TL.calNext=false;}else TL.calNext=true;}
@@ -64,11 +65,7 @@ function onFootNow(){const W=window.WALK_MODE;return !!(W&&W.onFoot);}
 function canExitCar(){const W=window.WALK_MODE;return !!(W&&!W.onFoot&&typeof W.canGetOut==='function'&&W.canGetOut());}
 function syncWingsBtn(){const b=document.getElementById('wng');if(!b)return;
   if(onFootNow()){if(typeof syncOnFootButtons==='function')syncOnFootButtons();return;}
-  const s=document.getElementById('wngS'),hasP=typeof P!=='undefined',open=!!(hasP&&P.wings),street=!open&&hasP&&P.driveMode==='street';
-  b.classList.remove('enter-car','exit-car');
-  b.classList.toggle('open',open);b.classList.toggle('arcade',!open&&!street);b.classList.toggle('street',street);
-  b.style.background='';b.style.boxShadow='';b.style.color='';
-  if(s)s.textContent=open?'OPEN':street?'STREET':'ARCADE';}
+  paintDriveWings();}
 syncWingsBtn();
 function bootWingsBtn(){try{if(typeof P!=='undefined'&&P.driveMode!=='street'&&P.driveMode!=='arcade')P.driveMode='arcade';syncWingsBtn();}catch(e){}}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',bootWingsBtn);else bootWingsBtn();
@@ -184,8 +181,8 @@ function setBtnFace(el,main,smallText,smallId){if(!el)return;const can=el.queryS
   el.insertBefore(document.createTextNode(main),el.firstChild);
   el.insertBefore(sm,el.firstChild.nextSibling);
   stampPcKey(el);}
-function paintDriveWings(){const b=document.getElementById('wng');if(!b)return;const s=document.getElementById('wngS'),hasP=typeof P!=='undefined',open=!!(hasP&&P.wings),street=!open&&hasP&&P.driveMode==='street';
-  b.classList.remove('enter-car','exit-car');b.classList.toggle('open',open);b.classList.toggle('arcade',!open&&!street);b.classList.toggle('street',street);
+function paintDriveWings(){const b=document.getElementById('wng');if(!b)return;const s=document.getElementById('wngS'),hasP=typeof P!=='undefined',open=!!(hasP&&P.wings),street=hasP&&P.driveMode==='street';
+  b.classList.remove('enter-car','exit-car','open');b.classList.toggle('arcade',!street);b.classList.toggle('street',!!street);
   b.style.background='';b.style.boxShadow='';b.style.color='';if(s)s.textContent=open?'OPEN':street?'STREET':'ARCADE';}
 function applyFootMode(mode){const tup=document.getElementById('tup'),nos=document.getElementById('nos'),brk=document.getElementById('brk'),wng=document.getElementById('wng');
   const can=nos&&nos.querySelector('.nfxcan');if(can)can.style.visibility=mode==='walk'?'hidden':'';

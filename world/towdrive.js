@@ -230,6 +230,59 @@ const TOWDRIVE = (() => {
     if ((P.y || 0) > deck + 2.5) return null;
     return loc;
   }
+  // The cab is a moving city wall. cityWall would halve speed, lock heading, and
+  // re-fire "BUMP! back on the runway" every frame, and the old side shove glued
+  // the Z to the bumper. One hit pushes clear, knocks once, then ignores that truck.
+  const COOL = 0.8, SKIN = 0.8, GAP = 0.6, KNOCK = 6.5;
+  function truckOf(q) {
+    if (!q) return null;
+    for (let i = 0; i < trucks.length; i++) if (trucks[i].oid === q.oid) return trucks[i];
+    return null;
+  }
+  function inCab(tr) {
+    const q = tr.cabQ;
+    if (!q || (P.y || 0) > (tr.ch || 2.7) - 0.2) return false;
+    return P.x > q.x0 - 0.4 && P.x < q.x1 + 0.4 && P.z > q.z0 - 0.4 && P.z < q.z1 + 0.4;
+  }
+  function separateCab(q) {
+    const x0 = q.x0 - SKIN, x1 = q.x1 + SKIN, z0 = q.z0 - SKIN, z1 = q.z1 + SKIN;
+    const opts = [
+      [P.x - x0, -1, 0, x0 - GAP, P.z],
+      [x1 - P.x, 1, 0, x1 + GAP, P.z],
+      [P.z - z0, 0, -1, P.x, z0 - GAP],
+      [z1 - P.z, 0, 1, P.x, z1 + GAP]
+    ];
+    let best = null;
+    for (let i = 0; i < 4; i++) {
+      if (opts[i][0] < 0) continue;
+      if (!best || opts[i][0] < best[0]) best = opts[i];
+    }
+    if (!best) {
+      best = opts[0];
+      for (let i = 1; i < 4; i++) if (opts[i][0] > best[0]) best = opts[i];
+    }
+    P.x = best[3];
+    P.z = best[4];
+    return {nx: best[1], nz: best[2]};
+  }
+  function cabTouch(q) {
+    const tr = truckOf(q);
+    if (!tr || P.wreck || P.loop) return false;
+    const now = P.simT || 0;
+    if ((tr.cool || 0) > now) return true;
+    const n = separateCab(q);
+    let hd = P.hd || P.yaw || 0;
+    const away = Math.sin(hd) * n.nx + Math.cos(hd) * n.nz;
+    if (away < 0) hd = Math.atan2(n.nx, n.nz);
+    else hd += (Math.sign(n.nx * Math.cos(hd) - n.nz * Math.sin(hd)) || 1) * (T.bumpYaw || 0.045);
+    P.hd = hd;
+    P.yaw = hd;
+    P.v = Math.max(KNOCK, Math.max(0, P.v || 0) * (T.bumpKeep != null ? T.bumpKeep : 0.92));
+    tr.cool = now + COOL;
+    tr.hits = (tr.hits || 0) + 1;
+    if (typeof fxBurst === 'function') fxBurst('spark', 6);
+    return true;
+  }
   function carry() {
     if (rideT) {
       const tr = rideT, loc = localOf(tr, P.x, P.z), lip = -tr.L / 2 + tr.bed;
@@ -247,15 +300,11 @@ const TOWDRIVE = (() => {
         if (overBed(tr, 0)) { rideT = tr; break; }
       }
     }
-    if (P.ground && !P.wreck) {
+    if (P.ground && !P.wreck && !P.loop) {
       for (let i = 0; i < trucks.length; i++) {
         const tr = trucks[i];
-        const loc = localOf(tr, P.x, P.z);
-        const cab0 = tr.L / 2 - tr.cabL - 0.15;
-        if (loc.along < cab0 || loc.along > tr.L / 2 + 0.4 || Math.abs(loc.lat) > tr.w / 2 + 0.15) continue;
-        if ((P.y || 0) > (tr.ch || 2.7) - 0.35) continue;
-        const side = loc.lat < 0 ? -1 : 1, out = side * (tr.w / 2 + 0.85);
-        P.x += tr.u[1] * (out - loc.lat); P.z -= tr.u[0] * (out - loc.lat);
+        if (!tr.cabQ || !inCab(tr)) continue;
+        cabTouch(tr.cabQ);
         break;
       }
     }
@@ -340,9 +389,9 @@ const TOWDRIVE = (() => {
   function stats() {
     return {
       enabled:!OFF, n:trucks.length, err, frac:T.towFrac, hopP:T.hopP,
-      trucks:trucks.map(tr => ({id:tr.id, v:+tr.v.toFixed(2), v0:+tr.v0.toFixed(2), gone:+tr.gone.toFixed(1), x:+tr.x.toFixed(1), z:+tr.z.toFixed(1), kind:tr.lane && tr.lane.kind, hop:tr.hopper ? 1 : 0}))
+      trucks:trucks.map(tr => ({id:tr.id, v:+tr.v.toFixed(2), v0:+tr.v0.toFixed(2), gone:+tr.gone.toFixed(1), x:+tr.x.toFixed(1), z:+tr.z.toFixed(1), kind:tr.lane && tr.lane.kind, hop:tr.hopper ? 1 : 0, hits:tr.hits || 0}))
     };
   }
-  return {update, ride, stats, get trucks(){ return trucks; }};
+  return {update, ride, stats, cabTouch, get trucks(){ return trucks; }};
 })();
 window.TOWDRIVE = TOWDRIVE;

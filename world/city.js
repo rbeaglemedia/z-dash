@@ -346,7 +346,7 @@ function garageZone(p,x,z,y,r){if(!p||p.type!=='garage'||(y||0)>=4.2)return 0;co
   if(x<x0||x>x1||z<z0||z>z1)return 0;return(x>=p.x0&&x<=p.x1&&z>=p.z0&&z<=p.z1)?2:1;}
 function hit(x,z,r,y){return CITY.hit(x,z,r,y);}
 function cityMove(px,pz,py,dt){dt=dt||1/30;if(P.loop)return loopStep(dt);
-  let pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl&&!hit(P.x,P.z,0.8,Math.max(P.y||0,py||0)))pr={fl:pr.fl,ce:pr.ce,wl:null,st:pr.st};if(pr.wl){cityWall(pr.wl,px,pz);pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl&&!hit(P.x,P.z,0.8,P.y||0))pr={fl:pr.fl,ce:pr.ce,wl:null,st:pr.st};if(pr.wl){P.x=px;P.z=pz;pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl&&!hit(P.x,P.z,0.8,P.y||0))pr={fl:pr.fl,ce:pr.ce,wl:null,st:pr.st};}}
+  let pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl&&!hit(P.x,P.z,0.8,Math.max(P.y||0,py||0)))pr={fl:pr.fl,ce:pr.ce,wl:null,st:pr.st};if(pr.wl&&pr.wl.b&&pr.wl.b.towCab&&window.TOWDRIVE&&TOWDRIVE.cabTouch&&TOWDRIVE.cabTouch(pr.wl))pr={fl:pr.fl,ce:pr.ce,wl:null,st:pr.st};else if(pr.wl){cityWall(pr.wl,px,pz);pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl&&!hit(P.x,P.z,0.8,P.y||0))pr={fl:pr.fl,ce:pr.ce,wl:null,st:pr.st};if(pr.wl){P.x=px;P.z=pz;pr=CITY.probe(P.x,P.z,P.y,py);if(pr.wl&&!hit(P.x,P.z,0.8,P.y||0))pr={fl:pr.fl,ce:pr.ce,wl:null,st:pr.st};}}
   if(pr.ce<1e9&&P.y+1.4>pr.ce){P.y=Math.max(pr.fl,pr.ce-1.4);if(!P.ground){P.gam=Math.min(P.gam,0);P.pitch=Math.min(P.pitch,2*D);}P.ceil=(P.ceil||0)+1;}
   // half-pipe: speed follows the height she climbs or drops (energy); runs out going up = rolls back down
   if(P.ground&&pr.st&&P._pg!=null){const dy=pr.fl-P._pg,v2=P.v*P.v-2*9.8*dy;if(v2<=0.25&&dy>0){P.v=0.4;P.yaw+=Math.PI;P.hd=P.yaw;P.pipeTurns=(P.pipeTurns||0)+1;}else P.v=Math.sqrt(Math.max(0.16,v2));}

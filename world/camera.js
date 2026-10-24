@@ -120,6 +120,46 @@ function camS(x,y,z){camStabilizeFlightPitch();let dx=x-cam.x,dy=y-cam.y,dz=z-ca
   const cp=Math.cos(-cam.pitch),sp=Math.sin(-cam.pitch);let Y=dy*cp-Z*sp;Z=dy*sp+Z*cp;
   const cr=Math.cos(cam.roll),sr=Math.sin(cam.roll);return[X*cr-Y*sr,X*sr+Y*cr,Z];}
 const NEAR=0.5;function scr(c){const f=H*0.9;return[W/2+c[0]*f/c[2],H/2-c[1]*f/c[2],c[2]];}
+// A segment that crosses the near plane interpolates a point at z=NEAR. That point's
+// screen position runs away to tens of thousands of pixels and the stroke comes back
+// as a floating shard. Keep the visible piece and cut it to a pad just outside the
+// canvas so the stroke of the cut itself never lands on screen.
+function clip2d(x1,y1,x2,y2){
+  const pad=12,xmin=-pad,ymin=-pad,xmax=W+pad,ymax=H+pad;
+  const code=(x,y)=>{let c=0;if(x<xmin)c|=1;else if(x>xmax)c|=2;if(y<ymin)c|=4;else if(y>ymax)c|=8;return c;};
+  let c1=code(x1,y1),c2=code(x2,y2);
+  for(let n=0;n<8;n++){
+    if(!(c1|c2))return[x1,y1,x2,y2];
+    if(c1&c2)return null;
+    const c=c1||c2,dx=x2-x1,dy=y2-y1;let x,y;
+    if(c&8){if(!dy)return null;const t=(ymax-y1)/dy;x=x1+dx*t;y=ymax;}
+    else if(c&4){if(!dy)return null;const t=(ymin-y1)/dy;x=x1+dx*t;y=ymin;}
+    else if(c&2){if(!dx)return null;const t=(xmax-x1)/dx;y=y1+dy*t;x=xmax;}
+    else{if(!dx)return null;const t=(xmin-x1)/dx;y=y1+dy*t;x=xmin;}
+    if(!isFinite(x)||!isFinite(y))return null;
+    if(c1){x1=x;y1=y;c1=code(x1,y1);}else{x2=x;y2=y;c2=code(x2,y2);}
+  }
+  return null;
+}
+function nearSeg(p,q){
+  if(p[2]<NEAR&&q[2]<NEAR)return null;
+  let a=p,b=q,cut=false;
+  if(a[2]<NEAR||b[2]<NEAR){
+    const dz=b[2]-a[2];
+    if(dz>-1e-8&&dz<1e-8)return null;
+    const t=(NEAR-a[2])/dz;
+    if(!(t>=0&&t<=1))return null;
+    const m=[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,NEAR];
+    if(a[2]<NEAR)a=m;else b=m;
+    cut=true;
+  }
+  if(!(a[2]>=NEAR)||!(b[2]>=NEAR))return null;
+  const f=H*0.9,x1=W/2+a[0]*f/a[2],y1=H/2-a[1]*f/a[2],x2=W/2+b[0]*f/b[2],y2=H/2-b[1]*f/b[2];
+  if(!isFinite(x1)||!isFinite(y1)||!isFinite(x2)||!isFinite(y2))return null;
+  const pad=12;
+  if(cut||x1<-pad||y1<-pad||x1>W+pad||y1>H+pad||x2<-pad||y2<-pad||x2>W+pad||y2>H+pad)return clip2d(x1,y1,x2,y2);
+  return[x1,y1,x2,y2];
+}
 function proj(x,y,z){
   // boot.js samples the horizon from the chase cam it just wrote. Retarget that
   // one far point onto the stabilized camera so the sky line matches the city.
@@ -129,9 +169,8 @@ function proj(x,y,z){
   if(Math.abs(x-hx)<2&&Math.abs(z-hz)<2&&Math.abs(y-oy)<2){x=cam.x+Math.sin(cam.yaw)*1e5;y=cam.y;z=cam.z+Math.cos(cam.yaw)*1e5;}
   const c=camS(x,y,z);return c[2]<NEAR?null:scr(c);
 }
-function line(a,b,col,w){let p=camS(...a),q=camS(...b);if(p[2]<NEAR&&q[2]<NEAR)return;
-  if(p[2]<NEAR||q[2]<NEAR){const t=(NEAR-p[2])/(q[2]-p[2]),m=[p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t,NEAR];if(p[2]<NEAR)p=m;else q=m;}
-  const P1=scr(p),Q1=scr(q);ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(P1[0],P1[1]);ctx.lineTo(Q1[0],Q1[1]);ctx.stroke();}
+function line(a,b,col,w){const s=nearSeg(camS(...a),camS(...b));if(!s)return;
+  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(s[0],s[1]);ctx.lineTo(s[2],s[3]);ctx.stroke();}
 // yaw convention: heading vector (sin yaw, cos yaw) in x,z
 
 // Street-mode LOOK AROUND. The chase rig stays behind the car (same pose as boot.js).

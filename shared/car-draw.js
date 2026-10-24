@@ -1,5 +1,5 @@
 'use strict';
-const ZV={yawOff:0,yawSign:1,rollSign:1,win:7,ty:0.6,maxPx:560,res:1,every:1,lowT:0,frame:0,cv:null,camDist:Math.hypot(10,2),flameCv:null,nosFlameCv:null};  // sprite window (m across), target height. cv is the player's own 2D cache (never the live WebGL canvas). camDist locks the chase-cam sprite size.
+const ZV={yawOff:0,yawSign:1,rollSign:1,win:7,ty:0.6,maxPx:560,res:1,every:1,lowT:0,highT:0,frame:0,cv:null,camDist:Math.hypot(10,2),flameCv:null,nosFlameCv:null};  // sprite window (m across), target height. cv is the player's own 2D cache (never the live WebGL canvas). camDist locks the chase-cam sprite size.
 // 370Z SUPERCHARGER exits in the sprite model (+X nose, +Y up). Each row is the nozzle, then a point up the pipe, so the flame runs out the tip.
 const ZTIP=[[-2.0648,0.2984,0.3958,-1.8477,0.2992,0.3317],[-2.0643,0.2972,-0.3945,-1.8477,0.2992,-0.3316]];
 function zFlameCvs(){if(ZV.flameCv)return;const bake=(nos)=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d'),r=g.createRadialGradient(32,32,0,32,32,32);r.addColorStop(0,nos?'rgba(255,255,255,.95)':'rgba(160,245,255,.85)');r.addColorStop(.4,nos?'rgba(62,230,255,.8)':'rgba(62,230,255,.45)');r.addColorStop(1,'rgba(62,230,255,0)');g.fillStyle=r;g.fillRect(0,0,64,64);return c;};ZV.flameCv=bake(0);ZV.nosFlameCv=bake(1);}
@@ -11,9 +11,16 @@ function drawZ(){if(window.NOZ)return;const X=window.ZD&&ZD.Xray;if(!X||!X.ready
   const dx=cam.x-P.x,dz=cam.z-P.z,dy=cam.y-(P.y+ZV.ty),hd=Math.hypot(dx,dz),ca=Math.atan2(dx,dz);
   const relYaw=Math.atan2(Math.sin(ca-P.yaw),Math.cos(ca-P.yaw)),elev=Math.atan2(dy,hd)-P.pitch*Math.cos(relYaw);
   const dist=ZV.win/(2*Math.tan(13*Math.PI/180));
-  ZV.frame++;if(fps<50){ZV.lowT+=1/Math.max(fps,1);if(ZV.lowT>2)ZV.every=2;}else if(fps>58){ZV.lowT=0;ZV.every=1;}   // adaptive: slow GPU -> redraw the car sprite every 2nd frame (same look)
+  ZV.frame++;
+  // Open air on the phone sits near 57fps, inside the old 50–58 gap, so this skip never
+  // armed and a one-frame recovery flipped straight back. Every 2nd frame is the same
+  // sprite. Stay there until the rate is actually above 115.
+  if(fps<58){ZV.highT=0;ZV.lowT+=1/Math.max(fps,1);if(ZV.lowT>1)ZV.every=2;}
+  else if(fps>115){ZV.highT+=1/Math.max(fps,1);if(ZV.highT>0.5){ZV.lowT=0;ZV.every=1;}}
+  else ZV.highT=0;
   if(!ZV.cv){ZV.cv=document.createElement('canvas');ZV.cvg=ZV.cv.getContext('2d',{alpha:true});}
-  if(ZV.frame%ZV.every===0||ZV.lastPx!==rp||X._w!==rp||X._h!==rp){X.render(ctx,0,0,rp,rp,{xray:false,showroom:!(window.GARAGEZ&&GARAGEZ.on),yaw:ZV.yawOff+ZV.yawSign*relYaw,pitch:elev,dist,tx:0,ty:ZV.ty,fov:26,drl:1,noDraw:true,kid:KID,st:{t:performance.now()/1000,throttle:30+P.thr*70}});
+  // Traffic bakes share this GL buffer and zero _w/_h. That is not a player-size change.
+  if(ZV.frame%ZV.every===0||ZV.lastPx!==rp){X.render(ctx,0,0,rp,rp,{xray:false,showroom:!(window.GARAGEZ&&GARAGEZ.on),yaw:ZV.yawOff+ZV.yawSign*relYaw,pitch:elev,dist,tx:0,ty:ZV.ty,fov:26,drl:1,noDraw:true,kid:KID,st:{t:performance.now()/1000,throttle:30+P.thr*70}});
     const src=X.canvas;if(ZV.cv.width!==src.width||ZV.cv.height!==src.height){ZV.cv.width=src.width;ZV.cv.height=src.height;}
     ZV.cvg.setTransform(1,0,0,1,0,0);ZV.cvg.clearRect(0,0,ZV.cv.width,ZV.cv.height);ZV.cvg.drawImage(src,0,0);}
   ZV.lastPx=rp;const roll=(P.bank+(P.ebRoll||0)-cam.roll)*ZV.rollSign;ctx.save();ctx.translate(sc[0],sc[1]);ctx.rotate(roll);ctx.drawImage(ZV.cv,0,0,ZV.cv.width,ZV.cv.height,-px/2,-px/2,px,px);ctx.restore();

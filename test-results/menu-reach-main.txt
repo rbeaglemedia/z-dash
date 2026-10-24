@@ -1,0 +1,198 @@
+menu-reachability audit
+scanned: origin/main 8777eb844186144e89b9cd4e04625cbe769e5920
+tool: tools/ui-polish-audit.js --menus-only --root <main worktree>
+adult index.html was not modified
+
+MENU TREE
+MAIN MENU  jr.html
+  SHOWROOM CAR  [car]  spin your Z
+    -> in-app tab car
+  ROAD  [road]  coins & ramps
+    -> in-app tab road
+  DRAG  [drag]  race a rival
+    -> in-app tab drag
+  NEON FLYING  [fly]  take to the sky
+    -> fly3.html
+  NEON WORLD  [world]  fly & drive 3D city
+    -> world.html
+    NEON WORLD SUBMENU  (first screen of world.html)
+      🛫 RUNWAY  [runway]
+      🪂 SKY DROP  [skydrop]
+      -- not on this submenu --
+      (missing) CAR SOCCER  [soccer]
+      (missing) NEON PAINT  [paint]
+      (missing) GRAFFITI WALL  [wall]
+      (missing) RECORD DANCE  [dance]
+      (missing) RECORD MY PET  [petdance]
+      (missing) CREW & PETS  [crew]
+    PAUSE MENU
+      ▶ RESUME  [resume]
+      ⌂ HOME / EXIT  [home]
+      ⊙ TILT CENTER  [recal]
+      ⛶ FULLSCREEN  [full]
+      ↺ BACK TO RUNWAY  [runway]
+      🪂 SKY DROP  [skydrop]
+      RUNWAY X-RAY ON  [xray]
+    PAUSE GAME GRID  (after START, then pause)
+      SHOWROOM CAR  [car]
+      ROAD  [road]
+      DRAG  [drag]
+      NEON FLYING  [fly]
+      NEON WORLD  [world]
+      GARAGE  [garage]
+      WANTED  [wanted]
+      RIDE ALONG  [boost]
+      CAR SOCCER  [soccer]
+      SKY DROP  [skydrop]
+      NEON PAINT  [paint]
+      GRAFFITI WALL  [wall]
+      RECORD DANCE  [dance]
+      RECORD MY PET  [petdance]
+      CREW & PETS  [crew]
+    WDRILL  GARAGE / HOME DRILL
+      GARAGE  [garage]
+      HOME  [home]
+      PAINT & VINYLS  [paintvinyl]
+        🎨 BODY  [paint]
+        🏁 ROOF & HOOD  [roof]
+        ✨ VINYLS  [vinyls]
+        ⭐ PRESETS  [presets]
+      WHEELS & STANCE  [wheels]
+        🛞 RIMS  [rims]
+        🎨 RIM COLOR  [wheels]
+        🔤 TIRE LETTERING  [tires]
+        🔴 BRAKE CALIPERS  [caliper]
+        ⬇️ STANCE / LOWERED  [stance]
+        📐 CAMBER  [camber]
+      AERO & WINGS  [aero]
+        🪽 SPOILER  [spoiler]
+        🎨 SPOILER COLOR  [spcol]
+        ✈️ FLIGHT WINGS  [wings]
+        📐 FRONT SPLITTER  [lip]
+        ▯ SIDE SKIRTS  [skirts]
+        ▽ DIFFUSER  [diffuser]
+        ✦ KIT FINISH  [kitmat]
+        ◉ EXHAUST  [tips]
+        🚪 DOORS  [doors]
+      LIGHTS & FX  [lights]
+        💡 HEADLIGHTS  [heads]
+        🔴 TAILLIGHTS  [tails]
+        🌈 UNDERGLOW  [underglow]
+        🪟 WINDOW TINT  [windows]
+        〰️ TRACK MARKS  [tracks]
+        📣 HORN  [horn]
+      PERFORMANCE & NOS  [perf]
+        🔥 NOS FLAME  [nos]
+        ⚡ BOOST / UPGRADE  [boost]
+      LIVING ROOM & DECOR  [living]
+        🌈 WALL NEON  [wall]
+        🛋️ CYBER FURNITURE  [furniture]
+        🛏️ GLOWING PET BED  [petbed]
+        ✨ NEON SIGN  [sign]
+      PETS & CREW  [crew]
+        🐾 COMPANION PET  [pet]
+        👤 CHARACTER OUTFIT  [character]
+        🚪 ENTER HOME  [enter]
+          -> crew.html, world.html
+      STUDIO & PAINT APPS  [studio]
+        🎨 3D CAR PAINT  [paintapp]
+          -> neon-paint.html
+        🧱 GRAFFITI WALL  [wallapp]
+          -> neon-paint.html?mode=wall
+        💃 DANCE STAGE  [danceapp]
+          -> dance-stage.html
+  GARAGE  [garage]  paint & parts
+    -> in-app tab garage
+    GDRILL  GARAGE / HOME DRILL
+      GARAGE  [garage]
+      HOME  [home]
+      PAINT & VINYLS  [paintvinyl]
+        🎨 BODY  [paint]
+        🏁 ROOF & HOOD  [roof]
+        ✨ VINYLS  [vinyls]
+        ⭐ PRESETS  [presets]
+      WHEELS & STANCE  [wheels]
+        🛞 RIMS  [rims]
+        🎨 RIM COLOR  [wheels]
+        🔤 TIRE LETTERING  [tires]
+        🔴 BRAKE CALIPERS  [caliper]
+        ⬇️ STANCE / LOWERED  [stance]
+        📐 CAMBER  [camber]
+      AERO & WINGS  [aero]
+        🪽 SPOILER  [spoiler]
+        🎨 SPOILER COLOR  [spcol]
+        ✈️ FLIGHT WINGS  [wings]
+        📐 FRONT SPLITTER  [lip]
+        ▯ SIDE SKIRTS  [skirts]
+        ▽ DIFFUSER  [diffuser]
+        ✦ KIT FINISH  [kitmat]
+        ◉ EXHAUST  [tips]
+        🚪 DOORS  [doors]
+      LIGHTS & FX  [lights]
+        💡 HEADLIGHTS  [heads]
+        🔴 TAILLIGHTS  [tails]
+        🌈 UNDERGLOW  [underglow]
+        🪟 WINDOW TINT  [windows]
+        〰️ TRACK MARKS  [tracks]
+        📣 HORN  [horn]
+      PERFORMANCE & NOS  [perf]
+        🔥 NOS FLAME  [nos]
+        ⚡ BOOST / UPGRADE  [boost]
+      LIVING ROOM & DECOR  [living]
+        🌈 WALL NEON  [wall]
+        🛋️ CYBER FURNITURE  [furniture]
+        🛏️ GLOWING PET BED  [petbed]
+        ✨ NEON SIGN  [sign]
+      PETS & CREW  [crew]
+        🐾 COMPANION PET  [pet]
+        👤 CHARACTER OUTFIT  [character]
+        🚪 ENTER HOME  [enter]
+          -> crew.html, world.html
+      STUDIO & PAINT APPS  [studio]
+        🎨 3D CAR PAINT  [paintapp]
+          -> neon-paint.html
+        🧱 GRAFFITI WALL  [wallapp]
+          -> neon-paint.html?mode=wall
+        💃 DANCE STAGE  [danceapp]
+          -> dance-stage.html
+  WANTED  [wanted]  1.0 + Z TAKEOVER
+    -> in-app tab wanted
+  RIDE ALONG  [boost]  shift + BOOST
+    -> in-app tab boost
+  CAR SOCCER  [soccer]  stadium arena match
+    -> world.html?entry=soccer
+  SKY DROP  [skydrop]  drop 320m over city
+    -> world.html?entry=skydrop
+  NEON PAINT  [paint]  draw on your 3D Z
+    -> neon-paint.html
+  GRAFFITI WALL  [wall]  Z Co Arts 3D sign
+    -> neon-paint.html?mode=wall
+  RECORD DANCE  [dance]  Z Co Arts mo-cap
+    -> dance-stage.html?record=character
+  RECORD MY PET  [petdance]  pet camera dance
+    -> dance-stage.html?record=dog
+  CREW & PETS  [crew]  characters & pets
+    -> crew.html
+CREW & PETS  crew.html
+  characters: Neon Woman [woman], Neon Man [man], None [none]
+  pets: Cyber Pup Dog [dog], Neon Kitty Cat [cat], Star Bunny [bunny], Mini Dragon [dragon], Nova Fox [fox], None [none]
+  + RECORD NEW DANCE IN Z COMPANY ARTS -> char.html
+  🚗 GARAGE -> jr.html#garage
+  🌆 NEON WORLD -> world.html
+  ⌂ MAIN MENU -> jr.html?kmenu=1
+ORPHAN PAGE  fly2.html
+
+FINDINGS
+ERROR / dead: Crew menu "+ RECORD NEW DANCE IN Z COMPANY ARTS" does not open the dance recorder (char.html)
+ERROR / submenu: Neon World submenu does not offer CAR SOCCER. The start card only reaches 🛫 RUNWAY, 🪂 SKY DROP. A separate main-menu tile also exists, which is why a layout pass missed this.
+ERROR / submenu: Neon World submenu does not offer NEON PAINT. The start card only reaches 🛫 RUNWAY, 🪂 SKY DROP. A separate main-menu tile also exists, which is why a layout pass missed this.
+ERROR / submenu: Neon World submenu does not offer GRAFFITI WALL. The start card only reaches 🛫 RUNWAY, 🪂 SKY DROP. A separate main-menu tile also exists, which is why a layout pass missed this.
+ERROR / submenu: Neon World submenu does not offer RECORD DANCE. The start card only reaches 🛫 RUNWAY, 🪂 SKY DROP. A separate main-menu tile also exists, which is why a layout pass missed this.
+ERROR / submenu: Neon World submenu does not offer RECORD MY PET. The start card only reaches 🛫 RUNWAY, 🪂 SKY DROP. A separate main-menu tile also exists, which is why a layout pass missed this.
+ERROR / submenu: Neon World submenu does not offer CREW & PETS. The start card only reaches 🛫 RUNWAY, 🪂 SKY DROP. A separate main-menu tile also exists, which is why a layout pass missed this.
+ERROR / unreachable: World mode "STREET CRUISE" (startStreet, entry=street) is built and no menu tile reaches it.
+ERROR / unreachable: World mode "CITY BUILDER" (playCity, entry=builder) is built and no menu tile reaches it.
+ERROR / unreachable: World mode "ROOFTOP STUNT RUN" (playStunt, entry=stunt) is built and no menu tile reaches it.
+ERROR / unreachable: Z TAKEOVER inside Neon World (playTakeover) is built and no menu calls it.
+ERROR / placeholder: Garage menu offers "DAD'S STILLEN" but it is a coming-soon placeholder (on hold).
+ERROR / unreachable: Kid App page fly2.html ships in the repo and no menu tile opens it.

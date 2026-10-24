@@ -1,0 +1,48 @@
+standalone: Chrome --app (real display-mode standalone)
+fullscreen: matchMedia override (CDP setEmulatedMedia ignores display-mode)
+android-915x412-standalone  index http://127.0.0.1:41571/index.html?zdpol=android-915x412-standalone&boot=1 standalone=true fullscreen=false manifest=manifest.webmanifest
+android-915x412-standalone  jr start manifest-jr.webmanifest standalone=true fullscreen=false fs=0
+android-915x412-standalone  world manifest-jr.webmanifest mode standalone=true fullscreen=false
+android-915x412-standalone  pause fullscreen fs=[]
+android-915x412-standalone  back http://127.0.0.1:41571/jr.html?kmenu=1
+android-915x412-standalone  garage tab http://127.0.0.1:41571/jr.html?kmenu=1 fs=0
+android-915x412-standalone  paint manifest-jr.webmanifest
+android-915x412-standalone  crew manifest-jr.webmanifest
+android-915x412-standalone  dance-stage.html → http://127.0.0.1:41571/dance-stage.html manifest=manifest-jr.webmanifest
+android-915x412-standalone  fly3.html → http://127.0.0.1:41571/fly3.html manifest=manifest-jr.webmanifest
+android-915x412-standalone  char.html → http://127.0.0.1:41571/char.html manifest=manifest-jr.webmanifest
+android-915x412-standalone  world-split.html → http://127.0.0.1:41571/world-split.html manifest=manifest-jr.webmanifest
+android-915x412-standalone  garage-hub.html → http://127.0.0.1:41571/jr.html#garage manifest=manifest-jr.webmanifest
+ios-844x390-standalone  index http://127.0.0.1:41571/index.html?zdpol=ios-844x390-standalone&boot=1 standalone=true fullscreen=false manifest=manifest.webmanifest
+ios-844x390-standalone  jr start manifest-jr.webmanifest standalone=true fullscreen=false fs=0
+ios-844x390-standalone  world manifest-jr.webmanifest mode standalone=true fullscreen=false
+ios-844x390-standalone  pause fullscreen fs=[]
+ios-844x390-standalone  back http://127.0.0.1:41571/jr.html?kmenu=1
+ios-844x390-standalone  garage tab http://127.0.0.1:41571/jr.html?kmenu=1 fs=0
+ios-844x390-standalone  paint manifest-jr.webmanifest
+ios-844x390-standalone  crew manifest-jr.webmanifest
+ios-844x390-standalone  dance-stage.html → http://127.0.0.1:41571/dance-stage.html manifest=manifest-jr.webmanifest
+ios-844x390-standalone  fly3.html → http://127.0.0.1:41571/fly3.html manifest=manifest-jr.webmanifest
+ios-844x390-standalone  char.html → http://127.0.0.1:41571/char.html manifest=manifest-jr.webmanifest
+ios-844x390-standalone  world-split.html → http://127.0.0.1:41571/world-split.html manifest=manifest-jr.webmanifest
+ios-844x390-standalone  garage-hub.html → http://127.0.0.1:41571/jr.html#garage manifest=manifest-jr.webmanifest
+ios-1180x820-standalone  index http://127.0.0.1:41571/index.html?zdpol=ios-1180x820-standalone&boot=1 standalone=true fullscreen=false manifest=manifest.webmanifest
+ios-1180x820-standalone  jr start manifest-jr.webmanifest standalone=true fullscreen=false fs=0
+ios-1180x820-standalone  world manifest-jr.webmanifest mode standalone=true fullscreen=false
+ios-1180x820-standalone  pause fullscreen fs=[]
+ios-1180x820-standalone  back http://127.0.0.1:41571/jr.html?kmenu=1
+ios-1180x820-standalone  garage tab http://127.0.0.1:41571/jr.html?kmenu=1 fs=0
+ios-1180x820-standalone  paint manifest-jr.webmanifest
+ios-1180x820-standalone  crew manifest-jr.webmanifest
+android-915x412-fullscreen  index http://127.0.0.1:41571/index.html?zdpol=android-915x412-fullscreen&boot=1 standalone=false fullscreen=true manifest=manifest.webmanifest
+android-915x412-fullscreen  jr start manifest-jr.webmanifest standalone=false fullscreen=true fs=0
+android-915x412-fullscreen  world manifest-jr.webmanifest mode standalone=false fullscreen=true
+android-915x412-fullscreen  pause fullscreen fs=[]
+android-915x412-fullscreen  back http://127.0.0.1:41571/jr.html?kmenu=1
+android-915x412-fullscreen  garage tab http://127.0.0.1:41571/jr.html?kmenu=1 fs=0
+android-915x412-fullscreen  paint manifest-jr.webmanifest
+android-915x412-fullscreen  crew manifest-jr.webmanifest
+android-915x412-browser  index http://127.0.0.1:41571/index.html?zdpol=android-915x412-browser&boot=1 standalone=false fullscreen=false manifest=manifest.webmanifest
+android-915x412-browser  browser blank tap {"x":16,"y":16,"tag":"DIV"} calls [{"kind":"requestFullscreen","href":"http://127.0.0.1:41571/index.html?zdpol=android-915x412-browser&boot=1","standalone":false,"fullscreen":false}]
+ok
+errors 0
