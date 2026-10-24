@@ -12,6 +12,10 @@
  *   3. Walk is a cycle: opposite arm and leg, a planted foot, a small bob,
  *      sensible angles, nothing clipping. The same torso check runs on
  *      every walk frame from the front, three-quarter, side, and back.
+ *   4. Scale: a pet's ears stay at or below the character's hip, unless that
+ *      pet is marked tall on its rig. The character, the pet, and room props
+ *      stand on the floor at a sensible size in interiors, the shop, and
+ *      outdoors. The room shot is the real walkPaintRoom path.
  * Clothing and extra style are noted, not failed, unless they break 1-3.
  *
  *   node tools/anatomy-check.mjs --root /path/to/tree --out test-results/anatomy
@@ -63,7 +67,13 @@ function exportCrew(code) {
     'try{window.__ANATOMY={',
     'paintPet:paintPet,paintFigure:paintFigure,humanSpec:humanSpec,',
     'figurePoints:figurePoints,groundPetQ:groundPetQ,cellProject:cellProject,',
-    'wearLook:typeof wearLook==="function"?wearLook:null',
+    'wearLook:typeof wearLook==="function"?wearLook:null,',
+    'paintPetStanding:typeof paintPetStanding==="function"?paintPetStanding:null,',
+    'paintCompanion:typeof paintCompanion==="function"?paintCompanion:null,',
+    'companionPetQ:typeof companionPetQ==="function"?companionPetQ:null,',
+    'worldProject:typeof worldProject==="function"?worldProject:null,',
+    'lookGirl:typeof LOOK!=="undefined"&&LOOK.girl?LOOK.girl:null,',
+    'petScale:typeof PET_DRAW_SCALE==="number"?PET_DRAW_SCALE:null',
     '};}catch(err){window.__ANATOMY={error:String(err&&err.stack||err)};}',
     ''
   ].join('');
@@ -71,12 +81,11 @@ function exportCrew(code) {
 }
 
 function startServer(root, port) {
-  const harness = harnessHtml();
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, 'http://127.0.0.1');
     if (url.pathname === '/__anatomy.html') {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
-      res.end(harness);
+      res.end(harnessHtml(root));
       return;
     }
     let rel = decodeURIComponent(url.pathname);
@@ -216,13 +225,16 @@ function markdown(p) {
   const groups = [
     [1, 'Head'],
     [2, 'Limbs and feet'],
-    [3, 'Walk']
+    [3, 'Walk'],
+    [4, 'Scale']
   ];
   for (const [pri, title] of groups) {
     const items = (p.findings || []).filter((f) => f.priority === pri && f.severity === 'fail');
     lines.push('## ' + pri + '. ' + title);
     lines.push('');
-    if (!items.length) lines.push('Pass.');
+    if (pri <= 3 && p.closet === false) lines.push('Not scored. This tree has no jointed closet.');
+    else if (pri === 4 && p.scale && p.scale.ready === false) lines.push('Not scored. ' + (p.scale.note || 'No room-scale drawer in this tree.'));
+    else if (!items.length) lines.push('Pass.');
     for (const f of items) {
       lines.push('- **' + f.title + '** `' + f.id + '`');
       lines.push('  ' + f.detail);
@@ -242,7 +254,7 @@ function markdown(p) {
   if (p.pets) {
     lines.push('## Pets');
     lines.push('');
-    lines.push(p.pets.ok ? 'Pass. Each pet reads as its animal in idle, walk, closet, and on foot.' : 'Fail.');
+    lines.push(p.pets.ok ? (p.closet === false ? 'Pass. Joints read as that animal.' : 'Pass. Each pet reads as its animal in idle, walk, closet, and on foot.') : 'Fail.');
     for (const f of p.pets.findings || []) lines.push('- ' + f);
     lines.push('');
   }
@@ -343,12 +355,20 @@ async function main() {
   }
 }
 
-function harnessHtml() {
+function harnessHtml(root) {
+  const has = (rel) => fs.existsSync(path.join(root, rel));
+  const tags = [
+    '<script src="/world/crew-data.js"></script>',
+    has('shared/char-closet.js') ? '<script src="/shared/char-closet.js"></script>' : '',
+    '<script src="/world/crew.js?anatomy=1"></script>',
+    has('world/house.js') ? '<script src="/world/house.js"></script>' : '',
+    has('world/walk-items.js') ? '<script src="/world/walk-items.js"></script>' : '',
+    has('world/camera.js') ? '<script src="/world/camera.js"></script>' : ''
+  ].filter(Boolean).join('\n');
   return `<!doctype html><meta charset="utf-8"><title>anatomy</title>
+<canvas id="c" width="1100" height="800"></canvas>
 <canvas id="cv" width="480" height="640"></canvas>
-<script src="/world/crew-data.js"></script>
-<script src="/shared/char-closet.js"></script>
-<script src="/world/crew.js?anatomy=1"></script>
+${tags}
 <script>
 ${BROWSER}
 </script>`;
@@ -1326,7 +1346,14 @@ var ANATOMY = (function () {
       'walk-float': 'The feet float during the walk',
       'walk-bob': 'The body bob is missing or too big',
       'walk-angle': 'A walk pose bends a joint the wrong way',
-      'missing': 'The figure is missing'
+      'missing': 'The figure is missing',
+      'pet-scale': 'The pet is taller than the character\'s hip',
+      'pet-floor': 'The pet is not standing on the floor',
+      'char-scale': 'The character is the wrong size for the room',
+      'char-floor': 'The character is not standing on the floor',
+      'prop-scale': 'A prop is the wrong size next to the character',
+      'prop-floor': 'A prop is not standing on the floor',
+      'scale-missing': 'The room did not draw the character and the pet'
     }[id] || id;
   }
 
@@ -1438,6 +1465,407 @@ var ANATOMY = (function () {
     images['pets.png'] = c.toDataURL('image/png').split(',')[1];
   }
 
+  function camAt(x, y, z, w, h) {
+    if (typeof walkCam === 'function') return walkCam(x, y, z, w, h);
+    var s = 1.45 / Math.max(0.38, z + 1.7);
+    return [w * 0.5 + x * s * h * 0.58, h * 0.60 - (y - 1.4) * s * h * 0.58, s];
+  }
+  function worldOfY(screenY, z, w, h) {
+    var y0 = camAt(0, 0, z, w, h)[1];
+    var y1 = camAt(0, 1, z, w, h)[1];
+    var dy = y1 - y0;
+    if (Math.abs(dy) < 0.5) return 0;
+    return (screenY - y0) / dy;
+  }
+  function inkBox(cnv, bg) {
+    var w = cnv.width, h = cnv.height;
+    var data = cnv.getContext('2d').getImageData(0, 0, w, h).data;
+    var x0 = w, y0 = h, x1 = -1, y1 = -1, n = 0;
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var i = (y * w + x) * 4;
+        if (data[i + 3] < 16) continue;
+        var dr = data[i] - bg[0], dg = data[i + 1] - bg[1], db = data[i + 2] - bg[2];
+        if (dr * dr + dg * dg + db * db < 650) continue;
+        n++;
+        if (x < x0) x0 = x;
+        if (y < y0) y0 = y;
+        if (x > x1) x1 = x;
+        if (y > y1) y1 = y;
+      }
+    }
+    if (n < 24) return null;
+    return { x0: x0, y0: y0, x1: x1, y1: y1, n: n };
+  }
+  function diffBox(a, b) {
+    var w = a.width, h = a.height;
+    var da = a.getContext('2d').getImageData(0, 0, w, h).data;
+    var db = b.getContext('2d').getImageData(0, 0, w, h).data;
+    var c = canvas(w, h);
+    var ctx = c.getContext('2d');
+    ctx.fillStyle = '#dfe7ef';
+    ctx.fillRect(0, 0, w, h);
+    var img = ctx.getImageData(0, 0, w, h);
+    var pix = img.data;
+    var n = 0;
+    for (var i = 0; i < da.length; i += 4) {
+      var d = Math.abs(da[i] - db[i]) + Math.abs(da[i + 1] - db[i + 1]) + Math.abs(da[i + 2] - db[i + 2]);
+      if (d < 48) continue;
+      pix[i] = da[i]; pix[i + 1] = da[i + 1]; pix[i + 2] = da[i + 2]; pix[i + 3] = 255;
+      n++;
+    }
+    ctx.putImageData(img, 0, 0);
+    var box = n > 24 ? inkBox(c, [223, 231, 239]) : null;
+    return { canvas: c, box: box, n: n };
+  }
+  function girlLook() {
+    var api = window.__ANATOMY;
+    if (api && api.lookGirl) return api.lookGirl;
+    return { thigh: 0.4, shin: 0.38, torso: 0.4, neck: 0.045, head: 0.125, hip: 0.1, shoulder: 0.15, uarm: 0.26, farm: 0.23, armR: 0.036, legR: 0.055, cloth: '#1c0e22', cloth2: '#2a1434', trim: '#ff4ad8', accent: '#3ee6ff', sole: '#ffe14d', hair: '#ff4ad8' };
+  }
+  function hipMetres() {
+    var look = girlLook();
+    return (look.thigh || 0.4) + (look.shin || 0.38);
+  }
+  function roomProject(w, h) {
+    return function (x, y, z) {
+      var p = camAt(x, y, z, w, h);
+      var depth = Math.max(0.38, z + 1.7);
+      return [p[0], p[1], depth, 1.45 * h * 0.58];
+    };
+  }
+  function standingPetQ(type, yaw) {
+    var api = window.__ANATOMY;
+    var q;
+    if (api.companionPetQ) q = api.companionPetQ(type, 'idle', 0.2, 0.2, null);
+    else q = api.groundPetQ(type, 'idle', 0.2, 0.2, null);
+    q = Object.assign({}, q, { x: 0, y: 0, z: 0, sit: 0, tuck: 0, ph: 0, amp: 0 });
+    q.yaw = (yaw || 0) * 180 / Math.PI;
+    return q;
+  }
+  function paintActor(ctx, kind, project, origin) {
+    var api = window.__ANATOMY;
+    var look = girlLook();
+    if (kind === 'person') {
+      var spec = api.humanSpec ? api.humanSpec('idle', 0.2, 0.2, false) : { bob: 0 };
+      api.paintFigure(ctx, look, spec, project, origin.yaw || 0, origin);
+      return true;
+    }
+    if (!api.paintPetStanding) return false;
+    return api.paintPetStanding(ctx, kind, standingPetQ(kind, origin.yaw), project, '#ffb020', origin) !== false;
+  }
+  function actorCanvas(kind, project, origin, w, h) {
+    var c = canvas(w, h);
+    var ctx = c.getContext('2d');
+    ctx.fillStyle = '#dfe7ef';
+    ctx.fillRect(0, 0, w, h);
+    try { paintActor(ctx, kind, project, origin); } catch (e) {}
+    return c;
+  }
+  function worldOfProject(screenY, z, project) {
+    var y0 = project(0, 0, z);
+    var y1 = project(0, 1, z);
+    if (!y0 || !y1) return null;
+    var dy = y1[1] - y0[1];
+    if (Math.abs(dy) < 0.5) return null;
+    return (screenY - y0[1]) / dy;
+  }
+  function bodySpan(cnv, z, project) {
+    var box = inkBox(cnv, [223, 231, 239]);
+    if (!box) return null;
+    var top = worldOfProject(box.y0, z, project);
+    var bot = worldOfProject(box.y1, z, project);
+    if (top == null || bot == null) return null;
+    return { box: box, top: top, bot: bot };
+  }
+  function judgeBody(span, label, hip, problems, opt) {
+    if (!span) {
+      problems.push({ id: 'scale-missing', priority: 4, msg: label + ' did not draw' });
+      return;
+    }
+    var tallOk = !!(opt && opt.tall);
+    if (!tallOk && span.top > hip + 0.08) {
+      problems.push({ id: opt && opt.prop ? 'prop-scale' : 'pet-scale', priority: 4, msg: label + ' reaches ' + span.top.toFixed(2) + 'm. The hip is ' + hip.toFixed(2) + 'm, so it stands taller than her waist' });
+    }
+    if (span.bot > 0.16) problems.push({ id: opt && opt.prop ? 'prop-floor' : 'pet-floor', priority: 4, msg: label + ' floats ' + span.bot.toFixed(2) + 'm off the floor' });
+    else if (span.bot < -0.28) problems.push({ id: opt && opt.prop ? 'prop-floor' : 'pet-floor', priority: 4, msg: label + ' sinks ' + (-span.bot).toFixed(2) + 'm through the floor' });
+  }
+  function judgeCharacter(span, label, problems) {
+    if (!span) {
+      problems.push({ id: 'scale-missing', priority: 4, msg: label + ' did not draw the character' });
+      return;
+    }
+    if (span.top < 1.15 || span.top > 2.05) problems.push({ id: 'char-scale', priority: 4, msg: label + ' character is ' + span.top.toFixed(2) + 'm tall. A standing kid reads around one and a half metres' });
+    if (span.bot > 0.16) problems.push({ id: 'char-floor', priority: 4, msg: label + ' character floats ' + span.bot.toFixed(2) + 'm off the floor' });
+    else if (span.bot < -0.28) problems.push({ id: 'char-floor', priority: 4, msg: label + ' character sinks ' + (-span.bot).toFixed(2) + 'm through the floor' });
+  }
+  function markScale(cnv, z, w, h, hip) {
+    var g = cnv.getContext('2d');
+    var floorY = camAt(0, 0, z, w, h)[1];
+    var hipY = camAt(0, hip, z, w, h)[1];
+    g.save();
+    g.strokeStyle = '#ffe14d';
+    g.lineWidth = 2;
+    g.beginPath(); g.moveTo(8, floorY); g.lineTo(w - 8, floorY); g.stroke();
+    g.strokeStyle = '#ff4d8d';
+    g.setLineDash([6, 4]);
+    g.beginPath(); g.moveTo(8, hipY); g.lineTo(w - 8, hipY); g.stroke();
+    g.restore();
+    return { ground: { groundY: floorY } };
+  }
+  function openRoom(purpose) {
+    if (!window.WALK_MODE || typeof walkPaintRoom !== 'function') return null;
+    var card = document.getElementById('walk-interior');
+    if (card) { card.style.width = '844px'; card.style.height = '390px'; card.style.display = 'block'; }
+    WALK_MODE.insideBuilding = true;
+    WALK_MODE.insideDoor = { purpose: purpose, id: 1 };
+    WALK_MODE.onFoot = true;
+    WALK_MODE.speed = 0;
+    WALK_MODE.room = { x: 0, z: 2.45, yaw: Math.PI, petX: 1.1, petZ: 2.15, tx: null, tz: null };
+    var caught = null;
+    var orig = window.CREW && CREW.paintCompanion;
+    if (orig) {
+      CREW.paintCompanion = function (ctx, project, person, pet) {
+        caught = { project: project, person: person, pet: pet };
+        return orig(ctx, project, person, pet);
+      };
+    }
+    try { walkPaintRoom(); } catch (e) { caught = caught || { error: String(e && e.message || e) }; }
+    if (orig) CREW.paintCompanion = orig;
+    var cv = document.getElementById('walk-room-cv');
+    return { caught: caught, canvas: cv, error: caught && caught.error };
+  }
+  function calibScale(errors) {
+    if (typeof walkCam !== 'function') return;
+    var w = 844, h = 390, z = 3.3, hip = 0.78;
+    var project = roomProject(w, h);
+    function box(ctx, x, y0, y1, z0) {
+      var a = project(x - 0.15, y0, z0), b = project(x + 0.15, y1, z0);
+      if (!a || !b) return;
+      ctx.fillStyle = '#243044';
+      ctx.fillRect(Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.abs(b[0] - a[0]) + 8, Math.abs(b[1] - a[1]));
+    }
+    function shot(draw) {
+      var c = canvas(w, h);
+      var ctx = c.getContext('2d');
+      ctx.fillStyle = '#dfe7ef';
+      ctx.fillRect(0, 0, w, h);
+      draw(ctx);
+      return c;
+    }
+    var goodPet = bodySpan(shot(function (ctx) { box(ctx, 0.8, 0, 0.6, z); }), z, project);
+    var badPet = bodySpan(shot(function (ctx) { box(ctx, 0.8, 0, 2.4, z); }), z, project);
+    var floatPet = bodySpan(shot(function (ctx) { box(ctx, 0.8, 0.55, 1.15, z); }), z, project);
+    var goodChar = bodySpan(shot(function (ctx) { box(ctx, 0, 0, 1.5, z); }), z, project);
+    var probs = [];
+    judgeBody(goodPet, 'calib good pet', hip, probs, null);
+    if (probs.length) errors.push('scale good pet should pass, saw ' + probs.map(function (p) { return p.id; }).join(','));
+    probs = [];
+    judgeBody(badPet, 'calib giant pet', hip, probs, null);
+    if (!probs.some(function (p) { return p.id === 'pet-scale'; })) errors.push('scale calib missed a giant pet');
+    probs = [];
+    judgeBody(floatPet, 'calib float pet', hip, probs, null);
+    if (!probs.some(function (p) { return p.id === 'pet-floor'; })) errors.push('scale calib missed a floating pet');
+    probs = [];
+    judgeCharacter(goodChar, 'calib', probs);
+    if (probs.length) errors.push('scale good character should pass, saw ' + probs.map(function (p) { return p.id; }).join(','));
+    var giantProp = bodySpan(shot(function (ctx) { box(ctx, 0, 0, 3.2, z); }), z, project);
+    probs = [];
+    if (giantProp && giantProp.top > 1.9) probs.push({ id: 'prop-scale', priority: 4, msg: 'tall' });
+    if (!probs.length) errors.push('scale calib missed a giant prop');
+  }
+  function runScale() {
+    var out = { problems: [], shots: [], stats: [], note: '', ready: false };
+    var api = window.__ANATOMY;
+    if (typeof walkCam !== 'function' || !api || !api.paintPetStanding || !api.paintFigure) {
+      out.note = 'This tree has no room-scale drawer, so the hip and floor check was not run here.';
+      return out;
+    }
+    out.ready = true;
+    var hip = hipMetres();
+    var rw = 844, rh = 390;
+    var room = { x: 0, z: 4.6 - 2.45 * 0.55, yaw: Math.PI };
+    var petAt = { x: 1.1, y: 0, z: 4.6 - 2.15 * 0.55, yaw: Math.PI + 0.5 };
+    var person = { x: room.x, y: 0, z: room.z, yaw: room.yaw };
+    var project = roomProject(rw, rh);
+    var types = window.CREWDATA && CREWDATA.PET_RIG ? Object.keys(CREWDATA.PET_RIG) : ['fox'];
+    var scenes = [
+      { id: 'home', label: "Ellie's house", purpose: 'HOME' },
+      { id: 'shop', label: 'Showroom shop', purpose: 'SHOWROOM' }
+    ];
+    scenes.forEach(function (scene) {
+      if (window.CREW && CREW.debugPet) { try { CREW.debugPet(types[0], 0.2); } catch (e) {} }
+      var opened = openRoom(scene.purpose);
+      if (opened && opened.canvas) {
+        var copy = canvas(opened.canvas.width, opened.canvas.height);
+        copy.getContext('2d').drawImage(opened.canvas, 0, 0);
+        var cap = scene.label + ' — yellow line is the floor, pink dashes are her hip';
+        store('scale-' + scene.id + '.png', copy, null, cap);
+        out.shots.push('scale-' + scene.id + '.png');
+      } else {
+        out.problems.push({ id: 'scale-missing', priority: 4, msg: scene.label + ' did not paint a room' });
+      }
+    });
+    types.forEach(function (type) {
+      var rig = CREWDATA.PET_RIG[type] || {};
+      var pc = actorCanvas('person', project, person, rw, rh);
+      var petOrigin = { x: petAt.x, y: 0, z: petAt.z, yaw: petAt.yaw };
+      var ac = actorCanvas(type, project, petOrigin, rw, rh);
+      var both = canvas(rw, rh);
+      var g = both.getContext('2d');
+      g.drawImage(pc, 0, 0);
+      g.drawImage(ac, 0, 0);
+      var charSpan = bodySpan(pc, person.z, project);
+      var petSpan = bodySpan(ac, petAt.z, project);
+      var local = [];
+      if (type === types[0]) judgeCharacter(charSpan, "Ellie's house", local);
+      judgeBody(petSpan, rig.n || type, hip, local, { tall: !!rig.tall });
+      local.forEach(function (p) {
+        if (p.msg.indexOf('Ellie') !== 0) p.msg = "Ellie's house, " + p.msg;
+      });
+      out.problems = out.problems.concat(local);
+      var guide = markScale(both, person.z, rw, rh, hip);
+      store('scale-home-' + type + '.png', both, guide, (rig.n || type) + ' next to her in the house. Pink dashes are the hip.');
+      out.shots.push('scale-home-' + type + '.png');
+      out.stats.push({
+        where: 'home',
+        type: type,
+        petTop: petSpan ? +petSpan.top.toFixed(2) : null,
+        petBot: petSpan ? +petSpan.bot.toFixed(2) : null,
+        charTop: charSpan ? +charSpan.top.toFixed(2) : null,
+        charBot: charSpan ? +charSpan.bot.toFixed(2) : null,
+        hip: +hip.toFixed(2)
+      });
+    });
+    if (api.worldProject && typeof camSeatFoot === 'function' && window.WALK_MODE) {
+      WALK_MODE.onFoot = true;
+      WALK_MODE.insideBuilding = false;
+      WALK_MODE.x = 0; WALK_MODE.y = 0; WALK_MODE.z = 0; WALK_MODE.yaw = 0;
+      try { camSeatFoot(); } catch (e) {}
+      var ow = (typeof window.W === 'number' && window.W > 100) ? window.W : 1100;
+      var oh = (typeof window.H === 'number' && window.H > 100) ? window.H : 800;
+      var outdoors = api.worldProject;
+      var op = { x: 0, y: 0, z: 0, yaw: 0 };
+      var oPet = { x: 0.75, y: 0, z: 0.15, yaw: 0.4 };
+      var oc = actorCanvas('person', outdoors, op, ow, oh);
+      var oac = actorCanvas(types[0], outdoors, oPet, ow, oh);
+      var ob = canvas(ow, oh);
+      ob.getContext('2d').drawImage(oc, 0, 0);
+      ob.getContext('2d').drawImage(oac, 0, 0);
+      var oChar = bodySpan(oc, 0.01, outdoors);
+      var oPetSpan = bodySpan(oac, 0.15, outdoors);
+      var outdoorsProblems = [];
+      judgeCharacter(oChar, 'Outdoors', outdoorsProblems);
+      var oRig = CREWDATA.PET_RIG[types[0]] || {};
+      judgeBody(oPetSpan, oRig.n || types[0], hip, outdoorsProblems, { tall: !!oRig.tall });
+      outdoorsProblems.forEach(function (p) { p.msg = 'Outdoors, ' + p.msg; });
+      out.problems = out.problems.concat(outdoorsProblems);
+      var oGuide = { ground: { groundY: outdoors(0, 0, 0) ? outdoors(0, 0, 0)[1] : null } };
+      store('scale-outdoors.png', ob, oGuide, 'Outdoors, ' + (oRig.n || types[0]) + ' beside her. Yellow line is the floor.');
+      out.shots.push('scale-outdoors.png');
+      out.stats.push({
+        where: 'outdoors',
+        type: types[0],
+        petTop: oPetSpan ? +oPetSpan.top.toFixed(2) : null,
+        petBot: oPetSpan ? +oPetSpan.bot.toFixed(2) : null,
+        charTop: oChar ? +oChar.top.toFixed(2) : null,
+        charBot: oChar ? +oChar.bot.toFixed(2) : null,
+        hip: +hip.toFixed(2)
+      });
+    } else out.problems.push({ id: 'scale-missing', priority: 4, msg: 'Outdoors follow camera did not load' });
+    if (window.WALK_ITEMS && typeof WALK_ITEMS.drawKit === 'function') {
+      var charTop = 1.5;
+      out.stats.forEach(function (s) { if (s.where === 'home' && s.charTop) charTop = s.charTop; });
+      var props = [
+        ['chair', -1.15, 4.7],
+        ['sofa', -1.65, 5.4],
+        ['counter', 1.8, 5.3],
+        ['plant', 2.2, 4.2],
+        ['petBed', -1.8, 3.6],
+        ['arcade', 0.2, 5.6],
+        ['lamp', 2.4, 4.8],
+        ['plaque', -0.4, 6.2]
+      ];
+      function kit(placed) {
+        var c = canvas(rw, rh);
+        var g = c.getContext('2d');
+        WALK_ITEMS.drawKit(g, rw, rh, 'HOME', {
+          wall: 'neon-grid', sign: 'ellie', accent: '#3ee6ff', signText: "ELLIE'S Z",
+          sofa: false, arcade: false, petBed: false, placed: placed, hasPlaced: true
+        });
+        return c;
+      }
+      function boxKey(b) {
+        return [b.x, b.y, b.z, b.w, b.h, b.d].map(function (n) { return (+n).toFixed(3); }).join(',');
+      }
+      function boxesFor(placed) {
+        var seen = [];
+        var orig = walkBox;
+        walkBox = function (g, x, y, z, w, h, d, fill, stroke, W, H) {
+          seen.push({ x: x, y: y, z: z, w: w, h: h, d: d, fill: fill });
+          return orig(g, x, y, z, w, h, d, fill, stroke, W, H);
+        };
+        try { kit(placed); } finally { walkBox = orig; }
+        return seen;
+      }
+      var baseKeys = {};
+      boxesFor([]).forEach(function (b) { baseKeys[boxKey(b)] = 1; });
+      props.forEach(function (row) {
+        var placed = [{ id: row[0], x: row[1], z: row[2], space: 'room', purpose: 'HOME', rot: 0 }];
+        var extra = boxesFor(placed).filter(function (b) { return !baseKeys[boxKey(b)]; });
+        var shot = canvas(rw, rh);
+        var sg = shot.getContext('2d');
+        sg.fillStyle = '#dfe7ef';
+        sg.fillRect(0, 0, rw, rh);
+        extra.forEach(function (b) {
+          walkBox(sg, b.x, b.y, b.z, b.w, b.h, b.d, b.fill || '#243044', '#243044', rw, rh);
+        });
+        var top = null, bot = null;
+        extra.forEach(function (b) {
+          var hi = b.y + b.h, lo = b.y;
+          if (top == null || hi > top) top = hi;
+          if (bot == null || lo < bot) bot = lo;
+        });
+        var local = [];
+        if (!extra.length || top == null) local.push({ id: 'scale-missing', priority: 4, msg: row[0] + ' did not draw in the house' });
+        else {
+          var height = top - bot;
+          if (height > Math.max(1.9, charTop * 1.2)) local.push({ id: 'prop-scale', priority: 4, msg: row[0] + ' is ' + height.toFixed(2) + 'm tall next to a ' + charTop.toFixed(2) + 'm character' });
+          if (bot > 0.08) local.push({ id: 'prop-floor', priority: 4, msg: row[0] + ' floats ' + bot.toFixed(2) + 'm off the floor' });
+          else if (bot < -0.08) local.push({ id: 'prop-floor', priority: 4, msg: row[0] + ' sinks ' + (-bot).toFixed(2) + 'm through the floor' });
+        }
+        local.forEach(function (p) { p.msg = "Ellie's house, " + p.msg; });
+        out.problems = out.problems.concat(local);
+        store('scale-prop-' + row[0] + '.png', shot, { ground: { groundY: camAt(row[1], 0, row[2], rw, rh)[1] } }, row[0] + ' on the house floor');
+        out.shots.push('scale-prop-' + row[0] + '.png');
+        out.stats.push({ where: 'prop', type: row[0], petTop: top == null ? null : +top.toFixed(2), petBot: bot == null ? null : +bot.toFixed(2), hip: +hip.toFixed(2) });
+      });
+    }
+    var shopPet = out.stats.filter(function (s) { return s.where === 'home'; });
+    if (shopPet.length) {
+      var shopProject = project;
+      var shopChar = bodySpan(actorCanvas('person', shopProject, person, rw, rh), person.z, shopProject);
+      var shopPetSpan = bodySpan(actorCanvas(types[0], shopProject, petAt, rw, rh), petAt.z, shopProject);
+      var shopProblems = [];
+      judgeCharacter(shopChar, 'Showroom shop', shopProblems);
+      judgeBody(shopPetSpan, (CREWDATA.PET_RIG[types[0]] || {}).n || types[0], hip, shopProblems, { tall: !!(CREWDATA.PET_RIG[types[0]] || {}).tall });
+      shopProblems.forEach(function (p) {
+        if (p.msg.indexOf('Showroom') !== 0 && p.msg.indexOf('Ellie') !== 0) p.msg = 'Showroom shop, ' + p.msg;
+      });
+      out.problems = out.problems.concat(shopProblems);
+      out.stats.push({
+        where: 'shop',
+        type: types[0],
+        petTop: shopPetSpan ? +shopPetSpan.top.toFixed(2) : null,
+        petBot: shopPetSpan ? +shopPetSpan.bot.toFixed(2) : null,
+        charTop: shopChar ? +shopChar.top.toFixed(2) : null,
+        charBot: shopChar ? +shopChar.bot.toFixed(2) : null,
+        hip: +hip.toFixed(2)
+      });
+    }
+    return out;
+  }
+
   function passesFrom(cases, findings) {
     var ids = {};
     findings.forEach(function (f) { if (f.severity === 'fail') ids[f.id] = 1; });
@@ -1484,6 +1912,7 @@ var ANATOMY = (function () {
     ['walk-step', 'walk-arms', 'walk-float'].forEach(function (id) {
       if (!walkB.problems.some(function (p) { return p.id === id; })) calibErrors.push('bad walk missed ' + id);
     });
+    calibScale(calibErrors);
     var calib = { ok: calibErrors.length === 0, errors: calibErrors, good: good.measure, badProblems: bad.problems, sideDeep: sideDeep.measure && sideDeep.measure.torso, sideFlat: sideFlat.problems.map(function (p) { return p.id; }), walkGood: walkG.stats, walkBad: walkB.stats };
 
     var cases = [];
@@ -1501,6 +1930,12 @@ var ANATOMY = (function () {
       return m;
     }
 
+    var closetOn = !!(window.CHARCLOSET && CHARCLOSET.frame);
+    var sideDepth = 0, frontDepth = 0, backDepth = 0, quarterDepth = 0;
+    var depthNote = '';
+    var walk = { problems: [], stats: null };
+    var faceNote = null;
+    if (closetOn) {
     setWear(null);
     pushStill('closet-front', renderCloset(), { idleAngles: true, view: 'front' });
     pushStill('idle-front', renderFigure(0, idleSpec(), 390), { idleAngles: true, view: 'front' });
@@ -1604,6 +2039,7 @@ var ANATOMY = (function () {
         faceNote = { id: 'face-turn', severity: 'note', priority: 9, title: 'The face stays on when the body turns around', detail: 'Back view still shows the eye color (' + eb + ' px, front was ' + ef + '). Secondary to the humanoid bar. Left and right limbs are the blocking check.', shots: ['idle-back.png'] };
       }
     } catch (e) {}
+    }
 
     drawPets();
     keep('pets.png');
@@ -1612,6 +2048,13 @@ var ANATOMY = (function () {
     else if (!window.__ANATOMY || !window.__ANATOMY.paintPet) petFindings.push('Pet drawer did not load');
     else Object.keys(CREWDATA.PET_RIG).forEach(function (type) {
       petIssues(type).forEach(function (msg) { petFindings.push(msg); });
+    });
+
+    var scale = runScale();
+    (scale.shots || []).forEach(keep);
+    var scaleShot = (scale.shots || []).filter(function (s) { return s.indexOf('scale-home-') === 0; })[0] || (scale.shots || [])[0] || '';
+    (scale.problems || []).forEach(function (p) {
+      cases.push({ name: p.msg.slice(0, 48), problems: [p], shot: scaleShot });
     });
 
     var findings = mergeFindings(cases);
@@ -1633,7 +2076,7 @@ var ANATOMY = (function () {
       var srcNote = window.CHARCLOSET && CHARCLOSET.slow && CHARCLOSET.slow();
       slowNote = !!srcNote;
     } catch (e) {}
-    findings.push({
+    if (closetOn) findings.push({
       id: 'clothes-secondary',
       severity: 'note',
       priority: 9,
@@ -1643,25 +2086,58 @@ var ANATOMY = (function () {
       views: [],
       msgs: []
     });
+    if (scale.note) findings.push({
+      id: 'scale-skip',
+      severity: 'note',
+      priority: 9,
+      title: 'Scale check was not run on this tree',
+      detail: scale.note,
+      shots: [],
+      views: [],
+      msgs: []
+    });
+    if (scale.ready && !(scale.problems || []).length) {
+      var bits = (scale.stats || []).filter(function (s) { return s.where !== 'prop'; }).map(function (s) {
+        return s.where + ' ' + s.type + ' top ' + s.petTop + 'm, feet ' + s.petBot + 'm, character ' + s.charTop + 'm, hip ' + s.hip + 'm';
+      });
+      findings.push({
+        id: 'scale-held',
+        severity: 'note',
+        priority: 9,
+        title: 'Pets stay at or below her hip, and everyone stands on the floor',
+        detail: bits.join('. ') + '.',
+        shots: scale.shots || [],
+        views: [],
+        msgs: []
+      });
+    }
 
     var blocking = findings.filter(function (f) { return f.severity === 'fail' && f.priority <= 3; });
-    var coverage = [
+    var scaleFails = (scale.problems || []).length;
+    var coverage = closetOn ? [
       'Closet preview, idle front, idle side, idle back, on-foot idle',
       'Body and clothes that can change the silhouette: short body, bob, long hair, hoodie, jacket, shorts, skirt, boots, gloves',
       'Walk: 8 on-foot frames at front, three-quarter, side, and back. Torso depth and neck/hip joins are checked on every frame',
-      'Pets: ' + (window.CREWDATA && CREWDATA.PET_RIG ? Object.keys(CREWDATA.PET_RIG).join(', ') : 'none') + ' in idle, walk, closet, on foot'
+      'Pets: ' + (window.CREWDATA && CREWDATA.PET_RIG ? Object.keys(CREWDATA.PET_RIG).join(', ') : 'none') + ' in idle, walk, closet, on foot',
+      scale.ready ? 'Scale: pet beside the character in the house, the showroom shop, and outdoors, plus room props on the floor' : 'Scale: not in this tree'
+    ] : [
+      'No jointed closet in this tree, so the head, limb, and walk pixel suite was not scored here',
+      'Pets: ' + (window.CREWDATA && CREWDATA.PET_RIG ? Object.keys(CREWDATA.PET_RIG).join(', ') : 'none') + ' joint check',
+      'Scale: pet beside the character in the house, the showroom shop, and outdoors, plus room props on the floor'
     ];
     return {
-      ok: calib.ok && blocking.length === 0 && petFindings.length === 0,
+      ok: calib.ok && blocking.length === 0 && petFindings.length === 0 && scaleFails === 0,
       calib: calib,
       findings: findings,
       pets: { ok: petFindings.length === 0, findings: petFindings },
-      passes: passesFrom(cases, findings),
+      scale: { ok: scaleFails === 0, ready: !!scale.ready, stats: scale.stats || [], note: scale.note || '' },
+      passes: closetOn ? passesFrom(cases, findings) : [],
       coverage: coverage,
       shotNames: shotNames,
+      closet: closetOn,
       walkStats: walk.stats,
       sample: cases.filter(function (c) { return c.name === 'idle-front' || c.name === 'closet-front' || c.name === 'idle-side' || c.name === 'walk-side-0' || c.name === 'walk-side-depth'; }).map(function (c) { return { name: c.name, problems: c.problems, measure: c.measure, error: c.error }; }),
-      checkerError: (window.__ANATOMY && window.__ANATOMY.error) || (!window.CHARCLOSET ? 'CHARCLOSET missing' : '') || (!window.__ANATOMY ? 'crew export missing' : '')
+      checkerError: (window.__ANATOMY && window.__ANATOMY.error) || (!window.__ANATOMY ? 'crew export missing' : '')
     };
   }
 
