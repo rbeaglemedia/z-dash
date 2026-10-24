@@ -1,6 +1,17 @@
 'use strict';
 let fps=60,fpsAcc=0,fpsN=0;
-function render(){const _vs=visApply();
+// Per-frame render cost after the warm-up. The ring is the flight the pace report reads.
+// gaps[] is the time between animation frames (what the HUD turns into FPS).
+const Z_PACE=window.Z_PACE={n:0,sum:0,min:1e9,max:0,ring:[],gaps:[],cap:4000,heavyN:0,heavySum:0,lightN:0,lightSum:0,carSum:0,collectSum:0,restSum:0,
+  reset(){this.n=0;this.sum=0;this.min=1e9;this.max=0;this.ring.length=0;this.gaps.length=0;this.heavyN=0;this.heavySum=0;this.lightN=0;this.lightSum=0;this.carSum=0;this.collectSum=0;this.restSum=0;}};
+function pacePush(ms){const p=Z_PACE;p.n++;p.sum+=ms;if(ms<p.min)p.min=ms;if(ms>p.max)p.max=ms;if(p.ring.length<p.cap)p.ring.push(ms);}
+function paceGap(ms){const p=Z_PACE;if(p.gaps.length<p.cap)p.gaps.push(ms);}
+// ?perf=1 draws a frame-time graph. Off that flag, these laps are one skipped check.
+const PERF=/[?&]perf=1/.test(location.search);
+const Z_PERF=window.Z_PERF={on:PERF,gap:0,work:0,worst:'',worstMs:0,pass:{sky:0,collect:0,city:0,car:0,hud:0}};
+let perfT=0,perfTextAt=0,perfBoxEl=null;
+function perfLap(name){if(!PERF)return;const n=performance.now();if(name)Z_PERF.pass[name]=n-perfT;perfT=n;}
+function render(){const _vs=visApply();const tR=performance.now();perfLap();
   // chase cam: smoothed behind the plane
   if(FLYCAM.orbit){const o=FLYCAM.orbit,tx=P.x,ty=P.y+.6,tz=P.z,ay=P.yaw+o.az;cam.x=tx+Math.sin(ay)*Math.cos(o.el)*o.d;cam.z=tz+Math.cos(ay)*Math.cos(o.el)*o.d;cam.y=ty+Math.sin(o.el)*o.d;
     const dx=tx-cam.x,dy=ty-cam.y,dz=tz-cam.z;cam.yaw=Math.atan2(dx,dz);cam.pitch=Math.atan2(-dy,Math.hypot(dx,dz));cam.roll=0;}else{
@@ -24,17 +35,31 @@ function render(){const _vs=visApply();
   const S=40,N=22,gx=Math.round(cam.x/S)*S,gz=Math.round(cam.z/S)*S;ctx.globalAlpha=.55;
   for(let i=-N;i<=N;i++){line([gx+i*S,0,gz-N*S],[gx+i*S,0,gz+N*S],'#7a1a8a',1);line([gx-N*S,0,gz+i*S],[gx+N*S,0,gz+i*S],'#7a1a8a',1);}
   ctx.globalAlpha=1;
+  perfLap('sky');
   // towers (far to near)
-  drawCityGround();if(!RWXRAY.on)drawRunway();frameItems.length=0;if(typeof itemReset==='function')itemReset();cityItems(frameItems);if(window.TRAFFIC)TRAFFIC.collect(frameItems);for(const r of rings){if(typeof itemPush==='function')itemPush(frameItems,(r.x-cam.x)**2+(r.z-cam.z)**2,'r',r);else frameItems.push([(r.x-cam.x)**2+(r.z-cam.z)**2,'r',r]);}frameItems.sort(itemFarther);
+  drawCityGround();if(!RWXRAY.on)drawRunway();frameItems.length=0;if(typeof itemReset==='function')itemReset();cityItems(frameItems);const tCol=performance.now();if(window.TRAFFIC)TRAFFIC.collect(frameItems);const colMs=performance.now()-tCol;if(PERF)Z_PERF.pass.collect=colMs;for(const r of rings){if(typeof itemPush==='function')itemPush(frameItems,(r.x-cam.x)**2+(r.z-cam.z)**2,'r',r);else frameItems.push([(r.x-cam.x)**2+(r.z-cam.z)**2,'r',r]);}frameItems.sort(itemFarther);
+  perfLap();
   for(const[d,k,o]of frameItems){if(d>2200*2200)continue;ctx.globalAlpha=clamp(1.4-Math.sqrt(d)/1800,0.15,1);
     if(k==='t'){ctx.globalAlpha=1;if(o.draw)o.draw(Math.sqrt(d));else drawBldg(o,Math.sqrt(d));}
     else{ctx.shadowColor='#ffb020';ctx.shadowBlur=8;let prev=null;for(let i=0;i<=16;i++){const a=i/16*Math.PI*2,px=o.x+Math.cos(o.yaw)*Math.cos(a)*o.r,pz=o.z+Math.sin(o.yaw)*Math.cos(a)*o.r,p=[px,o.y+Math.sin(a)*o.r,pz];if(prev)line(prev,p,'#ffb020',3);prev=p;}ctx.shadowBlur=0;}}
   ctx.globalAlpha=1;farFlush();drawTunnelInside();
+  perfLap('city');
   // shadow on ground
   const sh=proj(P.x,(P.ground?P.y:P.gy||0)+0.35,P.z);if(sh){ctx.fillStyle='rgba(255,42,61,.25)';ctx.beginPath();ctx.ellipse(sh[0],sh[1],Math.max(2,900/sh[2]),Math.max(1,300/sh[2]),0,0,7);ctx.fill();}
-  if(RWXRAY.on)drawRunway();drawSkids();P.y+=P.sus||0;if(window.CREW)CREW.update();drawZ();P.y-=P.sus||0;drawWaterline();drawFX();
+  if(RWXRAY.on)drawRunway();drawSkids();P.y+=P.sus||0;if(window.CREW)CREW.update();perfLap();drawZ();perfLap('car');P.y-=P.sus||0;drawWaterline();drawFX();
   if(window.HOTDROP)HOTDROP.draw();
-  visRestore(_vs);drawHud(hudDt);}
+  visRestore(_vs);drawHud(hudDt);perfLap('hud');
+  // Train the car rate on heavy frames only, and only once play has started.
+  // A 70–90 blended average is not a signal: it is the cheap frame mixed with this one.
+  if(window.Z_WARM&&Z_WARM.phase==='done'){
+    const dtR=performance.now()-tR;
+    pacePush(dtR);
+    Z_PACE.collectSum+=colMs;
+    const carMs=ZV.drew?(ZV.carMs||0):0;
+    Z_PACE.restSum+=dtR-colMs-carMs;
+    if(ZV.drew){Z_PACE.heavyN++;Z_PACE.heavySum+=dtR;Z_PACE.carSum+=carMs;if(typeof zRate==='function')zRate(dtR,1);}
+    else{Z_PACE.lightN++;Z_PACE.lightSum+=dtR;}
+  }}
 let last=performance.now(),hudDt=1/60,fpsWall=performance.now(),loopHidden=false;
 const frameItems=[];
 function itemFarther(a,b){return b[0]-a[0];}
@@ -177,7 +202,52 @@ function loop(t){
   const clock=onIpad?(wall>250?dt:wall/1000):dt;
   fpsAcc+=clock;fpsN++;if(fpsAcc>0.5){fps=fpsN/fpsAcc;fpsAcc=0;fpsN=0;}
   if(onIpad&&wall<=250&&typeof ipadFit==='function')ipadFit(wall/1000);
-  hudDt=dt;if(flying&&!paused)step(dt);if(window.TOWDRIVE&&!paused)TOWDRIVE.update(dt);if(window.TRAFFIC&&!paused)TRAFFIC.update(dt);if(window.SOCCER)SOCCER.frame(dt);render();requestAnimationFrame(loop);}
+  hudDt=dt;if(flying&&!paused)step(dt);if(window.TOWDRIVE&&!paused)TOWDRIVE.update(dt);if(window.TRAFFIC&&!paused)TRAFFIC.update(dt);if(window.SOCCER)SOCCER.frame(dt);render();
+  if(window.Z_WARM&&Z_WARM.phase==='done'&&wall>0&&wall<250)paceGap(wall);
+  if(PERF)perfPaint(wall);
+  requestAnimationFrame(loop);}
+function perfBox(){
+  if(perfBoxEl)return perfBoxEl;
+  const css=document.createElement('style');
+  css.textContent='#zPerf{position:fixed;left:8px;bottom:8px;z-index:400;pointer-events:none;padding:6px 8px;border:1px solid #3ee6ff;border-radius:8px;background:rgba(5,2,12,.88);color:#d7fff8;font:700 12px/1.35 ui-monospace,monospace;text-shadow:0 1px 0 #000}#zPerf canvas{display:block;width:192px;height:48px;margin-bottom:4px;background:#12081c}';
+  document.head.appendChild(css);
+  const el=document.createElement('div');
+  el.id='zPerf';
+  el.innerHTML='<canvas width="192" height="48"></canvas><div data-k="t"></div>';
+  (document.body||document.documentElement).appendChild(el);
+  perfBoxEl=el;
+  return el;
+}
+function perfPaint(gap){
+  const work=Z_PACE.ring.length?Z_PACE.ring[Z_PACE.ring.length-1]:0;
+  Z_PERF.gap=gap;Z_PERF.work=work;
+  const samples=Z_PERF.gaps||(Z_PERF.gaps=[]);
+  samples.push(gap);if(samples.length>96)samples.shift();
+  let worst='',wm=0,pass=Z_PERF.pass;
+  for(const k in pass){if(pass[k]>wm){wm=pass[k];worst=k;}}
+  Z_PERF.worst=worst;Z_PERF.worstMs=wm;
+  const el=perfBox(),cv=el.querySelector('canvas'),g=cv.getContext('2d'),Wd=cv.width,Hd=cv.height,scale=Hd/40;
+  g.clearRect(0,0,Wd,Hd);g.fillStyle='#12081c';g.fillRect(0,0,Wd,Hd);
+  g.globalAlpha=.45;g.strokeStyle='#3ee6ff';g.beginPath();g.moveTo(0,Hd-8.3*scale);g.lineTo(Wd,Hd-8.3*scale);g.stroke();
+  g.strokeStyle='#ff4fd8';g.beginPath();g.moveTo(0,Hd-16.6*scale);g.lineTo(Wd,Hd-16.6*scale);g.stroke();g.globalAlpha=1;
+  for(let i=0;i<samples.length;i++){const ms=samples[i],bh=Math.max(1,Math.min(Hd,ms*scale));g.fillStyle=ms>16.6?'#ff2a3d':ms>8.6?'#ffb020':'#3ee6ff';g.fillRect(i*2,Hd-bh,1,bh);}
+  const now=performance.now();if(now-perfTextAt<200)return;perfTextAt=now;
+  const stats=paceQuant(Z_PACE.gaps);
+  const every=typeof ZV!=='undefined'?ZV.every:1;
+  const rung=typeof ipadSized!=='undefined'&&ipadSized&&typeof ipadScale==='function'?ipadScale():null;
+  const car=typeof ZV!=='undefined'&&ZV.drew?(ZV.carMs||0):0;
+  el.querySelector('[data-k=t]').textContent=
+    gap.toFixed(1)+' ms gap   '+work.toFixed(1)+' ms work\n'
+    +'worst '+worst+' '+wm.toFixed(1)+'   car gl '+car.toFixed(1)+'\n'
+    +(stats?('med '+stats.med.toFixed(1)+'   1% '+stats.low.toFixed(1)+'   max '+stats.max.toFixed(1)+'\n'):'')
+    +'sprite x'+every+(rung?'   rung '+rung.step+' / '+rung.boost:'');
+}
+function paceQuant(arr){
+  if(!arr||arr.length<8)return null;
+  const s=arr.slice().sort(function(a,b){return a-b;});
+  const at=function(p){return s[Math.min(s.length-1,Math.max(0,Math.floor(p*(s.length-1))))];};
+  return {min:s[0],med:at(0.5),max:s[s.length-1],low:at(0.99)};
+}
 requestAnimationFrame(loop);
 function syncStartButtons(){const row=document.getElementById('kStartMode');if(!row)return;row.querySelectorAll('[data-sm]').forEach(b=>b.classList.toggle('on',b.dataset.sm===P.startMode));}
 function setStartMode(mode){P.startMode=mode==='skydrop'?'skydrop':'runway';try{localStorage.setItem('zdw_start',P.startMode);}catch(e){}syncStartButtons();}

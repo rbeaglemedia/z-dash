@@ -1201,13 +1201,19 @@ if(typeof CITY!=='undefined'&&CITY&&CITY.DYN){
 // boot.js owns the city loop. Hold that one callback while an interior is open so the
 // outdoor draw, traffic, and flight step do not spend frames behind the room card.
 const walkNativeRAF=window.requestAnimationFrame.bind(window);
-let walkCityLoop=null;
+let walkCityLoop=null,walkT=performance.now();
 window.requestAnimationFrame=function(fn){
   if(typeof fn==='function'&&fn.name==='loop'){
     if(!walkCityLoop){
       const game=fn;
       walkCityLoop=function(t){
-        if(WALK_MODE.insideBuilding){WALK_MODE.cityHoldFrames=(WALK_MODE.cityHoldFrames||0)+1;walkNativeRAF(walkCityLoop);return;}
+        const hidden=typeof document!=='undefined'&&document.hidden;
+        if(!hidden){
+          const dt=Math.min(0.05,Math.max(0,(t-walkT)/1000));walkT=t;
+          try{WALK_MODE.update(dt);}catch(e){}
+          try{if(typeof syncOnFootButtons==='function')syncOnFootButtons();}catch(e){}
+          if(WALK_MODE.insideBuilding){WALK_MODE.cityHoldFrames=(WALK_MODE.cityHoldFrames||0)+1;walkNativeRAF(walkCityLoop);return;}
+        }
         game(t);
       };
     }
@@ -1215,11 +1221,3 @@ window.requestAnimationFrame=function(fn){
   }
   return walkNativeRAF(fn);
 };
-let walkT=performance.now();
-function walkFrame(t){
-  if(typeof document!=='undefined'&&document.hidden){walkNativeRAF(walkFrame);return;}
-  const dt=Math.min(0.05,Math.max(0,(t-walkT)/1000));walkT=t;
-  try{WALK_MODE.update(dt);}catch(e){}
-  walkNativeRAF(walkFrame);
-}
-walkNativeRAF(walkFrame);

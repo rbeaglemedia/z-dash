@@ -15,6 +15,8 @@ const TRAFFIC = (() => {
   const lanes = [];
   const cars = [];
   const cache = new Map();
+  // Sprites on screen this frame. Eviction may drop an old angle, not one of these.
+  const hot = new Set();
   const sparks = [];
   let bakes = 0, bakeMs = 0, bakeErr = '', cloned = 0, built = false, sparkN = 0;
   // Raised only while this visit is filling the view grid. Phone and PC stay
@@ -747,7 +749,8 @@ const TRAFFIC = (() => {
       let cap = warmCapOn || T.cacheMax || 140;
       if (bytes >= WARM_BYTE_CAP) cap = cache.size;
       while (cache.size >= cap) {
-        const oldest = cache.keys().next().value;
+        let oldest = null;
+        for (const k of cache.keys()) { if (!hot.has(k)) { oldest = k; break; } }
         if (oldest == null) break;
         cache.delete(oldest);
       }
@@ -906,10 +909,22 @@ const TRAFFIC = (() => {
     for (const c of cars) if (c.on && c.sim && !c.hit) bump(c);
     } catch (e) { runErr = String(e && e.stack || e); }
   }
+  // collect runs before the player car. A bake on the car's own frame stacks the dip
+  // that presents at ~55 FPS. One miss may bake on a skipped car frame instead.
+  function flightBakeCap() {
+    if (typeof ZV === 'undefined') return 1;
+    const warm = window.Z_WARM;
+    if (warm && warm.phase === 'done' && warm.total > 0 && warm.at >= warm.total) return 0;
+    const every = ZV.every | 0 || 1;
+    const heavyNext = every <= 1 || ((ZV.frame + 1) % every) === 0;
+    if (heavyNext) return 0;
+    return 1;
+  }
   function collect(items) {
     if (OFF || !built) return;
     try {
-    let baked = 0;
+    hot.clear();
+    const misses = [];
     for (const c of cars) {
       if (!c.on) continue;
       const dx = c.x - cam.x, dy = (c.y + 0.6) - cam.y, dz = c.z - cam.z;
@@ -918,11 +933,15 @@ const TRAFFIC = (() => {
       if (dist > T.dotDist) continue;
       if (dist < T.fullDist) {
         c._key = viewKey(c);
-        if (!cache.has(c._key) && baked < T.bakePerFrame) { if (bake(c._key)) baked++; }
+        hot.add(c._key);
+        if (!cache.has(c._key)) misses.push(c._key);
       }
       if (typeof itemPush === 'function') itemPush(items, dx * dx + dz * dz, 't', c.slot);
       else items.push([dx * dx + dz * dz, 't', c.slot]);
     }
+    const cap = flightBakeCap();
+    let baked = 0;
+    for (let i = 0; i < misses.length && baked < cap; i++) { if (bake(misses[i])) baked++; }
     if (sparks.length) {
       if (typeof itemPush === 'function') itemPush(items, 0, 't', sparkSlot);
       else items.push([0, 't', sparkSlot]);
