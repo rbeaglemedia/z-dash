@@ -1,0 +1,16 @@
+{
+  "source": "option-1-boulevards",
+  "note": "Stand-in until CITY.LAYOUT.weather, docs/city-layout/interfaces.json, or window.ZD_LAYOUT_INTERFACES is on the page. Rectangles match CITY.LAYOUT.weather on cursor/city-boulevards-ef23 (PR #85). clear keeps the runway, tunnel, river jumps, and homestead yard out of the weather on this map.",
+  "zones": [
+    { "id": "sand-west", "kind": "sand", "name": "West shoulder", "x0": -350, "x1": -170, "z0": 40, "z1": 1000 },
+    { "id": "fog-north", "kind": "fog", "name": "North of the runway", "x0": -180, "x1": 250, "z0": 1530, "z1": 1660 },
+    { "id": "rain-east", "kind": "rain", "name": "East gap", "x0": 240, "x1": 640, "z0": 240, "z1": 760 },
+    { "id": "fog-south", "kind": "fog", "name": "South lane", "x0": -480, "x1": -80, "z0": -400, "z1": -160 }
+  ],
+  "clear": [
+    { "id": "runway", "x0": -20, "x1": 20, "z0": -55, "z1": 1522 },
+    { "id": "tunnel", "x0": -530, "x1": -370, "z0": 470, "z1": 730 },
+    { "id": "river-jumps", "x0": -400, "x1": 400, "z0": 1700, "z1": 1920 },
+    { "id": "homestead-yard", "x0": -310, "x1": -130, "z0": -800, "z1": -600 }
+  ]
+}
