@@ -80,7 +80,7 @@ Only one video element exists. It follows the room she is in, or the trailer whe
 
 Today's map has two BUILDER shops on the north bank (`BUILDER_NORTH`, z 1860–2100) in `world/city.js`. City Layout agent `bc-3ff1a27b` picked Option 1, The Boulevards. Builder HQ moves to the southeast Builder Bay. One HQ, not two: **x 878..922, z 444..476**, with its pad at 966..994, 446..474. The dashed lots in Builder Bay stay empty until a new game exists. They are the build-your-own ground. Do not fill them with a second arcade.
 
-The design tool is the planner editor (walls, grid, place), opened from the HQ. The HQ room itself stays the interiors studio (desk, boards, glass). The toast can still point outside. The editor is not a new app on the drive HUD. Dragging the city itself is the City Editor section below, a separate top-down tool.
+The design tool is one planner editor core (walls, grid, place), with two permission levels. DEV Builder is Bob's, and it can reach the city. Ellie's Builder stays inside her own area. The HQ room itself stays the interiors studio (desk, boards, glass). The toast can still point outside. Neither level is a new app on the drive HUD. The City Editor section below is that shared core.
 
 The tool adds what the planner rooms do not: roofs, floors, openings, trim.
 
@@ -186,20 +186,131 @@ The house and trailer numbers include a texture upload and a view that fills the
 
 The object swap stays paused until the zip from agent `bc-04ef9a95` arrives. When it does, this plan is rewritten around two slightly modified copies of the planner app:
 
-1. **Builder HQ mode.** Walls, shapes, and roofs.
-2. **House object placement.** Starts with Ellie's house. Reuses the planner objects, especially the tech.
+1. **Builder HQ mode.** Walls, shapes, and roofs. DEV Builder uses this on the city.
+2. **House object placement.** Ellie's Builder. Starts inside her house. Reuses the planner objects, especially the tech.
 
 The venue section stays out. A following section will study the planner objects as whole sets and one by one, then propose better objects and building designs for Neon World, as ideas for Bob to pick from. That study needs the real objects. The City Editor below does not.
 
 ## City Editor
 
-Plan only. No editor code in this phase. Bob can drag buildings and add or move roads himself. It seeds from Option 1, The Boulevards (`cursor/city-layout-plan-ef23`, agent `bc-3ff1a27b`). It does not seed from today's 24 shops, and it does not seed from Option 2.
+Plan only. No editor code in this phase. Two builders sit on one editor core. The core is the same document, selection, drag, snap, and undo stack. A permission level decides which tools are on, where a drag is allowed to land, and which save key it writes.
 
-North is up. +x is east, +z is north. Spawn stays (0, 0) unless Bob moves that spawn record. The editor is a top-down canvas on a test page. It redraws on pointer-up. Flat fills and strokes. No `shadowBlur`. It does not draw the 3D city while he drags, so the edit frame is not the game frame.
+| | DEV Builder | Ellie's Builder |
+| --- | --- | --- |
+| Who | Bob | Ellie, from her own house |
+| Reach | The whole Neon World, eventually: buildings, roads, NOS stations, spawns, props, interiors | Her build area only |
+| City and roads | Yes, on the Option 1 map | No. Those tools are off |
+| Save | Test first, then the live world on Bob's explicit go, with a rollback | Her device only, the same way her home choices already save |
+| Menu | Hidden. A Bob-only unlock | A Build control inside her house |
+
+The map seed is Option 1, The Boulevards (`cursor/city-layout-plan-ef23`, agent `bc-3ff1a27b`). It does not seed from today's 24 shops, and it does not seed from Option 2.
+
+North is up. +x is east, +z is north. Spawn stays (0, 0) unless DEV moves that spawn record. DEV's city view is a top-down canvas on a test page. It redraws on pointer-up. Flat fills and strokes. No `shadowBlur`. It does not draw the 3D city while he drags, so the edit frame is not the game frame. Ellie's view is her room, same rule: flat color, brighter boxes for glow, one redraw when she lets go.
+
+### Shared core
+
+```text
+editor
+  document, selection, drag, snap, undo (50 steps)
+  tools: move, turn, add, delete
+  permission: role, boundary, tools allowed, save target
+```
+
+A gesture pushes one undo snapshot at pointer-down. Undo and Redo are labeled buttons. DEV also has Ctrl+Z and Ctrl+Shift+Z. Ellie gets the buttons. She does not need the keys.
+
+Snap is one setting for the core. DEV uses it on the city. Ellie uses a finer step inside her room, from the same picker.
+
+| Choice | DEV snap | Ellie snap | What it feels like |
+| --- | --- | --- | --- |
+| S1 | 2 m | 0.5 m | City edges land clean. A TV sits on a wall. Recommended |
+| S2 | 10 m | 0.5 m | Big boulevard moves. Her room stays on the half-metre |
+| S3 | 1 m | 0.25 m | Fine nudge. More dragging to cross a district |
+
+Ellie turns a prop in quarter turns. DEV can turn a road endpoint freely, and a prop in 15° steps.
+
+### DEV Builder
+
+Hidden from Ellie's normal menus. No row on the drive HUD, the kid garage, the pause sheet, or her Build screen. The unlock is a latch against a curious tap. It is not account security. Anyone who reads the script can find it.
+
+| Choice | How Bob opens it | Where |
+| --- | --- | --- |
+| U1 | Hold two opposite corners of the screen for 2 seconds, then a 4-digit PIN Bob chooses. A wrong code closes the pad and returns to the drive. Recommended for the live page | Live game, after this plan is approved and built |
+| U2 | `?bob=1` on the test page, then the same PIN | `/test/` only. The live page ignores the query |
+| U3 | The corner hold, with no PIN | Fastest. Easier for a random hold to open |
+
+This plan recommends **U1 plus U2**. The test page uses the query so Bob can work without the hold. The live page has the hold and the PIN, and no query door. The PIN lives in his head. The game stores only a "DEV is open this session" flag, and that flag clears when the page closes.
+
+Once open, DEV can eventually edit any of these: city buildings, roads, NOS stations, spawn points, props, and interiors. The first test still has a skeleton lock so one drag cannot delete the runway. That lock is a pick, not a missing tool. The tools exist. M3 turns the lock off.
+
+| Choice | Editable | Locked until he picks a wider level |
+| --- | --- | --- |
+| M1 | Buildings, kit, and boulevard streets | Highway at x −450, both bridges, river, tunnel, runway, airport ramps, half-pipe, loop, player spawn, Sky Drop start |
+| M2 | M1, plus new streets on the grass | Same skeleton. He can add a boulevard. He cannot delete the highway |
+| M3 | The skeleton too. This is the full DEV reach he described | Nothing. A bad drag can cover the tunnel mouth or the river jump |
+
+This plan recommends **M2 for the first test**, then **M3** when he wants the full reach. Unique purposes stay one each while M1 or M2 is on: one home, one main garage, one pet lounge, one paint, one showroom, one big NOS, one dance, one cafe, one arcade, one Builder HQ, one soccer shop, one field, one tower. Kit pieces may repeat, with the Option 1 exceptions: The Stage has the cafe and no snack stall, and Car Row has the big NOS and no second NOS. An arch keeps an opening at least one lane wide (3.4 m) plus the shoulders. The posts are the solids. The opening is clear.
+
+DEV save, test, publish, rollback:
+
+| Step | Where it lands | Who allows it |
+| --- | --- | --- |
+| 1. Save | This browser only, `localStorage` key `zdash.city.editor.v1` | Bob, any time, in DEV |
+| 2. Drive this | `/test/world.html` reads that key when present, else the committed layout file | Bob. Live `world.html` keeps today's map |
+| 3. Publish | A reviewed commit that copies the tested JSON into the file the live city loads | Bob's explicit go, same bar as "yes, do it" |
+| 4. Rollback | "Restore published" copies the previous live JSON back over the test key, and the publish commit reverts | Bob |
+
+| Choice | How far one go goes |
+| --- | --- |
+| P1 | One explicit go writes the live map file. The previous file is kept beside it for rollback |
+| P2 | The first go updates `/test/` only. A second explicit go updates the live map |
+
+This plan recommends **P2**.
+
+DEV never writes `zdash.house.v1` or `zdash.kid.v1`. Her wall, sign, sofa, arcade, pet bed, and dance floor stay the garage checkboxes. Garage Z still reads `zdash.kid.v1` → `eq` and still changes nothing else.
+
+A DEV save is refused, and the gesture undoes, when any of these are true:
+
+- A building footprint, grown by 3 m, covers the player spawn or the Sky Drop start (180, 520).
+- A traffic lane sample (each `ROADS.spawns` point, and a point every 4 m along each lane) probes as a solid wall. Ramps, outlines, and billboards stay legal. Arch posts count. The arch opening stays clear.
+- The player spawn or the Sky Drop start sits inside a building or off the paved surface.
+- A second copy of a unique purpose, a snack on The Stage, or a second NOS on Car Row, while M1 or M2 is the level.
+
+`redesign-maps.mjs` already rejects a building that covers spawn. The loader keeps that check. Traffic's `solidAt` and `blockedBy` stay as the runtime backstop after a good file loads.
+
+### Ellie's Builder
+
+She builds inside one boundary. A prop that would cross it stops on the inset line. The city, the roads, NOS, spawns, and other buildings are not in her tool list. She cannot select them.
+
+Where that boundary sits, and how big it is:
+
+| Choice | Boundary | Size | What she can place |
+| --- | --- | --- | --- |
+| L1 | Inside her house. Recommended | The interiors room, 24 × 18 m (style A). The old 8.4 × 6.3 m shell is the fallback until that room exists | Furniture and tech on the floor, inset 0.4 m from each wall |
+| L2 | A grass rectangle on the homestead, between the house and the garage, clear of pets, the garage, the south road, and the hitch pad | x −260..−180, z −720..−670 (80 × 50 m) | Yard props. The house, pets, and garage stay city buildings |
+| L3 | One empty Builder Bay lot | Whichever dashed lot City Layout marks, once they publish the boxes | A fenced lot in the city. Option 1 currently keeps those lots empty |
+
+This plan recommends **L1**. Her props are stored in room coordinates, so a later DEV move of the homestead carries the furniture with the room. L2 can be added later as a second area with its own list. L3 waits, because those lots are the build-your-own ground for a future game.
+
+How she opens it:
+
+| Choice | Entry |
+| --- | --- |
+| H1 | A Build control on the house interior, after she is already inside. Recommended. UI Polish places it. It stays off the driver HUD |
+| H2 | A control at the homestead door, before she walks in |
+
+The words are Place, Turn, Done, and Undo. Palette groups are Screens, Sound, Seats, and Tables, with the tech first. A full room stops at the interior budget (under 48 instances, one video) and says "This room is full." The hero pieces the garage already saves (sofa, arcade, pet bed, dance floor) stay those checkboxes. They are not a second copy in this palette, so her builder cannot clear them.
+
+Her save is a new key, `zdash.ellie.builder.v1`:
+
+```text
+{ v: 1, area: "house", props: [{ prop, x, z, yaw, params }] }
+```
+
+`params` is the catalog size, color, glow, and proportions. The write path is this key only. It does not call `saveHouse` or `walkHouseSave`. It does not patch `house` inside `zdash.kid.v1`. Clearing the site data clears this list the same way it clears her other device saves. There is no account in the cloud. DEV publish does not read or write this key. Her list draws on top of the house after the city loads, and only inside the boundary.
 
 ### Layout file
 
-One document, version 1, option `boulevard`. Suggested path when the build is approved: `docs/city-layout/layout.json`. City Layout's `docs/city-layout/coords.json` is the building list for the pictures. Roads today live only in `roadsFor('boulevard')` inside `docs/city-layout/redesign-maps.mjs`. The game file is still the hardcoded `shop()` calls and the 100 m / 200 m grid in `world/city.js`. `CITY.toJSON` and `ROADS.fromJSON` already exist and nothing loads them as the map.
+DEV's city document, version 1, option `boulevard`. Suggested path when the build is approved: `docs/city-layout/layout.json`. City Layout's `docs/city-layout/coords.json` is the building list for the pictures. Roads today live only in `roadsFor('boulevard')` inside `docs/city-layout/redesign-maps.mjs`. The game file is still the hardcoded `shop()` calls and the 100 m / 200 m grid in `world/city.js`. `CITY.toJSON` and `ROADS.fromJSON` already exist and nothing loads them as the map.
 
 ```text
 {
@@ -217,88 +328,55 @@ One document, version 1, option `boulevard`. Suggested path when the build is ap
 
 Spawns in the file: player (0, 0) and Sky Drop start (180, 520). Both locked in the seed. Hot Drop picks a point at runtime. It is not a stored pin.
 
-Buildings use the Option 1 boxes. Kit kinds: `arch`, `bay`, `nos`, `pad`, `snack`, plus the unique places (home, pets, garage, tower, paint, showroom, cafe, dance, arcade, builder, soccer, field, track, jump roof). `face` is the door side (`n`, `e`, `s`, `w`). `h` is metres. `coords.json` has neither field yet. Roads use the boulevard segments: highway, two bridges, river, the shoulder out of spawn, and the city streets. `kind` matches what the minimap already strokes: `street`, `highway`, `bridge`, `tunnel`, `track`. A boulevard `lane` is a street. Water stays a river band, not a drivable edge.
+Buildings use the Option 1 boxes. Kit kinds: `arch`, `bay`, `nos`, `pad`, `snack`, plus the unique places (home, pets, garage, tower, paint, showroom, cafe, dance, arcade, builder, soccer, field, track, jump roof). `face` is the door side (`n`, `e`, `s`, `w`). `h` is metres. `coords.json` has neither field yet. Roads use the boulevard segments: highway, two bridges, river, the shoulder out of spawn, and the city streets. `kind` matches what the minimap already strokes: `street`, `highway`, `bridge`, `tunnel`, `track`. A boulevard lane is a street. Water stays a river band.
 
-Empty Builder Bay lots stay `lots` with `empty: true`. They are build-your-own ground. The seed does not put a shop on them.
+Empty Builder Bay lots stay `lots` with `empty: true`. They are build-your-own ground. The seed does not put a shop on them. Ellie's list is not a lot in this file.
 
-### Drag, snap, undo
+### Drag
 
-Top-down. Select a footprint or a road. Drag. One undo snapshot at pointer-down, so a gesture is one step. Stack of 50. Undo and redo buttons, plus Ctrl+Z and Ctrl+Shift+Z.
+Top-down for DEV. Select a footprint or a road. Her room uses the same drag on a prop.
 
 - A building drag moves the whole footprint. The door face stays on the side Bob last set, and a "face the nearest street" button writes `face` from the closest road.
-- A road drag moves one endpoint, or the whole segment if he grabs the middle. Add-road is two clicks.
+- A road drag moves one endpoint, or the whole segment if he grabs the middle. Add-road is two clicks. This tool is DEV-only.
 - An endpoint within 4 m of another endpoint snaps to that node, so `ROADS.rebuild` makes one chain. The live graph already rounds nodes to 0.1 m.
-
-Snap size is a pick for Bob:
-
-| Choice | Snap | What it feels like |
-| --- | --- | --- |
-| S1 | 2 m | Edges land clean. Close to a metre grid. Default in this plan |
-| S2 | 10 m | Big moves along a boulevard. Coarse for a bay or a snack |
-| S3 | 1 m | Fine nudge. More clicks to cross a district |
-
-### What he can move
-
-| Choice | Editable | Locked in the seed |
-| --- | --- | --- |
-| M1 | Buildings, kit, and boulevard streets | Highway at x −450, both bridges, river, tunnel, runway, airport ramps, half-pipe, loop, player spawn, Sky Drop start |
-| M2 | M1, plus new streets anywhere on the grass | Same locked skeleton. He can add a boulevard. He cannot delete the highway |
-| M3 | The skeleton too | Nothing. A bad drag can cover the tunnel mouth or the river jump |
-
-This plan recommends **M2**. Unique purposes stay one each: one home, one main garage, one pet lounge, one paint, one showroom, one big NOS, one dance, one cafe, one arcade, one Builder HQ, one soccer shop, one field, one tower. Kit pieces may repeat, with the two exceptions already in Option 1: The Stage has the cafe and no snack stall, and Car Row has the big NOS and no second NOS. An arch keeps an opening at least one lane wide (3.4 m) plus the shoulders. The posts are the solids. The opening is not a wall.
+- Her prop drag clamps to the boundary inset. Turn is a quarter turn per tap.
 
 ### Roads, lanes, and the minimap
 
-Saving a road writes the segment, then the test page reloads. On load the test city calls the existing `ROADS.addRoad` for each segment and `ROADS.rebuild`. That rebuild fills `lanes`, `chains`, and `spawns`, and `updateBlocked` marks stretches where a probe hits a building. Traffic reads those lanes once per page load (`world/traffic.js` sets `built` and returns). A reload is the v1 update. A hot rebuild without a reload can come later from Traffic Physics (`bc-2af9e871`); this plan does not edit `physics.js`.
+A DEV road save writes the segment, then the test page reloads. On load the test city calls the existing `ROADS.addRoad` for each segment and `ROADS.rebuild`. That rebuild fills `lanes`, `chains`, and `spawns`, and `updateBlocked` marks stretches where a probe hits a building. Traffic reads those lanes once per page load (`world/traffic.js` sets `built` and returns). A reload is the v1 update. A hot rebuild without a reload can come later from Traffic Physics (`bc-2af9e871`); this plan does not edit `physics.js`.
 
-The minimap already bakes `CITY.ROADS` and building footprints once (`miniBake` in `world/hud.js`). A reload rebuilds that image from the new graph. The test copy reads `bounds` from the layout so the west track street is on the image. The bake stays flat fills and strokes. This plan does not add `shadowBlur` to it, and it does not change the live driver HUD.
+The minimap already bakes `CITY.ROADS` and building footprints once (`miniBake` in `world/hud.js`). A reload rebuilds that image from the new graph. The test copy reads `bounds` from the layout so the west track street is on the image. The bake stays flat fills and strokes. This plan does not add `shadowBlur` to it, and it does not change the live driver HUD. Her prop save does not touch the minimap. Yard and room props are too small for that bake.
 
-### Save, test, publish, rollback
+### Frame cost
 
-The editor never writes `zdash.house.v1` or `zdash.kid.v1`.
+Both levels share the cheap path.
 
-| Step | Where it lands | Who allows it |
-| --- | --- | --- |
-| 1. Save | This browser only, `localStorage` key `zdash.city.editor.v1` | Bob, any time, in the editor |
-| 2. Drive this | `/test/world.html` reads that key when present, else the committed layout file | Bob, from the editor. Live `world.html` keeps today's map |
-| 3. Publish | A reviewed commit that copies the tested JSON into the file the live city loads | Bob's explicit go, same bar as "yes, do it". No deploy from this plan |
-| 4. Rollback | Restore the previous published JSON over the local key, and revert the publish commit | Bob, from "Restore published" or a revert |
-
-| Choice | How far one go goes |
-| --- | --- |
-| P1 | One explicit go writes the live map file. The previous file is kept beside it for rollback |
-| P2 | The first go updates `/test/` only. A second explicit go updates the live map. Live pages stay on today's map until that second go |
-
-This plan recommends **P2**. It matches City Layout's rule that the first playable copy is `/test/` and the live pages stay put.
-
-### Spawn guards
-
-A save is refused when any of these are true. The gesture undoes. The bad file never becomes the test key.
-
-- A building footprint, grown by 3 m, covers the player spawn or the Sky Drop start.
-- A traffic lane sample (each `ROADS.spawns` point, and a point every 4 m along each lane) probes as a solid wall. Ramps, outlines, and billboards do not count. Arch posts count. The arch opening does not.
-- The player spawn or the Sky Drop start sits inside a building or off the paved surface.
-- A second copy of a unique purpose, a snack on The Stage, or a second NOS on Car Row.
-
-`redesign-maps.mjs` already rejects a building that covers spawn. The loader keeps that check. Traffic's `solidAt` and `blockedBy` stay as the runtime backstop after a good file loads. The editor's refusal is the gate so a car does not have to dodge a bad save.
+- DEV's map is one 2D canvas. Redraw when the pointer goes up. No `shadowBlur`. No 3D city during the drag.
+- Ellie's room stays on the walk canvas, or a top-down of that floor only. Glow is a brighter flat color.
+- Her placed props share the one box mesh already in the FPS section. Cap 48 instances in the room, one 256×144 video.
+- The editor's three.js view, if the real planner UI is kept for DEV, is not the game frame. The game loads baked boxes.
 
 ### What City Layout changes so the map is data
 
-Agent `bc-3ff1a27b` keeps ownership of Option 1. This editor consumes their file. Their branch still has buildings in `coords.json` and roads only inside the picture generator. For the editor to drive the test map, their build needs these:
+Agent `bc-3ff1a27b` keeps ownership of Option 1. DEV consumes their file. Their branch still has buildings in `coords.json` and roads only inside the picture generator. For DEV to drive the test map, their build needs these:
 
 1. Put the boulevard roads, the two spawns, and the bounds in the same layout file as the buildings. Keep Option 2 out of the file the game loads.
 2. Add `h` and `face` on every building. Unique places keep today's heights. Kit sizes stay the ones in their plan (bay about 20×14×8, NOS kiosk about 16×12×6, pad about 28×28×6, snack about 12×10×5, arch about 8 m deep and 12 m tall).
-3. Mark the locked skeleton: highway, bridges, river, tunnel, runway, ramps, half-pipe, loop, player spawn, Sky Drop start.
+3. Mark the locked skeleton: highway, bridges, river, tunnel, runway, ramps, half-pipe, loop, player spawn, Sky Drop start. M3 is allowed to edit those marks. The file still ships with them locked.
 4. On `test/world/city.js` only, after their build is approved: load the file instead of the 24 `shop()` calls and instead of the generated grid. Call `ROADS.addRoad` and `ROADS.rebuild`. Leave live `world/city.js` on today's map until publish step 3.
 5. Map kinds to purposes: bay → GARAGE, small and big NOS → NOS, pad → SKY_DROP, snack → the stall, arch → posts with an open lane. One BUILDER. Empty lots stay empty.
 6. Export `bounds` for the test minimap. The test copy of `miniBake` uses them. The live HUD stays as it is.
 7. Do not cache the old road grid. Traffic builds lanes from `CITY.ROADS` at page load, so a test reload is enough.
+8. Leave the homestead buildings where they are. Ellie's boundary is inside the house (L1) or on the grass between the house and the garage (L2). Her props are not city records.
 
 ### Picks for Bob
 
-1. Snap: **S1** (2 m), S2 (10 m), or S3 (1 m).
-2. What moves: M1 (no new streets), **M2** (new streets, skeleton locked), or M3 (everything moves).
-3. Publish: P1 (one go writes the live map) or **P2** (test go, then a second go for the live map).
+1. Unlock: **U1** on the live page and **U2** on `/test/`, or U3 (gesture, no PIN).
+2. Snap: **S1** (2 m city, 0.5 m in her room), S2, or S3.
+3. DEV reach for the first test: M1, **M2**, or M3. M3 is the full reach, when he wants it.
+4. Publish: P1 (one go writes the live map) or **P2** (test go, then a second go).
+5. Her area: **L1** (inside the 24 × 18 m house), L2 (80 × 50 m of yard), or L3 (a Builder Bay lot).
+6. Her entry: **H1** (Build inside the house) or H2 (at the door).
 
 Bold items are the recommendation. Nothing here is built. The object swap and the review shots still wait on the planner zip.
 
