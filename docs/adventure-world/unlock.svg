@@ -1,46 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 248" width="960" height="248">
   <rect width="960" height="248" rx="16" fill="#14081f"/>
-  <text x="24" y="32" fill="#fff6e4" font-family="ui-sans-serif, sans-serif" font-size="16" font-weight="700">On foot first. The car is the last door.</text>
-  <text x="24" y="52" fill="#b9a6d6" font-family="ui-sans-serif, sans-serif" font-size="12">VALE owns the steps. NEXT owns the road, the speed cap, the sky, and traffic.</text>
+  <text x="24" y="32" fill="#fff6e4" font-family="ui-sans-serif, sans-serif" font-size="16" font-weight="700">On foot. Five of seven jobs. Then the car key. Then NEXT's sky.</text>
+  <text x="24" y="52" fill="#b9a6d6" font-family="ui-sans-serif, sans-serif" font-size="12">This file owns the walking. NEXT owns the road, the speed cap, the 400 ft line, and traffic.</text>
   <g font-family="ui-sans-serif, sans-serif" font-size="12" fill="#fff6e4">
     <g>
-      <rect x="20" y="78" width="100" height="64" rx="10" fill="#241433" stroke="#3ee6ff" stroke-width="2"/>
-      <text x="70" y="104" text-anchor="middle" font-weight="700">1. Square</text>
-      <text x="70" y="122" text-anchor="middle" fill="#b9a6d6">walk, pet</text>
+      <rect x="20" y="78" width="150" height="72" rx="10" fill="#241433" stroke="#3ee6ff" stroke-width="2"/>
+      <text x="95" y="106" text-anchor="middle" font-weight="700">1. On foot</text>
+      <text x="95" y="126" text-anchor="middle" fill="#b9a6d6">walk 3–4, run 8–10</text>
     </g>
     <g>
-      <rect x="140" y="78" width="100" height="64" rx="10" fill="#241433" stroke="#3ee6ff" stroke-width="2"/>
-      <text x="190" y="104" text-anchor="middle" font-weight="700">2. Blade</text>
-      <text x="190" y="122" text-anchor="middle" fill="#b9a6d6">motes only</text>
+      <rect x="190" y="78" width="170" height="72" rx="10" fill="#241433" stroke="#ffb020" stroke-width="2"/>
+      <text x="275" y="106" text-anchor="middle" font-weight="700">2. Five of seven</text>
+      <text x="275" y="126" text-anchor="middle" fill="#b9a6d6">Swing, Spark, Shot</text>
     </g>
     <g>
-      <rect x="260" y="78" width="100" height="64" rx="10" fill="#241433" stroke="#ffb020" stroke-width="2"/>
-      <text x="310" y="104" text-anchor="middle" font-weight="700">3. Spark</text>
-      <text x="310" y="122" text-anchor="middle" fill="#b9a6d6">then the bow</text>
+      <rect x="380" y="78" width="150" height="72" rx="10" fill="#241433" stroke="#7cff4f" stroke-width="2"/>
+      <text x="455" y="106" text-anchor="middle" font-weight="700">3. Car key</text>
+      <text x="455" y="126" text-anchor="middle" fill="#9ddec0">jobs 6 and 7 wait</text>
     </g>
     <g>
-      <rect x="380" y="78" width="110" height="64" rx="10" fill="#241433" stroke="#ffb020" stroke-width="2"/>
-      <text x="435" y="104" text-anchor="middle" font-weight="700">4. Trails</text>
-      <text x="435" y="122" text-anchor="middle" fill="#b9a6d6">pet moves</text>
+      <rect x="550" y="78" width="170" height="72" rx="10" fill="#10241c" stroke="#7cff4f" stroke-width="2"/>
+      <text x="635" y="106" text-anchor="middle" font-weight="700">4. Drive</text>
+      <text x="635" y="126" text-anchor="middle" fill="#9ddec0">NEXT caps, traffic on</text>
     </g>
     <g>
-      <rect x="510" y="78" width="120" height="64" rx="10" fill="#241433" stroke="#ff4fd8" stroke-width="2"/>
-      <text x="570" y="104" text-anchor="middle" font-weight="700">5. Fountain</text>
-      <text x="570" y="122" text-anchor="middle" fill="#b9a6d6">on-foot ending</text>
-    </g>
-    <g>
-      <rect x="650" y="78" width="130" height="64" rx="10" fill="#241433" stroke="#7cff4f" stroke-width="2"/>
-      <text x="715" y="100" text-anchor="middle" font-weight="700">6. Yard Gate</text>
-      <text x="715" y="118" text-anchor="middle" fill="#b9a6d6">much later</text>
-    </g>
-    <g>
-      <rect x="800" y="78" width="140" height="64" rx="10" fill="#10241c" stroke="#7cff4f" stroke-width="2"/>
-      <text x="870" y="104" text-anchor="middle" font-weight="700">DRIVE</text>
-      <text x="870" y="122" text-anchor="middle" fill="#9ddec0">opens NEXT</text>
+      <rect x="740" y="78" width="190" height="72" rx="10" fill="#10241c" stroke="#3ee6ff" stroke-width="2"/>
+      <text x="835" y="106" text-anchor="middle" font-weight="700">5. Sky</text>
+      <text x="835" y="126" text-anchor="middle" fill="#b9a6d6">6 of 8 drive jobs</text>
     </g>
   </g>
-  <path d="M120 110 H140 M240 110 H260 M360 110 H380 M490 110 H510 M630 110 H650 M780 110 H800" stroke="#3ee6ff" stroke-width="2"/>
-  <text x="24" y="176" fill="#fff6e4" font-family="ui-sans-serif, sans-serif" font-size="13">STAY keeps her walking in Glasswick. DRIVE does not unlock the sky, and it does not set a speed.</text>
-  <text x="24" y="198" fill="#b9a6d6" font-family="ui-sans-serif, sans-serif" font-size="12">Coins are a thank-you. They do not buy the blade, the bow, or the car. NEXT still asks for its own 6 sky stars.</text>
-  <text x="24" y="226" fill="#6e6480" font-family="ui-sans-serif, sans-serif" font-size="11">No foes in the square. No car mesh in the square. The parked Z is her paint on a door, not a second 370Z.</text>
+  <path d="M170 114 H190 M360 114 H380 M530 114 H550 M720 114 H740" stroke="#3ee6ff" stroke-width="2"/>
+  <text x="24" y="180" fill="#fff6e4" font-family="ui-sans-serif, sans-serif" font-size="13">Glasswick: STAY keeps walking, DRIVE opens NEXT. Homestead: she can park and get out, and traffic turns off.</text>
+  <text x="24" y="202" fill="#b9a6d6" font-family="ui-sans-serif, sans-serif" font-size="12">Each town job pays 25 coins. The coins do not buy the key. She cannot launch the sky on foot.</text>
+  <text x="24" y="226" fill="#6e6480" font-family="ui-sans-serif, sans-serif" font-size="11">Foes nearby: 3 on her iPad, 4 on the phone, 6 on a PC. The hub streets stay friendly.</text>
 </svg>

@@ -1,8 +1,10 @@
 # Adventure world plan
 
-Planning only. This file does not change the game, and it does not deploy. Nothing here is built until Bob writes "plan approved, build it."
+Planning only. This file does not change the game, and it does not deploy. Nothing here is built until Bob writes "plan approved, build it." Buy nothing from this list.
 
-This is a new tile and its own page, `vale.html`. The live Neon World stays on `world.html` and `world-split.html`. NEXT stays on `next.html` (pull request 90). This plan does not edit `index.html`, the current city, the Boulevards copy, the speed caps, the 400 ft sky, or traffic.
+This is the one adventure plan. Pull request 90, section 7, commit `935611f`, drafted an on-foot chapter and handed it here. Where that section and this file both describe walking, jobs, foes, pet moves, or the car key, this file is the one to follow. NEXT still owns the Boulevards map, the driving caps, the 400 ft sky, and traffic.
+
+This is a new tile and its own page, `vale.html`, if you take the Glasswick name. The live Neon World stays on `world.html` and `world-split.html`. NEXT stays on `next.html`. This plan does not edit `index.html`, the current city, the Boulevards copy, the speed caps, the 400 ft sky, or traffic.
 
 Ellie is 10 and plays at about a 13-year-old level. The words stay plain and specific: Lamp Square, glow, Yard Gate. No baby talk.
 
@@ -10,14 +12,14 @@ The shape is borrowed from two games she might already know the feel of. A town,
 
 ## How this sits next to NEXT
 
-Read with `docs/NEXT-WORLD-PLAN.md` on `cursor/next-world-plan-039c`, commit `50d12c5`, pull request 90. That agent (`bc-6b230a1a-3e68-589e-a9dd-88602abb039c`) was still running a traffic-car test when this was written. The test is not part of this world. If pull request 90 changes the plan, this section follows the new wording for anything NEXT owns. It does not start owning those things.
+Read with `docs/NEXT-WORLD-PLAN.md` on `cursor/next-world-plan-039c`, through commit `935611f`, pull request 90. The driving chapter and the traffic test stay there (traffic test pull request 93, commit `feb4211`). This file takes section 7's on-foot ideas. If pull request 90 changes a driving rule, follow it for driving. Do not take the map, the caps, the sky, or the traffic back.
 
 | | NEXT (pull request 90) | VALE (this plan) |
 | --- | --- | --- |
 | Page | `next.html` | `vale.html` |
 | Map | A copy of Option 1, The Boulevards. World id `next`. | Glasswick. Its own file. Not a copy of `world/city-layout.js`. |
 | How she moves | She drives the Z. She cannot launch the sky on foot. | She walks. The Z is not in this world until the last chapter, and then only as a door. |
-| Speed | 25 / 35 / 45 mph on the street. Sky 65 / 90 / 120 after NEXT's own unlock. | Walk 3.1 mph, rim-run 6.7, a short burst 9.4. Same on every device. No sky speed. |
+| Speed | 25 / 35 / 45 mph on the street, only while she is driving. Sky 65 / 90 / 120 after NEXT's own unlock. | Walk 3–4 mph. Run 8–10 mph. Same on every device. No sky speed. |
 | Altitude | The 400 ft line, the ramp, the bounce, the portal. Save key `zdash.next.v1`. | None. A fall sits her back at the last lamp. That is not the sky portal. |
 | Traffic | Rare: two cars, under her cap, live LOD or the photo fallback. | No traffic. No write to `shared/traffic-tune.js`. |
 | Car art | The real Z, and a lighter traffic cut of `assets/370z.glb`. | Her paint color on the Yard Gate door. Not a second mesh of the Z. |
@@ -30,43 +32,48 @@ Shared, on purpose, the same way NEXT already shares them:
 
 VALE progress is a new key, `zdash.vale.v1`. It stores tales, Warm and Bold, weapons, bond, vale-only guests, and her adventure coat. It does not write `zdash.next.v1`. It does not spend Garage stars. Coins she earns here land in the shared wallet, so a reward here is a reward in the garage. The recommended path never charges a price.
 
-When she finally drives, DRIVE opens `next.html`. The sky inside NEXT is still locked until she does NEXT's 6 of 8 errands. VALE does not skip them, and it does not set the caps. If `next.html` is not in the game yet, the button says the road is still being paved and she stays on foot. We do not build a stand-in city to cover that gap.
+When she finally drives, the sky inside NEXT is still locked until she does that world's 6 of 8 drive jobs. This plan does not skip them, and it does not set the caps. If `next.html` is not in the game yet, the button says the road is still being paved and she stays on foot. We do not build a stand-in city to cover that gap.
 
-![On foot first. The car is the last door.](adventure-world/unlock.svg)
+### Vale / Glasswick, or Homestead
+
+Section 7 called the hub Homestead, because that block is already on the Boulevards. This plan had named a separate town Glasswick, on a page called VALE. One name has to win. The jobs, the speeds, the foe cap, and the pet moves below are the same either way.
+
+**A. Glasswick, tile VALE. Recommended.** She walks a town that is not the driving map. Homestead stays the name NEXT uses when she is in the car. The car key opens the Yard Gate. STAY keeps walking. DRIVE opens `next.html`. Traffic never runs in Glasswick. The Z is her paint on the gate door, not a second mesh.
+
+**B. Homestead.** Drop the Glasswick name. She starts on foot on the Homestead block NEXT already drew. Read "Homestead" wherever this doc says Glasswick. The Z leaves that garage at the car key. Neighborhood caps (25 / 35 / 45 mph) and the two traffic cars apply only while she is driving. She can park and get out. Getting out turns traffic off and puts her back on foot. The sky is still that ramp, still 400 ft, still owned by NEXT. Pick this if one home matters more than a separate page. The map file stays NEXT's. This doc still does not edit it.
+
+![On foot first. Five town jobs, then the car key.](adventure-world/unlock.svg)
 
 ## 1. She starts on foot
 
-She appears in the middle of Lamp Square, in the square coat, with her pet already at her heel. There is no car in the square, no wings button, and no street/arcade switch. Neon World keeps flying. NEXT keeps driving.
+She appears in the middle of Lamp Square, in the square coat, with one pet already at her heel. There is no car in the square, no wings button, and no street/arcade switch. Neon World keeps flying. NEXT keeps driving, and those caps start only when she has the car key.
 
-Speeds, all devices:
+Speeds, all devices. The band is the rule. The default is the middle of the band, so a build has one number to measure.
 
-| | m/s | mph | What it is for |
+| | Band | Default | What it is for |
 | --- | --- | --- | --- |
-| Walk | 1.4 | 3.1 | Looking at a house |
-| Rim-run | 3.0 | 6.7 | Crossing the square, about half a minute |
-| Burst | 4.2 | 9.4 | 1.5 seconds, then it rests for 4 seconds |
+| Walk | 3–4 mph | 3.5 mph (1.6 m/s) | Looking at a house |
+| Run | 8–10 mph | 9 mph (4.0 m/s) | Crossing the square. A full push on the stick. |
 
-A long frame drops picture. It does not change these speeds mid-step. They stay far under NEXT's slowest cap (25 mph on her iPad) so the two worlds do not feel like the same drive.
+There is no third sprint. A run does not widen the pretty ring. She still has many seconds of houses ahead of her. A long frame drops picture. It does not change these speeds mid-step. They stay under NEXT's slowest driving cap (25 mph on her iPad). Foes chase at about 6 mph, so a run leaves them behind.
 
 ### The unlock path
 
-Trust is the price. Not coins.
+Trust is the price. Not coins. She cannot skip ahead by walking to a ramp.
 
-1. **Square.** Walk, talk, follow. Tales 1–4. No weapon.
-2. **Lamp blade.** The yard trusts her with a short glass blade. It bonks. Tale 5. Motes only.
-3. **Coat, spark, then the bow.** Tale 6 is the coat. Tale 7 is the lamp bolt. The glass ward is the hold on that same button, learned with it. Tale 8 is the short bow of light pins.
-4. **Trails and the pet.** The first pet move turns on at the meadow (tale 9). Then the ridge, a gap only the pet can fit, and the ruins door. Tales 9–12.
-5. **Fountain.** The Dim sits down and becomes the fountain. Tale 13. This is the end of the on-foot story.
-6. **Yard Gate, much later.** Tale 14. It is not in the first build, and it is not in the same phase as the fountain. Perrin opens the gate. Her Z is the one in the garage save, shown as her paint on the door. Two buttons: **STAY** (keep walking) and **DRIVE** (open NEXT).
+**A. Two keys. Recommended.**
 
-For testing, `?vale=1&chapter=5` can skip ahead. That switch is not shown to her.
+1. **On foot.** Day one. One pet follows. No driving. No traffic. No sky. The ramp, if she can see it, is a small hop she can look at. It does not push.
+2. **Car key.** 5 of 7 town jobs. Swing, Spark, and Shot are all inside those five, so the car is after the three moves and still well after the first minute. Each finished job pays 25 coins into the shared wallet. The last two jobs are optional forks. Both endings pay the 25. One ending changes the street.
+3. **Sky.** After the car key, NEXT's own 6 of 8 drive jobs (section 4 of that plan). Same ramp, same 400 ft line, same one bounce then the neon portal. She cannot launch the sky on foot. This plan does not rewrite that list.
 
-**Other ways to do the car, if you would rather:**
+On the Glasswick pick, the car key opens the Yard Gate: **STAY** or **DRIVE**. DRIVE opens `next.html`. On the Homestead pick, the Z leaves the garage, the driving caps and the two traffic cars turn on only while she drives, and getting out puts her on foot with traffic off.
 
-- **Parade lap.** A driveway inside VALE, cap 12 mph, no other cars, no sky, still not the Boulevards. She sits in a cheap stand-in, not the 26,549-triangle Z. Use this only if DRIVE-to-NEXT feels like leaving the story.
-- **No car in this world.** Tale 14 marks the NEXT tile and tells her the road is open. She never sees a door. Use this if any car in VALE is already too many cars.
+**B. One ladder.** Fourteen stars in one list. The car is star 8. The sky is star 14. Simpler to count. Harder to tell a town story from a drive story.
 
-Recommended is the gate with STAY and DRIVE.
+**C. Parent switches only.** `?car=1` and `?sky=1` open a chapter for testing. She does not see them. `?vale=1&chapter=5` can skip to the yard lane. These are not the design.
+
+A parade lap inside the walking town (12 mph, no other cars, no sky, not the full Z) is there if DRIVE-to-NEXT feels like leaving the story. It is not the recommendation.
 
 ## 2. The town, the tales, the choices
 
@@ -78,40 +85,37 @@ Houses use the Brookhaven feel NEXT already named, and none of its files: clean 
 
 The known interior bug stays out. `walkPaintCrew` stretches a portrait and the anatomy check still fails those rooms. Bob paused that check. VALE rooms draw the 3D body at about 1.5 m. They do not use that portrait.
 
-People, four at most: **Nia** at the Lamp House (the tales), **Otto** at the bun stall, **Perrin** at the yard, and the tailor. They share Ellie's rig and walk. A fifth person waits off-screen rather than stacking draw calls.
+People: **Nia** at the Lamp House (the jobs), **Otto** at the bun stall, **Perrin** at the yard, and the tailor. They share Ellie's rig and walk. They count toward the nearby cap, so on her iPad three are awake and the fourth waits off-screen until one leaves. A foe in the hub would spend that same cap. The hub has no foes, so the cap there is townsfolk only.
 
-### Tales
+### Town jobs
 
-A tale is 3 to 6 minutes. The fountain is a little longer. The on-foot set is an afternoon and a second sitting. The car is a later sitting on purpose.
+She picks the order. Five done earns the car key. Jobs 6 and 7 are optional. A job is a few minutes. The five are an afternoon, not a grind. The car comes after those five, not after a fourteenth quest.
 
-| # | Where | What she does | Choice |
+| # | Counts toward the key? | What she does | Choice |
 | --- | --- | --- | --- |
-| 1 | Square | Light four lamps | In order (Warm), or the far lamp first (Bold) |
-| 2 | Square | The pet's charm is under a bench | — |
-| 3 | Square | Carry buns to the tailor | Walk them over, or rim-run and Otto laughs. Nothing breaks. |
-| 4 | Alley | A glass panel shows a shortcut | Optional. Looking is the reward. |
-| 5 | Yard | Three motes, the new blade | — |
-| 6 | Tailor | Pick a coat | Square coat or trail kit. Both stay available. |
-| 7 | Porch | A glim. The spark. | — |
-| 8 | Low roof | A kite. The bow pins it and it floats down. | She does not aim at a person. |
-| 9 | Meadow | She picks the pet's first move, then uses it on the snags. | One of two moves |
-| 10 | Ridge | Pin a bell so it rings | — |
-| 11 | Meadow wall | A gap she cannot fit. The pet goes through and opens the latch. Second move after. | One of two moves |
-| 12 | Ruins door | Reach the door | — |
-| 13 | Ruins | The Dim yawns, sits, and becomes the fountain | — |
-| 14 | Yard Gate | STAY or DRIVE | Much later |
+| 1 | Yes | Walk the block and knock on three doors. | — |
+| 2 | Yes | At the pet porch, choose which pet walks today. | The four she already has |
+| 3 | Yes | Carry Otto's parcel to the tailor. | Walk it over (Warm), or run and he laughs (Bold). Nothing breaks. |
+| 4 | Yes | Light the yard lamps. She learns Spark. Late lamps stay dim, and she can try again. No fail screen. | — |
+| 5 | Yes | Clear the crate crabs off the yard lane, the road she will drive later. She learns Swing, then Shot, to pin the high crate. They poof. | — |
+| 6 | Optional | The meadow gate. A gate brute faints, the gate opens, and that brute is gone for this job. | Talk it open (Warm), or take the long path (Bold). The gate stays as she left it. |
+| 7 | Optional | Pick one porch. | Glass sport, or warm. The other look waits. |
 
-The tale book in the Lamp House replays any of them. A choice does not lock another tale away.
+The pet's favorite move turns on at job 5, with the crabs. A gap only the pet fits can sit on the meadow wall during job 6. It does not add an eighth job, and it does not change the 5 of 7 count. The tale book in the Lamp House replays any of them. A choice does not lock another job away.
+
+Hub and spokes: the town is home. Jobs send her out and back. She returns for the board, the pet, and the gate. Meadow is job 6. The ridge and the glass ruins are spokes she can walk after the car key. They do not raise the 5 of 7 count. One fixed road of seven jobs is the clearer, thinner version. Every district open on day one is a heavier load than the iPad plan. Recommended is home, then the spokes.
 
 ### Warm and Bold
 
-Both are kind. Warm is wait, share, help. Bold is race ahead, tease, take the shiny shortcut. There is no cruel option, no stealing, and no dark makeover. The word Warm or Bold is written on the button, so she can see it before she picks. The tale book shows the count from the first choice. Three Warm makes the fountain glass a soft cyan once the fountain exists. Three Bold makes the neon edge brighter. Neither one closes a door.
+Both are kind. Warm is wait, share, help. Bold is race ahead, tease, take the shiny shortcut. There is no cruel option, no stealing, and no dark makeover. The word Warm or Bold is written on the button, so she can see it before she picks. The tale book shows the count from the first choice. Three Warm softens the porch glass toward cyan. Three Bold makes the neon edge brighter. The meadow gate stays as she left it either way. Neither one closes a door.
 
 **Other tones, if you would rather:** a hidden score she never sees (closer to those older games, easier to feel unfair), or no score at all and the choice is only the line Nia says next. Recommended is the labeled pair.
 
 ## 3. Ellie, redrawn
 
-She is still Ellie: the ponytail, the cyan streak added, the adventure coat. Not a new girl, and not the live closet. Neon World keeps today's drawer. The adventure look lives in `zdash.vale.v1` unless she taps USE THIS LOOK, which is the only write back to `zdash.char.v1`.
+She is still Ellie: the ponytail, the cyan streak added, the adventure coat. The first body is a restyle of the figure she already has. Same rig, a clearer face, a jacket, boots, a satchel. The check already knows this body. A jacket that clips the arms fails even if it looks right. Neon World keeps today's drawer. The adventure coat lives in `zdash.vale.v1` unless she taps USE THIS LOOK, which is the only write back to `zdash.char.v1`.
+
+A free pack is a prototype only after that restyle has been measured. The face, the clothes, and the colors change before it ships, so she does not look like a pack demo. A paid pack waits for a yes on that price. Buying is not part of approving this plan.
 
 The style is stylized and expressive, in the spirit of those adventure games: a readable face, big hands, a coat, boots, a satchel. The proportions are a kid, not a realistic adult and not a chibi that fails the checker. The painted height matches the figure that already passes, about 1.5 m. The 1.75 m number in `world/crew-data.js` is the bone source. This world uses the painted height. Hip about 0.78 m. Head in the 18–40% band (the hard gate is 16–45% of the figure).
 
@@ -122,7 +126,7 @@ Coats:
 | Coat | When | Anatomy note |
 | --- | --- | --- |
 | Square coat | From the start | Open at the chest so the side view still has a torso |
-| Trail kit | Tale 6 | Lighter jacket, scarf. The scarf is not a second neck. |
+| Trail kit | Job 3, the parcel | Lighter jacket, scarf. The scarf is not a second neck. |
 | Glass cape | Phase 8, after the fountain exists | A back panel on the chest, shorter than the coat. It does not replace the body. |
 | Night scarf | Phase 8, a Bold or Warm cosmetic | Same rule |
 
@@ -143,72 +147,70 @@ What the new body has to do, in the checker's words: humanoid at least. Head, th
 - The walk is a cycle: opposite arm and leg, a planted foot, a small bob, nothing clipping. Eight frames at those four yaws.
 - On-screen height about 1.5 m, inside 1.15–2.05 m. Feet do not float.
 
-Phase 1 is the unarmed body. The blade, the bow, and the cape are a second mesh. If a prop glues itself to an arm in the pixel test, the walk shots hide the prop and combat shows it. Both states get a picture in the review. A bow on her back must not read as a third arm.
+Phase 1 is the unarmed body. Swing's blade, Shot's bow, and the cape are a second mesh. If a prop glues itself to an arm in the pixel test, the walk shots hide the prop and combat shows it. Both states get a picture in the review. A bow on her back must not read as a third arm.
 
 Townspeople use her rig, so a pass covers their walk too. We do not need a second walk cycle per person.
 
-## 4. Blade, spark, and bow
+## 4. Swing, Spark, and Shot
 
-Combat is in the world, in the stroll camera (behind her, about 4.5 m back, looking at her chest). It is not a separate battle screen, and it is not a shooter camera. The mouse aims only while the bow is up. Aim assist is on until she turns it off in the tale book. The cone is about 35 degrees and 12 metres. There are no crits and no headshots. A phone does not ask her to be precise.
+Three moves. Our names. **Swing** is a sword arc of light. **Spark** is a short spell. **Shot** is a bow: she aims, then lets go. The arrow is a bolt of light. It poofs. No blood. No ammo. A quiver that refills at a lamp is the other choice, and it turns into a chore.
 
-| Trick | What it does | Control |
-| --- | --- | --- |
-| Lamp blade | A wide bonk, 1.4 m, about 0.45 s. Three taps, and the third pushes. | Tap |
-| Lamp spark | One bolt, 8 m, one pip, a short daze. Cooldown 6 s. | Tap, once she has it |
-| Glass ward | A 3 s bubble that bumps the next hit away. Cooldown 12 s. | Hold spark, once she has it |
-| Bow | A light pin. It sticks as a glow and fades. One pip. Cooldown 0.9 s. No ammo. | Hold, aim, release |
-| Hop | A short step out of a telegraph ring. Cooldown 0.8 s. Free. | Its own button |
+Combat is in the world, in the stroll camera (behind her, about 4.5 m back, looking at her chest). It is not a separate battle screen. The mouse aims only while Shot is up. Aim assist is on until she turns it off in the tale book. The cone is about 35 degrees and 12 metres. There are no crits and no headshots.
 
-No ammo is the recommendation. A quiver of 6 that refills at a lamp is the other choice, if you want a resource. It is easy to turn into a chore.
+One control scheme on every device. She learns one game.
+
+| | Move | Swing, Spark, Shot | The bow |
+| --- | --- | --- | --- |
+| Phone | Left thumb. A short push walks. A full push runs. | Three buttons under the right thumb. At least 56 pt, with a gap a thumb can feel. | Drag to aim, let go to loose. |
+| iPad | Same thumbs, bigger targets (64 pt). A keyboard, if one is attached, also walks her. | Same three buttons. Not a phone row stretched wide. | Same drag, with more room. |
+| PC | WASD. Shift runs. | Keys 1, 2, and 3. | Mouse aims. Click lets go. |
+
+The pet move is one more button (Q on a keyboard). It does not replace her three. Talk is a big button at the bottom center when she is next to Nia. Landscape, same as the rest of the kid app. The iPad does not get a fourth attack.
 
 ![Same three tricks on every device.](adventure-world/controls.svg)
 
-Phone and iPad stay in landscape, the way the rest of the kid app is played. The stick is the left thumb. Push to the rim to run. Hop sits above the stick. Blade, spark, and bow are an arc for the right thumb, at least 56 pt on the phone and 64 pt on the iPad, with a gap a thumb can feel. The pet paw sits just above that arc. Talk is a big button at the bottom center when she is next to Nia, not a fourth combat button. The iPad does not get extra attacks. If a keyboard is attached it may use the PC keys, and touch still works.
-
-PC: WASD, Shift for rim-run, Space hop, E talk, 1 blade, 2 spark, hold 2 for the ward, hold 3 and click for the bow, Q for the pet. Esc opens the tale book. The camera snap-backs when she walks. A drag on empty screen (or the middle mouse) looks around, then returns.
-
-**Other combat shapes:** a locked side view during a fight (easier to read, worse for exploring), or a pause card where she picks the pet move and the world waits (easier on a phone, less like walking). Recommended is real-time, the stroll camera, and one pet button.
+A camera that follows the mouse all the time would be a second game on PC. Not recommended. A pause card for the pet move is the fallback if the phone fight is too fiddly.
 
 ### What a hit is
 
-Her glow is three cyan lamps, top left. Not a red bar. A foe has 1, 2, or 3 lamps. Empty lamps are a faint and then a poof. The foe sits for about 0.4 s, then breaks into 8–12 motes that fade. Nothing is left on the ground. No blood, no bones, no red X, no "dead", no screaming, no damage numbers. The screen does not print the word. The picture does it.
+Her meter is three pips, labeled WIND, drawn as small cyan lamps. Not a red bar. A hit on her is a spark and a stagger. Three staggers empty her wind. She sits for about 3 seconds, the pet noses her, then she stands. The line is "Catch your breath." The job stays. There is no game-over screen, and no trip back to a lamp unless she is stuck inside a pen.
 
-If her glow hits 0 she sits, the pet noses her, and she is back at the last lamp with full glow and the tale intact. The line is "Catch your breath." There is no game-over screen.
+A foe faints or poofs. Empty lamps: it sits for about 0.4 s, then breaks into 8–12 motes that fade, unless it is the gate brute, who faints and is gone for that job. Nothing is left on the ground. No blood, no bones, no red X, no "dead", no screaming, no damage numbers. The screen does not print the word. The picture does it.
 
 ## 5. Foes
 
-They are mischief made of sticks, toys, and light. They are not animals, so bonking one does not feel like hurting a pet. They never chase her into Lamp Square. They never spawn during a conversation. They never appear on top of her.
+Kid-safe. No gore, no blood, no death screen. No dogs. No kids. They are mischief made of light, crates, and a gate, so bonking one does not feel like hurting a pet. They never enter the hub streets. They never spawn during a conversation. They never appear on top of her.
 
-| Foe | Pips | Behavior | When |
-| --- | --- | --- | --- |
-| Mote | 1 | Drifts and bumps | Yard, the tutorial |
-| Snag | 2 | A vine knot with stick legs. Blocks the path. Slow. | Meadow |
-| Glim | 1 | Darts and hides. The bow finds it. | Porch, then trails |
-| Clank | 2 | A tipped toy sentry. A spin, telegraphed. | Ridge |
-| Murk | 1 | A grumpy cloud near an unlit lamp. Not horror. Leaves a lamp seed. | Optional, one pocket |
-| The Dim | 3 | Once. Yawns, sits, becomes the fountain. Not a kill. | Ruins |
+| Foe | What it does | When it loses |
+| --- | --- | --- |
+| Glimmer moth | Small. Flutters. A faint spark. | Poof |
+| Crate crab | Slow. Blocks a path. Job 5. | Poof into loose planks |
+| Lantern wisp | Hovers. A pulse you can see coming. | Poof. Soak puts it out faster. |
+| Gate brute | Slow and large. One per gate job. | Faints. The gate opens. It is gone for that job. |
 
 ### How one foe thinks
 
-Idle at its home spot. If she is inside 8 m, a lamp on its head lights for about 0.4 s (notice). It walks, it does not run, and it stops at about 1.6 m. The bump is telegraphed: a ring on the ground, 0.7 s in the story setting, then the bump only counts if she is still in the ring. She loses one glow. The shove is one step, not a ragdoll. It rests about 1.2 s, and that is when a bonk lands cleanly. If she pulls it more than 12 m from home, it gives up and walks back. It will not cross a gate.
+1. Wander inside a pen: a yard, or a piece of lane.
+2. Notice her inside about 12 m in front, or 8 m behind. They turn for about half a second. That is the tell. She can miss. Words stay specific. No prompt that waits for a tap.
+3. Chase at about 6 mph. Her run is 8–10 mph, so she can leave. They stop at the pen edge.
+4. Swing or pulse with a second tell, a glow or a crouch, so she can step aside.
+5. After two misses, or if she leaves, they walk home.
 
-The pet is not a target. If a bump would overlap the pet, the pet hops aside and stays on the floor. The pet has no glow pips. If a move would "hurt" the pet, it ducks into the satchel for 5 s and comes back.
+Quest foes are placed. They do not come back. Wild ones can be back next visit. Wild pens start at the yard lane. The hub stays friendly.
 
-### How many, and where
+The pet is not a target. If a bump would overlap the pet, the pet hops aside and stays on the floor. The pet has no wind pips. If a move would land on the pet, it ducks into the satchel for 5 s and comes back. The pet does not pick fights on its own.
 
-Hand-placed pockets. A pocket holds 1–3 and refills only after she leaves the chunk and comes back, and not within 10 m of her. No random horde. No spawner that can stack.
+### How many
 
-Story is the default.
+Nearby at once: **3 on her iPad, 4 on the Galaxy phone, 6 on a PC.** Townsfolk share that count. A long frame drops a far foe before it drops her. Anyone past the cap is not simulated. Past about 25 m a foe is an idle bob, or it is unloaded with the chunk.
 
 | | Her iPad | Galaxy phone | PC |
 | --- | --- | --- | --- |
-| Active foes, story | 2 | 3 | 4 |
-| Brisk (adds one) | 3 | 4 | 5 |
-| Telegraph | 0.7 s, or 0.45 s on brisk | same | same |
+| Nearby cap, foes and townsfolk together | 3 | 4 | 6 |
+| Tell | about half a second | same | same |
+| Chase | about 6 mph | same | same |
 
-Anyone past that cap is not simulated. Past about 25 m a foe is an idle bob or it is unloaded with the chunk. Brisk is a switch in the tale book. There is no harder tier.
-
-Two at once is the most that can stand in front of her. The rest wait at their spot. That is true on every device. The cap above is how many are awake, not how many can surround her.
+A harder lane can come later: a gate she opts into, or a parent switch. Shorter tells. Chase a bit closer to her run, still under it. Same cap. Not day one. Two in front of her is still the most who swing at once. The rest wait in the pen. The cap is how many are awake, not how many can surround her.
 
 ## 6. The pet on the floor
 
@@ -216,36 +218,26 @@ The pet she already chose follows her: fox, cat, dragon pup, or robo-dog, from `
 
 Paws stay on the floor. The checker's idle band is about −0.04 m to 0.055 m. This world does not mark a pet tall, so ears do not tower over her shoulder, and nothing rides on her shoulder. Stairs are walked. If a step is too tall, the pet puffs to the landing and is on the floor again. It does not hover.
 
-Follow slot: about 1.5 m back and a little to the side, so the camera still sees both. It walks when she walks, trots when she rim-runs, and bounds during the burst. A puff to her heel happens only if the gap is over 8 m. She can walk through it. It slides aside rather than blocking the stick. In a fight it stands at her side, not in front of the stick.
+Follow slot: about a step and a half behind, a little to the side, so the camera still sees both. It walks when she walks and runs to catch up. It does not block a door. Indoors it comes in, still small, still on the floor. A puff to her heel happens only if the gap is over 8 m. She can walk through it. In a fight it stands at her side, not in front of the stick. She presses the pet move. Two fighters choosing targets on their own are harder to read and cost another draw.
 
 In the Z, later, the existing ride clip still applies, and only after DRIVE. A combat move does not fire while she is driving. NEXT's "a pet can ride" stays true.
 
 ## 7. Pet moves
 
-Real-time, in the world. One paw button fires the ready move. A long-press on the phone, or the tale book, picks among the moves she has. Cooldowns, not a points pool. The ring on the paw button is the timer.
+Real-time, in the world. One paw button fires the ready move. A long-press on the phone, or the tale book, picks among the moves she has. Cooldowns, not a points pool. The ring on the paw button is the timer. The pet does not start a fight by itself.
 
-Bond is 1 to 10. It goes up when a tale says so, not when she farms foes.
+Four shared moves, learned in order. Names are ours. Cooldowns are 4 to 8 seconds. The light move is **Gleam**, so it is not the same word as her Spark.
 
-| Bond | What she gets |
-| --- | --- |
-| 1 | Follow only |
-| 2 | Tale 9, at the meadow. First move, pick one of two. |
-| 5 | After tale 11, the pet gap. Second move, pick one of two. |
-| 8 | After the fountain. Third move. |
-| 10 | A cosmetic charm. Not a harder hit. |
+| Move | Element | Cooldown | What it is |
+| --- | --- | --- | --- |
+| Gleam | Light | 4 s | A short zap |
+| Gust | Air | 6 s | A push. Small foes slide back. |
+| Pebble | Stone | 5 s | A lob. Good on crate crabs. |
+| Soak | Water | 8 s | A splash. Puts a lantern wisp out faster. |
 
-A pick is replayable from the tale book, so it is not a trap. Moves empty lamps the same way the blade does, or they push, daze, or light a lamp. They do not add a second, bloodier combat.
+She starts with that pet's favorite when job 5 begins. Favorites: fox Gust, cat Gleam, dragon Pebble, robo Gleam. A level comes from finishing a job with that pet out, about two jobs a level. Not from making foes faint. Level 3 opens the second move, level 6 the third, level 8 the fourth, and it stops. A unique pair on top of these four can come later, if four shared moves feel thin. That later pair does not ship in the first pet phase.
 
-Elements are four, and they are this world's, not a copied type chart: **Lamp** (spark), **Glass** (a deflect or a daze), **Tide** (a push along the ground), **Ember** (a short warm cone). No weaknesses table in the first build. A snag sits faster if it is wet. That is the only matchup, and it is written on the move.
-
-| Pet | Moves (cooldown) |
-| --- | --- |
-| Fox | Brushflare, ember cone, 8 s. Quickfoot, rim-run rests less for 4 s, 12 s. Lantern Nip, one pip, 5 s. |
-| Cat | Glasspounce, a slide along the ground to the foe's side, daze, 8 s. Purrward, her ward comes back 4 s sooner, 14 s. Nightstep, they lose her for 2 s, 12 s. |
-| Dragon pup | Puff, push back toward home, 8 s. Winglamp, lights a lamp she is next to, 6 s. Warmroar, they sit for 1 s, 10 s. |
-| Robo-dog | Clankpulse, a 3 m ring, one pip, 10 s. Boltfetch, brings a quest item inside 8 m, 6 s. Scanbeep, outlines a hidden glim, 8 s. |
-
-Phase 5 ships the first move for whichever pet is active. The other rows are data for later phases. A guest species (below) uses the same cooldown rules and does not get a stronger hit than the fox.
+No copied type chart. Soak on a wisp is the only matchup, and it is written on the move.
 
 ## 8. More pets, and where models come from
 
@@ -264,35 +256,47 @@ Eight shared materials for the whole square. Windows instance. On the iPad, at m
 
 ### New animals
 
-They are guests in `zdash.vale.v1`. They do not go into `zdash.pet.v1` until a later closet pass that teaches every reader to keep an unknown type. If a guest were written into the shared key today, an old page could fail the load and fall through badly. Recommended: the shared pet is the one who follows, guests can be tried in VALE, and "this is my pet everywhere" is a separate tap after that closet pass.
+The four she has stay. Then three new ones, found one mesh at a time, each through the anatomy check. Not a roster of 8 to 12 on the first boot.
 
-| Guest | Size | Two moves |
+| Guest | Size | Note |
 | --- | --- | --- |
-| Hare | Ears stop at her hip | Meadowkick (push), Burrowpeek (shows a pet gap) |
-| Otter | Knee height, on the floor | Tidesplash (push), Wetnose (a snag sits) |
-| Pocket hound | Knee height | Heel (back to the follow slot), Bay (daze) |
+| Tin hare | Ears stop at her hip | On the floor |
+| Brook frog | Knee height | On the floor |
+| Lamp moth | Knee height, wings folded | Hops. It does not fly, and it does not sit on her shoulder. |
 
-A pigeon, a shoulder owl, or anything that flies stays out. The rule is on the floor.
+They are guests in `zdash.vale.v1`. They do not go into `zdash.pet.v1` until a later closet pass that teaches every reader to keep an unknown type. The shared pet is the one who follows. "This is my pet everywhere" is a separate tap after that closet pass. They use Gleam, Gust, Pebble, and Soak. They do not get a stronger hit than the fox.
 
-### Sources
+### 3D model sources
 
-Prices checked 24 Oct 2026. They move. Recheck before anyone asks to spend. This plan buys nothing. A purchase, a Patreon charge, a paid itch tier, or an Adobe login on Bob's account needs a later "yes, do it."
+Buy nothing. A price below is not a yes. Prices were public on 24 Oct 2026 and they change. Check the pack page on the day of a download. Nothing gets bought unless Bob writes yes for that price.
 
-Hero, foes, and pets are modeled for this game. A pack mesh is not dropped in and called Ellie. CC0 props (a rock, a crate, a planter) are allowed only when the license file in that download says CC0, and only if the silhouette is background. Download from the author's own page. A re-upload on another site has shipped the same file under a different license.
+The figure that ships is the restyle of Ellie. A pack can be a prototype or a background prop. It is not her face, and it is not a copied hero, town, or pet. Download from the author's own page. Read the `license.txt` in that download. Keep it with the phase notes. The game repo does not gain a pack zip from this plan.
 
-| Source | License | Cost | Use here |
-| --- | --- | --- | --- |
-| Quaternius public packs (Ultimate Animated Animals, Ultimate RPG, Ultimate Animated Character Pack, Fantasy RTS, Ultimate Modular Men) | CC0 on quaternius.com | $0 | Reference, or a background prop after the license file is read. Not Ellie, not a pet, not a foe. Modular Men is an adult kit, so it is the wrong silhouette for her even as reference. Their Patreon lists $3, $10, $20, and $50 tiers. Those are support. Exclusive tier files are not part of this plan. |
-| Kenney, one pack at a time | CC0 | $0. Donation is optional. | A UI icon or a click, if it fits. Not the hero. |
-| Kenney Game Assets All-in-1 | CC0, paid only because it is one zip | $19.95 or more on itch | Do not buy. The same packs are free one at a time. |
-| KayKit Adventurers (Kay Lousberg) | CC0 on the free tier | $0. EXTRA is $7.95 or more. SOURCE is $11.95 or more. | Do not pay. Do not use those characters as Ellie. They are a dungeon look, and they are someone else's cast. |
-| Sketchfab | Per model. CC0, CC-BY, CC-BY-NC, Editorial, or a paid Standard license. | CC0 is $0. A store row on 24 Oct 2026 showed paid character models from about $11 to $65 (one android violinist at $65). | CC-BY-NC and Editorial are out. Paid Standard is a purchase. Do not buy. CC-BY only for a non-hero prop, with credit on a parent page. Not the recommended path. |
-| Poly Pizza | Per model, often CC0 or CC-BY. Not a site-wide license. | $0 | Easy to grab the wrong file. Prefer the author's page. Not a hero source. |
-| Mixamo | Adobe's terms. Royalty-free inside a game. Do not redistribute the raw files. | $0, and it needs an Adobe ID. Not a purchase. | Skip it until Bob says yes to the login. A walk we author ourselves is easier to fit to the checker. Do not ship a stock Mixamo body as Ellie. |
-| Synty POLYGON Fantasy Kingdom | Unity Asset Store EULA, restricted, not CC0 | The Unity sale page showed $174.99, marked down from $349.99. The Synty store listed $349.99. A library plan was advertised from $30 a month. | Do not buy. Medieval kits fight the glass town, and their characters would be copied art. |
-| An artist, or us | Ours | $0 if we model it. A commission is a purchase. | Recommended. Do not hire anyone from this plan. |
+**Free / CC0**
 
-Every download keeps its `license.txt` next to the notes for that phase. The game repo does not gain a pack zip in this plan.
+| Source | Price | What it is good for |
+| --- | --- | --- |
+| Quaternius | $0 | Public packs that say CC0: Ultimate Animated Characters, Ultimate Animated Animals, Ultimate RPG, Universal Base Characters, Modular Character Outfits Fantasy. A stylized person or animal to restyle. Newer Quaternius kits may use their own license instead: free in a game, including a commercial one, no credit, and you may not resell the files. If a page shows a price, do not pay it. Patreon ($3, $10, $20, $50) is optional support, not required. Modular Men is an adult kit. Leave it. |
+| Kenney | $0 | Props, crates, simple blocks. CC0. Too blocky for her face. Donation is optional. |
+| KayKit Adventurers, free tier | $0 | Rigged people and weapons to restyle, including a sword and a bow. CC0. Enough to prototype. Restyle before it ships. |
+
+**Paid. Do not buy.**
+
+| Source | Price | What it adds |
+| --- | --- | --- |
+| KayKit Adventurers, extra characters | about $7.95 and up | Three more bodies and alt colors. |
+| KayKit source files | about $11.95 and up | The Blender files. |
+| Kenney Game Assets All-in-1 | about $19.95 and up | The same free packs in one zip. Do not buy. Download the packs one at a time. |
+| Synty, POLYGON Fantasy Kingdom | about $349.99 | A whole stylized town. A sale page has shown $174.99. A library plan has been advertised from about $30 a month. A store seat license, not CC. Even with a yes, it would be restyled. The medieval look fights the glass town. |
+
+**Also free, after the license on that file is read. Still do not buy.**
+
+| Source | Price | Note |
+| --- | --- | --- |
+| Poly Haven | $0, CC0 | Textures and sky light. Not characters. |
+| Sketchfab | $0 if that file is CC0 or CC BY. Paid files are often about $5 to $40. | CC BY-NC is a poor fit for a public site. Do not download anything that looks like a copied hero, town, or pet. |
+| Mixamo | $0 with an Adobe account | Walk and swing clips only. Usable in a game. Do not redistribute the raw files. The people are realistic, so they are a motion source, not the look. Skip it until Bob says yes to the login. |
+| Poly Pizza | $0, license is per model | Easy to grab the wrong file. Prefer the author's page. |
 
 ## 9. Frames, and the ten-second load
 
@@ -300,21 +304,19 @@ Her iPad is the 6th generation (2018): A10, 2 GB, 60 Hz, landscape 1024×768 in 
 
 60 fps means 16.7 ms. The iPad may sit on a flat 30 (33 ms) when 60 will not hold. A flat 30 is the floor. Drops down to 5 are not. Lab sizes, when this is built: phone 844×390, iPad 1024×768, PC 1366×768. Five on/off pairs, one browser at a time, on that phase's commit. A lab number alone is not "done".
 
-On-foot split we will aim at:
+On foot the Z is not drawn, and the two traffic cars are not drawn. That is the 4 ms plus the 2.5 ms from NEXT's driving split, free for her, the pet, and a few foes. When she drives, that split comes back. She is inside the Z. She is not a second full person during the drive. The pet can ride as it does today, small, and does not use a move from the seat.
 
-| Piece | Time |
+| Piece, on foot | Time |
 | --- | --- |
-| Ellie | 3.0 ms |
-| The pet | 1.5 ms |
-| The square, or one trail | 6.0 ms |
-| Awake foes, at the cap | 1.5 ms |
-| Blade, spark, bow, the mote burst | 1.5 ms |
-| HUD | 1.5 ms |
-| Spare | 1.7 ms |
+| Town and lots | 6 ms |
+| Ellie and the pet | 3 ms |
+| A few foes or townsfolk, inside the 3 / 4 / 6 cap | 3 ms |
+| HUD | 2 ms |
+| Spare, including a poof | 2.7 ms |
 
-No `shadowBlur` anywhere on `vale.html`, HUD included. Glow is in the texture. A blob under her feet is a dark circle decal, and it is the first thing the iPad turns off if a frame runs long. No shadow maps. No copy of the character back onto a 2D canvas.
+No `shadowBlur` anywhere on the adventure page, HUD included. Glow is in the texture. A blob under her feet is a dark circle decal, and it is the first thing the iPad turns off if a frame runs long. No shadow maps. No copy of the character back onto a 2D canvas.
 
-If a frame runs long, drop in this order: the burst motes, extra glass (already capped), townspeople's face swaps, neon edge strips, then awake foes down to one. Ellie, the pet, and her jog stay. Particles cap at 24 on the iPad, 48 on the phone, 80 on the PC. A foe's exit is a short burst of 8–12, once, not a long system.
+If a frame runs long, drop in this order: the poof motes, extra glass (already capped), townspeople's face swaps, neon edge strips, then a far foe. Ellie, the pet, and her run stay. Particles cap at 24 on the iPad, 48 on the phone, 80 on the PC. A foe's exit is a short burst of 8–12, once, not a long system. Walk stays 3–4 mph and run stays 8–10 mph while this happens. The run does not grow the draw distance.
 
 Resident memory, decoded, about 40 MB on the iPad, 55 on the phone, 80 on the PC. One chunk. The 2 GB iPad does not keep two towns.
 
@@ -322,33 +324,33 @@ Resident memory, decoded, about 40 MB on the iPad, 55 on the phone, 80 on the PC
 
 From the moment she taps the tile to the moment she can take a step:
 
-| | Cold | Warm cache |
+| | Boot target | What the first screen is |
 | --- | --- | --- |
-| Her iPad | 10 s | under 10 s |
-| Galaxy phone | 7 s | under 7 s |
-| PC | 5 s | under 5 s |
+| Her iPad | under 10 s | The hub, Ellie, one pet, the buttons, the job list |
+| Galaxy phone | under 6 s | Same, with smaller textures |
+| PC | under 4 s | Same, and it may prefetch the next block |
 
-That 10 s is the budget, not a hope. Roughly: page and script 2 s, Ellie and the active pet 3 s, the square 3 s, the first lamp and one music loop 2 s. The loop stays under about 1 MB in phase 1. A trail loads behind a mist card of about 1.5 s. That mist is this world's. It is not NEXT's 400 ft card, and it is not an excuse for a 30 s load. If the cold iPad misses 10 s, the fix is fewer bytes, not a longer card.
+These are targets to measure, not a claim that it is already that fast. The Z file is about 1.8 MB and is not in that boot. It loads when she nears the garage, or when DRIVE opens NEXT. Foe meshes load with the district that uses them. The next block streams in as she walks. A mist card of about 1.5 s can hide that walk across a gate. That mist is this world's. It is not NEXT's 400 ft card, and it is not an excuse for a 30 s load. If the cold iPad misses 10 s, the fix is fewer bytes, not a longer card. One music loop in phase 1, under about 1 MB.
 
 Audio later adds one trail loop. It does not add an orchestra.
 
 ## 10. Build order
 
-Each phase is measured before the next one starts. The fountain does not start ahead of a held frame. The car does not start ahead of the fountain.
+Each phase is measured before the next one starts. The car key does not start ahead of the five jobs. Finer models do not start ahead of the on-foot measurement.
 
 | Phase | What she can do | Done when |
 | --- | --- | --- |
 | 0 | Read this. Pick a row or say "recommended". | You write "plan approved, build it". |
-| 1 | The tile, the page, box houses, unarmed Ellie, the pet at her heel. | Anatomy exit 0 on the unarmed body. Cold load inside the table. Five frame pairs. |
-| 2 | One real Lamp-kit house, one room at 1.5 m, Nia, tale 1, the tale book. | The choice shows Warm or Bold before she taps. The room does not use the stretched portrait. |
-| 3 | The blade, motes, glow, "Catch your breath." | Props do not fail the walk. Foes stay out of the square. Frame still holds. |
-| 4 | Spark, ward, bow, snag, glim. Phone, iPad, and PC controls. | A thumb can hit the three buttons. Aim assist works with the cone. |
-| 5 | Tale 9. First pet move, one meadow pocket. | The pet stays knee-to-waist, on the floor, in the room and on the trail. |
-| 6 | Ridge, the pet gap, the ruins, The Dim, guest animals in the vale save only. | One chunk resident. The Dim becomes the fountain. |
-| 7 | The Yard Gate. STAY and DRIVE. | DRIVE opens NEXT and does not write `zdash.next.v1`. No Z mesh in the square. No traffic file. |
-| 8 | Brisk, the glass cape, PC blink. | Only if the iPad still holds a flat 30 after phase 6. |
+| 1 | The tile, the page, box houses, unarmed Ellie, one pet. No car, no sky, no traffic. | Anatomy exit 0 on the unarmed body. Boot inside the table. Five frame pairs. |
+| 2 | One real Lamp-kit house, one room at 1.5 m, Nia, job 1, the tale book. | The room does not use the stretched portrait. |
+| 3 | Jobs 3–5. Swing, Spark, Shot. Crate crabs. WIND. | Props do not fail the walk. Hub streets stay friendly. Nearby cap holds at 3 / 4 / 6. |
+| 4 | Phone, iPad, and PC use the one control scheme. | A thumb can hit the three buttons. Aim assist works with the cone. |
+| 5 | The favorite pet move at job 5. Gleam, Gust, Pebble, Soak as levels allow. | The pet stays knee-to-waist, on the floor, and does not pick fights. |
+| 6 | Jobs 6 and 7. The gate brute. One new guest animal in the vale save. | One chunk resident. The brute faints and is gone for that job. |
+| 7 | The car key, after 5 of 7. | Glasswick: DRIVE opens NEXT and does not write `zdash.next.v1`. Homestead: caps and traffic turn on only while she drives. No Z mesh in the walking boot. No traffic file edited. |
+| 8 | The harder lane, the glass cape, PC blink. $0 models only. | Only if the iPad still holds a flat 30 after phase 6. Same foe cap. |
 
-Phase 1 does not add combat "while we are in there". Phase 7 does not invent a boulevard if NEXT is not merged.
+Phase 1 does not add combat "while we are in there". Phase 7 does not invent a boulevard if NEXT is not merged. The sky chapter is NEXT's build, after the car key.
 
 ## Risks
 
@@ -359,7 +361,9 @@ Phase 1 does not add combat "while we are in there". Phase 7 does not invent a b
 - The anatomy checker scores pixels. A cape, a bow, or a big satchel can look like a broken arm. Phase 1 is unarmed for that reason.
 - The interior check is paused because of a stretched portrait. Copying that portrait into a VALE room fails the same way the moment the pause lifts.
 - Real transparency is expensive on the 2018 iPad. Eight glass bays is the cap. More glass means opaque cards, not a lower jog speed.
-- The full Z is about 687 meshes and 26,549 triangles. Parked in the square, it blows the 3 ms character line and the 6 ms town line. The door uses her paint. The mesh stays where it already loads.
+- The full Z is about 687 meshes and 26,549 triangles. Parked in the square, it blows the on-foot budget. The walking boot does not load it. On the Glasswick pick the door uses her paint. On the Homestead pick the mesh loads when she nears the garage, and only the driving chapter draws it.
+- Turning the traffic mesh on while she is on foot spends the frame the people need. Traffic stays with the driving chapter.
+- Loading the whole map, every pet, and the Z on the first step will miss the 10 second boot. The hub loads first.
 - Lab frames are not her iPad. NEXT's note still applies: the iPad is the strict column, and a lab number is not done.
 - A pack character is the fastest way to fail "original" and the fastest way to fail the anatomy walk we did not author. Model Ellie.
 
@@ -369,23 +373,23 @@ Reply with a letter, or "recommended" to take the marked row.
 
 | # | Question | Recommended |
 | --- | --- | --- |
-| 1 | Tile and page | A. VALE, `vale.html`. B. TRAIL. C. LAMP. |
-| 2 | Town name | A. Glasswick, hub Lamp Square. B. The Lantern Mile. C. Starwick. |
-| 3 | First minute | On foot in the square, pet at her heel, no car. |
-| 4 | The car | A. Yard Gate, much later. STAY or DRIVE. DRIVE opens NEXT and does not set speed, sky, or traffic. B. A 12 mph parade lap inside VALE, no other cars. C. No car in this world. Tale 14 only points at the NEXT tile. |
-| 5 | Choices | A. Warm and Bold, both kind, labeled on the button, replayable. B. A hidden score. C. No score, only the next line of dialogue. |
-| 6 | Combat | Real-time, stroll camera, glow lamps, foes sit and burst into motes. Town is safe. "Catch your breath" at the last lamp. |
-| 7 | Tricks, in order | Blade, then spark and ward, then bow. All three before any car. No ammo. |
-| 8 | Controls | Phone and iPad: stick, hop, three buttons, pet paw. PC: WASD and the keys in the picture. Aim assist on. |
-| 9 | Pet size | Knee to hip, on the floor, ears included, under 0.74 m. No shoulder perch. |
-| 10 | Pet moves | Three slots, cooldowns, bond from tales. Real-time paw button. The pause-card is the fallback if the phone fight is too fiddly. |
-| 11 | New animals | Guests in `zdash.vale.v1` until a closet pass. The shared pet is the one who follows. |
-| 12 | Models | Original meshes. CC0 packs are reference and background clutter only. Do not buy the paid rows. |
-| 13 | Load and frames | 10 s to a step on the cold iPad. 60 fps aim, flat 30 floor. No `shadowBlur`. Detail drops first. |
+| 1 | Name | A. Glasswick, tile VALE, `vale.html`. Homestead stays the driving home. B. Homestead. She starts on foot on NEXT's block. Read Homestead wherever this doc says Glasswick. |
+| 2 | First minute | On foot. One pet. No car, no traffic, no sky. |
+| 3 | Walk and run | Walk 3–4 mph (default 3.5). Run 8–10 mph (default 9). Same on every device. |
+| 4 | Car key | A. 5 of 7 town jobs. Swing, Spark, and Shot are inside the five. Coins are 25 a job, not a price. B. One ladder of 14. The car is star 8. The sky is star 14. |
+| 5 | Sky | NEXT's 6 of 8 drive jobs, after the car key. This plan does not change that list, the caps, or the 400 ft line. |
+| 6 | Choices | A. Warm and Bold, both kind, labeled on the button, replayable. Two forks, jobs 6 and 7. B. A hidden score. C. No score, only the next line. |
+| 7 | Her moves | A. Swing, Spark, Shot. One control scheme on phone, iPad, and PC. B. Mouse-look on PC all the time. |
+| 8 | Foes | Four kinds. They poof or faint. Nearby cap 3 iPad / 4 phone / 6 PC, townsfolk included. Hub streets stay friendly. |
+| 9 | Pet size | Knee to hip, on the floor, ears included, under 0.74 m. Follows. Does not pick fights. |
+| 10 | Pet moves | A. Gleam, Gust, Pebble, Soak. Cooldowns 4–8 s. Levels from jobs. Stops at four. B. A unique pair on every pet, later, on top of A. |
+| 11 | New animals | The four she has, then tin hare, brook frog, lamp moth. One mesh at a time. Vale save until a closet pass. |
+| 12 | Models | Restyle today's figure first. Free / CC0 only (Quaternius, Kenney, KayKit free). Do not buy KayKit Extra (about $7.95) or Synty Fantasy Kingdom (about $349.99). |
+| 13 | Load and frames | Boot under 10 s on her iPad, under 6 s on the phone, under 4 s on a PC. 60 fps aim, flat 30 floor. No `shadowBlur`. On foot the Z and the traffic cars are not drawn. |
 | 14 | First build | Phase 1 only: walk, pet, boxes, measure, anatomy on the unarmed body. |
 
 Open, and fine to leave until you approve a phase:
 
 - Should DRIVE land her in NEXT's Homestead driveway, or on the first street NEXT already spawns? Recommended: whatever spawn NEXT already uses. VALE does not add a spawn point on their map.
-- Is Murk one pocket, or cut until the other foes are fun?
-- Does the glass cape wait until phase 8, even if the fountain is done? Recommended yes. The cape is the prop most likely to hide her torso.
+- On the Homestead pick, should getting out of the car in a district far from home walk her there, or sit her back on the Homestead lot? Recommended: she stays where she parked, on foot, and traffic turns off.
+- Does the glass cape wait until phase 8? Recommended yes. The cape is the prop most likely to hide her torso.
