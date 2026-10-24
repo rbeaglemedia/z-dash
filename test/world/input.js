@@ -415,8 +415,9 @@ function syncBrakeLabel(){const el=document.getElementById('brk');if(!el)return;
     if(air)setBtnFace(el,'AIR','BRAKE');
     else{const can=el.querySelector('.nfxcan'),keep=el.querySelector(':scope > small.pc-key');[...el.childNodes].forEach(n=>{if(n!==can&&n!==keep)n.remove();});el.insertBefore(document.createTextNode('BRAKE'),el.firstChild);}}
   stampPcKey(el);}
-function footLoop(){if(typeof document!=='undefined'&&document.hidden){requestAnimationFrame(footLoop);return;}try{syncOnFootButtons();}catch(e){}requestAnimationFrame(footLoop);}
-if(document.getElementById('wng')){ensureEmote();ensureExitBtn();ensureEnterBldBtn();syncOnFootButtons();requestAnimationFrame(footLoop);}
+// The city frame calls syncOnFootButtons. A second animation callback here
+// was another turn on the same paint, which showed up as uneven frame gaps.
+if(document.getElementById('wng')){ensureEmote();ensureExitBtn();ensureEnterBldBtn();syncOnFootButtons();}
 // PC keyboard: W/↑ throttle, S/↓ brake, Space e-brake, G mode, C car, Esc/P pause, 1-4 emotes.
 // F wings and Shift NOS already exist. Labels stay off touch screens.
 addEventListener('keydown',e=>{
