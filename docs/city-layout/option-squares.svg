@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1620" height="2200" viewBox="0 0 1620 2200">
+<rect width="1620" height="2200" fill="#f6f3ec"/>
+<text x="36" y="34" fill="#1c2430" font-family="Georgia, ui-serif, serif" font-size="28">Option 2 — The Town Squares</text>
+<text x="1584" y="34" text-anchor="end" fill="#1c2430" font-size="16" font-weight="800" font-family="ui-sans-serif, sans-serif">N ↑</text>
+<line x1="1470" y1="48" x2="1566" y2="48" stroke="#1c2430" stroke-width="3"/>
+<text x="1518" y="62" text-anchor="middle" fill="#1c2430" font-size="11" font-family="ui-sans-serif, sans-serif">200 m</text>
+<text x="36" y="56" fill="#5c6b7a" font-family="ui-sans-serif, sans-serif" font-size="15">Same zones. A square in each city. The next shop is around the corner, out of view.</text>
+<rect x="36" y="72" width="1548" height="1996" fill="#e7f2df"/>
+<rect x="616.5" y="140.49019607843138" width="464.4000000000001" height="469.6470588235294" rx="18" fill="rgba(255,196,120,0.45)" stroke="#e09a3e" stroke-width="2"/>
+<text x="848.7" y="162.49019607843138" text-anchor="middle" fill="#e09a3e" font-family="ui-sans-serif, sans-serif" font-size="15" font-weight="700">NORTH · CAR ROW</text>
+<rect x="161.775" y="1353.7450980392157" width="416.025" height="440.294117647059" rx="18" fill="rgba(255,150,190,0.40)" stroke="#e45b8a" stroke-width="2"/>
+<text x="369.7875" y="1375.7450980392157" text-anchor="middle" fill="#e45b8a" font-family="ui-sans-serif, sans-serif" font-size="15" font-weight="700">SOUTHWEST · THE STAGE</text>
+<rect x="1032.525" y="1265.686274509804" width="493.42499999999995" height="635.9803921568625" rx="18" fill="rgba(190,170,255,0.42)" stroke="#7c62d6" stroke-width="2"/>
+<text x="1279.2375" y="1287.686274509804" text-anchor="middle" fill="#7c62d6" font-family="ui-sans-serif, sans-serif" font-size="15" font-weight="700">SOUTHEAST · BUILDER BAY</text>
+<rect x="123.075" y="727.5490196078431" width="454.72499999999997" height="508.7843137254904" rx="18" fill="rgba(150,214,140,0.40)" stroke="#3d9a55" stroke-width="2"/>
+<text x="350.4375" y="749.5490196078431" text-anchor="middle" fill="#3d9a55" font-family="ui-sans-serif, sans-serif" font-size="15" font-weight="700">MIDDLE WEST · THE TRACK</text>
+<rect x="974.4749999999999" y="825.3921568627451" width="580.5" height="234.82352941176475" rx="18" fill="rgba(140,200,255,0.42)" stroke="#3a86c8" stroke-width="2"/>
+<text x="1264.725" y="847.3921568627451" text-anchor="middle" fill="#3a86c8" font-family="ui-sans-serif, sans-serif" font-size="15" font-weight="700">MIDDLE EAST · THE FIELD</text>
+<rect x="36" y="688.4117647058824" width="1548" height="29.352941176470495" fill="#7ec8e3"/>
+<text x="848.7" y="703.0882352941176" text-anchor="middle" fill="#0c4a6e" font-size="13" font-family="ui-sans-serif, sans-serif" font-weight="700">RIVER</text>
+<rect x="776.1375" y="825.3921568627451" width="145.125" height="802.3137254901961" fill="rgba(255,248,220,0.65)" stroke="#e6d48a"/>
+<rect x="840.96" y="854.7450980392157" width="15.480000000000018" height="763.1764705882354" fill="#fffef8" stroke="#c4b36a"/>
+<text x="848.7" y="1392.8823529411764" text-anchor="middle" fill="#8a7340" font-size="14" font-family="ui-sans-serif, sans-serif" font-weight="700">AIRPORT</text>
+<text x="848.7" y="1403.6450980392156" text-anchor="middle" fill="#8a7340" font-size="11" font-family="ui-sans-serif, sans-serif">ramps stay</text>
+<line x1="631.0125" y1="1979.9411764705883" x2="631.0125" y2="365.5294117647059" stroke="#c48a12" stroke-width="11" stroke-linecap="round"/>
+<line x1="841.9275" y1="786.2549019607843" x2="855.4725000000001" y2="629.7058823529412" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="623.75625" y1="786.2549019607843" x2="638.26875" y2="629.7058823529412" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="171.45" y1="786.2549019607843" x2="771.3" y2="786.2549019607843" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="926.0999999999999" y1="786.2549019607843" x2="1380.825" y2="786.2549019607843" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="751.95" y1="1569" x2="751.95" y2="1931.0196078431372" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="374.625" y1="1588.5686274509803" x2="829.3499999999999" y2="1588.5686274509803" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="868.05" y1="1588.5686274509803" x2="1284.075" y2="1588.5686274509803" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="742.275" y1="482.94117647058823" x2="955.125" y2="482.94117647058823" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="955.125" y1="482.94117647058823" x2="955.125" y2="267.6862745098039" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="955.125" y1="267.6862745098039" x2="742.275" y2="267.6862745098039" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="742.275" y1="267.6862745098039" x2="742.275" y2="482.94117647058823" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="631.0125" y1="561.2156862745098" x2="848.7" y2="561.2156862745098" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="631.0125" y1="561.2156862745098" x2="631.0125" y2="375.3137254901961" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="268.2" y1="1696.1960784313726" x2="481.04999999999995" y2="1696.1960784313726" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="481.04999999999995" y1="1696.1960784313726" x2="481.04999999999995" y2="1480.9411764705883" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="481.04999999999995" y1="1480.9411764705883" x2="268.2" y2="1480.9411764705883" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="268.2" y1="1480.9411764705883" x2="268.2" y2="1696.1960784313726" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="481.04999999999995" y1="1588.5686274509803" x2="631.0125" y2="1588.5686274509803" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="1119.6" y1="1754.9019607843138" x2="1448.55" y2="1754.9019607843138" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="1448.55" y1="1754.9019607843138" x2="1448.55" y2="1422.235294117647" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="1448.55" y1="1422.235294117647" x2="1119.6" y2="1422.235294117647" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="1119.6" y1="1422.235294117647" x2="1119.6" y2="1754.9019607843138" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="1177.65" y1="1588.5686274509803" x2="1066.3875" y2="1588.5686274509803" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="132.75" y1="1099.3529411764705" x2="287.55" y2="1099.3529411764705" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="423" y1="1099.3529411764705" x2="631.0125" y2="1099.3529411764705" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="132.75" y1="874.3137254901961" x2="287.55" y2="874.3137254901961" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="926.0999999999999" y1="981.9411764705882" x2="1235.7" y2="981.9411764705882" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="1390.5" y1="942.8039215686275" x2="1525.95" y2="942.8039215686275" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="1380.825" y1="893.8823529411765" x2="1380.825" y2="786.2549019607843" stroke="#b7c3cf" stroke-width="8" stroke-linecap="round"/>
+<line x1="631.0125" y1="1979.9411764705883" x2="631.0125" y2="365.5294117647059" stroke="#ffd56a" stroke-width="6" stroke-linecap="round"/>
+<line x1="841.9275" y1="786.2549019607843" x2="855.4725000000001" y2="629.7058823529412" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="623.75625" y1="786.2549019607843" x2="638.26875" y2="629.7058823529412" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="171.45" y1="786.2549019607843" x2="771.3" y2="786.2549019607843" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="926.0999999999999" y1="786.2549019607843" x2="1380.825" y2="786.2549019607843" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="751.95" y1="1569" x2="751.95" y2="1931.0196078431372" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="374.625" y1="1588.5686274509803" x2="829.3499999999999" y2="1588.5686274509803" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="868.05" y1="1588.5686274509803" x2="1284.075" y2="1588.5686274509803" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="742.275" y1="482.94117647058823" x2="955.125" y2="482.94117647058823" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="955.125" y1="482.94117647058823" x2="955.125" y2="267.6862745098039" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="955.125" y1="267.6862745098039" x2="742.275" y2="267.6862745098039" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="742.275" y1="267.6862745098039" x2="742.275" y2="482.94117647058823" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="631.0125" y1="561.2156862745098" x2="848.7" y2="561.2156862745098" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="631.0125" y1="561.2156862745098" x2="631.0125" y2="375.3137254901961" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="268.2" y1="1696.1960784313726" x2="481.04999999999995" y2="1696.1960784313726" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="481.04999999999995" y1="1696.1960784313726" x2="481.04999999999995" y2="1480.9411764705883" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="481.04999999999995" y1="1480.9411764705883" x2="268.2" y2="1480.9411764705883" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="268.2" y1="1480.9411764705883" x2="268.2" y2="1696.1960784313726" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="481.04999999999995" y1="1588.5686274509803" x2="631.0125" y2="1588.5686274509803" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="1119.6" y1="1754.9019607843138" x2="1448.55" y2="1754.9019607843138" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="1448.55" y1="1754.9019607843138" x2="1448.55" y2="1422.235294117647" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="1448.55" y1="1422.235294117647" x2="1119.6" y2="1422.235294117647" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="1119.6" y1="1422.235294117647" x2="1119.6" y2="1754.9019607843138" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="1177.65" y1="1588.5686274509803" x2="1066.3875" y2="1588.5686274509803" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="132.75" y1="1099.3529411764705" x2="287.55" y2="1099.3529411764705" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="423" y1="1099.3529411764705" x2="631.0125" y2="1099.3529411764705" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="132.75" y1="874.3137254901961" x2="287.55" y2="874.3137254901961" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="926.0999999999999" y1="981.9411764705882" x2="1235.7" y2="981.9411764705882" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="1390.5" y1="942.8039215686275" x2="1525.95" y2="942.8039215686275" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<line x1="1380.825" y1="893.8823529411765" x2="1380.825" y2="786.2549019607843" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+<rect x="592.3125" y="1246.1176470588236" width="77.39999999999998" height="97.84313725490165" fill="rgba(90,160,90,0.35)" stroke="#2f7d46" stroke-dasharray="4 3"/>
+<text x="631.0125" y="1295.0392156862747" text-anchor="middle" fill="#1f6b34" font-size="11" font-family="ui-sans-serif, sans-serif" font-weight="700">TUNNEL</text>
+<ellipse cx="355.275" cy="1089.5686274509803" rx="55.631249999999994" ry="102.73529411764707" fill="rgba(255,255,255,0.7)" stroke="#1f6b34" stroke-width="3" />
+<text x="355.275" y="1089.5686274509803" text-anchor="middle" fill="#1f6b34" font-size="13" font-family="ui-sans-serif, sans-serif" font-weight="700">TRACK</text>
+<ellipse cx="355.275" cy="874.3137254901961" rx="55.631249999999994" ry="88.05882352941177" fill="none" stroke="#3d9a55" stroke-width="3" stroke-dasharray="7 5"/>
+<text x="355.275" y="874.3137254901961" text-anchor="middle" fill="#1f6b34" font-size="13" font-family="ui-sans-serif, sans-serif" font-weight="700">LATER TRACK</text>
+<ellipse cx="1380.825" cy="942.8039215686275" rx="43.53750000000002" ry="39.137254901960716" fill="rgba(255,255,255,0.75)" stroke="#1f6b34" stroke-width="3"/>
+<text x="1380.825" y="942.8039215686275" text-anchor="middle" fill="#1f6b34" font-size="13" font-family="ui-sans-serif, sans-serif" font-weight="700">SOCCER FIELD</text>
+<rect x="1419.525" y="1681.5196078431372" width="33.862499999999955" height="24.460784313725526" fill="rgba(255,255,255,0.45)" stroke="#7c62d6" stroke-dasharray="4 3"/>
+<rect x="1458.225" y="1681.5196078431372" width="33.86250000000018" height="24.460784313725526" fill="rgba(255,255,255,0.45)" stroke="#7c62d6" stroke-dasharray="4 3"/>
+<rect x="1419.525" y="1642.3823529411764" width="33.862499999999955" height="24.460784313725753" fill="rgba(255,255,255,0.45)" stroke="#7c62d6" stroke-dasharray="4 3"/>
+<rect x="1458.225" y="1642.3823529411764" width="33.86250000000018" height="24.460784313725753" fill="rgba(255,255,255,0.45)" stroke="#7c62d6" stroke-dasharray="4 3"/>
+<text x="1419.525" y="1697.9803921568628" fill="#5b46a8" font-size="12" font-weight="700" font-family="ui-sans-serif, sans-serif">room for later games</text>
+<text x="742.275" y="1862.5294117647059" text-anchor="middle" fill="#8a5a12" font-size="13" font-family="ui-sans-serif, sans-serif" font-weight="700">HOMESTEAD</text>
+<text x="1042.2" y="1148.2745098039215" fill="#6a7a62" font-size="13" font-family="ui-sans-serif, sans-serif">open ground</text>
+<polygon points="829.3499999999999,715.3186274509804 825.48,729.0166666666667 833.22,729.0166666666667" fill="#ffffff" stroke="#0c4a6e" stroke-width="1"/>
+<polygon points="727.7625,715.3186274509804 723.8925,729.0166666666667 731.6325,729.0166666666667" fill="#ffffff" stroke="#0c4a6e" stroke-width="1"/>
+<polygon points="877.7249999999999,673.2460784313726 873.855,686.9441176470589 881.595,686.9441176470589" fill="#ffffff" stroke="#0c4a6e" stroke-width="1"/>
+<text x="829.3499999999999" y="737.3333333333333" text-anchor="middle" fill="#0c4a6e" font-size="11" font-family="ui-sans-serif, sans-serif">river jump stays</text>
+<line x1="510.07500000000005" y1="1490.7254901960785" x2="1042.2" y2="747.1176470588235" stroke="#7c62d6" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="751.95" y="1148.2745098039215" fill="#5b46a8" font-size="11" font-family="ui-sans-serif, sans-serif">sightline to the tower</text>
+<rect x="717.12" y="1889.9254901960785" width="21.284999999999968" height="23.482352941176487" fill="#5fbf6a" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="746.145" y="1889.9254901960785" width="21.284999999999968" height="23.482352941176487" fill="#8ed98a" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="702.6075" y="1944.7176470588236" width="79.33500000000004" height="31.3098039215688" fill="#f0a202" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="1025.26875" y="729.9950980392157" width="33.862499999999955" height="34.24509803921569" fill="#6d7cff" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="925.1324999999999" y="1235.3549019607844" width="30.960000000000036" height="80.2313725490194" fill="#7fd4ef" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="678.42" y="335.19803921568626" width="30.960000000000036" height="80.23137254901962" fill="#3aaed0" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="660.0375" y="371.8892156862745" width="9.674999999999955" height="6.849019607843161" fill="#f29a4a" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="988.02" y="335.19803921568626" width="30.960000000000036" height="80.23137254901962" fill="#e2b93b" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="838.0574999999999" y="520.121568627451" width="21.285000000000082" height="23.482352941176373" fill="#e85aad" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="876.2737500000001" y="559.2588235294118" width="12.577499999999873" height="3.913725490196043" fill="#ffffff" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="841.9275" y="211.9156862745098" width="13.545000000000073" height="13.698039215686293" fill="#7fd4ef" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="845.7974999999999" y="186.96568627450978" width="5.805000000000064" height="4.892156862745139" fill="#ff8b7b" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="214.9875" y="1572.9137254901962" width="29.024999999999977" height="31.309803921568573" fill="#ff4f9a" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="184.0275" y="1562.150980392157" width="13.544999999999987" height="13.698039215686094" fill="#7fd4ef" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="363.9825" y="1733.3764705882354" width="21.284999999999968" height="23.48235294117626" fill="#ff5d5d" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="370.755" y="1781.3196078431372" width="7.740000000000009" height="5.870588235294008" fill="#e2b93b" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="524.5875" y="1550.8990196078432" width="9.675000000000068" height="6.849019607843047" fill="#f29a4a" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="368.33625" y="1586.6117647058823" width="12.577499999999986" height="3.913725490196157" fill="#ffffff" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="1273.4325" y="1355.7019607843138" width="21.285000000000082" height="15.6549019607844" fill="#a78bfa" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="1316.0025" y="1317.543137254902" width="13.544999999999845" height="13.698039215686322" fill="#7fd4ef" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="1270.53" y="1797.9529411764706" width="27.089999999999918" height="31.309803921568573" fill="#5b92f0" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="1319.8725" y="1850.2990196078433" width="5.805000000000064" height="4.892156862744969" fill="#ff8b7b" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="1066.3875" y="1546.006862745098" width="9.674999999999955" height="6.849019607843275" fill="#f29a4a" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="1067.355" y="1517.1431372549018" width="7.740000000000009" height="5.870588235294235" fill="#e2b93b" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="1277.78625" y="1586.6117647058823" width="12.577499999999873" height="3.913725490196157" fill="#ffffff" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="508.14" y="1092.9931372549017" width="3.8700000000000045" height="12.71960784313751" fill="#ffffff" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="507.1725" y="1067.5539215686276" width="5.80499999999995" height="4.892156862744741" fill="#ff8b7b" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="205.3125" y="870.8892156862745" width="9.675000000000011" height="6.849019607843161" fill="#f29a4a" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="206.28" y="842.0254901960785" width="7.740000000000009" height="5.870588235294008" fill="#e2b93b" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="503.3025" y="1268.6215686274509" width="13.544999999999959" height="13.698039215686322" fill="#7fd4ef" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="1251.18" y="921.278431372549" width="27.089999999999918" height="43.05098039215693" fill="#2fbf8a" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="1219.2525" y="935.9549019607844" width="13.544999999999845" height="13.698039215686208" fill="#7fd4ef" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="1020.915" y="975.5813725490196" width="3.8700000000001182" height="12.719607843137169" fill="#ffffff" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="1048.9725" y="1008.8480392156863" width="5.804999999999836" height="4.892156862745082" fill="#ff8b7b" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="1482.4125" y="939.3794117647059" width="9.675000000000182" height="6.849019607843161" fill="#f29a4a" stroke="#1c2430" stroke-width="1" rx="2"/>
+<rect x="1483.38" y="910.5156862745098" width="7.739999999999782" height="5.870588235294122" fill="#e2b93b" stroke="#1c2430" stroke-width="1" rx="2"/>
+<text x="727.7625" y="1885.9254901960785" text-anchor="middle" fill="#1c2430" font-size="11" font-weight="800" font-family="ui-sans-serif, sans-serif" stroke="#ffffff" stroke-width="3" paint-order="stroke">HOME</text>
+<text x="756.7875" y="1885.9254901960785" text-anchor="middle" fill="#1c2430" font-size="11" font-weight="800" font-family="ui-sans-serif, sans-serif" stroke="#ffffff" stroke-width="3" paint-order="stroke">PETS</text>
+<text x="742.275" y="1940.7176470588236" text-anchor="middle" fill="#1c2430" font-size="11" font-weight="800" font-family="ui-sans-serif, sans-serif" stroke="#ffffff" stroke-width="3" paint-order="stroke">GARAGE</text>
+<text x="1042.2" y="725.9950980392157" text-anchor="middle" fill="#1c2430" font-size="11" font-weight="800" font-family="ui-sans-serif, sans-serif" stroke="#ffffff" stroke-width="3" paint-order="stroke">TOWER</text>
+<text x="940.6125" y="1231.3549019607844" text-anchor="middle" fill="#1c2430" font-size="11" font-weight="800" font-family="ui-sans-serif, sans-serif" stroke="#ffffff" stroke-width="3" paint-order="stroke">JUMP ROOF</text>
+<text x="693.9" y="331.19803921568626" text-anchor="middle" fill="#1c2430" font-size="11" font-weight="800" font-family="ui-sans-serif, sans-serif" stroke="#ffffff" stroke-width="3" paint-order="stroke">SHOWROOM</text>
+<circle cx="664.875" cy="375.3137254901961" r="8" fill="#f29a4a" stroke="#1c2430" stroke-width="1.2"/>
+<text x="664.875" y="378.3137254901961" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">G</text>
+<rect x="660.0375" y="361.6156862745098" width="9.674999999999955" height="5.870588235294122" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<text x="1003.5" y="331.19803921568626" text-anchor="middle" fill="#1c2430" font-size="11" font-weight="800" font-family="ui-sans-serif, sans-serif" stroke="#ffffff" stroke-width="3" paint-order="stroke">NOS</text>
+<text x="848.7" y="516.121568627451" text-anchor="middle" fill="#1c2430" font-size="11" font-weight="800" font-family="ui-sans-serif, sans-serif" stroke="#ffffff" stroke-width="3" paint-order="stroke">PAINT</text>
+<circle cx="882.5625" cy="561.2156862745098" r="8" fill="#ffffff" stroke="#1c2430" stroke-width="1.2"/>
+<text x="882.5625" y="564.2156862745098" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">A</text>
+<rect x="877.7249999999999" y="547.5176470588235" width="9.675000000000182" height="5.870588235294122" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="848.7" cy="218.76470588235296" r="8" fill="#7fd4ef" stroke="#1c2430" stroke-width="1.2"/>
+<text x="848.7" y="221.76470588235296" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">P</text>
+<rect x="843.8625" y="205.06666666666666" width="9.674999999999955" height="5.870588235294122" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="848.7" cy="189.41176470588235" r="8" fill="#ff8b7b" stroke="#1c2430" stroke-width="1.2"/>
+<text x="848.7" y="192.41176470588235" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">S</text>
+<rect x="843.8625" y="175.71372549019608" width="9.674999999999955" height="5.870588235294093" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<text x="229.5" y="1568.9137254901962" text-anchor="middle" fill="#1c2430" font-size="11" font-weight="800" font-family="ui-sans-serif, sans-serif" stroke="#ffffff" stroke-width="3" paint-order="stroke">DANCE</text>
+<circle cx="190.8" cy="1569" r="8" fill="#7fd4ef" stroke="#1c2430" stroke-width="1.2"/>
+<text x="190.8" y="1572" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">P</text>
+<rect x="185.9625" y="1555.3019607843137" width="9.674999999999983" height="5.870588235294235" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<text x="374.625" y="1729.3764705882354" text-anchor="middle" fill="#1c2430" font-size="11" font-weight="800" font-family="ui-sans-serif, sans-serif" stroke="#ffffff" stroke-width="3" paint-order="stroke">CAFE</text>
+<circle cx="374.625" cy="1784.2549019607843" r="8" fill="#e2b93b" stroke="#1c2430" stroke-width="1.2"/>
+<text x="374.625" y="1787.2549019607843" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">N</text>
+<rect x="369.7875" y="1770.556862745098" width="9.674999999999955" height="5.870588235294008" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="529.425" cy="1554.3235294117649" r="8" fill="#f29a4a" stroke="#1c2430" stroke-width="1.2"/>
+<text x="529.425" y="1557.3235294117649" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">G</text>
+<rect x="524.5875" y="1540.6254901960785" width="9.675000000000068" height="5.870588235294008" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="374.625" cy="1588.5686274509803" r="8" fill="#ffffff" stroke="#1c2430" stroke-width="1.2"/>
+<text x="374.625" y="1591.5686274509803" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">A</text>
+<rect x="369.7875" y="1574.870588235294" width="9.674999999999955" height="5.870588235294235" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<text x="1284.075" y="1351.7019607843138" text-anchor="middle" fill="#1c2430" font-size="11" font-weight="800" font-family="ui-sans-serif, sans-serif" stroke="#ffffff" stroke-width="3" paint-order="stroke">BUILDER</text>
+<circle cx="1322.775" cy="1324.392156862745" r="8" fill="#7fd4ef" stroke="#1c2430" stroke-width="1.2"/>
+<text x="1322.775" y="1327.392156862745" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">P</text>
+<rect x="1317.9375" y="1310.6941176470589" width="9.674999999999955" height="5.870588235294008" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<text x="1284.075" y="1793.9529411764706" text-anchor="middle" fill="#1c2430" font-size="11" font-weight="800" font-family="ui-sans-serif, sans-serif" stroke="#ffffff" stroke-width="3" paint-order="stroke">ARCADE</text>
+<circle cx="1322.775" cy="1852.7450980392157" r="8" fill="#ff8b7b" stroke="#1c2430" stroke-width="1.2"/>
+<text x="1322.775" y="1855.7450980392157" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">S</text>
+<rect x="1317.9375" y="1839.0470588235294" width="9.674999999999955" height="5.870588235294008" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="1071.225" cy="1549.4313725490197" r="8" fill="#f29a4a" stroke="#1c2430" stroke-width="1.2"/>
+<text x="1071.225" y="1552.4313725490197" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">G</text>
+<rect x="1066.3875" y="1535.7333333333331" width="9.674999999999955" height="5.870588235294463" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="1071.225" cy="1520.078431372549" r="8" fill="#e2b93b" stroke="#1c2430" stroke-width="1.2"/>
+<text x="1071.225" y="1523.078431372549" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">N</text>
+<rect x="1066.3875" y="1506.3803921568629" width="9.674999999999955" height="5.870588235294008" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="1284.075" cy="1588.5686274509803" r="8" fill="#ffffff" stroke="#1c2430" stroke-width="1.2"/>
+<text x="1284.075" y="1591.5686274509803" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">A</text>
+<rect x="1279.2375" y="1574.870588235294" width="9.674999999999955" height="5.870588235294235" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="510.07500000000005" cy="1099.3529411764705" r="8" fill="#ffffff" stroke="#1c2430" stroke-width="1.2"/>
+<text x="510.07500000000005" y="1102.3529411764705" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">A</text>
+<rect x="516.8475" y="1096.4176470588234" width="9.675000000000068" height="5.870588235294463" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="510.07500000000005" cy="1070" r="8" fill="#ff8b7b" stroke="#1c2430" stroke-width="1.2"/>
+<text x="510.07500000000005" y="1073" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">S</text>
+<rect x="505.23749999999995" y="1056.301960784314" width="9.675000000000068" height="5.870588235294008" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="210.15" cy="874.3137254901961" r="8" fill="#f29a4a" stroke="#1c2430" stroke-width="1.2"/>
+<text x="210.15" y="877.3137254901961" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">G</text>
+<rect x="205.3125" y="860.6156862745098" width="9.675000000000011" height="5.870588235294008" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="210.15" cy="844.9607843137255" r="8" fill="#e2b93b" stroke="#1c2430" stroke-width="1.2"/>
+<text x="210.15" y="847.9607843137255" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">N</text>
+<rect x="205.3125" y="831.2627450980392" width="9.675000000000011" height="5.870588235294235" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="510.07500000000005" cy="1275.4705882352941" r="8" fill="#7fd4ef" stroke="#1c2430" stroke-width="1.2"/>
+<text x="510.07500000000005" y="1278.4705882352941" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">P</text>
+<rect x="505.23749999999995" y="1261.7725490196078" width="9.675000000000068" height="5.870588235294008" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<text x="1264.725" y="917.278431372549" text-anchor="middle" fill="#1c2430" font-size="11" font-weight="800" font-family="ui-sans-serif, sans-serif" stroke="#ffffff" stroke-width="3" paint-order="stroke">SOCCER</text>
+<circle cx="1226.025" cy="942.8039215686275" r="8" fill="#7fd4ef" stroke="#1c2430" stroke-width="1.2"/>
+<text x="1226.025" y="945.8039215686275" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">P</text>
+<rect x="1221.1875" y="929.1058823529411" width="9.674999999999955" height="5.870588235294235" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="1022.8499999999999" cy="981.9411764705882" r="8" fill="#ffffff" stroke="#1c2430" stroke-width="1.2"/>
+<text x="1022.8499999999999" y="984.9411764705882" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">A</text>
+<rect x="1029.6225" y="979.0058823529412" width="9.674999999999955" height="5.870588235294122" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="1051.875" cy="1011.2941176470588" r="8" fill="#ff8b7b" stroke="#1c2430" stroke-width="1.2"/>
+<text x="1051.875" y="1014.2941176470588" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">S</text>
+<rect x="1047.0375" y="997.5960784313726" width="9.675000000000182" height="5.870588235294122" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="1487.25" cy="942.8039215686275" r="8" fill="#f29a4a" stroke="#1c2430" stroke-width="1.2"/>
+<text x="1487.25" y="945.8039215686275" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">G</text>
+<rect x="1482.4125" y="929.1058823529411" width="9.675000000000182" height="5.870588235294235" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="1487.25" cy="913.4509803921569" r="8" fill="#e2b93b" stroke="#1c2430" stroke-width="1.2"/>
+<text x="1487.25" y="916.4509803921569" text-anchor="middle" fill="#1c2430" font-size="9" font-weight="800" font-family="ui-sans-serif, sans-serif">N</text>
+<rect x="1482.4125" y="899.7529411764706" width="9.675000000000182" height="5.870588235294122" fill="none" stroke="#8a5a12" stroke-dasharray="2 2"/>
+<circle cx="848.7" cy="1588.5686274509803" r="5" fill="#1c2430"/>
+<text x="856.44" y="1588.5686274509803" fill="#1c2430" font-size="11" font-family="ui-sans-serif, sans-serif">SPAWN</text>
+<text x="1584" y="2092" text-anchor="end" fill="#1c2430" font-size="14" font-family="ui-sans-serif, sans-serif" font-weight="800">Worst view 3. Today 5. Scale: the runway is the pale strip.</text>
+<text x="36" y="2092" fill="#1c2430" font-size="13" font-weight="800" font-family="ui-sans-serif, sans-serif">Every city: A G N P S.  Colored blocks are one of a kind.  North is up.</text>
+<rect x="36" y="2112" width="14" height="12" fill="#ffffff" stroke="#1c2430"/>
+<text x="54" y="2123" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">A arch</text>
+<rect x="112" y="2112" width="14" height="12" fill="#f29a4a" stroke="#1c2430"/>
+<text x="130" y="2123" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">G garage bay</text>
+<rect x="230" y="2112" width="14" height="12" fill="#e2b93b" stroke="#1c2430"/>
+<text x="248" y="2123" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">N small NOS</text>
+<rect x="341" y="2112" width="14" height="12" fill="#7fd4ef" stroke="#1c2430"/>
+<text x="359" y="2123" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">P sky pad</text>
+<rect x="438" y="2112" width="14" height="12" fill="#ff8b7b" stroke="#1c2430"/>
+<text x="456" y="2123" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">S snack</text>
+<rect x="521" y="2112" width="14" height="12" fill="#5fbf6a" stroke="#1c2430"/>
+<text x="539" y="2123" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">home / pets</text>
+<rect x="632" y="2112" width="14" height="12" fill="#f0a202" stroke="#1c2430"/>
+<text x="650" y="2123" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">main garage</text>
+<rect x="743" y="2112" width="14" height="12" fill="#e85aad" stroke="#1c2430"/>
+<text x="761" y="2123" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">paint</text>
+<rect x="812" y="2112" width="14" height="12" fill="#3aaed0" stroke="#1c2430"/>
+<text x="830" y="2123" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">showroom</text>
+<rect x="36" y="2136" width="14" height="12" fill="#e2b93b" stroke="#1c2430"/>
+<text x="54" y="2147" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">big NOS</text>
+<rect x="119" y="2136" width="14" height="12" fill="#ff4f9a" stroke="#1c2430"/>
+<text x="137" y="2147" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">dance</text>
+<rect x="188" y="2136" width="14" height="12" fill="#ff5d5d" stroke="#1c2430"/>
+<text x="206" y="2147" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">cafe</text>
+<rect x="250" y="2136" width="14" height="12" fill="#5b92f0" stroke="#1c2430"/>
+<text x="268" y="2147" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">arcade</text>
+<rect x="326" y="2136" width="14" height="12" fill="#a78bfa" stroke="#1c2430"/>
+<text x="344" y="2147" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">builder</text>
+<rect x="409" y="2136" width="14" height="12" fill="#2fbf8a" stroke="#1c2430"/>
+<text x="427" y="2147" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">soccer</text>
+<rect x="485" y="2136" width="14" height="12" fill="#6d7cff" stroke="#1c2430"/>
+<text x="503" y="2147" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">tower</text>
+<rect x="554" y="2136" width="14" height="12" fill="#7fd4ef" stroke="#1c2430"/>
+<text x="572" y="2147" fill="#1c2430" font-size="12" font-family="ui-sans-serif, sans-serif">jump roof</text>
+<text x="36" y="2172" fill="#5c6b7a" font-size="12" font-family="ui-sans-serif, sans-serif">Gold road is the highway. Dashed oval is a later track. Dashed lots are later games. Dashed box by an arch is a suggested pull-off. Kit dots are drawn large so the stalls show. The Stage has the full cafe instead of a snack.</text>
+</svg>
