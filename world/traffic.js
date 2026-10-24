@@ -1,10 +1,10 @@
 'use strict';
-// Neon World road traffic: Z TAKEOVER level 4 (every car is the player's 370Z).
+// Neon World road traffic. Every car is the player's 370Z.
 // The GLB is the one already loaded on ZD.Xray.car. Traffic clones that graph once
 // (shared geometry, no second download) into its own scene and bakes view sprites
 // with X.renderer only. It never calls X.render, never touches X.car after the
 // clone, and never opens the player's wings. Far cars are boxes or light dots.
-// physics.js / tune.js untouched. A hit wrecks the traffic car (WANTED wKnock / wFlip).
+// Lanes come from CITY.ROADS. A meeting slows this car and leaves his Z where it is.
 const TRAFFIC = (() => {
   const T = window.TRAFFIC_TUNE;
   const OFF = /[?&]notraffic=1/.test(location.search);
@@ -16,7 +16,8 @@ const TRAFFIC = (() => {
   const cars = [];
   const cache = new Map();
   const sparks = [];
-  let bakes = 0, bakeErr = '', cloned = 0, built = false, sparkN = 0;
+  let bakes = 0, bakeErr = '', cloned = 0, built = false, sparkN = 0, roadSig = 0;
+  let aprons = [];
   let wingHinges = 0, crewN = 0;
 
   function kidOf(p) {
@@ -49,10 +50,41 @@ const TRAFFIC = (() => {
   }
 
   const towOid = id => { const ts = CITY.TOWS || []; for (let i = 0; i < ts.length; i++) if (ts[i].oid === id) return true; return false; };
+  function roadsSig() {
+    const R = CITY && CITY.ROADS;
+    if (!R || !R.edges) return 0;
+    let h = (R.nodes ? R.nodes.length : 0) * 100003 + R.edges.length;
+    for (let i = 0; i < R.edges.length; i++) {
+      const e = R.edges[i];
+      if (!e) { h = (h * 33 + 7) | 0; continue; }
+      h = (h * 33 + (((e.len || 0) * 10) | 0) + (e.a | 0) * 17 + (e.b | 0) * 131 + (((e.w || 0) * 4) | 0)) | 0;
+    }
+    return h >>> 0;
+  }
+  function readAprons() {
+    const out = [];
+    const BL = (CITY && (CITY.BL || CITY.buildings)) || [];
+    for (let i = 0; i < BL.length; i++) {
+      const b = BL[i];
+      if (!b || b.purpose !== 'NOS' || !b.nosStation || !b.nosStation.lane) continue;
+      const lane = b.nosStation.lane;
+      if (lane.x1 > lane.x0 && lane.z1 > lane.z0) out.push({x0:lane.x0, x1:lane.x1, z0:lane.z0, z1:lane.z1});
+    }
+    return out;
+  }
   function build() {
-    if (built) return;
+    const sig = roadsSig();
+    if (built && sig === roadSig) return;
+    const again = built;
+    if (again) {
+      lanes.length = 0;
+      for (const c of cars) { c.on = false; c.lane = null; c.turn = null; c.arc = null; c.blend = 0; }
+    }
+    const R = CITY && CITY.ROADS;
+    if (!R || !R.edges) { built = false; return; }
     built = true;
-    const R = CITY.ROADS, nodes = R.nodes;
+    roadSig = sig;
+    const nodes = R.nodes;
     const edges = [];
     for (const e of R.edges) {
       if (!e || !e.lanes || !e.lanes.length || e.len < 8) continue;
@@ -140,28 +172,159 @@ const TRAFFIC = (() => {
       }
     }
     for (const L of lanes) L.turns.sort((a, b) => a.s - b.s);
-    for (let i = 0; i < T.simCap; i++) cars.push(blank(true));
-    for (let i = 0; i < T.dotCap; i++) cars.push(blank(false));
+    aprons = readAprons();
+    if (!again) {
+      for (let i = 0; i < T.simCap; i++) cars.push(blank(true));
+      for (let i = 0; i < T.dotCap; i++) cars.push(blank(false));
+    }
   }
   function blank(sim) {
     const c = {sim, on:false, lane:null, s:0, v:0, v0:0, yaw:0, x:0, z:0, y:0, pi:0, turn:null, rollS:-1, blend:0, blend0:0, bx:0, bz:0, by:0, utT:0, was:false, tick:0, hit:false, hitT:0, fade:1, vx:0, vy:0, vz:0, spin:0, roll:0, vroll:0, braking:false, yawRate:0, accel:0, bodyRoll:0, pitch:0, slip:0, suspY:0, suspV:0, ground:true, gy:0, airVx:0, airVz:0, arc:null, rampSeen:0, rampYes:false};
     c.slot = {draw:() => drawOne(c), traffic:1, car:c};
     return c;
   }
+  function fastKind(kind) { return kind === 'highway' || kind === 'bridge' || kind === 'tunnel'; }
   function rollSpeed(kind) {
-    const add = (kind === 'highway' || kind === 'bridge' || kind === 'tunnel') ? T.highwayAdd : 0;
-    return T.speedMin + add + rnd() * (T.speedMax - T.speedMin);
+    const fast = fastKind(kind);
+    const lo = fast ? (T.fastMin || 16) : T.speedMin;
+    const hi = fast ? (T.fastMax || 20) : T.speedMax;
+    return lo + rnd() * Math.max(0, hi - lo);
+  }
+  function centreGap(c) {
+    const bumper = fastKind(c.lane && c.lane.kind) ? (T.gapFastBumper || 12.75) : (T.gapTownBumper || 8.5);
+    return bumper + T.carL;
   }
   function tooClose(L, s, sim) {
     if (!sim) return false;
+    const need = (fastKind(L.kind) ? (T.gapFastBumper || 12.75) : (T.gapTownBumper || 8.5)) + T.carL;
     for (const o of cars) {
       if (!o.on || !o.sim || o.lane !== L) continue;
       let ds = Math.abs(o.s - s);
       ds = Math.min(ds, L.len - ds);
-      if (ds < T.gap) return true;
-      if (Math.hypot(o.x - L.at(s)[0], o.z - L.at(s)[1]) < T.gap * 0.8) return true;
+      if (ds < need) return true;
+      if (Math.hypot(o.x - L.at(s)[0], o.z - L.at(s)[1]) < need * 0.8) return true;
     }
     return false;
+  }
+  function laneHalf() { return ((CITY.ROADS && CITY.ROADS.laneW) || 3.4) * 0.5; }
+  function playerRel(c) {
+    if (!P || P.x == null) return null;
+    const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw);
+    const dx = P.x - c.x, dz = P.z - c.z;
+    return {
+      fwd: dx * fx + dz * fz,
+      lat: dx * Math.cos(c.yaw) - dz * Math.sin(c.yaw),
+      dist: Math.hypot(dx, dz),
+      v: P.v || 0
+    };
+  }
+  function playerAhead(c) {
+    const r = playerRel(c);
+    if (!r || Math.abs(r.lat) > laneHalf() || r.fwd <= 0.4) return null;
+    const need = centreGap(c) + (T.leadExtra || T.carL);
+    if (r.fwd > need + 2) return null;
+    return r;
+  }
+  function playerBeside(c) {
+    const r = playerRel(c);
+    if (!r) return false;
+    return Math.abs(r.fwd) <= T.carL * 0.65 && Math.abs(r.lat) <= laneHalf() && Math.abs(r.lat) > 0.35;
+  }
+  function nextCrossS(c) {
+    const L = c.lane;
+    if (!L) return null;
+    for (let i = 0; i < L.turns.length; i++) if (L.turns[i].s > c.s + 1) return L.turns[i].s;
+    return null;
+  }
+  function nearPoint(x, z, r, self) {
+    const r2 = r * r;
+    for (const o of cars) {
+      if (o === self || !o.on || !o.sim) continue;
+      const dx = o.x - x, dz = o.z - z;
+      if (dx * dx + dz * dz < r2) return true;
+    }
+    if (P && P.x != null) {
+      const dx = P.x - x, dz = P.z - z;
+      if (dx * dx + dz * dz < r2) return true;
+    }
+    return false;
+  }
+  function rayBox(x, z, fx, fz, box, maxD) {
+    let t0 = 0, t1 = maxD;
+    const axes = [[fx, x, box.x0, box.x1], [fz, z, box.z0, box.z1]];
+    for (let i = 0; i < axes.length; i++) {
+      const d = axes[i][0], o = axes[i][1], a = axes[i][2], b = axes[i][3];
+      if (Math.abs(d) < 1e-8) { if (o < a || o > b) return null; continue; }
+      let ta = (a - o) / d, tb = (b - o) / d;
+      if (ta > tb) { const s = ta; ta = tb; tb = s; }
+      if (ta > t0) t0 = ta;
+      if (tb < t1) t1 = tb;
+      if (t0 > t1) return null;
+    }
+    if (t1 < 0) return null;
+    return t0 < 0 ? 0 : t0;
+  }
+  function inBox(x, z, box, m) {
+    return x >= box.x0 - m && x <= box.x1 + m && z >= box.z0 - m && z <= box.z1 + m;
+  }
+  function boxBusy(box, self) {
+    for (const o of cars) if (o !== self && o.on && o.sim && inBox(o.x, o.z, box, 0.4)) return true;
+    return !!(P && P.x != null && inBox(P.x, P.z, box, 1));
+  }
+  function apronAhead(c) {
+    if (!aprons.length) return null;
+    const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw);
+    const maxD = (T.stopDist || 18) + 2;
+    let best = null;
+    for (let i = 0; i < aprons.length; i++) {
+      const t = rayBox(c.x, c.z, fx, fz, aprons[i], maxD);
+      if (t == null) continue;
+      if (!best || t < best.t) best = {t:t, box:aprons[i]};
+    }
+    return best;
+  }
+  function holdLine(c) {
+    let stop = false, roll = false;
+    const box = T.crossBox || 6;
+    const reach = T.stopDist || 18;
+    const sCross = nextCrossS(c);
+    if (sCross != null) {
+      const edge = sCross - box;
+      const dist = edge - c.s;
+      const inside = c.s >= edge && c.s <= sCross + box;
+      if (!inside && dist < reach && dist > -1.5) {
+        const p = c.lane.at(sCross);
+        if (nearPoint(p[0], p[1], box, c)) stop = true;
+        else roll = true;
+      }
+    }
+    const ap = apronAhead(c);
+    if (ap && ap.t > 0.2 && ap.t < reach) {
+      if (boxBusy(ap.box, c)) stop = true;
+      else roll = true;
+    }
+    return {stop:stop, roll:roll && !stop};
+  }
+  function turnRadius(c) {
+    const dest = c.turn && c.turn.to;
+    if (!dest) return 99;
+    const ang = Math.abs(angDiff(dest.yaw, c.yaw));
+    if (ang < 0.2) return 99;
+    const p2 = dest.at(lim((c.turn.s2 || 0) + 4.2, 0.8, dest.len - 0.8));
+    const chord = Math.hypot(p2[0] - c.x, p2[1] - c.z);
+    return chord / (2 * Math.sin(Math.min(ang, 3) / 2));
+  }
+  function holdLane(c) {
+    if (!c.lane || c.arc || c.blend > 0 || c.hop) return;
+    const p = c.lane.at(c.s);
+    const dx = c.x - p[0], dz = c.z - p[1];
+    const dist = Math.hypot(dx, dz);
+    const hold = T.laneHold || 0.3;
+    if (dist > hold) {
+      const k = hold / dist;
+      c.x = p[0] + dx * k;
+      c.z = p[1] + dz * k;
+    }
   }
   function spot(minR, maxR, sim) {
     const px = P.x, pz = P.z;
@@ -226,7 +389,7 @@ const TRAFFIC = (() => {
   }
   function crowd(c) {
     const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw);
-    let hold = null, hd = T.gap;
+    let hold = null, hd = centreGap(c);
     const see = o => {
       if (!o || o.x == null) return;
       const dx = o.x - c.x, dz = o.z - c.z, d = Math.hypot(dx, dz);
@@ -244,9 +407,12 @@ const TRAFFIC = (() => {
     c.braking = false;
     const h = crowd(c);
     if (h) {
-      const cap = h.d < T.carL + 1.2 ? 1.5 : (h.o.v == null ? c.v : h.o.v);
+      const cap = h.d < centreGap(c) ? Math.max(0, h.o.v || 0) : (h.o.v == null ? c.v : h.o.v);
       if (cap < c.v - 0.35) c.braking = true;
     }
+    const lead = playerAhead(c);
+    if (lead && lead.v < c.v - 0.35) c.braking = true;
+    if (c.hold && (c.hold.stop || (c.hold.roll && c.v > (T.rollMs || 4) + 0.4))) c.braking = true;
     const ds = c.turn ? c.turn.s - c.s : 99;
     if (c.arc || (c.turn && ds < (T.cornerDist || 18) && ds > -2)) {
       if (c.v > (T.cornerFrac || 0.58) * c.v0 + 0.4) c.braking = true;
@@ -257,17 +423,34 @@ const TRAFFIC = (() => {
     let target = c.v0;
     const h = noteBrake(c);
     if (h) {
-      const cap = h.d < T.carL + 1.2 ? 1.5 : (h.o.v == null ? c.v : h.o.v);
+      const need = centreGap(c);
+      let cap = h.o.v == null ? c.v : (h.o.v || 0);
+      if (h.d < need) cap = Math.min(cap, Math.max(0, (h.o.v || 0) * (h.d / need)));
+      if (h.d < T.carL * 0.9) cap = 0;
       if (cap < target) target = cap;
     }
+    const lead = playerAhead(c);
+    if (lead) {
+      const need = centreGap(c) + (T.leadExtra || T.carL);
+      let cap = lead.v;
+      if (lead.v < 0.6) cap = 0;
+      else if (lead.d < need) cap = Math.max(0, lead.v * Math.min(1, lead.d / need));
+      if (cap < target) target = cap;
+    }
+    if (playerBeside(c)) target = Math.min(target, P.v || 0);
     const ds = c.turn ? c.turn.s - c.s : 99;
     if (c.arc || (c.turn && ds < (T.cornerDist || 18) && ds > -2)) {
       const corner = (T.cornerFrac || 0.58) * c.v0;
       if (corner < target) target = corner;
     }
-    if (c.v < target) c.v = Math.min(target, c.v + (T.accel || 5.5) * dt);
+    if ((c.arc && c.arc.tight) || (c.turn && turnRadius(c) < (T.minRadius || 7))) {
+      target = Math.min(target, T.crawl || 2.2);
+    }
+    if (c.hold && c.hold.stop) target = 0;
+    else if (c.hold && c.hold.roll) target = Math.min(target, T.rollMs || 4);
+    if (target <= 0.05) c.v = Math.max(0, c.v - (T.brake || 6.8) * dt);
+    else if (c.v < target) c.v = Math.min(target, c.v + (T.accel || 5.5) * dt);
     else c.v = Math.max(target, c.v - (T.brake || 6.8) * dt);
-    if (c.v < 0.4) c.v = 0.4;
   }
   function beginArc(c) {
     const dest = c.turn && c.turn.to;
@@ -279,7 +462,10 @@ const TRAFFIC = (() => {
     const apex = c.lane.at(lim(c.turn.s, 0.2, c.lane.len - 0.2));
     const ctrl = [2 * apex[0] - 0.5 * (p0[0] + p2[0]), 2 * apex[1] - 0.5 * (p0[1] + p2[1])];
     const dur = blendDur();
-    c.arc = {p0, p2, ctrl, yaw0:c.yaw, yaw2:dest.yaw, t:0, dur, lane:dest, s2};
+    const ang = Math.abs(angDiff(dest.yaw, c.yaw));
+    const chord = Math.hypot(p2[0] - p0[0], p2[1] - p0[1]);
+    const rad = ang < 0.2 ? 99 : chord / (2 * Math.sin(Math.min(ang, 3) / 2));
+    c.arc = {p0, p2, ctrl, yaw0:c.yaw, yaw2:dest.yaw, t:0, dur, lane:dest, s2, tight:rad < (T.minRadius || 7)};
     c.blend0 = dur; c.blend = dur;
     return true;
   }
@@ -420,6 +606,7 @@ const TRAFFIC = (() => {
   }
   function advance(c, dt) {
     const prevX = c.x, prevZ = c.z, prevY = c.y || 0, prevYaw = c.yaw || 0, prevV = c.v || 0;
+    if (c.sim) c.hold = holdLine(c);
     if (c.sim) noteBrake(c);
     if (c.sim && window.TOWDRIVE && TOWDRIVE.ride(c, dt)) {
       afterTow(c, dt, prevX, prevZ, prevY, prevYaw, prevV);
@@ -461,6 +648,25 @@ const TRAFFIC = (() => {
       return;
     }
     const step = c.v * dt;
+    if (c.sim && c.hold && c.hold.stop) {
+      const box = T.crossBox || 6;
+      const sCross = nextCrossS(c);
+      let limS = null;
+      if (sCross != null) {
+        const edge = sCross - box - T.carL * 0.5;
+        if (c.s <= edge + 0.05) limS = edge;
+      }
+      const ap = apronAhead(c);
+      if (ap && ap.t > 0.2) {
+        const room = c.s + Math.max(0, ap.t - T.carL * 0.5);
+        if (limS == null || room < limS) limS = room;
+      }
+      if (limS != null && c.s + step > limS) {
+        c.s = limS; c.v = 0; place(c); holdLane(c);
+        vertSim(c, dt, prevX, prevZ); body(c, dt, prevYaw, prevV);
+        return;
+      }
+    }
     if (!c.sim && c.turn && c.s + step >= c.turn.s) { switchTo(c, c.turn.to, c.turn.s2); return; }
     if (blockedAhead(L, c.s + step)) { if (c.utT > 0) respawn(c); else doUturn(c); return; }
     c.s += step;
@@ -479,6 +685,7 @@ const TRAFFIC = (() => {
     place(c);
     if (c.blend > 0) c.blend = Math.max(0, c.blend - dt);
     if (c.sim) rampSeek(c, dt);
+    if (c.sim) holdLane(c);
     if (c.sim || (c.tick++ % 18) === 0) {
       if (c.ground !== false && (runway(c.x, c.z) || solidAt(c.x, c.z))) { if (c.utT > 0) respawn(c); else doUturn(c); return; }
     }
@@ -498,30 +705,19 @@ const TRAFFIC = (() => {
     const fx = Math.sin(yaw), fz = Math.cos(yaw), rx = Math.cos(yaw), rz = -Math.sin(yaw);
     return hl * Math.abs(fx * ux + fz * uz) + hw * Math.abs(rx * ux + rz * uz);
   }
-  function bump(c) {
-    if (!c.sim || !c.on || c.hit || P.wreck || P.loop) { c.was = false; return; }
-    if (Math.abs((P.y || 0) - c.y) >= 2.2) { c.was = false; return; }
-    const hl = T.carL / 2, hw = T.carW / 2;
-    const axes = [[Math.sin(P.yaw), Math.cos(P.yaw)], [Math.cos(P.yaw), -Math.sin(P.yaw)], [Math.sin(c.yaw), Math.cos(c.yaw)], [Math.cos(c.yaw), -Math.sin(c.yaw)]];
-    let best = 1e9, nx = 0, nz = 0, hit = true;
-    for (const ax of axes) {
-      const dist = (P.x - c.x) * ax[0] + (P.z - c.z) * ax[1];
-      const pen = projR(P.yaw || 0, hl, hw, ax[0], ax[1]) + projR(c.yaw, hl, hw, ax[0], ax[1]) - Math.abs(dist);
-      if (pen <= 0) { hit = false; break; }
-      if (pen < best) { best = pen; const s = dist < 0 ? -1 : 1; nx = ax[0] * s; nz = ax[1] * s; }
+  function giveRoom(c, dt) {
+    if (!c.sim || !c.on || !c.lane) return;
+    const r = playerRel(c);
+    if (!r || Math.abs(r.lat) > laneHalf() || r.fwd <= 0) return;
+    if (r.fwd < T.carL && r.dist < T.carL) {
+      c.s = Math.max(0.4, c.s - 3 * dt);
+      c.v = 0;
+      place(c);
+      holdLane(c);
     }
-    if (!hit) { c.was = false; return; }
-    P.x += nx * Math.min(best, 0.35); P.z += nz * Math.min(best, 0.35);
-    const side = Math.sign((c.x - P.x) * Math.cos(P.yaw) - (c.z - P.z) * Math.sin(P.yaw)) || (rnd() < 0.5 ? -1 : 1);
-    P.v = Math.max(0, P.v * T.bumpKeep);
-    P.yaw = (P.yaw || 0) + side * T.bumpYaw; P.hd = P.yaw;
-    const fx = Math.sin(P.yaw), fz = Math.cos(P.yaw), rx = Math.cos(P.yaw), rz = -Math.sin(P.yaw);
-    const fwdV = Math.max(c.v, P.v * 0.88) + 4, sideV = side * (7 + P.v * 0.18);
-    c.hit = true; c.hitT = 0; c.fade = 1; c.was = true;
-    c.vx = fx * fwdV + rx * sideV; c.vz = fz * fwdV + rz * sideV;
-    c.vy = 3.8 + Math.min(5, P.v * 0.08);
-    c.spin = side * (5.5 + rnd() * 3.0); c.roll = 0; c.vroll = side * (4.5 + rnd() * 2.5);
-    burst(c);
+  }
+  function bump() {
+    // Kept so an old caller cannot move his Z. Yielding lives in pace() and giveRoom().
   }
   function burst(c) {
     const cols = ['#ffe14d', '#ffffff', '#ff4fd8'];
@@ -888,12 +1084,13 @@ const TRAFFIC = (() => {
     if (OFF || !T) return;
     try {
     build();
+    aprons = readAprons();
     if (!lanes.length) return;
     dt = Math.min(0.05, dt || 0.016);
     maintain();
     stepSparks(dt);
     for (const c of cars) if (c.on) { if (c.hit) knocked(c, dt); else advance(c, dt); }
-    for (const c of cars) if (c.on && c.sim && !c.hit) bump(c);
+    for (const c of cars) if (c.on && c.sim && !c.hit) giveRoom(c, dt);
     } catch (e) { runErr = String(e && e.stack || e); }
   }
   function collect(items) {
@@ -923,7 +1120,7 @@ const TRAFFIC = (() => {
       enabled:!OFF, model:'z370', clonedMeshes:cloned, simCap:T.simCap, dotCap:T.dotCap,
       sim, dots, alive:sim + dots, lanes:lanes.length, straight, turns,
       fullDist:T.fullDist, boxDist:T.boxDist, dotDist:T.dotDist,
-      speedMin:T.speedMin, speedMax:T.speedMax, highwayAdd:T.highwayAdd,
+      speedMin:T.speedMin, speedMax:T.speedMax, fastMin:T.fastMin, fastMax:T.fastMax,
       paints:T.paints.map(p => p.id), cache:cache.size, bakes, bakeErr, runErr,
       wingHinges, crewN, sparkN, sparks:sparks.length
     };

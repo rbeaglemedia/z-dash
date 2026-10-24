@@ -5,7 +5,7 @@
    - Other files (manifests, icons): stale-while-revalidate inside a versioned cache.
    - A new deploy changes VERSION/BUILD -> installs at once (skipWaiting), takes over open pages (clients.claim), deletes the
      old cache and tells the pages its BUILD so a stale page can reload itself (only when no game/drive is in progress). */
-importScripts('shared/version.js'); // world33
+importScripts('shared/version.js'); // world34
 const VERSION = 'zdash-f5f4db3cffe9-world' + self.ZD_WORLD;
 const BUILD = self.ZD_BUILD;
 const ASSETS = ["index.html", "jr.html", "manifest.webmanifest", "manifest-jr.webmanifest", "icons/zdash-192.png", "icons/zdash-512.png", "icons/zdash-apple-180.png", "icons/zdash-jr-192.png", "icons/zdash-jr-512.png", "icons/zdash-jr-apple-180.png", "icons/zdash-jr-maskable-512.png", "icons/zdash-maskable-512.png"];

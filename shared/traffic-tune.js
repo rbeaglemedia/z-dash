@@ -1,9 +1,11 @@
 'use strict';
-// Z TAKEOVER level 4 civilian traffic (jr.html ZTR + wTraffic), retuned for Neon World roads.
-// All cars are the one loaded Nissan 370Z. Distances are metres. Speeds are m/s.
-// Level 4 wTraffic rolls 13 + random * 6. Highway adds highwayAdd on top of that roll.
+// Neon World lane traffic. Every car is the loaded 370Z. Distances are metres. Speeds are m/s.
+// Bob's rows (Oct 24): lane centre, two lengths in town, three on fast roads,
+// stop for a busy crossing or NOS apron, roll at 4 m/s when that box is empty,
+// crawl a corner tighter than 7 m, merge only at a crossing, town 10–15,
+// fast roads 16–20, match his Z and leave one extra length, keep 30 cars.
 window.TRAFFIC_TUNE = {
-  simCap: 12,          // simulated cars near the player (collision, spacing)
+  simCap: 12,          // simulated cars near the player (spacing along the lane)
   dotCap: 18,          // extra cheap far cars (lights only, no collision)
   fullDist: 150,       // full 370Z model
   boxDist: 400,        // simple car + glowing lights
@@ -11,21 +13,28 @@ window.TRAFFIC_TUNE = {
   simRadius: 185,      // keep simulated cars inside this horizontal radius
   recycle: 240,        // respawn a simulated car once it is farther than this
   dotInner: 210,       // far-dot cars stay outside the simulated pocket
-  speedMin: 13,
-  speedMax: 19,
-  highwayAdd: 4,
-  gap: 11,             // metres, centre to centre, same direction
-  carL: 4.25,          // ZTR.L, the real Z the player drives
-  carW: 1.85,          // ZTR.W
+  speedMin: 10,        // m/s, town cruise on street and lane
+  speedMax: 15,
+  fastMin: 16,         // m/s, highway, bridge, and tunnel
+  fastMax: 20,
+  gap: 12.75,          // metres, town centre to centre (8.5 bumper + one 4.25 length)
+  gapTownBumper: 8.5,
+  gapFastBumper: 12.75,
+  leadExtra: 4.25,     // one extra length when his Z is the lead
+  stopDist: 18,        // metres before a crossing or apron where braking starts
+  crossBox: 6,         // metres, half-size of the crossing box
+  rollMs: 4,           // m/s through an empty crossing or apron
+  laneHold: 0.3,       // metres, stay this close to the lane centre
+  minRadius: 7,        // metres, crawl instead of cutting tighter than this
+  crawl: 2.2,          // m/s on a corner tighter than minRadius
+  carL: 4.25,          // metres, the 370Z the player drives
+  carW: 1.85,
   carH: 1.32,
   turnP: 0.32,         // chance to leave the straight road at a crossing
   towFrac: 0.5,        // rollback trucks cruise at this fraction of a Z's roll
   hopP: 0.4,           // chance a Z catching a tow truck in its lane jumps the bed
-  hopLane: 0.5,        // of the ones that do not jump, this fraction changes lanes (the rest follow)
+  hopLane: 0,          // no mid-block lane change; a merge waits for a crossing
   hopVy: 6.2,          // m/s, scripted launch off the bed (ballistic, no damage)
-  bumpKeep: 0.92,      // WANTED bumpTraffic: heavy Z keeps this fraction of speed (never a reset, no speed floor)
-  bumpDrop: 0,         // unused: the old subtract-a-floor stall is gone; wrecks use bumpKeep only
-  bumpYaw: 0.045,      // rad, small sideways kick
   spritePx: 160,       // baked once per paint x view; the mesh is not redrawn per car
   bakePerFrame: 2,     // two new pitch/yaw views a frame; cache holds the finer grid
   cacheMax: 140,       // paint x 24 yaw steps x pitch buckets
