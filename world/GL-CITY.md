@@ -2,69 +2,45 @@
 
 **On hold.** Bob changed the goal on 2026-10-24. The new look stays unbuilt until the current FPS round lands (car-copy removal and the resolution clamp) and Bob says go. `index.html` stays untouched. Color and detail land one object type at a time, buildings first. Cars, props, and the rest wait.
 
-The look proposal below is for Bob to pick. This branch keeps the black-solid `?gl=1` fallback. No model files are in the repo.
+The look proposal below is for Bob to pick. Placement, districts, and the top-down map belong to the City Layout agent (`bc-3ff1a27b`, branch `cursor/city-layout-plan-ef23`). This branch keeps the black-solid `?gl=1` fallback. No model files are in the repo. This proposal does not include a city map.
 
-## Same count, new map
+## Footprints the looks fit
 
-The shop count stays 24, two of each purpose, until Bob approves an addition. Lots and the district plan can move. The game is unchanged until Bob says go. The top-down proposal is `test-results/gl-city/looks/city-map-proposed.png`. North is up. Numbers on that image match the table below.
+The City Layout agent keeps all 24 shops and may move them. Width, depth, height, and the five rooftop pads stay the sizes in `world/city.js` today. The looks are drawn to those boxes. A later mesh has to fit the same box. The layout agent sets `face` and the lot.
 
-The runway (`|x| < 18`, `z` about -80 to 1520), the west highway (`x = -450`), the river (`z` 1780–1840), and the outer track stay. The stadium slides from `x = 830` to `x = 700`, `z = 280`, so the soccer doors open onto about a 70 m promenade (shop edge at `x = 526`, pitch edge at `x = 598`). The generic far-outline skyline stays the far ring. It does not grow a purpose sign.
+| Purpose | Shops | Box the look fits |
+|---|---|---|
+| GARAGE | 2 | 64×164×26 m with a pad, and 48×90×15 m. |
+| SKY_DROP | 2 | 64×164×62 m pad deck, and 70×70×239 m tower with a pad. |
+| SHOWROOM | 2 | 64×164×18 m with a pad, and 64×56×16 m. Both signed Z-DASH. |
+| NOS | 2 | 64×164×34 m with a pad, and 40×46×12 m. |
+| HOME | 2 | 44×48×11 m and 40×48×12 m. |
+| NEON_PAINT | 2 | 44×48×14 m and 44×48×15 m. |
+| DANCE | 2 | 60×64×18 m and 60×64×20 m. The mural uses the 64 m face. |
+| ARCADE | 2 | 56×64×18 m and 52×64×17 m. |
+| PETS | 2 | 40×48×12 m and 44×48×13 m. |
+| CAFE | 2 | 44×48×12 m and 48×48×13 m. Both signed PIZZA. |
+| SOCCER | 2 | 56×88×16 m and 56×68×16 m. Both signed TURBO. |
+| BUILDER | 2 | 44×32×15 m and 44×30×16 m. |
 
-| # | Purpose | Proposed lot (x0, x1, z0, z1) | Why it sits there |
-|---|---|---|---|
-| 1 | HOME | 100, 144, 60, 108 | Ellie's house, just east of the runway start. Door faces the runway. |
-| 2 | HOME | 100, 140, 128, 176 | Guest cottage on the same block. Same saved house choices. |
-| 3 | GARAGE | 180, 228, 60, 150 | Driveway garage. A walk from the porch, no runway crossing. Opens Garage Z. |
-| 4 | NOS | 250, 290, 60, 106 | Pump beside that driveway. |
-| 5 | SHOWROOM | 180, 244, 168, 224 | Small Z-DASH pavilion on the home cross street. |
-| 6 | NEON_PAINT | 200, 244, 380, 428 | Paint studio on the arts walk. |
-| 7 | DANCE | 200, 260, 450, 514 | Mural faces west, toward the runway walk. Wall stays 64×18 m. |
-| 8 | ARCADE | 290, 346, 450, 514 | Arts walk, beside the mural. |
-| 9 | ARCADE | 290, 342, 540, 604 | Second arcade on the same walk. |
-| 10 | CAFE | -280, -236, 960, 1008 | Pizza cafe on the south edge of the park. |
-| 11 | PETS | -420, -380, 1040, 1088 | West of the park green, off the highway. |
-| 12 | PETS | -420, -376, 1120, 1168 | Second pet lounge on that same edge. |
-| 13 | NOS | -400, -336, 1400, 1564 | Fuel depot on the highway, east of the lanes. |
-| 14 | SKY_DROP | 90, 154, 1100, 1264 | Helipad deck. The glide from sky start lands here. |
-| 15 | SKY_DROP | 200, 270, 1165, 1235 | Sky tower, 70×70×239 m, beside the deck. |
-| 16 | DANCE | 310, 370, 1160, 1224 | Downtown mural faces west, toward the deck. Wall stays 64×20 m. |
-| 17 | NEON_PAINT | 310, 354, 1260, 1308 | Second studio beside that mural. |
-| 18 | SHOWROOM | 90, 154, 1320, 1484 | Long glass Z-DASH on the runway side of downtown. |
-| 19 | CAFE | 310, 358, 1340, 1388 | Downtown pizza cafe. |
-| 20 | SOCCER | 470, 526, 230, 318 | Faces east toward the moved stadium. |
-| 21 | SOCCER | 470, 526, 330, 398 | Beside the first, same promenade. |
-| 22 | GARAGE | 400, 464, 720, 884 | Pit pad on the way to the track. Same Garage Z save. |
-| 23 | BUILDER | -70, -26, 1888, 1920 | HQ north of the river, west of the center bridge. |
-| 24 | BUILDER | 40, 84, 1888, 1918 | HQ on the other side of that bridge. |
+The five pad roofs stay 26, 62, 18, 34, and 239 m so landings still match. The generic far-outline skyline stays a dark box with no purpose word. Where any of these sit is the City Layout plan.
 
-### How you move
+Their FPS plan for street detail, which these looks stay inside: at most 4 purposeful buildings in one street shot, at most 4 within 170 m of the sky tower, and at most 8 within 400 m of a play cluster. The hybrid street estimate for that density is 0.8–2.5 ms. The sky tower stays one instanced landmark. On the software bench its west face alone was about 2 ms, so the tower look does not split into extra materials.
 
-Drive starts at `(0, 0)` on the runway, facing north. The runway is the slow spine. The west highway is the fast spine, tunnel included. Cross streets sit at `z` 220, 360, 960, 1280, and 1700. Bridges cross the river at `x = 0` and at the highway.
+Ellie's house choices stay in `zdash.house.v1` and on `zdash.kid.v1` under `house`. Garage Z still reads `zdash.kid.v1` → `eq` and still opens only from `purpose: 'GARAGE'`. Neither save stores a coordinate or a building id. When the layout agent moves a shop, the door keeps its purpose, so the same save still opens.
 
-Fly starts at `(180, 980)`, height 460, and glides north onto the deck. Today `resetSkyDrop` in `world/state.js` uses `(180, 520, 460)`. When this map is built, that air point moves with the deck. The rooftop elevator already uses the building's own center and roof, so it follows shop 15 without a saved coordinate.
-
-Walk from the porch of shop 1 to the bay of shop 3 on the driveway. The arts sidewalk runs along `x ≈ 160` past the paint studio, the mural, and both arcades. The park loop is the west green: cafe, then the two pet lounges. Soccer is a short walk east from shops 20 and 21 onto the pitch.
-
-### Saves stay put
-
-Ellie's house choices live in `localStorage` key `zdash.house.v1`, and a copy on `zdash.kid.v1` under `house`. That is the wall theme, furniture, pet bed, and neon sign, plus the Garage page's sofa, arcade, and dance floor. The save does not store a coordinate or a building id. Both HOME shops keep `purpose: 'HOME'`, so either door reads and writes the same choices.
-
-Garage Z reads `zdash.kid.v1` → `eq` in `world/garagez.js` and paints the world Z. A door opens it only when `purpose === 'GARAGE'`. Both GARAGE shops keep that purpose. The driveway one is the walk from home. The pit one is the same link when she is on the sports side. Nothing in that save points at the old lot.
-
-Shop order can change the in-memory building id. Do not write that id into the house save or the kid save. Doors keep working by purpose. The dance mural follows `purpose === 'DANCE'` through `isTaggedArts`, not the old coordinates.
-
-Each purpose still has a shape, a color, and a sign so it reads at a glance. The shape is the same at every tier. Street and on-foot add surface detail on that shape. The portraits are the look of each purpose. The map is where that purpose sits.
+Each purpose has a shape, a color, and a sign so it reads at a glance. The shape is the same at every tier. Street and on-foot add surface detail on that shape. The portraits are the look. They are not a map.
 
 | Purpose | How it reads |
 |---|---|
 | HOME | Pitched roof, green, a person door and a garage door, sign HOME. |
 | NEON_PAINT | Magenta studio, paint swatches on the wall, sign NEON. |
 | GARAGE | Amber bay wider and taller than the car (3.6×2.8 m), sign GARAGE. |
-| DANCE | Flat mural wall at least 64×18 m (east) or 64×20 m (west). Sign Z COMPANY ARTS. The mural stays on that face. |
+| DANCE | Flat mural wall on the 64 m face, 18 m tall on one shop and 20 m tall on the other. Sign Z COMPANY ARTS. The City Layout agent sets which way that face points. |
 | PETS | Green front, paw mark, sign PETS. |
 | ARCADE | Marquee over the sidewalk, pixel lights, sign ARCADE. |
 | NOS | Gold, tanks on the roof, sign NOS. |
-| SKY_DROP | Tall cyan shaft, a landing pad with an H on the roof, and the sign JUMP. The portrait is the 70×70×239 tower. The 64×164×62 deck sits beside it downtown and wears the same pad and the same JUMP sign. |
+| SKY_DROP | Tall cyan shaft, a landing pad with an H on the roof, and the sign JUMP. The portrait is the 70×70×239 tower. The 64×164×62 deck wears the same pad and the same JUMP sign. |
 | BUILDER | Stepped blocks, sign PIXEL. |
 | SOCCER | Stands around a field, sign TURBO. |
 | CAFE | Red awning, sign PIZZA. |
@@ -75,13 +51,13 @@ Street-front, three-quarter, roof, and on-foot frames for each of these are in `
 
 ## Ideas for Bob
 
-These three are not in the 24. They are not built, and they do not get a `shop()` call, unless Bob says yes. Each one is a dashed footprint on the map and a portrait in `test-results/gl-city/looks/idea-sheet.png`.
+These three are look pitches. They are not in the 24, they are not built, and this branch does not place them. If Bob says yes, the City Layout agent owns the lot. Portraits: `test-results/gl-city/looks/idea-sheet.png`.
 
-| Idea | Suggested purpose | Where it would sit | Why it is worth a yes |
-|---|---|---|---|
-| CAR WASH | A drive-through wash for the Z. Sign WASH. | Beside the driveway pump, x 300–340, z 70–110. | She already paints the Z at Garage Z. A wash is a drive toy on the way out of the house, and there is no page for it yet. |
-| RIVER DOCK | A pier on the water. Sign DOCK. | South bank, x 200–280, z 1748–1772, clear of the river channel. | The river is a barrier today. A dock is a flying landmark and a place a boat could live later. No boat page exists yet. |
-| STORY NOOK | A quiet reading house. Sign READ. | By the park cafe, x -360–-324, z 900–940. | Home is for her saved rooms. A small nook is a calm walk-in that is not a shop, a garage, or a cafe. No page exists yet. |
+| Idea | Suggested purpose | Why it is worth a yes |
+|---|---|---|
+| CAR WASH | A drive-through wash for the Z. Sign WASH. Box about 32×16×8 m, with a bay wider than the car. | She already paints the Z at Garage Z. A wash is a drive toy, and there is no page for it yet. |
+| RIVER DOCK | A pier. Sign DOCK. Box about 64×16×6 m. | A dock is a flying landmark and a place a boat could live later. No boat page exists yet. |
+| STORY NOOK | A quiet reading house. Sign READ. Box about 28×18×11 m, pitched roof. | Home is for her saved rooms. A small nook is a calm walk-in that is not a shop, a garage, or a cafe. No page exists yet. |
 
 ## Detail tiers (approved plan, folded into the look)
 
@@ -93,18 +69,18 @@ Shapes, doors, and garages are the same at every tier. Only the surface changes.
 | Street | `P.driveMode === 'street'`, on the ground | The same boxes, doors, and garages, plus richer eye-level facade and storefront detail for each building purpose. |
 | On foot | `WALK_MODE.onFoot` | Highest tier. Extra eye-level detail inside `onFootDetailDist` (38 m). This tier is outside the WINGS toggle. |
 
-Street storefronts cover the 24 `shop()` buildings in `world/city.js`, across six districts (`SPAWN_SOUTH`, `ARTS_GARAGE`, `PARKSIDE_WEST`, `DOWNTOWN_CORE`, `SPORTS_EAST`, `BUILDER_NORTH`) and twelve purposes in `WALK_DOOR` (`HOME`, `SHOWROOM`, `NEON_PAINT`, `GARAGE`, `NOS`, `DANCE`, `PETS`, `CAFE`, `ARCADE`, `SKY_DROP`, `SOCCER`, `BUILDER`). The existing caps stay: `storefrontDist` 48 m, `storefrontMaxSpeed` 12, `storefrontMaxSegs` 260, `faceBudget` / `maxWindowFaces` 4.
+Street storefronts cover the 24 purposeful shops, wherever the City Layout agent places them. The existing caps stay: `storefrontDist` 48 m, `storefrontMaxSpeed` 12, `storefrontMaxSegs` 260, `faceBudget` / `maxWindowFaces` 4. Those caps, plus their cluster limits above, keep a street shot inside the 0.8–2.5 ms hybrid estimate.
 
 The WINGS control is the live A/B. `toggleDrive()` / `setDriveMode()` in `world/input.js` flips `P.driveMode` between `arcade` and `street`. Bob compares those two on the Galaxy by flipping WINGS / STREET. On-foot detail stays on its own path and is not what that toggle measures.
 
 ### Z dance building (mural wall)
 
-The building may take a new shape. It keeps at least one flat wall as large as the wall the mural uses today, and the mural stays on that face. `isTaggedArts` paints the mural on every DANCE building, so this covers both shops. On the proposed map the arts shop's mural faces west, toward the runway walk, and the wall stays 64×18 m. The downtown mural stays a west face, 64×20 m, toward the sky deck. The tag follows `purpose === 'DANCE'`, not the old coordinates.
+The building may take a new shape. It keeps at least one flat wall as large as the wall the mural uses today, and the mural stays on that face. `isTaggedArts` paints the mural on every DANCE building, so this covers both shops. One wall is 64×18 m. The other is 64×20 m. The City Layout agent sets which way each wall faces. The tag follows `purpose === 'DANCE'`, not a coordinate.
 
-| Shop | Flat wall that stays | Facing |
-|---|---|---|
-| Arts & Garage, `shop(-224,-164,360,424,18)` | East face, 64 m wide × 18 m tall | East (`face: 'e'`) |
-| Downtown, `shop(264,324,1160,1224,20)` | West face, 64 m wide × 20 m tall | West (`face: 'w'`) |
+| Shop | Flat wall that stays |
+|---|---|
+| Dance shop, 18 m tall | 64 m wide × 18 m tall, on the long face |
+| Dance shop, 20 m tall | 64 m wide × 20 m tall, on the long face |
 
 Today each shop is one tier, so that face is the whole building. A later shape may add a side mass, a deeper body, or a set-back crown. That extra geometry stays behind this rectangle. It does not inset, curve, or cover the mural wall. Trim, the sign in the band above the mural, and the entrance stay off the mural quad, as they do now.
 
