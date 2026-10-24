@@ -907,6 +907,53 @@ window.addEventListener&&window.addEventListener('storage',e=>{
 });
 try{new BroadcastChannel('zdash-customdance').onmessage=()=>{hRaw=null;hObjRaw='';};}catch(e){}
 try{new BroadcastChannel('zdash-petdance').onmessage=()=>{pRaw=null;pObjRaw='';};}catch(e){}
+/* Garage turntable only. Same wings-open clip petPose plays (PET_CLIPS.takeoff,
+   then rideFor). Star Bunny is not in the shared rig (that would change the
+   world pet cycle); it is added here the first time the preview samples one. */
+function ensureGarageRigs(){
+  if(D.PET_RIG.bunny)return;
+  D.PET_RIG.bunny={n:'STAR BUNNY',len:.20,leg:.13,head:.070,body:.052,ear:'point',earL:.11,tail:'stub',tailL:.045,tailR:.03,snout:.016};
+}
+function garageRig(type){
+  if(type==='dog')return 'robo';
+  if(type==='bunny')return 'bunny';
+  return D.PET_RIG[type]?type:'fox';
+}
+const GARAGE_GLOW={dog:'#b6ff4a',cat:'#ff4ad8',bunny:'#fff04d',dragon:'#b48cff',fox:'#ffb020'};
+function wingsPose(type,tSec,hatch){
+  if(!type||type==='none')return null;
+  ensureGarageRigs();
+  const rig=garageRig(type);
+  if(!D.PET_RIG[rig])return null;
+  const len=D.PET_CLIPS.takeoff.len,t=+tSec||0,h=+hatch||0;
+  let q,phase;
+  if(t<len){
+    q=D.PET_CLIPS.takeoff.f(Math.max(0,Math.min(.999,t/len)),rig);
+    phase='takeoff';
+  }else{
+    const ride=D.PET_CLIPS.ride.len,u=((t%ride)+ride)%ride/ride;
+    q=D.rideFor(u,rig,h);
+    phase=D.flyMix(h)>.55?'fly':'ride';
+  }
+  return {q,rig,phase,len,type};
+}
+function paintGaragePet(ctx,project,pose){
+  if(!ctx||typeof project!=='function'||!pose||!pose.q||!D.PET_RIG[pose.rig])return false;
+  return paintPet(ctx,pose.rig,pose.q,project,GARAGE_GLOW[pose.type]||'#ffb020');
+}
+/* Put that same pose on the car with the in-car tubes, so the preview matches
+   the wings sequence (occlusion included). Hides again when the preview is off. */
+function showWingsPet(pose,on){
+  if(!on||!pose||!pose.q){if(root)root.visible=false;return false;}
+  const X=xray();if(!X)return false;
+  if(!st.built&&!build(X))return false;
+  if(st.rigs){st.rigs.girl.group.visible=false;st.rigs.boy.group.visible=false;}
+  root.visible=true;
+  const prev=D.pet.glow;
+  D.pet.glow=GARAGE_GLOW[pose.type]||prev||'#ffb020';
+  try{drawPet(pose.q,pose.rig);}finally{D.pet.glow=prev;}
+  return true;
+}
 if(typeof drawWaterline==='function'&&!drawWaterline.__crewHooked){
   const _dw=drawWaterline;
   drawWaterline=function(){
@@ -920,6 +967,9 @@ window.CREW={
   update,
   preview,
   paintCompanion,
+  paintGaragePet,
+  wingsPose,
+  showWingsPet,
   petScale:PET_DRAW_SCALE,
   parts(who){const w=who==='boy'?'boy':who==='girl'?'girl':whoNow();return (st.rigs&&st.rigs[w]&&st.rigs[w].parts)||logical[w];},
   debugHuman(gait,tSec,phase){syncDanceOpts();return humanSpec(gait,phase==null?tSec:phase,tSec,true);},

@@ -1,0 +1,21 @@
+Companion pet turntable check
+Commit: 0b402be0bdad53b7f77236e6d7fd2d0e65e58c14
+Page: jr.html?gopen=pet#garage
+Viewports: phone 844x390, iPad 1180x820, PC 1366x768
+
+Selecting a pet plays the existing Neon World wings-open sequence:
+PET_CLIPS.takeoff on the in-car pet tubes, while the wing hinge ramps
+0 to 1 over 1.8s (the same transform time as opening WINGS). After 2.8s
+the pet holds the same fly pose petPose uses once the hatch is open.
+None eases the hinge shut and hides the pet.
+
+At about 0.95s (still in takeoff, hanging on the raised door):
+- phase takeoff, clip about x=1.14 y=0.20 z=0.94 (the door-lip hang)
+- door g about 0.52, doorDelta 2.08, hatch starting to open
+Then phase fly with door g at 1.
+None: phase none, door g 0, hatchDelta 0.
+
+P.eq stayed the cyan garage look. zdash.garagez.v1 stayed unset.
+Hover does not write zdash.crew.v1.
+Companion Pet screen: 16 hittable controls, 0 overlaps, on phone, iPad, and PC.
+Adult index.html was not edited. No deploy.
