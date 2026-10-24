@@ -18,3 +18,11 @@ Result: **PASS**
 Still open, and not a fail of the six checks above: the hidden `/test` preview does not load the new scripts; adult `index.html` only updates the `ZD_BUILD` stamp to world32; `spanFar` is still 3400 m; weather bands are stored and nothing draws them.
 
 Not deployed.
+
+## b504a8f
+
+`b504a8facacb188563c802bca3f5473558bd4f54` is `802a7ae` plus a comment in `world/city-layout.js`. No runtime line changed. `world.html`, `world-split.html`, `hud.js`, `traffic.js`, `city.js`, `shared/version.js`, and `sw.js` are identical to `802a7ae`.
+
+`tools/city-layout-check.js` on `b504a8f` passed again: stamp `1dxhsa7`, 57 roads, 8 districts, 5 NOS stations, 548 lane samples, 0 on the runway.
+
+Result: **PASS**. The six checks from `802a7ae` still hold.
