@@ -1120,6 +1120,8 @@ const TRAFFIC = (() => {
   }
   // Same copy the player sprite uses. Punching low alpha out of this canvas
   // opened holes in the glass, and the side silhouette stopped matching his Z.
+  // Showroom headlamp housings bake as flat gray discs. His Z shows those as
+  // the cool running light. Wheels sit in the lower half and stay chrome.
   function copyPhoto(src) {
     const sw = src.width || 2, sh = src.height || 2;
     const cv = document.createElement('canvas');
@@ -1127,6 +1129,36 @@ const TRAFFIC = (() => {
     const g = cv.getContext('2d', {alpha:true});
     g.clearRect(0, 0, sw, sh);
     g.drawImage(src, 0, 0);
+    try {
+      const img = g.getImageData(0, 0, sw, sh);
+      const d = img.data;
+      let minY = sh, maxY = 0, n = 0;
+      for (let y = 0, p = 0; y < sh; y++) {
+        for (let x = 0; x < sw; x++, p += 4) {
+          if (d[p + 3] < 20) continue;
+          n++;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+      const cut = n ? minY + (maxY - minY) * 0.55 : sh;
+      const a = 0.42;
+      for (let y = 0, p = 0; y < sh; y++) {
+        for (let x = 0; x < sw; x++, p += 4) {
+          if (y > cut || d[p + 3] < 20) continue;
+          const r = d[p], gg = d[p + 1], b = d[p + 2];
+          const mx = r > gg ? (r > b ? r : b) : (gg > b ? gg : b);
+          const mn = r < gg ? (r < b ? r : b) : (gg < b ? gg : b);
+          if (mx - mn >= 40) continue;
+          const L = 0.2126 * r + 0.7152 * gg + 0.0722 * b;
+          if (L <= 115 || L >= 220) continue;
+          d[p] = r * (1 - a) + 159 * a;
+          d[p + 1] = gg * (1 - a) + 216 * a;
+          d[p + 2] = b * (1 - a) + 255 * a;
+        }
+      }
+      g.putImageData(img, 0, 0);
+    } catch (e) {}
     return cv;
   }
   function bake(key) {
