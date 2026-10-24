@@ -1,6 +1,8 @@
 'use strict';
 // ===== CAMERA / PROJECTION =====
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');let W=0,H=0,DPR=1;
+const cv=document.getElementById('c');
+// let, not const: ?gl=1 points this at the sky canvas for the ground pass, then back at #c.
+let ctx=cv.getContext('2d');let W=0,H=0,DPR=1;
 // Desktop PCs fill a huge backing store (often 1080p at devicePixelRatio 2) and the
 // 2D city cannot keep up. Cap that buffer only. Phones keep the exact sizing below.
 // iPad (touch, including 1180×820 and 1366×1024) is not a desktop PC: hasTouch is

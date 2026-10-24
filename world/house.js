@@ -3,26 +3,27 @@
 // GET OUT is for street mode, on the ground, P.v < 3.
 // Each door carries a building purpose (from the city, or id % 12 until that lands)
 // plus a kid-facing label, an enter action, and a floating prompt.
-const WALK_PURPOSES=['HOME','SHOWROOM','NEON_PAINT','GARAGE','NOS','DANCE','PETS','CAFE','ARCADE','SKY_DROP','SOCCER','BUILDER'];
+const WALK_PURPOSES=['HOME','SHOWROOM','NEON_PAINT','GARAGE','NOS','DANCE','PETS','CAFE','ARCADE','SKY_DROP','SOCCER','BUILDER','SNACK'];
 const WALK_DOOR={
   HOME:{purposeLabel:'PLAYER HOUSE & GARAGE',actionLabel:'[E] WELCOME HOME',color:'#7dff6b'},
   SHOWROOM:{purposeLabel:'Z-DASH GLASS SHOWROOM',actionLabel:'[E] 370Z SPOTLIGHT',color:'#3ee6ff'},
   NEON_PAINT:{purposeLabel:"ELLIE'S NEON PAINT STUDIO",actionLabel:"[E] ENTER ELLIE'S NEON PAINT STUDIO",color:'#ff4fd8'},
   GARAGE:{purposeLabel:'SPEED & TUNING GARAGE',actionLabel:'[E] GARAGE TUNE-UP',color:'#ffb020'},
-  NOS:{purposeLabel:'NOS & FUEL DEPOT',actionLabel:'TAP: NOS DEPOT (30s NOS)',color:'#3ee6ff'},
+  NOS:{purposeLabel:'NOS & FUEL DEPOT',actionLabel:'TAP: CLAIM NOS',color:'#ffe14d'},
   DANCE:{purposeLabel:'Z COMPANY ARTS — DANCE STUDIO',actionLabel:'ENTER Z COMPANY ARTS',color:'#ff4fd8'},
   PETS:{purposeLabel:'PET RESCUE & CRITTER LOUNGE',actionLabel:'[E] CRITTERS SAY HI',color:'#7dff6b'},
   CAFE:{purposeLabel:'NEON PIZZA & BOBA CAFE',actionLabel:'[E] BOBA & PIZZA',color:'#ff9a2e'},
   ARCADE:{purposeLabel:'RETRO PIXEL ARCADE',actionLabel:'[E] ARCADE JACKPOT',color:'#ffe14d'},
   SKY_DROP:{purposeLabel:'SKY-DROP ELEVATOR TOWER',actionLabel:'[E] ROOFTOP ELEVATOR',color:'#3ee6ff'},
   SOCCER:{purposeLabel:'STADIUM PRO SHOP & ARENA',actionLabel:'[E] STADIUM ARENA',color:'#7dfff2'},
-  BUILDER:{purposeLabel:'CITY BUILDER ARCHITECT HQ',actionLabel:'[E] CITY BUILDER HQ',color:'#ffb020'}
+  BUILDER:{purposeLabel:'CITY BUILDER ARCHITECT HQ',actionLabel:'[E] CITY BUILDER HQ',color:'#ffb020'},
+  SNACK:{purposeLabel:'SNACK STAND',actionLabel:'[E] GRAB A SNACK',color:'#ff9a2e'}
 };
 const WALK_UG=['#ff4fd8','#3ee6ff','#7dff6b','#ffe14d','#9b5cff'];
 const WALK_PILL_M=6,WALK_AUTO_M=4.5;
 const WALK_V=3.6,RUN_V=7.6,WALK_ACCEL=14,WALK_BRAKE=32,WALK_STRIDE=2.4,DANCE_STRIDE=6;
 const WALK_PARK_M=9,WALK_PARK_PAD=1.5,WALK_BAY_M=1.35,WALK_BAY_STAND=1.7;
-const WALK_INDOOR={HOME:1,SHOWROOM:1,NEON_PAINT:1,GARAGE:1,DANCE:1,PETS:1,CAFE:1,ARCADE:1,BUILDER:1,NOS:1,SOCCER:1};
+const WALK_INDOOR={HOME:1,SHOWROOM:1,NEON_PAINT:1,GARAGE:1,DANCE:1,PETS:1,CAFE:1,ARCADE:1,BUILDER:1,SOCCER:1};
 const WALK_PAGE={NEON_PAINT:'neon-paint.html',DANCE:'dance-stage.html',GARAGE:'jr.html#garage',PETS:'crew.html'};
 const WALK_HOUSE_KEY='zdash.house.v1',WALK_KID_KEY='zdash.kid.v1';
 const WALK_THEMES=['#ff4fd8','#3ee6ff','#7dff6b','#ffb020','#9b5cff'];
@@ -32,7 +33,7 @@ const WALK_SIGNS=['ELLIE','Z COMPANY','370Z','HOME'];
 function walkPurpose(b){
   if(b&&b.purpose&&WALK_DOOR[b.purpose])return b.purpose;
   const id=b&&Number.isFinite(b.id)?b.id:0;
-  return WALK_PURPOSES[((id%12)+12)%12];
+  return WALK_PURPOSES[((id%WALK_PURPOSES.length)+WALK_PURPOSES.length)%WALK_PURPOSES.length];
 }
 function walkMeta(b){
   const purpose=walkPurpose(b),meta=WALK_DOOR[purpose]||WALK_DOOR.HOME;
@@ -216,6 +217,7 @@ function walkPageLabel(purpose){
   if(purpose==='SOCCER')return 'KICK OFF';
   if(purpose==='BUILDER')return 'OPEN THE BLUEPRINTS';
   if(purpose==='NOS')return 'CLAIM THE NOS';
+  if(purpose==='SNACK')return 'GRAB A SNACK';
   return '';
 }
 function walkFurnLabel(id){
@@ -800,8 +802,9 @@ function walkAct(door){
     if(window.GARAGEZ&&typeof window.GARAGEZ.open==='function')window.GARAGEZ.open({building:walkDanceBuilding(door)});
     walkToast('GARAGE TUNE-UP! 100% NOS',door.color);
   }else if(purpose==='NOS'){
+    if(!door.pump){walkToast('PULL UP TO A PUMP',door.color);return;}
     P.nosTank=1;P.hotDropNosT=30;
-    walkToast('NOS DEPOT! 30s OVERCHARGED NOS!',door.color);
+    walkToast('NOS AT THE PUMP! 30s OVERCHARGED NOS!',door.color);
   }else if(purpose==='DANCE'){
     const building=walkDanceBuilding(door);
     if(window.DANCE_STAGE&&typeof window.DANCE_STAGE.open==='function'){
@@ -817,6 +820,9 @@ function walkAct(door){
     P.score=(P.score||0)+250;
     P.nosTank=Math.min(1,(P.nosTank||0)+0.5);
     walkToast('BOBA & PIZZA BREAK! +250 PTS & +50% NOS',door.color);
+  }else if(purpose==='SNACK'){
+    P.score=(P.score||0)+80;
+    walkToast('SNACK STOP! +80 PTS',door.color);
   }else if(purpose==='ARCADE'){
     P.score=(P.score||0)+500;walkBurst(16);
     walkToast('RETRO ARCADE HIGH SCORE! +500 PTS',door.color);
@@ -875,6 +881,10 @@ function walkEntryTarget(){
   const x=onFoot?WALK_MODE.x:P.x,z=onFoot?WALK_MODE.z:P.z;
   if(!Number.isFinite(x)||!Number.isFinite(z))return null;
   const carOk=!!(P.ground&&!P.wreck);
+  if((onFoot||(carOk&&P.v<8))&&typeof NOS_STATION!=='undefined'&&NOS_STATION.nearest){
+    const pump=NOS_STATION.nearest(x,z);
+    if(pump)return {door:NOS_STATION.asDoor(pump),pump:true};
+  }
   if((onFoot||(carOk&&P.v<10))&&typeof WALK_MODE.activeParking==='function'){
     const garage=WALK_MODE.activeParking(x,z);
     if(garage&&garage.door)return {door:garage.door,garage};
@@ -884,7 +894,7 @@ function walkEntryTarget(){
   return door?{door,garage:null}:null;
 }
 function walkShortBld(door){
-  const map={HOME:'HOUSE',SHOWROOM:'SHOWROOM',NEON_PAINT:'PAINT',GARAGE:'GARAGE',NOS:'NOS',DANCE:'DANCE',PETS:'PETS',CAFE:'CAFE',ARCADE:'ARCADE',SKY_DROP:'SKY',SOCCER:'STADIUM',BUILDER:'BUILDER'};
+  const map={HOME:'HOUSE',SHOWROOM:'SHOWROOM',NEON_PAINT:'PAINT',GARAGE:'GARAGE',NOS:'NOS',DANCE:'DANCE',PETS:'PETS',CAFE:'CAFE',ARCADE:'ARCADE',SKY_DROP:'SKY',SOCCER:'STADIUM',BUILDER:'BUILDER',SNACK:'SNACK'};
   return (door&&map[door.purpose])||'';
 }
 function walkEnsureEnterBtn(){
@@ -943,6 +953,14 @@ function walkEnterDoor(){
   const target=walkEntryTarget();
   if(!target||!target.door)return false;
   const door=target.door;
+  if(door.purpose==='NOS'){
+    if(!door.pump){walkToast('PULL UP TO A PUMP',door.color||'#ffe14d');return false;}
+    try{walkAct(door);}catch(e){return false;}
+    self.door=door;self.insideBuilding=false;self.insideDoor=null;
+    if(typeof walkHideInterior==='function')walkHideInterior();
+    walkSyncPill();walkSyncGait();walkSyncDyn();walkSyncEnterBtn();
+    return false;
+  }
   P.v=0;P.ground=true;P.pitch=0;
   if(P.driveMode!=='street')P.driveMode='street';
   self.onFoot=true;self.y=P.y||0;self._roofY=null;

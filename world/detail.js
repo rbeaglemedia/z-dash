@@ -1584,81 +1584,90 @@
       if (x1 > 140) clipEW(center, z, x0 > 140 ? x0 : 140, x1);
     }
   }
+  function detailSegs(rd) {
+    const segs = (typeof CITY !== 'undefined' && CITY.LAYOUT && CITY.LAYOUT.roads) || [];
+    const out = [];
+    for (let i = 0; i < segs.length; i++) {
+      const r = segs[i];
+      if (!r || r.kind === 'tunnel') continue;
+      const x0 = Math.min(r.x0, r.x1), x1 = Math.max(r.x0, r.x1);
+      const z0 = Math.min(r.z0, r.z1), z1 = Math.max(r.z0, r.z1);
+      if (cam.x < x0 - rd || cam.x > x1 + rd || cam.z < z0 - rd || cam.z > z1 + rd) continue;
+      out.push(r);
+    }
+    return out;
+  }
   function drawRoads() {
     if (!active || (!on.lanes && !on.crosswalks && !on.sidewalks)) return;
-    const sx = snapStreetX(cam.x), sz = snapStreetZ(cam.z);
     const close = mode === 0;
     const rd = close ? (T.crawlDetailDist || 30) : (T.streetDist || T.roadDist || 70);
     const step = close ? 8 : 14, dash = close ? 4 : 6;
-    if (dist3(sx, 0, cam.z) < rd + 30 && (on.lanes || on.sidewalks)) {
+    const segs = detailSegs(rd + 8);
+    if (!segs.length) return;
+    if (on.lanes) {
       ctx.beginPath();
-      if (on.lanes) {
-        const z0 = cam.z - rd, z1 = cam.z + rd;
-        for (let z = z0; z < z1; z += step) clipNS(sx, sx, z, z + dash);
-        ctx.strokeStyle = 'rgba(62,230,255,.7)';
-        ctx.lineWidth = 1.4;
-        ctx.stroke();
-      }
-      if (on.sidewalks) {
-        const z0 = Math.max(-320, cam.z - rd), z1 = Math.min(2120, cam.z + rd);
-        const gap0 = sz - 14, gap1 = sz + 14;
-        ctx.beginPath();
-        curbNS(sx, sx + 9.6, z0, z1, gap0, gap1);
-        curbNS(sx, sx - 9.6, z0, z1, gap0, gap1);
-        ctx.strokeStyle = 'rgba(255,176,32,.8)';
-        ctx.lineWidth = 1.6;
-        ctx.stroke();
-        ctx.beginPath();
-        curbNS(sx, sx + 12.2, z0, z1, gap0, gap1);
-        curbNS(sx, sx - 12.2, z0, z1, gap0, gap1);
-        ctx.strokeStyle = 'rgba(62,230,255,.35)';
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
-      }
-      stat.roads++;
-    }
-    if ((on.lanes || on.sidewalks) && dist3(cam.x, 0, sz) < rd + 30) {
-      ctx.beginPath();
-      if (on.lanes) {
-        const x0 = cam.x - rd, x1 = cam.x + rd;
-        for (let x = x0; x < x1; x += step) {
-          if (x > -150 && x < 150) continue;
-          clipEW(sz, sz, x, Math.min(x + dash, x1));
+      for (let i = 0; i < segs.length; i++) {
+        const r = segs[i];
+        if (Math.abs(r.x0 - r.x1) < 1.5) {
+          const x = r.x0, z0 = Math.max(Math.min(r.z0, r.z1), cam.z - rd), z1 = Math.min(Math.max(r.z0, r.z1), cam.z + rd);
+          for (let z = z0; z < z1; z += step) clipNS(x, x, z, Math.min(z + dash, z1));
+        } else if (Math.abs(r.z0 - r.z1) < 1.5) {
+          const z = r.z0, x0 = Math.max(Math.min(r.x0, r.x1), cam.x - rd), x1 = Math.min(Math.max(r.x0, r.x1), cam.x + rd);
+          for (let x = x0; x < x1; x += step) {
+            if (Math.abs(x) < 18 && z > -70 && z < 1520) continue;
+            clipEW(z, z, x, Math.min(x + dash, x1));
+          }
         }
       }
-      ctx.strokeStyle = 'rgba(255,79,216,.65)';
-      ctx.lineWidth = 1.3;
+      ctx.strokeStyle = 'rgba(62,230,255,.7)';
+      ctx.lineWidth = 1.4;
       ctx.stroke();
-      if (on.sidewalks) {
-        const x0 = cam.x - rd, x1 = cam.x + rd, gap0 = sx - 14, gap1 = sx + 14;
-        ctx.beginPath();
-        if (x0 < gap0) { spanX(sz, x0, x1 < gap0 ? x1 : gap0, sz + 9.6); spanX(sz, x0, x1 < gap0 ? x1 : gap0, sz - 9.6); }
-        if (x1 > gap1) { spanX(sz, x0 > gap1 ? x0 : gap1, x1, sz + 9.6); spanX(sz, x0 > gap1 ? x0 : gap1, x1, sz - 9.6); }
-        ctx.strokeStyle = 'rgba(255,176,32,.8)';
-        ctx.lineWidth = 1.6;
-        ctx.stroke();
-        ctx.beginPath();
-        if (x0 < gap0) { spanX(sz, x0, x1 < gap0 ? x1 : gap0, sz + 12.2); spanX(sz, x0, x1 < gap0 ? x1 : gap0, sz - 12.2); }
-        if (x1 > gap1) { spanX(sz, x0 > gap1 ? x0 : gap1, x1, sz + 12.2); spanX(sz, x0 > gap1 ? x0 : gap1, x1, sz - 12.2); }
-        ctx.strokeStyle = 'rgba(62,230,255,.35)';
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
-      }
+      stat.roads++;
     }
-    const crossD = close ? (T.crawlDetailDist || 30) : (T.streetDist || T.crossDist || 70);
-    if (on.crosswalks && dist3(sx, 0, sz) < crossD) {
+    if (on.sidewalks) {
       ctx.beginPath();
-      for (let i = 0; i < 4; i++) {
-        const o = 10 + i * 2.1;
-        clipEW(sz, sz - o, sx - 8, sx + 8);
-        clipEW(sz, sz + o, sx - 8, sx + 8);
-        clipNS(sx, sx - o, sz - 8, sz + 8);
-        clipNS(sx, sx + o, sz - 8, sz + 8);
+      for (let i = 0; i < segs.length; i++) {
+        const r = segs[i];
+        if (r.kind === 'highway' || r.kind === 'bridge') continue;
+        const half = (r.w || 20) / 2;
+        if (Math.abs(r.x0 - r.x1) < 1.5) {
+          const x = r.x0, z0 = Math.max(Math.min(r.z0, r.z1), cam.z - rd), z1 = Math.min(Math.max(r.z0, r.z1), cam.z + rd);
+          clipNS(x, x + half, z0, z1);
+          clipNS(x, x - half, z0, z1);
+        } else if (Math.abs(r.z0 - r.z1) < 1.5) {
+          const z = r.z0, x0 = Math.max(Math.min(r.x0, r.x1), cam.x - rd), x1 = Math.min(Math.max(r.x0, r.x1), cam.x + rd);
+          clipEW(z + half, z + half, x0, x1);
+          clipEW(z - half, z - half, x0, x1);
+        }
+      }
+      ctx.strokeStyle = 'rgba(255,176,32,.8)';
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+    }
+    if (on.crosswalks) {
+      ctx.beginPath();
+      for (let i = 0; i < segs.length; i++) {
+        const a = segs[i];
+        if (Math.abs(a.x0 - a.x1) >= 1.5) continue;
+        for (let j = 0; j < segs.length; j++) {
+          const b = segs[j];
+          if (Math.abs(b.z0 - b.z1) >= 1.5) continue;
+          const x = a.x0, z = b.z0;
+          if (z < Math.min(a.z0, a.z1) - 2 || z > Math.max(a.z0, a.z1) + 2) continue;
+          if (x < Math.min(b.x0, b.x1) - 2 || x > Math.max(b.x0, b.x1) + 2) continue;
+          if (Math.hypot(x - cam.x, z - cam.z) > rd) continue;
+          for (let k = 0; k < 4; k++) {
+            const o = 10 + k * 2.1;
+            clipEW(z, z - o, x - 8, x + 8);
+            clipEW(z, z + o, x - 8, x + 8);
+            clipNS(x, x - o, z - 8, z + 8);
+            clipNS(x, x + o, z - 8, z + 8);
+          }
+        }
       }
       ctx.strokeStyle = 'rgba(255,242,192,.8)';
       ctx.lineWidth = 1.6;
       ctx.stroke();
-      stat.roads++;
     }
   }
   const GP = new Float32Array(12);

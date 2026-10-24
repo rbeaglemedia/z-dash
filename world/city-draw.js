@@ -70,13 +70,50 @@ function farSil(q){const P8=[];for(const y of[q.y0,q.y1])for(const[x,z]of[[q.x0,
   const face=(ids)=>{for(let k=0;k<4;k++)edge(ids[k],ids[(k+1)%4]);if(FARF){const ink=PT;PT=FARF;const f4=[P8[ids[0]],P8[ids[1]],P8[ids[2]],P8[ids[3]]];let ar=0;for(let k=0;k<4;k++){const u=f4[k],v=f4[(k+1)%4];ar+=(u[0]/Math.max(u[2],NEAR))*(v[1]/Math.max(v[2],NEAR))-(v[0]/Math.max(v[2],NEAR))*(u[1]/Math.max(u[2],NEAR));}pathPoly(ar<0?f4.reverse():f4);PT=ink;}};
   if(farSil.o){face([0,1,2,3]);face([4,5,6,7]);edge(0,4);edge(1,5);edge(2,6);edge(3,7);return;}
   if(cam.x<q.x0)face([0,3,7,4]);else if(cam.x>q.x1)face([1,2,6,5]);if(cam.z<q.z0)face([0,1,5,4]);else if(cam.z>q.z1)face([3,2,6,7]);if(cam.y>q.y1)face([4,5,6,7]);else if(cam.y<q.y0)face([0,1,2,3]);}
-function drawBldg(b,d){if(b.towCab&&TOW3.on(d))return;const ol=b.kind==='outline';if(CDRAW.nonear&&d<=CDRAW.far&&!ol)return;if(d>CDRAW.far||ol){if(CDRAW.nofar||(!ol&&d>CDRAW.far*3.5&&b.top<12))return;if(!FARF){FARF=new Path2D();FARD=d;}FARN=d;farSil.o=ol;let p=FARB.get(b.c);if(!p){p=new Path2D();FARB.set(b.c,p);}farSil.o=false;PT=p;for(const q of b.boxes)farSil(q);PT=null;farFlush();
+// Signs, doors, parking, and graffiti stay on the 2D context. ?gl=1 draws the solid
+// and the window dashes in WebGL, then this paints the same leftovers the 2D path does.
+// One batched fill and one stroke per piece. Flat boxes. No blur.
+const NOS_FILL={mass:'#1a1030',canopy:'#ffe14d',glow:'#3ee6ff',post:'#123040',pump:'#ff4fd8',glass:'#16324a'};
+const NOS_EDGE={mass:'#ffe14d',canopy:'#fff4b0',glow:'#e9ffff',post:'#3ee6ff',pump:'#ffe14d',glass:'#3ee6ff'};
+const NOS_ORDER=['mass','glass','post','pump','canopy','glow'];
+function drawNosStation(b,d,a){
+  const groups={};
+  for(const q of b.boxes){const k=q.nosPart||'mass';(groups[k]||(groups[k]=[])).push(q);}
+  for(const k of NOS_ORDER){const list=groups[k];if(!list)continue;
+    ctx.beginPath();for(const q of list)boxFaces(q);ctx.fillStyle=NOS_FILL[k]||'#1a1030';ctx.globalAlpha=1;ctx.fill();
+    ctx.globalAlpha=a;ctx.strokeStyle=NOS_EDGE[k]||b.c;ctx.lineWidth=k==='glow'?2.2:1.5;ctx.stroke();}
+  if(d<CDRAW.winDist){ctx.beginPath();for(const q of groups.mass||[])winRows(b,q,d);
+    if(!b.dashFixed)b.dashFixed=b.dash[0]>3?[6,5]:[4,4];ctx.setLineDash(b.dashFixed);ctx.lineDashOffset=0;
+    ctx.strokeStyle=b.wc;ctx.globalAlpha=a*.75;ctx.lineWidth=1.6;ctx.stroke();ctx.setLineDash([]);}
+  const lane=b.nosStation.lane;if(lane){const lx=lane.x1-lane.x0,lz=lane.z1-lane.z0;ctx.beginPath();
+    if(lz>=lx){pathSeg([lane.x0,.05,lane.z0],[lane.x0,.05,lane.z1]);pathSeg([lane.x1,.05,lane.z0],[lane.x1,.05,lane.z1]);}
+    else{pathSeg([lane.x0,.05,lane.z0],[lane.x1,.05,lane.z0]);pathSeg([lane.x0,.05,lane.z1],[lane.x1,.05,lane.z1]);}
+    ctx.strokeStyle='#3ee6ff';ctx.globalAlpha=a;ctx.lineWidth=1.4;ctx.stroke();}
+  if(d<140){let glow=null;for(const q of b.boxes)if(q.nosPart==='glow')glow=q;
+    if(glow){const nx=(b.nosStation.face&&b.nosStation.face.nx)||0,nz=(b.nosStation.face&&b.nosStation.face.nz)||0;
+      const x=nx<0?glow.x0:nx>0?glow.x1:(glow.x0+glow.x1)/2,z=nz<0?glow.z0:nz>0?glow.z1:(glow.z0+glow.z1)/2,y=(glow.y0+glow.y1)/2,p=proj(x,y,z);
+      if(p){const fs=Math.max(12,Math.min(42,520/Math.max(d,8)));ctx.globalAlpha=1;ctx.font='900 '+fs.toFixed(0)+'px system-ui,Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#140818';ctx.fillText('NOS',p[0],p[1]);}}}
+  ctx.globalAlpha=a;}
+function drawBldgGLDeco(b,d,ol){
+  if(b.nosStation&&!ol&&d<=CDRAW.far)drawNosStation(b,d,1);
+  if(d>CDRAW.far||ol){
+    if(!ol&&d<520)for(const k of b.deco)if(k[0]==='sign')drawSign(k[1],d);
+    if(!ol&&d<180)drawParking(b,d);
+    if(!ol&&typeof NEON_PAINT!=='undefined'&&NEON_PAINT&&typeof NEON_PAINT.drawBuildingGraffiti==='function'&&d<260)NEON_PAINT.drawBuildingGraffiti(ctx,b);
+    return;}
+  const a=clamp(1.5-d/CDRAW.dist,0.25,1);ctx.save();ctx.globalAlpha=a;
+  drawDoors(b,d);drawDeco(b,d);
+  if(d<180)drawParking(b,d);
+  if(typeof NEON_PAINT!=='undefined'&&NEON_PAINT&&typeof NEON_PAINT.drawBuildingGraffiti==='function'&&d<260)NEON_PAINT.drawBuildingGraffiti(ctx,b);
+  ctx.restore();}
+function drawBldg(b,d){if(b.towCab&&TOW3.on(d))return;const ol=b.kind==='outline';if(window.GLCITY&&GLCITY.skipSolid(b)){drawBldgGLDeco(b,d,ol);return;}if(CDRAW.nonear&&d<=CDRAW.far&&!ol)return;if(d>CDRAW.far||ol){if(CDRAW.nofar||(!ol&&d>CDRAW.far*3.5&&b.top<12))return;if(!FARF){FARF=new Path2D();FARD=d;}FARN=d;farSil.o=ol;let p=FARB.get(b.c);if(!p){p=new Path2D();FARB.set(b.c,p);}farSil.o=false;PT=p;for(const q of b.boxes)farSil(q);PT=null;farFlush();
     if(!ol&&d<520)for(const k of b.deco)if(k[0]==='sign'){farFlush();drawSign(k[1],d);}
     if(!ol&&d<180){farFlush();drawParking(b,d);}
     if(!ol&&typeof NEON_PAINT!=='undefined'&&NEON_PAINT&&typeof NEON_PAINT.drawBuildingGraffiti==='function'&&d<260)NEON_PAINT.drawBuildingGraffiti(ctx,b);
     return;}farFlush();const a=clamp(1.5-d/CDRAW.dist,0.25,1);
-  ctx.beginPath();for(const q of b.boxes)boxFaces(q);ctx.fillStyle=b.kind==='hill'?'#05100a':'#0a0612';ctx.fill();ctx.globalAlpha=a;ctx.strokeStyle=b.c;ctx.lineWidth=d<400?1.8:1.2;ctx.stroke();
-  if(d<CDRAW.winDist&&b.kind!=='pylon'&&b.kind!=='bill'){ctx.beginPath();for(const q of b.boxes)winRows(b,q,d);if(!b.dashFixed)b.dashFixed=b.dash[0]>3?[6,5]:[4,4];ctx.setLineDash(b.dashFixed);ctx.lineDashOffset=0;ctx.strokeStyle=b.wc;ctx.globalAlpha=a*.75;ctx.lineWidth=1.6;ctx.stroke();ctx.setLineDash([]);}
+  if(b.nosStation)drawNosStation(b,d,a);
+  else{ctx.beginPath();for(const q of b.boxes)boxFaces(q);ctx.fillStyle=b.kind==='hill'?'#05100a':'#0a0612';ctx.fill();ctx.globalAlpha=a;ctx.strokeStyle=b.c;ctx.lineWidth=d<400?1.8:1.2;ctx.stroke();
+  if(d<CDRAW.winDist&&b.kind!=='pylon'&&b.kind!=='bill'){ctx.beginPath();for(const q of b.boxes)winRows(b,q,d);if(!b.dashFixed)b.dashFixed=b.dash[0]>3?[6,5]:[4,4];ctx.setLineDash(b.dashFixed);ctx.lineDashOffset=0;ctx.strokeStyle=b.wc;ctx.globalAlpha=a*.75;ctx.lineWidth=1.6;ctx.stroke();ctx.setLineDash([]);}}
   ctx.globalAlpha=a;drawDoors(b,d);drawDeco(b,d);
   if(d<180)drawParking(b,d);
   if(typeof NEON_PAINT!=='undefined'&&NEON_PAINT&&typeof NEON_PAINT.drawBuildingGraffiti==='function'&&d<260)NEON_PAINT.drawBuildingGraffiti(ctx,b);
@@ -137,13 +174,14 @@ function drawHoop(h,d){if(d>700)return;ctx.beginPath();const pts=[];for(let i=0;
 function roadFeet(){const ids=new Set();for(const e of (CITY.ROADS&&CITY.ROADS.edges)||[]){if(!e)continue;for(const b of e.blockedBy||[])if(b&&b.oid!=null)ids.add(b.oid);}const out=[];
   for(const b of CITY.buildings||CITY.BL){if(!ids.has(b.oid)||!b.boxes)continue;for(const q of b.boxes)if((q.y0||0)<=1.2&&q.y1>1)out.push(q);}return out;}
 function cutSpan(a,b,cuts){let seg=[[a,b]];for(const[c0,c1]of cuts){if(!(c1>c0))continue;const next=[];for(const[s0,s1]of seg){if(c1<=s0||c0>=s1){next.push([s0,s1]);continue;}if(c0>s0+0.05)next.push([s0,c0]);if(c1<s1-0.05)next.push([c1,s1]);}seg=next;if(!seg.length)break;}return seg;}
-function drawRoads(cx,cz){cx=cx==null?cam.x:cx;cz=cz==null?cam.z:cz;const C=CITY,RS=CDRAW.streets,feet=roadFeet(),z0=Math.max(C.ZS0,cz-RS),z1=Math.min(C.ZS1,cz+RS),x0=Math.max(C.XS0,cx-RS),x1=Math.min(C.XS1,cx+RS);
+function drawRoads(cx,cz){cx=cx==null?cam.x:cx;cz=cz==null?cam.z:cz;const C=CITY,RS=CDRAW.streets,feet=roadFeet();
   const emitZ=(x,za,zb)=>{if(!(zb>za))return;const cuts=[];for(const q of feet)if(x>q.x0&&x<q.x1&&q.z1>za&&q.z0<zb)cuts.push([Math.max(za,q.z0),Math.min(zb,q.z1)]);for(const[s0,s1]of cutSpan(za,zb,cuts))if(s1-s0>0.4)pathSeg([x,0.02,s0],[x,0.02,s1]);};
   const emitX=(z,xa,xb)=>{if(xb<xa){const t=xa;xa=xb;xb=t;}if(!(xb>xa))return;const cuts=[];for(const q of feet)if(z>q.z0&&z<q.z1&&q.x1>xa&&q.x0<xb)cuts.push([Math.max(xa,q.x0),Math.min(xb,q.x1)]);for(const[s0,s1]of cutSpan(xa,xb,cuts))if(s1-s0>0.4)pathSeg([s0,0.02,z],[s1,0.02,z]);};
+  const segs=(C.LAYOUT&&C.LAYOUT.roads)||[];
   ctx.beginPath();
-  for(const X of C.roadsX){if(Math.abs(X-cx)>RS)continue;for(const e of[-10,10]){const zb=Math.max(z0,C.ZS0),ze=Math.min(z1,C.ZS1);if(ze<=zb)continue;if(zb<1700&&ze>1900){emitZ(X+e,zb,1700);emitZ(X+e,1900,ze);}else if(zb<1700||ze>1900)emitZ(X+e,Math.max(zb,ze>1900&&zb>=1700?1900:zb),Math.min(ze,zb<1700&&ze<=1900?1700:ze));}}
-  for(const z of C.roadsZ){if(Math.abs(z-cz)>RS)continue;for(const e of[-10,10])for(const s of[-1,1]){const a=s>0?140:-C.XS1,b2=s>0?C.XS1:-140,xa=Math.max(a,x0),xb=Math.min(b2,x1);if(xb>xa)emitX(z+e,xa,xb);}}
-  if(Math.abs(cz-1100)<RS)for(const e of[-10,10])emitX(1100+e,C.XS1,C.TRACK.cx-C.TRACK.R-C.TRACK.w/2);
+  for(const r of segs){if(!r||r.kind==='highway'||r.kind==='bridge'||r.kind==='tunnel')continue;const half=(r.w||20)/2;
+    if(Math.abs(r.x0-r.x1)<1.5){const x=r.x0,zA=Math.min(r.z0,r.z1),zB=Math.max(r.z0,r.z1);if(Math.abs(x-cx)>RS+half||zB<cz-RS||zA>cz+RS)continue;const za=Math.max(zA,cz-RS),zb=Math.min(zB,cz+RS);for(const e of[-half,half])emitZ(x+e,za,zb);}
+    else if(Math.abs(r.z0-r.z1)<1.5){const z=r.z0,xA=Math.min(r.x0,r.x1),xB=Math.max(r.x0,r.x1);if(Math.abs(z-cz)>RS+half||xB<cx-RS||xA>cx+RS)continue;const xa=Math.max(xA,cx-RS),xb=Math.min(xB,cx+RS);for(const e of[-half,half])emitX(z+e,xa,xb);}}
   ctx.strokeStyle='rgba(62,230,255,.35)';ctx.lineWidth=1.2;ctx.stroke();}
 function drawCityGround(){const cx=cam.x,cz=cam.z,R=CDRAW.dist,C=CITY;ctx.save();
   // river + bridge decks + bank lips
@@ -153,7 +191,7 @@ function drawCityGround(){const cx=cam.x,cz=cam.z,R=CDRAW.dist,C=CITY;ctx.save()
   ctx.beginPath();for(const bx of[0,C.HW.x]){const w=bx?C.HW.hw:14;wpoly([[bx-w,0.05,C.RIV.z0-4],[bx+w,0.05,C.RIV.z0-4],[bx+w,0.05,C.RIV.z1+4],[bx-w,0.05,C.RIV.z1+4]]);}ctx.fillStyle='#120a18';ctx.fill();
   ctx.beginPath();for(const bx of[0,C.HW.x]){const w=bx?C.HW.hw:14;for(const s of[-1,1]){pathSeg([bx+s*w,1.2,C.RIV.z0-4],[bx+s*w,1.2,C.RIV.z1+4]);pathSeg([bx+s*w,0,C.RIV.z0-4],[bx+s*w,0,C.RIV.z1+4]);}}ctx.strokeStyle='#ffb020';ctx.lineWidth=1.6;ctx.stroke();}
   // park + stadium field
-  ctx.beginPath();if(Math.hypot(cx+250,cz-1100)<R)wpoly([[C.PARK.x0,0,C.PARK.z0],[C.PARK.x1,0,C.PARK.z0],[C.PARK.x1,0,C.PARK.z1],[C.PARK.x0,0,C.PARK.z1]]);if(Math.hypot(cx-C.STAD.x,cz-C.STAD.z)<R){const pts=[];for(let i=0;i<20;i++){const a=i/20*Math.PI*2;pts.push([C.STAD.x+Math.cos(a)*(C.STAD.r-14),0,C.STAD.z+Math.sin(a)*(C.STAD.r-14)*.8]);}wpoly(pts);}ctx.fillStyle='#062a12';ctx.fill();
+  ctx.beginPath();if(Math.hypot(cx-(C.PARK.x0+C.PARK.x1)/2,cz-(C.PARK.z0+C.PARK.z1)/2)<R)wpoly([[C.PARK.x0,0,C.PARK.z0],[C.PARK.x1,0,C.PARK.z0],[C.PARK.x1,0,C.PARK.z1],[C.PARK.x0,0,C.PARK.z1]]);if(Math.hypot(cx-C.STAD.x,cz-C.STAD.z)<R){const pts=[];for(let i=0;i<20;i++){const a=i/20*Math.PI*2;pts.push([C.STAD.x+Math.cos(a)*(C.STAD.r-14),0,C.STAD.z+Math.sin(a)*(C.STAD.r-14)*.8]);}wpoly(pts);}ctx.fillStyle='#062a12';ctx.fill();
   if(Math.hypot(cx-C.STAD.x,cz-C.STAD.z)<R*.6){ctx.beginPath();wpoly([[C.STAD.x-50,0.05,C.STAD.z-30],[C.STAD.x+50,0.05,C.STAD.z-30],[C.STAD.x+50,0.05,C.STAD.z+30],[C.STAD.x-50,0.05,C.STAD.z+30]]);pathSeg([C.STAD.x,0.05,C.STAD.z-30],[C.STAD.x,0.05,C.STAD.z+30]);ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=1.2;ctx.stroke();}
   if(Math.hypot(cx-(C.PARK.x0+C.PARK.x1)/2,cz-(C.PARK.z0+C.PARK.z1)/2)<900){ctx.beginPath();for(const[x,z,h]of C.TREES){pathSeg([x,0,z],[x,h,z]);pathSeg([x-2,h*.7,z],[x+2,h*.7,z]);}ctx.strokeStyle='#7dff6b';ctx.lineWidth=1.4;ctx.stroke();}
   drawTrack(cx,cz);
