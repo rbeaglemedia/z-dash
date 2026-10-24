@@ -1,10 +1,16 @@
 'use strict';
-// Neon World road traffic: Z TAKEOVER level 4 (every car is the player's 370Z).
-// The GLB is the one already loaded on ZD.Xray.car. Traffic clones that graph once
-// (shared geometry, no second download) into its own scene and bakes view sprites
-// with X.renderer only. It never calls X.render, never touches X.car after the
-// clone, and never opens the player's wings. Far cars are boxes or light dots.
-// physics.js / tune.js untouched. A hit wrecks the traffic car (WANTED wKnock / wFlip).
+// Neon World road traffic. Every car is the player's 370Z, following CITY lanes.
+// No pursuit, no police, no ramming. A car that meets the player slows and stays in its lane.
+// Near cars are a photo of his showroom Z: same GLB, same paint, same tyre and
+// rim meshes in the wells. The only source is ZD.Xray.car, which init() loads
+// from shared/assets/370z-glb.js (ZD_EMBED.cfg file assets/370z.glb). Other
+// embedded cars are not this Z. Copying that picture off the GL canvas is not
+// cheap, so each view is photographed once and blitted. The wheels stay on the
+// axle. They are not flat stars turned toward the camera.
+// Farther cars are boxes or dots. No shadowBlur.
+// Lanes come only from the road net (nodes, edges, lanes, len, w, kind).
+// Neon World fills that net. A later world can too, and traffic follows it
+// without reading that world's buildings.
 const TRAFFIC = (() => {
   const T = window.TRAFFIC_TUNE;
   const OFF = /[?&]notraffic=1/.test(location.search);
@@ -16,7 +22,9 @@ const TRAFFIC = (() => {
   const cars = [];
   const cache = new Map();
   const sparks = [];
+  const warmSet = new Set();
   let bakes = 0, bakeErr = '', cloned = 0, built = false, sparkN = 0;
+  let roadSig = 0, warmKeys = null, warmAt = 0, frameN = 0, dotHold = 0;
   let wingHinges = 0, crewN = 0;
 
   function kidOf(p) {
@@ -24,10 +32,29 @@ const TRAFFIC = (() => {
   }
   const kids = T.paints.map(kidOf);
 
-  function runway(x, z) { return Math.abs(x) < 20 && z > -80 && z < 1520; }
+  function cityObj() {
+    return typeof CITY === 'undefined' ? null : CITY;
+  }
+  function runway(x, z) {
+    // Neon World's strip. A later world with no strip sets CITY.noRunway.
+    const C = cityObj();
+    if (C && C.noRunway) return false;
+    return Math.abs(x) < 20 && z > -80 && z < 1520;
+  }
+  function groundProbe(x, z, y) {
+    const C = cityObj();
+    if (!C || typeof C.probe !== 'function') return {fl:0, wl:null};
+    return C.probe(x, z, y) || {fl:0, wl:null};
+  }
+  function roadNet() {
+    const C = cityObj();
+    const R = C && C.ROADS;
+    if (!R || !R.nodes || !R.edges) return null;
+    return R;
+  }
   function solidAt(x, z) {
     if (runway(x, z)) return true;
-    const pr = CITY.probe(x, z, 0.7);
+    const pr = groundProbe(x, z, 0.7);
     if (!pr.wl || pr.wl.ramp) return false;
     const b = pr.wl.b;
     if (b && b.kind === 'pylon' && !b.towCab) return false;
@@ -35,7 +62,7 @@ const TRAFFIC = (() => {
     return true;
   }
   function groundY(x, z) {
-    const pr = CITY.probe(x, z, 2);
+    const pr = groundProbe(x, z, 2);
     return Math.max(0, pr.fl || 0);
   }
   function blocked(L, s) {
@@ -48,11 +75,31 @@ const TRAFFIC = (() => {
     return false;
   }
 
-  const towOid = id => { const ts = CITY.TOWS || []; for (let i = 0; i < ts.length; i++) if (ts[i].oid === id) return true; return false; };
+  const towOid = id => { const C = cityObj(); const ts = (C && C.TOWS) || []; for (let i = 0; i < ts.length; i++) if (ts[i].oid === id) return true; return false; };
+  function roadsSig() {
+    const R = roadNet();
+    if (!R) return 0;
+    let h = R.nodes.length * 100003 + R.edges.length;
+    for (let i = 0; i < R.edges.length; i++) {
+      const e = R.edges[i];
+      if (!e) { h = (h * 33 + 7) | 0; continue; }
+      h = (h * 33 + (((e.len || 0) * 10) | 0) + (e.a | 0) * 17 + (e.b | 0) * 131 + (((e.w || 0) * 4) | 0)) | 0;
+    }
+    return h >>> 0;
+  }
   function build() {
-    if (built) return;
+    const sig = roadsSig();
+    if (built && sig === roadSig) return;
+    const again = built;
+    if (again) {
+      lanes.length = 0;
+      for (const c of cars) { c.on = false; c.lane = null; c.turn = null; c.arc = null; c.blend = 0; }
+    }
+    const R = roadNet();
+    if (!R) { built = false; return; }
     built = true;
-    const R = CITY.ROADS, nodes = R.nodes;
+    roadSig = sig;
+    const nodes = R.nodes;
     const edges = [];
     for (const e of R.edges) {
       if (!e || !e.lanes || !e.lanes.length || e.len < 8) continue;
@@ -140,11 +187,15 @@ const TRAFFIC = (() => {
       }
     }
     for (const L of lanes) L.turns.sort((a, b) => a.s - b.s);
-    for (let i = 0; i < T.simCap; i++) cars.push(blank(true));
-    for (let i = 0; i < T.dotCap; i++) cars.push(blank(false));
+    if (!again) {
+      for (let i = 0; i < T.simCap; i++) cars.push(blank(true));
+      for (let i = 0; i < T.dotCap; i++) cars.push(blank(false));
+    } else {
+      for (const c of cars) respawn(c);
+    }
   }
   function blank(sim) {
-    const c = {sim, on:false, lane:null, s:0, v:0, v0:0, yaw:0, x:0, z:0, y:0, pi:0, turn:null, rollS:-1, blend:0, blend0:0, bx:0, bz:0, by:0, utT:0, was:false, tick:0, hit:false, hitT:0, fade:1, vx:0, vy:0, vz:0, spin:0, roll:0, vroll:0, braking:false, yawRate:0, accel:0, bodyRoll:0, pitch:0, slip:0, suspY:0, suspV:0, ground:true, gy:0, airVx:0, airVz:0, arc:null, rampSeen:0, rampYes:false};
+    const c = {sim, on:false, lane:null, s:0, v:0, v0:0, yaw:0, x:0, z:0, y:0, pi:0, turn:null, rollS:-1, blend:0, blend0:0, bx:0, bz:0, by:0, utT:0, was:false, tick:0, hit:false, hitT:0, fade:1, vx:0, vy:0, vz:0, spin:0, roll:0, vroll:0, braking:false, yawRate:0, accel:0, bodyRoll:0, pitch:0, nose:0, noseV:0, steer:0, wheelA:0, slip:0, suspY:0, suspV:0, ground:true, gy:0, airVx:0, airVz:0, arc:null, rampSeen:0, rampYes:false, _blend:0};
     c.slot = {draw:() => drawOne(c)};
     return c;
   }
@@ -189,6 +240,7 @@ const TRAFFIC = (() => {
     c.pi = (rnd() * T.paints.length) | 0; c.v0 = rollSpeed(sp.L.kind); c.v = c.v0;
     c.turn = null; c.rollS = -1; c.blend = 0; c.was = false; c.utT = 0; c.arc = null;
     c.braking = false; c.yawRate = 0; c.accel = 0; c.bodyRoll = 0; c.pitch = 0; c.slip = 0;
+    c.nose = 0; c.noseV = 0; c.steer = 0; c.wheelA = 0; c._blend = 0;
     c.suspY = 0; c.suspV = 0; c.ground = true; c.gy = c.y; c.airVx = 0; c.airVz = 0;
     c.rampSeen = 0; c.rampYes = false;
   }
@@ -299,7 +351,8 @@ const TRAFFIC = (() => {
     return Math.abs(angDiff(yaw, d)) < 0.55;
   }
   function rampHere(c) {
-    const R = CITY.RAMPS;
+    const C = cityObj();
+    const R = C && C.RAMPS;
     if (!R || !R.length) return null;
     const grab = T.rampGrab || 3.5;
     const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw);
@@ -333,8 +386,10 @@ const TRAFFIC = (() => {
   }
   function susp(c, dt) {
     const y = c.suspY || 0, v = c.suspV || 0;
-    c.suspV = v + (-y * 42 - v * 7.5) * dt;
-    c.suspY = lim(y + c.suspV * dt, -0.42, 0.12);
+    const k = T.susK || 140, d = T.susD || 8;
+    const hold = c.braking ? (T.susBrake == null ? -0.07 : T.susBrake) : 0;
+    c.suspV = v + ((hold - y) * k - v * d) * dt;
+    c.suspY = lim(y + c.suspV * dt, T.susLo == null ? -0.18 : T.susLo, T.susHi == null ? 0.10 : T.susHi);
   }
   function puff(c) {
     for (let i = 0; i < 4; i++) {
@@ -349,14 +404,23 @@ const TRAFFIC = (() => {
     const raw = angDiff(c.yaw, prevYaw) / Math.max(0.001, dt);
     c.yawRate = (c.yawRate || 0) + (raw - (c.yawRate || 0)) * Math.min(1, dt * 8);
     c.accel = (c.v - prevV) / Math.max(0.001, dt);
-    const camTurnTilt = lim(angDiff(c.yaw, (typeof cam !== 'undefined' && cam && cam.yaw) || c.yaw) * 0.015, -0.03, 0.03);
-    const targetRoll = lim(-c.yawRate * 0.095 + camTurnTilt, -0.16, 0.16);
+    const rollMax = T.rollMax || 0.42;
+    const targetRoll = lim(-c.yawRate * (T.rollGain || 0.28), -rollMax, rollMax);
     c.bodyRoll = (c.bodyRoll || 0) + (targetRoll - (c.bodyRoll || 0)) * Math.min(1, dt * 8);
-    c.slip = lim(c.yawRate * 0.08, -0.14, 0.14);
+    c.slip = lim(c.yawRate * 0.12, -0.22, 0.22);
+    c.steer = lim(c.yawRate * 0.45, -0.55, 0.55);
+    const brakeN = c.braking ? (T.noseBrake || 0.30) : 0;
+    const accelN = (c.accel || 0) > 0.8 ? Math.min(T.noseAccel || 0.10, (c.accel || 0) * 0.012) : 0;
+    const noseT = brakeN - accelN;
+    c.noseV = (c.noseV || 0) + ((noseT - (c.nose || 0)) * 90 - (c.noseV || 0) * 11) * dt;
+    c.nose = lim((c.nose || 0) + c.noseV * dt, -0.16, 0.42);
+    const wr = T.wheelR || 0.33;
+    const spinV = c.ground === false ? c.v * 0.2 : c.v;
+    c.wheelA = (c.wheelA || 0) + spinV * dt / wr;
   }
   function vertSim(c, dt, prevX, prevZ) {
     const stepDist = Math.hypot(c.x - prevX, c.z - prevZ);
-    const pr = CITY.probe(c.x, c.z, (c.y || 0) + 1.6);
+    const pr = groundProbe(c.x, c.z, (c.y || 0) + 1.6);
     const gy = Math.max(0, pr.fl || 0);
     const prevGy = c.gy == null ? gy : c.gy;
     const hopping = c.hop && c.hop.phase === 'air';
@@ -374,8 +438,7 @@ const TRAFFIC = (() => {
         c.y = gy; c.ground = true;
         if (slope <= 0.04) {
           c.vy = 0;
-          const dive = lim((c.accel || 0) * 0.012, -0.05, 0.05);
-          c.pitch += (dive - c.pitch) * Math.min(1, dt * 8);
+          c.pitch += (0 - (c.pitch || 0)) * Math.min(1, dt * 6);
         }
       }
     } else if (!hopping) {
@@ -387,7 +450,7 @@ const TRAFFIC = (() => {
       if (c.y <= gy && c.vy <= 0) {
         const drop = c.vy;
         c.y = gy; c.ground = true;
-        c.suspV = lim(drop * 0.22, -2.4, -0.5);
+        c.suspV = lim(drop * 0.45, -4, -0.9);
         c.vy = 0;
         if (drop < -2.2) puff(c);
       }
@@ -489,68 +552,20 @@ const TRAFFIC = (() => {
     for (const c of cars) {
       if (!c.on) { respawn(c); continue; }
       const d = horiz(c);
-      if (c.sim) { if (!c.hit && d > T.recycle) respawn(c); }
+      if (c.sim) { if (d > T.recycle) respawn(c); }
       else if (d > T.dotDist - 15 || d < T.dotInner - 25) respawn(c);
     }
   }
 
-  function projR(yaw, hl, hw, ux, uz) {
-    const fx = Math.sin(yaw), fz = Math.cos(yaw), rx = Math.cos(yaw), rz = -Math.sin(yaw);
-    return hl * Math.abs(fx * ux + fz * uz) + hw * Math.abs(rx * ux + rz * uz);
-  }
-  function bump(c) {
-    if (!c.sim || !c.on || c.hit || P.wreck || P.loop) { c.was = false; return; }
-    if (Math.abs((P.y || 0) - c.y) >= 2.2) { c.was = false; return; }
-    const hl = T.carL / 2, hw = T.carW / 2;
-    const axes = [[Math.sin(P.yaw), Math.cos(P.yaw)], [Math.cos(P.yaw), -Math.sin(P.yaw)], [Math.sin(c.yaw), Math.cos(c.yaw)], [Math.cos(c.yaw), -Math.sin(c.yaw)]];
-    let best = 1e9, nx = 0, nz = 0, hit = true;
-    for (const ax of axes) {
-      const dist = (P.x - c.x) * ax[0] + (P.z - c.z) * ax[1];
-      const pen = projR(P.yaw || 0, hl, hw, ax[0], ax[1]) + projR(c.yaw, hl, hw, ax[0], ax[1]) - Math.abs(dist);
-      if (pen <= 0) { hit = false; break; }
-      if (pen < best) { best = pen; const s = dist < 0 ? -1 : 1; nx = ax[0] * s; nz = ax[1] * s; }
-    }
-    if (!hit) { c.was = false; return; }
-    P.x += nx * Math.min(best, 0.35); P.z += nz * Math.min(best, 0.35);
-    const side = Math.sign((c.x - P.x) * Math.cos(P.yaw) - (c.z - P.z) * Math.sin(P.yaw)) || (rnd() < 0.5 ? -1 : 1);
-    P.v = Math.max(0, P.v * T.bumpKeep);
-    P.yaw = (P.yaw || 0) + side * T.bumpYaw; P.hd = P.yaw;
-    const fx = Math.sin(P.yaw), fz = Math.cos(P.yaw), rx = Math.cos(P.yaw), rz = -Math.sin(P.yaw);
-    const fwdV = Math.max(c.v, P.v * 0.88) + 4, sideV = side * (7 + P.v * 0.18);
-    c.hit = true; c.hitT = 0; c.fade = 1; c.was = true;
-    c.vx = fx * fwdV + rx * sideV; c.vz = fz * fwdV + rz * sideV;
-    c.vy = 3.8 + Math.min(5, P.v * 0.08);
-    c.spin = side * (5.5 + rnd() * 3.0); c.roll = 0; c.vroll = side * (4.5 + rnd() * 2.5);
-    burst(c);
-  }
-  function burst(c) {
-    const cols = ['#ffe14d', '#ffffff', '#ff4fd8'];
-    for (let i = 0; i < 16; i++) {
-      sparks.push({
-        x: c.x + (rnd() - 0.5) * 1.2, y: c.y + 0.7 + rnd() * 0.35, z: c.z + (rnd() - 0.5) * 1.2,
-        vx: (rnd() - 0.5) * 14, vy: 2 + rnd() * 6, vz: (rnd() - 0.5) * 14,
-        col: cols[i % 3], life: 0.45 + rnd() * 0.35, t: 0
-      });
-      sparkN++;
-    }
-    if (sparks.length > 240) sparks.splice(0, sparks.length - 240);
-    if (typeof FX !== 'undefined' && FX && FX.push) {
-      for (let i = 0; i < 6; i++) FX.push({k:'spark', x:c.x + (rnd() - 0.5), y:c.y + 0.7, z:c.z + (rnd() - 0.5), vx:(rnd() - 0.5) * 8, vy:2 + rnd() * 4, vz:(rnd() - 0.5) * 8, life:0.35 + rnd() * 0.3, t:0, s:0});
-      if (FX.length > 600) FX.splice(0, FX.length - 600);
-    }
-    try { navigator.vibrate && navigator.vibrate(20); } catch (e) {}
-  }
-  function knocked(c, dt) {
-    c.hitT += dt;
-    c.x += c.vx * dt; c.z += c.vz * dt; c.y += c.vy * dt; c.vy -= 14 * dt;
-    const gy = groundY(c.x, c.z);
-    if (c.y < gy && c.hitT > 0.12) { c.y = gy; c.vy = Math.abs(c.vy) * 0.38; c.vx *= 0.68; c.vz *= 0.68; }
-    const drag = Math.max(0, 1 - 1.2 * dt);
-    c.vx *= drag; c.vz *= drag;
-    c.yaw += c.spin * dt; c.spin *= Math.max(0, 1 - 0.9 * dt);
-    c.roll += c.vroll * dt; c.vroll *= Math.max(0, 1 - 1.1 * dt);
-    if (c.hitT > 1.3) c.fade = Math.max(0, c.fade - dt * 1.4);
-    if (c.fade <= 0 || c.hitT > 2.6) respawn(c);
+  // The player is not a target. Overlap only slows this car. It does not push her, spin, or leave the lane.
+  function yieldCar(c) {
+    if (!c.sim || !c.on || typeof P === 'undefined' || P.x == null) return;
+    const dx = P.x - c.x, dz = P.z - c.z;
+    const d = Math.hypot(dx, dz);
+    if (d >= (T.carL || 4.25) + 0.6 || Math.abs((P.y || 0) - (c.y || 0)) > 2.2) return;
+    const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw);
+    const ahead = dx * fx + dz * fz;
+    if (ahead > -0.4) c.v = Math.min(c.v, Math.max(0.4, d * 0.45));
   }
   function stepSparks(dt) {
     for (let i = sparks.length - 1; i >= 0; i--) {
@@ -561,72 +576,166 @@ const TRAFFIC = (() => {
     }
   }
 
-  function viewKey(c) {
-    const dx = cam.x - c.x, dz = cam.z - c.z, dy = cam.y - (c.y + 0.6);
+  function aimOf(x, y, z, yaw, pitch) {
+    const dx = cam.x - x, dz = cam.z - z, dy = cam.y - ((y || 0) + 0.6);
     const hd = Math.hypot(dx, dz) || 0.001;
-    const visYaw = c.yaw + (c.slip || 0);
-    const rel = Math.atan2(Math.sin(Math.atan2(dx, dz) - visYaw), Math.cos(Math.atan2(dx, dz) - visYaw));
-    const elev = Math.atan2(dy, hd) - (c.pitch || 0) * 0.9;
+    const ca = Math.atan2(dx, dz);
+    const rel = Math.atan2(Math.sin(ca - yaw), Math.cos(ca - yaw));
+    const elev = Math.atan2(dy, hd) - (pitch || 0) * Math.cos(rel);
+    return {rel, elev};
+  }
+  // A car headed with Ellie is photographed from the chase camera's view of her
+  // Z, so a car one lane over still reads as the same face. Oncoming traffic
+  // keeps its own aim, or a car in front of her would show its tail.
+  function photoAim(c) {
+    const own = aimOf(c.x, c.y, c.z, c.yaw + (c.slip || 0), c.pitch);
+    if (typeof P === 'undefined' || P.x == null) return own;
+    if (Math.abs(angDiff(c.yaw, P.yaw || 0)) > 0.9) return own;
+    return aimOf(P.x, P.y, P.z, P.yaw || 0, P.pitch || 0);
+  }
+  function viewKey(c) {
+    const aim = photoAim(c);
+    const rel = aim.rel, elev = aim.elev;
     const step = T.yawStep || (Math.PI / 12);
-    let yb = Math.round(rel / step);
-    yb = ((yb + 12) % 24 + 24) % 24 - 12;
-    const eb = lim(Math.round(elev / 0.35), -1, 5);
-    return c.pi + ':' + yb + ':' + eb;
+    const bins = Math.max(4, Math.round((Math.PI * 2) / step));
+    const half = bins / 2;
+    const wrap = y => ((y % bins) + bins) % bins;
+    let y0 = wrap(Math.round(rel / step));
+    if (y0 >= half) y0 -= bins;
+    const eStep = T.elevStep || 0.1;
+    const eb = lim(Math.round(elev / eStep), -3, 8);
+    c._relExact = rel;
+    c._elevExact = elev;
+    const sb = lim(Math.round((c.steer || 0) / (T.steerStep || 0.15)), -4, 4);
+    // One photo. A crossfade of two yaws ghosts the silhouette.
+    c._blend = 0;
+    c._key = c.pi + ':' + y0 + ':' + eb + ':' + sb;
+    c._key2 = c._key;
+    return c._key;
   }
-  const packs = [];
-  function stdMat() {
-    const X = window.ZD && ZD.Xray;
-    let Std = null;
-    const seek = o => {
-      if (Std || !o || !o.isMesh || !o.material) return;
-      const m = Array.isArray(o.material) ? o.material[0] : o.material;
-      if (m && m.type === 'MeshStandardMaterial') Std = m.constructor;
-    };
-    if (X && X.car) X.car.traverse(seek);
-    if (!Std && X && X._tr && X._tr.scene) X._tr.scene.traverse(seek);
-    return Std;
+  // Low-poly copy of his Z. Built once. Drawn on traffic's own canvas.
+  const lod = {
+    built: false, ok: false, err: '', tris: 0, draws: 0, wheels: 0, src: 0,
+    ms: 0, n: 0, corners: [], scene: null, cam: null, renderer: null, pool: [],
+    bodyMat: null, copy: null, copyG: null, atlasW: 0, atlasH: 0
+  };
+  function skipped(o) {
+    for (let p = o; p; p = p.parent) {
+      const n = p.name;
+      if (n === 'crew' || n === 'kidGrp' || n === 'partsGrp') return true;
+      if (p.userData && p.userData.crew) return true;
+    }
+    return false;
   }
-  function paintPack(pi) {
-    if (packs[pi]) return packs[pi];
-    const Std = stdMat(), p = T.paints[pi];
-    if (!Std || !p) return null;
-    const body = new Std({color:p.paint, metalness:0.55, roughness:0.32, emissive:p.glow, emissiveIntensity:0.12});
-    const trim = new Std({color:'#17181d', metalness:0.4, roughness:0.45});
-    const glass = new Std({color:'#cfe6f5', transparent:true, opacity:0.3, roughness:0.05, metalness:0.4, depthWrite:false});
-    const rim = new Std({color:'#4a4f57', metalness:0.85, roughness:0.32});
-    const tyre = new Std({color:'#141416', roughness:0.9, metalness:0.05});
-    packs[pi] = {body, trim, glass, rim, tyre};
-    return packs[pi];
+  // Same tags loadGLB uses on this file. "material" is the rim. Material.002 is
+  // the bolt pile, left off so the copy is less detailed than the showroom Z.
+  function partKind(mat, name) {
+    const m = mat || '';
+    const u = m.toUpperCase();
+    const n = (name || '').toLowerCase();
+    if (u === 'TYRE' || /tyre|tire/.test(n)) return 'tyre';
+    if (u === 'BRAKE' || /caliper/.test(n)) return 'brake';
+    if (m === 'material' || /rim|wheel/.test(n)) return 'rim';
+    if (u === 'SILVER' || /rotor|disc/.test(n)) return 'silver';
+    if (u === 'GLASS') return 'glass';
+    if (u === 'LIGHT' || u === 'LIGHTGLASS') return 'head';
+    if (u === 'REARLIGHT') return 'tail';
+    if (u === 'BODY' || u === 'CARBON') return 'body';
+    if (u === 'MATERIAL.002') return '';
+    if (!m) return '';
+    return 'trim';
   }
-  function applyPaint(root, pi) {
-    const pack = paintPack(pi);
+  function eachVert(mesh, fn) {
+    const g = mesh.geometry;
+    if (!g || !g.attributes || !g.attributes.position) return 0;
+    const pos = g.attributes.position, nrm = g.attributes.normal, idx = g.index;
+    const n = idx ? idx.count : pos.count;
+    const v = lod._v, N = lod._N;
+    for (let i = 0; i < n; i++) {
+      const vi = idx ? idx.getX(i) : i;
+      v.fromBufferAttribute(pos, vi).applyMatrix4(mesh.matrixWorld);
+      if (nrm) N.fromBufferAttribute(nrm, vi).transformDirection(mesh.matrixWorld);
+      else N.set(0, 1, 0);
+      fn(v.x, v.y, v.z, N.x, N.y, N.z);
+    }
+    return n / 3;
+  }
+  // GLB meshes keep userData.mat from the file. Edges, crew props, and the
+  // procedural wheel cards do not. Kenney traffic models never carry BODY.
+  function modelSig(root) {
+    let meshes = 0, tris = 0;
+    const mats = {};
+    if (!root) return {meshes, tris, mats};
     root.traverse(o => {
-      if (!o.isMesh) return;
-      const k = (o.userData && o.userData.mat) || '';
-      if (pack) {
-        let mat = pack.trim;
-        if (k === 'BODY' || k === 'CARBON') mat = pack.body;
-        else if (k === 'GLASS') mat = pack.glass;
-        else if (k === 'RIM') mat = pack.rim;
-        else if (k === 'TYRE' || k === 'BRAKE') mat = pack.tyre;
-        o.material = mat;
-      } else if (o.material && o.material.color && T.paints[pi]) {
-        if (k === 'BODY' || k === 'CARBON') o.material.color.set(T.paints[pi].paint);
-      }
+      if (!o.isMesh || !o.geometry || !o.geometry.attributes || !o.geometry.attributes.position) return;
+      const mat = o.userData && o.userData.mat;
+      if (!mat) return;
+      meshes++;
+      const idx = o.geometry.index, pos = o.geometry.attributes.position;
+      tris += (idx ? idx.count : pos.count) / 3;
+      mats[mat] = (mats[mat] || 0) + 1;
     });
+    return {meshes, tris: Math.round(tris), mats};
   }
-  function ensureClone() {
-    if (cloned) return cloned > 0;
-    const X = window.ZD && ZD.Xray;
-    if (!X || !X.ready || !X.car || !X.renderer || !window.ZGL || !ZGL.ensure()) return false;
-    const g0 = ZGL.S.g;
+  function assertPlayerZ(X, clone) {
+    const credit = X.credit || {};
+    const file = credit.file || '';
+    if (X.source !== 'glb') throw new Error('traffic source is not the player GLB (source ' + (X.source || 'none') + ')');
+    if (!/370z\.glb/i.test(file)) throw new Error('traffic source file is ' + (file || 'missing') + ', player Z is assets/370z.glb');
+    const player = modelSig(X.car);
+    const copy = modelSig(clone);
+    if (!player.mats.BODY || player.meshes < 100) {
+      throw new Error('player Z has no BODY shell (' + player.meshes + ' tagged meshes). Traffic will not substitute another model.');
+    }
+    if (player.meshes !== copy.meshes || player.tris !== copy.tris) {
+      throw new Error('traffic clone is not the player Z (' + copy.meshes + ' meshes / ' + copy.tris + ' tris vs player ' + player.meshes + ' / ' + player.tris + ')');
+    }
+    lod.modelFile = file;
+    lod.modelTitle = credit.title || '';
+    lod.modelMeshes = player.meshes;
+    lod.modelTris = player.tris;
+    lod.modelMats = player.mats;
+  }
+  function grabShowroom(X) {
+    let env = null, paint = null, lights = [];
+    const orig = X.renderer.render.bind(X.renderer);
+    X.renderer.render = function (scene, camera) {
+      if (scene) {
+        if (scene.environment) env = scene.environment;
+        if (!lights.length) scene.traverse(o => { if (o.isLight) lights.push(o.clone()); });
+        if (!paint) scene.traverse(o => {
+          if (paint || !o.isMesh || !o.material || !(o.material.clearcoat > 0.5)) return;
+          paint = o.material;
+        });
+      }
+      return orig(scene, camera);
+    };
     try {
-      ZGL.set(0);
-      const tag = (o, name) => { if (o && !o.name) o.name = name; };
-      tag(X.car.getObjectByName && X.car.getObjectByName('crew'), 'crew');
-      tag(X.kidGrp, 'kidGrp');
-      tag(X.partsGrp, 'partsGrp');
-      // Hinge pivots stash Object3D refs on userData (circular). Park those so clone(true) can copy the closed car, then put them straight back.
+      X.render(ctx, 0, 0, 64, 64, {
+        xray: false, showroom: true, yaw: 0.8, pitch: 0.25, dist: 15,
+        tx: 0, ty: 0.6, fov: 26, drl: 1, noDraw: true,
+        kid: kids[0], st: { t: 0, throttle: 18 }
+      });
+    } finally {
+      X.renderer.render = orig;
+      try { if (X.kidApply) X.kidApply(typeof KID !== 'undefined' ? KID : null, {}); } catch (e) {}
+      X._w = 0; X._h = 0;
+    }
+    return {env, paint, lights};
+  }
+  function buildLod() {
+    if (lod.built) return lod.ok;
+    const X = window.ZD && ZD.Xray;
+    if (!X || !X.ready || !X.car || !X.renderer || !X.render) return false;
+    if (window.ZGL && ZGL.ensure && !ZGL.ensure()) return false;
+    const g0 = window.ZGL && ZGL.S ? ZGL.S.g : 0;
+    const saved = [];
+    const force = (o, name) => { if (!o) return; saved.push([o, o.name]); o.name = name; };
+    try {
+      if (window.ZGL && ZGL.set) ZGL.set(0);
+      force(X.car.getObjectByName && X.car.getObjectByName('crew'), 'crew');
+      force(X.kidGrp, 'kidGrp');
+      force(X.partsGrp, 'partsGrp');
       const parked = [];
       X.car.traverse(o => {
         const ud = o.userData;
@@ -642,103 +751,471 @@ const TRAFFIC = (() => {
       });
       let g;
       try { g = X.car.clone(true); }
-      finally { for (const [o, ud] of parked) o.userData = ud; }
-      ZGL.set(g0);
-      const kill = [];
-      g.traverse(o => {
-        const tagN = o.name;
-        if (tagN === 'crew' || tagN === 'kidGrp' || tagN === 'partsGrp' || (o.userData && o.userData.crew)) kill.push(o);
-      });
-      kill.forEach(o => { if (o.parent) o.parent.remove(o); });
-      g.updateMatrixWorld(true);
-      const inv = g.matrixWorld.clone();
-      if (inv.invert) inv.invert();
-      const baked = [];
-      const matMap = new Map();
-      const cloneMat = m => {
-        if (!m) return m;
-        if (Array.isArray(m)) return m.map(cloneMat);
-        if (matMap.has(m.uuid)) return matMap.get(m.uuid);
-        const c = m.clone ? m.clone() : m;
-        matMap.set(m.uuid, c);
-        return c;
-      };
-      g.traverse(o => {
-        if (!o.isMesh || !o.visible) return;
-        const m = o.clone(false);
-        m.material = cloneMat(o.material);
-        m.userData = {mat: (o.userData && o.userData.mat) || ''};
-        const wm = o.matrixWorld.clone().premultiply(inv);
-        wm.decompose(m.position, m.quaternion, m.scale);
-        m.matrixAutoUpdate = true;
-        baked.push(m);
-      });
-      while (g.children.length) g.remove(g.children[0]);
-      g.position.set(0, 0, 0); g.rotation.set(0, 0, 0); g.scale.set(1, 1, 1); g.updateMatrix();
-      baked.forEach(m => g.add(m));
-      const scene = new X.scene.constructor();
-      const tr = X.loadTraffic ? X.loadTraffic() : null;
-      if (tr && tr.scene) tr.scene.children.forEach(c => { if (c.isLight) scene.add(c.clone()); });
-      if (!scene.children.length) {
-        X.scene.children.forEach(c => { if (c.isLight) scene.add(c.clone()); });
+      finally {
+        for (const [o, ud] of parked) o.userData = ud;
+        for (const [o, name] of saved) o.name = name;
+        if (window.ZGL && ZGL.set) ZGL.set(g0);
       }
-      scene.add(g);
-      const camT = new X.cam.constructor(26, 1, 0.05, 80);
-      TRAFFIC._clone = g;
-      TRAFFIC._scene = scene;
-      TRAFFIC._cam = camT;
-      let wing = 0, crew = 0;
+      assertPlayerZ(X, g);
+      const show = grabShowroom(X);
+      if (!show.paint) throw new Error('showroom paint missing');
+      g.updateMatrixWorld(true);
+      const sample = [];
+      g.traverse(o => { if (o.isMesh && o.geometry && o.geometry.attributes && o.geometry.attributes.position) sample.push(o); });
+      if (!sample.length) throw new Error('car has no meshes');
+      lod.Geo = sample[0].geometry.constructor;
+      lod.BA = sample[0].geometry.attributes.position.constructor;
+      lod.Mesh = sample[0].constructor;
+      lod.Group = g.constructor;
+      lod._v = new X.THREE_Vector3();
+      lod._N = new X.THREE_Vector3();
+      const Mat = show.paint.constructor;
+      lod.bodyMat = new Mat({
+        color:'#1aa6c8', metalness:0.55, roughness:0.32,
+        clearcoat:1, clearcoatRoughness:0.06, envMapIntensity:1.25
+      });
+      lod.trimMat = new Mat({color:'#17181d', metalness:0.45, roughness:0.5});
+      lod.glassMat = new Mat({color:'#cfe6f5', transparent:true, opacity:0.3, roughness:0.05, metalness:0.4, depthWrite:false});
+      lod.tyreMat = new Mat({color:'#141416', roughness:0.92, metalness:0.05});
+      lod.rimMat = new Mat({color:'#3e434b', metalness:0.45, roughness:0.55, envMapIntensity:0.4});
+      lod.brakeMat = new Mat({color:'#d1121f', emissive:'#ff2a3d', emissiveIntensity:0.25, roughness:0.4, metalness:0.4});
+      lod.headMat = new Mat({color:'#e7fbff', emissive:'#e7fbff', emissiveIntensity:1.3, roughness:0.2, metalness:0.1});
+      lod.tailMat = new Mat({color:'#ff2a3d', emissive:'#ff2a3d', emissiveIntensity:1.2, roughness:0.3, metalness:0.1});
+      for (const m of [lod.bodyMat, lod.trimMat, lod.glassMat, lod.tyreMat, lod.rimMat, lod.brakeMat, lod.headMat, lod.tailMat]) {
+        m.side = 2;
+        if (show.env) m.envMap = show.env;
+      }
+      // Keep the loader's placement (nose +X, ground at y = 0, centred). A second
+      // recenter, or welding the shell onto a 2 cm grid, was what broke the silhouette.
+      const lists = {body:[], trim:[], glass:[], head:[], tail:[]};
+      const wheels = [];
+      let wing = 0, crew = 0, dropped = 0;
+      const V = X.THREE_Vector3;
+      function meshCenter(mesh) {
+        const acc = new V();
+        let n = 0;
+        eachVert(mesh, (x, y, z) => { acc.x += x; acc.y += y; acc.z += z; n++; });
+        if (!n) return new V();
+        return acc.multiplyScalar(1 / n);
+      }
       g.traverse(o => {
         if (o.name === 'crew' || (o.userData && o.userData.crew)) crew++;
         if (o.userData && (o.userData.ax || o.userData.p2)) wing++;
-        if (window.ZGL && ZGL.S) {
-          if (o === ZGL.S.hingeH || (ZGL.S.hingeD && ZGL.S.hingeD.indexOf(o) >= 0)) wing++;
-        }
+        if (!o.isMesh || skipped(o) || !o.geometry) return;
+        const matName = o.userData && o.userData.mat;
+        if (!matName) return;
+        const kind = partKind(matName, o.name);
+        if (!kind) { dropped++; return; }
+        lod.src++;
+        if (kind === 'tyre' || kind === 'rim' || kind === 'brake' || kind === 'silver') {
+          wheels.push({mesh:o, kind, c:meshCenter(o)});
+        } else lists[kind].push(o);
       });
-      wingHinges = wing; crewN = crew; cloned = baked.length;
-      for (let i = 0; i < T.paints.length; i++) bake(i + ':0:0');
-      return cloned > 0;
-    } catch (e) { bakeErr = String(e); try { ZGL.set(g0); } catch (e2) {} cloned = -1; return false; }
+      const tyres = wheels.filter(w => w.kind === 'tyre');
+      const seeds = [];
+      for (const fx of [true, false]) for (const fz of [true, false]) {
+        const q = tyres.filter(w => (w.c.x >= 0) === fx && (w.c.z >= 0) === fz);
+        if (!q.length) continue;
+        const c = new V();
+        q.forEach(w => c.add(w.c));
+        c.multiplyScalar(1 / q.length);
+        seeds.push({c, front: fx, side: c.z >= 0 ? 1 : -1, tyre:[], rim:[], brake:[]});
+      }
+      if (seeds.length !== 4) throw new Error('expected 4 wheels, got ' + seeds.length + ' from ' + tyres.length + ' tyres');
+      for (const w of wheels) {
+        let best = seeds[0], bd = 1e9;
+        for (const s of seeds) {
+          const d = (w.c.x - s.c.x) ** 2 + (w.c.y - s.c.y) ** 2 + (w.c.z - s.c.z) ** 2;
+          if (d < bd) { bd = d; best = s; }
+        }
+        if (w.kind === 'silver' && bd > 0.2) { lists.trim.push(w.mesh); continue; }
+        const slot = w.kind === 'tyre' ? 'tyre' : w.kind === 'brake' ? 'brake' : 'rim';
+        best[slot].push(w.mesh);
+      }
+      function bakeGeo(mesh) {
+        const geo = mesh.geometry.clone();
+        geo.applyMatrix4(mesh.matrixWorld);
+        return geo;
+      }
+      function shiftGeo(geo, c) {
+        if (geo.translate) geo.translate(-c.x, -c.y, -c.z);
+        else {
+          const p = geo.attributes.position;
+          for (let i = 0; i < p.count; i++) p.setXYZ(i, p.getX(i) - c.x, p.getY(i) - c.y, p.getZ(i) - c.z);
+          p.needsUpdate = true;
+        }
+        if (geo.computeBoundingSphere) geo.computeBoundingSphere();
+        return geo;
+      }
+      function nTris(geo) {
+        if (!geo || !geo.attributes || !geo.attributes.position) return 0;
+        const idx = geo.index, pos = geo.attributes.position;
+        return (idx ? idx.count : pos.count) / 3;
+      }
+      const baked = {
+        body: lists.body.map(bakeGeo),
+        trim: lists.trim.map(bakeGeo),
+        glass: lists.glass.map(bakeGeo),
+        head: lists.head.map(bakeGeo),
+        tail: lists.tail.map(bakeGeo)
+      };
+      const wheelGeo = seeds.map(s => ({
+        tyre: s.tyre.map(m => shiftGeo(bakeGeo(m), s.c)),
+        rim: s.rim.map(m => shiftGeo(bakeGeo(m), s.c)),
+        brake: s.brake.map(m => shiftGeo(bakeGeo(m), s.c))
+      }));
+      const countList = arr => arr.reduce((n, geo) => n + nTris(geo), 0);
+      let tris = countList(baked.body) + countList(baked.trim) + countList(baked.glass) + countList(baked.head) + countList(baked.tail);
+      wheelGeo.forEach(w => { tris += countList(w.tyre) + countList(w.rim) + countList(w.brake); });
+      lod.dropped = dropped;
+      // Same GL context as the player so the studio environment map still applies.
+      const renderer = X.renderer;
+      const scene = new X.scene.constructor();
+      scene.environment = show.env || null;
+      show.lights.forEach(l => scene.add(l));
+      const camL = new X.cam.constructor(26, 1, 0.05, 80);
+      function addMesh(parent, geo, mat, order) {
+        if (!geo) return null;
+        const m = new lod.Mesh(geo, mat);
+        m.frustumCulled = false;
+        m.userData.part = mat === lod.bodyMat ? 'body' : '';
+        if (order) m.renderOrder = order;
+        parent.add(m);
+        return m;
+      }
+      function makeCar() {
+        const root = new lod.Group();
+        let draws = 0;
+        const put = (geos, mat, order) => { for (const geo of geos) if (addMesh(root, geo, mat, order)) draws++; };
+        put(baked.body, lod.bodyMat);
+        put(baked.trim, lod.trimMat);
+        put(baked.glass, lod.glassMat, 2);
+        put(baked.head, lod.headMat, 3);
+        put(baked.tail, lod.tailMat, 3);
+        root.wheels = seeds.map((s, i) => {
+          const pivot = new lod.Group();
+          pivot.position.copy(s.c);
+          const spin = new lod.Group();
+          pivot.add(spin);
+          for (const geo of wheelGeo[i].tyre) if (addMesh(spin, geo, lod.tyreMat)) draws++;
+          for (const geo of wheelGeo[i].rim) if (addMesh(spin, geo, lod.rimMat)) draws++;
+          for (const geo of wheelGeo[i].brake) if (addMesh(pivot, geo, lod.brakeMat)) draws++;
+          root.add(pivot);
+          return {pivot, spin, front: s.front, side: s.side};
+        });
+        root.userData.draws = draws;
+        root.visible = false;
+        scene.add(root);
+        return root;
+      }
+      const pool = [];
+      for (let i = 0; i < 12; i++) pool.push(makeCar());
+      lod.scene = scene; lod.cam = camL; lod.renderer = renderer; lod.pool = pool;
+      lod.tris = Math.round(tris); lod.draws = pool[0].userData.draws; lod.wheels = seeds.length;
+      lod.corners = seeds.map(s => [+s.c.x.toFixed(3), +s.c.y.toFixed(3), +s.c.z.toFixed(3), s.front ? 1 : 0, s.side]);
+      const bb = [1e9, 1e9, 1e9, -1e9, -1e9, -1e9];
+      let sx = 0, sy = 0, sz = 0, n = 0;
+      for (const geo of baked.body) {
+        const arr = geo.attributes.position.array;
+        for (let i = 0; i < arr.length; i += 3) {
+          const x = arr[i], y = arr[i + 1], z = arr[i + 2];
+          if (x < bb[0]) bb[0] = x; if (x > bb[3]) bb[3] = x;
+          if (y < bb[1]) bb[1] = y; if (y > bb[4]) bb[4] = y;
+          if (z < bb[2]) bb[2] = z; if (z > bb[5]) bb[5] = z;
+          sx += x; sy += y; sz += z; n++;
+        }
+      }
+      lod.bodyBox = bb.map(v => +v.toFixed(3));
+      lod.radius = n ? +Math.hypot((bb[3] - bb[0]) / 2, (bb[4] - bb[1]) / 2, (bb[5] - bb[2]) / 2).toFixed(3) : 0;
+      if (n) {
+        const mx = sx / n, my = sy / n, mz = sz / n;
+        lod.bodyStat = { n, mean: [mx, my, mz].map(v => +v.toFixed(3)), dropped };
+      }
+      lod.partTris = {
+        body: countList(baked.body) | 0, trim: countList(baked.trim) | 0, glass: countList(baked.glass) | 0,
+        tyre: wheelGeo.reduce((n, w) => n + countList(w.tyre), 0) | 0,
+        rim: wheelGeo.reduce((n, w) => n + countList(w.rim), 0) | 0,
+        brake: wheelGeo.reduce((n, w) => n + countList(w.brake), 0) | 0
+      };
+      lod.env = !!show.env;
+      lod.lightN = show.lights.length;
+      wingHinges = wing; crewN = crew; cloned = lod.src;
+      lod.built = true; lod.ok = true;
+      return true;
+    } catch (e) {
+      lod.err = String(e && e.stack || e);
+      bakeErr = lod.err;
+      try { if (window.ZGL && ZGL.set) ZGL.set(g0); } catch (e2) {}
+      for (const [o, name] of saved) o.name = name;
+      lod.built = true; lod.ok = false;
+      return false;
+    }
+  }
+  function viewAngles(c) {
+    if (c._rel != null) return {rel: c._rel, elev: c._elev || 0};
+    const yDraw = (c.y || 0) + (c.suspY || 0);
+    const dx = cam.x - c.x, dz = cam.z - c.z, dy = cam.y - (yDraw + 0.6);
+    const hd = Math.hypot(dx, dz) || 0.001;
+    const vis = (c.yaw || 0) + (c.slip || 0);
+    const ca = Math.atan2(dx, dz);
+    const rel = Math.atan2(Math.sin(ca - vis), Math.cos(ca - vis));
+    return {rel, elev: Math.atan2(dy, hd)};
+  }
+  function poseCar(inst, c) {
+    const paint = T.paints[c.pi | 0] || T.paints[0];
+    lod.bodyMat.color.set(paint.paint);
+    const nose = (c.nose || 0) + (c.pitch || 0);
+    const roll = (c.bodyRoll || 0) + (c.roll || 0);
+    inst.rotation.set(roll, 0, -nose);
+    inst.position.set(0, 0, 0);
+    inst.visible = true;
+    const only = c.only;
+    inst.traverse(o => {
+      if (!o.isMesh) return;
+      if (!only) { o.visible = true; return; }
+      if (only === 'body') {
+        const isBody = o.material === lod.bodyMat || o.userData.part === 'body';
+        o.visible = isBody;
+        if (isBody) o.material = lod.tyreMat;
+        return;
+      }
+      if (only === 'wheels') o.visible = o.material === lod.tyreMat || o.material === lod.rimMat;
+    });
+    lod.bodyMat.wireframe = only === 'body';
+    const steer = c.steer || 0, spin = c.wheelA || 0;
+    for (const w of inst.wheels) {
+      w.pivot.rotation.set(0, w.front ? steer : 0, 0);
+      w.spin.rotation.set(0, 0, -spin * w.side);
+    }
+    inst.updateMatrixWorld(true);
+  }
+  function placeCam(c) {
+    const a = viewAngles(c);
+    const dist = 7 / (2 * Math.tan(13 * Math.PI / 180));
+    const ty = 0.6, ce = Math.cos(a.elev), se = Math.sin(a.elev);
+    lod.cam.fov = 26;
+    lod.cam.aspect = 1;
+    lod.cam.near = 0.05;
+    lod.cam.far = 80;
+    lod.cam.updateProjectionMatrix();
+    lod.cam.position.set(Math.cos(a.rel) * ce * dist, ty + se * dist, Math.sin(a.rel) * ce * dist);
+    lod.cam.lookAt(0, ty, 0);
+    lod.cam.updateMatrixWorld();
+  }
+  function renderTiles(list, px) {
+    if (!list.length || !buildLod()) return false;
+    if (list.length > lod.pool.length) list = list.slice(0, lod.pool.length);
+    const n = list.length;
+    const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
+    const rows = Math.ceil(n / cols);
+    const w = cols * px, h = rows * px;
+    const R = lod.renderer;
+    const Xr = window.ZD && ZD.Xray;
+    if (lod.atlasW !== w || lod.atlasH !== h || !lod.copy) {
+      lod.atlasW = w; lod.atlasH = h;
+      lod.copy = document.createElement('canvas');
+      lod.copy.width = w; lod.copy.height = h;
+      lod.copyG = lod.copy.getContext('2d', {alpha:true});
+    }
+    const prevAuto = R.autoClear;
+    const prevDpr = R.getPixelRatio();
+    const tResize = performance.now();
+    try {
+    R.setPixelRatio(1);
+    R.setSize(w, h, false);
+    lod.resizeMs = performance.now() - tResize;
+    const tGpu = performance.now();
+    R.setScissorTest(true);
+    R.autoClear = false;
+    R.setClearColor(0x000000, 0);
+    for (let i = 0; i < lod.pool.length; i++) lod.pool[i].visible = false;
+    for (let i = 0; i < n; i++) {
+      const col = i % cols, row = (i / cols) | 0;
+      const x = col * px, yTop = row * px;
+      const inst = lod.pool[i];
+      poseCar(inst, list[i]);
+      placeCam(list[i]);
+      R.setViewport(x, h - yTop - px, px, px);
+      R.setScissor(x, h - yTop - px, px, px);
+      R.clear(true, true, true);
+      R.render(lod.scene, lod.cam);
+      inst.visible = false;
+    }
+    lod.copyG.clearRect(0, 0, w, h);
+    lod.copyG.drawImage(R.domElement, 0, 0, w, h, 0, 0, w, h);
+    lod.gpuMs = performance.now() - tGpu;
+    } finally {
+    R.setScissorTest(false);
+    R.setViewport(0, 0, w, h);
+    R.autoClear = prevAuto;
+    R.setPixelRatio(prevDpr);
+    if (Xr) { Xr._w = 0; Xr._h = 0; }
+    }
+    for (let i = 0; i < n; i++) {
+      const c = list[i];
+      const col = i % cols, row = (i / cols) | 0;
+      if (!c._liveCv || c._liveCv.width !== px) {
+        c._liveCv = document.createElement('canvas');
+        c._liveCv.width = c._liveCv.height = px;
+        c._liveG = c._liveCv.getContext('2d', {alpha:true});
+      }
+      c._liveG.clearRect(0, 0, px, px);
+      c._liveG.drawImage(lod.copy, col * px, row * px, px, px, 0, 0, px, px);
+      c._live = c._liveCv;
+    }
+    lod.n = n;
+    return true;
+  }
+  function renderLive(list) {
+    const t0 = performance.now();
+    try {
+      const ok = renderTiles(list, T.livePx || 512);
+      lod.ms = performance.now() - t0;
+      return ok;
+    } catch (e) {
+      lod.err = String(e && e.stack || e);
+      lod.ms = performance.now() - t0;
+      return false;
+    }
+  }
+  // Front tyres, rims, rotors, and calipers yaw about world up through the hub.
+  // A parent-local yaw spins the axle instead, and the wheel still looks straight
+  // from the nose. The GLB node is turned so the nose is +X; world Y stays up.
+  function steerFrontWheels(angle) {
+    const restores = [];
+    if (!angle) return restores;
+    const X = window.ZD && ZD.Xray;
+    if (!X || !X.car) return restores;
+    X.car.updateMatrixWorld(true);
+    const hits = [];
+    X.car.traverse(o => {
+      if (!o.isMesh || !o.geometry || skipped(o)) return;
+      const kind = partKind(o.userData && o.userData.mat, o.name);
+      if (kind !== 'tyre' && kind !== 'rim' && kind !== 'brake' && kind !== 'silver') return;
+      if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+      const c = o.geometry.boundingSphere.center.clone().applyMatrix4(o.matrixWorld);
+      if (c.x > 0.6 && c.x < 2.2 && c.y < 0.7) hits.push({mesh:o, kind, c});
+    });
+    const hubs = [];
+    for (const w of hits) {
+      if (w.kind !== 'tyre' && w.kind !== 'rim') continue;
+      let hub = null;
+      for (const h of hubs) if (Math.abs(h.z - w.c.z) < 0.35) hub = h;
+      if (!hub) hubs.push({x: w.c.x, y: w.c.y, z: w.c.z, n: 1});
+      else { hub.x += w.c.x; hub.y += w.c.y; hub.z += w.c.z; hub.n++; }
+    }
+    for (const h of hubs) { h.x /= h.n; h.y /= h.n; h.z /= h.n; }
+    for (const w of hits) {
+      const mesh = w.mesh, parent = mesh.parent;
+      if (!parent) continue;
+      let hub = hubs[0];
+      for (const h of hubs) if (Math.abs(h.z - w.c.z) < Math.abs(hub.z - w.c.z)) hub = h;
+      if (!hub) continue;
+      const saved = mesh.matrix.clone();
+      const auto = mesh.matrixAutoUpdate;
+      mesh.updateMatrixWorld(true);
+      const world = mesh.matrixWorld.clone();
+      const M = world.constructor;
+      const next = new M().makeTranslation(hub.x, hub.y, hub.z)
+        .multiply(new M().makeRotationY(angle))
+        .multiply(new M().makeTranslation(-hub.x, -hub.y, -hub.z))
+        .multiply(world);
+      const local = new M().copy(parent.matrixWorld).invert().multiply(next);
+      mesh.matrixAutoUpdate = false;
+      mesh.matrix.copy(local);
+      mesh.matrixWorldNeedsUpdate = true;
+      restores.push(() => {
+        mesh.matrix.copy(saved);
+        mesh.matrixAutoUpdate = auto;
+        mesh.matrixWorldNeedsUpdate = true;
+        if (auto && mesh.matrix.decompose) mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
+      });
+    }
+    X.car.updateMatrixWorld(true);
+    return restores;
+  }
+  // Same copy the player sprite uses. Punching low alpha out of this canvas
+  // opened holes in the glass, and the side silhouette stopped matching his Z.
+  // Showroom headlamp housings bake as flat gray discs. His Z shows those as
+  // the cool running light. Wheels sit in the lower half and stay chrome.
+  function copyPhoto(src) {
+    const sw = src.width || 2, sh = src.height || 2;
+    const cv = document.createElement('canvas');
+    cv.width = sw; cv.height = sh;
+    const g = cv.getContext('2d', {alpha:true});
+    g.clearRect(0, 0, sw, sh);
+    g.drawImage(src, 0, 0);
+    try {
+      const img = g.getImageData(0, 0, sw, sh);
+      const d = img.data;
+      let minY = sh, maxY = 0, n = 0;
+      for (let y = 0, p = 0; y < sh; y++) {
+        for (let x = 0; x < sw; x++, p += 4) {
+          if (d[p + 3] < 20) continue;
+          n++;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+      const cut = n ? minY + (maxY - minY) * 0.55 : sh;
+      const a = 0.42;
+      for (let y = 0, p = 0; y < sh; y++) {
+        for (let x = 0; x < sw; x++, p += 4) {
+          if (y > cut || d[p + 3] < 20) continue;
+          const r = d[p], gg = d[p + 1], b = d[p + 2];
+          const mx = r > gg ? (r > b ? r : b) : (gg > b ? gg : b);
+          const mn = r < gg ? (r < b ? r : b) : (gg < b ? gg : b);
+          if (mx - mn >= 40) continue;
+          const L = 0.2126 * r + 0.7152 * gg + 0.0722 * b;
+          if (L <= 115 || L >= 220) continue;
+          d[p] = r * (1 - a) + 159 * a;
+          d[p + 1] = gg * (1 - a) + 216 * a;
+          d[p + 2] = b * (1 - a) + 255 * a;
+        }
+      }
+      g.putImageData(img, 0, 0);
+    } catch (e) {}
+    return cv;
   }
   function bake(key) {
+    if (!buildLod()) return false;
     const X = window.ZD && ZD.Xray;
-    if (!X || !X.renderer) return false;
-    if (!TRAFFIC._clone && !ensureClone()) return false;
-    if (!TRAFFIC._clone || !TRAFFIC._scene || !TRAFFIC._cam) return false;
-    const [pi, yb, eb] = key.split(':').map(Number);
-    if (!T.paints[pi]) return false;
-    const R = X.renderer, px = T.spritePx;
-    const box = {set(w, h){ this.w = w; this.h = h; return this; }, w:1, h:1};
-    const dpr = R.getPixelRatio ? R.getPixelRatio() : 1;
-    const rt = R.getRenderTarget ? R.getRenderTarget() : null;
-    const scissor = R.getScissorTest ? R.getScissorTest() : false;
-    if (R.getSize) R.getSize(box);
+    const parts = key.split(':').map(Number);
+    const pi = parts[0], yb = parts[1], eb = parts[2], sb = parts.length > 3 ? parts[3] : 0;
+    if (!T.paints[pi] || !X || !X.render) return false;
+    const px = T.spritePx || 256;
+    let yaw = yb * (T.yawStep || Math.PI / 12);
+    let elev = eb * (T.elevStep || 0.1);
+    // The front close shot asks for 0.45 rad. The bin is the same angle when
+    // no car is holding an exact value yet.
+    let steer = sb * (T.steerStep || 0.15);
+    for (const c of cars) {
+      if (c._key === key && c._relExact != null) {
+        yaw = c._relExact;
+        elev = c._elevExact;
+        if (c.steer) steer = c.steer;
+        break;
+      }
+    }
+    const dist = (window.ZV && ZV.win ? ZV.win : 7) / (2 * Math.tan(13 * Math.PI / 180));
+    // The showroom photo is the same shell the player draws. Front wheels yaw
+    // about the hub for a steered bin. Bolt meshes stay, so the outline stays his.
+    const restores = steerFrontWheels(steer);
+    const hidden = [];
     try {
-      applyPaint(TRAFFIC._clone, pi);
-      const yaw = yb * (T.yawStep || Math.PI / 12), elev = eb * 0.35;
-      const dist = 7 / (2 * Math.tan(13 * Math.PI / 180)), ty = 0.6;
-      const camT = TRAFFIC._cam;
-      camT.fov = 26; camT.aspect = 1; camT.near = 0.05; camT.far = 80;
-      camT.position.set(Math.cos(yaw) * Math.cos(elev) * dist, ty + Math.sin(elev) * dist, Math.sin(yaw) * Math.cos(elev) * dist);
-      camT.lookAt(0, ty, 0);
-      camT.updateProjectionMatrix();
-      camT.updateMatrixWorld();
-      if (R.setRenderTarget) R.setRenderTarget(null);
-      if (R.setScissorTest) R.setScissorTest(false);
-      if (R.setPixelRatio) R.setPixelRatio(1);
-      R.setSize(px, px, false);
-      if (R.setViewport) R.setViewport(0, 0, px, px);
-      R.setClearColor(0x000000, 0);
-      if (R.clear) R.clear();
-      R.render(TRAFFIC._scene, camT);
-      const src = R.domElement || X.canvas;
-      if (!src || src.width < 8) return false;
-      const cv = document.createElement('canvas');
-      cv.width = px; cv.height = px;
-      cv.getContext('2d', {alpha:true}).drawImage(src, 0, 0, src.width, src.height, 0, 0, px, px);
-      const cap = T.cacheMax || 140;
+      X.render(ctx, 0, 0, px, px, {
+        xray: false, showroom: true, yaw: yaw, pitch: elev, dist: dist,
+        tx: 0, ty: (window.ZV && ZV.ty) || 0.6, fov: 26, drl: 1, noDraw: true,
+        kid: (typeof KID !== 'undefined' && KID) ? Object.assign({}, KID, {paint: kids[pi].paint, glow: kids[pi].glow, grid: kids[pi].grid}) : kids[pi],
+        st: { t: 0, throttle: 30 }
+      });
+      const src = X.canvas;
+      if (!src) return false;
+      const cv = copyPhoto(src);
+      const cap = T.cacheMax || 240;
       while (cache.size >= cap) {
-        const oldest = cache.keys().next().value;
+        let oldest = null;
+        for (const k of cache.keys()) { if (!warmSet.has(k)) { oldest = k; break; } }
         if (oldest == null) break;
         cache.delete(oldest);
       }
@@ -746,14 +1223,10 @@ const TRAFFIC = (() => {
       return true;
     } catch (e) { bakeErr = String(e); return false; }
     finally {
-      try {
-        if (R.setPixelRatio) R.setPixelRatio(dpr);
-        R.setSize(box.w || 1, box.h || 1, false);
-        if (R.setViewport) R.setViewport(0, 0, box.w || 1, box.h || 1);
-        if (R.setScissorTest) R.setScissorTest(scissor);
-        if (rt && R.setRenderTarget) R.setRenderTarget(rt);
-      } catch (e2) {}
+      for (const o of hidden) o.visible = true;
+      for (const undo of restores) undo();
       X._w = 0; X._h = 0;
+      try { if (X.kidApply) X.kidApply(typeof KID !== 'undefined' ? KID : null, {}); } catch (e2) {}
     }
   }
   function shadow(c) {
@@ -805,19 +1278,55 @@ const TRAFFIC = (() => {
     }
     ctx.restore();
   }
+  function screenPose(c) {
+    const yDraw = (c.y || 0) + (c.suspY || 0);
+    const c0 = camS(c.x, yDraw + 0.6, c.z);
+    if (!c0 || c0[2] < (typeof NEAR === 'number' ? NEAR : 0.5)) return null;
+    const pose = (c.pitch || 0) + (c.nose || 0);
+    const px = H * 0.9 / c0[2] * 7;
+    return {
+      sc: scr(c0), px, depth: c0[2],
+      roll: (c.roll || 0) + (c.bodyRoll || 0),
+      squash: lim(1 - pose * (T.pitchDraw || 0.95), 0.62, 1.22),
+      yShift: pose * px * 0.14
+    };
+  }
   function blit(cv, c) {
+    const sp = screenPose(c);
+    if (!sp) return false;
+    ctx.save();
+    ctx.translate(sp.sc[0], sp.sc[1] + sp.yShift);
+    ctx.rotate(sp.roll);
+    ctx.scale(1, sp.squash);
+    ctx.drawImage(cv, -sp.px / 2, -sp.px / 2, sp.px, sp.px);
+    ctx.restore();
+    return true;
+  }
+  // The live photo already has his pitch, roll, and wheels. Do not squash it.
+  function blitLive(cv, c) {
     const yDraw = (c.y || 0) + (c.suspY || 0);
     const c0 = camS(c.x, yDraw + 0.6, c.z);
     if (!c0 || c0[2] < (typeof NEAR === 'number' ? NEAR : 0.5)) return false;
-    const sc = scr(c0), px = H * 0.9 / c0[2] * 7;
-    const squash = 1 - (c.pitch || 0) * 0.10;
-    ctx.save();
-    ctx.translate(sc[0], sc[1]);
-    ctx.rotate((c.roll || 0) + (c.bodyRoll || 0));
-    ctx.scale(1, squash);
-    ctx.drawImage(cv, -px / 2, -px / 2, px, px);
-    ctx.restore();
+    const sc = scr(c0);
+    const px = H * 0.9 / c0[2] * 7;
+    ctx.drawImage(cv, sc[0] - px / 2, sc[1] - px / 2, px, px);
     return true;
+  }
+  function paintCar(c) {
+    const a = cache.get(c._key);
+    const b = (c._blend || 0) > 0.05 ? cache.get(c._key2) : null;
+    if (a) { cache.delete(c._key); cache.set(c._key, a); }
+    if (!a && !b) return false;
+    if (a && b) {
+      const base = ctx.globalAlpha;
+      ctx.globalAlpha = base * (1 - c._blend);
+      const okA = blit(a, c);
+      ctx.globalAlpha = base * c._blend;
+      const okB = blit(b, c);
+      ctx.globalAlpha = base;
+      return okA || okB;
+    }
+    return blit(a || b, c);
   }
   function lights(c, dist) {
     const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), rx = Math.cos(c.yaw), rz = -Math.sin(c.yaw);
@@ -871,11 +1380,21 @@ const TRAFFIC = (() => {
     if (dist > T.dotDist) return;
     ctx.save();
     ctx.globalAlpha = c.fade == null ? 1 : c.fade;
-    if (c.sim && dist < T.boxDist) shadow(c);
+    const closePhoto = (c.hit || dist < T.fullDist) && ((c._live) || (c._key && cache.has(c._key)));
+    // The showroom photo already has its contact shadow. A second ground
+    // ellipse sits in the crop and the player sprite does not have one.
+    if (c.sim && dist < T.boxDist && !closePhoto) shadow(c);
     if (c.hit || dist < T.fullDist) {
-      const cv = cache.get(c._key);
-      if (cv) { cache.delete(c._key); cache.set(c._key, cv); }
-      if (cv && blit(cv, c)) { if (c.sim && !c.hit) dress(c); ctx.restore(); return; }
+      if (c._live && blitLive(c._live, c)) {
+        if (c.sim && !c.hit) dress(c);
+        ctx.restore();
+        return;
+      }
+      if (paintCar(c)) {
+        if (c.sim && !c.hit) dress(c);
+        ctx.restore();
+        return;
+      }
       drawBox(c); lights(c, dist);
     } else if (dist < T.boxDist) { drawBox(c); lights(c, dist); }
     else lights(c, dist);
@@ -892,25 +1411,74 @@ const TRAFFIC = (() => {
     dt = Math.min(0.05, dt || 0.016);
     maintain();
     stepSparks(dt);
-    for (const c of cars) if (c.on) { if (c.hit) knocked(c, dt); else advance(c, dt); }
-    for (const c of cars) if (c.on && c.sim && !c.hit) bump(c);
+    dotHold ^= 1;
+    for (const c of cars) if (c.on) {
+      if (!c.sim && dotHold) continue;
+      advance(c, c.sim ? dt : dt * 2);
+    }
+    for (const c of cars) if (c.on && c.sim) yieldCar(c);
     } catch (e) { runErr = String(e && e.stack || e); }
+  }
+  function warmList() {
+    if (warmKeys) return;
+    const keys = [];
+    // Chase elevation atan2(2, 10) lands in bin 2 (0.20 rad). Straight wheels.
+    // Other elevations and a steered axle are photographed when a car actually needs them.
+    for (let yb = -12; yb <= 11; yb++) {
+      for (let pi = 0; pi < T.paints.length; pi++) keys.push(pi + ':' + yb + ':2:0');
+    }
+    warmKeys = keys;
+    for (let i = 0; i < keys.length; i++) warmSet.add(keys[i]);
+  }
+  function nextWarm() {
+    warmList();
+    while (warmAt < warmKeys.length && cache.has(warmKeys[warmAt])) warmAt++;
+    return warmAt < warmKeys.length ? warmKeys[warmAt] : null;
+  }
+  function bakeBudget() {
+    frameN++;
+    const playing = typeof flying !== 'undefined' && flying;
+    if (!playing) return 2;
+    if (typeof ZV !== 'undefined' && (ZV.every | 0) > 1 && ((ZV.frame + 1) % (ZV.every | 0)) === 0) return 0;
+    if ((frameN & 1) === 0) return 0;
+    return T.bakePerFrame || 1;
   }
   function collect(items) {
     if (OFF || !built) return;
     try {
-    let baked = 0;
+    const misses = [];
+    const near = [];
     for (const c of cars) {
       if (!c.on) continue;
       const dx = c.x - cam.x, dy = (c.y + 0.6) - cam.y, dz = c.z - cam.z;
       const dist = Math.hypot(dx, dy, dz);
       c._dist = dist;
       if (dist > T.dotDist) continue;
-      if (dist < T.fullDist) {
-        c._key = viewKey(c);
-        if (!cache.has(c._key) && baked < T.bakePerFrame) { if (bake(c._key)) baked++; }
-      }
+      if (c.sim && dist < T.fullDist) near.push(c);
       items.push([dx * dx + dz * dz, 't', c.slot]);
+    }
+    near.sort((a, b) => a._dist - b._dist);
+    const cap = T.liveCap | 0;
+    const live = near.slice(0, cap);
+    const liveSet = new Set(live);
+    for (const c of cars) if (!liveSet.has(c)) c._live = null;
+    const playing = typeof flying !== 'undefined' && flying;
+    if (playing && live.length) renderLive(live);
+    for (const c of near) {
+      if (liveSet.has(c) && c._live) continue;
+      viewKey(c);
+      if (!cache.has(c._key)) misses.push(c._key);
+      if ((c._blend || 0) > 0.05 && c._key2 && !cache.has(c._key2)) misses.push(c._key2);
+    }
+    let budget = bakeBudget();
+    let baked = 0;
+    for (let i = 0; i < misses.length && baked < budget; i++) { if (bake(misses[i])) baked++; }
+    while (baked < budget) {
+      const k = nextWarm();
+      if (!k) break;
+      if (!bake(k)) break;
+      warmAt++;
+      baked++;
     }
     if (sparks.length) items.push([0, 't', sparkSlot]);
     } catch (e) { runErr = String(e && e.stack || e); }
@@ -920,11 +1488,17 @@ const TRAFFIC = (() => {
     for (const c of cars) if (c.on) c.sim ? sim++ : dots++;
     for (const L of lanes) { turns += L.turns.length; if (L.straight) straight++; }
     return {
-      enabled:!OFF, model:'z370', clonedMeshes:cloned, simCap:T.simCap, dotCap:T.dotCap,
+      enabled:!OFF, model:'z370-lod', modelFile:lod.modelFile || '', modelTitle:lod.modelTitle || '',
+      modelMeshes:lod.modelMeshes || 0, modelTris:lod.modelTris || 0, clonedMeshes:cloned, simCap:T.simCap, dotCap:T.dotCap,
+      liveMs:+lod.ms.toFixed(2), liveN:lod.n, lodTris:lod.tris, lodDraws:lod.draws,
+      lodWheels:lod.wheels, lodErr:lod.err, lodCorners:lod.corners, lodRadius:lod.radius,
+      lodEnv:lod.env, lodLights:lod.lightN, lodBox:lod.bodyBox, lodStat:lod.bodyStat, lodResize:+(lod.resizeMs || 0).toFixed(2),
+      lodGpu:+(lod.gpuMs || 0).toFixed(2), lodParts:lod.partTris, livePx:T.livePx, liveCap:T.liveCap,
       sim, dots, alive:sim + dots, lanes:lanes.length, straight, turns,
       fullDist:T.fullDist, boxDist:T.boxDist, dotDist:T.dotDist,
       speedMin:T.speedMin, speedMax:T.speedMax, highwayAdd:T.highwayAdd,
       paints:T.paints.map(p => p.id), cache:cache.size, bakes, bakeErr, runErr,
+      warmAt, warmTotal: warmKeys ? warmKeys.length : 0, roadSig,
       wingHinges, crewN, sparkN, sparks:sparks.length
     };
   }
@@ -942,6 +1516,51 @@ const TRAFFIC = (() => {
     return {n, onRunway, inSolid, offLane};
   }
   function ensure() { build(); }
-  return {update, collect, stats, audit, ensure, _bake:bake, get cars(){ return cars; }, get lanes(){ return lanes; }, get _cache(){ return cache; }};
+  function bench(n, px, pose) {
+    if (!buildLod()) return {ok:false, err:lod.err};
+    const list = [];
+    for (let i = 0; i < n; i++) {
+      list.push(Object.assign({
+        pi: i % T.paints.length, yaw: 0, x: (cam.x || 0) + 6, y: 0, z: (cam.z || 0) + i * 3,
+        suspY: 0, nose: 0.12, pitch: 0, bodyRoll: -0.2, roll: 0, steer: 0.35, wheelA: 1.2, slip: 0
+      }, pose || {}));
+    }
+    const t0 = performance.now();
+    const ok = renderTiles(list, px || T.livePx || 512);
+    return {ok, ms: performance.now() - t0, tris: lod.tris, draws: lod.draws, wheels: lod.wheels, err: lod.err, corners: lod.corners, src: lod.src, shots: list.map(c => c._live), gpu: lod.gpuMs, resize: lod.resizeMs};
+  }
+  function pass(n, px) {
+    if (!buildLod()) return {ok:false, err:lod.err};
+    const R = lod.renderer;
+    const list = [];
+    for (let i = 0; i < n; i++) {
+      list.push({pi: i % T.paints.length, yaw: 0, x: 0, y: 0, z: 0, suspY: 0, nose: 0, pitch: 0, bodyRoll: 0, roll: 0, steer: 0.3, wheelA: 1, slip: 0, _rel: 2.2, _elev: 0.25});
+    }
+    R.setPixelRatio(1);
+    R.setSize(px, px, false);
+    R.setScissorTest(false);
+    R.setViewport(0, 0, px, px);
+    R.autoClear = true;
+    R.setClearColor(0x000000, 0);
+    for (let i = 0; i < lod.pool.length; i++) {
+      const inst = lod.pool[i];
+      if (i < n) { poseCar(inst, list[i]); inst.position.x = (i - (n - 1) / 2) * 5.2; inst.visible = true; }
+      else inst.visible = false;
+    }
+    lod.cam.aspect = 1; lod.cam.fov = 26; lod.cam.updateProjectionMatrix();
+    lod.cam.position.set(9, 3.2, 9);
+    lod.cam.lookAt(0, 0.5, 0);
+    const tR = performance.now();
+    R.render(lod.scene, lod.cam);
+    const gpu = performance.now() - tR;
+    const tB = performance.now();
+    const cv = document.createElement('canvas');
+    cv.width = px; cv.height = px;
+    cv.getContext('2d', {alpha:true}).drawImage(R.domElement, 0, 0, px, px);
+    const blit = performance.now() - tB;
+    if (window.ZD && ZD.Xray) { ZD.Xray._w = 0; ZD.Xray._h = 0; }
+    return {gpu, blit, ms: gpu + blit};
+  }
+  return {update, collect, stats, audit, ensure, _bake:bake, _bench:bench, _pass:pass, _lod:lod, get cars(){ return cars; }, get lanes(){ return lanes; }, get _cache(){ return cache; }};
 })();
 window.TRAFFIC = TRAFFIC;

@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-24",
+  "harness": "headless Chrome, --disable-gpu --enable-unsafe-swiftshader, viewport 844x390, deviceScaleFactor 3, touch, CPU throttle 4x. Game canvas 1688x780, DPR 2. world.html.",
+  "beforeSha": "e279c9a79a885abd11a500b018938f835f48e34c",
+  "before": {
+    "updateMs": [1.07, 1.26],
+    "collectMs": [16.28, 31.11],
+    "drawMs": [0.72, 1.56],
+    "bakesPerFrame": [0.2, 0.4],
+    "cache": 25,
+    "note": "Two street runs from docs/traffic-profile.json on the plan branch. Collect includes the new-angle photo hitch."
+  },
+  "after": {
+    "pairs": 5,
+    "throttle": 4,
+    "spot": "P.x=250 P.z=200 street",
+    "updateMs": [1.0, 0.9, 0.6, 1.0, 0.7],
+    "collectMs": [0, 0, 0.1, 0, 0],
+    "drawMs": [1.3, 0.8, 2.2, 0.9, 0.9],
+    "bakesPerFrame": [0, 0, 0, 0, 0],
+    "updateMedianMs": 0.9,
+    "collectMedianMs": 0,
+    "drawMedianMs": 0.9,
+    "cache": 432,
+    "warmPhotos": 432,
+    "warmMsAtLoad": 18883,
+    "note": "Warm finished on the start card (flying false, 2 photos a frame) before these 5 driving frames. Isolated traffic cost. Full city frames on this VM are not Galaxy fps."
+  },
+  "sim": {
+    "cars": 30,
+    "lanes": 810,
+    "straight": 718,
+    "turns": 2016,
+    "wingHinges": 0,
+    "clonedMeshes": 427,
+    "audit": {"n": 30, "onRunway": 0, "inSolid": 0, "offLane": 0},
+    "brakeTurn": "nose 0.30, bodyRoll -0.39, steer 0.55, suspY -0.07 while braking, wheel angle keeps climbing"
+  },
+  "rebuild": {
+    "carsBefore": 30,
+    "carsAfter": 30,
+    "sigChanged": true,
+    "sigRestored": true,
+    "lanes": 810
+  }
+}
