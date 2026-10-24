@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Proposal mockups for the building-look hold. Not the game. No model files."""
+"""Parked look mockups. Not the game. No model files.
+
+Bob's order on 2026-10-24: building-design mockups wait until the City
+Layout agent (bc-3ff1a27b) has an FPS layout Bob has approved. Until
+then the only track that proceeds is the free 3D model search, which
+is research in world/GL-CITY.md. Do not run this script to start a
+new look.
+"""
 import math
 import os
 import sys
