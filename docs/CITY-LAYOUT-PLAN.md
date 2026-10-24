@@ -21,10 +21,10 @@ This plan keeps every building, every height, and every footprint. It keeps the 
 
 The two options are the same map. The only difference is the Sky Drop roof (the 62 m pad).
 
-- **Option A.** The roof stays where it is now, on the west side of the runway.
-- **Option B.** The roof moves to the east side, next to the arcades.
+- **Option A.** The roof stays where it is now, on the west side of the runway. The east side, with the arcades and the soccer shops, stays a little emptier. Pick this if the glide should keep today's pad.
+- **Option B.** The roof moves to the east side, next to the arcades, so the play side has the big jump. Pick this if the jump should live with the arcades.
 
-Option A is the one to build if the glide should stay on its current pad and the play street should stay a little emptier. Option B is the one to build if the big jump roof should live with the arcades. Either way the airport does not move.
+Either way the airport does not move, and the buildings stay the black placeholders.
 
 To change a later round, name the block. "Slide the arcades north" changes one pair of buildings. The other option does not have to be redrawn.
 
@@ -36,11 +36,13 @@ North is up. Cyan strip down the middle is the runway and the flying lane. That 
 
 ## Option A — Sky Drop stays on the west
 
+Home streets on the west, car shops split by the park, play on the east, the tower alone. The big cyan jump roof stays on the west shoulder of the runway, where she already glides to it.
+
 ![Option A, top-down](city-layout/option-a.png)
 
 ## Option B — Sky Drop moves to the east
 
-Same streets, same buildings, same tower. Only the cyan Sky Drop roof crosses the runway.
+Same streets, same buildings, same tower. Only the cyan jump roof crosses the runway and sits with the arcades.
 
 ![Option B, top-down](city-layout/option-b.png)
 
@@ -167,12 +169,53 @@ For the Architecture Check agent, bc-c7ace59c. This PR is a plan. It does not ch
 | Builder HQs | Seeds 23 and 24 stay on today's pads. Moving them overlaps the north-bank jumps. Sandbox north of the river unchanged. |
 | Roads, traffic, Hot Drop, tows | Centerlines unchanged. Traffic stays 30. No building covers a tow point. |
 | Spawn | (0, 0). |
-| Plazas | Two existing rectangles overlap new buildings: arcade seed 13 with the lot at x 160..240, z 310..490, and cafe seed 17 with the lot at x −540..−472, z 310..490. Build would slide those two plazas to the nearest empty block. Not done here. |
+| Plazas | Two rectangles overlap new buildings. Not done here. At build time the arcade lot slides one block north (x 160..240, z 510..690) and the pizza lot slides one block south (x −540..−472, z 110..290). Ramps go with them. |
 | FPS files | Not touched. |
 | Adult `index.html` | Not touched. |
 
+## Driving it on the /test/ copy
+
+Not built. Bob picks an option first. When he does, the playable version is the whole Neon World that already lives under `/test/`, with these black boxes moved onto the new map. It is not a bare map, and it is not the live site.
+
+`/test/world.html` and `/test/world-split.html` already run the full game. They load traffic, walking, doors, the app each building opens, the airport and its ramps, the river jump, the tunnel, soccer, Hot Drop, the minimap, the pet and Z, Garage and Home, saves, menus, and the controls. Both pages read `test/world/city.js`. The live pages stay on today's map.
+
+### What the build changes
+
+One file: `test/world/city.js`. The 24 shop positions, the street faces, the district names, and two plaza rectangles. Same black boxes, same heights, same footprints, same signs and colors. No new art. Traffic, the house code, objectives, soccer, the minimap, and the menus stay as they are. Then bump the `?v=` on that script in both test pages so a refresh loads it.
+
+### What keeps working without rewiring
+
+These look up a building by its purpose, or they draw whatever boxes the city built. They do not remember today's coordinates. This is true for both options.
+
+- **Minimap.** It draws the buildings from the city list when the page loads. The runway plane icon stays at (0, 730). The soccer ball stays on the dome. The builder-zone box stays. Hot Drop is a live star, not a baked shop. Labels follow the purpose (HOME, GARAGE, and the rest), not the old district names.
+- **Doors and the apps they open.** Doors are generated from the street face. Walking up still opens the same thing it opens now: Home and Ellie's saved house, Garage Z, the pet and crew page, the dance stage, neon paint, the cafe, the arcade, NOS, and the builder blueprints. A soccer shop still sends her to the dome, and the dome does not move. A sky-drop door is not an indoor room. It sends her to that building's own roof, then launches her, using the box she is standing at. There is no second coordinate to update.
+- **Saves, menus, and controls.** The house save, the car paint, and the start-mode choice are not map coordinates. Two homes still share one house save, same as today. Both garages still open Garage Z. Menus and controls do not change.
+- **Traffic.** The roads are the same lines, including the tunnel stretch cars do not spawn in. A car skips a stretch only if a wall sits in the lane. None of these shops cover a lane. The 30 cars stay 30 cars.
+- **Hot Drop and objectives.** After a Sky Drop landing, Hot Drop picks a road point 200–340 m ahead. The road points do not move. There is no objective pinned to an old shop coordinate.
+- **Spawn.** She still starts at (0, 0) on the empty runway. Sky Drop still starts in the air at (180, 520), altitude 460. That point is not inside a building in either option.
+- **Airport, river jump, tunnel, soccer field, pet, and Z.** Not moved. The pet greeting happens inside the house. Z is the car.
+
+### What has to be done or it breaks (both options)
+
+- **Two plazas have to slide, or their ramps spawn inside shops.** The ramps are built inside the plaza rectangle. The new arcade covers the lot at x 160..240, z 310..490. The new south pizza shop covers the lot at x −540..−472, z 310..490. Leave them and those ramps are inside the buildings, and the doors are a mess. Slide the arcade lot one block north, to x 160..240, z 510..690. Slide the pizza lot one block south, to x −540..−472, z 110..290. The other three plazas stay. Same slide for A and B.
+- **Keep the street faces in the table.** A wall that is not on a street gets a fallback door on the south side, which can open into an alley. The faces in this plan were checked against the curb rule, so the generated doors land on the street.
+
+### Option A only
+
+Nothing else. The jump roof stays on today's west pad, so the Sky Drop start is the same glide she has now. The tow truck at (254, 600) stays in the open play street, clear of that roof. The tow at (−546, 400) stays clear of the pizza shop. No spawn, minimap, traffic, or door code to edit.
+
+### Option B only
+
+- The jump roof is the only extra move: x 264..328, z 518..682, still 62 m, still a roof pad. The elevator follows that box. The walk code does not have a separate coordinate for it.
+- She still appears at (180, 520) in the air, just west of that roof, heading mostly north. She does not spawn inside it. She is not pointed at it. The mode still runs. If the glide should face the roof, that is one number, the yaw in `resetSkyDrop` inside `test/world/state.js`, and only on the test copy. The rest of the game does not need it.
+- The tow truck at (254, 600) sits about 8 m west of the new roof. It is not inside the building. On the drive, check that the jump does not kiss the wall. If it feels tight, nudge that one truck a few meters west, still in the road. The other five trucks stay.
+
+### What to drive before calling it playable
+
+On `/test/world.html`, with the black boxes: start on the runway, fly the tunnel both ways, take the small river jump, and open one of each building (home, garage, pets, dance, paint, soccer, and a sky-drop roof). Check the minimap labels moved with the shops. Trigger a Sky Drop and a Hot Drop. Watch traffic on a home street and on the north car row. Option B adds the tow-next-to-the-roof check. That pass is the whole game, not a map screenshot.
+
 ## If the plan is approved
 
-The build is `world/city.js` only: the 24 `shop()` positions and faces, the district labels, and a slide of those two plazas. No draw-code changes, no traffic changes, no new art. Then a driving pass on the shots in the table above, on the commit that was actually tested.
+The first build is the section above: `test/world/city.js` only, inside the existing `/test/` game, plus the two plaza slides. Not the live `world.html`. No draw-code changes, no traffic changes, no new art. Then the drive pass, on the commit that was actually tested.
 
 Pictures and the count log: `docs/city-layout/`. The picture generator is `docs/city-layout/layout-maps.mjs`. It is not part of the game.
