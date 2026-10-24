@@ -39,29 +39,46 @@ def channel(a, b):
     }
 
 
-def zoom_box(im):
-    # The car sits in the middle of the frame. The zoom is a building edge
-    # up and to the left, so the crop is the wall and not the Z.
+def zoom_box(im, shot):
+    # The car sits in the middle of the frame. Street shots zoom a building
+    # edge up and to the left. The NOS shot zooms the far wall beside the
+    # station, which is the silhouette that has to stay filled.
     w, h = im.size
-    cx, cy = int(w * 0.22), int(h * 0.34)
+    if shot == 'nos':
+        px = im.load()
+        xs = []
+        for y in range(int(h * 0.2), int(h * 0.45), 3):
+            for x in range(int(w * 0.5), w, 3):
+                r, g, b = px[x, y]
+                if r < 18 and g < 12 and b < 28:
+                    xs.append(x)
+        if xs:
+            xs.sort()
+            cx = xs[int(len(xs) * 0.8)]
+        else:
+            cx = int(w * 0.85)
+        cy = int(h * 0.33)
+    else:
+        cx, cy = int(w * 0.22), int(h * 0.34)
     hw, hh = max(70, w // 10), max(52, h // 10)
     return cx, cy, hw, hh
 
 
-def zoom(im, anchor):
+def zoom(im, shot, box=None):
     w, h = im.size
-    cx, cy, hw, hh = zoom_box(im)
-    box = (max(0, cx - hw), max(0, cy - hh), min(w, cx + hw), min(h, cy + hh))
-    crop = im.crop(box)
+    cx, cy, hw, hh = box if box is not None else zoom_box(im, shot)
+    rect = (max(0, cx - hw), max(0, cy - hh), min(w, cx + hw), min(h, cy + hh))
+    crop = im.crop(rect)
     return crop.resize((crop.width * 3, crop.height * 3), Image.NEAREST)
 
 
-def sheet(left, right, title, left_label, right_label, footer, anchor):
+def sheet(left, right, title, left_label, right_label, footer, shot):
     gap = 16
     head = 54
     foot = 78
     zw = 420
-    zl, zr = zoom(left, anchor), zoom(right, anchor)
+    box = zoom_box(left, shot)
+    zl, zr = zoom(left, shot, box), zoom(right, shot, box)
     zl.thumbnail((zw, 280), Image.NEAREST)
     zr.thumbnail((zw, 280), Image.NEAREST)
     body_h = max(left.height, right.height)
@@ -80,7 +97,7 @@ def sheet(left, right, title, left_label, right_label, footer, anchor):
     im.paste(zr, (gap * 2 + left.width, zy))
     # outline the zoom source on the full frames
     def mark(ox, src):
-        cx, cy, hw, hh = zoom_box(src)
+        cx, cy, hw, hh = box
         dr.rectangle([ox + cx - hw, head + cy - hh, ox + cx + hw, head + cy + hh], outline=(255, 241, 77), width=3)
     mark(gap, left)
     mark(gap * 2 + left.width, right)
@@ -118,7 +135,8 @@ def main():
                 stats = channel(ia, ib)
                 note = (
                     'Same camera. Exact pixels %s%%. Within a small step %s%%. Visibly different %s%%. '
-                    'Nearer walls cover the boost rings. One soft pixel under a neon edge still differs. '
+                    'Far walls use the same facing faces as today\'s silhouette. '
+                    'One soft pixel under a neon edge still differs. '
                     'The minimap and the FPS number move between shots. No shadowBlur.'
                     % (stats['exact'], stats['near'], stats['hot'])
                 )
@@ -127,7 +145,7 @@ def main():
                 fps = '2D %sms (~%s fps)   WebGL %sms (~%s fps)   compose %sms   blit %s' % (
                     a['raf'], a['fps'], b['raf'], b['fps'], b['compose'], b['blit'])
                 title = '%s  %s  %s     2D canvas  |  WebGL buildings' % (page, vp, shot)
-                img = sheet(ia, ib, title, 'today\'s 2D canvas', 'WebGL ?gl=1', note + '   ' + fps, a.get('anchor') or b.get('anchor'))
+                img = sheet(ia, ib, title, 'today\'s 2D canvas', 'WebGL ?gl=1', note + '   ' + fps, shot)
                 name = 'sheet-%s-%s-%s.png' % (page.replace('.html', ''), vp, shot)
                 img.save(os.path.join(SRC, name))
                 img.save(os.path.join(ART, name))
@@ -144,7 +162,7 @@ def main():
                         % (gst['exact'], gst['hot'])
                     )
                     gimg = sheet(ia, ig, '%s  %s  glow is a different picture' % (page, vp),
-                                 'today\'s hard edge', '?glow=1 wider halo', gnote, a.get('anchor'))
+                                 'today\'s hard edge', '?glow=1 wider halo', gnote, 'face')
                     gname = 'sheet-%s-%s-glow.png' % (page.replace('.html', ''), vp)
                     gimg.save(os.path.join(SRC, gname))
                     gimg.save(os.path.join(ART, gname))

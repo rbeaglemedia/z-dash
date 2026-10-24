@@ -10,25 +10,27 @@ Today's building strokes set `shadowBlur` to 0. The matching glow is that hard n
 
 A nearer wall covers what the 2D fill covered. Boost rings stay on the 2D painter. Where a nearer solid overlaps one, that solid punches the ring out, so the ring does not paint across the wall. The same box fill is stamped on the ground canvas when the wall is opaque, so a street line behind that wall stays behind it. The WebGL edge fades across its outer pixels so it does not paint a hard extra row. One soft pixel under a neon edge still does not match. The moving minimap and the FPS number also differ between the two shots.
 
-The picture is close and it is not identical. On the kid page, share of pixels within a channel-sum of 12, and the share that differ by more than 24 (sampled every second pixel):
+Far outline blocks use the same facing faces as today's silhouette. `farSil.o` is cleared before that fill, so a cap-only box is a hole. A wall of constant camera-x is submitted in screen space. Leaving its clip w equal to camera z drops that wall: the clip triangle has no area, and the pixels stay sky. Depth is the same window z as before.
+
+The picture is close and it is not identical. On the kid page, share of pixels within a channel-sum of 12, and the share that differ by more than 24 (sampled every second pixel). Head `f2724a2`, shots taken 5:49 AM ET:
 
 | view | canvas | face ≤12 / >24 | NOS ≤12 / >24 | air ≤12 / >24 |
 |---|---|---|---|---|
-| phone | 1688×780 DPR 2 | 98.2% / 1.5% | 99.2% / 0.7% | 97.9% / 0.8% |
-| iPad | 1024×768 DPR 1 | 97.2% / 2.4% | 98.9% / 0.9% | 98.0% / 1.6% |
-| PC | 1280×720 inside 1366×768 | 95.7% / 3.7% | 98.3% / 1.3% | 98.2% / 1.3% |
+| phone | 1688×780 DPR 2 | 99.2% / 0.6% | 97.4% / 1.0% | 95.5% / 3.2% |
+| iPad | 1024×768 DPR 1 | 96.2% / 3.1% | 98.1% / 1.1% | 98.6% / 0.5% |
+| PC | 1280×720 inside 1366×768 | 97.7% / 1.8% | 99.2% / 0.4% | 99.2% / 0.5% |
 
-Exact pixels are lower than that, especially on PC (the NOS pair is 39.1% identical and 98.3% within a small step). The desktop canvas is scaled into the window. The iPad face pair is 94.0% identical. The phone face pair is 88.7% identical. The iPad air pair is 96.5% identical, and its visibly different share is 1.6%, which is higher than the first proof's 0.4% on that one shot. Labeled zooms are in `test-results/gl-city-proof/`.
+Exact pixels are lower than that. The phone face pair is 93.3% identical. The iPad face pair is 93.5% identical. The iPad NOS pair is 93.7% identical. On that NOS pair the far wall beside the station is filled: of the dark 2D pixels in that wall, 4 differ from WebGL by a channel-sum over 40. The PC NOS pair is 40.1% identical and 99.2% within a small step, because the desktop canvas is scaled into the window. The phone air pair's 3.2% is the minimap in the bottom-left, not the skyline. The iPad street shot still has an amber patch on the right that is dark in the WebGL capture. Traffic moves during boot, before the pose freezes, so that patch is not a second copy of a building. The split page is the same HTML. Its iPad NOS pair is 98.9% / 0.6%. Its phone street pair is 94.8% / 3.8%, and that extra is the same bottom-left minimap. Labeled zooms are in `test-results/gl-city-proof/`. The NOS zoom is the far wall. The street zoom is a building edge, not the car.
 
-`?glow=1` on the phone face is 94.5% within a small step and 4.7% visibly different. It is labeled as a different picture.
+`?glow=1` on the phone face is 95.6% within a small step and 3.9% visibly different. It is labeled as a different picture.
 
-Frame times are SwiftShader with the player car draw stubbed. They are not a Galaxy and not an iPad. Compose (submit plus the GL draw) is 0.1–0.3 ms, and 0.5 ms on the PC glow shot. Blit is 0. Whole-frame `raf` on the kid page, 2D then WebGL:
+Frame times are SwiftShader with the player car draw stubbed during the sample. They are not a Galaxy and not an iPad. Compose (submit plus the GL draw) is 0.1–0.3 ms. Blit is 0. Whole-frame `raf` on the kid page, 2D then WebGL:
 
 | view | face | NOS | air |
 |---|---|---|---|
-| phone | 14.5 ms then 18.0 ms | 16.2 then 18.7 | 16.6 then 16.1 |
-| iPad | 15.2 then 14.1 | 16.7 then 13.7 | 16.7 then 13.8 |
-| PC | 15.9 then 14.8 | 14.5 then 16.4 | 16.7 then 16.6 |
+| phone | 15.8 ms then 19.8 ms | 15.3 then 16.4 | 16.6 then 16.6 |
+| iPad | 16.8 then 16.2 | 15.6 then 16.5 | 16.6 then 16.7 |
+| PC | 15.2 then 16.8 | 14.0 then 14.8 | 16.7 then 16.7 |
 
 Nothing here deploys.
 
