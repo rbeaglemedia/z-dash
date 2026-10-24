@@ -1,0 +1,44 @@
+{
+  "index_html_bytes": 7462115,
+  "index_html_changed": false,
+  "jr_html_before_bytes": 7608854,
+  "jr_html_after_bytes": 1731104,
+  "driver_files_bytes": 5879684,
+  "menu_does_not_load": [
+    "driver/embed.js (4703719, 370Z GLB)",
+    "driver/three.module.js (695047)",
+    "driver/music.js (22126, Spotify)",
+    "driver/obd-source.js (32822)",
+    "driver/shell.js (92799, driver dashboard loop)",
+    "driver/qrcode.js + jsqr.js + link.js"
+  ],
+  "menu_still_loads": [
+    "shared/kid-seam.js (3464, localStorage reader only)",
+    "driver/roles.js (10365, kid/adult device redirect on cold PWA launch)",
+    "inline wake lock (6413, screen-awake, no network)"
+  ],
+  "on_open": {
+    "dashboard": "play bundle + music.js. Spotify poll only if src is spotify. No OBD, no shell.",
+    "road": "play bundle + music.js for the local beat. No Spotify poll unless the dashboard music feature is the open one.",
+    "garage": "play bundle + world/neon-paint.js. No music.js, no OBD.",
+    "settings_gear": "full adult bundle including OBD, shell, QR, link"
+  },
+  "probe": {
+    "menu_idle": "idle iv 0 · ch 0 · net 0 · sensor 0 · tilt on",
+    "menu_errs": [],
+    "menu_resources": ["shared/kid-seam.js", "driver/roles.js"],
+    "dash_idle_demo": "idle iv 20ms,200ms,16ms · ch 0 · net 0 · sensor 0 · tilt on",
+    "dash_idle_spotify": "idle iv 20ms,4000ms,200ms,16ms",
+    "dash_spotify_request": "https://accounts.spotify.com/api/token only after the dashboard opened",
+    "dash_obd": false,
+    "dash_shell": false,
+    "road_obd": false,
+    "garage_paint": true,
+    "garage_music": false,
+    "garage_obd": false,
+    "garage_idle": "idle iv 16ms · ch 0 · net 0 · sensor 0 · tilt on",
+    "world_driver_files": false,
+    "world_music": false,
+    "seam": "zdash.kid.v1.shifts plus optional read-only zdash.drives.v1.shifts. Kid save shape unchanged. 41 kid + 7 future = 48."
+  }
+}
