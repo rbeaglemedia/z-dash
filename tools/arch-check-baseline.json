@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "note": "Mural floor for the Z dance buildings, and the small river-edge ramps. A later mural wall must be at least this big. The river-edge ramps stay this size and this far from the water. Extra ramps are allowed. Written by arch-check --write-baseline. Do not edit these numbers to hide a smaller wall or a moved river jump.",
+  "capturedAt": "2026-10-24T05:21:27.482Z",
+  "git": {
+    "sha": "1b90d27e4b89a904c480f1f4292b44566871345c",
+    "branch": "cursor/arch-check-652e"
+  },
+  "murals": [
+    {
+      "id": 11,
+      "purpose": "DANCE",
+      "label": "Z Company Arts",
+      "cx": -164,
+      "cz": 392,
+      "width": 58.88,
+      "height": 9.9,
+      "area": 582.91
+    },
+    {
+      "id": 17,
+      "purpose": "DANCE",
+      "label": "Z Company Arts",
+      "cx": 264,
+      "cz": 1192,
+      "width": 58.88,
+      "height": 11,
+      "area": 647.68
+    }
+  ],
+  "riverEdge": [
+    {
+      "cx": -40,
+      "cz": 1767,
+      "h": 1.6,
+      "len": 10,
+      "wid": 8,
+      "dir": 0,
+      "sz": "small",
+      "nm": "river",
+      "bank": "south",
+      "lipToWater": 8
+    },
+    {
+      "cx": 60,
+      "cz": 1853,
+      "h": 1.6,
+      "len": 10,
+      "wid": 8,
+      "dir": 2,
+      "sz": "small",
+      "nm": "river",
+      "bank": "north",
+      "lipToWater": 8
+    },
+    {
+      "cx": -250,
+      "cz": 1767,
+      "h": 1.6,
+      "len": 10,
+      "wid": 8,
+      "dir": 0,
+      "sz": "small",
+      "nm": "river",
+      "bank": "south",
+      "lipToWater": 8
+    }
+  ],
+  "rampLot": 24,
+  "scales": {
+    "person": 1.7,
+    "pet": 0.74,
+    "car": {
+      "len": 4.25,
+      "w": 1.85,
+      "h": 1.32,
+      "name": "370Z"
+    }
+  }
+}

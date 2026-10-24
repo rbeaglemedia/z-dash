@@ -1,0 +1,31 @@
+<!-- ARCHITECTURE-CHECK -->
+
+## ARCHITECTURE-CHECK
+
+**FAIL** on `cursor/arch-check-652e` `1b90d27e4b89`.
+
+Kid App buildings only. 24 reviewed. Full log: `test-results/arch-check/report.md`.
+
+- **Garage door is not car-sized** (20)
+  The mouth graphic sits on the center of the bay. It has to clear the 370Z (1.85 m wide, 1.32 m tall) with room to spare.
+- **Two window systems share the wall** (24)
+  The close view draws dashed floor lines every 5.5 m and 1.65×1.2 m panes on a different pitch. A floor line cuts through a pane.
+- **Sign is not readable from the street** (1)
+  At the front camera the word "JUMP" is 6.35 px.
+- **Roof is a blank slab from the air** (17)
+  The cap is closed and the neon edge draws. Nothing else is on the roof: no pad, tank, or antenna. A flying view cannot tell this roof from a lid.
+- **Building pass set shadowBlur**
+  A review draw assigned a non-zero shadowBlur 386 times. The probe forced the value back to 0 so the shot still shows the building. Glow belongs off this path. Source: world/neon-paint.js:2708 (10); world/neon-paint.js:2719 (8); world/neon-paint.js:2740 (8); world/neon-paint.js:2770 (lw * (s.brush === 'spray' ? 2.2 : 1.4)); world/neon-paint.js:2775 (Math.max(2, lw * 0.3)).
+
+FPS (software GL, one near building / in-view pass):
+
+- phone 0.1 ms / 0.5 ms over 37 buildings
+- ipad 0.3 ms / 1.2 ms over 37 buildings
+- pc 0.1 ms / 0.3 ms over 37 buildings
+
+Ramps: 70 (floor 24, no ceiling). River-edge small jumps: 3.
+
+Dance mural:
+
+- Z Company Arts 58.88×9.9 m
+- Z Company Arts 58.88×11 m
