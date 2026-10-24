@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head><meta name="robots" content="noindex"><link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="><script>(function(){function scrub(){if(!('caches' in window))return;caches.keys().then(function(keys){keys.forEach(function(k){caches.open(k).then(function(c){['/jr.html','/index.html','/world.html','/fly3.html'].forEach(function(logical){var req=new Request(location.origin+logical);c.match(req).then(function(hit){if(hit&&String(hit.url).indexOf('/test/')!==-1)c.delete(req);});});c.keys().then(function(reqs){reqs.forEach(function(req){try{if(new URL(req.url).pathname.indexOf('/test/')===0)c.delete(req);}catch(e){}});});});});});}scrub();var n=0,iv=setInterval(function(){scrub();if(++n>10)clearInterval(iv);},300);if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){navigator.serviceWorker.register('sw.js',{scope:'/test/',updateViaCache:'none'}).catch(function(){});}})();</script>
+<head><meta name="robots" content="noindex"><link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="><script>(function(){function scrub(){if(!('caches' in window))return;caches.keys().then(function(keys){keys.forEach(function(k){caches.open(k).then(function(c){['/jr.html','/index.html','/world.html','/fly3.html'].forEach(function(logical){var req=new Request(location.origin+logical);c.match(req).then(function(hit){if(hit&&String(hit.url).indexOf('/test/')!==-1)c.delete(req);});});c.keys().then(function(reqs){reqs.forEach(function(req){try{if(new URL(req.url).pathname.indexOf('/test/')===0)c.delete(req);}catch(e){}});});});});});}scrub();var n=0,iv=setInterval(function(){scrub();if(++n>10)clearInterval(iv);},300);if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){navigator.serviceWorker.register('sw.js',{scope:'/test/',updateViaCache:'none'}).catch(function(){});}})();</script><script src="shared/kid-idle.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#000000">
@@ -743,6 +743,7 @@ body:not(.kidon) #kFpsRow { display: none; }
   sw.addEventListener('message', function (e) { if (e.data && e.data.type === 'zd-sw') onBuild(e.data.build); });
   sw.addEventListener('controllerchange', function () { if (sw.controller) sw.controller.postMessage('zd-build?'); });
   addEventListener('load', function () { sw.register('./sw.js', { updateViaCache: 'none' }).then(function (reg) { window.ZD_SWREG = reg;
+    if (window.ZD_JR) return; // Kid App: no update poll until a driver page asks for it
     document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') reg.update().catch(function () {}); }); // home-screen app brought back
     setInterval(function () { reg.update().catch(function () {}); }, 30 * 60 * 1000); }).catch(function (e) { console.warn('SW', e); }); });
 })();</script>
@@ -8359,14 +8360,21 @@ var qrcode = function() {
     if (clockIv) { clearInterval(clockIv); clockIv = 0; }
     if (pollIv) { clearInterval(pollIv); pollIv = 0; }
     if (!on || window.ZD_DASH_IDLE) return;
-    clockIv = setInterval(() => { if (window.ZD_PARKED || window.ZD_DASH_IDLE) return; M.tick(); M.beatTick(); }, 20);
-    pollIv = setInterval(() => { if (window.ZD_PARKED || window.ZD_DASH_IDLE) return; M.poll(); }, 4000);
+    const kid = !!window.ZD_JR;
+    const beat = !kid || !!window.ZD_KID_BEAT;
+    const spotify = !kid || (!!window.ZD_KID_MUSIC && M.src === 'spotify');
+    if (!beat && !spotify) return;
+    if (beat) clockIv = setInterval(() => { if (window.ZD_PARKED || window.ZD_DASH_IDLE) return; M.tick(); M.beatTick(); }, 20);
+    if (spotify) pollIv = setInterval(() => { if (window.ZD_PARKED || window.ZD_DASH_IDLE) return; M.poll(); }, 4000);
   };
   if (!window.ZD_JR) ZD.musicClock(true);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) M.poll(); });
-  M.handleRedirect().then(() => M.poll());
-  // a saved "Mic" choice re-arms on the first tap (browsers need a gesture to start audio)
-  if (M.sync === 'mic') addEventListener('pointerdown', function arm() { removeEventListener('pointerdown', arm); M.setSync('mic'); }, { once: true });
+  document.addEventListener('visibilitychange', () => { if (document.hidden || window.ZD_JR) return; M.poll(); });
+  if (window.ZD_JR) {
+    const q = new URLSearchParams(location.search);
+    if (q.get('code') || q.get('error')) M.handleRedirect(); // the player only talks to Spotify after CONNECT
+  } else M.handleRedirect().then(() => M.poll());
+  // a saved "Mic" choice re-arms on the first tap (browsers need a gesture to start audio). The Kid App waits until that control is used.
+  if (M.sync === 'mic' && !window.ZD_JR) addEventListener('pointerdown', function arm() { removeEventListener('pointerdown', arm); M.setSync('mic'); }, { once: true });
 })();
 /* NOW PLAYING widgets + Settings wiring (Bob's Drive panel, Passenger strip, MUSIC settings) */
 (function () {
@@ -8555,7 +8563,7 @@ var qrcode = function() {
     return pc;
   }
   const GRACE = +(Q.get('linkgrace') || 12000);
-  function lost(why) { if (L.state === 'lost' || L.state === 'idle') return; clearTimeout(L.graceT); L.state = 'lost'; L.why = why; L.drops = (L.drops || 0) + 1; emit(); }
+  function lost(why) { if (L.state === 'lost' || L.state === 'idle') return; clearTimeout(L.graceT); L.state = 'lost'; L.why = why; L.drops = (L.drops || 0) + 1; if (window.ZD_JR && L.watch) L.watch(false); emit(); }
   function reconnecting(why) { if (L.state !== 'linked') return; L.state = 'reconnecting'; L.why = why; L.recT = performance.now(); emit(); clearTimeout(L.graceT); L.graceT = setTimeout(() => { if (L.state === 'reconnecting') lost(why + ' (gave up)'); }, GRACE); }
   function back() { if (L.state !== 'reconnecting') return; clearTimeout(L.graceT); L.state = 'linked'; L.recovered = (L.recovered || 0) + 1; emit(); }
   // pair code: the same 4 digits on both screens, from both DTLS fingerprints, so Bob can see the right iPad joined
@@ -8574,7 +8582,7 @@ var qrcode = function() {
       else if (m.k === 'pf') { if (ZD.Roles) ZD.Roles.peerProfile(m.p); }
     };
   }
-  L.stop = function () { clearTimeout(L.graceT); const pc = L.pc, ch = L.ch; Object.assign(L, { role: null, pc: null, ch: null, state: 'idle' }); try { ch && ch.close(); } catch (e) {} try { pc && pc.close(); } catch (e) {} clearInterval(L.timer); stopCam(); emit(); };
+  L.stop = function () { clearTimeout(L.graceT); const pc = L.pc, ch = L.ch; Object.assign(L, { role: null, pc: null, ch: null, state: 'idle' }); try { ch && ch.close(); } catch (e) {} try { pc && pc.close(); } catch (e) {} clearInterval(L.timer); if (L.watch) L.watch(false); stopCam(); emit(); };
 
   // ---------- Bob's phone (host) ----------
   L.share = async function () {
@@ -8583,7 +8591,7 @@ var qrcode = function() {
     const pc = (L.pc = newPC()); bind(pc.createDataChannel('zdash', { ordered: true }));
     await pc.setLocalDescription(await pc.createOffer()); await waitIce(pc);
     L.offer = await L.encode(pc.localDescription); L.state = 'waiting'; emit();
-    clearInterval(L.timer); L.timer = setInterval(sendState, 100); hookShifts(); return L.offer;
+    clearInterval(L.timer); L.timer = setInterval(sendState, 100); if (L.watch) L.watch(true); hookShifts(); return L.offer;
   };
   L.acceptAnswer = async function (code) { const d = await L.decode(code); if (d.type !== 'answer') throw new Error('That is not her answer code'); await L.pc.setRemoteDescription(d); L.state = 'connecting'; emit(); };
   let hooked = false, lastEv = 0;
@@ -8606,9 +8614,14 @@ var qrcode = function() {
     L.role = 'guest'; L.state = 'answering'; emit();
     const pc = (L.pc = newPC()); pc.ondatachannel = (e) => bind(e.channel);
     await pc.setRemoteDescription(d); await pc.setLocalDescription(await pc.createAnswer()); await waitIce(pc);
-    L.answer = await L.encode(pc.localDescription); L.state = 'connecting'; emit(); return L.answer;
+    L.answer = await L.encode(pc.localDescription); L.state = 'connecting'; if (L.watch) L.watch(true); emit(); return L.answer;
   };
-  setInterval(() => { if (L.state === 'linked' && performance.now() - L.lastMsg > 3000) reconnecting('no data'); }, 500);
+  L.watch = function (on) {
+    if (L._watch) { clearInterval(L._watch); L._watch = 0; }
+    if (!on) return;
+    L._watch = setInterval(() => { if (L.state === 'linked' && performance.now() - L.lastMsg > 3000) reconnecting('no data'); }, 500);
+  };
+  if (!window.ZD_JR) L.watch(true);
 
   // ---------- camera QR scanning (jsQR) ----------
   async function startCam() { if (L.stream) return L.stream; L.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 } }, audio: false }); return L.stream; }
@@ -8763,7 +8776,7 @@ var qrcode = function() {
   R.start = async function (label, meta = {}) { if (off) return; if (R.on) await R.stop('restart');
     R.t0 = performance.now(); const id = new Date().toISOString().replace(/[:.]/g, '-');
     R.run = { id, started: Date.now(), label, ua: navigator.userAgent, screen: `${screen.width}x${screen.height}@${devicePixelRatio}`, build: G.ZD_BUILD || '', meta, samples: 0, events: 0, chunks: 0, ran: 0 };
-    R.on = true; R.n = 0; R.buf = []; R.event('start', label); R.event('wake', ZD.wake ? (ZD.wake.lock ? 'wakelock' : ZD.wake.how || 'none') : 'n/a'); if (!R._armed) { R._armed = true; requestAnimationFrame(tick); }
+    R.on = true; R.n = 0; R.buf = []; R.event('start', label); R.event('wake', ZD.wake ? (ZD.wake.lock ? 'wakelock' : ZD.wake.how || 'none') : 'n/a'); if (window.ZD_JR && R.armBattery) R.armBattery(); if (!R._armed) { R._armed = true; requestAnimationFrame(tick); }
     const d = await db(); if (d) { try { await rq(d.transaction('runs', 'readwrite').objectStore('runs').put(R.run)); } catch (e) {} }
     clearInterval(R.flushT); R.flushT = setInterval(R.flush, FLUSH_MS); R.prune(); R.changed(); };
   R.stop = async function (why = 'stop') { if (!R.on) return; R.event('stop', why); R.on = false; clearInterval(R.flushT); await R.flush(); R.changed(); };
@@ -8814,7 +8827,8 @@ var qrcode = function() {
     document.addEventListener('freeze', () => { R.event('freeze'); R.flush(); }); document.addEventListener('resume', () => R.event('resume'));
     addEventListener('online', () => R.event('online')); addEventListener('offline', () => R.event('offline'));
     addEventListener('error', (e) => R.event('jserror', (e.message || '') + ' @' + (e.lineno || ''))); addEventListener('unhandledrejection', (e) => R.event('rejection', e.reason && (e.reason.message || e.reason)));
-    if (navigator.getBattery) navigator.getBattery().then((b) => { const f = () => R.event('battery', `${Math.round(b.level * 100)}%${b.charging ? ' charging' : ' NOT charging'}`); b.addEventListener('chargingchange', f); R.listeners.push(() => { if (R.on && !R._bat) { R._bat = 1; f(); } }); }).catch(() => {}); }
+    function armBattery() { if (R._batArmed || !navigator.getBattery) return; R._batArmed = 1; navigator.getBattery().then((b) => { const f = () => R.event('battery', `${Math.round(b.level * 100)}%${b.charging ? ' charging' : ' NOT charging'}`); b.addEventListener('chargingchange', f); R.listeners.push(() => { if (R.on && !R._bat) { R._bat = 1; f(); } }); }).catch(() => {}); }
+    if (!window.ZD_JR) armBattery(); R.armBattery = armBattery; }
   /* Settings: status line + EXPORT RUN */
   function wire() { const b = document.getElementById('btnExportRun'), st = document.getElementById('recStat'); if (!b || !st) return;
     const show = async () => { const l = await R.list().catch(() => []); st.textContent = `Run recorder: ${R.status()} · ${l.length} run${l.length === 1 ? '' : 's'} saved (keeps last ${MAX_RUNS})`; };
@@ -9681,11 +9695,19 @@ var qrcode = function() {
   });
   S.dyno.on((run) => { S.ex && S.ex.onDyno(run); S.lastDyno = run; if (!S.bestDyno || run.peakHp > S.bestDyno.peakHp) S.bestDyno = run; $('#btnDyno').disabled = false; });
 
-  window.addEventListener('devicemotion', (e) => {
+  function onMotion(e) {
     const a = e.acceleration; if (!a) return; // phone in landscape on the mount, screen facing the driver
     S.motion.lat += ((a.y || 0) / 9.81 - S.motion.lat) * 0.2; S.motion.lon += (-(a.z || 0) / 9.81 - S.motion.lon) * 0.2;
     const r = e.rotationRate; if (r && r.alpha != null) { S.motion.yaw = (S.motion.yaw || 0) + ((r.alpha || 0) - (S.motion.yaw || 0)) * 0.2; S.motion.hasGyro = true; } // deg/s about the phone's screen axis ≈ car yaw on a landscape mount
-  });
+  }
+  let motionOn = false;
+  (window.ZD = window.ZD || {}).armMotion = function (on) {
+    if (!!on === motionOn) return;
+    motionOn = !!on;
+    if (motionOn) window.addEventListener('devicemotion', onMotion);
+    else window.removeEventListener('devicemotion', onMotion);
+  };
+  if (!window.ZD_JR) window.ZD.armMotion(true);
 
   // ---------------- sources ----------------
   // Anything blank gets hidden: live OBD panels whose data is still null ~5 s after going live drop out (and come back if a value
@@ -13784,6 +13806,8 @@ var qrcode = function() {
     const menuHome = !!(K.on && K.menuOpen && K.tab === 'drive');
     const canvasOn = !!(K.on && !K.kStart && !menuHome && K.tab);
     window.ZD_DASH_IDLE = !canvasOn;
+    window.ZD_KID_MUSIC = !!(canvasOn && K.tab === 'drive');
+    window.ZD_KID_BEAT = !!(canvasOn && (K.tab === 'drive' || K.tab === 'road'));
     const back = $('#kDashBack'); if (back) back.classList.toggle('hidden', !(canvasOn && K.tab === 'drive'));
     const M = window.ZD && ZD.Music;
     if (M && M.src === 'demo') {
@@ -13793,6 +13817,7 @@ var qrcode = function() {
     }
     if (ZD.musicClock) ZD.musicClock(canvasOn);
     if (ZD.musicPaint) ZD.musicPaint(canvasOn && K.tab === 'drive');
+    if (window.ZD && ZD.armMotion) ZD.armMotion(!!window.ZD_KID_MUSIC);
     if (!canvasOn && K.sim) { try { K.sim.stop(); } catch (e) {} K.sim = null; }
     if (window.ZD_PARKED) return;
     if (document.body.classList.contains('kidon')) { if (ZD_DASH.stopDad) ZD_DASH.stopDad(); }

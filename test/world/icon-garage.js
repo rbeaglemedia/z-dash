@@ -2052,7 +2052,7 @@
   dressMenu();
   installGames();
   hookWalk();
-  listenCrew();
+  /* zdash-crew stays closed until the garage hub is actually opened. */
   document.addEventListener('click', onClick, true);
   document.addEventListener('keydown', function (e) {
     if ((e.key === 'Escape' || e.key === 'Esc') && opened) { e.preventDefault(); close(); }

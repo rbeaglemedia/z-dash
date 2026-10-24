@@ -70,7 +70,7 @@
   let origRender = null;
   let blit = null;
   let scratch = null;
-  let loopOn = false;
+  let loopOn = false, studioWait = 0;
   let groupN = 1;
   const WALL_KEY = 'zdash.wallgraffiti.v1';
   const WALL_CH = 'zdash-wallgraffiti';
@@ -2824,6 +2824,7 @@
     opts = opts || {};
     ui.canvas = (opts.canvas === 'wall' || opts.mode === 'wall') ? 'wall' : 'car';
     closeStudio();
+    channels();
     parkMenuButton();
     if (ui.canvas === 'car') beginCarEditor(opts.vinyl || '');
     lastJson = JSON.stringify(state);
@@ -2839,14 +2840,44 @@
     syncUI();
     setStatus(ui.canvas === 'wall' ? 'DRAW THE Z COMPANY ARTS WALL' : 'LOADING THE 370Z');
     if (!loopOn) frameStudio();
-    const wait = setInterval(function () {
-      if (ui.canvas === 'wall') { clearInterval(wait); return; }
+    if (studioWait) clearInterval(studioWait);
+    studioWait = setInterval(function () {
+      if (!studio || ui.canvas === 'wall') { clearInterval(studioWait); studioWait = 0; return; }
       if (!hookReady()) return;
       const X = carX();
       if (X) applyToCar(X);
-      clearInterval(wait);
+      clearInterval(studioWait); studioWait = 0;
       setStatus(ui.mode === 'draw' ? 'DRAW ON THE CAR' : 'DRAG TO SPIN');
     }, 200);
+  }
+  function paintPage() { return /neon-paint\.html/.test(location.pathname || ''); }
+  function channels() {
+    if (!ch) {
+      try {
+        ch = new BroadcastChannel(CH);
+        ch.onmessage = function (ev) {
+          const d = ev.data;
+          if (!d || d.tab === TAB) return;
+          ingest(d.json || d.data);
+        };
+      } catch (e) { ch = null; }
+    }
+    if (!wallCh) {
+      try {
+        wallCh = new BroadcastChannel(WALL_CH);
+        wallCh.onmessage = function (ev) {
+          const d = ev.data;
+          if (!d || d.tab === TAB) return;
+          ingestWall(d.json || d.data);
+        };
+      } catch (e) { wallCh = null; }
+    }
+  }
+  function closeChannels() {
+    if (paintPage()) return;
+    try { if (ch) ch.close(); } catch (e) {}
+    try { if (wallCh) wallCh.close(); } catch (e) {}
+    ch = null; wallCh = null;
   }
   function closeStudio() {
     live = null;
@@ -2854,34 +2885,27 @@
     pauseOn = false;
     if (studio && studio.parentNode) studio.parentNode.removeChild(studio);
     studio = null;
+    if (studioWait) { clearInterval(studioWait); studioWait = 0; }
     unparkMenuButton();
+    closeChannels();
   }
   function bakeCanvases() {
     const X = carX();
     if (X) applyToCar(X);
     return { strokes: slot().strokes.length };
   }
+  let paintSettled = false;
+  function settle() {
+    if (paintSettled) return;
+    hookWorldGraffiti();
+    const graf = (typeof drawBldg !== 'function' || drawBldg._npGraf) && (typeof drawZ !== 'function' || drawZ._npGraf);
+    if (graf && hookReady()) paintSettled = true;
+  }
   function boot() {
     adoptEquipped();
     lastJson = JSON.stringify(state);
-    try {
-      ch = new BroadcastChannel(CH);
-      ch.onmessage = function (ev) {
-        const d = ev.data;
-        if (!d || d.tab === TAB) return;
-        ingest(d.json || d.data);
-      };
-    } catch (e) { ch = null; }
     wallState = readWall();
     wallJson = JSON.stringify(wallState);
-    try {
-      wallCh = new BroadcastChannel(WALL_CH);
-      wallCh.onmessage = function (ev) {
-        const d = ev.data;
-        if (!d || d.tab === TAB) return;
-        ingestWall(d.json || d.data);
-      };
-    } catch (e) { wallCh = null; }
     window.addEventListener('storage', function (e) {
       if (!e.key || e.key === KEY) ingest(e.newValue || '');
       if (e.key === WALL_KEY) ingestWall(e.newValue || '');
@@ -2898,16 +2922,12 @@
       if (live || liveMirror || wallLive || wallLiveMirror) flushPaint();
     });
     hookWorldGraffiti();
-    let tries = 0;
-    const hookTimer = setInterval(function () {
-      tries++;
-      hookWorldGraffiti();
-      if (tries > 40) clearInterval(hookTimer);
-    }, 250);
-    if (hookReady()) return;
+    if (!paintPage()) return;
+    channels();
     let n = 0;
     const id = setInterval(function () {
       n++;
+      hookWorldGraffiti();
       if (hookReady() || n > 120) clearInterval(id);
     }, 250);
   }
@@ -2921,6 +2941,7 @@
       applyToCar: applyToCar,
       openStudio: openStudio,
       closeStudio: closeStudio,
+      settle: settle,
       drawBuildingGraffiti: drawBuildingGraffiti,
       drawAllWallGraffiti: drawAllWallGraffiti,
       getVinyls: getVinyls,
