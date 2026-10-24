@@ -660,11 +660,16 @@
   function mirrorCrew(state) {
     if (state.character === 'woman' || state.character === 'man') {
       const cur = readObj(CHAR_KEY) || { v: 1, gender: 'female', hair: 'ponytail', outfit: '#ff3df2', glow: '#ff3df2' };
-      cur.v = 1;
       cur.gender = state.character === 'man' ? 'male' : 'female';
-      if (!cur.glow) cur.glow = '#ff3df2';
-      cur.outfit = cur.glow;
-      try { localStorage.setItem(CHAR_KEY, JSON.stringify(cur)); } catch (e) {}
+      if (cur.v === 2 && cur.parts) {
+        if (window.CHARCLOSET && CHARCLOSET.setGender) CHARCLOSET.setGender(cur.gender);
+        else { try { localStorage.setItem(CHAR_KEY, JSON.stringify(cur)); } catch (e) {} }
+      } else {
+        cur.v = 1;
+        if (!cur.glow) cur.glow = '#ff3df2';
+        cur.outfit = cur.glow;
+        try { localStorage.setItem(CHAR_KEY, JSON.stringify(cur)); } catch (e) {}
+      }
     }
     if (state.pet && PET_TYPE[state.pet]) {
       const cur = readObj(PET_KEY) || { v: 1, type: 'fox', glow: '#ffb020', spot: 'hatch' };

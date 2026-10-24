@@ -1,0 +1,4 @@
+ok standard bob 0.012 head/height 0.289
+ok short bob 0.012 head/height 0.338
+ok boots bob 0.012 head/height 0.286
+anatomy check passed

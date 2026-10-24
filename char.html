@@ -31,6 +31,7 @@ button.on{border-color:var(--g,#3ee6ff);color:#fff;box-shadow:0 0 10px var(--g,#
  <div class="row"><span class="lab">RIDE SPOT</span><span id="pS"></span></div>
  <div class="row"><span class="lab">REACT</span><span id="pR"></span></div>
 </div>
+<script src="shared/char-closet.js?v=30"></script>
 <script>
 "use strict";
 /* NEONCHAR phase 1. Units/axes match world.html zModel: metres, x right, y up, z forward (car nose +z).
@@ -42,9 +43,9 @@ const HAIRS=['short','spiky','bob','long','ponytail','buns'];
 const OUTFITS=['#3ee6ff','#ff3df2','#7cff4f','#ffb020','#ff4d5e','#b48cff','#fff04d','#ffffff'];
 const GLOWS=OUTFITS;
 const DEF={v:1,gender:'female',hair:'ponytail',outfit:'#ff3df2',glow:'#ff3df2'};
-function load(){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');if(o&&o.v===1){const c=Object.assign({},DEF,o);if(!GLOWS.includes(c.glow))c.glow=DEF.glow;c.outfit=c.glow;return c;}}catch(e){}return Object.assign({},DEF);}
+function load(){if(window.CHARCLOSET){const w=CHARCLOSET.wear();return {v:1,gender:w.gender,hair:w.hair,outfit:w.outfit,glow:w.glow};}try{const o=JSON.parse(localStorage.getItem(KEY)||'null');if(o&&(o.v===1||o.v===2)){const c=Object.assign({},DEF,o);if(o.v===1&&!GLOWS.includes(c.glow))c.glow=DEF.glow;if(!c.outfit)c.outfit=c.glow;return c;}}catch(e){}return Object.assign({},DEF);}
 let C=load();
-function save(){C.updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify(C));}catch(e){}}
+function save(){if(window.CHARCLOSET){CHARCLOSET.patch({gender:C.gender,glow:C.glow,hair:C.hair});return;}C.updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify(C));}catch(e){}}
 
 /* ---------- 370Z geometry (copied read-only from world.html zModel: ST body stations, RF roofline, doors) ---------- */
 const ST=[[2.125,.70,.28,.56],[2.02,.84,.22,.62],[1.80,.90,.20,.70],[1.50,.925,.20,.78],[1.15,.92,.20,.80],[.80,.89,.22,.79],[.55,.88,.22,.80],
@@ -467,7 +468,7 @@ let petMove='auto',pT=0,lineup=false,rgrid=false;
 let last=performance.now(),paused=false;
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(!paused){aT+=dt;pT+=dt;}const A=ANIMS[anim];let t=aT/A.len;t=A.once?Math.min(1,t%(1+.35/A.len*1)):(t%1);
  if(A.once&&aT>A.len+1.2)aT=0;render(t);requestAnimationFrame(frame);}
-function render(t){const A=ANIMS[anim];const pm=petMove==='auto'?PET_AUTO[anim]:petMove,PCl=PET_CLIPS[pm];CAR.on=!!(A.car||PCl.car);const g=C.glow;
+function render(t){if(window.CHARCLOSET&&/strip=1/.test(location.search)){CHARCLOSET.paintStrip(ctx,Wd,Ht);window.CHARSTATE={anim:'strip',t:0,frames:(window.CHARSTATE?.frames||0)+1};return;}if(window.CHARCLOSET&&/pose=/.test(location.search)){CHARCLOSET.poseFrame(ctx,Wd,Ht);window.CHARSTATE={anim:'pose',t:0,frames:(window.CHARSTATE?.frames||0)+1};return;}if(window.CHARCLOSET&&document.body.classList.contains('closet-on')){CHARCLOSET.frame(ctx,Wd,Ht);window.CHARSTATE={anim:'closet',t:0,frames:(window.CHARSTATE?.frames||0)+1};return;}const A=ANIMS[anim];const pm=petMove==='auto'?PET_AUTO[anim]:petMove,PCl=PET_CLIPS[pm];CAR.on=!!(A.car||PCl.car);const g=C.glow;
  ctx.fillStyle='#05030c';ctx.fillRect(0,0,Wd,Ht);const gr=ctx.createRadialGradient(Wd/2,Ht*.55,10,Wd/2,Ht*.55,Math.max(Wd,Ht)*.7);gr.addColorStop(0,shade(g,-.86));gr.addColorStop(1,'#05030c');ctx.fillStyle=gr;ctx.fillRect(0,0,Wd,Ht);
  const v=VIEWS[view];cam.yaw+=( v.yaw-cam.yaw)*.15;cam.pitch+=(v.pitch-cam.pitch)*.15;const ck=view===4;cam.d+=((CAR.on?(ck?CK.d:view===3?2.6:5.2):v.d)-cam.d)*.15;cam.tx+=((CAR.on?(ck?CK.tx:view===3?SEAT.x:-.3):0)-cam.tx)*.15;cam.ty+=((CAR.on?(ck?CK.ty:view===3?.75:.7):.95)-cam.ty)*.15;cam.tz+=((CAR.on&&ck?CK.tz:0)-cam.tz)*.15;
  if(snapCam){snapCam=0;for(let i=0;i<60;i++){cam.yaw+=(v.yaw-cam.yaw)*.15;cam.pitch+=(v.pitch-cam.pitch)*.15;}}
@@ -520,5 +521,5 @@ window.CK=CK;window.PET={get cfg(){return PC},RIG:PET_RIG,CLIPS:PET_CLIPS,fk:pet
 window.CHAR={get cfg(){return C},ANIMS,fk,SH,B,SEAT,set:(o)=>{if(o.anim)anim=o.anim;if(o.view!=null){view=o.view;cam=Object.assign(cam,VIEWS[view]);snapCam=1;}if(o.both!=null)both=o.both;if(o.t!=null){paused=true;aT=o.t*ANIMS[anim].len;}ui();}};
 {const q=new URLSearchParams(location.search);const o={};if(q.get('anim'))o.anim=q.get('anim');if(q.get('view'))o.view=+q.get('view');if(q.get('both'))o.both=q.get('both')==='1';if(q.get('t'))o.t=+q.get('t');if(q.get('fit'))showFit=true;if(q.get('lineup'))lineup=true;if(q.get('rgrid'))rgrid=true;if(q.get('pet'))petMove=q.get('pet');if(q.get('pt')){paused=true;pT=+q.get('pt')*PET_CLIPS[petMove].len;}if(q.get('ui')==='0')$('panel').classList.add('hide');
  if(o.anim&&ANIMS[o.anim].car&&o.view==null)o.view=1;CHAR.set(o);}
-ui();requestAnimationFrame(frame);
+ui();if(window.CHARCLOSET){CHARCLOSET.onChange=function(w){C.gender=w.gender;C.hair=w.hair;C.glow=w.glow;C.outfit=w.outfit;};const cq=new URLSearchParams(location.search);if(cq.get('closet')!=='0'&&cq.get('ui')!=='0'&&cq.get('strip')!=='1'&&!cq.get('pose')&&!cq.get('fit')&&!cq.get('lineup')&&!cq.get('rgrid'))CHARCLOSET.mount();}requestAnimationFrame(frame);
 </script></body></html>
