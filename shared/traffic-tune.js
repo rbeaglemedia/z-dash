@@ -31,7 +31,7 @@ window.TRAFFIC_TUNE = {
   hopVy: 6.2,          // m/s, scripted launch off the bed (ballistic, no damage)
   liveCap: 0,          // 0 = no per-frame GL readback. A live photo every frame misses 110fps.
   livePx: 512,
-  spritePx: 320,       // photo of the low-poly Z. 160 was too coarse. Paid once per angle.
+  spritePx: 480,       // showroom photo. 160 was too coarse, and 320 upscales into gray blobs.
   bakePerFrame: 1,
   cacheMax: 280,       // 9 paints x 24 yaw at the chase elevation, plus steer and elev misses
   yawStep: Math.PI / 12,

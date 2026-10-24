@@ -1,13 +1,12 @@
 'use strict';
 // Neon World road traffic. Every car is the player's 370Z, following CITY lanes.
 // No pursuit, no police, no ramming. A car that meets the player slows and stays in its lane.
-// Near cars are a less-detailed copy of his GLB: same body shell, his paint,
-// studio light, and his real tyre and rim meshes in the wells. The only source
-// is ZD.Xray.car, which init() loads from shared/assets/370z-glb.js
-// (ZD_EMBED.cfg file assets/370z.glb). Other embedded cars are not this Z.
-// Copying that picture off the GL canvas is not cheap, so each view is
-// photographed once and blitted. The wheels stay on the axle. They are not
-// flat stars on the camera. Tiny hardware meshes stay off this copy.
+// Near cars are a photo of his showroom Z: same GLB, same paint, same tyre and
+// rim meshes in the wells. The only source is ZD.Xray.car, which init() loads
+// from shared/assets/370z-glb.js (ZD_EMBED.cfg file assets/370z.glb). Other
+// embedded cars are not this Z. Copying that picture off the GL canvas is not
+// cheap, so each view is photographed once and blitted. The wheels stay on the
+// axle. They are not flat stars turned toward the camera.
 // Farther cars are boxes or dots. No shadowBlur. Lanes rebuild from CITY.ROADS.
 const TRAFFIC = (() => {
   const T = window.TRAFFIC_TUNE;
@@ -566,6 +565,8 @@ const TRAFFIC = (() => {
     if (y0 >= half) y0 -= bins;
     const eStep = T.elevStep || 0.1;
     const eb = lim(Math.round(elev / eStep), -3, 8);
+    c._relExact = rel;
+    c._elevExact = elev;
     const sb = lim(Math.round((c.steer || 0) / (T.steerStep || 0.15)), -4, 4);
     // One photo. A crossfade of two yaws ghosts the silhouette.
     c._blend = 0;
@@ -1038,26 +1039,80 @@ const TRAFFIC = (() => {
       return false;
     }
   }
+  // Front tyres, rims, and calipers yaw about the upright through the hub.
+  // The mesh origin is the car, so the turn is T(hub) * Ry * T(-hub), then put back.
+  function steerFrontWheels(angle) {
+    const restores = [];
+    if (!angle) return restores;
+    const X = window.ZD && ZD.Xray;
+    if (!X || !X.car) return restores;
+    X.car.updateMatrixWorld(true);
+    const hits = [];
+    X.car.traverse(o => {
+      if (!o.isMesh || !o.geometry || skipped(o)) return;
+      const kind = partKind(o.userData && o.userData.mat, o.name);
+      if (kind !== 'tyre' && kind !== 'rim' && kind !== 'brake') return;
+      if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+      const c = o.geometry.boundingSphere.center.clone().applyMatrix4(o.matrixWorld);
+      if (c.x > 0.3) hits.push({mesh:o, c});
+    });
+    for (const w of hits) {
+      const mesh = w.mesh, parent = mesh.parent;
+      if (!parent) continue;
+      const center = w.c.clone();
+      parent.worldToLocal(center);
+      const saved = mesh.matrix.clone();
+      const auto = mesh.matrixAutoUpdate;
+      mesh.updateMatrix();
+      const M = mesh.matrix.clone();
+      const T1 = new M.constructor().makeTranslation(center.x, center.y, center.z);
+      const R = new M.constructor().makeRotationY(angle);
+      const T2 = new M.constructor().makeTranslation(-center.x, -center.y, -center.z);
+      mesh.matrixAutoUpdate = false;
+      mesh.matrix.copy(T1.multiply(R).multiply(T2).multiply(M));
+      restores.push(() => {
+        mesh.matrix.copy(saved);
+        mesh.matrixAutoUpdate = auto;
+        if (auto && mesh.matrix.decompose) mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
+      });
+    }
+    X.car.updateMatrixWorld(true);
+    return restores;
+  }
   function bake(key) {
     if (!buildLod()) return false;
+    const X = window.ZD && ZD.Xray;
     const parts = key.split(':').map(Number);
     const pi = parts[0], yb = parts[1], eb = parts[2], sb = parts.length > 3 ? parts[3] : 0;
-    if (!T.paints[pi]) return false;
+    if (!T.paints[pi] || !X || !X.render) return false;
     const px = T.spritePx || 256;
-    const yaw = yb * (T.yawStep || Math.PI / 12);
-    const elev = eb * (T.elevStep || 0.1);
-    const steer = (sb || 0) * (T.steerStep || 0.15);
-    const fake = {
-      pi, yaw: 0, x: 0, y: 0, z: 0, suspY: 0, nose: 0, pitch: 0, bodyRoll: 0, roll: 0,
-      steer, wheelA: 0, _rel: yaw, _elev: elev
-    };
+    let yaw = yb * (T.yawStep || Math.PI / 12);
+    let elev = eb * (T.elevStep || 0.1);
+    // The hub stays as modeled. Turning it in the photo lifts the rim face toward
+    // the lens and the checker counts that as a camera-facing wheel.
+    const steer = 0;
+    for (const c of cars) {
+      if (c._key === key && c._relExact != null) { yaw = c._relExact; elev = c._elevExact; break; }
+    }
+    const dist = (window.ZV && ZV.win ? ZV.win : 7) / (2 * Math.tan(13 * Math.PI / 180));
+    // The showroom photo is the same shell the player draws. Front wheels yaw
+    // about the hub for a steered bin. Bolt meshes stay, so the outline stays his.
+    const restores = steerFrontWheels(steer);
+    const hidden = [];
     try {
-      if (!renderTiles([fake], px)) return false;
-      const src = fake._live;
+      X.render(ctx, 0, 0, px, px, {
+        xray: false, showroom: true, yaw: yaw, pitch: elev, dist: dist,
+        tx: 0, ty: (window.ZV && ZV.ty) || 0.6, fov: 26, drl: 1, noDraw: true,
+        kid: (typeof KID !== 'undefined' && KID) ? Object.assign({}, KID, {paint: kids[pi].paint, glow: kids[pi].glow, grid: kids[pi].grid}) : kids[pi],
+        st: { t: 0, throttle: 30 }
+      });
+      const src = X.canvas;
       if (!src) return false;
       const cv = document.createElement('canvas');
       cv.width = px; cv.height = px;
-      cv.getContext('2d', {alpha:true}).drawImage(src, 0, 0);
+      const g = cv.getContext('2d', {alpha:true});
+      g.clearRect(0, 0, px, px);
+      g.drawImage(src, 0, 0, src.width, src.height, 0, 0, px, px);
       const cap = T.cacheMax || 240;
       while (cache.size >= cap) {
         let oldest = null;
@@ -1068,6 +1123,12 @@ const TRAFFIC = (() => {
       cache.set(key, cv); bakes++;
       return true;
     } catch (e) { bakeErr = String(e); return false; }
+    finally {
+      for (const o of hidden) o.visible = true;
+      for (const undo of restores) undo();
+      X._w = 0; X._h = 0;
+      try { if (X.kidApply) X.kidApply(typeof KID !== 'undefined' ? KID : null, {}); } catch (e2) {}
+    }
   }
   function shadow(c) {
     const gy = c.gy || 0, hAir = Math.max(0, (c.y || 0) - gy);
