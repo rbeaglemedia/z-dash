@@ -70,7 +70,20 @@ function farSil(q){const P8=[];for(const y of[q.y0,q.y1])for(const[x,z]of[[q.x0,
   const face=(ids)=>{for(let k=0;k<4;k++)edge(ids[k],ids[(k+1)%4]);if(FARF){const ink=PT;PT=FARF;const f4=[P8[ids[0]],P8[ids[1]],P8[ids[2]],P8[ids[3]]];let ar=0;for(let k=0;k<4;k++){const u=f4[k],v=f4[(k+1)%4];ar+=(u[0]/Math.max(u[2],NEAR))*(v[1]/Math.max(v[2],NEAR))-(v[0]/Math.max(v[2],NEAR))*(u[1]/Math.max(u[2],NEAR));}pathPoly(ar<0?f4.reverse():f4);PT=ink;}};
   if(farSil.o){face([0,1,2,3]);face([4,5,6,7]);edge(0,4);edge(1,5);edge(2,6);edge(3,7);return;}
   if(cam.x<q.x0)face([0,3,7,4]);else if(cam.x>q.x1)face([1,2,6,5]);if(cam.z<q.z0)face([0,1,5,4]);else if(cam.z>q.z1)face([3,2,6,7]);if(cam.y>q.y1)face([4,5,6,7]);else if(cam.y<q.y0)face([0,1,2,3]);}
-function drawBldg(b,d){if(b.towCab&&TOW3.on(d))return;const ol=b.kind==='outline';if(CDRAW.nonear&&d<=CDRAW.far&&!ol)return;if(d>CDRAW.far||ol){if(CDRAW.nofar||(!ol&&d>CDRAW.far*3.5&&b.top<12))return;if(!FARF){FARF=new Path2D();FARD=d;}FARN=d;farSil.o=ol;let p=FARB.get(b.c);if(!p){p=new Path2D();FARB.set(b.c,p);}farSil.o=false;PT=p;for(const q of b.boxes)farSil(q);PT=null;farFlush();
+// Signs, doors, parking, and graffiti stay on the 2D context. ?gl=1 draws the solid
+// and the window dashes in WebGL, then this paints the same leftovers the 2D path does.
+function drawBldgGLDeco(b,d,ol){
+  if(d>CDRAW.far||ol){
+    if(!ol&&d<520)for(const k of b.deco)if(k[0]==='sign')drawSign(k[1],d);
+    if(!ol&&d<180)drawParking(b,d);
+    if(!ol&&typeof NEON_PAINT!=='undefined'&&NEON_PAINT&&typeof NEON_PAINT.drawBuildingGraffiti==='function'&&d<260)NEON_PAINT.drawBuildingGraffiti(ctx,b);
+    return;}
+  const a=clamp(1.5-d/CDRAW.dist,0.25,1);ctx.save();ctx.globalAlpha=a;
+  drawDoors(b,d);drawDeco(b,d);
+  if(d<180)drawParking(b,d);
+  if(typeof NEON_PAINT!=='undefined'&&NEON_PAINT&&typeof NEON_PAINT.drawBuildingGraffiti==='function'&&d<260)NEON_PAINT.drawBuildingGraffiti(ctx,b);
+  ctx.restore();}
+function drawBldg(b,d){if(b.towCab&&TOW3.on(d))return;const ol=b.kind==='outline';if(window.GLCITY&&GLCITY.skipSolid(b)){drawBldgGLDeco(b,d,ol);return;}if(CDRAW.nonear&&d<=CDRAW.far&&!ol)return;if(d>CDRAW.far||ol){if(CDRAW.nofar||(!ol&&d>CDRAW.far*3.5&&b.top<12))return;if(!FARF){FARF=new Path2D();FARD=d;}FARN=d;farSil.o=ol;let p=FARB.get(b.c);if(!p){p=new Path2D();FARB.set(b.c,p);}farSil.o=false;PT=p;for(const q of b.boxes)farSil(q);PT=null;farFlush();
     if(!ol&&d<520)for(const k of b.deco)if(k[0]==='sign'){farFlush();drawSign(k[1],d);}
     if(!ol&&d<180){farFlush();drawParking(b,d);}
     if(!ol&&typeof NEON_PAINT!=='undefined'&&NEON_PAINT&&typeof NEON_PAINT.drawBuildingGraffiti==='function'&&d<260)NEON_PAINT.drawBuildingGraffiti(ctx,b);

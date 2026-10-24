@@ -12,6 +12,10 @@ function render(){const _vs=visApply();
   let cy=ty+dy;if(cy<1){cy=1;const dyA=cy-ty,horiz=Math.sqrt(Math.max(0,D*D-dyA*dyA));dx=-Math.sin(aim)*horiz;dz=-Math.cos(aim)*horiz;}
   cam.x=P.x+dx;cam.y=cy;cam.z=P.z+dz;
   {const lx=P.x-cam.x,ly=ty-cam.y,lz=P.z-cam.z;cam.yaw=Math.atan2(lx,lz);cam.pitch=Math.atan2(-ly,Math.hypot(lx,lz));}cam.roll=0;} /* locked chase cam: behind on heading+pitch, car dead centre, horizon level */
+  const glOn=window.GLCITY&&GLCITY.active();
+  if(glOn)GLCITY.beginUnder();
+  let items;
+  try{
   // sky + horizon
   ctx.fillStyle='#05020c';ctx.fillRect(0,0,W,H);
   const rl=cam.roll;cam.roll=0;const hz=proj(cam.x+Math.sin(cam.yaw)*1e5,cam.y,cam.z+Math.cos(cam.yaw)*1e5);cam.roll=rl;const hy=hz?hz[1]:H/2;
@@ -24,9 +28,11 @@ function render(){const _vs=visApply();
   for(let i=-N;i<=N;i++){line([gx+i*S,0,gz-N*S],[gx+i*S,0,gz+N*S],'#7a1a8a',1);line([gx-N*S,0,gz+i*S],[gx+N*S,0,gz+i*S],'#7a1a8a',1);}
   ctx.globalAlpha=1;
   // towers (far to near)
-  drawCityGround();if(!RWXRAY.on)drawRunway();const items=[];cityItems(items);if(window.TRAFFIC)TRAFFIC.collect(items);for(const r of rings)items.push([(r.x-cam.x)**2+(r.z-cam.z)**2,'r',r]);items.sort((a,b)=>b[0]-a[0]);
+  drawCityGround();if(!RWXRAY.on)drawRunway();items=[];cityItems(items);if(window.TRAFFIC)TRAFFIC.collect(items);for(const r of rings)items.push([(r.x-cam.x)**2+(r.z-cam.z)**2,'r',r]);items.sort((a,b)=>b[0]-a[0]);
+  }finally{if(glOn)GLCITY.beginOver();}
+  if(glOn)GLCITY.compose(items);
   for(const[d,k,o]of items){if(d>2200*2200)continue;ctx.globalAlpha=clamp(1.4-Math.sqrt(d)/1800,0.15,1);
-    if(k==='t'){ctx.globalAlpha=1;if(o.draw)o.draw(Math.sqrt(d));else drawBldg(o,Math.sqrt(d));}
+    if(k==='t'){ctx.globalAlpha=1;if(o.draw){if(!(window.GLCITY&&GLCITY.skipDyn(o)))o.draw(Math.sqrt(d));}else drawBldg(o,Math.sqrt(d));}
     else{ctx.shadowColor='#ffb020';ctx.shadowBlur=8;let prev=null;for(let i=0;i<=16;i++){const a=i/16*Math.PI*2,px=o.x+Math.cos(o.yaw)*Math.cos(a)*o.r,pz=o.z+Math.sin(o.yaw)*Math.cos(a)*o.r,p=[px,o.y+Math.sin(a)*o.r,pz];if(prev)line(prev,p,'#ffb020',3);prev=p;}ctx.shadowBlur=0;}}
   ctx.globalAlpha=1;farFlush();drawTunnelInside();
   // shadow on ground
