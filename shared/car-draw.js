@@ -35,3 +35,14 @@ function drawZ(){if(window.NOZ)return;const X=window.ZD&&ZD.Xray;if(!X||!X.ready
     ctx.drawImage(img,p[0]-r,p[1]-r,r*2,r*2);
     if(TUNE.jetEngines){const len=(1.5+P.thr*3)*fl*P.tf,q=spPt(t[0]+dx*len,t[1]+dy*len,t[2]+dz*len);if(q){ctx.strokeStyle='#3ee6ff';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();}}}
   ctx.globalCompositeOperation='source-over';}
+// One tiny render so the car shaders and lights compile before the first flying frame.
+// noDraw keeps it off the city canvas. The sprite the player sees is unchanged.
+function zWarmGpu(){
+  try{
+    const X=window.ZD&&ZD.Xray;
+    if(!X||!X.ready||typeof ZGL==='undefined'||!ZGL.ensure())return false;
+    ZGL.set(typeof P!=='undefined'&&P?P.tf:0);
+    X.render(ctx,0,0,64,64,{xray:false,showroom:true,yaw:0.6,pitch:0.15,dist:12,tx:0,ty:0.6,fov:26,drl:1,noDraw:true,kid:(typeof KID!=='undefined'?KID:null),st:{t:0,throttle:40}});
+    return true;
+  }catch(e){return false;}
+}

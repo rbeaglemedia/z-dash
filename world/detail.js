@@ -1304,7 +1304,7 @@
     b._footGen = FOOT_GEN;
     return rec;
   }
-  let indoorRec = null, indoorId = null;
+  let indoorRec = null, indoorId = null, preI = 0, preDone = false;
   function buildingOfDoor(door) {
     if (!door) return null;
     if (door.building && door.building.boxes) return door.building;
@@ -1900,6 +1900,23 @@
     inFoot: inFoot,
     band: function () { return mode === 0 ? 'crawl' : mode === 1 ? 'street' : 'off'; },
     cruise: function () { return stat.cruise === 1; },
+    // Shop fronts and the eye-level trim are the lazy geometry. Baking them
+    // here writes the same segment buffers the first drive-by would.
+    prewarm: function (ms) {
+      if (preDone) return { done: true, at: preI, total: BL.length };
+      const t0 = performance.now();
+      const budget = ms > 0 ? ms : 8;
+      while (preI < BL.length && performance.now() - t0 < budget) {
+        const b = BL[preI++];
+        try {
+          if (!b || !shopOk(b)) continue;
+          bakeStore(b);
+          bakeFoot(b);
+        } catch (e) {}
+      }
+      preDone = preI >= BL.length;
+      return { done: preDone, at: preI, total: BL.length };
+    },
     wallSlots: function (u0, u1) {
       const n = fillSlots(u0, u1), o = [];
       for (let i = 0; i < n; i++) o.push(WSLOT[i]);

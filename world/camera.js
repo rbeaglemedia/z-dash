@@ -11,7 +11,7 @@ const cv=document.getElementById('c'),ctx=cv.getContext('2d');let W=0,H=0,DPR=1;
 // The canvas CSS stays width/height 100% (iPad also sets that size in px).
 // ipadBoost stays 1 unless an iPad's measured frame time misses ~55fps.
 // Phones, desktops, and an iPad already near 60 never take a step down.
-let ipadSized=false,ipadBoost=1,ipadStepI=0,ipadEma=0.016,ipadWarm=0,ipadBad=0,ipadGood=0,ipadCool=0,ipadProbe=0,ipadProbeBase=0,ipadProbeUp=0,ipadLock=99,ipadClimbHold=0;
+let ipadSized=false,ipadBoost=1,ipadStepI=0,ipadEma=0.016,ipadWarm=0,ipadBad=0,ipadGood=0,ipadCool=0,ipadProbe=0,ipadProbeBase=0,ipadProbeUp=0,ipadLock=99,ipadClimbHold=0,ipadSettle=0,ipadProbeSum=0,ipadProbeN=0,ipadAnchor=0,ipadSkip=0;
 const IPAD_LADDER=[1,0.84,0.70,0.58,0.48,0.38];
 function resize(){
   const hasTouch=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
@@ -41,15 +41,21 @@ function resize(){
   cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
 }
 function ipadScale(){return {boost:ipadBoost,step:ipadStepI,ema:+ipadEma.toFixed(4),lock:ipadLock};}
+function ipadPause(s){
+  ipadSettle=Math.max(0,+s||0);ipadBad=0;ipadGood=0;ipadProbe=0;ipadProbeUp=0;ipadSkip=0;
+  ipadProbeSum=0;ipadProbeN=0;ipadEma=0.016;ipadWarm=1.3;
+}
 function ipadApply(i){
   i=Math.max(0,Math.min(IPAD_LADDER.length-1,i|0));
   ipadStepI=i;ipadBoost=IPAD_LADDER[i];ipadBad=0;ipadGood=0;ipadCool=0.6;
   resize();
 }
+function ipadArmProbe(){ipadProbe=1.15;ipadProbeSum=0;ipadProbeN=0;}
 // Wall-clock seconds for one frame. Drops the internal buffer only while this iPad
 // stays slower than ~18.5ms, and only when the drop actually shortens the frame.
-// A step that does not help is put back and stays there until the iPad is fast
-// again, so the picture does not flicker. Quality climbs only while frames are
+// A step that does not help is put back. The next smaller buffer gets one try
+// against that same baseline, then the last size that did help stays, so the
+// picture does not flicker. Quality climbs only while frames are
 // comfortably under 13.5ms, and a climb that misses 60 is undone.
 function ipadFit(frame){
   if(!ipadSized){
@@ -60,27 +66,37 @@ function ipadFit(frame){
   ipadWarm+=frame;
   ipadEma+=(frame-ipadEma)*0.15;
   if(ipadWarm<1.3)return;
+  if(ipadSettle>0){ipadSettle-=frame;return;}
   if(ipadClimbHold>0)ipadClimbHold-=frame;
   if(ipadCool>0){ipadCool-=frame;return;}
   if(ipadProbe>0){
     ipadProbe-=frame;
-    if(ipadProbe<=0){
+    // The resize itself is not the new frame time. Score only the back half.
+    if(ipadProbe<0.90){ipadProbeSum+=frame;ipadProbeN++;}
+    if(ipadProbe<=0&&ipadProbeN>0){
+      const avg=ipadProbeSum/ipadProbeN;
+      ipadEma=avg;
       if(ipadProbeUp){
         ipadProbeUp=0;
-        if(ipadEma>0.017){ipadApply(ipadStepI+1);ipadClimbHold=6;}
-      }else if(ipadEma>ipadProbeBase*0.90){
-        ipadLock=Math.max(0,ipadStepI-1);
-        ipadApply(ipadStepI-1);
-      }
+        if(avg>0.017){ipadApply(ipadStepI+1);ipadClimbHold=6;}
+      }else if(avg>ipadProbeBase*0.90){
+        // This rung did not pay for itself. Try the next smaller buffer once
+        // against the same baseline, then keep the last size that did.
+        if(!ipadSkip&&ipadStepI<IPAD_LADDER.length-1&&ipadStepI<ipadLock){
+          ipadSkip=1;ipadApply(ipadStepI+1);ipadArmProbe();
+        }else{
+          ipadSkip=0;ipadLock=ipadAnchor;ipadEma=ipadProbeBase;ipadApply(ipadAnchor);
+        }
+      }else ipadSkip=0;
     }
     return;
   }
   if(ipadEma>0.0185&&ipadStepI<IPAD_LADDER.length-1&&ipadStepI<ipadLock){
     ipadBad+=frame;ipadGood=0;
-    if(ipadBad>0.7){ipadProbeBase=ipadEma;ipadProbeUp=0;ipadApply(ipadStepI+1);ipadProbe=1.15;ipadBad=0;}
+    if(ipadBad>0.7){ipadProbeBase=ipadEma;ipadProbeUp=0;ipadAnchor=ipadStepI;ipadSkip=0;ipadApply(ipadStepI+1);ipadArmProbe();ipadBad=0;}
   }else if(ipadEma<0.0135&&ipadStepI>0&&ipadClimbHold<=0){
     ipadGood+=frame;ipadBad=0;
-    if(ipadGood>1.6){ipadLock=99;ipadProbeUp=1;ipadProbeBase=ipadEma;ipadApply(ipadStepI-1);ipadProbe=1.15;ipadGood=0;}
+    if(ipadGood>1.6){ipadLock=99;ipadProbeUp=1;ipadProbeBase=ipadEma;ipadApply(ipadStepI-1);ipadArmProbe();ipadGood=0;}
   }else{
     ipadBad=Math.max(0,ipadBad-frame);
     ipadGood=Math.max(0,ipadGood-frame*0.25);
