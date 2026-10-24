@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Next traffic LOD test</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #05020c; color: #e8eef2; font: 15px/1.35 system-ui, sans-serif; }
+  #sheet { display: flex; flex-direction: column; height: 100%; }
+  #head { padding: 10px 16px 4px; font-weight: 700; letter-spacing: .02em; }
+  #cols { flex: 1; display: flex; min-height: 0; gap: 8px; padding: 0 12px; }
+  #cols .col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #cols .tag { font: 700 13px/1.2 system-ui, sans-serif; padding: 4px 2px; color: #9fd8ff; }
+  #cols canvas { flex: 1; width: 100%; min-height: 0; background: #05020c; object-fit: contain; }
+  body.single #cols .col + .col { display: none; }
+  body.single #cols .col { flex: 1; }
+  #foot { padding: 6px 16px 10px; font: 13px/1.4 ui-monospace, monospace; color: #c5d0d8; white-space: pre-wrap; }
+  #report { display: none; }
+</style>
+</head>
+<body>
+<div id="sheet">
+  <div id="head">Next traffic LOD</div>
+  <div id="cols">
+    <div class="col"><div class="tag" id="tagL">BOB'S Z</div><canvas id="viewL"></canvas></div>
+    <div class="col"><div class="tag" id="tagR">LIVE LOD</div><canvas id="viewR"></canvas></div>
+  </div>
+  <div id="foot">Loading the 370Z…</div>
+</div>
+<pre id="report"></pre>
+<script src="shared/assets/370z-glb.js"></script>
+<script src="shared/zd-embed.js"></script>
+<script src="shared/car-model.js"></script>
+<script type="module" src="shared/next-traffic-lod.js"></script>
+</body>
+</html>

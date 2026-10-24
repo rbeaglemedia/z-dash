@@ -1,0 +1,257 @@
+{
+  "page": "next-traffic-lod.html",
+  "glb": "assets/370z.glb",
+  "sha12": "fdba257f6422",
+  "bodyErrorM": 0.01,
+  "lockBorder": false,
+  "trianglesPerCar": 8912,
+  "cars": 2,
+  "overlapBar": 0.55,
+  "frameCapMs": 2.5,
+  "gl": "Headless Chrome SwiftShader. These are lab times at the phone, iPad, and PC viewport sizes, not a Galaxy or iPad device benchmark.",
+  "designCheck": "Same 96x64 mask overlap as tools/car-design-check.mjs on the design-check branch. That checker only opens world.html, so it was not pointed at this page. Overlap was scored on next-traffic-lod.html.",
+  "shots": {
+    "rear": {
+      "iou": 0.99,
+      "pass": true,
+      "straight": null,
+      "satRatio": 1.01,
+      "lumRatio": 1.03,
+      "edgeRatio": 0.88
+    },
+    "front": {
+      "iou": 0.965,
+      "pass": true,
+      "straight": 0.993,
+      "satRatio": 1.03,
+      "lumRatio": 1.05,
+      "edgeRatio": 0.78
+    },
+    "side": {
+      "iou": 0.935,
+      "pass": true,
+      "straight": null,
+      "satRatio": 0.98,
+      "lumRatio": 1.11,
+      "edgeRatio": 0.96
+    },
+    "three": {
+      "iou": 0.952,
+      "pass": true,
+      "straight": 0.95,
+      "satRatio": 1.01,
+      "lumRatio": 1.03,
+      "edgeRatio": 0.84
+    },
+    "pair": {
+      "iou": null,
+      "pass": null,
+      "straight": null,
+      "satRatio": null,
+      "lumRatio": null,
+      "edgeRatio": null
+    }
+  },
+  "counts": {
+    "body": {
+      "Material.002": {
+        "before": 2390,
+        "after": 1051,
+        "error": 0.009918413124978542
+      },
+      "SUPERCHARGER": {
+        "before": 340,
+        "after": 158,
+        "error": 0.009182087145745754
+      },
+      "BLACK": {
+        "before": 5070,
+        "after": 1702,
+        "error": 0.009859376586973667
+      },
+      "BODY": {
+        "before": 9266,
+        "after": 792,
+        "error": 0.009908484295010567
+      },
+      "CARBON": {
+        "before": 4304,
+        "after": 320,
+        "error": 0.009853102266788483
+      },
+      "GLASS": {
+        "before": 338,
+        "after": 48,
+        "error": 0.009998256340622902
+      }
+    },
+    "bodyTris": 4071,
+    "lightTris": 666,
+    "wheelTris": 4175,
+    "total": 8912,
+    "wheels": [
+      {
+        "front": false,
+        "axis": 2,
+        "center": [
+          -1.28,
+          0.328,
+          -0.756
+        ],
+        "parts": "tyre:234,rim:686,rotor:110,brake:28"
+      },
+      {
+        "front": false,
+        "axis": 2,
+        "center": [
+          -1.28,
+          0.328,
+          0.756
+        ],
+        "parts": "tyre:234,rim:798"
+      },
+      {
+        "front": true,
+        "axis": 2,
+        "center": [
+          1.269,
+          0.326,
+          -0.74
+        ],
+        "parts": "tyre:234,brake:28,rim:789"
+      },
+      {
+        "front": true,
+        "axis": 2,
+        "center": [
+          1.269,
+          0.326,
+          0.74
+        ],
+        "parts": "tyre:234,rim:800"
+      }
+    ]
+  },
+  "probes": {
+    "phone": {
+      "tier": "phone",
+      "w": 844,
+      "h": 390,
+      "pairs": [
+        {
+          "off": 0.1,
+          "on": 0.7,
+          "delta": 0.6
+        },
+        {
+          "off": 0.2,
+          "on": 0.4,
+          "delta": 0.2
+        },
+        {
+          "off": 0.2,
+          "on": 0.6,
+          "delta": 0.4
+        },
+        {
+          "off": 0.1,
+          "on": 0.5,
+          "delta": 0.4
+        },
+        {
+          "off": 0.2,
+          "on": 0.7,
+          "delta": 0.5
+        }
+      ],
+      "medianMs": 0.4,
+      "maxMs": 0.6,
+      "minMs": 0.2,
+      "capMs": 2.5,
+      "pass": true,
+      "calls": 42,
+      "triangles": 19156,
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+    },
+    "ipad": {
+      "tier": "ipad",
+      "w": 1024,
+      "h": 768,
+      "pairs": [
+        {
+          "off": 0.3,
+          "on": 0.5,
+          "delta": 0.2
+        },
+        {
+          "off": 0.2,
+          "on": 0.6,
+          "delta": 0.4
+        },
+        {
+          "off": 0.2,
+          "on": 0.4,
+          "delta": 0.2
+        },
+        {
+          "off": 0.2,
+          "on": 0.4,
+          "delta": 0.2
+        },
+        {
+          "off": 0.1,
+          "on": 0.5,
+          "delta": 0.4
+        }
+      ],
+      "medianMs": 0.2,
+      "maxMs": 0.4,
+      "minMs": 0.2,
+      "capMs": 2.5,
+      "pass": true,
+      "calls": 42,
+      "triangles": 19156,
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+    },
+    "pc": {
+      "tier": "pc",
+      "w": 1366,
+      "h": 768,
+      "pairs": [
+        {
+          "off": 0.1,
+          "on": 0.5,
+          "delta": 0.4
+        },
+        {
+          "off": 0.2,
+          "on": 0.3,
+          "delta": 0.1
+        },
+        {
+          "off": 0.1,
+          "on": 0.6,
+          "delta": 0.5
+        },
+        {
+          "off": 0.1,
+          "on": 0.6,
+          "delta": 0.5
+        },
+        {
+          "off": 0.1,
+          "on": 0.6,
+          "delta": 0.5
+        }
+      ],
+      "medianMs": 0.5,
+      "maxMs": 0.5,
+      "minMs": 0.1,
+      "capMs": 2.5,
+      "pass": true,
+      "calls": 42,
+      "triangles": 19156,
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+    }
+  }
+}
