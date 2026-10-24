@@ -31,6 +31,7 @@
     compose: compose,
     beginUnder: beginUnder,
     beginOver: beginOver,
+    withUnder: withUnder,
     stats: function () {
       const s = {};
       for (const k in api.statsFrame) s[k] = api.statsFrame[k];
@@ -65,6 +66,34 @@
   const LINE_STRIDE = 17;
   const SPRITE_STRIDE = 9;
   const FAR_Z = 4000;
+  // Line quad corners, hoisted so a window dash does not allocate six arrays.
+  const LINE_PAT = [0, 1, 0, -1, 1, 1, 0, -1, 1, -1, 1, 1];
+  const FACE_XL = [0, 3, 7, 4];
+  const FACE_XR = [1, 2, 6, 5];
+  const FACE_ZL = [0, 1, 5, 4];
+  const FACE_ZR = [3, 2, 6, 7];
+  const FACE_TOP = [4, 5, 6, 7];
+  const FACE_BOT = [0, 1, 2, 3];
+  const CORNER = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  const EA = [0, 0, 0], EB = [0, 0, 0], MID = [0, 0, 0], SEG = [null, null];
+  const FILL_HILL = [5 / 255, 16 / 255, 10 / 255];
+  const FILL_BLDG = [10 / 255, 6 / 255, 18 / 255];
+  const DASH_LONG = [6, 11];
+  const DASH_SHORT = [4, 8];
+  const C0 = [0, 0, 0];
+  const SPR_PT = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+  const SPR_TRI = [0, 1, 2, 0, 2, 3];
+  const SPR_OFF = [[-1, -1, 0, 1], [1, -1, 1, 1], [1, 1, 1, 0], [-1, 1, 0, 0]];
+  const faceList = [];
+  const pool = [];
+  let pooli = 0;
+  let basisOk = false;
+  let bxx = 1, bxy = 0, bxz = 0, byx = 0, byy = 1, byz = 0, bzx = 0, bzy = 0, bzz = 1;
+  let loc = null;
+  let sizedW = 0, sizedH = 0;
+  const hexCache = new Map();
+  const recPool = [];
+  let recN = 0;
 
   function emptyStats() {
     return {
@@ -74,12 +103,53 @@
   }
 
   function hexToRgb(hex) {
-    if (!hex || hex.charAt(0) !== '#') return [0.24, 0.90, 1];
-    let h = hex.slice(1);
-    if (h.length === 3) h = h.charAt(0) + h.charAt(0) + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2);
-    const n = parseInt(h, 16);
-    if (!(n >= 0)) return [0.24, 0.90, 1];
-    return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+    const hit = hexCache.get(hex);
+    if (hit) return hit;
+    let rgb;
+    if (!hex || hex.charAt(0) !== '#') rgb = [0.24, 0.90, 1];
+    else {
+      let h = hex.slice(1);
+      if (h.length === 3) h = h.charAt(0) + h.charAt(0) + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2);
+      const n = parseInt(h, 16);
+      rgb = !(n >= 0) ? [0.24, 0.90, 1] : [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+    }
+    hexCache.set(hex, rgb);
+    return rgb;
+  }
+
+  function alloc3() {
+    let a = pool[pooli];
+    if (!a) { a = [0, 0, 0]; pool[pooli] = a; }
+    pooli++;
+    return a;
+  }
+
+  // Same transform as camS, written into a reused vector. Trig is cached once
+  // per frame so a few thousand corners do not allocate or recompute it.
+  function refreshBasis() {
+    if (typeof camStabilizeFlightPitch === 'function') camStabilizeFlightPitch();
+    const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw);
+    const cp = Math.cos(-cam.pitch), sp = Math.sin(-cam.pitch);
+    const cr = Math.cos(cam.roll), sr = Math.sin(cam.roll);
+    bxx = cy * cr + sy * sp * sr; bxy = -cp * sr; bxz = -sy * cr + cy * sp * sr;
+    byx = cy * sr - sy * sp * cr; byy = cp * cr; byz = -sy * sr - cy * sp * cr;
+    bzx = sy * cp; bzy = sp; bzz = cy * cp;
+    basisOk = true;
+  }
+
+  function camInto(out, x, y, z) {
+    if (!basisOk) refreshBasis();
+    const dx = x - cam.x, dy = y - cam.y, dz = z - cam.z;
+    out[0] = dx * bxx + dy * bxy + dz * bxz;
+    out[1] = dx * byx + dy * byy + dz * byz;
+    out[2] = dx * bzx + dy * bzy + dz * bzz;
+    return out;
+  }
+
+  function resetStats(s) {
+    s.buildings = 0; s.faces = 0; s.segs = 0; s.windows = 0; s.sprites = 0;
+    s.submitMs = 0; s.gpuMs = 0; s.blitMs = 0; s.composeMs = 0;
+    return s;
   }
 
   function grow(arr, need) {
@@ -130,7 +200,10 @@
     '  float ndcX=2.0*aCam.x*uF/(Z*uWH.x);',
     '  float ndcY=2.0*aCam.y*uF/(Z*uWH.y);',
     '  float winZ=clamp((Z-uNear)/(uFar-uNear),0.0,1.0);',
-    '  gl_Position=vec4(ndcX*Z,ndcY*Z,(winZ*2.0-1.0)*Z,Z);',
+    '  // w = Z collapses a wall of constant camera-x to a zero-area clip triangle.',
+    '  // That wall still covers pixels after the divide, so the fill has to be',
+    '  // submitted in screen space. Depth stays the same window z as before.',
+    '  gl_Position=vec4(ndcX,ndcY,winZ*2.0-1.0,1.0);',
     '  vCol=aCol;',
     '}'
   ].join('\n');
@@ -194,10 +267,14 @@
     '    if(m>vDashOn) discard;',
     '  }',
     '  float a=vCol.a;',
+    '  float x=abs(vCross);',
     '  if(uCore<0.999){',
-    '    float x=abs(vCross);',
     '    float halo=x<=uCore?1.0:(1.0-(x-uCore)/max(0.001,1.0-uCore));',
     '    a*=halo;',
+    '  }else{',
+    '    // Canvas strokes fade across the outer half of the quad. A hard edge',
+    '    // paints a full extra pixel, which reads as a line across the car.',
+    '    a*=1.0-smoothstep(0.72,1.0,x);',
     '  }',
     '  if(a<0.004) discard;',
     '  gl_FragColor=vec4(vCol.rgb*a,a);',
@@ -280,6 +357,7 @@
     fillBuf = gl.createBuffer();
     lineBuf = gl.createBuffer();
     spriteBuf = gl.createBuffer();
+    cacheLocs();
     const dbg = gl.getExtension('WEBGL_debug_renderer_info');
     api.webgl = String(gl.getParameter(gl.VERSION) || '');
     api.limits = {
@@ -349,13 +427,20 @@
   function resize() {
     const dw = Math.max(1, (W | 0) * (DPR || 1));
     const dh = Math.max(1, (H | 0) * (DPR || 1));
-    if (cv.width !== dw || cv.height !== dh) { cv.width = dw; cv.height = dh; }
+    if (cv.width !== dw || cv.height !== dh) {
+      cv.width = dw;
+      cv.height = dh;
+      sizedW = 0;
+    }
+    if (sizedW === dw && sizedH === dh) return;
     mirrorCss(cv);
     if (backCv && backCtx) {
       mirrorCss(backCv);
       size2d(backCv, backCtx);
     }
     gl.viewport(0, 0, cv.width, cv.height);
+    sizedW = dw;
+    sizedH = dh;
   }
 
   // Sky and ground draw into #cback, under the WebGL canvas.
@@ -381,57 +466,82 @@
     ctx.clearRect(0, 0, W || 1, H || 1);
   }
 
+  // One callback on #cback, then the painter returns to #c. Used so a nearer
+  // wall covers a street line with the same fill the 2D path already uses.
+  function withUnder(fn) {
+    if (!backCtx || typeof ctx === 'undefined' || typeof fn !== 'function') return;
+    const prev = ctx;
+    ctx = backCtx;
+    try { fn(); }
+    finally { ctx = prev; }
+  }
+
+  // Locations are queried once. Asking every frame flushes the GL queue and
+  // is a stall on a phone once the GPU is behind.
+  function cacheLocs() {
+    function prog(p, attribs, uniforms) {
+      const a = {}, u = {};
+      for (let i = 0; i < attribs.length; i++) a[attribs[i]] = gl.getAttribLocation(p, attribs[i]);
+      for (let i = 0; i < uniforms.length; i++) u[uniforms[i]] = gl.getUniformLocation(p, uniforms[i]);
+      return { a: a, u: u };
+    }
+    loc = {
+      fill: prog(program, ['aCam', 'aCol'], ['uWH', 'uF', 'uNear', 'uFar']),
+      line: prog(lineProg, ['aA', 'aB', 'aMisc', 'aCol', 'aDash', 'aCross'], ['uWH', 'uF', 'uNear', 'uFar', 'uCore']),
+      sprite: prog(spriteProg, ['aS', 'aZ', 'aUv', 'aCol'], ['uWH', 'uNear', 'uFar', 'uTex'])
+    };
+  }
+
+  function bindPtr(index, size, stride, off) {
+    if (index < 0) return;
+    gl.enableVertexAttribArray(index);
+    gl.vertexAttribPointer(index, size, gl.FLOAT, false, stride, off);
+  }
+
   function bindFillAttribs() {
     gl.bindBuffer(gl.ARRAY_BUFFER, fillBuf);
     const s = FILL_STRIDE * 4;
-    const cam = gl.getAttribLocation(program, 'aCam');
-    const col = gl.getAttribLocation(program, 'aCol');
-    gl.enableVertexAttribArray(cam);
-    gl.enableVertexAttribArray(col);
-    gl.vertexAttribPointer(cam, 3, gl.FLOAT, false, s, 0);
-    gl.vertexAttribPointer(col, 4, gl.FLOAT, false, s, 12);
+    bindPtr(loc.fill.a.aCam, 3, s, 0);
+    bindPtr(loc.fill.a.aCol, 4, s, 12);
   }
 
   function bindLineAttribs() {
     gl.bindBuffer(gl.ARRAY_BUFFER, lineBuf);
     const s = LINE_STRIDE * 4;
-    function at(name, size, off) {
-      const loc = gl.getAttribLocation(lineProg, name);
-      if (loc < 0) return;
-      gl.enableVertexAttribArray(loc);
-      gl.vertexAttribPointer(loc, size, gl.FLOAT, false, s, off);
-    }
-    at('aA', 3, 0);
-    at('aB', 3, 12);
-    at('aMisc', 4, 24);
-    at('aCol', 4, 40);
-    at('aDash', 2, 56);
-    at('aCross', 1, 64);
+    const a = loc.line.a;
+    bindPtr(a.aA, 3, s, 0);
+    bindPtr(a.aB, 3, s, 12);
+    bindPtr(a.aMisc, 4, s, 24);
+    bindPtr(a.aCol, 4, s, 40);
+    bindPtr(a.aDash, 2, s, 56);
+    bindPtr(a.aCross, 1, s, 64);
   }
 
   function bindSpriteAttribs() {
     gl.bindBuffer(gl.ARRAY_BUFFER, spriteBuf);
     const s = SPRITE_STRIDE * 4;
-    function at(name, size, off) {
-      const loc = gl.getAttribLocation(spriteProg, name);
-      if (loc < 0) return;
-      gl.enableVertexAttribArray(loc);
-      gl.vertexAttribPointer(loc, size, gl.FLOAT, false, s, off);
-    }
-    at('aS', 2, 0);
-    at('aZ', 1, 8);
-    at('aUv', 2, 12);
-    at('aCol', 4, 20);
+    const a = loc.sprite.a;
+    bindPtr(a.aS, 2, s, 0);
+    bindPtr(a.aZ, 1, s, 8);
+    bindPtr(a.aUv, 2, s, 12);
+    bindPtr(a.aCol, 4, s, 20);
   }
 
-  function uniforms(p, core) {
-    gl.uniform2f(gl.getUniformLocation(p, 'uWH'), W || 1, H || 1);
-    const f = gl.getUniformLocation(p, 'uF');
-    if (f) gl.uniform1f(f, (H || 1) * 0.9);
-    gl.uniform1f(gl.getUniformLocation(p, 'uNear'), typeof NEAR === 'number' ? NEAR : 0.5);
-    gl.uniform1f(gl.getUniformLocation(p, 'uFar'), FAR_Z);
-    const c = gl.getUniformLocation(p, 'uCore');
-    if (c) gl.uniform1f(c, core);
+  function uniforms(bag, core) {
+    const u = bag.u;
+    gl.uniform2f(u.uWH, W || 1, H || 1);
+    if (u.uF) gl.uniform1f(u.uF, (H || 1) * 0.9);
+    gl.uniform1f(u.uNear, typeof NEAR === 'number' ? NEAR : 0.5);
+    gl.uniform1f(u.uFar, FAR_Z);
+    if (u.uCore) gl.uniform1f(u.uCore, core);
+  }
+
+  // Orphan the buffer, then upload only the used floats. Writing a buffer the
+  // GPU is still drawing stalls the next frame on a phone.
+  function uploadDyn(buf, arr, nFloats) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, arr.buffer.byteLength, gl.DYNAMIC_DRAW);
+    if (nFloats) gl.bufferSubData(gl.ARRAY_BUFFER, 0, arr.subarray(0, nFloats));
   }
 
   function pushFill(poly, rgb, alpha) {
@@ -440,10 +550,11 @@
     fillArr = grow(fillArr, need);
     const p0 = poly[0];
     for (let i = 1; i < poly.length - 1; i++) {
-      const tri = [p0, poly[i], poly[i + 1]];
+      const pa = poly[i], pb = poly[i + 1];
+      const tri0 = p0, tri1 = pa, tri2 = pb;
       for (let k = 0; k < 3; k++) {
         const o = fillN * FILL_STRIDE;
-        const p = tri[k];
+        const p = k === 0 ? tri0 : (k === 1 ? tri1 : tri2);
         fillArr[o] = p[0]; fillArr[o + 1] = p[1]; fillArr[o + 2] = p[2];
         fillArr[o + 3] = rgb[0]; fillArr[o + 4] = rgb[1]; fillArr[o + 5] = rgb[2]; fillArr[o + 6] = alpha;
         fillN++;
@@ -462,22 +573,63 @@
         const dz = b[2] - a[2];
         if (!dz) continue;
         const t = (near - a[2]) / dz;
-        o.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, near]);
+        const m = alloc3();
+        m[0] = a[0] + (b[0] - a[0]) * t; m[1] = a[1] + (b[1] - a[1]) * t; m[2] = near;
+        o.push(m);
       }
     }
     return o;
   }
 
+  // A corner just in front of the camera projects to a huge screen position.
+  // The 2D painter cuts that face to a pad outside the canvas. WebGL1 drops the
+  // uncut triangle, which leaves a wire box and the street line showing through.
+  function clipScreen(poly) {
+    if (!poly || poly.length < 3) return [];
+    const f = (H || 1) * 0.9;
+    const pad = 12;
+    const sx = ((W || 1) * 0.5 + pad) / f;
+    const sy = ((H || 1) * 0.5 + pad) / f;
+    const planes = [[1, 0, -sx], [-1, 0, -sx], [0, 1, -sy], [0, -1, -sy]];
+    let cur = poly;
+    for (let p = 0; p < planes.length; p++) {
+      const A = planes[p][0], B = planes[p][1], C = planes[p][2];
+      const next = [];
+      for (let i = 0; i < cur.length; i++) {
+        const a = cur[i], b = cur[(i + 1) % cur.length];
+        const da = A * a[0] + B * a[1] + C * a[2];
+        const db = A * b[0] + B * b[1] + C * b[2];
+        const ain = da <= 1e-6, bin = db <= 1e-6;
+        if (ain && bin) next.push(b);
+        else if (ain !== bin) {
+          const den = da - db;
+          if (den) {
+            const t = da / den;
+            const m = alloc3();
+            m[0] = a[0] + (b[0] - a[0]) * t; m[1] = a[1] + (b[1] - a[1]) * t; m[2] = a[2] + (b[2] - a[2]) * t;
+            next.push(m);
+          }
+          if (bin) next.push(b);
+        }
+      }
+      cur = next;
+      if (cur.length < 3) return [];
+    }
+    return cur;
+  }
+
   function clipSeg(a, b) {
     const near = typeof NEAR === 'number' ? NEAR : 0.5;
     if (a[2] < near && b[2] < near) return null;
-    if (a[2] >= near && b[2] >= near) return [a, b];
+    if (a[2] >= near && b[2] >= near) { SEG[0] = a; SEG[1] = b; return SEG; }
     const dz = b[2] - a[2];
     if (!dz) return null;
     const t = (near - a[2]) / dz;
     if (!(t >= 0 && t <= 1)) return null;
-    const m = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, near];
-    return a[2] < near ? [m, b] : [a, m];
+    MID[0] = a[0] + (b[0] - a[0]) * t; MID[1] = a[1] + (b[1] - a[1]) * t; MID[2] = near;
+    if (a[2] < near) { SEG[0] = MID; SEG[1] = b; }
+    else { SEG[0] = a; SEG[1] = MID; }
+    return SEG;
   }
 
   function screenLen(a, b) {
@@ -501,13 +653,10 @@
     // core is a uniform for the whole line pass. Mixed widths still fade from the
     // same ratio when glow is on; glow is off in the matching picture.
     api._core = core;
-    const col = [rgb[0], rgb[1], rgb[2], alpha];
     const need = (lineN + 6) * LINE_STRIDE;
     lineArr = grow(lineArr, need);
-    // two triangles: (start+, start-, end+), (start-, end-, end+)
-    const pattern = [[0, 1], [0, -1], [1, 1], [0, -1], [1, -1], [1, 1]];
-    for (let i = 0; i < pattern.length; i++) {
-      const end = pattern[i][0], side = pattern[i][1];
+    for (let i = 0; i < 6; i++) {
+      const end = LINE_PAT[i * 2], side = LINE_PAT[i * 2 + 1];
       const o = lineN * LINE_STRIDE;
       const A = seg[0], B = seg[1];
       lineArr[o] = A[0]; lineArr[o + 1] = A[1]; lineArr[o + 2] = A[2];
@@ -516,7 +665,7 @@
       lineArr[o + 7] = end;
       lineArr[o + 8] = end ? len : 0;
       lineArr[o + 9] = drawHalf;
-      lineArr[o + 10] = col[0]; lineArr[o + 11] = col[1]; lineArr[o + 12] = col[2]; lineArr[o + 13] = col[3];
+      lineArr[o + 10] = rgb[0]; lineArr[o + 11] = rgb[1]; lineArr[o + 12] = rgb[2]; lineArr[o + 13] = alpha;
       lineArr[o + 14] = dashOn || 0;
       lineArr[o + 15] = dashPer || 0;
       lineArr[o + 16] = side;
@@ -529,77 +678,77 @@
     const poly = [];
     for (let i = 0; i < ids.length; i++) {
       const p = corners[ids[i]];
-      poly.push(camS(p[0], p[1], p[2]));
+      poly.push(camInto(alloc3(), p[0], p[1], p[2]));
     }
-    return clipNear(poly);
+    return clipScreen(clipNear(poly));
   }
 
   function edgePair(ids, corners, rgb, alpha, width) {
     for (let i = 0; i < ids.length; i++) {
       const a = corners[ids[i]], b = corners[ids[(i + 1) % ids.length]];
-      if (pushLine(camS(a[0], a[1], a[2]), camS(b[0], b[1], b[2]), rgb, alpha, width, 0, 0)) api.statsFrame.segs++;
+      camInto(EA, a[0], a[1], a[2]);
+      camInto(EB, b[0], b[1], b[2]);
+      if (pushLine(EA, EB, rgb, alpha, width, 0, 0)) api.statsFrame.segs++;
     }
   }
 
   function submitBox(q, b, d, ol) {
     const y0 = q.y0 || 0, y1 = q.y1;
-    const corners = [
-      [q.x0, y0, q.z0], [q.x1, y0, q.z0], [q.x1, y0, q.z1], [q.x0, y0, q.z1],
-      [q.x0, y1, q.z0], [q.x1, y1, q.z0], [q.x1, y1, q.z1], [q.x0, y1, q.z1]
-    ];
+    const corners = CORNER;
+    corners[0][0] = q.x0; corners[0][1] = y0; corners[0][2] = q.z0;
+    corners[1][0] = q.x1; corners[1][1] = y0; corners[1][2] = q.z0;
+    corners[2][0] = q.x1; corners[2][1] = y0; corners[2][2] = q.z1;
+    corners[3][0] = q.x0; corners[3][1] = y0; corners[3][2] = q.z1;
+    corners[4][0] = q.x0; corners[4][1] = y1; corners[4][2] = q.z0;
+    corners[5][0] = q.x1; corners[5][1] = y1; corners[5][2] = q.z0;
+    corners[6][0] = q.x1; corners[6][1] = y1; corners[6][2] = q.z1;
+    corners[7][0] = q.x0; corners[7][1] = y1; corners[7][2] = q.z1;
     const inside = cam.x > q.x0 && cam.x < q.x1 && cam.z > q.z0 && cam.z < q.z1 && cam.y > y0 && cam.y < y1;
     if (inside) return;
-    const fillRgb = b.kind === 'hill' ? [5 / 255, 16 / 255, 10 / 255] : [10 / 255, 6 / 255, 18 / 255];
+    const fillRgb = b.kind === 'hill' ? FILL_HILL : FILL_BLDG;
     const edgeRgb = hexToRgb(b.c);
     const dist = typeof CDRAW !== 'undefined' ? CDRAW.dist : 950;
     const alpha = Math.max(0.25, Math.min(1, 1.5 - d / dist));
     const lw = d < 400 ? 1.8 : 1.2;
-    const faces = [];
-    if (ol) {
-      faces.push([0, 1, 2, 3], [4, 5, 6, 7]);
-    } else {
-      if (cam.x < q.x0) faces.push([0, 3, 7, 4]);
-      else if (cam.x > q.x1) faces.push([1, 2, 6, 5]);
-      if (cam.z < q.z0) faces.push([0, 1, 5, 4]);
-      else if (cam.z > q.z1) faces.push([3, 2, 6, 7]);
-      if (cam.y > y1) faces.push([4, 5, 6, 7]);
-      else if (cam.y < y0) faces.push([0, 1, 2, 3]);
-    }
+    // Outlines use the same facing faces as the 2D far silhouette. farSil.o is
+    // cleared before that fill, so a cap-only box reads as a hole in the wall.
+    const faces = faceList;
+    faces.length = 0;
+    if (cam.x < q.x0) faces.push(FACE_XL);
+    else if (cam.x > q.x1) faces.push(FACE_XR);
+    if (cam.z < q.z0) faces.push(FACE_ZL);
+    else if (cam.z > q.z1) faces.push(FACE_ZR);
+    if (cam.y > y1) faces.push(FACE_TOP);
+    else if (cam.y < y0) faces.push(FACE_BOT);
     for (let i = 0; i < faces.length; i++) {
-      pushFill(worldFace(faces[i], corners), fillRgb, 1);
+      const poly = worldFace(faces[i], corners);
+      pushFill(poly, fillRgb, 1);
       edgePair(faces[i], corners, edgeRgb, alpha, lw);
       api.statsFrame.faces++;
     }
-    if (ol) {
-      const verts = [[0, 4], [1, 5], [2, 6], [3, 7]];
-      for (let i = 0; i < verts.length; i++) {
-        const a = corners[verts[i][0]], c = corners[verts[i][1]];
-        if (pushLine(camS(a[0], a[1], a[2]), camS(c[0], c[1], c[2]), edgeRgb, alpha, lw, 0, 0)) api.statsFrame.segs++;
-      }
-      return;
-    }
+    if (ol) return;
     const winDist = typeof CDRAW !== 'undefined' ? CDRAW.winDist : 70;
     if (!(d < winDist) || b.kind === 'pylon' || b.kind === 'bill') return;
     const st = d > 45 ? 11 : 5.5;
     const gfh = 4.5;
     const wc = hexToRgb(b.wc || b.c);
-    const dash = (b.dash && b.dash[0] > 3) ? [6, 11] : [4, 8];
+    const dash = (b.dash && b.dash[0] > 3) ? DASH_LONG : DASH_SHORT;
+    const wa = alpha * 0.75;
     for (let y = y0 + (y0 > 0 ? 2 : gfh + 1.8); y < y1 - 1.5; y += st) {
       if (((Math.floor(y / st) * 31 + (b.wseed || 0)) % 7) === 0) continue;
-      const segs = [];
-      if (cam.x < q.x0) segs.push([[q.x0 - 0.2, y, q.z0 + 2], [q.x0 - 0.2, y, q.z1 - 2]]);
-      else if (cam.x > q.x1) segs.push([[q.x1 + 0.2, y, q.z0 + 2], [q.x1 + 0.2, y, q.z1 - 2]]);
-      if (cam.z < q.z0) segs.push([[q.x0 + 2, y, q.z0 - 0.2], [q.x1 - 2, y, q.z0 - 0.2]]);
-      else if (cam.z > q.z1) segs.push([[q.x0 + 2, y, q.z1 + 0.2], [q.x1 - 2, y, q.z1 + 0.2]]);
-      for (let s = 0; s < segs.length; s++) {
-        const A = segs[s][0], B = segs[s][1];
-        if (pushLine(camS(A[0], A[1], A[2]), camS(B[0], B[1], B[2]), wc, alpha * 0.75, 1.6, dash[0], dash[1])) api.statsFrame.windows++;
-      }
+      if (cam.x < q.x0) { camInto(EA, q.x0 - 0.2, y, q.z0 + 2); camInto(EB, q.x0 - 0.2, y, q.z1 - 2); if (pushLine(EA, EB, wc, wa, 1.6, dash[0], dash[1])) api.statsFrame.windows++; }
+      else if (cam.x > q.x1) { camInto(EA, q.x1 + 0.2, y, q.z0 + 2); camInto(EB, q.x1 + 0.2, y, q.z1 - 2); if (pushLine(EA, EB, wc, wa, 1.6, dash[0], dash[1])) api.statsFrame.windows++; }
+      if (cam.z < q.z0) { camInto(EA, q.x0 + 2, y, q.z0 - 0.2); camInto(EB, q.x1 - 2, y, q.z0 - 0.2); if (pushLine(EA, EB, wc, wa, 1.6, dash[0], dash[1])) api.statsFrame.windows++; }
+      else if (cam.z > q.z1) { camInto(EA, q.x0 + 2, y, q.z1 + 0.2); camInto(EB, q.x1 - 2, y, q.z1 + 0.2); if (pushLine(EA, EB, wc, wa, 1.6, dash[0], dash[1])) api.statsFrame.windows++; }
     }
   }
 
   function submitBuilding(b, d) {
     if (!b || !b.boxes) return false;
+    // The colored NOS station stays on the 2D painter. Copying its fills into
+    // this pass would be a second palette, and a later station change would have
+    // to be made twice. Black solids and neon edges are the WebGL proof.
+    if (b.nosStation) return false;
     if (b.towCab && window.TOW3 && TOW3.on && TOW3.on(d)) return false;
     const ol = b.kind === 'outline';
     if (window.CDRAW && CDRAW.nonear && d <= CDRAW.far && !ol) return false;
@@ -638,35 +787,40 @@
     const src = TRAFFIC._cache.get(c._key);
     if (!src) return false;
     const yDraw = (c.y || 0) + (c.suspY || 0);
-    const c0 = camS(c.x, yDraw + 0.6, c.z);
+    camInto(C0, c.x, yDraw + 0.6, c.z);
     const near = typeof NEAR === 'number' ? NEAR : 0.5;
-    if (!c0 || c0[2] < near) return false;
-    const sc = scr(c0);
-    const px = (H || 1) * 0.9 / c0[2] * 7;
+    if (C0[2] < near) return false;
+    const sc = scr(C0);
+    const px = (H || 1) * 0.9 / C0[2] * 7;
     const squash = 1 - (c.pitch || 0) * 0.10;
     const roll = (c.roll || 0) + (c.bodyRoll || 0);
     const cos = Math.cos(roll), sin = Math.sin(roll);
     const hw = px / 2, hh = px * squash / 2;
-    const local = [[-hw, -hh, 0, 1], [hw, -hh, 1, 1], [hw, hh, 1, 0], [-hw, hh, 0, 0]];
-    const pts = [];
     for (let i = 0; i < 4; i++) {
-      const x = local[i][0], y = local[i][1];
-      pts.push([sc[0] + x * cos - y * sin, sc[1] + x * sin + y * cos, local[i][2], local[i][3]]);
+      const ox = SPR_OFF[i][0] * hw, oy = SPR_OFF[i][1] * hh;
+      const p = SPR_PT[i];
+      p[0] = sc[0] + ox * cos - oy * sin;
+      p[1] = sc[1] + ox * sin + oy * cos;
+      p[2] = SPR_OFF[i][2];
+      p[3] = SPR_OFF[i][3];
     }
     const fade = c.fade == null ? 1 : c.fade;
-    const tri = [0, 1, 2, 0, 2, 3];
     const need = (spriteN + 6) * SPRITE_STRIDE;
     spriteArr = grow(spriteArr, need);
     const base = spriteN;
     for (let i = 0; i < 6; i++) {
-      const p = pts[tri[i]];
+      const p = SPR_PT[SPR_TRI[i]];
       const o = spriteN * SPRITE_STRIDE;
-      spriteArr[o] = p[0]; spriteArr[o + 1] = p[1]; spriteArr[o + 2] = c0[2];
+      spriteArr[o] = p[0]; spriteArr[o + 1] = p[1]; spriteArr[o + 2] = C0[2];
       spriteArr[o + 3] = p[2]; spriteArr[o + 4] = p[3];
       spriteArr[o + 5] = 1; spriteArr[o + 6] = 1; spriteArr[o + 7] = 1; spriteArr[o + 8] = fade;
       spriteN++;
     }
-    spriteRec.push({ tex: texFor(src), start: base, count: 6 });
+    let rec = recPool[recN];
+    if (!rec) { rec = { tex: null, start: 0, count: 0 }; recPool[recN] = rec; }
+    rec.tex = texFor(src); rec.start = base; rec.count = 6;
+    recN++;
+    spriteRec.push(rec);
     dyn.add(slot);
     api.statsFrame.sprites++;
     return true;
@@ -686,28 +840,25 @@
     const core = glowOn ? (api._core || 0.35) : 1;
     if (fillN) {
       gl.useProgram(program);
-      uniforms(program, 1);
-      gl.bindBuffer(gl.ARRAY_BUFFER, fillBuf);
-      gl.bufferData(gl.ARRAY_BUFFER, fillArr.subarray(0, fillN * FILL_STRIDE), gl.DYNAMIC_DRAW);
+      uniforms(loc.fill, 1);
+      uploadDyn(fillBuf, fillArr, fillN * FILL_STRIDE);
       bindFillAttribs();
       gl.drawArrays(gl.TRIANGLES, 0, fillN);
     }
     if (lineN) {
       gl.useProgram(lineProg);
-      uniforms(lineProg, core);
-      gl.bindBuffer(gl.ARRAY_BUFFER, lineBuf);
-      gl.bufferData(gl.ARRAY_BUFFER, lineArr.subarray(0, lineN * LINE_STRIDE), gl.DYNAMIC_DRAW);
+      uniforms(loc.line, core);
+      uploadDyn(lineBuf, lineArr, lineN * LINE_STRIDE);
       bindLineAttribs();
       gl.drawArrays(gl.TRIANGLES, 0, lineN);
     }
     if (spriteN) {
       gl.useProgram(spriteProg);
-      uniforms(spriteProg, 1);
-      gl.bindBuffer(gl.ARRAY_BUFFER, spriteBuf);
-      gl.bufferData(gl.ARRAY_BUFFER, spriteArr.subarray(0, spriteN * SPRITE_STRIDE), gl.DYNAMIC_DRAW);
+      uniforms(loc.sprite, 1);
+      uploadDyn(spriteBuf, spriteArr, spriteN * SPRITE_STRIDE);
       bindSpriteAttribs();
       gl.activeTexture(gl.TEXTURE0);
-      gl.uniform1i(gl.getUniformLocation(spriteProg, 'uTex'), 0);
+      gl.uniform1i(loc.sprite.u.uTex, 0);
       for (let i = 0; i < spriteRec.length; i++) {
         const r = spriteRec[i];
         gl.bindTexture(gl.TEXTURE_2D, r.tex);
@@ -723,8 +874,11 @@
     dyn.clear();
     fillN = 0; lineN = 0; spriteN = 0;
     spriteRec.length = 0;
+    pooli = 0;
+    basisOk = false;
+    recN = 0;
     api._core = 1;
-    api.statsFrame = emptyStats();
+    resetStats(api.statsFrame);
     try {
       for (let i = 0; i < items.length; i++) {
         const it = items[i];

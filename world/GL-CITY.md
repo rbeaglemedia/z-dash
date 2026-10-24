@@ -1,5 +1,69 @@
 # Neon World WebGL buildings (prototype)
 
+## Boulevard proof (this branch)
+
+This proof sits on the boulevard map (`d4deed1`, PR #85). `?gl=1` draws the black building solids and the hard neon edges in WebGL1. Default play stays the 2D canvas. `world.html` and `world-split.html` are the same page on this commit, and both load `world/gl-city.js` and `world/nos-station.js`. The pass reads `CITY.BL`, so a later lot move does not need a second geometry list.
+
+The colored NOS station stays on the 2D painter in both modes. Copying its fills into WebGL would be a second palette. A later station change stays in `world/city-draw.js`.
+
+Today's building strokes set `shadowBlur` to 0. The matching glow is that hard neon edge. `?glow=1` widens the edge by 7 px. That wider halo is not today's picture, and it stays off unless the query is present. `world/gl-city.js` does not call `shadowBlur`.
+
+A nearer wall covers what the 2D fill covered. Boost rings stay on the 2D painter. Where a nearer solid overlaps one, that solid punches the ring out, so the ring does not paint across the wall. The same box fill is stamped on the ground canvas when the wall is opaque, so a street line behind that wall stays behind it. The WebGL edge fades across its outer pixels so it does not paint a hard extra row. One soft pixel under a neon edge still does not match. The moving minimap and the FPS number also differ between the two shots.
+
+Far outline blocks use the same facing faces as today's silhouette. `farSil.o` is cleared before that fill, so a cap-only box is a hole. A wall of constant camera-x is submitted in screen space. Leaving its clip w equal to camera z drops that wall: the clip triangle has no area, and the pixels stay sky. Depth is the same window z as before.
+
+The picture is close and it is not identical. On the kid page, share of pixels within a channel-sum of 12, and the share that differ by more than 24 (sampled every second pixel). Head `f2724a2`, shots taken 5:49 AM ET:
+
+| view | canvas | face ≤12 / >24 | NOS ≤12 / >24 | air ≤12 / >24 |
+|---|---|---|---|---|
+| phone | 1688×780 DPR 2 | 99.2% / 0.6% | 97.4% / 1.0% | 95.5% / 3.2% |
+| iPad | 1024×768 DPR 1 | 96.2% / 3.1% | 98.1% / 1.1% | 98.6% / 0.5% |
+| PC | 1280×720 inside 1366×768 | 97.7% / 1.8% | 99.2% / 0.4% | 99.2% / 0.5% |
+
+Exact pixels are lower than that. The phone face pair is 93.3% identical. The iPad face pair is 93.5% identical. The iPad NOS pair is 93.7% identical. On that NOS pair the far wall beside the station is filled: of the dark 2D pixels in that wall, 4 differ from WebGL by a channel-sum over 40. The PC NOS pair is 40.1% identical and 99.2% within a small step, because the desktop canvas is scaled into the window. The phone air pair's 3.2% is the minimap in the bottom-left, not the skyline. The iPad street shot still has an amber patch on the right that is dark in the WebGL capture. Traffic moves during boot, before the pose freezes, so that patch is not a second copy of a building. The split page is the same HTML. Its iPad NOS pair is 98.9% / 0.6%. Its phone street pair is 94.8% / 3.8%, and that extra is the same bottom-left minimap. Labeled zooms are in `test-results/gl-city-proof/`. The NOS zoom is the far wall. The street zoom is a building edge, not the car.
+
+`?glow=1` on the phone face is 95.6% within a small step and 3.9% visibly different. It is labeled as a different picture.
+
+Frame times below are SwiftShader with the player car draw stubbed during the sample. They are a software raster on this VM. Compose (submit plus the GL draw) is 0.1–0.3 ms. Blit is 0. Whole-frame `raf` on the kid page, 2D then WebGL:
+
+| view | face | NOS | air |
+|---|---|---|---|
+| phone | 15.8 ms then 19.8 ms | 15.3 then 16.4 | 16.6 then 16.6 |
+| iPad | 16.8 then 16.2 | 15.6 then 16.5 | 16.6 then 16.7 |
+| PC | 15.2 then 16.8 | 14.0 then 14.8 | 16.7 then 16.7 |
+
+### Phone dips
+
+A phone on `?gl=1` peaked near 125 fps and dipped near 25 fps. The low frames are the score. `node tools/gl-city-hist.js` keeps 280 frames after a 40-frame warmup on a phone-sized canvas (844×390, device pixel ratio 2, `world.html`). The 1% low is the mean of the slowest 1% of those frames (three frames). The best 2D frame on this VM is about 8 ms. The best WebGL frame is about 13 ms. These rows are stall times on SwiftShader. A 13 ms best frame is 75 fps here, and that number is not the phone.
+
+Before the stall edits, 1:56 PM ET. After, 2:04 PM ET. `raf` is the gap between render starts. `js` is time inside `render`. Logs: `test-results/gl-city-proof/hist-before.json` and `hist-after.json`.
+
+| run | before raf p95 / 1% low / worst | after raf p95 / 1% low / worst |
+|---|---|---|
+| 2D still | 55.5 / 67.8 / 84.7 | 63.3 / 74.6 / 76.8 |
+| 2D drive | 91.0 / 125.4 / 153.4 | 97.7 / 119.4 / 123.7 |
+| WebGL still | 68.2 / 83.0 / 91.9 | 64.4 / 69.4 / 71.1 |
+| WebGL drive | 99.2 / 253.9 / 342.2 | 81.6 / 102.1 / 103.4 |
+
+JS 1% low, before then after: 2D still 57.8 then 64.6; 2D drive 115.3 then 108.7; WebGL still 60.2 then 52.6; WebGL drive 185.2 then 88.3. Compose stays 0.1–0.3 ms at p95. The WebGL drive compose 1% low was 1.4 ms before and 0.3 ms after. `drawBldg` stays under 0.4 ms at p95. The building upload is a few tenths of a millisecond on this VM.
+
+Ranked by the effect expected on a phone's slow frames:
+
+1. Per-frame `getAttribLocation` and `getUniformLocation` flush the GL queue. Once the GPU is behind, that flush is the dip. Locations are cached at init.
+2. Uploading a buffer the GPU is still reading stalls the next frame on a phone driver. The upload now orphans the buffer, then writes the used floats. Compose was already under 1 ms here, so this VM barely shows it.
+3. The GL submit allocated thousands of short arrays a frame (camera vectors, line quads, colors, clip points, sprite records). A 5 s `?gl=1` drive trace spent about 300 ms in GC across about 1000 collections. The submit now keeps one camera basis, a vector pool, static corner and dash tables, and reused sprite records. The 2D grid and deco still call `camS` about 3100–3300 times a frame in both modes. Face polygons are still allocated, tens per frame.
+4. CSS size reads and `gl.viewport` ran every frame. They are skipped when the drawing buffer is already that size.
+5. Three canvases are presented every frame: `#cback` for the sky, a transparent `#cgl` for the buildings, and `#c` for signs, the car, and the HUD. That present is the structural dip. Headless Chrome shows it as a `GLES2::ReadPixels` of the GL canvas, about 1.5 s of a 5 s trace. The page does not call `readPixels` or `getImageData` on `#cgl`. On a phone the same present is a compositor sync. It is still there. One opaque canvas would be a new picture and a new review.
+6. Shaders compile once, at init. The first 40 frames are dropped, so a first-use stall is outside the tail. A building is a handful of faces. That overdraw is not a 40 ms dip.
+
+The 2D still 1% low moved from 67.8 ms to 74.6 ms between the two runs, with no code change on that path. The WebGL drive tail moved the other way and then sat still: worst frame 342 ms down to 103 ms, and the three slowest frames are 102.1 ms on average against a worst of 103.4 ms. An earlier sample, taken before these edits, is in `hist-first.json`. Its WebGL still 1% low was 68.8 ms, against 69.4 ms after, so the still tail did not move. Its WebGL drive 1% low was 125.5 ms and its worst frame was 133 ms. The after drive (102.1 ms, worst 103.4 ms) is the tighter of the three drive runs. The 342 ms frame was one bad sample, and it did not come back.
+
+An iPad spot check on this same `gl-city.js` (channel-sum, every second pixel): street front 95.0% exact, 99.3% within 12, 0.6% over 24; NOS 91.0% exact, 99.1% within 12, 0.6% over 24. The full phone, iPad, and PC sheets were not shot again. Architecture Check PASS is `09efdc07` only.
+
+Drop the WebGL buildings pursuit. These stall fixes stay on the proof, behind `?gl=1`. They cut a hitch on this VM. They leave the three-canvas present in place, and this VM cannot show whether a phone still dips to 25 fps. Another round on this stack does not remove that present. Default play stays the 2D canvas.
+
+Nothing here deploys.
+
 **Only the NOS station is built.** The other building looks stay drawings until the city layout is nailed. The City Layout agent (`bc-3ff1a27b`, branch `cursor/city-layout-plan-ef23`) owns placement and can keep using today's black buildings for those. The drawings below fit today's footprints. They do not move a shop.
 
 Once that layout is nailed with the placeholder buildings, more building ideas can follow. Some of those will depend on the lot. A shop beside a river is a different brief than the same shop on a street. Those location variants are not in this set.

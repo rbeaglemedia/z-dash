@@ -1,0 +1,410 @@
+{
+  "stamp": "2026-10-24T09:49:57.687Z",
+  "sheets": [
+    {
+      "file": "sheet-world-phone-face.png",
+      "page": "world.html",
+      "viewport": "phone",
+      "shot": "face",
+      "exact": 93.3,
+      "near": 99.2,
+      "hot": 0.6,
+      "raf2d": 15.8,
+      "rafgl": 19.8,
+      "fps2d": 63,
+      "fpsgl": 51,
+      "compose": 0.2,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      }
+    },
+    {
+      "file": "sheet-world-phone-glow.png",
+      "page": "world.html",
+      "viewport": "phone",
+      "shot": "glow",
+      "exact": 84.4,
+      "near": 95.6,
+      "hot": 3.9
+    },
+    {
+      "file": "sheet-world-phone-nos.png",
+      "page": "world.html",
+      "viewport": "phone",
+      "shot": "nos",
+      "exact": 86.2,
+      "near": 97.4,
+      "hot": 1.0,
+      "raf2d": 15.3,
+      "rafgl": 16.4,
+      "fps2d": 65,
+      "fpsgl": 61,
+      "compose": 0.1,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      }
+    },
+    {
+      "file": "sheet-world-phone-air.png",
+      "page": "world.html",
+      "viewport": "phone",
+      "shot": "air",
+      "exact": 88.4,
+      "near": 95.5,
+      "hot": 3.2,
+      "raf2d": 16.6,
+      "rafgl": 16.6,
+      "fps2d": 60,
+      "fpsgl": 60,
+      "compose": 0.2,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      }
+    },
+    {
+      "file": "sheet-world-ipad-face.png",
+      "page": "world.html",
+      "viewport": "ipad",
+      "shot": "face",
+      "exact": 93.5,
+      "near": 96.2,
+      "hot": 3.1,
+      "raf2d": 16.8,
+      "rafgl": 16.2,
+      "fps2d": 60,
+      "fpsgl": 62,
+      "compose": 0.1,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      }
+    },
+    {
+      "file": "sheet-world-ipad-glow.png",
+      "page": "world.html",
+      "viewport": "ipad",
+      "shot": "glow",
+      "exact": 93.9,
+      "near": 96.7,
+      "hot": 2.9
+    },
+    {
+      "file": "sheet-world-ipad-nos.png",
+      "page": "world.html",
+      "viewport": "ipad",
+      "shot": "nos",
+      "exact": 93.7,
+      "near": 98.1,
+      "hot": 1.1,
+      "raf2d": 15.6,
+      "rafgl": 16.5,
+      "fps2d": 64,
+      "fpsgl": 61,
+      "compose": 0.3,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      }
+    },
+    {
+      "file": "sheet-world-ipad-air.png",
+      "page": "world.html",
+      "viewport": "ipad",
+      "shot": "air",
+      "exact": 96.7,
+      "near": 98.6,
+      "hot": 0.5,
+      "raf2d": 16.6,
+      "rafgl": 16.7,
+      "fps2d": 60,
+      "fpsgl": 60,
+      "compose": 0.1,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      }
+    },
+    {
+      "file": "sheet-world-pc-face.png",
+      "page": "world.html",
+      "viewport": "pc",
+      "shot": "face",
+      "exact": 68.7,
+      "near": 97.7,
+      "hot": 1.8,
+      "raf2d": 15.2,
+      "rafgl": 16.8,
+      "fps2d": 66,
+      "fpsgl": 60,
+      "compose": 0.1,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      }
+    },
+    {
+      "file": "sheet-world-pc-glow.png",
+      "page": "world.html",
+      "viewport": "pc",
+      "shot": "glow",
+      "exact": 67.2,
+      "near": 95.4,
+      "hot": 4.1
+    },
+    {
+      "file": "sheet-world-pc-nos.png",
+      "page": "world.html",
+      "viewport": "pc",
+      "shot": "nos",
+      "exact": 40.1,
+      "near": 99.2,
+      "hot": 0.4,
+      "raf2d": 14,
+      "rafgl": 14.8,
+      "fps2d": 71,
+      "fpsgl": 68,
+      "compose": 0.3,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      }
+    },
+    {
+      "file": "sheet-world-pc-air.png",
+      "page": "world.html",
+      "viewport": "pc",
+      "shot": "air",
+      "exact": 93.2,
+      "near": 99.2,
+      "hot": 0.5,
+      "raf2d": 16.7,
+      "rafgl": 16.7,
+      "fps2d": 60,
+      "fpsgl": 60,
+      "compose": 0.2,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      }
+    },
+    {
+      "file": "sheet-world-split-phone-face.png",
+      "page": "world-split.html",
+      "viewport": "phone",
+      "shot": "face",
+      "exact": 85.7,
+      "near": 94.8,
+      "hot": 3.8,
+      "raf2d": 16.1,
+      "rafgl": 19.9,
+      "fps2d": 62,
+      "fpsgl": 50,
+      "compose": 0.2,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      }
+    },
+    {
+      "file": "sheet-world-split-phone-nos.png",
+      "page": "world-split.html",
+      "viewport": "phone",
+      "shot": "nos",
+      "exact": 85.5,
+      "near": 95.7,
+      "hot": 2.5,
+      "raf2d": 14.9,
+      "rafgl": 16.4,
+      "fps2d": 67,
+      "fpsgl": 61,
+      "compose": 0.2,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      }
+    },
+    {
+      "file": "sheet-world-split-phone-air.png",
+      "page": "world-split.html",
+      "viewport": "phone",
+      "shot": "air",
+      "exact": 89.4,
+      "near": 99.1,
+      "hot": 0.6,
+      "raf2d": 16,
+      "rafgl": 16.7,
+      "fps2d": 63,
+      "fpsgl": 60,
+      "compose": 0.1,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      }
+    },
+    {
+      "file": "sheet-world-split-ipad-face.png",
+      "page": "world-split.html",
+      "viewport": "ipad",
+      "shot": "face",
+      "exact": 92.8,
+      "near": 95.6,
+      "hot": 3.7,
+      "raf2d": 15.4,
+      "rafgl": 13.8,
+      "fps2d": 65,
+      "fpsgl": 72,
+      "compose": 0.2,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      }
+    },
+    {
+      "file": "sheet-world-split-ipad-nos.png",
+      "page": "world-split.html",
+      "viewport": "ipad",
+      "shot": "nos",
+      "exact": 93.8,
+      "near": 98.9,
+      "hot": 0.6,
+      "raf2d": 14.5,
+      "rafgl": 14.5,
+      "fps2d": 69,
+      "fpsgl": 69,
+      "compose": 0.3,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      }
+    },
+    {
+      "file": "sheet-world-split-ipad-air.png",
+      "page": "world-split.html",
+      "viewport": "ipad",
+      "shot": "air",
+      "exact": 96.7,
+      "near": 98.8,
+      "hot": 0.5,
+      "raf2d": 16.7,
+      "rafgl": 16.6,
+      "fps2d": 60,
+      "fpsgl": 60,
+      "compose": 0.2,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      }
+    },
+    {
+      "file": "sheet-world-split-pc-face.png",
+      "page": "world-split.html",
+      "viewport": "pc",
+      "shot": "face",
+      "exact": 68.4,
+      "near": 96.8,
+      "hot": 2.8,
+      "raf2d": 14.1,
+      "rafgl": 15,
+      "fps2d": 71,
+      "fpsgl": 67,
+      "compose": 0.2,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      }
+    },
+    {
+      "file": "sheet-world-split-pc-nos.png",
+      "page": "world-split.html",
+      "viewport": "pc",
+      "shot": "nos",
+      "exact": 39.5,
+      "near": 98.4,
+      "hot": 0.8,
+      "raf2d": 16.2,
+      "rafgl": 14.1,
+      "fps2d": 62,
+      "fpsgl": 71,
+      "compose": 0.3,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      }
+    },
+    {
+      "file": "sheet-world-split-pc-air.png",
+      "page": "world-split.html",
+      "viewport": "pc",
+      "shot": "air",
+      "exact": 93.6,
+      "near": 99.4,
+      "hot": 0.4,
+      "raf2d": 16.7,
+      "rafgl": 15.5,
+      "fps2d": 60,
+      "fpsgl": 65,
+      "compose": 0.2,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      }
+    }
+  ]
+}

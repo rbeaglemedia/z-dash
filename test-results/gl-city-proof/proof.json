@@ -1,0 +1,1840 @@
+{
+  "stamp": "2026-10-24T09:49:57.687Z",
+  "note": "SwiftShader, car draw stubbed, not a Galaxy or iPad FPS",
+  "results": [
+    {
+      "page": "world.html",
+      "viewport": "phone",
+      "shot": "face",
+      "mode": "2d",
+      "file": "world-phone-face-2d.png",
+      "raf": 15.8,
+      "bldg": 0.5,
+      "fps": 63,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.1590454007284858,
+        "v": 0.16431876414907606,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "phone",
+      "shot": "nos",
+      "mode": "2d",
+      "file": "world-phone-nos-2d.png",
+      "raf": 15.3,
+      "bldg": 0.3,
+      "fps": 65,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 0.5797730353215422,
+        "v": 0.3392453562219096,
+        "purpose": "NOS",
+        "id": 19
+      },
+      "pose": {
+        "id": 19,
+        "purpose": "NOS",
+        "h": 6,
+        "kind": "station",
+        "x": -914,
+        "y": 0,
+        "z": -80,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.16,
+        "d": 18,
+        "az": 0
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "phone",
+      "shot": "air",
+      "mode": "2d",
+      "file": "world-phone-air-2d.png",
+      "raf": 16.6,
+      "bldg": 0.1,
+      "fps": 60,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": -0.12461422446020655,
+        "v": -0.8797886514002033,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 0,
+        "purpose": "air",
+        "h": 0,
+        "kind": "air",
+        "x": -100,
+        "y": 0,
+        "z": 529.0666666666667,
+        "yaw": 0.45,
+        "pitch": 0,
+        "ground": false,
+        "el": 1.05,
+        "d": 70,
+        "az": 0.35
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "phone",
+      "shot": "face",
+      "mode": "gl",
+      "file": "world-phone-face-gl.png",
+      "raf": 19.8,
+      "bldg": 0.4,
+      "fps": 51,
+      "compose": 0.2,
+      "blit": 0,
+      "buildings": 8,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.1590454007284858,
+        "v": 0.16431876414907606,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "phone",
+      "shot": "nos",
+      "mode": "gl",
+      "file": "world-phone-nos-gl.png",
+      "raf": 16.4,
+      "bldg": 0.4,
+      "fps": 61,
+      "compose": 0.1,
+      "blit": 0,
+      "buildings": 16,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 0.5797730353215422,
+        "v": 0.3392453562219096,
+        "purpose": "NOS",
+        "id": 19
+      },
+      "pose": {
+        "id": 19,
+        "purpose": "NOS",
+        "h": 6,
+        "kind": "station",
+        "x": -914,
+        "y": 0,
+        "z": -80,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.16,
+        "d": 18,
+        "az": 0
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "phone",
+      "shot": "air",
+      "mode": "gl",
+      "file": "world-phone-air-gl.png",
+      "raf": 16.6,
+      "bldg": 0.2,
+      "fps": 60,
+      "compose": 0.2,
+      "blit": 0,
+      "buildings": 13,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": -0.12461422446020655,
+        "v": -0.8797886514002033,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 0,
+        "purpose": "air",
+        "h": 0,
+        "kind": "air",
+        "x": -100,
+        "y": 0,
+        "z": 529.0666666666667,
+        "yaw": 0.45,
+        "pitch": 0,
+        "ground": false,
+        "el": 1.05,
+        "d": 70,
+        "az": 0.35
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "phone",
+      "shot": "face",
+      "mode": "glow",
+      "file": "world-phone-face-glow.png",
+      "raf": 19.1,
+      "bldg": 0.4,
+      "fps": 52,
+      "compose": 0.2,
+      "blit": 0,
+      "buildings": 8,
+      "glow": true,
+      "ready": true,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.1590454007284858,
+        "v": 0.16431876414907606,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "ipad",
+      "shot": "face",
+      "mode": "2d",
+      "file": "world-ipad-face-2d.png",
+      "raf": 16.8,
+      "bldg": 0.4,
+      "fps": 60,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.5696813811823889,
+        "v": 0.16431876414907606,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "ipad",
+      "shot": "nos",
+      "mode": "2d",
+      "file": "world-ipad-nos-2d.png",
+      "raf": 15.6,
+      "bldg": 0.3,
+      "fps": 64,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 0.6294777727141956,
+        "v": 0.33924535622190954,
+        "purpose": "NOS",
+        "id": 19
+      },
+      "pose": {
+        "id": 19,
+        "purpose": "NOS",
+        "h": 6,
+        "kind": "station",
+        "x": -914,
+        "y": 0,
+        "z": -80,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.16,
+        "d": 18,
+        "az": 0
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "ipad",
+      "shot": "air",
+      "mode": "2d",
+      "file": "world-ipad-air-2d.png",
+      "raf": 16.6,
+      "bldg": 0.2,
+      "fps": 60,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": -0.5137969335469508,
+        "v": -0.8797886514002032,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 0,
+        "purpose": "air",
+        "h": 0,
+        "kind": "air",
+        "x": -100,
+        "y": 0,
+        "z": 529.0666666666667,
+        "yaw": 0.45,
+        "pitch": 0,
+        "ground": false,
+        "el": 1.05,
+        "d": 70,
+        "az": 0.35
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "ipad",
+      "shot": "face",
+      "mode": "gl",
+      "file": "world-ipad-face-gl.png",
+      "raf": 16.2,
+      "bldg": 0.5,
+      "fps": 62,
+      "compose": 0.1,
+      "blit": 0,
+      "buildings": 6,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.5696813811823889,
+        "v": 0.16431876414907606,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "ipad",
+      "shot": "nos",
+      "mode": "gl",
+      "file": "world-ipad-nos-gl.png",
+      "raf": 16.5,
+      "bldg": 0.4,
+      "fps": 61,
+      "compose": 0.3,
+      "blit": 0,
+      "buildings": 14,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 0.6294777727141956,
+        "v": 0.33924535622190954,
+        "purpose": "NOS",
+        "id": 19
+      },
+      "pose": {
+        "id": 19,
+        "purpose": "NOS",
+        "h": 6,
+        "kind": "station",
+        "x": -914,
+        "y": 0,
+        "z": -80,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.16,
+        "d": 18,
+        "az": 0
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "ipad",
+      "shot": "air",
+      "mode": "gl",
+      "file": "world-ipad-air-gl.png",
+      "raf": 16.7,
+      "bldg": 0.1,
+      "fps": 60,
+      "compose": 0.1,
+      "blit": 0,
+      "buildings": 12,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": -0.5137969335469508,
+        "v": -0.8797886514002032,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 0,
+        "purpose": "air",
+        "h": 0,
+        "kind": "air",
+        "x": -100,
+        "y": 0,
+        "z": 529.0666666666667,
+        "yaw": 0.45,
+        "pitch": 0,
+        "ground": false,
+        "el": 1.05,
+        "d": 70,
+        "az": 0.35
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "ipad",
+      "shot": "face",
+      "mode": "glow",
+      "file": "world-ipad-face-glow.png",
+      "raf": 13.9,
+      "bldg": 0.4,
+      "fps": 72,
+      "compose": 0.2,
+      "blit": 0,
+      "buildings": 6,
+      "glow": true,
+      "ready": true,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.5696813811823889,
+        "v": 0.16431876414907606,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "pc",
+      "shot": "face",
+      "mode": "2d",
+      "file": "world-pc-face-2d.png",
+      "raf": 15.2,
+      "bldg": 0.7,
+      "fps": 66,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.3022610358867914,
+        "v": 0.16431876414907604,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "pc",
+      "shot": "nos",
+      "mode": "2d",
+      "file": "world-pc-nos-2d.png",
+      "raf": 14,
+      "bldg": 0.3,
+      "fps": 71,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 0.5971083295356466,
+        "v": 0.3392453562219096,
+        "purpose": "NOS",
+        "id": 19
+      },
+      "pose": {
+        "id": 19,
+        "purpose": "NOS",
+        "h": 6,
+        "kind": "station",
+        "x": -914,
+        "y": 0,
+        "z": -80,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.16,
+        "d": 18,
+        "az": 0
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "pc",
+      "shot": "air",
+      "mode": "2d",
+      "file": "world-pc-air-2d.png",
+      "raf": 16.7,
+      "bldg": 0,
+      "fps": 60,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": -0.26034770016021297,
+        "v": -0.879788651400203,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 0,
+        "purpose": "air",
+        "h": 0,
+        "kind": "air",
+        "x": -100,
+        "y": 0,
+        "z": 529.0666666666667,
+        "yaw": 0.45,
+        "pitch": 0,
+        "ground": false,
+        "el": 1.05,
+        "d": 70,
+        "az": 0.35
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "pc",
+      "shot": "face",
+      "mode": "gl",
+      "file": "world-pc-face-gl.png",
+      "raf": 16.8,
+      "bldg": 0.4,
+      "fps": 60,
+      "compose": 0.1,
+      "blit": 0,
+      "buildings": 6,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.3022610358867914,
+        "v": 0.16431876414907604,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "pc",
+      "shot": "nos",
+      "mode": "gl",
+      "file": "world-pc-nos-gl.png",
+      "raf": 14.8,
+      "bldg": 0.3,
+      "fps": 68,
+      "compose": 0.3,
+      "blit": 0,
+      "buildings": 16,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 0.5971083295356466,
+        "v": 0.3392453562219096,
+        "purpose": "NOS",
+        "id": 19
+      },
+      "pose": {
+        "id": 19,
+        "purpose": "NOS",
+        "h": 6,
+        "kind": "station",
+        "x": -914,
+        "y": 0,
+        "z": -80,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.16,
+        "d": 18,
+        "az": 0
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "pc",
+      "shot": "air",
+      "mode": "gl",
+      "file": "world-pc-air-gl.png",
+      "raf": 16.7,
+      "bldg": 0.2,
+      "fps": 60,
+      "compose": 0.2,
+      "blit": 0,
+      "buildings": 13,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": -0.26034770016021297,
+        "v": -0.879788651400203,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 0,
+        "purpose": "air",
+        "h": 0,
+        "kind": "air",
+        "x": -100,
+        "y": 0,
+        "z": 529.0666666666667,
+        "yaw": 0.45,
+        "pitch": 0,
+        "ground": false,
+        "el": 1.05,
+        "d": 70,
+        "az": 0.35
+      }
+    },
+    {
+      "page": "world.html",
+      "viewport": "pc",
+      "shot": "face",
+      "mode": "glow",
+      "file": "world-pc-face-glow.png",
+      "raf": 14.2,
+      "bldg": 0.4,
+      "fps": 70,
+      "compose": 0.1,
+      "blit": 0,
+      "buildings": 6,
+      "glow": true,
+      "ready": true,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.3022610358867914,
+        "v": 0.16431876414907604,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "phone",
+      "shot": "face",
+      "mode": "2d",
+      "file": "world-split-phone-face-2d.png",
+      "raf": 16.1,
+      "bldg": 0.5,
+      "fps": 62,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.1590454007284858,
+        "v": 0.16431876414907606,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "phone",
+      "shot": "nos",
+      "mode": "2d",
+      "file": "world-split-phone-nos-2d.png",
+      "raf": 14.9,
+      "bldg": 0.4,
+      "fps": 67,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 0.5797730353215422,
+        "v": 0.3392453562219096,
+        "purpose": "NOS",
+        "id": 19
+      },
+      "pose": {
+        "id": 19,
+        "purpose": "NOS",
+        "h": 6,
+        "kind": "station",
+        "x": -914,
+        "y": 0,
+        "z": -80,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.16,
+        "d": 18,
+        "az": 0
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "phone",
+      "shot": "air",
+      "mode": "2d",
+      "file": "world-split-phone-air-2d.png",
+      "raf": 16,
+      "bldg": 0.2,
+      "fps": 63,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": -0.12461422446020655,
+        "v": -0.8797886514002033,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 0,
+        "purpose": "air",
+        "h": 0,
+        "kind": "air",
+        "x": -100,
+        "y": 0,
+        "z": 529.0666666666667,
+        "yaw": 0.45,
+        "pitch": 0,
+        "ground": false,
+        "el": 1.05,
+        "d": 70,
+        "az": 0.35
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "phone",
+      "shot": "face",
+      "mode": "gl",
+      "file": "world-split-phone-face-gl.png",
+      "raf": 19.9,
+      "bldg": 0.5,
+      "fps": 50,
+      "compose": 0.2,
+      "blit": 0,
+      "buildings": 8,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.1590454007284858,
+        "v": 0.16431876414907606,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "phone",
+      "shot": "nos",
+      "mode": "gl",
+      "file": "world-split-phone-nos-gl.png",
+      "raf": 16.4,
+      "bldg": 0.4,
+      "fps": 61,
+      "compose": 0.2,
+      "blit": 0,
+      "buildings": 16,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 0.5797730353215422,
+        "v": 0.3392453562219096,
+        "purpose": "NOS",
+        "id": 19
+      },
+      "pose": {
+        "id": 19,
+        "purpose": "NOS",
+        "h": 6,
+        "kind": "station",
+        "x": -914,
+        "y": 0,
+        "z": -80,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.16,
+        "d": 18,
+        "az": 0
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "phone",
+      "shot": "air",
+      "mode": "gl",
+      "file": "world-split-phone-air-gl.png",
+      "raf": 16.7,
+      "bldg": 0.1,
+      "fps": 60,
+      "compose": 0.1,
+      "blit": 0,
+      "buildings": 13,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1688,
+        "h": 780,
+        "W": 844,
+        "H": 390,
+        "DPR": 2
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": -0.12461422446020655,
+        "v": -0.8797886514002033,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 0,
+        "purpose": "air",
+        "h": 0,
+        "kind": "air",
+        "x": -100,
+        "y": 0,
+        "z": 529.0666666666667,
+        "yaw": 0.45,
+        "pitch": 0,
+        "ground": false,
+        "el": 1.05,
+        "d": 70,
+        "az": 0.35
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "ipad",
+      "shot": "face",
+      "mode": "2d",
+      "file": "world-split-ipad-face-2d.png",
+      "raf": 15.4,
+      "bldg": 0.3,
+      "fps": 65,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.5696813811823889,
+        "v": 0.16431876414907606,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "ipad",
+      "shot": "nos",
+      "mode": "2d",
+      "file": "world-split-ipad-nos-2d.png",
+      "raf": 14.5,
+      "bldg": 0.2,
+      "fps": 69,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 0.6294777727141956,
+        "v": 0.33924535622190954,
+        "purpose": "NOS",
+        "id": 19
+      },
+      "pose": {
+        "id": 19,
+        "purpose": "NOS",
+        "h": 6,
+        "kind": "station",
+        "x": -914,
+        "y": 0,
+        "z": -80,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.16,
+        "d": 18,
+        "az": 0
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "ipad",
+      "shot": "air",
+      "mode": "2d",
+      "file": "world-split-ipad-air-2d.png",
+      "raf": 16.7,
+      "bldg": 0.1,
+      "fps": 60,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": -0.5137969335469508,
+        "v": -0.8797886514002032,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 0,
+        "purpose": "air",
+        "h": 0,
+        "kind": "air",
+        "x": -100,
+        "y": 0,
+        "z": 529.0666666666667,
+        "yaw": 0.45,
+        "pitch": 0,
+        "ground": false,
+        "el": 1.05,
+        "d": 70,
+        "az": 0.35
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "ipad",
+      "shot": "face",
+      "mode": "gl",
+      "file": "world-split-ipad-face-gl.png",
+      "raf": 13.8,
+      "bldg": 0.4,
+      "fps": 72,
+      "compose": 0.2,
+      "blit": 0,
+      "buildings": 6,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.5696813811823889,
+        "v": 0.16431876414907606,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "ipad",
+      "shot": "nos",
+      "mode": "gl",
+      "file": "world-split-ipad-nos-gl.png",
+      "raf": 14.5,
+      "bldg": 0.3,
+      "fps": 69,
+      "compose": 0.3,
+      "blit": 0,
+      "buildings": 14,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 0.6294777727141956,
+        "v": 0.33924535622190954,
+        "purpose": "NOS",
+        "id": 19
+      },
+      "pose": {
+        "id": 19,
+        "purpose": "NOS",
+        "h": 6,
+        "kind": "station",
+        "x": -914,
+        "y": 0,
+        "z": -80,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.16,
+        "d": 18,
+        "az": 0
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "ipad",
+      "shot": "air",
+      "mode": "gl",
+      "file": "world-split-ipad-air-gl.png",
+      "raf": 16.6,
+      "bldg": 0.1,
+      "fps": 60,
+      "compose": 0.2,
+      "blit": 0,
+      "buildings": 12,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1024,
+        "h": 768,
+        "W": 1024,
+        "H": 768,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": -0.5137969335469508,
+        "v": -0.8797886514002032,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 0,
+        "purpose": "air",
+        "h": 0,
+        "kind": "air",
+        "x": -100,
+        "y": 0,
+        "z": 529.0666666666667,
+        "yaw": 0.45,
+        "pitch": 0,
+        "ground": false,
+        "el": 1.05,
+        "d": 70,
+        "az": 0.35
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "pc",
+      "shot": "face",
+      "mode": "2d",
+      "file": "world-split-pc-face-2d.png",
+      "raf": 14.1,
+      "bldg": 0.4,
+      "fps": 71,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.3022610358867914,
+        "v": 0.16431876414907604,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "pc",
+      "shot": "nos",
+      "mode": "2d",
+      "file": "world-split-pc-nos-2d.png",
+      "raf": 16.2,
+      "bldg": 0.4,
+      "fps": 62,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 0.5971083295356466,
+        "v": 0.3392453562219096,
+        "purpose": "NOS",
+        "id": 19
+      },
+      "pose": {
+        "id": 19,
+        "purpose": "NOS",
+        "h": 6,
+        "kind": "station",
+        "x": -914,
+        "y": 0,
+        "z": -80,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.16,
+        "d": 18,
+        "az": 0
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "pc",
+      "shot": "air",
+      "mode": "2d",
+      "file": "world-split-pc-air-2d.png",
+      "raf": 16.7,
+      "bldg": 0.1,
+      "fps": 60,
+      "compose": 0,
+      "blit": 0,
+      "buildings": 0,
+      "glow": false,
+      "ready": false,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": -0.26034770016021297,
+        "v": -0.879788651400203,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 0,
+        "purpose": "air",
+        "h": 0,
+        "kind": "air",
+        "x": -100,
+        "y": 0,
+        "z": 529.0666666666667,
+        "yaw": 0.45,
+        "pitch": 0,
+        "ground": false,
+        "el": 1.05,
+        "d": 70,
+        "az": 0.35
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "pc",
+      "shot": "face",
+      "mode": "gl",
+      "file": "world-split-pc-face-gl.png",
+      "raf": 15,
+      "bldg": 0.5,
+      "fps": 67,
+      "compose": 0.2,
+      "blit": 0,
+      "buildings": 6,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 1.3022610358867914,
+        "v": 0.16431876414907604,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 1,
+        "purpose": "PETS",
+        "h": 13,
+        "kind": "shop",
+        "x": -206,
+        "y": 0,
+        "z": -640,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.14,
+        "d": 22,
+        "az": 0
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "pc",
+      "shot": "nos",
+      "mode": "gl",
+      "file": "world-split-pc-nos-gl.png",
+      "raf": 14.1,
+      "bldg": 0.3,
+      "fps": 71,
+      "compose": 0.3,
+      "blit": 0,
+      "buildings": 16,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": 0.5971083295356466,
+        "v": 0.3392453562219096,
+        "purpose": "NOS",
+        "id": 19
+      },
+      "pose": {
+        "id": 19,
+        "purpose": "NOS",
+        "h": 6,
+        "kind": "station",
+        "x": -914,
+        "y": 0,
+        "z": -80,
+        "yaw": -1.5707963267948966,
+        "pitch": 0,
+        "ground": true,
+        "el": 0.16,
+        "d": 18,
+        "az": 0
+      }
+    },
+    {
+      "page": "world-split.html",
+      "viewport": "pc",
+      "shot": "air",
+      "mode": "gl",
+      "file": "world-split-pc-air-gl.png",
+      "raf": 15.5,
+      "bldg": 0.2,
+      "fps": 65,
+      "compose": 0.2,
+      "blit": 0,
+      "buildings": 13,
+      "glow": false,
+      "ready": true,
+      "canvas": {
+        "w": 1280,
+        "h": 720,
+        "W": 1280,
+        "H": 720,
+        "DPR": 1
+      },
+      "scripts": [
+        "http://127.0.0.1:8791/world/nos-station.js?v=32",
+        "http://127.0.0.1:8791/world/gl-city.js?v=32"
+      ],
+      "anchor": {
+        "u": -0.26034770016021297,
+        "v": -0.879788651400203,
+        "purpose": "PETS",
+        "id": 1
+      },
+      "pose": {
+        "id": 0,
+        "purpose": "air",
+        "h": 0,
+        "kind": "air",
+        "x": -100,
+        "y": 0,
+        "z": 529.0666666666667,
+        "yaw": 0.45,
+        "pitch": 0,
+        "ground": false,
+        "el": 1.05,
+        "d": 70,
+        "az": 0.35
+      }
+    }
+  ],
+  "stderrTail": "ware WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content.\n[16094:16094:1024/094943.585180:ERROR:gpu/command_buffer/service/gles2_cmd_decoder_passthrough.cc:1269] []Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content.\n[16094:16094:1024/094948.232154:ERROR:gpu/command_buffer/service/gles2_cmd_decoder_passthrough.cc:1269] []Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content.\n[16094:16094:1024/094950.789877:ERROR:gpu/command_buffer/service/gles2_cmd_decoder_passthrough.cc:1269] []Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content.\n[16094:16094:1024/094950.811668:ERROR:gpu/command_buffer/service/gles2_cmd_decoder_passthrough.cc:1269] []Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content.\n[16094:16094:1024/094955.090955:ERROR:gpu/command_buffer/service/gles2_cmd_decoder_passthrough.cc:1269] []Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content.\n"
+}
