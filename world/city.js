@@ -328,7 +328,7 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
     for(const b of BL){if(!b||b.purpose!=='NOS'||!b.nosStation)continue;const q=b.boxes&&b.boxes[0];
       nos.push({district:b.district||'',station:b.nosStation.kind,x0:q?q.x0:b.x0,x1:q?q.x1:b.x1,z0:q?q.z0:b.z0,z1:q?q.z1:b.z1,pumps:(b.nosStation.pumps||[]).map(p=>({x:p.x,z:p.z,nx:p.nx||0,nz:p.nz||0}))});}
     const spawns=ROADS.spawns.map(s=>({x:s.x,z:s.z,yaw:s.yaw,edge:s.edge,lane:s.lane}));
-    return {v:1,id:LAY?LAY.id:'',places:placesOut.map(p=>Object.assign({},p)),roads:ROAD_SEGS.map(r=>Object.assign({},r)),nos,spawns};
+    return JSON.parse(JSON.stringify({v:1,id:LAY?LAY.id:'',pages:['world.html','world-split.html'],bounds:LAY?LAY.bounds:null,anchors:LAY?LAY.anchors:null,weather:LAY?LAY.weather:[],districts:DISTRICTS,places:placesOut,roads:ROAD_SEGS,river:LAY&&LAY.anchors?LAY.anchors.river:null,bridges:LAY&&LAY.anchors?LAY.anchors.bridges:[],trailerPad:LAY?LAY.trailerPad:null,nos,spawns}));
   }
   const editor=editorDoc();
   const LAYOUT=LAY?{id:LAY.id,bounds:LAY.bounds,anchors:LAY.anchors,weather:LAY.weather,districts:DISTRICTS,places:placesOut,roads:ROAD_SEGS,river:LAY.anchors.river,bridges:LAY.anchors.bridges,highway:LAY.anchors.highway,tunnel:LAY.anchors.tunnel,runway:LAY.anchors.runway,track:LAY.anchors.track,field:LAY.anchors.field,trailerPad:LAY.trailerPad,faces:NET.faces,minimap:{bounds:LAY.bounds,roads:ROAD_SEGS,river:LAY.anchors.river,bridges:LAY.anchors.bridges,districts:DISTRICTS,places:placesOut},editor}:null;

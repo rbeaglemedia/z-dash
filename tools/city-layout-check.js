@@ -46,6 +46,11 @@ expect(ed.nos && ed.nos.length >= 5 && ed.nos.every(n => n.pumps && n.pumps.leng
 expect(ed.spawns && ed.spawns.length > 40 && ed.spawns.every(s => Number.isFinite(s.x) && Number.isFinite(s.z)), 'editor spawns');
 const again = C.editorDoc();
 expect(again.nos.length === ed.nos.length && again.spawns.length === ed.spawns.length, 'editorDoc copy');
+const raw = JSON.stringify(ed);
+const copy = JSON.parse(raw);
+expect(raw.indexOf('function') < 0 && copy.bounds && copy.bounds.x0 === -1600 && copy.districts.length === 8, 'editor JSON copy');
+expect(copy.pages && copy.pages[0] === 'world.html' && copy.pages[1] === 'world-split.html', 'editor names both kid pages');
+expect(copy.anchors && copy.anchors.river.z0 === 1780 && copy.trailerPad && copy.trailerPad.x0 === -280, 'editor anchors');
 expect(typeof C.districts === 'function' && C.districts().length === M.districts.length, 'districts()');
 expect(typeof C.nodes === 'function' && C.nodes().length > 10, 'nodes()');
 expect(typeof C.mapStamp === 'function' && C.mapStamp(), 'mapStamp');

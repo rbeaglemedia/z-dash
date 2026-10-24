@@ -2,6 +2,12 @@
 // Option 1, The Boulevards. Data only: no drawing, no physics.
 // Loaded before world/city.js on world.html and world-split.html.
 //
+// Last major layout for the current Neon World (those two pages).
+// A later world starts from a copy of this file. After boot,
+// CITY.editorDoc() is a JSON snapshot of the same map: places, roads,
+// districts, anchors, NOS pumps, and lane spawns. Builders, planner
+// objects, and new building designs do not land in these two pages.
+//
 // Other agents should read window.CITY_LAYOUT (this file) and, after the
 // city boots, window.CITY.LAYOUT (the same records plus the curb spurs the
 // game actually drives). Do not scrape shop() calls.
@@ -23,10 +29,11 @@
 //   After boot, CITY.LAYOUT and CITY.LAYOUT.minimap repeat roads (the
 //   driven centerlines, including curb spurs), river, bridges, districts,
 //   and every place with position and type. The minimap bakes from that.
-//   CITY.LAYOUT.editor is the one document a future City Editor reads:
-//   places (footprints), roads (centerlines), nos (fitted stations and
-//   pump spots), spawns (lane points traffic uses). CITY.editorDoc()
-//   returns a fresh copy. Writing it back is the editor's job.
+//   CITY.LAYOUT.editor is the one document a future City Editor, or a
+//   new world, reads. CITY.editorDoc() returns a fresh JSON copy:
+//   places (footprints), roads (centerlines), districts, anchors,
+//   nos (fitted stations and pump spots), spawns (lane points traffic
+//   uses). Writing it back is that later world's job.
 //   buildNetwork()  returns {roads, faces}
 //                 roads: centerlines with buildings cut out and a curb spur
 //                 added where a door was more than 16 m from a lane.
