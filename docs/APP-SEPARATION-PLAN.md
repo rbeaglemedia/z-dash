@@ -13,6 +13,7 @@ Today both apps are one website, and each big page still carries the other app i
 - One service worker and two home-screen manifests both claim the whole site. An update for one app can refresh the cache the other app uses.
 - Saves already sit in one place on the phone, because both pages are the same website (`z.beagle.games`). Her garage, dances, house, and unlocks are keys in that store. Nothing in this plan deletes those keys.
 - The 3D 370Z is one car, pasted in more than one place. Neon World loads the shared file. Your dash page, her menu, and Neon Flying each carry their own paste of those same bytes. Changing the shared file today leaves the pasted cars as they are. Every paste stays until you say otherwise. The check is in the section "The 370Z model" below.
+- Her gear button opens your settings screen. The same panel is pasted into both pages, and Passenger Mode hides the rows from MUSIC downward. Her name, the keep-awake choice, and low detail live in the same phone store as your dash. The section "Settings" below splits the two screens and copies her values into a small shared record before anything moves. Every old key stays.
 
 Step 1 is already underway on the FPS agent (`bc-da7101de`). This plan does not rebuild it. That step makes the Kid App stop loading the adult code, turns the old dashboard into a tile, and leaves Bluetooth, Spotify, and the car link idle until that tile is opened. The same agent is also stopping the old dashboard from keeping a frozen copy alive behind Neon World. When that step lands, her games no longer boot Dad's adapter stack.
 
@@ -28,13 +29,14 @@ What you would say yes to is marked **Needs your yes** on the steps below. The r
 | 2. A second copy of her saves, and a written list of which keys are hers. | A bad later step cannot be the only copy of the garage, dances, house, or unlocks. | Small | Low. Nothing is deleted. No new button unless you want one. | Only if you want a visible Backup button on her menu. The silent second copy does not need a yes. |
 | 3. Take her game out of your page, and keep adult code out of her pages. Same web addresses. | Your dash file no longer contains DAD'S SHIFTS. Her files no longer contain OBD or Spotify. | Large | Medium. Passenger Mode would leave your phone's dash page and live only in her app. | **Yes.** Your in-page Passenger Mode goes away. The Kid Z button and her iPad stay. |
 | M. One shared 370Z file, and one version stamp both apps read. Pasted copies stay until you say to remove them. | A new Z model reaches your page, her menu, Neon Flying, and Neon World together. | Small, after you say yes. | Low while each paste remains as a spare. | **Yes** before any paste is removed. **Yes** again if you would rather the two apps keep different cars on purpose. |
+| S. Separate settings screens, plus one small shared record for sound, units, and her name. | Her gear shows her rows. Your gear shows the dash. Her name, miles, and sound choice survive the split. | Small for the silent copy. Medium for the two screens. | Low while the old keys stay and both screens still read them. | **Yes** for the new gear screen (the Stillen row leaves her list). The silent copy of her name and toggles does not need a yes. |
 | 4. Two service workers and two home-screen manifests that do not cover each other. | An update to the dash cannot reload her game cache, and the other way around. | Medium | Medium. A home-screen icon may need to be opened once after the update. | **Yes**, because an icon already on a phone might need that one open. |
 | 5. Move her pages under a `/jr/` folder. Old addresses keep working as redirects. | A clean kid bundle for a later store app. Saves stay, because the website name does not change. | Medium | Medium. Bookmarks and the installed icon follow the redirect. | **Yes**, for the new address. The redirects are permanent. |
 | 6. A small real-drive note your phone writes and her game reads. | DAD'S SHIFTS and BOXES can see a finished drive even when the two pages are not open together. The Garage Z save stays the key it already is. | Small | Low. Live QR pairing still works for a drive in progress. | No, as long as the note is only minutes, shift count, and the last drive time. |
 | 7. Two installed apps (Capacitor), still one website behind them. | C.F.R., Inc. can ship Z-DASH and Z-DASH JR as two store listings. Her app has no Spotify and no OBD. | Large | Medium. The adult app needs a small Bluetooth add-on. A plain web view cannot talk to the OBDLink. | **Yes.** App names, ids, icons, and the privacy forms. |
 | 8. Sharing after the two apps no longer share a website: a file she can AirDrop, the QR link, and only later an account. | Garage and real-drive boxes survive two separate store apps. | Medium, then large if there is an account | High if the website name changes first. Her phone would look empty. | **Yes** before any new domain, and **yes** before any account on `beagle.studio`. |
 
-Benefit, in one line each: step 1 makes her games lighter now; step 2 protects her stuff; steps 3–5 make the split real on the website; step M makes a new 370Z show up in both apps; step 6 keeps DAD'S SHIFTS honest; steps 7–8 are the store.
+Benefit, in one line each: step 1 makes her games lighter now; step 2 protects her stuff; steps 3–5 make the split real on the website; step M makes a new 370Z show up in both apps; step S gives each app its own settings and keeps her name; step 6 keeps DAD'S SHIFTS honest; steps 7–8 are the store.
 
 ## What is already true
 
@@ -57,7 +59,7 @@ The adult page already knows a web view cannot open Bluetooth by itself. The OBD
 
 These are the keys a move has to carry. They live on the website origin, not in a file on disk.
 
-- `zdash.kid.v1` — garage (paint and parts), coins, ride time, the house pointer. Neon World paints the car from `eq` inside this key.
+- `zdash.kid.v1` — garage (paint and parts), coins, ride time, the house pointer, and her car name (`name`, up to 14 letters; a fresh profile starts as `ELLIE'S Z`). Neon World paints the car from `eq` inside this key. The garage name box is where she types it.
 - `zdash.house.v1` — Ellie's home.
 - `zdash.char.v1`, `zdash.pet.v1`, `zdash.crew.v1` — character, pet, crew.
 - `zdash.customdance.v1`, `zdash.petdance.v1`, `zdash.dancestage.v1` — recorded dances and the stage.
@@ -99,6 +101,7 @@ shared/                          only files both apps truly share
   version.js                     world stamp, plus a model stamp both workers read
   assets/370z-glb.js             the one 370Z mesh (checked: same bytes in every paste)
   zd-embed.js                    the credit line, and the pointer to that mesh
+  settings.js                    sound, units, and player name (three fields)
 ```
 
 Kid-only code stays under `/jr/` (or in today's `shared/` until step 5, then moves with her). That includes `ipad.js`, the car painter, tunes, crew state, unlock flags, and the traffic models. Adult code never imports those, and her pages never import `adult/`.
@@ -175,6 +178,7 @@ Rollback for each stage:
 | 2 | Delete the backup key in a one-line revert, or leave it. The real key was never moved. |
 | 3 | Revert the pull request. Passenger Mode returns inside `index.html`. Her files gain the adult blocks back only if that revert is what you want. Preview this revert on `/test/` before it hits `main`. |
 | M | Revert the pull request that pointed a page at the shared file. The paste in that page is still there, so the car she had remains. After a later yes removes a paste, put that paste back from git and preview it on `/test/` first. |
+| S | Revert the new gear screen. Her gear opens today's panel again. The shared record and her old keys are both still on the phone, so her name and toggles remain. Leave the shared record in place. |
 | 4 | Put the single `sw.js` back. Cache names change with the version stamp, so the old worker installs and the pages reload. Do not delete her backup key. |
 | 5 | Point the redirects back at the root copies, which stay in the repo until you say the folder move is settled. |
 | 6 | Stop writing `zdash.realdrive.v1`. Her game falls back to the live QR link, which is the path she has now. |
@@ -226,6 +230,61 @@ Store apps, at step 7: the build copies that one file into each app package. Her
 
 Nothing in step M deletes a paste, the `/test` copies, the wireframe, or a traffic file. Removing a paste, after the shared file is what that page actually shows, is its own pull request and its own yes. Rollback before that yes is reverting the pull request that added the script tag; the paste is still in the file. Rollback after a paste has been removed is putting that paste back from git, previewed on `/test/` first.
 
+## Settings
+
+Her gear is your settings screen. Both big pages contain the same panel, pasted in, 6,861 bytes, SHA-256 beginning `6f581c9f0b57c3dd`. It is in `index.html`, `jr.html`, and the hidden preview `test/jr.html`. It is not a shared file. Neon World, Neon Paint, and the flying pages do not have this panel. On her menu the gear button (`#kGear`, titled "Settings (turn Passenger Mode off here)") opens it. On your dash the gear (`#btnSettings`) opens the same panel.
+
+Passenger Mode adds a class that hides every block from the MUSIC heading down. The code that does that is in both pages. What she still sees above that cut:
+
+- Passenger Mode, JOIN DAD'S CAR, SHARE TO PASSENGER, SET PARENT PASSCODE, REGISTER AS DRIVER DEVICE.
+- PERFORMANCE: LOW DETAIL, KEEP SCREEN ON, FPS COUNTER, and STILLEN BUMPER (BETA).
+
+What that cut hides, while leaving the markup in her file: Spotify and music sync, the OBD adapter, drive logs, shift light, health-watch limits, the Rotrex reminder, fuel tank size, and the sim replay buttons.
+
+### What is saved today
+
+There is no units switch. Speed, distance, and the tank are miles and gallons, and the health limits are °F. There is no kid sound on/off key. `world/sound.js` is a one-line stub that says sound is future. Game effects call `ZD.Music.sfx` (a siren is one caller). The saved sound values are the adult music keys.
+
+| Saved value | Key | Who the gear shows it to |
+| --- | --- | --- |
+| Her car name, up to 14 letters | `name` inside `zdash.kid.v1` (a reader also checks `carName`) | The garage name box, not the gear panel |
+| Low detail | `zdash.lowdetail` | Both, from the shared panel |
+| Keep screen on | `zdash.wake` (missing key means on) | Both, from the shared panel |
+| FPS on the dash gear | `zdash.fps` | The gear button writes this key |
+| FPS inside her game | `zdash.kidFps` | Her game reads this key. It is a second flag, so the two counters can disagree |
+| WANTED steer | `zdash.wantedSteer` | Her game |
+| Stillen bumper | `zdash.drvStillen` | Her gear too, because the button sits above the MUSIC cut |
+| Music volume, mute, source, beat sync | `zdash.music.vol` (default 70), `zdash.music.muted`, `zdash.music.src`, `zdash.music.sync` | Your rows. Hidden on her gear. Same phone store |
+| Shift light, health limits, Rotrex miles | `zdash.extras` | Your rows |
+| Tank size | `settings` inside `zdash.fuel` | Your rows |
+| Dash widgets | `zdash.layout` | Your dash |
+| Parent passcode and which phone is the driver | `zdash.roles.v1` | The buttons at the top of the panel |
+| Passenger Mode flag | `zdash.kidOn` | A session flag. A cold open of your dash does not turn Passenger Mode back on from it |
+
+Step 2's spare copy includes her name inside `zdash.kid.v1` and these phone toggles: `zdash.lowdetail`, `zdash.wake`, `zdash.fps`, `zdash.kidFps`, `zdash.wantedSteer`. The spare is a copy. The real keys stay.
+
+### Two screens, and three shared fields
+
+`shared/settings.js` is the only shared settings code. It reads and writes one record, `zdash.settings.v1`:
+
+- `name` — her player name. Copied from `zdash.kid.v1.name`. If that is empty and `carName` is set, copy `carName`. A blank shared record does not replace a name she already has, including a stored `ELLIE'S Z`.
+- `units` — `miles` or `km`. Default `miles`, which is what every screen shows today. Adult limits stored as °F and gallons stay stored that way. A later km choice changes the label on screen. It does not rewrite `zdash.extras` or the tank size.
+- `sound` — `on` or `off`, for game sounds. Default `on`, so her games keep the sounds they make now. Spotify volume and mute stay on your dash (`zdash.music.*`). Her app does not read those keys. `world/sound.js` will read this switch when sound is built. Until then the switch is stored and her games behave as they do now.
+
+Each app then has its own screen and its own other values.
+
+Her screen, opened by her gear: her name, sound, units, low detail, keep screen on, her FPS counter, WANTED steer, and a parent row for the passcode and JOIN DAD'S CAR. The passcode stays in `zdash.roles.v1` on the phone. It is not one of the three shared fields, and step 8's file does not carry it. Stillen, Spotify, OBD, logs, shift light, health, fuel, and sim are absent from her screen. The Stillen key stays on your side.
+
+Your screen, opened by your gear: the driver rows you have now, including Stillen. It can show her name. It does not have its own box that writes her name, so a dash default cannot replace it. Editing the name happens on her gear and in the garage name box. Both write `zdash.settings.v1.name` and `zdash.kid.v1.name` until you say the profile copy can stop being the second writer. If those two ever disagree, the name inside `zdash.kid.v1` wins, and the shared record is updated to match.
+
+Her other toggles are seeded once into `zdash.jr.settings.v1`, from the keys above, so the split starts from the choices already on the phone. Low detail and keep-awake are copied as they are today (keep-awake counts as on when `zdash.wake` is missing). Her FPS field is `zdash.kidFps` when that key is set, and otherwise one copy of `zdash.fps`, so the gear's last FPS choice is kept. After that, her screen writes her record. It does not keep writing `zdash.fps`, so her counter and your dash counter can differ. Your dash keeps writing the keys it writes today.
+
+The record has a version number. A later field is added beside the ones already there. A save reads the record, changes one field, and writes it back, so an older page does not drop a field it does not know.
+
+On one website, `/` and `/jr/` still see the same store, so the shared record is just a key. On two store apps, step 8's file and the QR link carry `zdash.settings.v1` next to the garage blob. Sound, units, and her name arrive with the garage. Each app's private toggles stay in that app.
+
+Nothing in step S deletes a key, the pasted panel, or the `/test` copy of it. Removing the pasted panel from a page, after that page's own screen is what the gear opens, is its own pull request and its own yes. Until then an old page still reads the old keys, and a new page reads the new record and falls back to the old key when the new record is missing. Rollback is reverting the new gear. Both copies of her values are still on the phone.
+
 ## How this sits next to the other work
 
 - FPS agent `bc-da7101de` (pull request 56, and the dashboard parking still on that branch): owns step 1. This plan does not edit `jr.html` in parallel with them.
@@ -235,4 +294,4 @@ Nothing in step M deletes a paste, the `/test` copies, the wireframe, or a traff
 
 ## What this pull request does not do
 
-No file moves, no service-worker edits, no DNS, no store listings, no save migration, and no model file deleted or merged. The 370Z check is a hash of the copies that are already in the repo. Build for a step starts when you write "plan approved, build it" and, on the steps marked above, "yes".
+No file moves, no service-worker edits, no DNS, no store listings, no save migration, and no model or settings file deleted or merged. The 370Z check and the settings-panel check are hashes of copies already in the repo. Build for a step starts when you write "plan approved, build it" and, on the steps marked above, "yes".
