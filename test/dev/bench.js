@@ -30,8 +30,13 @@
     };
   }
   var elapsed = 0, seconds = 60, onScore = null, running = false;
+  function player() {
+    if (g.P && typeof g.P.z === 'number') return g.P;
+    if (g.FLY && g.FLY.P) return g.FLY.P;
+    return null;
+  }
   function place(p) {
-    var P = g.P;
+    var P = player();
     if (!P) return;
     P.x = p.x; P.z = p.z; P.y = p.y; P.yaw = p.yaw; P.hd = p.yaw;
     P.v = p.mph / MPH; P.ground = !p.air; P.nosBurn = !!p.nos; P.nosT = p.nos ? 1 : 0;

@@ -188,7 +188,15 @@
       return g.ZD_PANELS.mountBar(votes, ctx());
     }).catch(function (e) { notify(e); });
   }
+  function bindGame() {
+    var fly = g.FLY;
+    if (!fly) return;
+    if (!g.P && fly.P) g.P = fly.P;
+    if (!g.TUNE && fly.TUNE) g.TUNE = fly.TUNE;
+    if (!g.CDRAW && fly.CDRAW) g.CDRAW = fly.CDRAW;
+  }
   function finish() {
+    bindGame();
     g.ZD_DEV = {
       ready: true,
       attachPerf: function () { try { return attachPerf(); } catch (e) { notify(e); return null; } },

@@ -36,8 +36,13 @@
       }
     }
   }
+  function cdraw() {
+    if (g.CDRAW) return g.CDRAW;
+    if (g.FLY && g.FLY.CDRAW) return g.FLY.CDRAW;
+    return null;
+  }
   function far(on) {
-    var C = g.CDRAW;
+    var C = cdraw();
     if (!C) return;
     if (on) {
       if (!C.__zdFarSaved) C.__zdFarSaved = { has: Object.prototype.hasOwnProperty.call(C, 'nofar'), value: C.nofar };
