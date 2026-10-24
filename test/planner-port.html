@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Planner port proof</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #d7e7f0; color: #14202a; font: 15px/1.35 ui-sans-serif, sans-serif; }
+  body { display: flex; flex-direction: column; min-height: 100%; }
+  #banner { margin: 0; padding: 8px 12px; background: #14202a; color: #e7f7ff; font-size: 13px; }
+  #bar { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 12px; align-items: center; }
+  #bar a, #bar button, #bar label.file {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 44px; padding: 0 12px; border-radius: 10px;
+    background: #f7f4ee; color: #14202a; border: 2px solid #14202a;
+    text-decoration: none; font: 700 13px/1 ui-sans-serif, sans-serif; cursor: pointer;
+  }
+  #loops { display: flex; flex-wrap: wrap; gap: 8px; }
+  #file { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  #stage { position: relative; flex: 1; min-height: 240px; }
+  #view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #cap, #read { margin: 0; padding: 4px 12px 8px; font-size: 13px; }
+  body.shot #bar, body.shot #banner, body.shot #cap, body.shot #read { display: none; }
+  body.shot #stage { position: fixed; inset: 0; }
+</style>
+</head>
+<body>
+<p id="banner">Stand-in proof. The private planner repo was not readable, so these shapes are not copied from it. Not a live Neon World page. Saved home and Garage Z are not touched.</p>
+<div id="bar">
+  <a href="?scene=props">Props</a>
+  <a href="?scene=house">House</a>
+  <a href="?scene=shell">Walls and roof</a>
+  <a href="?scene=remix&amp;remix=food-truck">Food truck</a>
+  <a href="?scene=remix&amp;remix=welcome-gate">Gate</a>
+  <a href="?scene=remix&amp;remix=ticket-booth">Booth</a>
+  <a href="?scene=remix&amp;remix=speaker-tower">Tower</a>
+  <a href="?scene=remix&amp;remix=snack-counter">Snack</a>
+  <a href="?scene=trailer">Trailer</a>
+  <div id="loops">
+    <button type="button" data-loop="cyan">Cyan loop</button>
+    <button type="button" data-loop="dance">Dance bars</button>
+    <button type="button" data-loop="magenta">Magenta loop</button>
+    <label class="file">Your clip<input id="file" type="file" accept="video/*"></label>
+  </div>
+  <button type="button" id="air">Detach for flight</button>
+</div>
+<div id="stage"><canvas id="view"></canvas></div>
+<p id="cap"></p>
+<p id="read"></p>
+<script type="module" src="planner-port/app.js"></script>
+</body>
+</html>

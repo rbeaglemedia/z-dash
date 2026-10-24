@@ -1,0 +1,41 @@
+{
+  "v": 1,
+  "units": "m",
+  "standIn": true,
+  "source": "Not copied from rbeaglemedia/event-space-planner. That private repo was not readable from this agent. Ids are the names Bob used. Swap the bakers for the real modules when access exists. Keep these ids.",
+  "people": { "ellieM": 1.7, "petM": 0.74 },
+  "save": {
+    "doNotWrite": ["zdash.house.v1", "zdash.kid.v1"],
+    "garageZ": "world/garagez.js still reads zdash.kid.v1 eq only. This catalog does not add a key and does not change the 370Z mesh."
+  },
+  "api": {
+    "list": "PLANNER_PROPS.list() → these entries",
+    "get": "PLANNER_PROPS.get(id) → one entry or null",
+    "parts": "PLANNER_PROPS.parts(id, params) → local boxes in the prop frame, facing +z, y up. Proof code: test/planner-port/catalog.js",
+    "remix": "PLANNER_PROPS.remix(id) → local boxes for a remix id",
+    "building": "bakeBuilding(doc) → footprint boxes {x0,x1,y0,y1,z0,z1,part,color,glow}. placeOnBox(parts, cityBox, face) maps them with the same door-face frame as NOS_STATION in PR #76. Proof code: test/planner-port/bake.js"
+  },
+  "style": {
+    "A": "Daylight. White or cream, tan floor, glass, glow 0.",
+    "B": "Same shell plus one cyan #3ee6ff strip. Interiors agent bc-80a1fc6f owns the room pick. Bob's house note is A plus that one strip."
+  },
+  "props": [
+    { "id": "screen", "slot": "tech", "base": "screen", "rooms": ["HOME", "ARCADE", "CAFE", "BUILDER", "SHOWROOM", "DANCE"], "size": [1.6, 0.9, 0.08], "anchor": "wall", "video": true, "saveKey": null, "styleA": { "color": "#1b1e26", "glow": "#3ee6ff" }, "styleB": { "color": "#1b1e26", "glow": "#3ee6ff" }, "anatomy": "Face is 0.9 m tall. On a wall, keep the bottom at or above 1.05 m so the 0.74 m pet is not inside it. Ellie at 1.7 m sees the middle." },
+    { "id": "sofa", "slot": "furniture", "base": "sofa", "rooms": ["HOME"], "size": [2.1, 0.78, 0.85], "anchor": "floor", "video": false, "saveKey": null, "heroOf": "sofa", "styleA": { "color": "#f4efe6" }, "styleB": { "color": "#f4efe6" }, "anatomy": "Seat 0.4 m, back 0.78 m. Below Ellie's shoulder. The pet walks past it, not onto the back." },
+    { "id": "table", "slot": "furniture", "base": "table", "rooms": ["HOME", "CAFE"], "size": [1.2, 0.78, 0.7], "anchor": "floor", "video": false, "saveKey": null, "styleA": { "color": "#e7d3b4" }, "styleB": { "color": "#e7d3b4" }, "anatomy": "Top at 0.75 m, just above the pet's 0.74 m head. Do not scale the top down through the pet." },
+    { "id": "tv-stand", "slot": "tech", "base": "tvStand", "rooms": ["HOME", "ARCADE"], "size": [1.15, 1.1, 0.48], "anchor": "floor", "video": true, "saveKey": null, "heroOf": "arcade", "styleA": { "color": "#f7f4ee", "glow": "#3ee6ff" }, "styleB": { "color": "#f7f4ee", "glow": "#3ee6ff" }, "anatomy": "Screen top is about 1.1 m, between the pet and Ellie's eyes." },
+    { "id": "speaker", "slot": "decor", "base": "speaker", "rooms": ["HOME", "DANCE", "ARCADE"], "size": [0.55, 0.9, 0.45], "anchor": "floor", "video": false, "saveKey": null, "styleA": { "color": "#1c1e24", "glow": "#ff4fd8" }, "styleB": { "color": "#1c1e24", "glow": "#ff4fd8" }, "anatomy": "0.9 m. Taller than the pet, shorter than Ellie." },
+    { "id": "truss-seg", "slot": "structure", "base": "trussSeg", "rooms": [], "size": [2.0, 0.41, 0.06], "anchor": "floor", "video": false, "saveKey": null, "styleA": { "color": "#d5d8de" }, "styleB": { "color": "#e6e8ee" }, "anatomy": "A segment, not a room prop. Outdoor remixes stack it. Do not place a segment through the 1.7 m body." },
+    { "id": "led-trailer", "slot": "tech", "base": "ledTrailer", "rooms": [], "size": [4.2, 2.6, 2.05], "anchor": "ground", "video": true, "saveKey": null, "styleA": { "color": "#f4f1ea", "glow": "#3ee6ff" }, "styleB": { "color": "#f4f1ea", "glow": "#3ee6ff" }, "anatomy": "Deck is about 0.7 m. Ellie can stand beside it. She does not ride in it. The screen is on the side, clear of her head." }
+  ],
+  "remixes": [
+    { "id": "food-truck", "base": "led-trailer", "where": "The Stage curb, and a parked truck on a Builder Bay lot", "video": false },
+    { "id": "stage", "base": "screen", "where": "The Stage, in front of the dance mural. Not a second building.", "video": false },
+    { "id": "mobile-billboard", "base": "led-trailer", "where": "Highway shoulders that already have billboards. Cap 6 inside 170 m.", "video": false },
+    { "id": "welcome-gate", "base": "truss-seg", "where": "City kit arches: Car Row, The Stage, Builder Bay, The Track, The Field. No interior.", "video": false },
+    { "id": "bridge", "base": "truss-seg", "where": "Idea only. Does not replace the river bridges.", "video": false },
+    { "id": "ticket-booth", "base": "tv-stand", "where": "Soccer shop interior, arcade prize counter, Builder HQ desk.", "video": false },
+    { "id": "speaker-tower", "base": "speaker", "where": "The Stage, flanking the mural. Not the sky tower.", "video": false },
+    { "id": "snack-counter", "base": "table", "where": "City kit snack stall, about 12×10×5 m. The Stage uses the cafe instead.", "video": false }
+  ]
+}
