@@ -44,8 +44,8 @@ The live building bar still shows the game door: width 1.44 m fails against 1.85
 
 ## Integration
 
-Branch check after the tools landed: PASS (exit 0). Systems touched: none. No missing dependents.
+Branch check on `7af92d2` (and again after this note): PASS (exit 0). Systems touched: none. No missing dependents. The diff against `origin/cursor/adventure-world-plan-52cf` is `tools/dev/`, `tools/viewer-check.js`, `test/tools.html`, and `test-results/character-viewer/`.
 
 `node /tmp/zd-checks/tools/integration-check.js --branch origin/cursor/character-viewer-f5bb --base origin/cursor/adventure-world-plan-52cf`
 
-Self-test PASS after reading `docs/INTEGRATION-MAP.md` from `origin/cursor/integration-check-b88c`. That doc is not on this branch and was not committed. Re-run the branch check on the final head after the report commit.
+Self-test PASS after reading `docs/INTEGRATION-MAP.md` from `origin/cursor/integration-check-b88c`. That doc is not on this branch and was not committed.
