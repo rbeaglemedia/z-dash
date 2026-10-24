@@ -31,7 +31,7 @@
 <body>
   <canvas id="view"></canvas>
   <div id="boot">Opening the courtyard…</div>
-  <div id="hint">WASD walks. Shift runs. The pug stays at your heel.</div>
+  <div id="hint">WASD walks. Shift runs.</div>
   <div id="stick" aria-label="Move"></div>
   <div id="fps" hidden></div>
   <div id="label" hidden></div>
@@ -50,7 +50,8 @@
         : (short < 500 ? 'phone' : (long >= 1280 ? 'pc' : 'ipad'));
       label.hidden = false;
       const title = kind === 'ipad' ? 'iPad' : (kind === 'pc' ? 'PC' : 'Phone');
-      label.textContent = title + ' ' + w + '×' + h + ' · Ellie and pug · pink line is her hip, gold line is the ground';
+      const pet = (q.get('pet') || 'fox').toLowerCase();
+      label.textContent = title + ' ' + w + '×' + h + ' · Ellie and ' + pet + ' · pink line is her hip, gold line is the ground';
     }
   </script>
 </body>

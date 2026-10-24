@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const BG = 0xc8f4ff;
 const INK_BG = 0xd7e6f2;
@@ -39,6 +40,7 @@ if (ANATOMY) {
 }
 
 const loader = new FBXLoader();
+const gltfLoader = new GLTFLoader();
 const clock = new THREE.Clock();
 const keys = new Set();
 const stick = { x: 0, y: 0, on: false };
@@ -123,20 +125,24 @@ function prepareModel(root) {
     const mats = Array.isArray(o.material) ? o.material : [o.material];
     for (const m of mats) {
       if (!m) continue;
-      m.skinning = true;
+      if (o.isSkinnedMesh) m.skinning = true;
       m.transparent = false;
       m.opacity = 1;
       m.alphaTest = 0;
       m.depthWrite = true;
       if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
       const name = (m.name || '').toLowerCase();
-      if (m.color) {
+      if (m.color && !m.map) {
         if (name.includes('face') || name.includes('skin')) m.color.set('#f0c2a0');
         else if (name.includes('hair')) m.color.set('#c9853a');
         else if (name.includes('shirt') || name.includes('top') || name.includes('jacket')) m.color.set('#3a7bd5');
         else if (name.includes('pant')) m.color.set('#2a3358');
         else if (name.includes('belt') || name.includes('shoe') || name.includes('boot')) m.color.set('#2a211c');
-        else if (name.includes('pug') || name.includes('body') || name.includes('fur')) m.color.set('#c48a55');
+        else if (name.includes('dog') || name.includes('fur')) {
+          m.color.set('#e0b060');
+          if (m.metalness !== undefined) { m.metalness = 0; m.roughness = 0.82; }
+        }
+        else if (name.includes('grey') || name.includes('gray')) m.color.set('#7d8494');
         else if (Math.max(m.color.r, m.color.g, m.color.b) < 0.12) m.color.multiplyScalar(8);
       }
       m.needsUpdate = true;
@@ -154,10 +160,133 @@ function clipNamed(clips, fragment) {
   }) || null;
 }
 
+function lambert(color) {
+  return new THREE.MeshLambertMaterial({ color });
+}
+
+function addPart(parent, geo, mat, x, y, z, sx, sy, sz) {
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(x, y, z);
+  if (sx) mesh.scale.set(sx, sy == null ? sx : sy, sz == null ? sx : sz);
+  mesh.castShadow = false;
+  mesh.receiveShadow = false;
+  mesh.frustumCulled = false;
+  parent.add(mesh);
+  return mesh;
+}
+
+function hideOldFace(root) {
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    for (const m of mats) {
+      if (!m) continue;
+      const name = (m.name || '').toLowerCase();
+      if (name.includes('hair') || name.includes('face')) m.visible = false;
+    }
+  });
+}
+
+// Body mesh, shirt, and pants stay. The pack's Face and Hair are one bald
+// helmet, so those two materials are hidden and a new head hangs on the Head
+// bone. Face looks along local -Z. Units are the head bone's, about 0.47 m.
+function dressHead(root) {
+  const head = findBone(root, 'Head');
+  if (!head) return;
+  hideOldFace(root);
+  const kit = new THREE.Group();
+  kit.name = 'EllieHead';
+  head.add(kit);
+
+  const skin = lambert('#f0c2a0');
+  const hair = lambert('#e0a84a');
+  const hairDark = lambert('#a56b28');
+  const white = lambert('#fbf8f4');
+  const iris = lambert('#5c4636');
+  const pupil = lambert('#1a120e');
+  const brow = lambert('#6a4322');
+  const lip = lambert('#c47874');
+
+  addPart(kit, new THREE.SphereGeometry(0.18, 20, 16), skin, 0, 0.34, -0.02, 0.92, 1.34, 1.0);
+  addPart(kit, new THREE.SphereGeometry(0.07, 10, 8), skin, 0, 0.14, -0.1, 0.85, 0.7, 0.9);
+  addPart(kit, new THREE.CylinderGeometry(0.068, 0.086, 0.12, 12), skin, 0, 0.04, 0.02);
+  addPart(kit, new THREE.SphereGeometry(0.048, 10, 8), skin, -0.175, 0.32, 0.02, 0.42, 0.78, 0.38);
+  addPart(kit, new THREE.SphereGeometry(0.048, 10, 8), skin, 0.175, 0.32, 0.02, 0.42, 0.78, 0.38);
+
+  addPart(kit, new THREE.SphereGeometry(0.2, 16, 12), hair, 0, 0.46, 0.06, 1.08, 1.02, 1.05);
+  addPart(kit, new THREE.SphereGeometry(0.14, 12, 10), hairDark, 0, 0.34, 0.14, 1.05, 1.15, 0.72);
+  addPart(kit, new THREE.SphereGeometry(0.09, 12, 8), hair, -0.03, 0.5, -0.15, 1.55, 0.32, 0.55);
+  addPart(kit, new THREE.SphereGeometry(0.042, 8, 6), hairDark, -0.155, 0.2, -0.02, 0.85, 2.05, 0.8);
+  addPart(kit, new THREE.SphereGeometry(0.036, 8, 6), hair, 0.15, 0.3, 0.02, 0.8, 1.25, 0.7);
+  addPart(kit, new THREE.BoxGeometry(0.01, 0.18, 0.12), hairDark, 0.04, 0.52, 0.04);
+
+  for (const s of [-1, 1]) {
+    addPart(kit, new THREE.SphereGeometry(0.038, 14, 12), white, s * 0.07, 0.345, -0.2);
+    addPart(kit, new THREE.SphereGeometry(0.018, 10, 8), iris, s * 0.07, 0.342, -0.232);
+    addPart(kit, new THREE.SphereGeometry(0.009, 8, 6), pupil, s * 0.07, 0.342, -0.248);
+    addPart(kit, new THREE.SphereGeometry(0.0045, 6, 4), white, s * 0.06, 0.354, -0.254);
+    const browMesh = addPart(kit, new THREE.BoxGeometry(0.068, 0.012, 0.014), brow, s * 0.072, 0.408, -0.228);
+    browMesh.rotation.z = s * -0.18;
+  }
+  addPart(kit, new THREE.SphereGeometry(0.03, 10, 8), skin, 0, 0.265, -0.225, 0.62, 0.72, 1.35);
+  const nostril = lambert('#b57870');
+  addPart(kit, new THREE.SphereGeometry(0.007, 6, 4), nostril, -0.011, 0.248, -0.262);
+  addPart(kit, new THREE.SphereGeometry(0.007, 6, 4), nostril, 0.011, 0.248, -0.262);
+  addPart(kit, new THREE.BoxGeometry(0.052, 0.01, 0.012), lip, 0, 0.168, -0.228);
+}
+
+const PET_CATALOG = {
+  fox: {
+    url: 'adventure/assets/pets/Fox.glb',
+    height: 0.4,
+    yaw: Math.PI,
+    label: 'Fox',
+    idle: 'survey',
+    walk: 'walk',
+  },
+  cat: {
+    url: 'adventure/assets/pets/Cat.glb',
+    height: 0.36,
+    yaw: Math.PI / 2,
+    label: 'Cat',
+    idle: 'idle',
+    walk: 'walk',
+  },
+  puppy: {
+    url: 'adventure/assets/pets/Puppy.glb',
+    height: 0.34,
+    yaw: Math.PI / 2,
+    label: 'Puppy',
+    idle: 'idle',
+    walk: 'walk',
+  },
+};
+const PET_NOTE = {
+  bunny: 'No free four-legged animated bunny is in this build.',
+  aussie: 'No free animated Australian Shepherd is in this build.',
+};
+
+function petChoice() {
+  const id = (params.get('pet') || 'fox').toLowerCase();
+  if (PET_CATALOG[id] || PET_NOTE[id]) return id;
+  return 'fox';
+}
+
+function actorBox(root) {
+  const box = skinnedBox(root);
+  root.updateMatrixWorld(true);
+  root.traverse((o) => {
+    if (!o.isMesh || o.isSkinnedMesh || !o.geometry) return;
+    box.union(new THREE.Box3().setFromObject(o));
+  });
+  return box;
+}
+
 async function loadActor(url, height) {
   const obj = await loader.loadAsync(url);
   prepareModel(obj);
   const box = fitHeight(obj, height);
+  dressHead(obj);
   const mixer = new THREE.AnimationMixer(obj);
   const idleClip = clipNamed(obj.animations, 'idle');
   const walkClip = clipNamed(obj.animations, 'walk');
@@ -165,6 +294,29 @@ async function loadActor(url, height) {
   const walk = walkClip ? mixer.clipAction(walkClip) : null;
   if (idle) idle.play();
   return { obj, mixer, idle, walk, clips: obj.animations.map((c) => c.name), box };
+}
+
+async function loadPet(spec) {
+  const gltf = await gltfLoader.loadAsync(spec.url);
+  const obj = gltf.scene;
+  obj.animations = gltf.animations || [];
+  // Nose ends up on local -Z, the same way Ellie faces.
+  obj.rotation.y = spec.yaw;
+  prepareModel(obj);
+  const box = fitHeight(obj, spec.height);
+  const mixer = new THREE.AnimationMixer(obj);
+  const idleClip = clipNamed(obj.animations, spec.idle);
+  const walkClip = clipNamed(obj.animations, spec.walk);
+  const idle = idleClip ? mixer.clipAction(idleClip) : null;
+  const walk = walkClip ? mixer.clipAction(walkClip) : null;
+  if (idle) {
+    idle.play();
+    mixer.setTime(Math.min(0.2, idleClip.duration * 0.15));
+    obj.updateMatrixWorld(true);
+    const posed = skinnedBox(obj);
+    obj.position.y -= posed.min.y;
+  }
+  return { obj, mixer, idle, walk, clips: obj.animations.map((c) => c.name), box, label: spec.label };
 }
 
 function setAction(actor, moving) {
@@ -270,10 +422,11 @@ function readMove() {
 }
 
 function frameSubject(root, yawBias) {
-  const box = skinnedBox(root);
+  const box = actorBox(root);
   const size = box.getSize(new THREE.Vector3());
   const c = box.getCenter(new THREE.Vector3());
-  const dist = Math.max(1.15, size.y / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2)) * 1.28);
+  const span = Math.max(size.x, size.y, size.z);
+  const dist = Math.max(1.05, span / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2)) * 1.32);
   const bias = yawBias || 0.15;
   camera.position.set(c.x + Math.sin(bias) * dist * 0.22, c.y, c.z + dist);
   camera.lookAt(c.x, c.y, c.z);
@@ -316,7 +469,7 @@ function seek(actor, clipName, t) {
 function placeAnatomy(which, viewYaw, t) {
   const walking = t >= 0;
   heroRig.position.set(0, 0, 0);
-  petRig.position.set(which === 'both' ? 0.72 : 0, 0, which === 'both' ? 0.15 : 0);
+  petRig.position.set(which === 'both' ? 1.05 : 0, 0, which === 'both' ? 0.15 : 0);
   const face = Math.PI;
   heroRig.rotation.y = viewYaw + face;
   petRig.rotation.y = viewYaw + face;
@@ -325,9 +478,11 @@ function placeAnatomy(which, viewYaw, t) {
   seek(which === 'pet' ? world.pet : world.hero, walking ? 'walk' : 'idle', walking ? t : 0.15);
   if (which === 'both') seek(world.pet, 'idle', 0.2);
   heroRig.position.y = walking && which !== 'pet' ? Math.abs(Math.sin((t % 1) * Math.PI * 2)) * 0.028 : 0;
-  const height = which === 'pet' ? 0.42 : 1.55;
-  const lookY = height * 0.48;
-  const dist = height / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2)) * 1.42;
+  const height = which === 'pet' ? 0.7 : 1.55;
+  const lookY = which === 'pet' ? 0.24 : height * 0.48;
+  let dist = height / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2)) * 1.42;
+  if (which === 'pet') dist *= 1.35;
+  if (which === 'both') dist *= 1.18;
   camera.position.set(0, lookY, dist);
   camera.lookAt(0, lookY, 0);
   camera.updateProjectionMatrix();
@@ -335,9 +490,22 @@ function placeAnatomy(which, viewYaw, t) {
   renderer.render(scene, camera);
 }
 
-function measureActor(root) {
+function spanLength(root) {
+  const q = root.quaternion.clone();
+  const pos = root.position.clone();
+  root.quaternion.identity();
   root.updateMatrixWorld(true);
   const box = skinnedBox(root);
+  const size = box.getSize(new THREE.Vector3());
+  root.quaternion.copy(q);
+  root.position.copy(pos);
+  root.updateMatrixWorld(true);
+  return Math.max(size.x, size.z);
+}
+
+function measureActor(root) {
+  root.updateMatrixWorld(true);
+  const box = actorBox(root);
   const size = box.getSize(new THREE.Vector3());
   const head = findBone(root, 'Head');
   const neck = findBone(root, 'Neck');
@@ -355,6 +523,7 @@ function measureActor(root) {
     height: size.y,
     minY: box.min.y,
     maxY: box.max.y,
+    length: Math.max(size.x, size.z, spanLength(root)),
     headFrac,
     headY,
     neckY,
@@ -384,6 +553,7 @@ function walkSamples(actor, frames) {
     actor.mixer.setTime((i / frames) * clip.duration);
     actor.obj.updateMatrixWorld(true);
     const hips = findBone(actor.obj, 'Hips');
+    if (!hips) return out;
     const lf = findBone(actor.obj, 'Foot.L');
     const rf = findBone(actor.obj, 'Foot.R');
     const la = findBone(actor.obj, 'LowerArm.L');
@@ -518,15 +688,24 @@ function publish(extra) {
   const st = stats();
   window.__ADV = Object.assign({
     ready: world.ready,
-    clips: world.hero ? { hero: world.hero.clips, pet: world.pet.clips } : null,
+    petId: world.petId,
+    petNote: world.petNote || null,
+    clips: world.hero ? { hero: world.hero.clips, pet: world.pet ? world.pet.clips : null } : null,
     bones() {
-      return { hero: boneList(heroRig), pet: boneList(petRig) };
+      return { hero: boneList(heroRig), pet: world.pet ? boneList(petRig) : null };
     },
     measure() {
-      return { hero: measureActor(heroRig), pet: measureActor(petRig) };
+      return {
+        hero: measureActor(heroRig),
+        pet: world.pet ? measureActor(petRig) : null,
+        petId: world.petId,
+      };
     },
     walkSamples(frames) {
-      return { hero: walkSamples(world.hero, frames || 8), pet: walkSamples(world.pet, frames || 8) };
+      return {
+        hero: walkSamples(world.hero, frames || 8),
+        pet: world.pet ? walkSamples(world.pet, frames || 8) : null,
+      };
     },
     pose(which, viewYaw, t) {
       placeAnatomy(which, viewYaw, t);
@@ -541,12 +720,22 @@ function publish(extra) {
 async function boot() {
   if (!ANATOMY) buildCourtyard();
   const hero = await loadActor('adventure/assets/Casual_Female.fbx', 1.5);
-  const pet = await loadActor('adventure/assets/Pug.fbx', 0.4);
+  const petId = petChoice();
+  const spec = PET_CATALOG[petId];
+  const pet = spec ? await loadPet(spec) : null;
   heroRig.add(hero.obj);
-  petRig.add(pet.obj);
+  if (pet) petRig.add(pet.obj);
   world.hero = hero;
   world.pet = pet;
+  world.petId = petId;
+  world.petNote = spec ? null : (PET_NOTE[petId] || null);
   world.ready = true;
+  const hint = document.getElementById('hint');
+  if (hint) {
+    hint.textContent = pet
+      ? 'WASD walks. Shift runs. The ' + spec.label.toLowerCase() + ' stays at your heel.'
+      : 'WASD walks. Shift runs. ' + world.petNote;
+  }
   if (SHOT === 'pet') {
     heroRig.visible = false;
     petRig.position.set(0, 0, 0);
@@ -555,16 +744,17 @@ async function boot() {
     heroRig.position.set(0, 0, 0);
     heroRig.rotation.y = 0.35;
   } else {
-    petRig.position.set(0.85, 0, 0.45);
+    petRig.position.set(1.05, 0, 0.35);
     heroRig.rotation.y = 0.4;
+    petRig.rotation.y = 0.4;
   }
   resize();
   seek(hero, 'idle', 0.15);
-  seek(pet, 'idle', 0.2);
+  if (pet) seek(pet, 'idle', 0.2);
   const hm = measureActor(heroRig);
-  const pm = measureActor(petRig);
+  const pm = pet ? measureActor(petRig) : null;
   world.hipY = hm.hipY;
-  world.petTop = pm.maxY;
+  world.petTop = pm ? pm.maxY : 0;
   if (SHOT === '1') {
     const ground = new THREE.BufferGeometry().setFromPoints([
       new THREE.Vector3(-1.15, 0.02, 0.15),
@@ -588,15 +778,29 @@ async function boot() {
       const h = window.innerHeight;
       const kind = deviceKind();
       const title = kind === 'ipad' ? 'iPad' : (kind === 'pc' ? 'PC' : 'Phone');
-      const who = SHOT === 'pet' ? 'Pug' : (SHOT === 'hero' ? 'Ellie' : 'Ellie and pug');
+      const petLabel = spec ? spec.label : petId;
+      const who = SHOT === 'pet' ? petLabel : (SHOT === 'hero' ? 'Ellie' : 'Ellie and ' + petLabel.toLowerCase());
       label.hidden = false;
       label.textContent = title + ' ' + w + '×' + h + ' · ' + who
         + ' · Ellie ' + hm.height.toFixed(2) + ' m, hip ' + hm.hipY.toFixed(2) + ' m'
-        + ' · pug ' + pm.height.toFixed(2) + ' m, feet ' + pm.minY.toFixed(2) + ' m'
+        + (pm
+          ? ' · ' + petLabel.toLowerCase() + ' ' + pm.height.toFixed(2) + ' m × ' + pm.length.toFixed(2) + ' m, feet ' + pm.minY.toFixed(2) + ' m'
+          : ' · ' + (world.petNote || ''))
         + (SHOT === '1' ? ' · pink = hip, gold = ground' : '');
     }
   }
-  publish({ heroMeasure: hm, petMeasure: pm, tris: { hero: triCount(hero.obj), pet: triCount(pet.obj) } });
+  publish({
+    heroMeasure: hm,
+    petMeasure: pm,
+    tris: { hero: triCount(hero.obj), pet: pet ? triCount(pet.obj) : 0 },
+  });
+  if (!SHOT && world.petNote) {
+    const label = document.getElementById('label');
+    if (label) {
+      label.hidden = false;
+      label.textContent = world.petNote;
+    }
+  }
   document.getElementById('boot').hidden = true;
 }
 
@@ -636,20 +840,22 @@ function tick() {
       }
       setAction(world.hero, moving);
       world.hero.mixer.update(dt);
-      follow.set(
-        heroRig.position.x - Math.sin(yaw) * 1.15 + Math.cos(yaw) * 0.45,
-        0,
-        heroRig.position.z - Math.cos(yaw) * 1.15 - Math.sin(yaw) * 0.45,
-      );
-      petRig.position.lerp(follow, 1 - Math.exp(-dt * 5));
-      petRig.position.y = 0;
-      const dx = heroRig.position.x - petRig.position.x;
-      const dz = heroRig.position.z - petRig.position.z;
-      const gap = Math.hypot(dx, dz);
-      if (gap > 0.2) petRig.rotation.y = Math.atan2(dx, dz);
-      const petMoving = gap > 0.35 || moving;
-      setAction(world.pet, petMoving);
-      world.pet.mixer.update(dt);
+      if (world.pet) {
+        follow.set(
+          heroRig.position.x - Math.sin(yaw) * 1.15 + Math.cos(yaw) * 0.45,
+          0,
+          heroRig.position.z - Math.cos(yaw) * 1.15 - Math.sin(yaw) * 0.45,
+        );
+        petRig.position.lerp(follow, 1 - Math.exp(-dt * 5));
+        petRig.position.y = 0;
+        const dx = heroRig.position.x - petRig.position.x;
+        const dz = heroRig.position.z - petRig.position.z;
+        const gap = Math.hypot(dx, dz);
+        if (gap > 0.2) petRig.rotation.y = Math.atan2(dx, dz);
+        const petMoving = gap > 0.35 || moving;
+        setAction(world.pet, petMoving);
+        world.pet.mixer.update(dt);
+      }
       frameCamera('play');
     } else {
       frameCamera(SHOT === 'hero' || SHOT === 'pet' ? SHOT : 'shot');

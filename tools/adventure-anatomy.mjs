@@ -7,7 +7,7 @@
  *   side / three-quarter / back chest at least 36% of the front
  *   walk: opposite arms and legs, a plant, a small bob
  *   Ellie 1.15–2.05 m with feet on the ground
- *   pug at or under her hip, feet on the ground, knee-to-waist
+ *   dog longer than tall, at or under her hip, four paws on the ground, knee-to-waist
  *
  *   node tools/adventure-anatomy.mjs
  * Exit 0 pass, 1 fail, 2 checker bug.
@@ -275,7 +275,7 @@ async function main() {
     width: 520, height: 760, deviceScaleFactor: 1, mobile: false,
   });
   const loaded = cdp.once('Page.loadEventFired', 20000);
-  await cdp.send('Page.navigate', { url: 'http://127.0.0.1:' + PORT + '/adventure.html?anatomy=1' });
+  await cdp.send('Page.navigate', { url: 'http://127.0.0.1:' + PORT + '/adventure.html?anatomy=1&pet=fox' });
   await loaded;
   const measure = await cdp.eval(`new Promise((res) => {
     const t0 = Date.now();
@@ -295,9 +295,19 @@ async function main() {
   const pet = measure.pet;
   if (hero.height < 1.15 || hero.height > 2.05) problems.push('Ellie is ' + hero.height.toFixed(2) + ' m. A standing kid reads around 1.50 m (1.15–2.05).');
   if (hero.minY > 0.08 || hero.minY < -0.05) problems.push('Ellie feet are at ' + hero.minY.toFixed(3) + ' m. They should meet the ground.');
-  if (pet.minY > 0.08 || pet.minY < -0.05) problems.push('Pug feet are at ' + pet.minY.toFixed(3) + ' m. The pug should stand on the ground.');
-  if (pet.maxY > hero.hipY + 0.08) problems.push('Pug top is ' + pet.maxY.toFixed(2) + ' m. Her hip is ' + hero.hipY.toFixed(2) + ' m, so the pug stands above her waist.');
-  if (pet.height < 0.28) problems.push('Pug is ' + pet.height.toFixed(2) + ' m, below knee height.');
+  function petProblems(id, petM, hipY) {
+    const name = id || 'pet';
+    if (!petM) {
+      problems.push(name + ' did not load.');
+      return;
+    }
+    if (petM.minY > 0.08 || petM.minY < -0.05) problems.push(name + ' feet are at ' + petM.minY.toFixed(3) + ' m. Paws should meet the ground.');
+    if (petM.maxY > hipY + 0.08) problems.push(name + ' top is ' + petM.maxY.toFixed(2) + ' m. Her hip is ' + hipY.toFixed(2) + ' m, so it stands above her waist.');
+    if (petM.height < 0.28) problems.push(name + ' is ' + petM.height.toFixed(2) + ' m, below knee height.');
+    if (!(petM.length > petM.height * 1.15)) problems.push(name + ' is ' + petM.height.toFixed(2) + ' m tall and ' + petM.length.toFixed(2) + ' m long. A quadruped is longer than it is tall.');
+  }
+  if (!pet) problems.push('fox did not load.');
+  else petProblems(measure.petId || 'fox', pet, hero.hipY);
   if (!hero.bones.upperArmL || !hero.bones.upperLegL || !hero.bones.footL || !hero.bones.head) problems.push('Ellie is missing a limb bone.');
 
   async function grab(which, yaw, t, file) {
@@ -387,6 +397,31 @@ async function main() {
   }
 
   const walk = { front: walkProblems('front', false), side: walkProblems('side', true) };
+  const petReports = { fox: pet };
+  for (const id of ['cat', 'puppy']) {
+    const loaded = cdp.once('Page.loadEventFired', 20000);
+    await cdp.send('Page.navigate', { url: 'http://127.0.0.1:' + PORT + '/adventure.html?anatomy=1&pet=' + id });
+    await loaded;
+    const again = await cdp.eval(`new Promise((res) => {
+      const t0 = Date.now();
+      const tick = () => {
+        const a = window.__ADV;
+        if (a && a.error) return res({ error: a.error });
+        if (a && a.ready) return res(a.measure());
+        if (Date.now() - t0 > 30000) return res({ timeout: true });
+        setTimeout(tick, 40);
+      };
+      tick();
+    })`);
+    if (!again || again.error || again.timeout || !again.pet) {
+      problems.push(id + ' did not load. ' + JSON.stringify(again && (again.error || again.timeout)));
+    } else {
+      petProblems(id, again.pet, again.hero.hipY);
+      petReports[id] = again.pet;
+      await grab('pet', 0.4, -1, 'pet-' + id + '.png');
+      await grab('both', 0.35, -1, 'both-' + id + '.png');
+    }
+  }
   console.log('front0', JSON.stringify(frames.front[0]));
   console.log('side0', JSON.stringify(frames.side[0]));
   const report = {
@@ -394,6 +429,7 @@ async function main() {
     bar: 'Same numeric bar as Anatomy Check (cursor/anatomy-check-3de5). That checker scores Neon crew sprites, so Milestone 0 runs it on these renders.',
     problems,
     measure,
+    pets: petReports,
     chest: {
       front: frames.front[0] && frames.front[0].chest,
       threeQuarter: frames['three-quarter'][0] && frames['three-quarter'][0].chest,

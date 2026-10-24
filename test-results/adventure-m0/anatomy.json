@@ -7,6 +7,7 @@
       "height": 1.4995334220999121,
       "minY": 0.0003067470300241251,
       "maxY": 1.4998401691299363,
+      "length": 0.7132403453563629,
       "headFrac": 0.2438274584669565,
       "headY": 1.0158463013521162,
       "neckY": 0.9527769830714432,
@@ -28,78 +29,145 @@
       }
     },
     "pet": {
-      "height": 0.39992645564082024,
-      "minY": 0.00006946155915551425,
-      "maxY": 0.39999591719997574,
-      "headFrac": 0.2766761723313889,
-      "headY": 0.3070639576792469,
-      "neckY": 0.28797723935218533,
-      "hipY": 0.13233090524984595,
-      "footY": [
-        0.005942356034573956,
-        0.005942356034572833
-      ],
+      "height": 0.38742384956996545,
+      "minY": -1.9398223274121745e-7,
+      "maxY": 0.38742365558773273,
+      "length": 0.7703074935361316,
+      "headFrac": 0,
+      "headY": 0.38742365558773273,
+      "neckY": 0.38742365558773273,
+      "hipY": 0.19371173080274998,
+      "footY": [],
       "bones": {
-        "head": true,
-        "neck": true,
-        "hips": true,
-        "upperArmL": true,
-        "lowerArmL": true,
-        "upperLegL": true,
-        "lowerLegL": true,
-        "footL": true,
-        "footR": true
+        "head": false,
+        "neck": false,
+        "hips": false,
+        "upperArmL": false,
+        "lowerArmL": false,
+        "upperLegL": false,
+        "lowerLegL": false,
+        "footL": false,
+        "footR": false
+      }
+    },
+    "petId": "fox"
+  },
+  "pets": {
+    "fox": {
+      "height": 0.38742384956996545,
+      "minY": -1.9398223274121745e-7,
+      "maxY": 0.38742365558773273,
+      "length": 0.7703074935361316,
+      "headFrac": 0,
+      "headY": 0.38742365558773273,
+      "neckY": 0.38742365558773273,
+      "hipY": 0.19371173080274998,
+      "footY": [],
+      "bones": {
+        "head": false,
+        "neck": false,
+        "hips": false,
+        "upperArmL": false,
+        "lowerArmL": false,
+        "upperLegL": false,
+        "lowerLegL": false,
+        "footL": false,
+        "footR": false
+      }
+    },
+    "cat": {
+      "height": 0.33612073909063583,
+      "minY": -0.0013376228166667903,
+      "maxY": 0.33478311627396906,
+      "length": 0.4224505683033546,
+      "headFrac": 0,
+      "headY": 0.33478311627396906,
+      "neckY": 0.33478311627396906,
+      "hipY": 0.16672274672865112,
+      "footY": [],
+      "bones": {
+        "head": false,
+        "neck": false,
+        "hips": false,
+        "upperArmL": false,
+        "lowerArmL": false,
+        "upperLegL": false,
+        "lowerLegL": false,
+        "footL": false,
+        "footR": false
+      }
+    },
+    "puppy": {
+      "height": 0.31362393017286927,
+      "minY": -0.0005975879779214419,
+      "maxY": 0.31302634219494785,
+      "length": 0.4933432192838647,
+      "headFrac": 0,
+      "headY": 0.31302634219494785,
+      "neckY": 0.31302634219494785,
+      "hipY": 0.15621437710851319,
+      "footY": [],
+      "bones": {
+        "head": false,
+        "neck": false,
+        "hips": false,
+        "upperArmL": false,
+        "lowerArmL": false,
+        "upperLegL": false,
+        "lowerLegL": false,
+        "footL": false,
+        "footR": false
       }
     }
   },
   "chest": {
-    "front": 93,
-    "threeQuarter": 143,
+    "front": 81,
+    "threeQuarter": 102,
     "side": 67,
-    "back": 160
+    "back": 162
   },
   "head": [
     {
       "view": "front",
-      "ratio": 0.376,
+      "ratio": 0.339,
       "neck": true,
       "centered": true
     },
     {
       "view": "three-quarter",
-      "ratio": 0.358,
+      "ratio": 0.347,
       "neck": true,
       "centered": true
     },
     {
       "view": "side",
-      "ratio": 0.237,
-      "neck": false,
+      "ratio": 0.363,
+      "neck": true,
       "centered": true
     },
     {
       "view": "back",
-      "ratio": 0.361,
+      "ratio": 0.34,
       "neck": true,
       "centered": true
     }
   ],
   "walk": {
     "front": {
-      "step": 60,
-      "swing": 49,
-      "oppose": 0.01,
-      "bob": 10,
+      "step": 48,
+      "swing": 48,
+      "oppose": 0.09,
+      "bob": 11,
       "lifts": 8,
-      "figureH": 535
+      "figureH": 525
     },
     "side": {
       "step": 182,
-      "swing": 72,
-      "oppose": 0.48,
-      "bob": 15,
+      "swing": 75,
+      "oppose": 0.66,
+      "bob": 13,
       "lifts": 2,
-      "figureH": 523
+      "figureH": 515
     }
   },
   "logs": []

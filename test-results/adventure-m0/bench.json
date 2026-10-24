@@ -5,6 +5,8 @@
     "file": null,
     "value": {
       "ready": true,
+      "petId": "fox",
+      "petNote": null,
       "clips": {
         "hero": [
           "CharacterArmature|Victory",
@@ -20,17 +22,9 @@
           "CharacterArmature|Punch"
         ],
         "pet": [
-          "CharacterArmature|Victory",
-          "CharacterArmature|SitDown",
-          "CharacterArmature|Shoot_OneHanded",
-          "CharacterArmature|PickUp",
-          "CharacterArmature|RecieveHit",
-          "CharacterArmature|Idle",
-          "CharacterArmature|Defeat",
-          "CharacterArmature|Walk",
-          "CharacterArmature|Walk_Carry",
-          "CharacterArmature|StandUp",
-          "CharacterArmature|Punch"
+          "Survey",
+          "Walk",
+          "Run"
         ]
       },
       "bones": {},
@@ -40,10 +34,10 @@
       "stats": {
         "n": 330,
         "p50": 0.5,
-        "p95": 2.6000000000931323,
-        "worst": 4.100000000093132,
-        "onePctLowFps": 256.4102564163795,
-        "p95Fps": 384.6153846016077,
+        "p95": 1.2000000001862645,
+        "worst": 4.400000000372529,
+        "onePctLowFps": 246.9135802440746,
+        "p95Fps": 833.333333203983,
         "buckets": {
           "lt8": 330,
           "lt16": 0,
@@ -51,7 +45,7 @@
           "lt50": 0,
           "gte50": 0
         },
-        "bootHitch": 52.90000000037253,
+        "bootHitch": 172.79999999981374,
         "warmup": 30
       },
       "gate": {
@@ -62,7 +56,6 @@
       "benchDone": true
     },
     "logs": [
-      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights."
     ]
   },
@@ -72,6 +65,8 @@
     "file": null,
     "value": {
       "ready": true,
+      "petId": "fox",
+      "petNote": null,
       "clips": {
         "hero": [
           "CharacterArmature|Victory",
@@ -87,17 +82,9 @@
           "CharacterArmature|Punch"
         ],
         "pet": [
-          "CharacterArmature|Victory",
-          "CharacterArmature|SitDown",
-          "CharacterArmature|Shoot_OneHanded",
-          "CharacterArmature|PickUp",
-          "CharacterArmature|RecieveHit",
-          "CharacterArmature|Idle",
-          "CharacterArmature|Defeat",
-          "CharacterArmature|Walk",
-          "CharacterArmature|Walk_Carry",
-          "CharacterArmature|StandUp",
-          "CharacterArmature|Punch"
+          "Survey",
+          "Walk",
+          "Run"
         ]
       },
       "bones": {},
@@ -106,11 +93,11 @@
       "pose": {},
       "stats": {
         "n": 330,
-        "p50": 0.40000000037252903,
-        "p95": 1.2000000001862645,
-        "worst": 6.7000000001862645,
-        "onePctLowFps": 197.04433497265745,
-        "p95Fps": 833.333333203983,
+        "p50": 0.5,
+        "p95": 1.099999999627471,
+        "worst": 5.800000000745058,
+        "onePctLowFps": 212.76595743837643,
+        "p95Fps": 909.0909093987843,
         "buckets": {
           "lt8": 330,
           "lt16": 0,
@@ -118,7 +105,7 @@
           "lt50": 0,
           "gte50": 0
         },
-        "bootHitch": 41,
+        "bootHitch": 48.5,
         "warmup": 30
       },
       "gate": {
@@ -130,8 +117,6 @@
     },
     "logs": [
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
-      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
-      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights."
     ]
   },
@@ -141,6 +126,8 @@
     "file": null,
     "value": {
       "ready": true,
+      "petId": "fox",
+      "petNote": null,
       "clips": {
         "hero": [
           "CharacterArmature|Victory",
@@ -156,17 +143,9 @@
           "CharacterArmature|Punch"
         ],
         "pet": [
-          "CharacterArmature|Victory",
-          "CharacterArmature|SitDown",
-          "CharacterArmature|Shoot_OneHanded",
-          "CharacterArmature|PickUp",
-          "CharacterArmature|RecieveHit",
-          "CharacterArmature|Idle",
-          "CharacterArmature|Defeat",
-          "CharacterArmature|Walk",
-          "CharacterArmature|Walk_Carry",
-          "CharacterArmature|StandUp",
-          "CharacterArmature|Punch"
+          "Survey",
+          "Walk",
+          "Run"
         ]
       },
       "bones": {},
@@ -175,11 +154,11 @@
       "pose": {},
       "stats": {
         "n": 330,
-        "p50": 0.40000000037252903,
-        "p95": 1.3000000002793968,
-        "worst": 5.900000000372529,
-        "onePctLowFps": 190.4761904719668,
-        "p95Fps": 769.2307690654457,
+        "p50": 0.5,
+        "p95": 2,
+        "worst": 6,
+        "onePctLowFps": 185.18518518039443,
+        "p95Fps": 500,
         "buckets": {
           "lt8": 330,
           "lt16": 0,
@@ -187,7 +166,7 @@
           "lt50": 0,
           "gte50": 0
         },
-        "bootHitch": 43.40000000037253,
+        "bootHitch": 48.10000000055879,
         "warmup": 30
       },
       "gate": {
@@ -198,9 +177,6 @@
       "benchDone": true
     },
     "logs": [
-      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
-      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
-      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights."
@@ -215,6 +191,7 @@
         "height": 1.4995334220999126,
         "minY": 0.0003067470300241199,
         "maxY": 1.4998401691299368,
+        "length": 0.7158278321969803,
         "headFrac": 0.24382745846695641,
         "headY": 1.0158463013521162,
         "neckY": 0.9527769830714432,
@@ -236,35 +213,30 @@
         }
       },
       "pet": {
-        "height": 0.3999264556408204,
-        "minY": 0.00006946155915551512,
-        "maxY": 0.3999959171999759,
-        "headFrac": 0.2766761723313888,
-        "headY": 0.3070639576792469,
-        "neckY": 0.28797723935218533,
-        "hipY": 0.13233090524984595,
-        "footY": [
-          0.005942356034573956,
-          0.005942356034572833
-        ],
+        "height": 0.38742384956996556,
+        "minY": -1.9398223274132587e-7,
+        "maxY": 0.38742365558773284,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773284,
+        "neckY": 0.38742365558773284,
+        "hipY": 0.19371173080275003,
+        "footY": [],
         "bones": {
-          "head": true,
-          "neck": true,
-          "hips": true,
-          "upperArmL": true,
-          "lowerArmL": true,
-          "upperLegL": true,
-          "lowerLegL": true,
-          "footL": true,
-          "footR": true
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
         }
-      }
+      },
+      "petId": "fox"
     },
     "logs": [
-      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
-      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
-      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
-      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
@@ -280,6 +252,7 @@
         "height": 1.499533422099913,
         "minY": 0.0003067470300241199,
         "maxY": 1.4998401691299372,
+        "length": 0.7105480639067485,
         "headFrac": 0.24382745846695636,
         "headY": 1.0158463013521162,
         "neckY": 0.9527769830714432,
@@ -301,34 +274,30 @@
         }
       },
       "pet": {
-        "height": 0.3999264556408204,
-        "minY": 0.00006946155915551512,
-        "maxY": 0.3999959171999759,
-        "headFrac": 0.2766761723313888,
-        "headY": 0.3070639576792469,
-        "neckY": 0.28797723935218533,
-        "hipY": 0.13233090524984595,
-        "footY": [
-          0.005942356034573956,
-          0.005942356034572833
-        ],
+        "height": 0.38742384956996556,
+        "minY": -1.9398223274132587e-7,
+        "maxY": 0.38742365558773284,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773284,
+        "neckY": 0.38742365558773284,
+        "hipY": 0.19371173080275003,
+        "footY": [],
         "bones": {
-          "head": true,
-          "neck": true,
-          "hips": true,
-          "upperArmL": true,
-          "lowerArmL": true,
-          "upperLegL": true,
-          "lowerLegL": true,
-          "footL": true,
-          "footR": true
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
         }
-      }
+      },
+      "petId": "fox"
     },
     "logs": [
-      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
-      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
-      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
@@ -338,13 +307,14 @@
   },
   {
     "kind": "phone",
-    "query": "shot=1&kind=phone",
-    "file": "phone-both.png",
+    "query": "shot=1&kind=phone&pet=fox",
+    "file": "phone-fox.png",
     "value": {
       "hero": {
         "height": 1.4995334220999121,
         "minY": 0.0003067470300241251,
         "maxY": 1.4998401691299363,
+        "length": 0.7132403453563629,
         "headFrac": 0.2438274584669565,
         "headY": 1.0158463013521162,
         "neckY": 0.9527769830714432,
@@ -366,16 +336,55 @@
         }
       },
       "pet": {
-        "height": 0.39992645564082024,
-        "minY": 0.00006946155915551425,
-        "maxY": 0.39999591719997574,
-        "headFrac": 0.2766761723313889,
-        "headY": 0.3070639576792469,
-        "neckY": 0.28797723935218533,
-        "hipY": 0.13233090524984595,
+        "height": 0.38742384956996545,
+        "minY": -1.9398223274121745e-7,
+        "maxY": 0.38742365558773273,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773273,
+        "neckY": 0.38742365558773273,
+        "hipY": 0.19371173080274998,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "fox"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights."
+    ]
+  },
+  {
+    "kind": "phone",
+    "query": "shot=1&kind=phone&pet=cat",
+    "file": "phone-cat.png",
+    "value": {
+      "hero": {
+        "height": 1.4995334220999121,
+        "minY": 0.0003067470300241251,
+        "maxY": 1.4998401691299363,
+        "length": 0.7132403453563629,
+        "headFrac": 0.2438274584669565,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
         "footY": [
-          0.005942356034573956,
-          0.005942356034572833
+          0.01961406975702337,
+          0.01961406975701966
         ],
         "bones": {
           "head": true,
@@ -388,7 +397,159 @@
           "footL": true,
           "footR": true
         }
-      }
+      },
+      "pet": {
+        "height": 0.33612073909063583,
+        "minY": -0.0013376228166667903,
+        "maxY": 0.33478311627396906,
+        "length": 0.4224505683033546,
+        "headFrac": 0,
+        "headY": 0.33478311627396906,
+        "neckY": 0.33478311627396906,
+        "hipY": 0.16672274672865112,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "cat"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights."
+    ]
+  },
+  {
+    "kind": "phone",
+    "query": "shot=1&kind=phone&pet=puppy",
+    "file": "phone-puppy.png",
+    "value": {
+      "hero": {
+        "height": 1.4995334220999121,
+        "minY": 0.0003067470300241251,
+        "maxY": 1.4998401691299363,
+        "length": 0.7132403453563629,
+        "headFrac": 0.2438274584669565,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
+        "footY": [
+          0.01961406975702337,
+          0.01961406975701966
+        ],
+        "bones": {
+          "head": true,
+          "neck": true,
+          "hips": true,
+          "upperArmL": true,
+          "lowerArmL": true,
+          "upperLegL": true,
+          "lowerLegL": true,
+          "footL": true,
+          "footR": true
+        }
+      },
+      "pet": {
+        "height": 0.31362393017286927,
+        "minY": -0.0005975879779214419,
+        "maxY": 0.31302634219494785,
+        "length": 0.4933432192838647,
+        "headFrac": 0,
+        "headY": 0.31302634219494785,
+        "neckY": 0.31302634219494785,
+        "hipY": 0.15621437710851319,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "puppy"
+    },
+    "logs": [
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
+      "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights."
+    ]
+  },
+  {
+    "kind": "phone",
+    "query": "shot=1&kind=phone&pet=fox",
+    "file": "phone-both.png",
+    "value": {
+      "hero": {
+        "height": 1.4995334220999121,
+        "minY": 0.0003067470300241251,
+        "maxY": 1.4998401691299363,
+        "length": 0.7132403453563629,
+        "headFrac": 0.2438274584669565,
+        "headY": 1.0158463013521162,
+        "neckY": 0.9527769830714432,
+        "hipY": 0.43854550788381025,
+        "footY": [
+          0.01961406975702337,
+          0.01961406975701966
+        ],
+        "bones": {
+          "head": true,
+          "neck": true,
+          "hips": true,
+          "upperArmL": true,
+          "lowerArmL": true,
+          "upperLegL": true,
+          "lowerLegL": true,
+          "footL": true,
+          "footR": true
+        }
+      },
+      "pet": {
+        "height": 0.38742384956996545,
+        "minY": -1.9398223274121745e-7,
+        "maxY": 0.38742365558773273,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773273,
+        "neckY": 0.38742365558773273,
+        "hipY": 0.19371173080274998,
+        "footY": [],
+        "bones": {
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
+        }
+      },
+      "petId": "fox"
     },
     "logs": [
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
@@ -410,6 +571,7 @@
         "height": 1.4995334220999126,
         "minY": 0.0003067470300241199,
         "maxY": 1.4998401691299368,
+        "length": 0.7158278321969803,
         "headFrac": 0.24382745846695641,
         "headY": 1.0158463013521162,
         "neckY": 0.9527769830714432,
@@ -431,29 +593,28 @@
         }
       },
       "pet": {
-        "height": 0.3999264556408204,
-        "minY": 0.00006946155915551512,
-        "maxY": 0.3999959171999759,
-        "headFrac": 0.2766761723313888,
-        "headY": 0.3070639576792469,
-        "neckY": 0.28797723935218533,
-        "hipY": 0.13233090524984595,
-        "footY": [
-          0.005942356034573956,
-          0.005942356034572833
-        ],
+        "height": 0.38742384956996556,
+        "minY": -1.9398223274132587e-7,
+        "maxY": 0.38742365558773284,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773284,
+        "neckY": 0.38742365558773284,
+        "hipY": 0.19371173080275003,
+        "footY": [],
         "bones": {
-          "head": true,
-          "neck": true,
-          "hips": true,
-          "upperArmL": true,
-          "lowerArmL": true,
-          "upperLegL": true,
-          "lowerLegL": true,
-          "footL": true,
-          "footR": true
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
         }
-      }
+      },
+      "petId": "fox"
     },
     "logs": [
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
@@ -475,6 +636,7 @@
         "height": 1.499533422099913,
         "minY": 0.0003067470300241199,
         "maxY": 1.4998401691299372,
+        "length": 0.7105480639067485,
         "headFrac": 0.24382745846695636,
         "headY": 1.0158463013521162,
         "neckY": 0.9527769830714432,
@@ -496,29 +658,28 @@
         }
       },
       "pet": {
-        "height": 0.3999264556408204,
-        "minY": 0.00006946155915551512,
-        "maxY": 0.3999959171999759,
-        "headFrac": 0.2766761723313888,
-        "headY": 0.3070639576792469,
-        "neckY": 0.28797723935218533,
-        "hipY": 0.13233090524984595,
-        "footY": [
-          0.005942356034573956,
-          0.005942356034572833
-        ],
+        "height": 0.38742384956996556,
+        "minY": -1.9398223274132587e-7,
+        "maxY": 0.38742365558773284,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773284,
+        "neckY": 0.38742365558773284,
+        "hipY": 0.19371173080275003,
+        "footY": [],
         "bones": {
-          "head": true,
-          "neck": true,
-          "hips": true,
-          "upperArmL": true,
-          "lowerArmL": true,
-          "upperLegL": true,
-          "lowerLegL": true,
-          "footL": true,
-          "footR": true
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
         }
-      }
+      },
+      "petId": "fox"
     },
     "logs": [
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
@@ -540,6 +701,7 @@
         "height": 1.4995334220999121,
         "minY": 0.0003067470300241251,
         "maxY": 1.4998401691299363,
+        "length": 0.7132403453563629,
         "headFrac": 0.2438274584669565,
         "headY": 1.0158463013521162,
         "neckY": 0.9527769830714432,
@@ -561,29 +723,28 @@
         }
       },
       "pet": {
-        "height": 0.39992645564082024,
-        "minY": 0.00006946155915551425,
-        "maxY": 0.39999591719997574,
-        "headFrac": 0.2766761723313889,
-        "headY": 0.3070639576792469,
-        "neckY": 0.28797723935218533,
-        "hipY": 0.13233090524984595,
-        "footY": [
-          0.005942356034573956,
-          0.005942356034572833
-        ],
+        "height": 0.38742384956996545,
+        "minY": -1.9398223274121745e-7,
+        "maxY": 0.38742365558773273,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773273,
+        "neckY": 0.38742365558773273,
+        "hipY": 0.19371173080274998,
+        "footY": [],
         "bones": {
-          "head": true,
-          "neck": true,
-          "hips": true,
-          "upperArmL": true,
-          "lowerArmL": true,
-          "upperLegL": true,
-          "lowerLegL": true,
-          "footL": true,
-          "footR": true
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
         }
-      }
+      },
+      "petId": "fox"
     },
     "logs": [
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
@@ -605,6 +766,7 @@
         "height": 1.4995334220999126,
         "minY": 0.0003067470300241199,
         "maxY": 1.4998401691299368,
+        "length": 0.7158278321969803,
         "headFrac": 0.24382745846695641,
         "headY": 1.0158463013521162,
         "neckY": 0.9527769830714432,
@@ -626,29 +788,28 @@
         }
       },
       "pet": {
-        "height": 0.3999264556408204,
-        "minY": 0.00006946155915551512,
-        "maxY": 0.3999959171999759,
-        "headFrac": 0.2766761723313888,
-        "headY": 0.3070639576792469,
-        "neckY": 0.28797723935218533,
-        "hipY": 0.13233090524984595,
-        "footY": [
-          0.005942356034573956,
-          0.005942356034572833
-        ],
+        "height": 0.38742384956996556,
+        "minY": -1.9398223274132587e-7,
+        "maxY": 0.38742365558773284,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773284,
+        "neckY": 0.38742365558773284,
+        "hipY": 0.19371173080275003,
+        "footY": [],
         "bones": {
-          "head": true,
-          "neck": true,
-          "hips": true,
-          "upperArmL": true,
-          "lowerArmL": true,
-          "upperLegL": true,
-          "lowerLegL": true,
-          "footL": true,
-          "footR": true
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
         }
-      }
+      },
+      "petId": "fox"
     },
     "logs": [
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
@@ -670,6 +831,7 @@
         "height": 1.499533422099913,
         "minY": 0.0003067470300241199,
         "maxY": 1.4998401691299372,
+        "length": 0.7105480639067485,
         "headFrac": 0.24382745846695636,
         "headY": 1.0158463013521162,
         "neckY": 0.9527769830714432,
@@ -691,29 +853,28 @@
         }
       },
       "pet": {
-        "height": 0.3999264556408204,
-        "minY": 0.00006946155915551512,
-        "maxY": 0.3999959171999759,
-        "headFrac": 0.2766761723313888,
-        "headY": 0.3070639576792469,
-        "neckY": 0.28797723935218533,
-        "hipY": 0.13233090524984595,
-        "footY": [
-          0.005942356034573956,
-          0.005942356034572833
-        ],
+        "height": 0.38742384956996556,
+        "minY": -1.9398223274132587e-7,
+        "maxY": 0.38742365558773284,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773284,
+        "neckY": 0.38742365558773284,
+        "hipY": 0.19371173080275003,
+        "footY": [],
         "bones": {
-          "head": true,
-          "neck": true,
-          "hips": true,
-          "upperArmL": true,
-          "lowerArmL": true,
-          "upperLegL": true,
-          "lowerLegL": true,
-          "footL": true,
-          "footR": true
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
         }
-      }
+      },
+      "petId": "fox"
     },
     "logs": [
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",
@@ -735,6 +896,7 @@
         "height": 1.4995334220999121,
         "minY": 0.0003067470300241251,
         "maxY": 1.4998401691299363,
+        "length": 0.7132403453563629,
         "headFrac": 0.2438274584669565,
         "headY": 1.0158463013521162,
         "neckY": 0.9527769830714432,
@@ -756,29 +918,28 @@
         }
       },
       "pet": {
-        "height": 0.39992645564082024,
-        "minY": 0.00006946155915551425,
-        "maxY": 0.39999591719997574,
-        "headFrac": 0.2766761723313889,
-        "headY": 0.3070639576792469,
-        "neckY": 0.28797723935218533,
-        "hipY": 0.13233090524984595,
-        "footY": [
-          0.005942356034573956,
-          0.005942356034572833
-        ],
+        "height": 0.38742384956996545,
+        "minY": -1.9398223274121745e-7,
+        "maxY": 0.38742365558773273,
+        "length": 0.7703074935361316,
+        "headFrac": 0,
+        "headY": 0.38742365558773273,
+        "neckY": 0.38742365558773273,
+        "hipY": 0.19371173080274998,
+        "footY": [],
         "bones": {
-          "head": true,
-          "neck": true,
-          "hips": true,
-          "upperArmL": true,
-          "lowerArmL": true,
-          "upperLegL": true,
-          "lowerLegL": true,
-          "footL": true,
-          "footR": true
+          "head": false,
+          "neck": false,
+          "hips": false,
+          "upperArmL": false,
+          "lowerArmL": false,
+          "upperLegL": false,
+          "lowerLegL": false,
+          "footL": false,
+          "footR": false
         }
-      }
+      },
+      "petId": "fox"
     },
     "logs": [
       "THREE.FBXLoader: Vertex has more than 4 skinning weights assigned to vertex. Deleting additional weights.",

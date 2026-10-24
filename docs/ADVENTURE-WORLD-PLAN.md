@@ -12,7 +12,7 @@ Ellie is 10 and plays at about a 13-year-old level. The words stay plain and spe
 
 ## Renderer
 
-One canvas. One WebGL2 scene. The page loads `adventure/app.js`, which is three.js r170 (MIT) bundled with its FBX loader. The courtyard, Ellie, and the pug are objects in that one scene.
+One canvas. One WebGL2 scene. The page loads `adventure/app.js`, which is three.js r170 (MIT) bundled with its FBX and glTF loaders. The courtyard, Ellie, and one follower pet are objects in that one scene. The page loads only the pet named in `?pet=`.
 
 This is not Neon's renderer. Neon paints the city on a 2D canvas (`world/boot.js`, with `shadowBlur`) and keeps a separate three.js build inside `shared/car-model.js` for the car. A buildings pass that added another WebGL view was dropped after the phone dips. Adventure World does not import `world/`, `shared/car-model.js`, or `index.html`. There is no second canvas, no `shadowBlur`, no shadow map, no antialias, and the pixel ratio stays at 1.
 
@@ -34,31 +34,51 @@ The iPad floor is 30 because that tablet is 60 Hz and already the strict machine
 
 Lab numbers are software GL on this agent (SwiftShader). They are not his phone and not the 2018 iPad. A lab pass means the scene is cheap enough to grow in the lab. His phone is still the column that matters before a later milestone is called done.
 
-Milestone 0, lab, 360 frames, first 30 dropped as warmup. Every steady frame was under 8 ms.
+Milestone 0, lab, 360 frames, first 30 dropped as warmup, fox loaded (the default pet). Every steady frame was under 8 ms. The steady gate passed on all three. The phone job is the first page in a fresh browser, and its warmup frame was 173 ms, over the 80 ms hitch line, while the iPad and PC loads in that same browser were 49 ms and 48 ms.
 
 | Viewport | p50 | p95 | 1% low | Worst steady | Boot hitch | Gate |
 | --- | --- | --- | --- | --- | --- | --- |
-| Phone 844×390 | 0.5 ms | 2.6 ms | 256 fps | 4.1 ms | 53 ms | Pass |
-| iPad 1024×768 | 0.4 ms | 1.2 ms | 197 fps | 6.7 ms | 41 ms | Pass |
-| PC 1366×768 | 0.4 ms | 1.3 ms | 190 fps | 5.9 ms | 43 ms | Pass |
+| Phone 844×390 | 0.5 ms | 1.2 ms | 247 fps | 4.4 ms | 173 ms | Pass on steady frames |
+| iPad 1024×768 | 0.5 ms | 1.1 ms | 213 fps | 5.8 ms | 49 ms | Pass |
+| PC 1366×768 | 0.5 ms | 2.0 ms | 185 fps | 6.0 ms | 48 ms | Pass |
 
 The histogram is in `test-results/adventure-m0/bench.json`. The overlay that produced it is `?fps=1`.
 
 ## Anatomy on Milestone 0
 
-The Neon checker (`tools/anatomy-check.mjs` on `cursor/anatomy-check-3de5`) scores the crew sprites. It cannot see these FBX meshes. `tools/adventure-anatomy.mjs` applies that same numeric bar to the adventure renders: head 16–45% of the figure, on a neck, centered; side, three-quarter, and back chest at least 36% of the front; a walk with a step, a swing, a plant, and a small bob; opposition scored from the side, because a 3D stride travels away from the camera; Ellie 1.15–2.05 m with feet on the ground; the pug at or under her hip, on the ground, knee to waist.
+The Neon checker (`tools/anatomy-check.mjs` on `cursor/anatomy-check-3de5`) scores the crew sprites. It cannot see these meshes. `tools/adventure-anatomy.mjs` applies that same numeric bar to the adventure renders: head 16–45% of the figure, on a neck, centered; side, three-quarter, and back chest at least 36% of the front; a walk with a step, a swing, a plant, and a small bob; opposition scored from the side, because a 3D stride travels away from the camera; Ellie 1.15–2.05 m with feet on the ground; each follower longer than it is tall, at or under her hip, paws on the ground, knee to waist.
 
 Result: **PASS** (exit 0).
 
 | | Measured |
 | --- | --- |
 | Ellie | 1.50 m. Feet at 0.00 m. Hip bone 0.44 m. |
-| Head, front | 38% of the figure. On a neck. Centered. Three-quarter 36%, side 24%, back 36%. |
-| Chest width | Front 93 px, three-quarter 143, side 67 (72% of the front), back 160. |
-| Walk | Side step 182 px, arm swing 72 px, opposition 0.48, bob 15 px, feet trade a plant. |
-| Pug | 0.40 m tall. Top 0.40 m, under the 0.44 m hip. Feet at 0.00 m. |
+| Head, front | 34% of the figure. On a neck. Centered. Three-quarter 35%, side 36%, back 34%. |
+| Chest width | Front 81 px, three-quarter 102, side 67 (83% of the front), back 162. |
+| Walk | Side step 182 px, arm swing 75 px, opposition 0.66, bob 13 px, feet trade a plant. |
+| Fox | 0.39 m tall, 0.77 m long. Top 0.39 m, under the 0.44 m hip. Feet at 0.00 m. |
+| Cat | 0.34 m tall, 0.42 m long. Top 0.34 m. Feet at 0.00 m. |
+| Puppy | 0.31 m tall, 0.49 m long. Top 0.31 m. Feet at 0.00 m. |
 
-Ellie is the CC0 Casual Female, scaled to 1.50 m. The pug is the CC0 pug from the same pack, scaled to 0.40 m so the ears sit just under her hip. Both use the pack's Idle and Walk clips. The FBX materials arrived with opacity 0, so the page forces opacity 1 and flat colors by material name. Shots are in `test-results/adventure-m0/`.
+Ellie is the CC0 Casual Female, scaled to 1.50 m. Her shirt, pants, and body mesh are the pack's. The pack Face and Hair are hidden, and a new head (longer face, brows, eyes, nose, mouth, side-swept hair) sits on the Head bone. The suited pug is not the follower. It is saved at `adventure/assets/later/Pug.fbx` for a later town character.
+
+`?pet=fox|cat|puppy|bunny|aussie` picks the follower. Fox, cat, and puppy are in the scene, one at a time, at her heel, with idle and walk. Bunny and Australian Shepherd are accepted by the switch and are not loaded. Shots are in `test-results/adventure-m0/`. Before shots of the old head and the suited pug are in `test-results/adventure-m0/before/`.
+
+### Bunny and Australian Shepherd
+
+No free model was shipped for either, and nothing was purchased.
+
+Bunny. The Quaternius Ultimate Monsters bunny is CC0 and animated, and the pack sheet shows it on two legs, so it is not a heel pet. https://quaternius.com/packs/ultimatemonsters.html Sketchfab has CC-BY bunnies (for example Bunny Detective, six clips) that this run could not download without an account, and several are characters rather than a plain four-legged rabbit. OpenGameArt rabbits found in the search were flat sprites.
+
+Australian Shepherd. No CC0 or CC-BY file with a merle coat, four legs, and an idle plus a walk was found.
+
+| Candidate | License | Why it is not in the build |
+| --- | --- | --- |
+| [Australian Shepherd (Game Ready)](https://sketchfab.com/3d-models/australian-shepherd-game-ready-122dedb159bb4a6da34cc14cda46aa38) by Nyilonelycompany | Sketchfab Standard, paid. Eight clips, including idle and walk. The description names merle coats. | Not free. |
+| [Low Australian Shepherd](https://sketchfab.com/3d-models/low-australian-shepherd-166469433a8948c386d127c6cf374513) by Luckypon | CC BY 4.0. Rigged. | No animation clips. |
+| [Australian Shepherd Low Poly Model](https://sketchfab.com/3d-models/australian-shepherd-low-poly-model-4fcc0ef60fda4f5d95d57b7e545e7279) by ribbon_bee | No license is set on the model. | No animation clips, and the license is not one this page can use. |
+
+Quaternius does publish a CC0 husky and a CC0 shiba. Neither is an Australian Shepherd, so neither was renamed into the aussie slot.
 
 ## Milestones
 
@@ -66,7 +86,7 @@ Each step is one addition. The car is still absent. Sky, traffic, and the Boulev
 
 | Step | What is added | Not yet |
 | --- | --- | --- |
-| M0 | One round courtyard. Ellie on foot. One pug at her heel. The frame harness. | No house, no job, no foe, no car. This is the build. |
+| M0 | One round courtyard. Ellie on foot. One follower at her heel, chosen with `?pet=` (fox, cat, or puppy). The frame harness. | No house, no job, no foe, no car. Bunny and Australian Shepherd wait on a free animated model. This is the build. |
 | M1 | One glass house shell on the courtyard edge. No interior. | No room portrait, no second building. |
 | M2 | Nia, and job 1 (walk up and knock). | No other people. The iPad cap of 3 awake starts here and is not raised. |
 | M3 | Swing, and one crate crab that faints. | No second foe. Nearby cap still 3 / 4 / 6. |
@@ -407,7 +427,7 @@ Each phase is measured before the next one starts. The car key does not start ah
 
 | Phase | What she can do | Done when |
 | --- | --- | --- |
-| 0 | Milestone 0. Courtyard, Ellie, pug, frame harness. Page `adventure.html`. No menu tile. | Anatomy exit 0. The frame gate above, on the lab viewports. |
+| 0 | Milestone 0. Courtyard, Ellie, one follower (`?pet=fox`, `cat`, or `puppy`), frame harness. Page `adventure.html`. No menu tile. | Anatomy exit 0. The frame gate above, on the lab viewports. |
 | 1 | Milestone 1. One glass house shell. Still unarmed. No interior. | The same frame gate, with the shell in the shot. |
 | 2 | One real Lamp-kit house, one room at 1.5 m, Nia, job 1, the tale book. | The room does not use the stretched portrait. |
 | 3 | Jobs 3–5. Swing, Spark, Shot. Crate crabs. WIND. | Props do not fail the walk. Hub streets stay friendly. Nearby cap holds at 3 / 4 / 6. |
@@ -453,7 +473,7 @@ Reply with a letter, or "recommended" to take the marked row.
 | 11 | New animals | The four she has, then tin hare, brook frog, lamp moth. One mesh at a time. Vale save until a closet pass. |
 | 12 | Models | Restyle today's figure first. Free / CC0 only (Quaternius, Kenney, KayKit free). Do not buy KayKit Extra (about $7.95) or Synty Fantasy Kingdom (about $349.99). |
 | 13 | Load and frames | Boot under 10 s on her iPad, under 6 s on the phone, under 4 s on a PC. 60 fps aim, flat 30 floor. No `shadowBlur`. On foot the Z and the traffic cars are not drawn. |
-| 14 | First build | Milestone 0 is in `adventure.html`: one courtyard, Ellie, the pug, the frame gate. M1 through M5 wait on that gate. |
+| 14 | First build | Milestone 0 is in `adventure.html`: one courtyard, Ellie, a fox, cat, or puppy at her heel, the frame gate. The suited pug is saved under `adventure/assets/later/` and is not the follower. M1 through M5 wait on that gate. |
 
 Open, and fine to leave until you approve a phase:
 
