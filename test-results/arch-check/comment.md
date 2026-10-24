@@ -2,7 +2,7 @@
 
 ## ARCHITECTURE-CHECK
 
-**FAIL** on `cursor/arch-check-652e` `a9371bcce864`.
+**FAIL** on `cursor/arch-check-652e` `896fb969726a`.
 
 Kid App buildings only. 24 reviewed. Judged against `docs/NEON-WORLD-STYLE.md`. Full log: `test-results/arch-check/report.md`.
 
@@ -32,11 +32,12 @@ Warnings (they do not fail the review):
 
 FPS (software GL, one near building / in-view pass):
 
-- phone 0.1 ms / 0.3 ms over 37 buildings
-- ipad 0.1 ms / 1.1 ms over 37 buildings
+- phone 0.1 ms / 0.4 ms over 37 buildings
+- ipad 0.1 ms / 1 ms over 37 buildings
 - pc 0.1 ms / 0.3 ms over 37 buildings
 
-Ramps: 70 (floor 24, no ceiling). River-edge small jumps: 3.
+Ramps: 70 (floor 70, no ceiling). River-edge small jumps: 3.
+Tunnel: 200 m × 160 m, bore 30 m, ceiling 10 m.
 
 Dance mural:
 

@@ -1,6 +1,6 @@
 # Architecture check
 
-Target `cursor/arch-check-652e` `a9371bcce864`
+Target `cursor/arch-check-652e` `896fb969726a`
 
 Result: **FAIL**
 
@@ -75,6 +75,10 @@ Pass.
 
 Pass.
 
+## Tunnel
+
+Pass.
+
 ## shadowBlur
 
 - **Building pass set shadowBlur**
@@ -100,7 +104,7 @@ Pass.
 
 ## River-edge ramps
 
-70 ramps besides tow trucks. Light floor 24. No upper limit.
+70 ramps besides tow trucks. Floor 70 (the original count, including the river-edge launches). No upper limit. Run-up 16 m, landing 16 m.
 
 - south bank 1.6 m × 10 m, lip 8 m from the water, at -40, 1767
 - north bank 1.6 m × 10 m, lip 8 m from the water, at 60, 1853
@@ -117,15 +121,16 @@ Software GL. Milliseconds are this host, same idea as PERF-GUARD. Source for the
 
 | View | One building ms | Pass ms | Buildings | Cap one | Cap pass | Buffer |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| phone | 0.1 | 0.3 | 37 | 8 | 40 | 1688x780 |
-| ipad | 0.1 | 1.1 | 37 | 16 | 90 | 1024x768 |
+| phone | 0.1 | 0.4 | 37 | 8 | 40 | 1688x780 |
+| ipad | 0.1 | 1 | 37 | 16 | 90 | 1024x768 |
 | pc | 0.1 | 0.3 | 37 | 8 | 40 | 1280x720 |
 
 ## What held
 
 - Shape, doors, and garages match on Arcade, Street, and on foot.
 - Dance mural walls are flat, on the face, and at least as big as the recorded floor.
-- Lots of ramps (70). No upper limit. The small river-edge jump stays the one that clears the river at about 80 mph.
+- 70 ramps, at least the original 70, each with a clear run-up and landing. No upper limit. The small river-edge jump stays the one that clears the river at about 80 mph.
+- The tunnel keeps its length, bore, ceiling, and height, and both mouths stay clear.
 - 24 solid buildings, the approved count. A move does not change it. Ideas for Bob are not buildings.
 - Districts, roads, spawn, purpose placement, and walkable doors still read as a city.
 - Finished buildings are straight boxes on the shared drawer. Curves, organic shells, and photoreal skins are not in this city.

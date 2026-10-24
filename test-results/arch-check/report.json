@@ -1,6 +1,6 @@
 {
   "ok": false,
-  "sha": "a9371bcce864d6b673f27cb656fbb1760f3657ea",
+  "sha": "896fb969726a1c693612058f6b4ca86d74248e79",
   "branch": "cursor/arch-check-652e",
   "findings": [
     {
@@ -617,7 +617,8 @@
   "passes": [
     "Shape, doors, and garages match on Arcade, Street, and on foot.",
     "Dance mural walls are flat, on the face, and at least as big as the recorded floor.",
-    "Lots of ramps (70). No upper limit. The small river-edge jump stays the one that clears the river at about 80 mph.",
+    "70 ramps, at least the original 70, each with a clear run-up and landing. No upper limit. The small river-edge jump stays the one that clears the river at about 80 mph.",
+    "The tunnel keeps its length, bore, ceiling, and height, and both mouths stay clear.",
     "24 solid buildings, the approved count. A move does not change it. Ideas for Bob are not buildings.",
     "Districts, roads, spawn, purpose placement, and walkable doors still read as a city.",
     "Finished buildings are straight boxes on the shared drawer. Curves, organic shells, and photoreal skins are not in this city.",
@@ -1330,7 +1331,8 @@
   ],
   "ramps": {
     "count": 70,
-    "lot": 24,
+    "lot": 70,
+    "floor": 70,
     "riverEdge": [
       {
         "cx": -40,
@@ -1369,7 +1371,33 @@
         "lipToWater": 8
       }
     ],
-    "locked": 3
+    "locked": 3,
+    "run": 16,
+    "land": 16,
+    "blocked": 0
+  },
+  "tunnel": {
+    "ok": true,
+    "count": 1,
+    "record": {
+      "length": 200,
+      "width": 160,
+      "bore": 30,
+      "ceil": 10,
+      "top": 34,
+      "along": "z",
+      "approach": 40
+    },
+    "live": {
+      "length": 200,
+      "width": 160,
+      "bore": 30,
+      "ceil": 10,
+      "top": 34,
+      "along": "z",
+      "cx": -450,
+      "cz": 600
+    }
   },
   "roster": [
     {
@@ -1722,7 +1750,7 @@
         "n": 11
       },
       "pass": {
-        "median": 0.3,
+        "median": 0.4,
         "max": 0.6,
         "n": 9
       },
@@ -1743,8 +1771,8 @@
         "n": 11
       },
       "pass": {
-        "median": 1.1,
-        "max": 1.9,
+        "median": 1,
+        "max": 1.5,
         "n": 9
       },
       "blurHits": 0
@@ -1760,12 +1788,12 @@
       "neighbors": 37,
       "one": {
         "median": 0.1,
-        "max": 0.2,
+        "max": 0.1,
         "n": 11
       },
       "pass": {
         "median": 0.3,
-        "max": 0.4,
+        "max": 0.5,
         "n": 9
       },
       "blurHits": 0
