@@ -19,4 +19,4 @@ The stage cafe on the west side of the city stays where it is. Its sign still sa
 
 Arcade, pet lounge, soccer shop, and Builder HQ keep the 1 2 3 4 buttons on the try link. A house room and a cafe room do not. The southeast no longer has an arcade door or a Builder HQ door. Those rooms open from the try link.
 
-Nothing here deploys.
+This is the live southeast row. Adventure, the adult pages, and /test/ stay as they were.

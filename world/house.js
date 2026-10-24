@@ -446,7 +446,7 @@ function walkEnsureHomeStyles(){
   if(window.HOUSE_ROW||houseStylesLoading||typeof document==='undefined')return;
   houseStylesLoading=true;
   const s=document.createElement('script');
-  s.src='world/house-styles.js?v=41';
+  s.src='world/house-styles.js?v=40';
   s.onload=function(){houseStylesLoading=false;};
   s.onerror=function(){houseStylesLoading=false;};
   document.head.appendChild(s);
@@ -458,7 +458,7 @@ function walkEnsureTry(){
   if(window.INTERIOR_TRY||interiorTryLoading||typeof document==='undefined')return;
   interiorTryLoading=true;
   const s=document.createElement('script');
-  s.src='world/interior-try.js?v=41';
+  s.src='world/interior-try.js?v=40';
   s.onload=function(){interiorTryLoading=false;};
   s.onerror=function(){interiorTryLoading=false;};
   document.head.appendChild(s);

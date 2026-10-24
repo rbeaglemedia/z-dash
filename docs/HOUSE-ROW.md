@@ -31,4 +31,4 @@ Each roof has an antenna. The row sits clear of the cross streets at z = −760 
 
 A signed HOME 1 to HOME 4 opens that style. The unsigned Homestead door is counted only among unsigned homes, so it stays style 1.
 
-Nothing here deploys.
+This is the live southeast row. Adventure, the adult pages, and /test/ stay as they were.
