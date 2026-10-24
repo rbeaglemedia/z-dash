@@ -1,5 +1,5 @@
 'use strict';
-let fps=60,fpsAcc=0,fpsN=0;
+let fps=60,fpsAcc=0,fpsN=0,skyGrad=null,groundGrad=null,gradKey='';
 function render(){const _vs=visApply();
   // chase cam: smoothed behind the plane
   if(FLYCAM.orbit){const o=FLYCAM.orbit,tx=P.x,ty=P.y+.6,tz=P.z,ay=P.yaw+o.az;cam.x=tx+Math.sin(ay)*Math.cos(o.el)*o.d;cam.z=tz+Math.cos(ay)*Math.cos(o.el)*o.d;cam.y=ty+Math.sin(o.el)*o.d;
@@ -18,10 +18,12 @@ function render(){const _vs=visApply();
   try{
   // sky + horizon
   ctx.fillStyle='#05020c';ctx.fillRect(0,0,W,H);
-  const rl=cam.roll;cam.roll=0;const hz=proj(cam.x+Math.sin(cam.yaw)*1e5,cam.y,cam.z+Math.cos(cam.yaw)*1e5);cam.roll=rl;const hy=hz?hz[1]:H/2;
+  const rl=cam.roll;cam.roll=0;  const hz=proj(cam.x+Math.sin(cam.yaw)*1e5,cam.y,cam.z+Math.cos(cam.yaw)*1e5);cam.roll=rl;let hy=hz&&Number.isFinite(hz[1])?hz[1]:H/2;if(!Number.isFinite(hy))hy=H*0.5;
   ctx.save();ctx.translate(W/2,H/2);ctx.rotate(cam.roll);ctx.translate(-W/2,-H/2);
-  const g=ctx.createLinearGradient(0,hy-H,0,hy);g.addColorStop(0,'#05020c');g.addColorStop(.7,'#2a0636');g.addColorStop(1,'#ff2a3d');ctx.fillStyle=g;ctx.fillRect(-W,hy-H*2,W*3,H*2);
-  const gg=ctx.createLinearGradient(0,hy,0,hy+H);gg.addColorStop(0,'#1a0410');gg.addColorStop(1,'#020203');ctx.fillStyle=gg;ctx.fillRect(-W,hy,W*3,H*2);
+  const gkey=(hy|0)+':'+H+':'+cv.width+':'+cv.height;
+  if(gkey!==gradKey||!skyGrad){gradKey=gkey;skyGrad=ctx.createLinearGradient(0,hy-H,0,hy);skyGrad.addColorStop(0,'#05020c');skyGrad.addColorStop(.7,'#2a0636');skyGrad.addColorStop(1,'#ff2a3d');groundGrad=ctx.createLinearGradient(0,hy,0,hy+H);groundGrad.addColorStop(0,'#1a0410');groundGrad.addColorStop(1,'#020203');}
+  ctx.fillStyle=skyGrad;ctx.fillRect(-W,hy-H*2,W*3,H*2);
+  ctx.fillStyle=groundGrad;ctx.fillRect(-W,hy,W*3,H*2);
   ctx.strokeStyle='#ff5a66';ctx.lineWidth=2;ctx.shadowColor='#ff2a3d';ctx.shadowBlur=14;ctx.beginPath();ctx.moveTo(-W,hy);ctx.lineTo(W*2,hy);ctx.stroke();ctx.shadowBlur=0;ctx.restore();
   // grid
   const S=40,N=22,gx=Math.round(cam.x/S)*S,gz=Math.round(cam.z/S)*S,quiet=typeof roadLook==='function'&&roadLook()==='E';ctx.globalAlpha=quiet?0.16:0.55;
@@ -42,7 +44,7 @@ function render(){const _vs=visApply();
   visRestore(_vs);drawHud(hudDt);if(typeof drawRoadLookTag==='function')drawRoadLookTag();}
 let last=performance.now(),hudDt=1/60;
 function loop(t){const dt=Math.min(0.05,(t-last)/1000);last=t;fpsAcc+=dt;fpsN++;if(fpsAcc>0.5){fps=fpsN/fpsAcc;fpsAcc=0;fpsN=0;}
-  hudDt=dt;if(flying&&!paused)step(dt);if(window.TOWDRIVE&&!paused)TOWDRIVE.update(dt);if(window.TRAFFIC&&!paused)TRAFFIC.update(dt);if(window.SOCCER)SOCCER.frame(dt);render();requestAnimationFrame(loop);}
+  hudDt=dt;if(flying&&!paused)step(dt);if(window.TOWDRIVE&&!paused)TOWDRIVE.update(dt);if(window.TRAFFIC&&!paused)TRAFFIC.update(dt);if(window.SOCCER)SOCCER.frame(dt);try{render();}catch(e){if(!loop.err)loop.err=String(e&&e.message||e);}requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 function syncStartButtons(){const row=document.getElementById('kStartMode');if(!row)return;row.querySelectorAll('[data-sm]').forEach(b=>b.classList.toggle('on',b.dataset.sm===P.startMode));}
 function setStartMode(mode){P.startMode=mode==='skydrop'?'skydrop':'runway';try{localStorage.setItem('zdw_start',P.startMode);}catch(e){}syncStartButtons();}

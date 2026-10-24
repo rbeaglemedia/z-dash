@@ -27,8 +27,15 @@ const TOWDRIVE = (() => {
   let ready = false, rideT = null, err = '';
 
   function cruise(kind) {
-    const add = (kind === 'highway' || kind === 'bridge' || kind === 'tunnel') ? T.highwayAdd : 0;
-    return (T.speedMin + add + rnd() * (T.speedMax - T.speedMin)) * T.towFrac;
+    // Fast roads use fastMin/fastMax. highwayAdd is only a fallback for a tune
+    // saved before those fields existed. A missing addend is 0, never NaN:
+    // NaN speed moves the truck to NaN and the bed check then drags the Z there.
+    const fast = kind === 'highway' || kind === 'bridge' || kind === 'tunnel';
+    const add = Number.isFinite(+T.highwayAdd) ? +T.highwayAdd : 0;
+    const lo = fast ? (Number.isFinite(+T.fastMin) ? +T.fastMin : T.speedMin + add) : T.speedMin;
+    const hi = fast ? (Number.isFinite(+T.fastMax) ? +T.fastMax : T.speedMax + add) : T.speedMax;
+    const span = hi > lo ? hi - lo : 0;
+    return (lo + rnd() * span) * (Number.isFinite(+T.towFrac) ? +T.towFrac : 0.5);
   }
   function blocked(L, s) {
     for (const iv of L.blocks) if (s >= iv[0] - 1 && s <= iv[1] + 1) return true;
@@ -135,6 +142,8 @@ const TOWDRIVE = (() => {
   }
   function drive(tr, dt) {
     const x0 = tr.x, z0 = tr.z;
+    if (!Number.isFinite(tr.v)) tr.v = Number.isFinite(tr.v0) ? tr.v0 : cruise(tr.lane && tr.lane.kind);
+    if (!Number.isFinite(tr.v) || !tr.lane || typeof tr.lane.at !== 'function') return;
     if (tr.ut > 0) tr.ut -= dt;
     const lead = leadOf(tr);
     tr.v = lead ? Math.min(tr.v0, lead.v) : tr.v0;
@@ -222,7 +231,9 @@ const TOWDRIVE = (() => {
   let lipOid = 0;
   function overBed(tr, past) {
     if (P.wreck || P.loop || !tr || !tr.u) return null;
+    if (!Number.isFinite(tr.x) || !Number.isFinite(tr.z) || !Number.isFinite(tr.v)) return null;
     const loc = localOf(tr, P.x, P.z);
+    if (!Number.isFinite(loc.along) || !Number.isFinite(loc.lat)) return null;
     const rear = -tr.L / 2 - 0.55, lip = -tr.L / 2 + tr.bed;
     if (loc.along < rear || loc.along > lip + (past || 0.4)) return null;
     if (Math.abs(loc.lat) > tr.w / 2 + 0.55) return null;
@@ -289,7 +300,7 @@ const TOWDRIVE = (() => {
       const nearLip = Math.abs(loc.lat) < tr.w / 2 + 0.8 && (P.y || 0) < (tr.h || 2) + 3 && loc.along >= lip - 0.35 && loc.along < lip + 3;
       const on = overBed(tr, 1.2);
       if (nearLip) { boost(tr); lipOid = tr.oid; rideT = null; }
-      else if (on) { P.x += tr.dx; P.z += tr.dz; }
+      else if (on && Number.isFinite(tr.dx) && Number.isFinite(tr.dz)) { P.x += tr.dx; P.z += tr.dz; }
       else rideT = null;
     }
     if (P.ground && (P.y || 0) < 0.85) lipOid = 0;
@@ -392,6 +403,6 @@ const TOWDRIVE = (() => {
       trucks:trucks.map(tr => ({id:tr.id, v:+tr.v.toFixed(2), v0:+tr.v0.toFixed(2), gone:+tr.gone.toFixed(1), x:+tr.x.toFixed(1), z:+tr.z.toFixed(1), kind:tr.lane && tr.lane.kind, hop:tr.hopper ? 1 : 0, hits:tr.hits || 0}))
     };
   }
-  return {update, ride, stats, cabTouch, get trucks(){ return trucks; }};
+  return {update, ride, stats, cabTouch, get trucks(){ return trucks; }, build:'finite-cruise'};
 })();
 window.TOWDRIVE = TOWDRIVE;

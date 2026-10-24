@@ -1,0 +1,19 @@
+{
+  "cause": "v34 removed traffic-tune highwayAdd. towdrive.js still added it on highway, bridge, and tunnel trucks, so their speed became NaN. A NaN bed check then added that NaN to the car. The sky gradient rejected the NaN, the draw loop stopped, and only the HTML buttons stayed on screen.",
+  "v33": "f6678f4 still has highwayAdd 4, so the same phone draws the city. Rollback would show the city again. Bob asked to keep v34 live and wait for this fix.",
+  "cold": {
+    "url": "http://127.0.0.1:8778/world.html",
+    "cache": "disabled",
+    "phone": {"errs": [], "loopErr": "", "P": [0, 0], "trucks": 6, "speedsFinite": true, "lit": 420, "size": "844x390"},
+    "ipad": {"errs": [], "loopErr": "", "lit": 885, "size": "1024x768"},
+    "pc": {"errs": [], "loopErr": "", "lit": 1009, "size": "1280x720"}
+  },
+  "worldSplitPhone": {"errs": [], "loopErr": "", "P": [0, 0], "speedsFinite": true, "lit": 420},
+  "webkitLockedAddColorStop": {"errs": [], "loopErr": "", "finite": true, "lit": 210},
+  "serviceWorker": {
+    "v33Controlled": {"cache": "world-split-v33", "highwayAdd": 4, "finite": true, "lit": 324, "errs": []},
+    "mixOldTowNewTune": {"build": "", "highwayAdd": 6, "finite": true, "speedsFinite": true, "lit": 324, "errs": []},
+    "afterWorkerUpdate": {"cache": "world-split-v34", "build": "finite-cruise", "finite": true, "lit": 264, "errs": []}
+  },
+  "notDeployed": true
+}

@@ -17,6 +17,7 @@ window.TRAFFIC_TUNE = {
   speedMax: 15,
   fastMin: 16,         // m/s, highway, bridge, and tunnel
   fastMax: 20,
+  highwayAdd: 6,       // m/s. towdrive from v33 still adds this. It must stay a number: a missing one makes truck speed NaN and the city never draws.
   gap: 12.75,          // metres, town centre to centre (8.5 bumper + one 4.25 length)
   gapTownBumper: 8.5,
   gapFastBumper: 12.75,
