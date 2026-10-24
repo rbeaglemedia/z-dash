@@ -1,11 +1,12 @@
 /* Test walk for the six rooms. Loaded only when world.html?interiorTry=1.
-   Houses keep one style per door. Cafe, arcade, pet lounge, soccer shop,
-   and Builder HQ get buttons 1 2 3 4. This file does not write the kid
-   saves, and it does not set shadowBlur. */
+   Houses keep one style per door. The four cafes are doors, one style
+   each. Arcade, pet lounge, soccer shop, and Builder HQ get buttons
+   1 2 3 4. This file does not write the kid saves, and it does not set
+   shadowBlur. */
 'use strict';
 
 const TRY_SAVE = 'zdash.interior.try.v1';
-const TRY_SINGLE = ['CAFE', 'ARCADE', 'PETS', 'SOCCER', 'BUILDER'];
+const TRY_SINGLE = ['ARCADE', 'PETS', 'SOCCER', 'BUILDER'];
 
 function tryLook(n, id, name, line, w, d, h, floor, wall, ceil, panes, boxes) {
   return { n: n, id: id, name: name, line: line, w: w, d: d, h: h, floor: floor, wall: wall, ceil: ceil, panes: panes, boxes: boxes };
@@ -63,6 +64,7 @@ const TRY_ROOMS = {
 };
 
 const tryChoice = { CAFE: 1, ARCADE: 1, PETS: 1, SOCCER: 1, BUILDER: 1 };
+let tryCafeN = 0;
 
 function tryQuery() {
   try {
@@ -147,19 +149,49 @@ function tryPaint(g, W, H, purpose) {
   for (let i = 0; i < look.samples.length; i++) sum += look.samples[i];
   const ms = sum / look.samples.length;
   const fps = ms < 9.1 ? 'about 110 fps' : (ms > 0 ? 'about ' + Math.round(1000 / ms) + ' fps' : '');
+  const pickKey = purpose === 'CAFE' && tryCafeN ? ('CAFE ' + tryCafeN) : purpose;
   const picks = tryReadPicks();
-  const mine = picks[purpose];
+  const mine = picks[pickKey];
   const star = mine && mine.style === style ? '  ·  FAVORITE' : '';
+  const head = purpose === 'CAFE' && tryCafeN
+    ? ('CAFE ' + tryCafeN + '  STYLE ' + style + '  ' + look.name.toUpperCase())
+    : ('STYLE ' + style + '  ' + look.name.toUpperCase());
   g.fillStyle = '#04140c';
   g.fillRect(0, H - 64, W, 64);
   g.fillStyle = '#e9fff2';
   g.font = '800 22px sans-serif';
   g.textAlign = 'left';
   g.textBaseline = 'alphabetic';
-  g.fillText('STYLE ' + style + '  ' + look.name.toUpperCase() + star, 16, H - 38);
+  g.fillText(head + star, 16, H - 38);
   g.font = '700 15px sans-serif';
   g.fillText(room.title + '  ·  ' + look.line + '   ' + ms.toFixed(2) + ' ms   ' + fps, 16, H - 14);
-  return { ms: ms, style: style, name: look.name, room: purpose, title: room.title };
+  return { ms: ms, style: style, name: look.name, room: pickKey, title: room.title, cafe: tryCafeN || 0 };
+}
+
+function tryCafeStyle(door) {
+  const b = door && door.building;
+  const word = b && b.sign ? (b.sign.word || b.sign.t || '') : '';
+  const m = /CAFE\s*([1-4])/.exec(String(word).toUpperCase());
+  if (m) { tryCafeN = Number(m[1]); return tryCafeN; }
+  if (b && b.tryCafe >= 1 && b.tryCafe <= 4) { tryCafeN = b.tryCafe; return tryCafeN; }
+  return 0;
+}
+
+function tryCafeStreet(hold) {
+  window.INTERIOR_TRY_STREET = 1;
+  tryHideMenu();
+  if (hold && typeof WALK_MODE !== 'undefined') {
+    WALK_MODE.onFoot = false;
+    WALK_MODE.insideBuilding = false;
+    WALK_MODE.insideDoor = null;
+  }
+  if (hold && typeof walkHideInterior === 'function') walkHideInterior();
+  if (typeof P !== 'undefined' && P) {
+    P.x = -220; P.z = -654; P.y = 0.2; P.v = 0; P.ground = true;
+    P.pitch = 0; P.bank = 0; P.gam = 0; P.wreck = null;
+    P.yaw = Math.PI / 2; P.hd = P.yaw; P.driveMode = 'street';
+  }
+  if (hold && typeof FLYCAM !== 'undefined') FLYCAM.orbit = { az: Math.PI, el: 0.16, d: 18 };
 }
 
 function tryHouseKey(pick) {
@@ -216,11 +248,11 @@ function tryEnsureUi() {
   if (typeof document === 'undefined') return;
   if (!document.getElementById('interior-try-menu')) {
     const css = document.createElement('style');
-    css.textContent = '#interior-try-menu{position:fixed;inset:0;z-index:96;display:flex;flex-direction:column;gap:12px;padding:22px 16px 18px;background:#04140c;color:#e9fff2;font-family:sans-serif;overflow:auto}#interior-try-menu[hidden]{display:none}#interior-try-menu h1{margin:0;font-size:28px}#interior-try-menu p{margin:0;font-size:16px;max-width:640px}#interior-try-menu .row{display:flex;flex-wrap:wrap;gap:10px}#interior-try-menu button{min-height:64px;min-width:148px;padding:10px 14px;border-radius:16px;border:3px solid #7dff6b;background:#102418;color:#e9fff2;font:800 18px sans-serif;cursor:pointer}#interior-try-picks{font-size:16px;font-weight:800}#interior-try-switch{position:absolute;z-index:3;left:0;right:0;bottom:78px;display:flex;justify-content:center;gap:10px;pointer-events:auto}#interior-try-switch[hidden]{display:none}#interior-try-switch button{width:76px;height:76px;border-radius:18px;border:4px solid #e9fff2;background:#102418;color:#e9fff2;font:900 32px sans-serif;cursor:pointer}#interior-try-switch button[hidden]{display:none}#interior-try-switch button.on{background:#7dff6b;color:#04140c}#interior-try-switch button.fav{width:auto;padding:0 18px;font-size:16px;letter-spacing:.4px}';
+    css.textContent = '#interior-try-menu{position:fixed;inset:0;z-index:96;display:flex;flex-direction:column;gap:12px;padding:22px 16px 18px;background:#04140c;color:#e9fff2;font-family:sans-serif;overflow:auto}#interior-try-menu[hidden]{display:none}#interior-try-menu h1{margin:0;font-size:28px}#interior-try-menu p{margin:0;font-size:16px;max-width:640px}#interior-try-menu .row{display:flex;flex-wrap:wrap;gap:10px}#interior-try-menu button{min-height:64px;min-width:148px;padding:10px 14px;border-radius:16px;border:3px solid #7dff6b;background:#102418;color:#e9fff2;font:800 18px sans-serif;cursor:pointer}#interior-try-picks{font-size:16px;font-weight:800}#interior-try-switch{position:absolute;z-index:3;left:0;right:0;bottom:78px;display:flex;justify-content:center;gap:10px;pointer-events:auto}#interior-try-switch[hidden]{display:none}#interior-try-switch button{width:76px;height:76px;border-radius:18px;border:4px solid #e9fff2;background:#102418;color:#e9fff2;font:900 32px sans-serif;cursor:pointer}#interior-try-switch button[hidden]{display:none}#interior-try-switch button.on{background:#7dff6b;color:#04140c}#interior-try-switch button.fav{width:auto;padding:0 18px;font-size:16px;letter-spacing:.4px}#interior-try-back{position:fixed;z-index:97;left:14px;top:14px;min-height:52px;padding:10px 14px;border-radius:16px;border:3px solid #7dff6b;background:#102418;color:#e9fff2;font:800 16px sans-serif;cursor:pointer}#interior-try-back[hidden]{display:none}';
     document.head.appendChild(css);
     const menu = document.createElement('div');
     menu.id = 'interior-try-menu';
-    menu.innerHTML = '<h1>Try the rooms</h1><p>Houses are one style each. Cafe, arcade, pet lounge, soccer shop, and Builder HQ have buttons 1 2 3 4. The style number stays on the picture. Tap FAVORITE on the one you like.</p><div class="row" id="interior-try-houses"></div><div class="row" id="interior-try-rooms"></div><div id="interior-try-picks"></div>';
+    menu.innerHTML = '<h1>Try the rooms</h1><p>Houses are one style each. The four cafes are doors across that street, one style each, with the number on the sign. Arcade, pet lounge, soccer shop, and Builder HQ have buttons 1 2 3 4. Tap FAVORITE on the one you like.</p><div class="row" id="interior-try-houses"></div><div class="row" id="interior-try-rooms"></div><div id="interior-try-picks"></div>';
     document.body.appendChild(menu);
     const houses = menu.querySelector('#interior-try-houses');
     const names = ['Glass loft', 'Timber cabin', 'Sky penthouse', 'Block home'];
@@ -233,6 +265,11 @@ function tryEnsureUi() {
       houses.appendChild(b);
     }
     const rooms = menu.querySelector('#interior-try-rooms');
+    const street = document.createElement('button');
+    street.type = 'button';
+    street.textContent = 'CAFE STREET';
+    street.addEventListener('click', function () { tryCafeStreet(false); });
+    rooms.appendChild(street);
     for (let i = 0; i < TRY_SINGLE.length; i++) {
       const id = TRY_SINGLE[i];
       const b = document.createElement('button');
@@ -243,10 +280,28 @@ function tryEnsureUi() {
     }
   }
   tryEnsureSwitch();
+  if (!document.getElementById('interior-try-back')) {
+    const back = document.createElement('button');
+    back.id = 'interior-try-back';
+    back.type = 'button';
+    back.textContent = 'ALL ROOMS';
+    back.hidden = true;
+    back.addEventListener('click', function () {
+      window.INTERIOR_TRY_STREET = 0;
+      if (window.WALK_MODE && WALK_MODE.insideBuilding && typeof WALK_MODE.stepBackOutside === 'function') WALK_MODE.stepBackOutside();
+      tryShowMenu();
+    });
+    document.body.appendChild(back);
+  }
   const out = document.getElementById('walk-step-out');
   if (out && out.dataset.tryMenu !== '1') {
     out.dataset.tryMenu = '1';
-    out.addEventListener('click', function () { tryShowMenu(); });
+    out.addEventListener('click', function () {
+      const door = window.WALK_MODE && WALK_MODE.insideDoor;
+      if (window.INTERIOR_TRY_STREET && door && door.purpose === 'CAFE') return;
+      window.INTERIOR_TRY_STREET = 0;
+      tryShowMenu();
+    });
   }
   tryPaintPicks();
 }
@@ -282,7 +337,11 @@ function tryOpen(purpose, houseN) {
     P.driveMode = 'street'; P.ground = true; P.v = 0; P.wreck = null; P.pitch = 0;
   }
   window.INTERIOR_TRY_HOUSE = purpose === 'HOME' ? houseN : 0;
-  if (purpose !== 'HOME') trySet(purpose, tryQuery().style || tryStyle(purpose));
+  if (purpose === 'CAFE') {
+    const n = tryQuery().style || tryCafeN || tryStyle('CAFE');
+    tryCafeN = n;
+    trySet('CAFE', n);
+  } else if (purpose !== 'HOME') trySet(purpose, tryQuery().style || tryStyle(purpose));
   const titles = { HOME: 'HOME', CAFE: 'CAFE', ARCADE: 'ARCADE', PETS: 'PET LOUNGE', SOCCER: 'SOCCER SHOP', BUILDER: 'BUILDER HQ' };
   const door = { purpose: purpose, purposeLabel: titles[purpose] || purpose, actionLabel: '', color: '#7dff6b' };
   if (typeof WALK_MODE !== 'undefined') {
@@ -298,10 +357,11 @@ function tryOpen(purpose, houseN) {
 function trySync() {
   const bar = document.getElementById('interior-try-switch');
   const door = window.WALK_MODE && WALK_MODE.insideDoor;
-  const single = !!(door && tryRoom(door.purpose));
+  const single = !!(door && TRY_SINGLE.indexOf(door.purpose) >= 0);
   const home = !!(door && door.purpose === 'HOME');
+  const cafe = !!(door && door.purpose === 'CAFE');
   if (bar) {
-    bar.hidden = !(single || home);
+    bar.hidden = !(single || home || cafe);
     const n = single ? tryStyle(door.purpose) : 0;
     const buttons = bar.querySelectorAll('button[data-style]');
     for (let i = 0; i < buttons.length; i++) {
@@ -319,7 +379,7 @@ function trySync() {
     for (let i = 0; i < nodes.length; i++) nodes[i].style.visibility = 'hidden';
   }
   const out = document.getElementById('walk-step-out');
-  if (out && tryQuery().on) out.textContent = 'ALL ROOMS';
+  if (out && tryQuery().on) out.textContent = (window.INTERIOR_TRY_STREET && cafe) ? 'STEP OUTSIDE' : 'ALL ROOMS';
 }
 
 function tryHold() {
@@ -339,11 +399,26 @@ function tryTick() {
   }
   if (window.WALK_MODE && WALK_MODE.insideBuilding) tryHold();
   tryEnsureUi();
+  const back = document.getElementById('interior-try-back');
+  if (back) back.hidden = !!q.shot || !window.INTERIOR_TRY_STREET || !!(window.WALK_MODE && WALK_MODE.insideBuilding);
   if (!q.shot) {
+    if (window.INTERIOR_TRY_STREET) { tryHideMenu(); return; }
     if (!window.WALK_MODE || !WALK_MODE.insideBuilding) tryShowMenu();
     return;
   }
   tryShotN++;
+  if (q.shot === 'cafes') {
+    tryCafeStreet(true);
+    if (tryShotN > 36 && document.body.dataset.ready !== '1') {
+      document.body.dataset.ready = '1';
+      document.body.dataset.shot = 'cafes';
+      if (typeof P !== 'undefined' && P) {
+        document.body.dataset.px = P.x.toFixed(1);
+        document.body.dataset.pz = P.z.toFixed(1);
+      }
+    }
+    return;
+  }
   if (q.shot === 'menu') {
     if (window.WALK_MODE) { WALK_MODE.insideBuilding = false; WALK_MODE.insideDoor = null; }
     if (typeof walkHideInterior === 'function') walkHideInterior();
@@ -378,9 +453,10 @@ const INTERIOR_TRY = {
   saveKey: TRY_SAVE,
   rooms: TRY_ROOMS,
   single: TRY_SINGLE,
-  has: function (purpose) { return !!tryRoom(purpose); },
+  has: function (purpose) { return TRY_SINGLE.indexOf(purpose) >= 0; },
+  cafeStyle: tryCafeStyle,
   styleOf: tryStyle,
-  setStyle: trySet,
+  setStyle: function (purpose, n) { if (purpose === 'CAFE') tryCafeN = n; trySet(purpose, n); },
   paint: tryPaint,
   picks: tryReadPicks,
   houseStar: tryHouseStar,

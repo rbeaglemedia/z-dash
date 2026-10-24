@@ -446,7 +446,7 @@ function walkEnsureHomeStyles(){
   if(window.HOUSE_ROW||houseStylesLoading||typeof document==='undefined')return;
   houseStylesLoading=true;
   const s=document.createElement('script');
-  s.src='world/house-styles.js?v=38';
+  s.src='world/house-styles.js?v=39';
   s.onload=function(){houseStylesLoading=false;};
   s.onerror=function(){houseStylesLoading=false;};
   document.head.appendChild(s);
@@ -458,7 +458,7 @@ function walkEnsureTry(){
   if(window.INTERIOR_TRY||interiorTryLoading||typeof document==='undefined')return;
   interiorTryLoading=true;
   const s=document.createElement('script');
-  s.src='world/interior-try.js?v=38';
+  s.src='world/interior-try.js?v=39';
   s.onload=function(){interiorTryLoading=false;};
   s.onerror=function(){interiorTryLoading=false;};
   document.head.appendChild(s);
@@ -556,10 +556,16 @@ function walkPaintRoom(){
   const purpose=door.purpose||'HOME';
   if(interiorTryOn()&&purpose!=='HOME'){
     walkEnsureTry();
-    if(window.INTERIOR_TRY&&INTERIOR_TRY.has(purpose)){
-      const info=INTERIOR_TRY.paint(g,W,H,purpose);
-      INTERIOR_TRY.last=info;
-      INTERIOR_TRY.sync();
+    const api=window.INTERIOR_TRY;
+    const cafe=purpose==='CAFE';
+    if(api&&(api.has(purpose)||cafe)){
+      if(cafe&&api.cafeStyle){
+        const n=api.cafeStyle(door);
+        if(n)api.setStyle('CAFE',n);
+      }
+      const info=api.paint(g,W,H,purpose);
+      api.last=info;
+      api.sync();
       if(card)card.dataset.room=purpose;
       return;
     }
