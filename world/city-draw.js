@@ -64,7 +64,7 @@ function drawDoors(b,d){if(!b.doors||d>150)return;const q=b.boxes[0];ctx.beginPa
   if(close&&b.purpose)drawAwning(b);}
 // far buildings (> CDRAW.far) and outline blocks: one cheap whole box per building box (every wall that faces the camera, plus the roof).
 // Same faces as the near draw, batched into one fill and one stroke per colour, so nothing pops in as a single wall.
-const FARB=new Map();let FARF=null,FARD=0,FARN=0;function farFlush(){if(FARF){ctx.fillStyle='#0a0612';ctx.fill(FARF);FARF=null;}if(!FARB.size){FARN=0;return;}const d0=FARN||FARD;ctx.lineWidth=d0<400?1.8:1.2;ctx.globalAlpha=clamp(1.5-d0/CDRAW.dist,.25,1);for(const[c,p]of FARB){ctx.strokeStyle=c;ctx.stroke(p);}ctx.globalAlpha=1;FARB.clear();FARN=0;}
+const FARB=new Map();let FARF=null,FARD=0,FARN=0;function farFlush(){if(FARF){ctx.globalAlpha=1;ctx.fillStyle='#0a0612';ctx.fill(FARF);FARF=null;}if(!FARB.size){FARN=0;return;}const d0=FARN||FARD;ctx.lineWidth=d0<400?1.8:1.2;ctx.globalAlpha=clamp(1.5-d0/CDRAW.dist,.25,1);for(const[c,p]of FARB){ctx.strokeStyle=c;ctx.stroke(p);}ctx.globalAlpha=1;FARB.clear();FARN=0;}
 function farSil(q){const P8=[];for(const y of[q.y0,q.y1])for(const[x,z]of[[q.x0,q.z0],[q.x1,q.z0],[q.x1,q.z1],[q.x0,q.z1]])P8.push(camS(x,y,z));
   const edge=(i,j)=>{const s=nearSeg(P8[i],P8[j]);if(!s)return;PT.moveTo(s[0],s[1]);PT.lineTo(s[2],s[3]);};
   const face=(ids)=>{for(let k=0;k<4;k++)edge(ids[k],ids[(k+1)%4]);if(FARF){const ink=PT;PT=FARF;const f4=[P8[ids[0]],P8[ids[1]],P8[ids[2]],P8[ids[3]]];let ar=0;for(let k=0;k<4;k++){const u=f4[k],v=f4[(k+1)%4];ar+=(u[0]/Math.max(u[2],NEAR))*(v[1]/Math.max(v[2],NEAR))-(v[0]/Math.max(v[2],NEAR))*(u[1]/Math.max(u[2],NEAR));}pathPoly(ar<0?f4.reverse():f4);PT=ink;}};
@@ -112,7 +112,7 @@ function drawBldg(b,d){if(b.towCab&&TOW3.on(d))return;const ol=b.kind==='outline
     if(!ol&&typeof NEON_PAINT!=='undefined'&&NEON_PAINT&&typeof NEON_PAINT.drawBuildingGraffiti==='function'&&d<260)NEON_PAINT.drawBuildingGraffiti(ctx,b);
     return;}farFlush();const a=clamp(1.5-d/CDRAW.dist,0.25,1);
   if(b.nosStation)drawNosStation(b,d,a);
-  else{ctx.beginPath();for(const q of b.boxes)boxFaces(q);ctx.fillStyle=b.kind==='hill'?'#05100a':'#0a0612';ctx.fill();ctx.globalAlpha=a;ctx.strokeStyle=b.c;ctx.lineWidth=d<400?1.8:1.2;ctx.stroke();
+  else{ctx.globalAlpha=1;ctx.beginPath();for(const q of b.boxes)boxFaces(q);ctx.fillStyle=b.kind==='hill'?'#05100a':'#0a0612';ctx.fill();ctx.globalAlpha=a;ctx.strokeStyle=b.c;ctx.lineWidth=d<400?1.8:1.2;ctx.stroke();
   if(d<CDRAW.winDist&&b.kind!=='pylon'&&b.kind!=='bill'){ctx.beginPath();for(const q of b.boxes)winRows(b,q,d);if(!b.dashFixed)b.dashFixed=b.dash[0]>3?[6,5]:[4,4];ctx.setLineDash(b.dashFixed);ctx.lineDashOffset=0;ctx.strokeStyle=b.wc;ctx.globalAlpha=a*.75;ctx.lineWidth=1.6;ctx.stroke();ctx.setLineDash([]);}}
   ctx.globalAlpha=a;drawDoors(b,d);drawDeco(b,d);
   if(d<180)drawParking(b,d);

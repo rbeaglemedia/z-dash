@@ -20,9 +20,18 @@
 //   weather[]     {name, x0, x1, z0, z1} open-land rectangles. Not built yet.
 //   districts[]   {id, label, x0, x1, z0, z1}
 //   places[]      one approved footprint. kind 'arch' is a gate, not a solid.
+//                 A gate may span the road. A solid may not.
+//                 Shops sit on the sidewalk: the road face is 4 m outside the
+//                 curb, same count, same plan size. The four small NOS kits
+//                 are the exception (24 m along the curb, 18 m deep, 8 m tall)
+//                 so the canopy reads from the lane. The Car Row depot stays
+//                 164 x 64 x 34. The dance wall stays 60 x 64 x 18, east face.
 //                 {name, station, kind, purpose, x0, x1, z0, z1, h, sign, c, pad, roof, antH, district}
 //   roads[]       approved centerlines {x0,z0,x1,z1,w,kind}
 //                 kind: street | lane | highway | bridge | water
+//                 The Car Row service connector is x=-160. x=-230 would
+//                 line up with the Homestead sidewalk and read as one street.
+//                 The deck lane at x=-220 is the jump roof's curb.
 //   places[].type the same as kind (arch, nos, snack, bay, pad, home, ...)
 //   places[].cx/cz footprint centre. x0,x1,z0,z1 are the corners.
 //   anchors.river    {z0,z1}
@@ -47,42 +56,42 @@
 //   world/traffic.js (the live model) reads those lanes. It does not own the map.
 (function (root) {
   const places = [
-    {name:'HOME', station:'yard', kind:'home', purpose:'HOME', district:'HOMESTEAD', x0:-272, x1:-228, z0:-664, z1:-616, h:11, sign:'HOME', c:'#7dff6b'},
-    {name:'PETS', station:'yard', kind:'pets', purpose:'PETS', district:'HOMESTEAD', x0:-212, x1:-168, z0:-664, z1:-616, h:13, sign:'PETS', c:'#7dff6b'},
-    {name:'GARAGE', station:'yard', kind:'garage', purpose:'GARAGE', district:'HOMESTEAD', x0:-302, x1:-138, z0:-792, z1:-728, h:26, sign:'GARAGE', c:'#ffb020', pad:1},
+    {name:'HOME', station:'yard', kind:'home', purpose:'HOME', district:'HOMESTEAD', x0:-274, x1:-230, z0:-678, z1:-630, h:11, sign:'HOME', c:'#7dff6b'},
+    {name:'PETS', station:'yard', kind:'pets', purpose:'PETS', district:'HOMESTEAD', x0:-274, x1:-230, z0:-624, z1:-576, h:13, sign:'PETS', c:'#7dff6b'},
+    {name:'GARAGE', station:'yard', kind:'garage', purpose:'GARAGE', district:'HOMESTEAD', x0:-394, x1:-230, z0:-748, z1:-684, h:26, sign:'GARAGE', c:'#ffb020', pad:1},
     {name:'TOWER', station:'tower', kind:'tower', purpose:'SKY_DROP', district:'RIVERBANK', x0:365, x1:435, z0:1685, z1:1755, h:239, sign:'JUMP', c:'#3ee6ff', landmark:1},
-    {name:'JUMP ROOF', station:'deck', kind:'deck', purpose:'SKY_DROP', district:'DECK', x0:-242, x1:-178, z0:1158, z1:1322, h:62, sign:'JUMP', c:'#3ee6ff', pad:1},
-    {name:'SHOWROOM', station:'car-w', kind:'show', purpose:'SHOWROOM', district:'CAR_ROW', x0:-602, x1:-438, z0:2288, z1:2352, h:18, sign:'Z-DASH', c:'#3ee6ff', pad:1},
-    {name:'BAY', station:'car-w', kind:'bay', purpose:'GARAGE', district:'CAR_ROW', x0:-530, x1:-510, z0:2393, z1:2407, h:8, sign:'GARAGE', c:'#ffb020'},
-    {name:'PAINT', station:'car-c', kind:'paint', purpose:'NEON_PAINT', district:'CAR_ROW', x0:-22, x1:22, z0:2292, z1:2340, h:14, sign:'NEON', c:'#ff4fd8'},
-    {name:'SNACK', station:'car-c', kind:'snack', purpose:'SNACK', district:'CAR_ROW', x0:-6, x1:6, z0:2391, z1:2401, h:5, sign:'SNACK', c:'#ff9a2e'},
-    {name:'NOS', station:'car-e', kind:'nos', purpose:'NOS', district:'CAR_ROW', x0:458, x1:622, z0:2288, z1:2352, h:34, sign:'NOS', c:'#ffe14d', pad:1},
-    {name:'PAD', station:'car-e', kind:'pad', purpose:'SKY_DROP', district:'CAR_ROW', x0:526, x1:554, z0:2386, z1:2414, h:8, sign:'JUMP', c:'#3ee6ff', pad:1},
+    {name:'JUMP ROOF', station:'deck', kind:'deck', purpose:'SKY_DROP', district:'DECK', x0:-294, x1:-230, z0:1094, z1:1258, h:62, sign:'JUMP', c:'#3ee6ff', pad:1},
+    {name:'SHOWROOM', station:'car-w', kind:'show', purpose:'SHOWROOM', district:'CAR_ROW', x0:-633, x1:-469, z0:2274, z1:2338, h:18, sign:'Z-DASH', c:'#3ee6ff', pad:1},
+    {name:'BAY', station:'car-w', kind:'bay', purpose:'GARAGE', district:'CAR_ROW', x0:-530, x1:-510, z0:2380, z1:2394, h:8, sign:'GARAGE', c:'#ffb020'},
+    {name:'PAINT', station:'car-c', kind:'paint', purpose:'NEON_PAINT', district:'CAR_ROW', x0:164, x1:208, z0:2274, z1:2322, h:14, sign:'NEON', c:'#ff4fd8'},
+    {name:'SNACK', station:'car-c', kind:'snack', purpose:'SNACK', district:'CAR_ROW', x0:164, x1:176, z0:2380, z1:2390, h:5, sign:'SNACK', c:'#ff9a2e'},
+    {name:'NOS', station:'car-e', kind:'nos', purpose:'NOS', district:'CAR_ROW', x0:458, x1:622, z0:2274, z1:2338, h:34, sign:'NOS', c:'#ffe14d', pad:1},
+    {name:'PAD', station:'car-e', kind:'pad', purpose:'SKY_DROP', district:'CAR_ROW', x0:526, x1:554, z0:2380, z1:2408, h:8, sign:'JUMP', c:'#3ee6ff', pad:1},
     {name:'CAR ROW', station:'car-gate', kind:'arch', purpose:'', district:'CAR_ROW', x0:-993, x1:-967, z0:2256, z1:2264, h:12, sign:'CAR ROW', c:'#ff4fd8'},
     {name:'THE STAGE', station:'dance-gate', kind:'arch', purpose:'', district:'STAGE', x0:-994, x1:-986, z0:-633, z1:-607, h:12, sign:'THE STAGE', c:'#ff4fd8'},
-    {name:'BAY', station:'dance-gate', kind:'bay', purpose:'GARAGE', district:'STAGE', x0:-907, x1:-893, z0:-630, z1:-610, h:8, sign:'GARAGE', c:'#ffb020'},
-    {name:'CAFE', station:'dance-s', kind:'cafe', purpose:'CAFE', district:'STAGE', x0:-1082, x1:-1038, z0:-104, z1:-56, h:12, sign:'PIZZA', c:'#ff2a3d'},
-    {name:'NOS', station:'dance-s', kind:'kitnos', purpose:'NOS', district:'STAGE', x0:-908, x1:-892, z0:-86, z1:-74, h:6, sign:'NOS', c:'#ffe14d'},
-    {name:'DANCE', station:'dance-n', kind:'dance', purpose:'DANCE', district:'STAGE', x0:-1090, x1:-1030, z0:428, z1:492, h:18, sign:'Z COMPANY ARTS', c:'#ff4fd8', roof:'ant', antH:14},
-    {name:'PAD', station:'dance-n', kind:'pad', purpose:'SKY_DROP', district:'STAGE', x0:-914, x1:-886, z0:446, z1:474, h:8, sign:'JUMP', c:'#3ee6ff', pad:1},
+    {name:'BAY', station:'dance-gate', kind:'bay', purpose:'GARAGE', district:'STAGE', x0:-976, x1:-962, z0:-670, z1:-650, h:8, sign:'GARAGE', c:'#ffb020'},
+    {name:'CAFE', station:'dance-s', kind:'cafe', purpose:'CAFE', district:'STAGE', x0:-1048, x1:-1004, z0:-200, z1:-152, h:12, sign:'PIZZA', c:'#ff2a3d'},
+    {name:'NOS', station:'dance-s', kind:'kitnos', purpose:'NOS', district:'STAGE', x0:-976, x1:-958, z0:-50, z1:-26, h:8, sign:'NOS', c:'#ffe14d'},
+    {name:'DANCE', station:'dance-n', kind:'dance', purpose:'DANCE', district:'STAGE', x0:-1064, x1:-1004, z0:425, z1:489, h:18, sign:'Z COMPANY ARTS', c:'#ff4fd8', roof:'ant', antH:14},
+    {name:'PAD', station:'dance-n', kind:'pad', purpose:'SKY_DROP', district:'STAGE', x0:-976, x1:-948, z0:430, z1:458, h:8, sign:'JUMP', c:'#3ee6ff', pad:1},
     {name:'BUILDER BAY', station:'build-gate', kind:'arch', purpose:'', district:'BUILDER_BAY', x0:836, x1:844, z0:-633, z1:-607, h:12, sign:'BUILDER BAY', c:'#7dff6b'},
-    {name:'BAY', station:'build-gate', kind:'bay', purpose:'GARAGE', district:'BUILDER_BAY', x0:953, x1:967, z0:-630, z1:-610, h:8, sign:'GARAGE', c:'#ffb020'},
-    {name:'ARCADE', station:'build-s', kind:'arcade', purpose:'ARCADE', district:'BUILDER_BAY', x0:872, x1:928, z0:-112, z1:-48, h:18, sign:'ARCADE', c:'#3ee6ff'},
-    {name:'SNACK', station:'build-s', kind:'snack', purpose:'SNACK', district:'BUILDER_BAY', x0:974, x1:986, z0:-85, z1:-75, h:5, sign:'SNACK', c:'#ff9a2e'},
-    {name:'BUILDER', station:'build-n', kind:'builder', purpose:'BUILDER', district:'BUILDER_BAY', x0:878, x1:922, z0:444, z1:476, h:15, sign:'PIXEL', c:'#7dff6b'},
-    {name:'PAD', station:'build-n', kind:'pad', purpose:'SKY_DROP', district:'BUILDER_BAY', x0:966, x1:994, z0:446, z1:474, h:8, sign:'JUMP', c:'#3ee6ff', pad:1},
-    {name:'NOS', station:'build-nos', kind:'kitnos', purpose:'NOS', district:'BUILDER_BAY', x0:1172, x1:1188, z0:194, z1:206, h:6, sign:'NOS', c:'#ffe14d'},
+    {name:'BAY', station:'build-gate', kind:'bay', purpose:'GARAGE', district:'BUILDER_BAY', x0:854, x1:868, z0:-660, z1:-640, h:8, sign:'GARAGE', c:'#ffb020'},
+    {name:'ARCADE', station:'build-s', kind:'arcade', purpose:'ARCADE', district:'BUILDER_BAY', x0:854, x1:910, z0:-220, z1:-156, h:18, sign:'ARCADE', c:'#3ee6ff'},
+    {name:'SNACK', station:'build-s', kind:'snack', purpose:'SNACK', district:'BUILDER_BAY', x0:854, x1:866, z0:-400, z1:-390, h:5, sign:'SNACK', c:'#ff9a2e'},
+    {name:'BUILDER', station:'build-n', kind:'builder', purpose:'BUILDER', district:'BUILDER_BAY', x0:854, x1:898, z0:400, z1:432, h:15, sign:'PIXEL', c:'#7dff6b'},
+    {name:'PAD', station:'build-n', kind:'pad', purpose:'SKY_DROP', district:'BUILDER_BAY', x0:854, x1:882, z0:300, z1:328, h:8, sign:'JUMP', c:'#3ee6ff', pad:1},
+    {name:'NOS', station:'build-nos', kind:'kitnos', purpose:'NOS', district:'BUILDER_BAY', x0:854, x1:872, z0:40, z1:64, h:8, sign:'NOS', c:'#ffe14d'},
     {name:'THE TRACK', station:'track-e', kind:'arch', purpose:'', district:'TRACK', x0:-573, x1:-547, z0:856, z1:864, h:12, sign:'THE TRACK', c:'#ffb020'},
-    {name:'SNACK', station:'track-e', kind:'snack', purpose:'SNACK', district:'TRACK', x0:-566, x1:-554, z0:795, z1:805, h:5, sign:'SNACK', c:'#ff9a2e'},
-    {name:'BAY', station:'track-w', kind:'bay', purpose:'GARAGE', district:'TRACK', x0:-1490, x1:-1470, z0:853, z1:867, h:8, sign:'GARAGE', c:'#ffb020'},
-    {name:'NOS', station:'track-w', kind:'kitnos', purpose:'NOS', district:'TRACK', x0:-1488, x1:-1472, z0:794, z1:806, h:6, sign:'NOS', c:'#ffe14d'},
-    {name:'PAD', station:'track-pad', kind:'pad', purpose:'SKY_DROP', district:'TRACK', x0:-1214, x1:-1186, z0:1566, z1:1594, h:8, sign:'JUMP', c:'#3ee6ff', pad:1},
-    {name:'SOCCER', station:'field-shop', kind:'soccer', purpose:'SOCCER', district:'FIELD', x0:732, x1:788, z0:1236, z1:1324, h:16, sign:'TURBO', c:'#ffb020'},
-    {name:'PAD', station:'field-shop', kind:'pad', purpose:'SKY_DROP', district:'FIELD', x0:666, x1:694, z0:1266, z1:1294, h:8, sign:'JUMP', c:'#3ee6ff', pad:1},
+    {name:'SNACK', station:'track-e', kind:'snack', purpose:'SNACK', district:'TRACK', x0:-590, x1:-578, z0:836, z1:846, h:5, sign:'SNACK', c:'#ff9a2e'},
+    {name:'BAY', station:'track-w', kind:'bay', purpose:'GARAGE', district:'TRACK', x0:-1520, x1:-1500, z0:832, z1:846, h:8, sign:'GARAGE', c:'#ffb020'},
+    {name:'NOS', station:'track-w', kind:'kitnos', purpose:'NOS', district:'TRACK', x0:-1460, x1:-1436, z0:828, z1:846, h:8, sign:'NOS', c:'#ffe14d'},
+    {name:'PAD', station:'track-pad', kind:'pad', purpose:'SKY_DROP', district:'TRACK', x0:-1080, x1:-1052, z0:818, z1:846, h:8, sign:'JUMP', c:'#3ee6ff', pad:1},
+    {name:'SOCCER', station:'field-shop', kind:'soccer', purpose:'SOCCER', district:'FIELD', x0:1054, x1:1110, z0:1384, z1:1472, h:16, sign:'TURBO', c:'#ffb020'},
+    {name:'PAD', station:'field-shop', kind:'pad', purpose:'SKY_DROP', district:'FIELD', x0:700, x1:728, z0:1238, z1:1266, h:8, sign:'JUMP', c:'#3ee6ff', pad:1},
     {name:'THE FIELD', station:'field-s', kind:'arch', purpose:'', district:'FIELD', x0:967, x1:993, z0:856, z1:864, h:12, sign:'THE FIELD', c:'#7dff6b'},
-    {name:'SNACK', station:'field-s', kind:'snack', purpose:'SNACK', district:'FIELD', x0:1034, x1:1046, z0:855, z1:865, h:5, sign:'SNACK', c:'#ff9a2e'},
-    {name:'BAY', station:'field-e', kind:'bay', purpose:'GARAGE', district:'FIELD', x0:1170, x1:1190, z0:1273, z1:1287, h:8, sign:'GARAGE', c:'#ffb020'},
-    {name:'NOS', station:'field-e', kind:'kitnos', purpose:'NOS', district:'FIELD', x0:1172, x1:1188, z0:1334, z1:1346, h:6, sign:'NOS', c:'#ffe14d'}
+    {name:'SNACK', station:'field-s', kind:'snack', purpose:'SNACK', district:'FIELD', x0:930, x1:942, z0:836, z1:846, h:5, sign:'SNACK', c:'#ff9a2e'},
+    {name:'BAY', station:'field-e', kind:'bay', purpose:'GARAGE', district:'FIELD', x0:1054, x1:1074, z0:1480, z1:1494, h:8, sign:'GARAGE', c:'#ffb020'},
+    {name:'NOS', station:'field-e', kind:'kitnos', purpose:'NOS', district:'FIELD', x0:1054, x1:1072, z0:1504, z1:1528, h:8, sign:'NOS', c:'#ffe14d'}
   ];
 
   // Approved centerlines, plus the yard lane slid into the 16 m gap between
@@ -94,11 +103,12 @@
     {x0:-1400, z0:1640, x1:-160, z1:1640, w:20, kind:'water'},
     {x0:160, z0:1640, x1:1100, z1:1640, w:20, kind:'water'},
     {x0:-220, z0:40, x1:-220, z1:-716, w:12, kind:'lane'},
+    {x0:-220, z0:1088, x1:-220, z1:1264, w:12, kind:'lane'},
     {x0:-980, z0:0, x1:-40, z1:0, w:20, kind:'street'},
     {x0:40, z0:0, x1:900, z1:0, w:20, kind:'street'},
     {x0:-1100, z0:2260, x1:720, z1:2260, w:20, kind:'street'},
     {x0:-640, z0:2370, x1:660, z1:2370, w:12, kind:'lane'},
-    {x0:-230, z0:2260, x1:-230, z1:2370, w:12, kind:'lane'},
+    {x0:-160, z0:2260, x1:-160, z1:2370, w:12, kind:'lane'},
     {x0:250, z0:2260, x1:250, z1:2370, w:12, kind:'lane'},
     {x0:-450, z0:1640, x1:-450, z1:2260, w:20, kind:'street'},
     {x0:-990, z0:-760, x1:-990, z1:620, w:20, kind:'street'},
@@ -261,11 +271,14 @@
       const along = f.ax === 'z' ? (b.z0 + b.z1) / 2 : (b.x0 + b.x1) / 2;
       const tx = f.ax === 'z' ? f.fix + f.nx * 4 : along;
       const tz = f.ax === 'x' ? f.fix + f.nz * 4 : along;
-      const near = f.outward <= 16 && (
-        (vertical(hit.s) && f.ax === 'z' && Math.abs(hit.x - f.fix) <= 18) ||
-        (horizontal(hit.s) && f.ax === 'x' && Math.abs(hit.z - f.fix) <= 18)
+      // A shop already on the sidewalk does not get a driveway. That spur
+      // would be a new centerline running through the block.
+      const curb = (hit.s.w || 20) / 2 + 8;
+      const onSidewalk = f.outward > 0 && f.outward <= curb && (
+        (vertical(hit.s) && f.ax === 'z' && Math.abs(hit.x - f.fix) <= curb) ||
+        (horizontal(hit.s) && f.ax === 'x' && Math.abs(hit.z - f.fix) <= curb)
       );
-      if (near && hit.d < 24) continue;
+      if (onSidewalk) continue;
       let x0 = hit.x, z0 = hit.z, x1 = tx, z1 = tz;
       if (Math.abs(x1 - x0) >= Math.abs(z1 - z0)) z1 = z0;
       else x1 = x0;
