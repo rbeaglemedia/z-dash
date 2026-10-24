@@ -10,6 +10,7 @@
  *   node tools/integration-check.js --pr 68
  *   node tools/integration-check.js --branch origin/cursor/nos-driveup-58d4 --pr 76
  *   node tools/integration-check.js --open --out test-results/integration-check
+ *   node tools/integration-check.js --bundle d4deed1
  *
  * Docs, tools, and test-results do not count as a shipped runtime change.
  * Adult index.html is flagged when a branch edits it. This tool never edits the game.
@@ -19,6 +20,7 @@
 const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -592,7 +594,7 @@ function checkOne(ctx) {
       summary: 'Builders, building redesigns, or a city redesign belong on a new world page',
       owner: selfText(ctx),
       ownerId: 'self',
-      detail: 'After the Option 1 Boulevards bundle, world.html and world-split.html take bug fixes, FPS fixes, Ellie\'s interiors, and the planner drop-objects placement tool. This PR adds ' + redesign.join(' and ') + '.' + where + ' Build that part on a new world page, and keep Ellie\'s shared save keys (' + PROFILE_KEYS.join(', ') + ').'
+      detail: 'After the Option 1 Boulevards bundle, world.html and world-split.html take bug fixes, FPS fixes, Ellie\'s interiors, the planner drop-objects placement tool, and traffic testing and changes. This PR adds ' + redesign.join(' and ') + '.' + where + ' Build that part on a new world page, and keep Ellie\'s shared save keys (' + PROFILE_KEYS.join(', ') + ').'
     });
   }
   if (newWorldPages.length) {
@@ -1209,6 +1211,186 @@ function ownerAgentForBranch(branch) {
   return hit ? hit.agent : '';
 }
 
+const BUNDLE_ROLLBACK = 'e279c9a79a885abd11a500b018938f835f48e34c';
+const BUNDLE_HEAD = 'd4deed17ebf486969833138d8ed84c420746554d';
+
+const BUNDLE_SCRIPTS = [
+  'world/city-layout.js',
+  'world/city.js',
+  'world/hud.js',
+  'world/nos-station.js',
+  'world/objectives.js',
+  'world/traffic.js',
+  'world/resume-safe.js'
+];
+
+function quotedSaveKeys(ref) {
+  const text = gitQuiet(['grep', '-h', '-o', '-E', '[\'"]zdash[._][A-Za-z0-9_.]+[\'"]', ref, '--', 'world', 'shared']);
+  const keys = new Set();
+  const re = /['"](zdash[._][A-Za-z0-9_.]+)['"]/g;
+  let m;
+  while ((m = re.exec(text))) keys.add(m[1]);
+  return keys;
+}
+
+function resolveCommit(ref) {
+  const name = String(ref || '').trim();
+  const direct = gitQuiet(['rev-parse', '--verify', name + '^{commit}']).trim();
+  if (direct) return direct;
+  const origin = gitQuiet(['rev-parse', '--verify', remoteRef(name) + '^{commit}']).trim();
+  return origin || name;
+}
+
+function scoreMapBundle(ref, base) {
+  const head = resolveCommit(ref);
+  const rollback = resolveCommit(base || BUNDLE_ROLLBACK);
+  const sha = head;
+  const items = [];
+  function item(id, pass, detail) {
+    items.push({ id, pass: !!pass, detail });
+  }
+  const world = gitShow(head + ':world.html') || '';
+  const split = gitShow(head + ':world-split.html') || '';
+  const hud = gitShow(head + ':world/hud.js') || '';
+  const objectives = gitShow(head + ':world/objectives.js') || '';
+  const version = parseVersion(gitShow(head + ':shared/version.js') || '');
+  const worldScripts = scriptSrcs(world);
+  const splitScripts = scriptSrcs(split);
+  const pagesMatch = worldScripts.join('\n') === splitScripts.join('\n') && worldScripts.length > 0;
+  const missing = BUNDLE_SCRIPTS.filter((src) => worldScripts.indexOf(src) === -1 || splitScripts.indexOf(src) === -1);
+  const versions = queryVersions(world).concat(queryVersions(split));
+  const versionOk = version.world && versions.length > 0 && versions.every((v) => v === version.world);
+  const layoutBeforeCity = worldScripts.indexOf('world/city-layout.js') !== -1 &&
+    worldScripts.indexOf('world/city-layout.js') < worldScripts.indexOf('world/city.js') &&
+    splitScripts.indexOf('world/city-layout.js') < splitScripts.indexOf('world/city.js');
+
+  const g = {
+    console, Math, JSON, Object, Array, Number, String, Error, parseInt, isFinite,
+    clamp: (v, a, b) => Math.max(a, Math.min(b, v)),
+    D: Math.PI / 180,
+    TUNE: { skimDeg: 25, skimSpeed: 8, offRoad: 0.6 },
+    location: { search: '' }
+  };
+  g.globalThis = g;
+  g.window = g;
+  vm.createContext(g);
+  const boot = ['world/towtruck.js', 'world/nos-station.js', 'world/city-layout.js', 'world/city.js', 'world/resume-safe.js', 'shared/traffic-tune.js']
+    .map((rel) => gitShow(head + ':' + rel) || '')
+    .join('\n');
+  let bootErr = '';
+  try {
+    vm.runInContext(boot + '\nglobalThis.__CITY=CITY;globalThis.__RESUME=ZD_RESUME;globalThis.__TUNE=TRAFFIC_TUNE;\n', g, { filename: 'city-bundle.js' });
+  } catch (e) {
+    bootErr = String(e && e.stack || e);
+  }
+  const C = g.__CITY;
+  const L = C && C.LAYOUT;
+  const M = L && L.minimap;
+  const roadKinds = {};
+  (M && M.roads || []).forEach((r) => { roadKinds[r.kind] = (roadKinds[r.kind] || 0) + 1; });
+  item('roads', !bootErr && pagesMatch && !missing.length && layoutBeforeCity && M && M.roads && M.roads.length > 10 && roadKinds.street && roadKinds.highway && roadKinds.bridge && /M\.roads|minimap\.roads/.test(hud) && /CITY\.LAYOUT/.test(hud),
+    bootErr ? bootErr.split('\n')[0] : 'minimap roads ' + ((M && M.roads && M.roads.length) || 0) + ' (street ' + (roadKinds.street || 0) + ', highway ' + (roadKinds.highway || 0) + ', bridge ' + (roadKinds.bridge || 0) + ') from CITY.LAYOUT on both pages');
+  item('river', !bootErr && M && M.river && M.river.z0 === 1780 && M.river.z1 === 1840 && /M\.river|minimap\.river|anchors\.river/.test(hud),
+    'river z ' + (M && M.river ? M.river.z0 + '–' + M.river.z1 : 'missing') + ' baked from the layout');
+  item('bridges', !bootErr && M && M.bridges && M.bridges.length === 2 && /M\.bridges|minimap\.bridges|anchors\.bridges/.test(hud),
+    'bridge decks ' + ((M && M.bridges && M.bridges.length) || 0));
+  const districtIds = (M && M.districts || []).map((d) => d.id);
+  const wantDistricts = ['HOMESTEAD', 'CAR_ROW', 'STAGE', 'BUILDER_BAY', 'TRACK', 'FIELD', 'RIVERBANK', 'DECK'];
+  item('districts', !bootErr && wantDistricts.every((id) => districtIds.indexOf(id) !== -1) && /M\.districts|minimap\.districts/.test(hud),
+    'districts ' + districtIds.join(', '));
+  const nosPlaces = (M && M.places || []).filter((p) => p.purpose === 'NOS');
+  const nosKindsOk = nosPlaces.length === 5 && nosPlaces.every((p) => p.kind === 'nos' || p.kind === 'kitnos' || p.type === 'nos' || p.type === 'kitnos');
+  const nosDistricts = nosPlaces.map((p) => p.district).sort();
+  const hudShowsNos = /nos:1/.test(hud) && /kitnos:1/.test(hud) && /purpose==='NOS'|purpose === 'NOS'/.test(hud);
+  const fitted = !bootErr && C ? C.BL.filter((b) => b.purpose === 'NOS' && b.nosStation) : [];
+  item('nos', !bootErr && pagesMatch && nosKindsOk && hudShowsNos && fitted.length === 5 && worldScripts.indexOf('world/nos-station.js') !== -1,
+    '5 NOS on the minimap: ' + nosPlaces.map((p) => (p.kind || p.type) + '@' + p.district).join(', ') + '; fitted ' + fitted.length);
+  let hotDetail = 'Hot Drop did not load';
+  let hotPass = false;
+  if (!bootErr && C && /CITY\.ROADS/.test(objectives) && /HOTDROP/.test(hud) && /hotdrop/.test(hud)) {
+    try {
+      vm.runInContext(objectives + '\nglobalThis.hotDropSpot=hotDropSpot;\n', g, { filename: 'objectives.js' });
+      const samples = [[0, 200, 0], [-990, 0, Math.PI / 2], [0, 2000, 0]];
+      const hits = samples.map((s) => {
+        const spot = g.hotDropSpot(s[0], s[1], s[2]);
+        let node = null;
+        for (const n of C.ROADS.nodes) {
+          if (!n) continue;
+          if (Math.hypot(n.x - spot.x, n.z - spot.z) < 1.5) { node = n; break; }
+        }
+        return { from: s[0] + ',' + s[1], x: spot.x, z: spot.z, kind: node && node.kind, onRoad: !!(node && node.kind !== 'tunnel' && node.kind !== 'track') };
+      });
+      hotPass = hits.every((h) => h.onRoad);
+      hotDetail = hits.map((h) => h.from + ' → ' + Math.round(h.x) + ',' + Math.round(h.z) + ' ' + (h.kind || 'off-road')).join('; ');
+    } catch (e) {
+      hotDetail = String(e && e.message || e);
+    }
+  }
+  item('hot-drop', hotPass && pagesMatch && worldScripts.indexOf('world/objectives.js') !== -1, hotDetail);
+  let trafficDetail = bootErr || 'traffic did not build';
+  let trafficPass = false;
+  if (!bootErr && C) {
+    try {
+      vm.runInContext((gitShow(head + ':world/traffic.js') || '') + '\n', g, { filename: 'traffic.js' });
+      g.TRAFFIC.ensure();
+      const lanes = g.TRAFFIC.lanes;
+      const mid = (L) => [(L.x0 + L.x1) / 2, (L.z0 + L.z1) / 2];
+      const runway = lanes.filter((L) => { const p = mid(L); return Math.abs(p[0]) < 20 && p[1] > -80 && p[1] < 1520; }).length;
+      const kinds = {};
+      lanes.forEach((L) => { kinds[L.kind] = (kinds[L.kind] || 0) + 1; });
+      const onHighway = lanes.some((L) => L.kind === 'highway' && Math.abs(mid(L)[0] + 450) < 40);
+      const onBridge = lanes.some((L) => L.kind === 'bridge');
+      const onStage = lanes.some((L) => L.kind === 'street' && Math.abs(mid(L)[0] + 990) < 40);
+      const onCarRow = lanes.some((L) => L.kind === 'street' && Math.abs(mid(L)[1] - 2260) < 40);
+      trafficPass = lanes.length > 40 && runway === 0 && onHighway && onBridge && onStage && onCarRow && pagesMatch;
+      trafficDetail = 'lanes ' + lanes.length + ', runway ' + runway + ', highway ' + onHighway + ', bridge ' + onBridge + ', stage ' + onStage + ', car row ' + onCarRow + ', ' + Object.keys(kinds).map((k) => k + ' ' + kinds[k]).join(', ');
+    } catch (e) {
+      trafficDetail = String(e && e.stack || e).split('\n')[0];
+    }
+  }
+  item('traffic', trafficPass, trafficDetail);
+  const headKeys = quotedSaveKeys(head);
+  const baseKeys = quotedSaveKeys(rollback);
+  const dropped = PROFILE_KEYS.filter((k) => baseKeys.has(k) && !headKeys.has(k));
+  const stray = [...headKeys].filter((k) => {
+    if (LOCAL_SAVE_KEYS[k] || PROFILE_KEYS.indexOf(k) !== -1) return false;
+    return SAVE_FAMILIES.some((pair) => k.indexOf(pair[0]) === 0 && k !== pair[1]);
+  });
+  const kept = PROFILE_KEYS.filter((k) => headKeys.has(k));
+  item('ellie-saves', headKeys.size > 0 && dropped.length === 0 && stray.length === 0 && kept.length >= 10,
+    'kept ' + kept.join(', ') + (dropped.length ? '; dropped ' + dropped.join(', ') : '') + (stray.length ? '; stray ' + stray.join(', ') : ''));
+  item('both-pages', pagesMatch && missing.length === 0 && versionOk && layoutBeforeCity,
+    (pagesMatch ? 'script lists match' : 'script lists differ') + (missing.length ? '; missing ' + missing.join(', ') : '') + '; ?v= ' + (versionOk ? version.world : 'mismatch') + (nosDistricts.length ? '; NOS districts ' + nosDistricts.join(', ') : ''));
+
+  const pass = items.every((row) => row.pass);
+  return {
+    ref: head,
+    sha,
+    rollback,
+    pass,
+    version: version.world,
+    items
+  };
+}
+
+function bundleMarkdown(report) {
+  const lines = [
+    '# Combined map bundle',
+    '',
+    'Head `' + report.sha + '` against rollback `' + report.rollback + '`.',
+    '',
+    'Result: **' + (report.pass ? 'PASS' : 'FAIL') + '**',
+    '',
+    '| Check | Result | Detail |',
+    '| --- | --- | --- |'
+  ];
+  report.items.forEach((row) => {
+    lines.push('| ' + row.id + ' | ' + (row.pass ? 'pass' : 'fail') + ' | ' + String(row.detail).replace(/\|/g, '/') + ' |');
+  });
+  lines.push('');
+  return lines.join('\n');
+}
+
 function runSelfTest() {
   const failures = [];
   function expect(name, cond) {
@@ -1564,6 +1746,26 @@ function runSelfTest() {
   });
   expect('fps fix stays on the frozen world', !fps.gaps.some((g) => g.id === 'frozen-world'));
 
+  const trafficChange = checkOne({
+    pr: 78,
+    title: 'traffic test',
+    branch: 'cursor/traffic-option-b-2bdb',
+    files: [
+      { status: 'M', path: 'world/traffic.js' },
+      { status: 'M', path: 'shared/traffic-tune.js' },
+      { status: 'M', path: 'world.html' },
+      { status: 'M', path: 'world-split.html' }
+    ],
+    pages: {
+      world: '<script src="world/traffic.js?v=31"></script>',
+      split: '<script src="world/traffic.js?v=31"></script>'
+    },
+    versionHead: { world: '31', stamp: '2', sw: 'b' },
+    versionBase: { world: '30', stamp: '1', sw: 'a' },
+    trafficHead: 'const R = CITY.ROADS;'
+  });
+  expect('traffic changes stay on the current world', !trafficChange.gaps.some((g) => g.id === 'frozen-world'));
+
   const nextWorld = checkOne({
     pr: 90,
     title: 'new world',
@@ -1593,7 +1795,7 @@ function runSelfTest() {
   Object.keys(OWNERS).forEach((id) => {
     expect('map mentions ' + OWNERS[id].title, mapDoc.indexOf(OWNERS[id].title) !== -1);
   });
-  ['world.html', 'world-split.html', 'PROP-CATALOG', 'ZD_WORLD', 'index.html'].forEach((token) => {
+  ['world.html', 'world-split.html', 'PROP-CATALOG', 'ZD_WORLD', 'index.html', 'traffic testing and changes', 'd4deed1'].forEach((token) => {
     expect('map mentions ' + token, mapDoc.indexOf(token) !== -1);
   });
 
@@ -1606,7 +1808,7 @@ function runSelfTest() {
 }
 
 function parseArgs(argv) {
-  const out = { pr: null, branch: '', open: false, out: '', self: false, base: 'origin/main', json: false };
+  const out = { pr: null, branch: '', open: false, out: '', self: false, base: 'origin/main', json: false, bundle: '' };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--self-test') out.self = true;
@@ -1614,6 +1816,7 @@ function parseArgs(argv) {
     else if (a === '--json') out.json = true;
     else if (a === '--pr') out.pr = Number(argv[++i]);
     else if (a === '--branch') out.branch = argv[++i];
+    else if (a === '--bundle') out.bundle = argv[++i] || BUNDLE_HEAD;
     else if (a === '--out') out.out = argv[++i];
     else if (a === '--base') out.base = argv[++i];
     else if (a === '--help' || a === '-h') out.help = true;
@@ -1623,14 +1826,26 @@ function parseArgs(argv) {
 
 function main() {
   const args = parseArgs(process.argv);
-  if (args.help || (!args.self && !args.open && !args.pr && !args.branch)) {
-    console.log('Usage: node tools/integration-check.js --self-test | --pr N | --branch ref | --open [--out dir] [--base origin/main]');
+  if (args.help || (!args.self && !args.open && !args.pr && !args.branch && !args.bundle)) {
+    console.log('Usage: node tools/integration-check.js --self-test | --pr N | --branch ref | --bundle <sha> | --open [--out dir] [--base origin/main]');
     if (args.help) return;
-    if (!args.self && !args.open && !args.pr && !args.branch) process.exit(2);
+    if (!args.self && !args.open && !args.pr && !args.branch && !args.bundle) process.exit(2);
   }
   if (args.self) {
     runSelfTest();
-    if (!args.open && !args.pr && !args.branch) return;
+    if (!args.open && !args.pr && !args.branch && !args.bundle) return;
+  }
+  if (args.bundle) {
+    const report = scoreMapBundle(args.bundle, args.base === 'origin/main' ? BUNDLE_ROLLBACK : args.base);
+    if (args.out) {
+      const dir = path.resolve(ROOT, args.out);
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, 'map-bundle.json'), JSON.stringify(report, null, 2));
+      fs.writeFileSync(path.join(dir, 'map-bundle.md'), bundleMarkdown(report));
+    }
+    if (args.json) console.log(JSON.stringify(report, null, 2));
+    else console.log(bundleMarkdown(report));
+    process.exit(report.pass ? 0 : 1);
   }
   if (args.open) {
     const { rows } = runOpen(args.base, args.out ? path.resolve(ROOT, args.out) : path.join(ROOT, 'test-results/integration-check'));
@@ -1660,7 +1875,8 @@ module.exports = {
   tableRow,
   isRuntime,
   layoutGeometry,
-  scriptSrcs
+  scriptSrcs,
+  scoreMapBundle
 };
 
 if (require.main === module) main();

@@ -218,12 +218,13 @@ flowchart TD
 
 ## Frozen Neon World
 
-After the Option 1 Boulevards bundle (plan PR #68, build PR #85), `world.html` and `world-split.html` take bug fixes, FPS fixes, Ellie's interiors, and the planner drop-objects placement tool. The minimap follow-through for that same map (PR #86) is part of the bundle.
+After the Option 1 Boulevards bundle (plan PR #68, build PR #85), `world.html` and `world-split.html` take bug fixes, FPS fixes, Ellie's interiors, the planner drop-objects placement tool, and traffic testing and changes. The minimap is part of that same bundle: PR #86 is folded into PR #85. The combined head is `d4deed1`. Rollback is `e279c9a`.
 
 Allowed on the current pages:
 
 - Interiors (`world/house.js`, `world/style-sampler.js`, `world/walk-items.js`, `docs/INTERIORS-PLAN.md`, `docs/interiors/`, `docs/STYLE-SAMPLER.md`)
 - The drop-objects placement tool (`world/planner-props.js`, `docs/planner/PROP-CATALOG.json`, `docs/ROOM-PLACE-HOOK.md`, `docs/room-place/`, `test/planner-port/catalog.js`)
+- Traffic testing and changes (`world/traffic.js`, `shared/traffic-tune.js`, `world/towdrive.js`, `docs/TRAFFIC-PLAN.md`)
 
 These still belong on a new world page:
 
@@ -251,6 +252,9 @@ If `origin/main` already loads a script on both world pages and the PR does not 
 node tools/integration-check.js --self-test
 node tools/integration-check.js --pr 68
 node tools/integration-check.js --open --out test-results/integration-check
+node tools/integration-check.js --bundle d4deed1 --out test-results/map-bundle-d4deed1
 ```
+
+`--bundle` loads that commit (PR #85 combined head, rollback `e279c9a`) and scores roads, river, bridges, districts, the 5 NOS stations on the minimap, the Hot Drop star, traffic lanes, and Ellie's saves on both `world.html` and `world-split.html`. Exit code 1 means that combined bundle failed.
 
 `--pr` and `--open` diff `origin/main...branch`. Exit code 0 means the command ran. Exit code 1 means the selected branch has a `gap` (missing now, not a plan follow-up). `--open` writes the report and exits 0 so a full scan can finish. `before-build` items are still listed. They are the work a plan has not done yet, assigned to the agent who owns that system.

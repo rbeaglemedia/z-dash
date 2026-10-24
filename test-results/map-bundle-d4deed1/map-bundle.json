@@ -1,0 +1,54 @@
+{
+  "ref": "d4deed17ebf486969833138d8ed84c420746554d",
+  "sha": "d4deed17ebf486969833138d8ed84c420746554d",
+  "rollback": "e279c9a79a885abd11a500b018938f835f48e34c",
+  "pass": true,
+  "version": "32",
+  "items": [
+    {
+      "id": "roads",
+      "pass": true,
+      "detail": "minimap roads 57 (street 44, highway 2, bridge 1) from CITY.LAYOUT on both pages"
+    },
+    {
+      "id": "river",
+      "pass": true,
+      "detail": "river z 1780–1840 baked from the layout"
+    },
+    {
+      "id": "bridges",
+      "pass": true,
+      "detail": "bridge decks 2"
+    },
+    {
+      "id": "districts",
+      "pass": true,
+      "detail": "districts HOMESTEAD, CAR_ROW, STAGE, BUILDER_BAY, TRACK, FIELD, RIVERBANK, DECK"
+    },
+    {
+      "id": "nos",
+      "pass": true,
+      "detail": "5 NOS on the minimap: nos@CAR_ROW, kitnos@STAGE, kitnos@BUILDER_BAY, kitnos@TRACK, kitnos@FIELD; fitted 5"
+    },
+    {
+      "id": "hot-drop",
+      "pass": true,
+      "detail": "0,200 → 260,200 street; -990,0 → -771,0 street; 0,2000 → 12,2260 street"
+    },
+    {
+      "id": "traffic",
+      "pass": true,
+      "detail": "lanes 632, runway 0, highway true, bridge true, stage true, car row true, highway 136, tunnel 8, bridge 24, street 392, track 72"
+    },
+    {
+      "id": "ellie-saves",
+      "pass": true,
+      "detail": "kept zdash.kid.v1, zdash.house.v1, zdash.char.v1, zdash.pet.v1, zdash.crew.v1, zdash.neonpaint.v1, zdash_vinyls_v1, zdash_neon_paint_v1, zdash.customdance.v1, zdash.petdance.v1"
+    },
+    {
+      "id": "both-pages",
+      "pass": true,
+      "detail": "script lists match; ?v= 32; NOS districts BUILDER_BAY, CAR_ROW, FIELD, STAGE, TRACK"
+    }
+  ]
+}
