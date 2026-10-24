@@ -13,7 +13,7 @@ const ASSETS = ["index.html", "jr.html", "manifest.webmanifest", "manifest-jr.we
 const NAV_TIMEOUT = 2500;
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(VERSION).then((c) => c.addAll(ASSETS.map((a) => new Request(a, { cache: 'reload' })))).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => (k.startsWith('zdash-') && k !== VERSION) || (k.startsWith('world-split-') && k !== SPLIT_CACHE)).map((k) => caches.delete(k))))
+  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => (k.startsWith('zdash-') && k !== VERSION) || (k.startsWith('world-split-') && k !== SPLIT_CACHE) || (k.startsWith('adventure-') && k !== ADV_CACHE)).map((k) => caches.delete(k))))
     .then(() => self.clients.claim())
     .then(() => self.clients.matchAll({ type: 'window' })).then((cs) => cs.forEach((c) => c.postMessage({ type: 'zd-sw', build: BUILD }))));
 });
@@ -25,6 +25,11 @@ const pageKey = (url) => (url.pathname.endsWith('jr.html') ? 'jr.html' : url.pat
 // activate drops every world-split-* cache except SPLIT_CACHE, and the fetch handler is network-first.
 const SPLIT_CACHE = 'world-split-v' + self.ZD_WORLD;
 const isSplitPath = (url) => { const p = url.pathname; return p.endsWith('/world-split.html') || p.endsWith('/world.html') || p.endsWith('/crew.html') || p.endsWith('/dance-stage.html') || p.endsWith('/garage-hub.html') || p.endsWith('/neon-paint.html') || p.includes('/world/') || p.includes('/shared/'); };
+// Adventure World is its own page. Its HTML and /adventure/ files live in ADV_CACHE only.
+// They are not in ASSETS and must not be stored under the index.html key. Bump ADV_CACHE
+// when those files change. Do not bump ZD_WORLD for an adventure-only deploy.
+const ADV_CACHE = 'adventure-v1';
+const isAdvPath = (url) => { const p = url.pathname; return p.endsWith('/adventure.html') || p.includes('/adventure/'); };
 function fromNetwork(req, key) { // revalidate with the server (bypasses the 10-min HTTP cache on GitHub Pages; an unchanged page is a cheap 304)
   return fetch(new Request(req.url, { cache: 'no-cache', credentials: 'same-origin' })).then((res) => {
     if (res.redirected) return Response.redirect(res.url, 302); // e.g. /z-dash -> /z-dash/: let the browser follow it
@@ -35,6 +40,19 @@ self.addEventListener('fetch', (e) => {
   const req = e.request, url = new URL(req.url);
   if (req.method !== 'GET' || url.origin !== self.location.origin) return; // Spotify etc. go straight to the network
   if (url.pathname === '/.well-known' || url.pathname.startsWith('/.well-known/')) return; // asset links: network only, never the page cache
+  if (isAdvPath(url)) { // own cache, NETWORK FIRST. A miss must not fall through to the index.html key.
+    e.respondWith(caches.open(ADV_CACHE).then((c) => c.match(req, { ignoreSearch: true }).then((hit) => {
+      let timer;
+      const timeout = new Promise((ok) => { timer = setTimeout(() => ok(hit || null), NAV_TIMEOUT); });
+      const net = fetch(new Request(req.url, { cache: 'no-cache', credentials: 'same-origin' })).then((res) => {
+        clearTimeout(timer);
+        if (res.ok && res.type === 'basic') c.put(req, res.clone());
+        return res.ok ? res : (hit || res);
+      }, () => { clearTimeout(timer); if (hit) return hit; return Promise.reject(new Error('adventure')); });
+      return Promise.race([net, timeout]).then((res) => res || net);
+    })));
+    return;
+  }
   if (isSplitPath(url)) { // own cache, NETWORK FIRST (a phone refresh must get the new world/ and shared/ scripts on the first load)
     e.respondWith(caches.open(SPLIT_CACHE).then((c) => c.match(req, { ignoreSearch: true }).then((hit) => {
       let timer;

@@ -1,0 +1,6 @@
+Pug.fbx is the suited, standing pug from the Quaternius Ultimate Animated
+Character Pack (CC0). It is a person-shaped costume, not a follower.
+
+Kept for a later town character. It is not one of the heel pets.
+Ellie picks a follower with ?pet=fox|cat|puppy|bunny|aussie.
+The pug file is not wired to any of those.
