@@ -2,7 +2,7 @@
 
 Neon World stays the test bed for Ellie's walk-in rooms. The pages are `world.html` and `world-split.html`, plus the copies under `test/`. The city stays as it is after the Option 1 layout. This note does not move a building, and it does not publish the site.
 
-The drop tool and the object catalog belong to Planner Port (`bc-40642464`, [PR #82](https://github.com/rbeaglemedia/z-dash/pull/82)). This hook is the room side of that tool: bounds, floor slots, wall slots, and the device save the walk painter will read. The tool is not built in this change.
+The object catalog belongs to Planner Port (`bc-40642464`, [PR #82](https://github.com/rbeaglemedia/z-dash/pull/82)). This hook is the room side: bounds, floor slots, wall slots, and the device save. `world/room-place.js` reads it. `world/planner-tools.js` writes Ellie's list. Planner Port adds the DEV Builder on that same file.
 
 The machine copy is [`docs/room-place/HOOK.json`](room-place/HOOK.json).
 
@@ -14,7 +14,7 @@ Objects sit at least 0.4 m inside the walls. The door gap stays clear: x from -1
 
 ## What each room exposes
 
-When the hook is added to the kid pages, three calls cover it. They read. They do not write.
+`world/room-place.js` is on the kid pages. Three calls cover a room. They read. The editor core writes.
 
 ```text
 ROOM_PLACE.describe(id) → bounds, blocked boxes, floor slots, wall slots
@@ -71,7 +71,7 @@ Planner Port already named the key `zdash.ellie.builder.v1`. This hook uses that
 }
 ```
 
-`prop` is a catalog id. `params` is size, color, glow, and proportions. `wall` is `far`, `left`, `right`, or null for a floor piece. `y` is 0 on the floor, or the bottom of a wall piece. The drop tool is the writer. The walk painter is the reader. Neither call writes `zdash.house.v1`, the `house` object inside `zdash.kid.v1`, or `zdash.sampler.likes.v1`. Clearing the site data clears this list with her other device saves.
+`prop` is a catalog id. `params` is size, color, glow, and proportions. `wall` is `far`, `left`, `right`, or null for a floor piece. `y` is 0 on the floor, or the bottom of a wall piece. `PLANNER_TOOLS` is the writer. The walk painter is the reader. The writer stores `zdash.ellie.builder.v1` and leaves `zdash.house.v1`, the `house` object inside `zdash.kid.v1`, and `zdash.sampler.likes.v1` alone. Clearing the site data clears this list with her other device saves.
 
 The house hero pieces stay on the existing four controls: sofa, arcade cabinet, DJ speakers, trophy screen, plus the pet bed and the sign. A placed object draws in addition to those. It does not replace them.
 
@@ -84,4 +84,4 @@ In a sampler room, the first saved prop hides that room's sample furniture. The 
 3. Slots now on the house and the eight sampler rooms. The five later rooms keep a name, bounds, and one floor slot plus one wall slot.
 4. The Place control stays the one Planner Port described inside the house. The sampler rooms expose the same hook so the tool can target them when that control should appear there too.
 
-Nothing in this note is built. The next step is Bob's go-ahead, then a reader on the two kid pages. The drop tool stays on the Planner Port branch.
+Ellie L1 uses this hook inside the house. The DEV Builder and the Q2 tools stay with Planner Port, on `world/planner-tools.js`.

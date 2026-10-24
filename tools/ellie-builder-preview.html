@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ellie builder preview</title>
+<style>
+  html,body{margin:0;background:#111;overflow:hidden;}
+  #walk-interior{position:relative;overflow:hidden;background:#fffdf8;}
+  #walk-room-cv{display:block;width:100%;height:100%;}
+  #shot{position:absolute;inset:0;width:100%;height:100%;z-index:1;}
+  #walk-interior h2{position:absolute;z-index:2;left:14px;top:56px;margin:0;color:#243044;font:800 22px sans-serif;}
+  #walk-interior p{position:absolute;z-index:2;left:14px;top:86px;margin:0;max-width:46%;color:#243044;font:600 14px sans-serif;}
+  #walk-step-out{position:absolute;z-index:2;left:14px;bottom:64px;min-height:44px;min-width:44px;padding:8px 12px;border:2px solid #243044;border-radius:12px;background:#fffdf8;color:#1c140c;font:800 14px sans-serif;}
+</style>
+</head>
+<body>
+<div id="walk-interior">
+  <h2>PLAYER HOUSE</h2>
+  <p>Glass, daylight, and the saved pieces.</p>
+  <canvas id="walk-room-cv"></canvas>
+  <button id="walk-step-out" type="button">STEP BACK OUTSIDE</button>
+</div>
+<script src="../world/planner-props.js"></script>
+<script src="../world/room-place.js"></script>
+<script src="../world/planner-tools.js"></script>
+<script src="../world/style-sampler.js"></script>
+<script src="../world/ellie-builder.js"></script>
+<script>
+const DEVICES = {
+  phone: [844, 390, 'Phone'],
+  ipad: [1180, 820, 'iPad'],
+  pc: [1366, 768, 'PC']
+};
+const q = new URLSearchParams(location.search);
+const spec = DEVICES[q.get('device') || 'phone'] || DEVICES.phone;
+const floor = q.get('view') === 'floor';
+const W = spec[0], H = spec[1];
+const caption = spec[2] + " · Ellie's house · " + (floor ? 'Floor' : 'L1');
+const stage = document.getElementById('walk-interior');
+stage.style.width = W + 'px';
+stage.style.height = H + 'px';
+document.documentElement.style.width = W + 'px';
+document.body.style.width = W + 'px';
+document.body.style.height = H + 'px';
+const cv = document.getElementById('walk-room-cv');
+cv.width = W;
+cv.height = H;
+const g = cv.getContext('2d');
+ELLIE_BUILDER.mount(stage, { preview: true });
+ELLIE_BUILDER.show();
+if (floor) {
+  const btn = document.querySelector('#ellie-bar button[data-view="floor"]');
+  if (btn) btn.click();
+}
+const who = { x: 0, z: 3.6, petX: 1.35, petZ: 3.85, caption: caption };
+const N = 40;
+const t0 = performance.now();
+for (let i = 0; i < N; i++) SAMPLER.paint(g, W, H, 'house', who);
+const ms = (performance.now() - t0) / N;
+SAMPLER.paint(g, W, H, 'house', who);
+const shot = document.createElement('img');
+shot.id = 'shot';
+shot.src = cv.toDataURL('image/png');
+shot.alt = caption;
+stage.appendChild(shot);
+cv.style.display = 'none';
+samplerEnsureUi();
+const heart = document.getElementById('sampler-heart');
+const picks = document.getElementById('sampler-picks-open');
+if (heart) heart.hidden = true;
+if (picks) picks.hidden = true;
+const fps = document.getElementById('sampler-fps');
+if (fps) fps.textContent = (ms < 9.1 ? '110+ · ' : '') + ms.toFixed(1) + ' ms';
+function audit() {
+  const nodes = Array.from(document.querySelectorAll('#ellie-build, #ellie-bar button, #ellie-size, #walk-step-out, #sampler-fps, #walk-interior h2'));
+  const boxes = [];
+  const problems = [];
+  nodes.forEach((el) => {
+    if (el.hidden) return;
+    const style = getComputedStyle(el);
+    if (style.display === 'none' || style.visibility === 'hidden') return;
+    const r = el.getBoundingClientRect();
+    if (r.width < 1 || r.height < 1) return;
+    const font = parseFloat(style.fontSize) || 0;
+    const item = { id: el.id || el.getAttribute('aria-label') || el.textContent.trim(), x: r.x, y: r.y, w: r.width, h: r.height, font: font };
+    if ((el.id === 'ellie-build' || el.closest('#ellie-bar') || el.id === 'ellie-size' || el.id === 'walk-step-out') && (r.width < 44 || r.height < 44)) {
+      problems.push('small ' + item.id + ' ' + Math.round(r.width) + 'x' + Math.round(r.height));
+    }
+    if (font && font < 9) problems.push('font ' + item.id);
+    if (style.boxShadow && style.boxShadow !== 'none') problems.push('shadow ' + item.id);
+    boxes.push(item);
+  });
+  for (let i = 0; i < boxes.length; i++) {
+    for (let j = i + 1; j < boxes.length; j++) {
+      const a = boxes[i], b = boxes[j];
+      const ox = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
+      const oy = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+      if (ox > 2 && oy > 2) problems.push('overlap ' + a.id + ' / ' + b.id);
+      else if (oy > 8 && ox < 0 && -ox < 8) problems.push('gap ' + a.id + ' / ' + b.id);
+      else if (ox > 8 && oy < 0 && -oy < 8) problems.push('gap ' + a.id + ' / ' + b.id);
+    }
+  }
+  const bar = document.getElementById('ellie-bar');
+  if (bar) {
+    const r = bar.getBoundingClientRect();
+    if (r.bottom > H + 1 || r.right > W + 1 || r.left < -1) problems.push('bar clip');
+  }
+  document.body.dataset.audit = problems.join(' | ') || 'ok';
+  document.body.dataset.ms = ms.toFixed(2);
+  document.body.dataset.caption = caption;
+  document.body.dataset.ready = '1';
+}
+requestAnimationFrame(() => requestAnimationFrame(audit));
+</script>
+</body>
+</html>
