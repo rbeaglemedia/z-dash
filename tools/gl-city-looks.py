@@ -765,9 +765,24 @@ def draw_purpose(dr, proj, spec, tier):
     elif kind == 'plain':
         cull_face(dr, proj, [(x0, 0, zf), (x1, 0, zf), (x1, bh, zf), (x0, bh, zf)], (18, 12, 28))
         win_face(dr, proj, x0 + 3, x1 - 3, 3, bh - 3, 0.15, 'arcade', (40, 28, 64))
+    elif kind == 'wash':
+        cull_face(dr, proj, [(x0, 0, zf), (x0 + 6, 0, zf), (x0 + 6, bh, zf), (x0, bh, zf)], color, CYAN, 2)
+        cull_face(dr, proj, [(x1 - 6, 0, zf), (x1, 0, zf), (x1, bh, zf), (x1 - 6, bh, zf)], color, CYAN, 2)
+        cull_face(dr, proj, [(x0, bh - 1.4, zf), (x1, bh - 1.4, zf), (x1, bh, zf), (x0, bh, zf)], CYAN)
+        cull_face(dr, proj, [(-1.6, 0, 2.2), (1.6, 0, 2.2), (1.6, 1.4, 2.2), (-1.6, 1.4, 2.2)], (16, 16, 24), CYAN, 2)
+    elif kind == 'dock':
+        cull_face(dr, proj, [(x0, 0.4, zf), (x1, 0.4, zf), (x1, 1.3, zf - bd), (x0, 1.3, zf - bd)], (24, 48, 64), CYAN, 2)
+        for px in (x0 + 4, x1 - 4):
+            cull_face(dr, proj, [(px, 0, zf - 2), (px + 1.4, 0, zf - 2), (px + 1.4, 4.2, zf - 2), (px, 4.2, zf - 2)], CYAN)
+        cull_face(dr, proj, [(x0 + 8, 1.5, zf - 6), (x0 + 22, 1.5, zf - 6), (x0 + 20, 3.2, zf - 10), (x0 + 10, 3.2, zf - 10)], (255, 79, 216))
+    elif kind == 'nook':
+        cull_face(dr, proj, [(x0, 0, zf), (x1, 0, zf), (x1, bh, zf), (x0, bh, zf)], color, AMBER, 2)
+        peak = bh + bw * 0.16
+        cull_face(dr, proj, [(x0 - 1, bh, zf + 0.3), (x1 + 1, bh, zf + 0.3), (0, peak, zf - bd * 0.5)], (90, 16, 48))
+        cull_face(dr, proj, [(-4, 2.2, 0.3), (4, 2.2, 0.3), (4, 6.4, 0.3), (-4, 6.4, 0.3)], (255, 225, 77), (20, 8, 16), 2)
     else:
         cull_face(dr, proj, [(x0, 0, zf), (x1, 0, zf), (x1, bh, zf), (x0, bh, zf)], color)
-    if kind not in ('house', 'garage', 'dance', 'soccer', 'show', 'plain', 'builder'):
+    if kind not in ('house', 'garage', 'dance', 'soccer', 'show', 'plain', 'builder', 'wash', 'dock', 'nook'):
         win_face(dr, proj, x0 + 2, x1 - 2, 3.2, bh - 3.5, 0.12, tier, shade(CYAN, 0.8))
     if kind == 'paint':
         for i, c in enumerate((MAG, CYAN, AMBER, GREEN)):
@@ -845,14 +860,266 @@ def purpose_frame(spec, view, tier, vw, vh, title):
     cap = ImageFont.truetype(SIGN_FONT, 13 if vh < 500 else 16)
     bar_h = 70 if vh < 500 else 82
     dr.rectangle([0, vh - bar_h, vw, vh], fill=(8, 2, 16))
-    if pid == 'SKY_DROP':
-        sign_line = 'Sign JUMP. Tower 70x239 and deck 64x164x62 both stay on their lots.'
+    if pid in ('CAR_WASH', 'RIVER_DOCK', 'STORY_NOOK'):
+        sign_line = 'Suggested purpose %s. Not one of the 24.' % (spec[1] or pid)
+        foot = 'Idea only. Stays out of the game unless Bob says yes.'
+    elif pid == 'SKY_DROP':
+        sign_line = 'Sign JUMP. Deck and tower sit together downtown.'
+        foot = 'Mockup. Count stays 24. The map picks the lot.'
     else:
-        sign_line = 'Sign %s. Same lot as today. Not a new building.' % (spec[1] or 'none')
+        sign_line = 'Sign %s. Count stays 24.' % (spec[1] or 'none')
+        foot = 'Mockup. The map picks the lot. Not moved in the game yet.'
     dr.text((12, vh - bar_h + 8), 'PURPOSE  %s    %s    %s' % (pid, title, tier_name), fill=(233, 227, 228), font=cap)
     dr.text((12, vh - bar_h + 30), sign_line, fill=(62, 230, 255), font=cap)
-    dr.text((12, vh - bar_h + 52), 'Mockup. 24 shops stay. Placements unchanged.', fill=(138, 122, 125), font=cap)
+    dr.text((12, vh - bar_h + 52), foot, fill=(138, 122, 125), font=cap)
     return img
+
+
+# Proposed lots. Count is 24. Sizes match today's shops. North is +z.
+# (n, purpose, x0, x1, z0, z1)
+MAP_SHOPS = [
+    (1, 'HOME', 100, 144, 60, 108),
+    (2, 'HOME', 100, 140, 128, 176),
+    (3, 'GARAGE', 180, 228, 60, 150),
+    (4, 'NOS', 250, 290, 60, 106),
+    (5, 'SHOWROOM', 180, 244, 168, 224),
+    (6, 'NEON_PAINT', 200, 244, 380, 428),
+    (7, 'DANCE', 200, 260, 450, 514),
+    (8, 'ARCADE', 290, 346, 450, 514),
+    (9, 'ARCADE', 290, 342, 540, 604),
+    (10, 'CAFE', -280, -236, 960, 1008),
+    (11, 'PETS', -420, -380, 1040, 1088),
+    (12, 'PETS', -420, -376, 1120, 1168),
+    (13, 'NOS', -400, -336, 1400, 1564),
+    (14, 'SKY_DROP', 90, 154, 1100, 1264),
+    (15, 'SKY_DROP', 200, 270, 1165, 1235),
+    (16, 'DANCE', 310, 370, 1160, 1224),
+    (17, 'NEON_PAINT', 310, 354, 1260, 1308),
+    (18, 'SHOWROOM', 90, 154, 1320, 1484),
+    (19, 'CAFE', 310, 358, 1340, 1388),
+    (20, 'SOCCER', 470, 526, 230, 318),
+    (21, 'SOCCER', 470, 526, 330, 398),
+    (22, 'GARAGE', 400, 464, 720, 884),
+    (23, 'BUILDER', -70, -26, 1888, 1920),
+    (24, 'BUILDER', 40, 84, 1888, 1918),
+]
+MAP_IDEAS = [
+    ('CAR WASH', 300, 340, 70, 110),
+    ('RIVER DOCK', 200, 280, 1748, 1772),
+    ('STORY NOOK', -360, -324, 900, 940),
+]
+MAP_COLOR = {
+    'HOME': (125, 255, 107), 'NEON_PAINT': (255, 79, 216), 'GARAGE': (255, 176, 32),
+    'DANCE': (255, 79, 216), 'PETS': (125, 255, 107), 'ARCADE': (62, 230, 255),
+    'NOS': (255, 225, 77), 'SKY_DROP': (62, 230, 255), 'BUILDER': (125, 255, 107),
+    'SOCCER': (255, 176, 32), 'CAFE': (255, 42, 61), 'SHOWROOM': (62, 230, 255),
+}
+MAP_WORD = {
+    'HOME': 'HOME', 'NEON_PAINT': 'NEON', 'GARAGE': 'GARAGE', 'DANCE': 'DANCE',
+    'PETS': 'PETS', 'ARCADE': 'ARCADE', 'NOS': 'NOS', 'SKY_DROP': 'JUMP',
+    'BUILDER': 'PIXEL', 'SOCCER': 'TURBO', 'CAFE': 'PIZZA', 'SHOWROOM': 'Z-DASH',
+}
+
+
+def _map_overlaps():
+    boxes = [(n, x0, x1, z0, z1) for n, _p, x0, x1, z0, z1 in MAP_SHOPS]
+    bad = []
+    for i in range(len(boxes)):
+        a = boxes[i]
+        if abs((a[1] + a[2]) / 2) < 40:
+            bad.append('shop %s on runway' % a[0])
+        for b in boxes[i + 1:]:
+            if a[2] > b[1] + 2 and b[2] > a[1] + 2 and a[4] > b[3] + 2 and b[4] > a[3] + 2:
+                bad.append('overlap %s %s' % (a[0], b[0]))
+    if bad:
+        raise SystemExit('map check failed: ' + '; '.join(bad))
+
+
+def write_map():
+    _map_overlaps()
+    os.makedirs(ROOT, exist_ok=True)
+    os.makedirs(ART, exist_ok=True)
+    W, H = 1180, 1880
+    img = Image.new('RGB', (W, H), (8, 2, 16))
+    dr = ImageDraw.Draw(img)
+    title_f = ImageFont.truetype(SIGN_FONT, 28)
+    sub_f = ImageFont.truetype(SIGN_FONT, 16)
+    lab_f = ImageFont.truetype(SIGN_FONT, 13)
+    tiny = ImageFont.truetype(SIGN_FONT, 11)
+    dr.text((24, 16), 'NEON WORLD  ·  PROPOSED MAP', fill=(233, 227, 228), font=title_f)
+    dr.text((24, 50), '24 shops. North is up. Dashed boxes are ideas, not in the count.', fill=CYAN, font=sub_f)
+    x0w, x1w, z0w, z1w = -620.0, 1100.0, -220.0, 2160.0
+    avail_w, avail_h = 1124.0, 1280.0
+    scale = min(avail_w / (x1w - x0w), avail_h / (z1w - z0w))
+    mw, mh = (x1w - x0w) * scale, (z1w - z0w) * scale
+    left, top = 28 + (avail_w - mw) / 2, 88
+    right, bot = left + mw, top + mh
+    def P(x, z):
+        return (left + (x - x0w) * scale, bot - (z - z0w) * scale)
+    def rect_xz(xa, xb, za, zb, fill=None, outline=None, width=1):
+        ax, ay = P(xa, za)
+        bx, by = P(xb, zb)
+        box = [min(ax, bx), min(ay, by), max(ax, bx), max(ay, by)]
+        if fill:
+            dr.rectangle(box, fill=fill)
+        if outline:
+            dr.rectangle(box, outline=outline, width=width)
+        return box
+    def poly_dash(box, outline, width=2):
+        x0, y0, x1, y1 = box
+        step = 8
+        for x in range(int(x0), int(x1), step * 2):
+            dr.line([(x, y0), (min(x + step, x1), y0)], fill=outline, width=width)
+            dr.line([(x, y1), (min(x + step, x1), y1)], fill=outline, width=width)
+        for y in range(int(y0), int(y1), step * 2):
+            dr.line([(x0, y), (x0, min(y + step, y1))], fill=outline, width=width)
+            dr.line([(x1, y), (x1, min(y + step, y1))], fill=outline, width=width)
+    # Ground and districts
+    rect_xz(-560, 560, -200, 2100, (14, 6, 22))
+    for name, xa, xb, za, zb, col in (
+        ('HOME', 80, 360, 30, 250, (18, 36, 24)),
+        ('ARTS', 170, 380, 340, 660, (40, 14, 36)),
+        ('PARK', -460, -200, 860, 1220, (14, 32, 24)),
+        ('DOWNTOWN', 60, 390, 1060, 1540, (12, 24, 40)),
+        ('SPORTS', 380, 560, 180, 940, (36, 24, 12)),
+        ('BUILDER', -180, 180, 1860, 2080, (24, 32, 16)),
+    ):
+        rect_xz(xa, xb, za, zb, col)
+        cx, cy = P((xa + xb) / 2, zb - 12)
+        dr.text((cx - 28, cy), name, fill=(180, 170, 190), font=tiny)
+    # Park green, river, stadium, track
+    rect_xz(-340, -160, 1010, 1190, (16, 48, 28), (125, 255, 107), 1)
+    px, py = P(-250, 1100)
+    dr.text((px - 16, py), 'PARK', fill=GREEN, font=tiny)
+    rect_xz(-560, 560, 1780, 1840, (10, 28, 48), CYAN, 2)
+    rx, ry = P(0, 1810)
+    dr.text((rx + 8, ry - 8), 'RIVER', fill=CYAN, font=tiny)
+    # Stadium slid west so the soccer doors open onto a short promenade.
+    sx, sy = P(700, 280)
+    rad = 102 * scale
+    dr.ellipse([sx - rad, sy - rad, sx + rad, sy + rad], outline=(255, 176, 32), width=3)
+    dr.text((sx - 28, sy - 8), 'STADIUM', fill=AMBER, font=tiny)
+    tx, ty = P(1000, 1100)
+    dr.ellipse([tx - 150 * scale, ty - 80 * scale, tx + 150 * scale, ty + 80 * scale], outline=(255, 79, 216), width=2)
+    dr.text((tx - 18, ty - 8), 'TRACK', fill=MAG, font=tiny)
+    # Roads. Runway is the spine. Highway stays on the west.
+    rect_xz(-18, 18, -80, 1520, (20, 16, 28), CYAN, 2)
+    rect_xz(38, 62, -40, 1450, (18, 12, 24))
+    rect_xz(-465, -435, -200, 2100, (28, 16, 20), AMBER, 2)
+    rect_xz(-530, -370, 500, 700, (12, 10, 16), AMBER, 1)
+    for zc, xa, xb in ((220, -450, 520), (360, 80, 520), (960, -450, 200), (1280, 40, 400), (1700, -450, 400)):
+        rect_xz(xa, xb, zc - 9, zc + 9, (22, 12, 28))
+    rect_xz(150, 176, 0, 1600, (22, 12, 28))
+    rect_xz(-230, -206, 880, 1600, (22, 12, 28))
+    # Bridges
+    rect_xz(-14, 14, 1768, 1852, (40, 28, 16), AMBER, 2)
+    rect_xz(-465, -435, 1768, 1852, (40, 28, 16), AMBER, 2)
+    # Buildings
+    num_f = ImageFont.truetype(SIGN_FONT, 12)
+    for n, purpose, xa, xb, za, zb in MAP_SHOPS:
+        box = rect_xz(xa, xb, za, zb, MAP_COLOR[purpose], (8, 2, 16), 1)
+        label = str(n)
+        bb = num_f.getbbox(label)
+        cx = (box[0] + box[2]) / 2 - (bb[2] - bb[0]) / 2
+        cy = (box[1] + box[3]) / 2 - (bb[3] - bb[1]) / 2
+        dr.text((cx, cy), label, fill=(8, 2, 16), font=num_f)
+    for name, xa, xb, za, zb in MAP_IDEAS:
+        box = rect_xz(xa, xb, za, zb)
+        poly_dash(box, AMBER, 2)
+    # Flow
+    def arrow(x, z, x2, z2, fill, word):
+        a, b = P(x, z), P(x2, z2)
+        dr.line([a, b], fill=fill, width=3)
+        dr.ellipse([b[0] - 4, b[1] - 4, b[0] + 4, b[1] + 4], fill=fill)
+        dr.text((a[0] + 6, a[1] - 14), word, fill=fill, font=tiny)
+    arrow(0, 20, 0, 700, CYAN, 'DRIVE')
+    arrow(-450, 200, -450, 900, AMBER, 'HIGHWAY')
+    arrow(160, 360, 160, 620, MAG, 'WALK')
+    arrow(180, 980, 122, 1180, CYAN, 'FLY')
+    sx0, sy0 = P(0, 0)
+    dr.ellipse([sx0 - 6, sy0 - 6, sx0 + 6, sy0 + 6], fill=(233, 227, 228))
+    dr.text((sx0 + 8, sy0 - 6), 'START', fill=(233, 227, 228), font=tiny)
+    ax, ay = P(180, 980)
+    dr.ellipse([ax - 5, ay - 5, ax + 5, ay + 5], outline=CYAN, width=2)
+    dr.text((ax + 8, ay - 6), 'SKY START', fill=CYAN, font=tiny)
+    # Legend
+    legend_y = bot + 18
+    dr.text((24, legend_y), 'THE 24  ·  same count, new lots', fill=(233, 227, 228), font=sub_f)
+    notes = [
+        '1 HOME  Ellie\'s house, east of the runway',
+        '2 HOME  guest cottage, same saved choices',
+        '3 GARAGE  driveway, walk from the porch, Garage Z',
+        '4 NOS  pump beside the driveway',
+        '5 SHOWROOM  small Z-DASH pavilion',
+        '6 NEON  paint studio on the arts walk',
+        '7 DANCE  mural faces the runway walk, 64x18',
+        '8 ARCADE  arts walk',
+        '9 ARCADE  arts walk',
+        '10 PIZZA  cafe facing the park',
+        '11 PETS  west of the park',
+        '12 PETS  west of the park',
+        '13 NOS  depot on the highway',
+        '14 JUMP  helipad deck, downtown',
+        '15 JUMP  sky tower, 70x70x239',
+        '16 DANCE  mural faces the deck, 64x20',
+        '17 NEON  studio beside that mural',
+        '18 SHOWROOM  long glass Z-DASH',
+        '19 PIZZA  downtown cafe',
+        '20 TURBO  soccer, faces the stadium',
+        '21 TURBO  soccer, beside 20',
+        '22 GARAGE  pit pad, same Garage Z save',
+        '23 PIXEL  builder HQ, north of the river',
+        '24 PIXEL  builder HQ, other side of the bridge',
+    ]
+    col_w = 370
+    for i, line in enumerate(notes):
+        c, r = divmod(i, 12)
+        y = legend_y + 30 + r * 18
+        purpose = MAP_SHOPS[i][1]
+        dr.rectangle([24 + c * col_w, y + 2, 36 + c * col_w, y + 14], fill=MAP_COLOR[purpose])
+        dr.text((42 + c * col_w, y), line, fill=(210, 204, 214), font=lab_f)
+    foot = legend_y + 30 + 12 * 18 + 10
+    dr.text((24, foot), 'IDEAS  ·  dashed on the map  ·  not in the 24 unless Bob says yes', fill=AMBER, font=sub_f)
+    dr.text((24, foot + 26), 'CAR WASH beside the driveway pump.  RIVER DOCK on the south bank.  STORY NOOK by the park cafe.', fill=(210, 204, 214), font=lab_f)
+    dr.text((24, foot + 50), 'Drive the runway or the west highway. Fly from SKY START onto the deck. Walk the porch to Garage Z, then the arts sidewalk, then the park.', fill=(180, 170, 190), font=tiny)
+    dr.text((24, foot + 70), 'Runway, river, west highway, and the outer track stay. Stadium slides west to x=700 so the soccer doors meet the pitch. Generic skyline stays the far ring.', fill=(180, 170, 190), font=tiny)
+    dr.text((24, foot + 96), 'Saves: HOME still reads zdash.house.v1. GARAGE still opens Garage Z from zdash.kid.v1. Neither save stores a coordinate.', fill=CYAN, font=tiny)
+    path = os.path.join(ROOT, 'city-map-proposed.png')
+    img.save(path)
+    img.save(os.path.join(ART, 'city-map-proposed.png'))
+    print(path, img.size, 'shops', len(MAP_SHOPS))
+    return img
+
+
+IDEA_SPECS = [
+    ('CAR_WASH', 'WASH', (62, 230, 255), 32, 8, 16, 'wash'),
+    ('RIVER_DOCK', 'DOCK', (62, 230, 255), 64, 6, 16, 'dock'),
+    ('STORY_NOOK', 'READ', (125, 255, 107), 28, 11, 18, 'nook'),
+]
+
+
+def write_ideas():
+    os.makedirs(ROOT, exist_ok=True)
+    os.makedirs(ART, exist_ok=True)
+    frames = []
+    for spec in IDEA_SPECS:
+        img = purpose_frame(spec, 'front', 'street', 1024, 768, 'IDEA')
+        leaf = 'idea-%s-front-ipad.png' % spec[0]
+        img.save(os.path.join(ROOT, leaf))
+        img.save(os.path.join(ART, leaf))
+        frames.append(img)
+        print(leaf, img.size)
+    cell = 240
+    gap = 8
+    thumbs = [im.resize((int(im.size[0] * cell / im.size[1]), cell), Image.BILINEAR) for im in frames]
+    pw = max(th.size[0] for th in thumbs)
+    board = Image.new('RGB', (3 * pw + gap * 4, cell + gap * 2), (8, 2, 16))
+    for i, th in enumerate(thumbs):
+        board.paste(th, (gap + i * (pw + gap), gap))
+    path = os.path.join(ROOT, 'idea-sheet.png')
+    board.save(path)
+    board.save(os.path.join(ART, 'idea-sheet.png'))
+    print(path, board.size)
 
 
 def main():
@@ -999,7 +1266,10 @@ def write_purpose(shot_dir=None, art_shots=None):
 
 
 if __name__ == '__main__':
-    if '--purpose' in sys.argv:
+    if '--map' in sys.argv:
+        write_map()
+        write_ideas()
+    elif '--purpose' in sys.argv:
         write_purpose()
     else:
         main()
