@@ -1,5 +1,7 @@
 /* DEV Builder, M2, on the current Neon World.
-   Bob only. Hidden until the corner latch. Not a driver-HUD button.
+   Bob only. On /test/ a DEV button and a 2 s press on the in-game minimap
+   open it. The two-corner hold and Ctrl+Shift+B still open it. The button
+   is not on the live page.
    Map edits save to zdash.city.editor.v1. They change the drive only on /test/.
    Q2 tools: roof, measure, align, group, 15 degree rotate.
    Draws with flat fills. The closed editor does not run its own frame loop.
@@ -27,6 +29,8 @@
   var applied = null;
   var placeBind = null;
   var miniSpanNow = 300;
+  var miniHit = null;
+  var devBtn = null;
   var hist = T.createHistory(100);
   var ui = null;
   var tool = 'move';
@@ -128,11 +132,34 @@
       var w = Math.max(8, metres || 16);
       return Math.min(w / 72, w / 44);
     },
-    /* Top-left, and bottom-center. Bottom-right is the throttle. */
+    /* Top-left, and bottom-center. Bottom-right is the throttle.
+       On an Android phone those two spots are the minimap and the
+       system gesture bar, so the page also has a DEV button. */
     latchSpot: function (x, y, w, h) {
       if (x < 72 && y < 72) return 'tl';
       if (Math.abs(x - w / 2) < 44 && y > h - 72) return 'bc';
       return '';
+    },
+    skipOverlap: function (items) {
+      var placed = [];
+      var out = [];
+      (items || []).forEach(function (it) {
+        var blocked = false;
+        for (var i = 0; i < placed.length; i++) {
+          var r = placed[i];
+          if (it.l < r.r && it.r > r.l && it.t < r.b && it.b > r.t) { blocked = true; break; }
+        }
+        if (blocked) return;
+        placed.push(it);
+        out.push(it);
+      });
+      return out;
+    },
+    /* Wide flight zoom keeps two names. A closer map keeps four. Overlap drops the rest. */
+    miniPick: function (items, span) {
+      var list = (items || []).slice().sort(function (a, b) { return (a.d || 0) - (b.d || 0); });
+      var cap = (span || 0) > 900 ? 2 : 4;
+      return list.slice(0, cap);
     },
     hitPad: function (v) {
       var t = ((v.mpp || 4) - 0.35) / 12;
@@ -893,6 +920,7 @@
         return db - da;
       });
     }
+    var pendingLabels = [];
     list.forEach(function (b) {
       var on = selected.indexOf(b.id) >= 0 || groupIds.indexOf(b.id) >= 0;
       var box = CAM.box(b, view, w, h);
@@ -954,11 +982,29 @@
       }
       var wide = box.r - box.l;
       if (on || wide >= 16) {
-        ctx.fillStyle = '#ffffff';
-        ctx.font = wide >= 36 ? '700 12px Orbitron, sans-serif' : '700 10px Orbitron, sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText(b.name || 'building', box.l + 2, Math.max(12, box.t - 2));
+        var text = b.name || 'building';
+        var size = wide >= 36 ? 12 : 10;
+        var font = '700 ' + size + 'px Orbitron, sans-serif';
+        ctx.font = font;
+        var tw = text.length * size * 0.62;
+        try { tw = ctx.measureText(text).width || tw; } catch (e) {}
+        var th = size + 2;
+        var x = box.l + 2;
+        var y = Math.max(th, box.t - 2);
+        pendingLabels.push({
+          text: text, font: font, x: x, y: y,
+          l: x, t: y - th, r: x + tw, b: y + 2,
+          pri: on ? 0 : 1, wide: wide
+        });
       }
+    });
+    pendingLabels.sort(function (a, b) { return a.pri - b.pri || b.wide - a.wide; });
+    CAM.skipOverlap(pendingLabels).forEach(function (lab) {
+      ctx.fillStyle = '#ffffff';
+      ctx.font = lab.font;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText(lab.text, lab.x, lab.y);
     });
     (doc.spawns || []).forEach(function (s) {
       var p = CAM.project(view, s.x, s.z, 0, w, h);
@@ -1248,6 +1294,7 @@
     ui.label.textContent = applies() ? 'Test page only' : 'View only';
     var hold = document.getElementById('devHold');
     if (hold) hold.style.display = 'none';
+    if (devBtn && devBtn.style) devBtn.style.display = 'none';
     var demo = new URLSearchParams(location.search).get('demo') === '1';
     resize();
     if (!demo) openNeighborhood();
@@ -1269,6 +1316,7 @@
     gesture = null;
     pointers = {};
     if (ui) ui.root.style.display = 'none';
+    if (devBtn && devBtn.style) devBtn.style.display = 'block';
   }
 
   function saveNow() {
@@ -1389,13 +1437,54 @@
     return { x: p[0], y: p[1], w: ui.canvas.width, h: ui.canvas.height };
   }
 
+  function pointInMini(ev) {
+    if (!miniHit || !ev) return false;
+    var cv = document.getElementById && document.getElementById('c');
+    if (!cv || !cv.getBoundingClientRect || !cv.width) return false;
+    var r = cv.getBoundingClientRect();
+    if (!r || r.width < 2 || r.height < 2) return false;
+    var bx = (ev.clientX - r.left) / r.width * cv.width;
+    var by = (ev.clientY - r.top) / r.height * cv.height;
+    return bx >= miniHit.x && bx <= miniHit.x + miniHit.w && by >= miniHit.y && by <= miniHit.y + miniHit.h;
+  }
+
+  function placeOpenBtn() {
+    if (!devBtn || !devBtn.style) return;
+    var top = 156, left = 56;
+    var cv = document.getElementById && document.getElementById('c');
+    if (miniHit && cv && cv.getBoundingClientRect && cv.width) {
+      var r = cv.getBoundingClientRect();
+      var sx = r.width / cv.width, sy = r.height / cv.height;
+      top = r.top + (miniHit.y + miniHit.h) * sy + 8;
+      left = r.left + miniHit.x * sx + 8;
+    }
+    var vw = window.innerWidth || 800, vh = window.innerHeight || 600;
+    if (left < 48) left = 48;
+    if (left > vw - 92) left = Math.max(48, vw - 92);
+    if (top < 48) top = 48;
+    if (top > vh - 100) top = Math.max(48, vh - 100);
+    devBtn.style.left = Math.round(left) + 'px';
+    devBtn.style.top = Math.round(top) + 'px';
+  }
+
   function latch() {
     var holds = {};
     var timer = 0;
+    var miniTimer = 0;
+    var miniPtr = null;
+    var miniX = 0, miniY = 0;
     var hint = document.createElement('div');
     hint.id = 'devHold';
     hint.textContent = 'Keep holding';
     if (document.body && document.body.appendChild) document.body.appendChild(hint);
+    devBtn = document.createElement('button');
+    devBtn.id = 'devOpen';
+    devBtn.type = 'button';
+    devBtn.textContent = 'DEV';
+    if (devBtn.setAttribute) devBtn.setAttribute('aria-label', 'Open DEV Builder');
+    devBtn.style.cssText = 'position:fixed;z-index:65;display:block;min-width:44px;min-height:44px;padding:4px 8px;border-radius:12px;border:2px solid #ffb020;background:#12081c;color:#ffe14d;font:700 12px Orbitron,sans-serif;touch-action:manipulation;';
+    if (document.body && document.body.appendChild) document.body.appendChild(devBtn);
+    placeOpenBtn();
     function spot(ev) {
       return CAM.latchSpot(ev.clientX, ev.clientY, window.innerWidth, window.innerHeight);
     }
@@ -1408,26 +1497,62 @@
         if (both()) show();
       }, 2000);
     }
+    function clearMini() {
+      if (miniTimer) { clearTimeout(miniTimer); miniTimer = 0; }
+      miniPtr = null;
+    }
     function syncHint() {
       if (!hint.style) return;
-      if (open || (holds.tl == null && holds.bc == null)) hint.style.display = 'none';
+      var holding = holds.tl != null || holds.bc != null || miniPtr != null;
+      if (open || !holding) hint.style.display = 'none';
       else { hint.textContent = 'Keep holding'; hint.style.display = 'block'; }
     }
     function release(ev) {
       Object.keys(holds).forEach(function (k) { if (holds[k] === ev.pointerId) delete holds[k]; });
       if (!both() && timer) { clearTimeout(timer); timer = 0; }
+      if (miniPtr != null && ev.pointerId === miniPtr) clearMini();
       syncHint();
+    }
+    if (devBtn.addEventListener) {
+      devBtn.addEventListener('click', function (ev) {
+        if (ev.preventDefault) ev.preventDefault();
+        if (ev.stopPropagation) ev.stopPropagation();
+        if (!open) show();
+      });
     }
     window.addEventListener('pointerdown', function (ev) {
       if (open) return;
+      if (ev.target === devBtn) return;
       var c = spot(ev);
-      if (!c) return;
-      holds[c] = ev.pointerId;
-      syncHint();
-      arm();
-    });
-    window.addEventListener('pointerup', release);
-    window.addEventListener('pointercancel', release);
+      if (c) {
+        holds[c] = ev.pointerId;
+        syncHint();
+        arm();
+      }
+      if (miniPtr == null && pointInMini(ev)) {
+        if (ev.cancelable && ev.preventDefault) ev.preventDefault();
+        miniPtr = ev.pointerId;
+        miniX = ev.clientX;
+        miniY = ev.clientY;
+        miniTimer = setTimeout(function () {
+          miniTimer = 0;
+          if (miniPtr != null && !open) show();
+        }, 2000);
+        syncHint();
+      }
+    }, true);
+    window.addEventListener('pointermove', function (ev) {
+      if (miniPtr == null || ev.pointerId !== miniPtr) return;
+      if (Math.hypot(ev.clientX - miniX, ev.clientY - miniY) > 16) {
+        clearMini();
+        syncHint();
+      }
+    }, true);
+    window.addEventListener('pointerup', release, true);
+    window.addEventListener('pointercancel', release, true);
+    window.addEventListener('contextmenu', function (ev) {
+      if (pointInMini(ev) && ev.preventDefault) ev.preventDefault();
+    }, true);
     window.addEventListener('keydown', function (ev) {
       if (open || ev.repeat) return;
       if (!(ev.ctrlKey && ev.shiftKey)) return;
@@ -1435,6 +1560,7 @@
       ev.preventDefault();
       show();
     });
+    window.addEventListener('resize', placeOpenBtn);
   }
 
   function miniPoint(wx, wz, mx, my, mw, mh) {
@@ -1478,32 +1604,49 @@
       ctx.fillStyle = '#070314';
       ctx.fill();
     });
-    var named = 0;
+    var candidates = [];
     CITY.BL.forEach(function (b) {
       if (!b || (b.kind !== 'b' && b.kind !== 'landmark')) return;
       var name = b.purposeLabel || b.label || b.purpose || '';
       if (!name) return;
       var mxw = (b.x0 + b.x1) / 2, mzw = (b.z0 + b.z1) / 2;
-      if (Math.hypot(mxw - P.x, mzw - P.z) > span) return;
-      ctx.beginPath();
-      miniPath(ctx, b, mx, my, mw, mh);
-      ctx.fillStyle = 'rgba(7,8,16,0.88)';
-      ctx.fill();
-      ctx.strokeStyle = b.c || '#3ee6ff';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
       var at = miniPoint(mxw, mzw, mx, my, mw, mh);
-      if (at.x < mx + 4 || at.x > mx + mw - 4 || at.y < my + 10 || at.y > my + mh - 4) return;
+      if (at.x < mx + 4 || at.x > mx + mw - 4 || at.y < my + 12 || at.y > my + mh - 4) return;
+      candidates.push({ name: String(name).slice(0, 18), at: at, d: Math.hypot(mxw - P.x, mzw - P.z) });
+    });
+    var fontPx = 8;
+    ctx.font = '700 8px Orbitron, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    var center = { l: mx + mw / 2 - 16, t: my + mh / 2 - 14, r: mx + mw / 2 + 16, b: my + mh / 2 + 14 };
+    var boxes = [center];
+    var named = [];
+    CAM.miniPick(candidates, span).forEach(function (item) {
+      var text = item.name;
+      var tw = text.length * fontPx * 0.62;
+      try { tw = ctx.measureText(text).width || tw; } catch (e) {}
+      while (text.length > 6 && tw > mw * 0.42) {
+        text = text.slice(0, -1);
+        try { tw = ctx.measureText(text).width || text.length * fontPx * 0.62; } catch (e2) { tw = text.length * fontPx * 0.62; }
+      }
+      var box = { l: item.at.x - tw / 2 - 1, t: item.at.y - fontPx - 3, r: item.at.x + tw / 2 + 1, b: item.at.y + 1, text: text, x: item.at.x, y: item.at.y - 1 };
+      var blocked = false;
+      for (var i = 0; i < boxes.length; i++) {
+        var r = boxes[i];
+        if (box.l < r.r && box.r > r.l && box.t < r.b && box.b > r.t) { blocked = true; break; }
+      }
+      if (blocked) return;
+      boxes.push(box);
+      named.push(box);
+    });
+    named.forEach(function (box) {
       ctx.fillStyle = '#ffffff';
-      ctx.font = '700 11px Orbitron, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'bottom';
-      ctx.fillText(String(name).slice(0, 18), at.x, at.y - 1);
-      named++;
+      ctx.font = '700 8px Orbitron, sans-serif';
+      ctx.fillText(box.text, box.x, box.y);
     });
     ctx.restore();
-    paintMiniNames.named = named;
-    try { window.__devMiniNamed = named; } catch (e) {}
+    paintMiniNames.named = named.length;
+    try { window.__devMiniNamed = named.length; window.__devMiniSpan = span; } catch (e) {}
   }
 
   function hookMini() {
@@ -1521,6 +1664,14 @@
     drawMini = function (mx, my, mw, mh, dt) {
       orig(mx, my, mw, mh, dt);
       paintMiniNames(mx, my, mw, mh);
+      try {
+        var t = ctx.getTransform();
+        miniHit = { x: mx * t.a + t.e, y: my * t.d + t.f, w: mw * t.a, h: mh * t.d };
+      } catch (e) {
+        miniHit = { x: mx, y: my, w: mw, h: mh };
+      }
+      try { window.__devMiniHit = miniHit; } catch (e2) {}
+      placeOpenBtn();
     };
   }
 
