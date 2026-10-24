@@ -3,6 +3,7 @@
    - Pages (index.html, jr.html): NETWORK FIRST with a 2.5 s timeout, so a new deploy shows on the first load. Offline or slow
      network -> the cached copy. Every good network answer refreshes the cache.
    - Other files (manifests, icons): stale-while-revalidate inside a versioned cache.
+   - /.well-known/ is not intercepted and not cached, so assetlinks.json is always the file from the server.
    - A new deploy changes VERSION/BUILD -> installs at once (skipWaiting), takes over open pages (clients.claim), deletes the
      old cache and tells the pages its BUILD so a stale page can reload itself (only when no game/drive is in progress). */
 importScripts('shared/version.js?v=35'); // world35
@@ -33,6 +34,7 @@ function fromNetwork(req, key) { // revalidate with the server (bypasses the 10-
 self.addEventListener('fetch', (e) => {
   const req = e.request, url = new URL(req.url);
   if (req.method !== 'GET' || url.origin !== self.location.origin) return; // Spotify etc. go straight to the network
+  if (url.pathname === '/.well-known' || url.pathname.startsWith('/.well-known/')) return; // asset links: network only, never the page cache
   if (isSplitPath(url)) { // own cache, NETWORK FIRST (a phone refresh must get the new world/ and shared/ scripts on the first load)
     e.respondWith(caches.open(SPLIT_CACHE).then((c) => c.match(req, { ignoreSearch: true }).then((hit) => {
       let timer;
