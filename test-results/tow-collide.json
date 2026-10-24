@@ -1,0 +1,158 @@
+{
+  "when": "2026-10-24T01:06:31.880Z",
+  "rows": [
+    {
+      "name": "phone",
+      "w": 390,
+      "h": 844,
+      "pass": true,
+      "bad": [],
+      "result": {
+        "ok": true,
+        "hits": 1,
+        "v": 30.93,
+        "thr": 1,
+        "bumpN": 0,
+        "bumps": 0,
+        "inside": false,
+        "dist": 19.68,
+        "dist0": 11.11,
+        "parked": false,
+        "samples": [
+          {
+            "i": 0,
+            "v": 6.5,
+            "thr": 1,
+            "hits": 1,
+            "x": 255,
+            "z": 611.8
+          },
+          {
+            "i": 29,
+            "v": 15.43,
+            "thr": 1,
+            "hits": 1,
+            "x": 255,
+            "z": 617.2
+          },
+          {
+            "i": 89,
+            "v": 30.93,
+            "thr": 1,
+            "hits": 1,
+            "x": 255,
+            "z": 640.9
+          }
+        ],
+        "ms": 14,
+        "mode": "phone",
+        "vw": 390,
+        "vh": 844,
+        "err": ""
+      },
+      "shot": "/opt/cursor/artifacts/screenshots/tow-collide-phone.png"
+    },
+    {
+      "name": "ipad",
+      "w": 1024,
+      "h": 768,
+      "pass": true,
+      "bad": [],
+      "result": {
+        "ok": true,
+        "hits": 1,
+        "v": 30.93,
+        "thr": 1,
+        "bumpN": 0,
+        "bumps": 0,
+        "inside": false,
+        "dist": 19.68,
+        "dist0": 11.11,
+        "parked": false,
+        "samples": [
+          {
+            "i": 0,
+            "v": 6.5,
+            "thr": 1,
+            "hits": 1,
+            "x": 255,
+            "z": 611.8
+          },
+          {
+            "i": 29,
+            "v": 15.43,
+            "thr": 1,
+            "hits": 1,
+            "x": 255,
+            "z": 617.2
+          },
+          {
+            "i": 89,
+            "v": 30.93,
+            "thr": 1,
+            "hits": 1,
+            "x": 255,
+            "z": 640.9
+          }
+        ],
+        "ms": 9,
+        "mode": "ipad",
+        "vw": 1024,
+        "vh": 768,
+        "err": ""
+      },
+      "shot": "/opt/cursor/artifacts/screenshots/tow-collide-ipad.png"
+    },
+    {
+      "name": "pc",
+      "w": 1440,
+      "h": 900,
+      "pass": true,
+      "bad": [],
+      "result": {
+        "ok": true,
+        "hits": 1,
+        "v": 30.93,
+        "thr": 1,
+        "bumpN": 0,
+        "bumps": 0,
+        "inside": false,
+        "dist": 19.68,
+        "dist0": 11.11,
+        "parked": false,
+        "samples": [
+          {
+            "i": 0,
+            "v": 6.5,
+            "thr": 1,
+            "hits": 1,
+            "x": 255,
+            "z": 611.8
+          },
+          {
+            "i": 29,
+            "v": 15.43,
+            "thr": 1,
+            "hits": 1,
+            "x": 255,
+            "z": 617.2
+          },
+          {
+            "i": 89,
+            "v": 30.93,
+            "thr": 1,
+            "hits": 1,
+            "x": 255,
+            "z": 640.9
+          }
+        ],
+        "ms": 19,
+        "mode": "pc",
+        "vw": 1440,
+        "vh": 900,
+        "err": ""
+      },
+      "shot": "/opt/cursor/artifacts/screenshots/tow-collide-pc.png"
+    }
+  ]
+}

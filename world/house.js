@@ -519,7 +519,7 @@ function walkLaunchStudio(purpose,door){
   const page=WALK_PAGE[purpose];
   if(!page)return false;
   if(walkHeadless()){walkToast(page,WALK_DOOR[purpose]&&WALK_DOOR[purpose].color);return true;}
-  window.open(page,'_blank');
+  location.assign(page);
   return true;
 }
 function walkHeadless(){
@@ -631,7 +631,7 @@ function walkEnsurePill(){
     e.stopPropagation();e.preventDefault();
     const building=walkDanceBuilding(WALK_MODE.door);
     if(window.DANCE_STAGE)window.DANCE_STAGE.open({building});
-    else window.open('dance-stage.html','_blank');
+    else location.assign('dance-stage.html');
   });
   const getOut=document.createElement('button');
   getOut.id='walk-get-out';getOut.type='button';getOut.textContent='EXIT CAR';
@@ -694,6 +694,7 @@ function walkSyncGait(){
 }
 function walkShowInterior(door){
   walkEnsurePill();
+  if(window.DETAIL&&typeof DETAIL.loadInterior==='function')DETAIL.loadInterior(door);
   const card=typeof document!=='undefined'&&document.getElementById('walk-interior');
   if(!card||!door)return;
   const dance=door.purpose==='DANCE';
@@ -716,6 +717,9 @@ function walkShowInterior(door){
   walkPaintRoom();
 }
 function walkHideInterior(){
+  if(window.DETAIL&&typeof DETAIL.unloadInterior==='function')DETAIL.unloadInterior();
+  const cv=typeof document!=='undefined'&&document.getElementById('walk-room-cv');
+  if(cv){const g=cv.getContext('2d');if(g)g.clearRect(0,0,cv.width,cv.height);cv.width=2;cv.height=2;}
   const card=typeof document!=='undefined'&&document.getElementById('walk-interior');
   if(!card)return;
   card.hidden=true;card.classList.remove('show');

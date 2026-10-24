@@ -1,0 +1,911 @@
+{
+  "tag": "after",
+  "sha": "",
+  "devices": [
+    {
+      "device": "phone",
+      "throttle": 4,
+      "dpr": 3,
+      "viewport": [
+        844,
+        390
+      ],
+      "fps": [
+        20,
+        20,
+        20,
+        20,
+        20
+      ],
+      "samples": [
+        {
+          "fps": 20.000000000000004,
+          "canvas": {
+            "w": 1688,
+            "h": 780,
+            "cssW": 844,
+            "cssH": 390
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.266103014778142,
+            "z": 1826.4837145542479
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 17360,
+            "pathClip": 100,
+            "pathWild": 100,
+            "line": 4960,
+            "lineWild": 450
+          },
+          "draw": {
+            "segs": 2355,
+            "wild": 80,
+            "max": 1688
+          },
+          "pc": false,
+          "touch": 1
+        },
+        {
+          "fps": 20.000000000000004,
+          "canvas": {
+            "w": 1688,
+            "h": 780,
+            "cssW": 844,
+            "cssH": 390
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.266174772974242,
+            "z": 1826.4837421990571
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 10416,
+            "pathClip": 60,
+            "pathWild": 60,
+            "line": 2976,
+            "lineWild": 270
+          },
+          "draw": {
+            "segs": 1404,
+            "wild": 48,
+            "max": 1688
+          },
+          "pc": false,
+          "touch": 1
+        },
+        {
+          "fps": 20.000000000000004,
+          "canvas": {
+            "w": 1688,
+            "h": 780,
+            "cssW": 844,
+            "cssH": 390
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.266174955655668,
+            "z": 1826.4837422694359
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 13888,
+            "pathClip": 80,
+            "pathWild": 80,
+            "line": 3968,
+            "lineWild": 360
+          },
+          "draw": {
+            "segs": 1872,
+            "wild": 64,
+            "max": 1688
+          },
+          "pc": false,
+          "touch": 1
+        },
+        {
+          "fps": 20.000000000000004,
+          "canvas": {
+            "w": 1688,
+            "h": 780,
+            "cssW": 844,
+            "cssH": 390
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.266174956930467,
+            "z": 1826.483742269927
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 12152,
+            "pathClip": 70,
+            "pathWild": 70,
+            "line": 3472,
+            "lineWild": 315
+          },
+          "draw": {
+            "segs": 1638,
+            "wild": 56,
+            "max": 1688
+          },
+          "pc": false,
+          "touch": 1
+        },
+        {
+          "fps": 20.000000000000004,
+          "canvas": {
+            "w": 1688,
+            "h": 780,
+            "cssW": 844,
+            "cssH": 390
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.266174956935725,
+            "z": 1826.4837422699288
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 13888,
+            "pathClip": 80,
+            "pathWild": 80,
+            "line": 3968,
+            "lineWild": 360
+          },
+          "draw": {
+            "segs": 1884,
+            "wild": 76,
+            "max": 1688
+          },
+          "pc": false,
+          "touch": 1
+        }
+      ],
+      "foot": {
+        "sample": {
+          "fps": 20.000000000000004,
+          "canvas": {
+            "w": 1688,
+            "h": 780,
+            "cssW": 844,
+            "cssH": 390
+          },
+          "pose": {
+            "x": 186,
+            "y": 0,
+            "z": 1908,
+            "ground": true,
+            "wings": 0
+          },
+          "cam": {
+            "x": 186,
+            "y": 1.85,
+            "z": 1903.5
+          },
+          "onFoot": true,
+          "insideB": false,
+          "detail": {
+            "footSegs": 74,
+            "onFoot": 1,
+            "storefronts": 1,
+            "segs": 171,
+            "band": 0,
+            "close": 0
+          },
+          "near": 1,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 18808,
+            "pathClip": 272,
+            "pathWild": 272,
+            "line": 5594,
+            "lineWild": 495
+          },
+          "draw": {
+            "segs": 2764,
+            "wild": 104,
+            "max": 1688
+          },
+          "pc": false,
+          "touch": 1
+        },
+        "baked": {
+          "baked": 1,
+          "segs": 74,
+          "shops": 24,
+          "bl": 88,
+          "stat": {
+            "faces": 1,
+            "trims": 0,
+            "signs": 0,
+            "lights": 3,
+            "trees": 0,
+            "roads": 1,
+            "river": 0,
+            "grass": 0,
+            "close": 0,
+            "cruise": 1,
+            "winSegs": 48,
+            "segs": 171,
+            "band": 0,
+            "storefronts": 1,
+            "onFoot": 1,
+            "footSegs": 74
+          }
+        },
+        "doors": {
+          "shop": 22,
+          "parking": true,
+          "stand": {
+            "x": 186,
+            "z": 1890.2,
+            "door": [
+              186,
+              1888,
+              0,
+              1
+            ]
+          },
+          "front": {
+            "entered": true,
+            "inside": true,
+            "interior": {
+              "id": 22,
+              "n": 16
+            },
+            "purpose": "BUILDER",
+            "garage": false,
+            "cv": 844
+          },
+          "exitFront": {
+            "inside": false,
+            "interior": null,
+            "cv": 2
+          },
+          "garage": {
+            "entered": true,
+            "inside": true,
+            "interior": {
+              "id": 22,
+              "n": 16
+            },
+            "purpose": "BUILDER",
+            "garage": true,
+            "cv": 844
+          },
+          "exitGarage": {
+            "inside": false,
+            "interior": null,
+            "cv": 2,
+            "onFoot": true
+          },
+          "outdoorFootSegs": 74,
+          "footGen": 2
+        }
+      },
+      "errors": [],
+      "shot": "/opt/cursor/artifacts/builder-after-phone.png"
+    },
+    {
+      "device": "ipad",
+      "throttle": 2,
+      "dpr": 2,
+      "viewport": [
+        1180,
+        820
+      ],
+      "fps": [
+        20,
+        20,
+        20,
+        22.5,
+        28
+      ],
+      "samples": [
+        {
+          "fps": 20.000000000000004,
+          "canvas": {
+            "w": 1180,
+            "h": 820,
+            "cssW": 1180,
+            "cssH": 820
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.26609894711521,
+            "z": 1826.4837129872012
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 15624,
+            "pathClip": 90,
+            "pathWild": 90,
+            "line": 4464,
+            "lineWild": 405
+          },
+          "draw": {
+            "segs": 1743,
+            "wild": 9,
+            "max": 2360
+          },
+          "pc": false,
+          "touch": 1
+        },
+        {
+          "fps": 20.000000000000004,
+          "canvas": {
+            "w": 1180,
+            "h": 820,
+            "cssW": 1180,
+            "cssH": 820
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.26617435759052,
+            "z": 1826.4837420390288
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 8680,
+            "pathClip": 50,
+            "pathWild": 50,
+            "line": 2480,
+            "lineWild": 225
+          },
+          "draw": {
+            "segs": 965,
+            "wild": 5,
+            "max": 2360
+          },
+          "pc": false,
+          "touch": 1
+        },
+        {
+          "fps": 20.000000000000004,
+          "canvas": {
+            "w": 1180,
+            "h": 820,
+            "cssW": 1180,
+            "cssH": 820
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.266174953442512,
+            "z": 1826.4837422685832
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 12152,
+            "pathClip": 70,
+            "pathWild": 70,
+            "line": 3472,
+            "lineWild": 315
+          },
+          "draw": {
+            "segs": 1351,
+            "wild": 7,
+            "max": 2360
+          },
+          "pc": false,
+          "touch": 1
+        },
+        {
+          "fps": 22.49718785151858,
+          "canvas": {
+            "w": 1180,
+            "h": 820,
+            "cssW": 1180,
+            "cssH": 820
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.266174956907633,
+            "z": 1826.4837422699181
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 15624,
+            "pathClip": 90,
+            "pathWild": 90,
+            "line": 4464,
+            "lineWild": 405
+          },
+          "draw": {
+            "segs": 1737,
+            "wild": 9,
+            "max": 2360
+          },
+          "pc": false,
+          "touch": 1
+        },
+        {
+          "fps": 27.98880447820868,
+          "canvas": {
+            "w": 1180,
+            "h": 820,
+            "cssW": 1180,
+            "cssH": 820
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.266174956935538,
+            "z": 1826.4837422699288
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 17360,
+            "pathClip": 100,
+            "pathWild": 100,
+            "line": 4960,
+            "lineWild": 450
+          },
+          "draw": {
+            "segs": 1932,
+            "wild": 12,
+            "max": 2360
+          },
+          "pc": false,
+          "touch": 1
+        }
+      ],
+      "foot": null,
+      "errors": [],
+      "shot": "/opt/cursor/artifacts/builder-after-ipad.png"
+    },
+    {
+      "device": "pc",
+      "throttle": 1,
+      "dpr": 1,
+      "viewport": [
+        1366,
+        768
+      ],
+      "fps": [
+        22.5,
+        27.1,
+        27.1,
+        27.3,
+        26.3
+      ],
+      "samples": [
+        {
+          "fps": 22.497187851518575,
+          "canvas": {
+            "w": 1280,
+            "h": 720,
+            "cssW": 1366,
+            "cssH": 768
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.265921751512472,
+            "z": 1826.4836447254324
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 45136,
+            "pathClip": 260,
+            "pathWild": 260,
+            "line": 12896,
+            "lineWild": 1170
+          },
+          "draw": {
+            "segs": 5527,
+            "wild": 26,
+            "max": 2560
+          },
+          "pc": true,
+          "touch": 0
+        },
+        {
+          "fps": 27.09502612734663,
+          "canvas": {
+            "w": 1280,
+            "h": 720,
+            "cssW": 1366,
+            "cssH": 768
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.266171602428656,
+            "z": 1826.4837409775928
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 29512,
+            "pathClip": 170,
+            "pathWild": 170,
+            "line": 8432,
+            "lineWild": 765
+          },
+          "draw": {
+            "segs": 3610,
+            "wild": 23,
+            "max": 2560
+          },
+          "pc": true,
+          "touch": 0
+        },
+        {
+          "fps": 27.095026127346586,
+          "canvas": {
+            "w": 1280,
+            "h": 720,
+            "cssW": 1366,
+            "cssH": 768
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.266174921091961,
+            "z": 1826.48374225612
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 27776,
+            "pathClip": 160,
+            "pathWild": 160,
+            "line": 7936,
+            "lineWild": 720
+          },
+          "draw": {
+            "segs": 3422,
+            "wild": 46,
+            "max": 2560
+          },
+          "pc": true,
+          "touch": 0
+        },
+        {
+          "fps": 27.28264823572194,
+          "canvas": {
+            "w": 1280,
+            "h": 720,
+            "cssW": 1366,
+            "cssH": 768
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.266174956614982,
+            "z": 1826.4837422698054
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 31248,
+            "pathClip": 180,
+            "pathWild": 180,
+            "line": 8928,
+            "lineWild": 810
+          },
+          "draw": {
+            "segs": 3852,
+            "wild": 18,
+            "max": 2560
+          },
+          "pc": true,
+          "touch": 0
+        },
+        {
+          "fps": 26.251640727545503,
+          "canvas": {
+            "w": 1280,
+            "h": 720,
+            "cssW": 1366,
+            "cssH": 768
+          },
+          "pose": {
+            "x": 186,
+            "y": 8,
+            "z": 1836,
+            "ground": false,
+            "wings": 1
+          },
+          "cam": {
+            "x": 186,
+            "y": 12.266174956930048,
+            "z": 1826.4837422699268
+          },
+          "onFoot": false,
+          "insideB": false,
+          "detail": {
+            "footSegs": 0,
+            "onFoot": 0,
+            "storefronts": 0,
+            "segs": 0,
+            "band": 2,
+            "close": 0
+          },
+          "near": 4,
+          "inside": 0,
+          "parked": 1,
+          "clip": {
+            "path": 24304,
+            "pathClip": 140,
+            "pathWild": 140,
+            "line": 6944,
+            "lineWild": 630
+          },
+          "draw": {
+            "segs": 3052,
+            "wild": 14,
+            "max": 2560
+          },
+          "pc": true,
+          "touch": 0
+        }
+      ],
+      "foot": null,
+      "errors": [],
+      "shot": "/opt/cursor/artifacts/builder-after-pc.png"
+    }
+  ]
+}

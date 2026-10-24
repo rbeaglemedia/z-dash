@@ -736,7 +736,12 @@ const TRAFFIC = (() => {
       const cv = document.createElement('canvas');
       cv.width = px; cv.height = px;
       cv.getContext('2d', {alpha:true}).drawImage(src, 0, 0, src.width, src.height, 0, 0, px, px);
-      if (cache.size > (T.cacheMax || 140)) cache.clear();
+      const cap = T.cacheMax || 140;
+      while (cache.size >= cap) {
+        const oldest = cache.keys().next().value;
+        if (oldest == null) break;
+        cache.delete(oldest);
+      }
       cache.set(key, cv); bakes++;
       return true;
     } catch (e) { bakeErr = String(e); return false; }
@@ -869,6 +874,7 @@ const TRAFFIC = (() => {
     if (c.sim && dist < T.boxDist) shadow(c);
     if (c.hit || dist < T.fullDist) {
       const cv = cache.get(c._key);
+      if (cv) { cache.delete(c._key); cache.set(c._key, cv); }
       if (cv && blit(cv, c)) { if (c.sim && !c.hit) dress(c); ctx.restore(); return; }
       drawBox(c); lights(c, dist);
     } else if (dist < T.boxDist) { drawBox(c); lights(c, dist); }

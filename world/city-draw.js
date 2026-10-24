@@ -2,11 +2,13 @@
 // ---------- render ----------
 const CDRAW={dist:950,far:170,winDist:70,streets:360,outline:1900};
 function cpoly(c){const o=[];for(let i=0;i<c.length;i++){const a=c[i],b=c[(i+1)%c.length],ai=a[2]>=NEAR,bi=b[2]>=NEAR;if(ai)o.push(a);if(ai!==bi){const t=(NEAR-a[2])/(b[2]-a[2]);o.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,NEAR]);}}return o;}
-let PT=null;function pathPoly(c){const o=cpoly(c);if(o.length<3)return;const f=H*0.9,g=PT||ctx;for(let i=0;i<o.length;i++){const q=o[i],X=W/2+q[0]*f/q[2],Y=H/2-q[1]*f/q[2];i?g.lineTo(X,Y):g.moveTo(X,Y);}g.closePath();}
-function pathSeg(a,b){let p=camS(a[0],a[1],a[2]),q=camS(b[0],b[1],b[2]);if(p[2]<NEAR&&q[2]<NEAR)return;if(p[2]<NEAR||q[2]<NEAR){const t=(NEAR-p[2])/(q[2]-p[2]),m=[p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t,NEAR];if(p[2]<NEAR)p=m;else q=m;}const f=H*0.9,g=PT||ctx;g.moveTo(W/2+p[0]*f/p[2],H/2-p[1]*f/p[2]);g.lineTo(W/2+q[0]*f/q[2],H/2-q[1]*f/q[2]);}
+function clipPoly2d(pts){const pad=12,lims=[[(x)=>x>=-pad,(a,b,t)=>[-pad,a[1]+(b[1]-a[1])*t],(a,b)=>b[0]-a[0],(a)=>-pad-a[0]],[(x,y,X)=>X<=W+pad,(a,b,t)=>[W+pad,a[1]+(b[1]-a[1])*t],(a,b)=>b[0]-a[0],(a)=>W+pad-a[0]],[(x,y)=>y>=-pad,(a,b,t)=>[a[0]+(b[0]-a[0])*t,-pad],(a,b)=>b[1]-a[1],(a)=>-pad-a[1]],[(x,y)=>y<=H+pad,(a,b,t)=>[a[0]+(b[0]-a[0])*t,H+pad],(a,b)=>b[1]-a[1],(a)=>H+pad-a[1]]];
+  let out=pts;for(const[inside,hit,den,num]of lims){if(out.length<3)return[];const inp=out;out=[];for(let i=0;i<inp.length;i++){const a=inp[i],b=inp[(i+1)%inp.length],ina=inside(a[0],a[1],a[0]),inb=inside(b[0],b[1],b[0]);if(ina&&inb)out.push(b);else{const d=den(a,b);if(!d)continue;const t=num(a)/d;if(!(t>=0&&t<=1))continue;const p=hit(a,b,t);if(ina)out.push(p);else if(inb){out.push(p);out.push(b);}}} }return out;}
+let PT=null;function pathPoly(c){const o=cpoly(c);if(o.length<3)return;const f=H*0.9,pad=12,raw=[];let wild=false;for(const q of o){if(!(q[2]>0))return;const X=W/2+q[0]*f/q[2],Y=H/2-q[1]*f/q[2];if(!isFinite(X)||!isFinite(Y))return;if(X<-pad||Y<-pad||X>W+pad||Y>H+pad)wild=true;raw.push([X,Y]);}const pts=wild?clipPoly2d(raw):raw;if(pts.length<3)return;const g=PT||ctx;for(let i=0;i<pts.length;i++)i?g.lineTo(pts[i][0],pts[i][1]):g.moveTo(pts[i][0],pts[i][1]);g.closePath();}
+function pathSeg(a,b){const s=nearSeg(camS(a[0],a[1],a[2]),camS(b[0],b[1],b[2]));if(!s)return;const g=PT||ctx;g.moveTo(s[0],s[1]);g.lineTo(s[2],s[3]);}
 const wpoly=(pts)=>pathPoly(pts.map(p=>camS(p[0],p[1],p[2])));
 function pathLine(pts){for(let i=1;i<pts.length;i++)pathSeg(pts[i-1],pts[i]);}
-function boxFaces(q){const C=[];for(const y of[q.y0,q.y1])for(const[x,z]of[[q.x0,q.z0],[q.x1,q.z0],[q.x1,q.z1],[q.x0,q.z1]])C.push(camS(x,y,z));
+function boxFaces(q){if(cam.x>q.x0&&cam.x<q.x1&&cam.z>q.z0&&cam.z<q.z1&&cam.y>q.y0&&cam.y<q.y1)return;const C=[];for(const y of[q.y0,q.y1])for(const[x,z]of[[q.x0,q.z0],[q.x1,q.z0],[q.x1,q.z1],[q.x0,q.z1]])C.push(camS(x,y,z));
   if(cam.x<q.x0)pathPoly([C[0],C[3],C[7],C[4]]);else if(cam.x>q.x1)pathPoly([C[1],C[2],C[6],C[5]]);
   if(cam.z<q.z0)pathPoly([C[0],C[1],C[5],C[4]]);else if(cam.z>q.z1)pathPoly([C[3],C[2],C[6],C[7]]);
   if(cam.y>q.y1)pathPoly([C[4],C[5],C[6],C[7]]);else if(cam.y<q.y0)pathPoly([C[0],C[1],C[2],C[3]]);}
@@ -64,7 +66,7 @@ function drawDoors(b,d){if(!b.doors||d>150)return;const q=b.boxes[0];ctx.beginPa
 // Same faces as the near draw, batched into one fill and one stroke per colour, so nothing pops in as a single wall.
 const FARB=new Map();let FARF=null,FARD=0,FARN=0;function farFlush(){if(FARF){ctx.fillStyle='#0a0612';ctx.fill(FARF);FARF=null;}if(!FARB.size){FARN=0;return;}const d0=FARN||FARD;ctx.lineWidth=d0<400?1.8:1.2;ctx.globalAlpha=clamp(1.5-d0/CDRAW.dist,.25,1);for(const[c,p]of FARB){ctx.strokeStyle=c;ctx.stroke(p);}ctx.globalAlpha=1;FARB.clear();FARN=0;}
 function farSil(q){const P8=[];for(const y of[q.y0,q.y1])for(const[x,z]of[[q.x0,q.z0],[q.x1,q.z0],[q.x1,q.z1],[q.x0,q.z1]])P8.push(camS(x,y,z));
-  const edge=(i,j)=>{let a=P8[i],b=P8[j];if(a[2]<NEAR&&b[2]<NEAR)return;if(a[2]<NEAR||b[2]<NEAR){const t=(NEAR-a[2])/(b[2]-a[2]),m=[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,NEAR];if(a[2]<NEAR)a=m;else b=m;}const f=H*0.9;PT.moveTo(W/2+a[0]*f/a[2],H/2-a[1]*f/a[2]);PT.lineTo(W/2+b[0]*f/b[2],H/2-b[1]*f/b[2]);};
+  const edge=(i,j)=>{const s=nearSeg(P8[i],P8[j]);if(!s)return;PT.moveTo(s[0],s[1]);PT.lineTo(s[2],s[3]);};
   const face=(ids)=>{for(let k=0;k<4;k++)edge(ids[k],ids[(k+1)%4]);if(FARF){const ink=PT;PT=FARF;const f4=[P8[ids[0]],P8[ids[1]],P8[ids[2]],P8[ids[3]]];let ar=0;for(let k=0;k<4;k++){const u=f4[k],v=f4[(k+1)%4];ar+=(u[0]/Math.max(u[2],NEAR))*(v[1]/Math.max(v[2],NEAR))-(v[0]/Math.max(v[2],NEAR))*(u[1]/Math.max(u[2],NEAR));}pathPoly(ar<0?f4.reverse():f4);PT=ink;}};
   if(farSil.o){face([0,1,2,3]);face([4,5,6,7]);edge(0,4);edge(1,5);edge(2,6);edge(3,7);return;}
   if(cam.x<q.x0)face([0,3,7,4]);else if(cam.x>q.x1)face([1,2,6,5]);if(cam.z<q.z0)face([0,1,5,4]);else if(cam.z>q.z1)face([3,2,6,7]);if(cam.y>q.y1)face([4,5,6,7]);else if(cam.y<q.y0)face([0,1,2,3]);}

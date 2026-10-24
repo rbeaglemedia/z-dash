@@ -4,7 +4,7 @@
  "short_name": "Z-DASH JR",
  "description": "Passenger Mode for Dad's 370Z",
  "start_url": "./jr.html",
- "scope": "./jr.html",
+ "scope": "./",
  "display": "fullscreen",
  "display_override": [
   "fullscreen",

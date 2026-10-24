@@ -52,7 +52,7 @@ html, body { margin: 0; height: 100%; background: #000; color: var(--txt); font-
 #splash { position: fixed; inset: 0; background: #000; z-index: 50; transition: opacity .6s; } .neonz { position: absolute; z-index: 3; top: calc(env(safe-area-inset-top, 0px) + 10px); right: calc(env(safe-area-inset-right, 0px) + 10px); width: 46px; height: 46px; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: rgba(0,0,0,.6); border: 1px solid #ff2a3d; border-radius: 6px; color: #ff2a8a; border-color: #ff2a8a; cursor: pointer; box-shadow: 0 0 10px rgba(255,42,138,.5), inset 0 0 8px rgba(255,42,138,.25); animation: neonzhue 9s linear infinite; will-change: filter; } @keyframes neonzhue { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } } @media (prefers-reduced-motion: reduce) { .neonz { animation: none; } } .neonz b { font: 900 26px/1 'Orbitron', sans-serif; text-shadow: 0 0 6px #ff2a8a, 0 0 14px #ff2a8a; }
 #hdr { padding-right: 92px; }
 #btnNeonZ.neonz { position: fixed; z-index: 200; top: 4px; right: 8px; width: 76px; height: 46px; pointer-events: auto; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-#btnNeonZ.neonz small { display: block; font: 800 8px/1 'Orbitron', sans-serif; letter-spacing: .6px; color: #fff; text-shadow: 0 0 6px #ff2a8a; }
+#btnNeonZ.neonz small { display: block; font: 800 9px/1 'Orbitron', sans-serif; letter-spacing: .6px; color: #fff; text-shadow: 0 0 6px #ff2a8a; }
 body.kidon #btnNeonZ { display: none !important; }
 #splash.gone { opacity: 0; pointer-events: none; }
 #splash canvas, .overlay canvas { width: 100%; height: 100%; display: block; }
@@ -704,7 +704,7 @@ body:not(.kidon) #kFpsRow { display: none; }
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Z-DASH">
 <meta name="application-name" content="Z-DASH">
-<script>window.ZD_BUILD = '2026-10-23-v27';
+<script>window.ZD_BUILD = '1792803540-world28';
 /* offline: the service worker caches the app so it runs with no internet after one online visit. Pages load network-first,
    so a new deploy shows straight away. If a newer build takes over while this page is open: reload once by itself when
    nothing is in progress, otherwise show a small "Update ready" button. */
@@ -10447,16 +10447,19 @@ var qrcode = function() {
   $('#btnLogs2').addEventListener('click', () => { hideSplash(); SET.open(); setTimeout(() => { const h = $('#btnExportRun'); h && h.closest('.row').previousElementSibling.scrollIntoView({ block: 'start' }); }, 60); }); // into the app with no adapter: drive logs, EXPORT RUN, replay
   $('#btnDemo').addEventListener('click', () => { phoneFullscreen(); startDemo(); });
   // small "tap for fullscreen" button in the header whenever fullscreen isn't active (and the browser supports it)
-  function syncFsBtn() { const can = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen), fs = !!(document.fullscreenElement || document.webkitFullscreenElement) || matchMedia('(display-mode: fullscreen)').matches; $('#btnFs').classList.toggle('hidden', !can || fs); }
-  $('#btnFs').addEventListener('click', () => { try { const el = document.documentElement, p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : el.webkitRequestFullscreen && el.webkitRequestFullscreen(); if (p && p.then) p.then(() => { try { screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} }).catch(() => {}); } catch (e) {} });
+  function syncFsBtn() { const can = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen), fs = !!(document.fullscreenElement || document.webkitFullscreenElement) || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches; $('#btnFs').classList.toggle('hidden', !can || fs); }
+  $('#btnFs').addEventListener('click', () => { try { if (matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches) return; const el = document.documentElement, p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : el.webkitRequestFullscreen && el.webkitRequestFullscreen(); if (p && p.then) p.then(() => { try { screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} }).catch(() => {}); } catch (e) {} });
   document.addEventListener('fullscreenchange', syncFsBtn); document.addEventListener('webkitfullscreenchange', syncFsBtn); syncFsBtn();
   // phones: go fullscreen + lock landscape on the START DEMO tap (needs a user gesture; silently ignored where unsupported)
-  /* PWA / phones: hide the Android status bar. Ask for fullscreen on the first tap and again on the first tap after coming back to the app (browsers only allow it from a tap). */
+  /* Installed app (display-mode standalone or fullscreen) is already full screen.
+     The Fullscreen API ends on every HTML navigation, so requesting it on a tap
+     that also leaves the page flashes browser chrome. A browser tab still asks
+     for fullscreen on the first tap. */
   const FS = { want: true };
   const fsMode = () => matchMedia('(pointer: coarse)').matches || matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches;
-  addEventListener('pointerdown', () => { if (!FS.want || document.fullscreenElement || document.webkitFullscreenElement || !fsMode()) return; FS.want = false; try { const el = document.documentElement, p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : null; if (p) p.catch(() => { FS.want = true; }); } catch (e) {} }, true);
+  addEventListener('pointerdown', () => { if (!FS.want || document.fullscreenElement || document.webkitFullscreenElement || !fsMode()) return; if (matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches) { FS.want = false; return; } FS.want = false; try { const el = document.documentElement, p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : null; if (p) p.catch(() => { FS.want = true; }); } catch (e) {} }, true);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') FS.want = true; });
-  function phoneFullscreen() { try { if (!matchMedia('(pointer: coarse)').matches || document.fullscreenElement) return; const el = document.documentElement; const p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : null; if (p) p.then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {})).catch(() => {}); } catch (e) {} }
+  function phoneFullscreen() { try { if (matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches) return; if (!matchMedia('(pointer: coarse)').matches || document.fullscreenElement) return; const el = document.documentElement; const p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : null; if (p) p.then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {})).catch(() => {}); } catch (e) {} }
   // performance toggles
   function renderPerf() { $('#tglLow').textContent = `LOW DETAIL: ${ZD.perf.low ? 'ON' : 'OFF'}`; $('#tglLow').classList.toggle('on', ZD.perf.low); $('#tglFps').textContent = `FPS COUNTER: ${ZD.perf.fps ? 'ON' : 'OFF'}`; $('#tglFps').classList.toggle('on', ZD.perf.fps); $('#fps').classList.toggle('hidden', !ZD.perf.fps); }
   $('#tglLow').addEventListener('click', () => { ZD.perf.set('low', !ZD.perf.low); renderPerf(); });
@@ -11715,8 +11718,8 @@ var qrcode = function() {
       root.querySelector('#kMenuB').addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); if (K.menuOpen) kResume(); else kPause(); });
       root.querySelector('[data-m="resume"]').addEventListener('click', () => kResume()); root.querySelector('#kPzX').addEventListener('click', (e) => { e.stopPropagation(); kResume(); }); /* ✕ (inside the panel, top-left): RESUME in a game, just close on DRIVE */ root.querySelector('[data-m="home"]').addEventListener('click', () => { setTab('drive'); kMenuShow(true); }); /* HOME = the full-screen main menu */ } // kid MENU / PAUSE
     $('#kGear').addEventListener('click', () => { if (ZD.Settings) ZD.Settings.toggle(); else $('#settings').classList.remove('hidden'); });
-    $('#kFs').addEventListener('click', () => { try { const el = document.documentElement, p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : el.webkitRequestFullscreen && el.webkitRequestFullscreen(); if (p && p.then) p.then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {})).catch(() => {}); } catch (e) {} });
-    const syncFs = () => { const can = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen), fs = !!(document.fullscreenElement || document.webkitFullscreenElement); $('#kFs').classList.toggle('hidden', !can || fs); };
+    $('#kFs').addEventListener('click', () => { try { if (matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches) return; const el = document.documentElement, p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : el.webkitRequestFullscreen && el.webkitRequestFullscreen(); if (p && p.then) p.then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {})).catch(() => {}); } catch (e) {} });
+    const syncFs = () => { const can = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen), fs = !!(document.fullscreenElement || document.webkitFullscreenElement) || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches; $('#kFs').classList.toggle('hidden', !can || fs); };
     document.addEventListener('fullscreenchange', syncFs); syncFs();
     $('#kDrvShift').addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, 14, [PINK, YEL]); drvShiftTap(performance.now() / 1000, 'button'); });
     $('#kDTutSkip').addEventListener('click', (e) => { e.stopPropagation(); dragTutSkip(); });

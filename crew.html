@@ -2,8 +2,14 @@
 <html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<script src="shared/ipad.js?v=27"></script>
-<link rel="stylesheet" href="shared/ipad.css?v=27">
+<link rel="manifest" href="manifest-jr.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Z-DASH JR">
+<script src="shared/ipad.js?v=28"></script>
+<link rel="stylesheet" href="shared/ipad.css?v=28">
 <link rel="icon" href="data:,">
 <title>Crew</title>
 <style>
@@ -18,6 +24,7 @@ button.boy{border-color:#3ee6ff}
 button.boy.on{background:#3ee6ff;color:#041018}
 a.pill{flex:1 1 100%;border-style:dashed}
 </style>
+<link rel="stylesheet" href="shared/menu-tiles.css">
 </head><body>
 <canvas id="cv"></canvas>
 <div id="bar">
@@ -32,16 +39,16 @@ a.pill{flex:1 1 100%;border-style:dashed}
   <div class="row" id="charDances">
     <span class="tag">💃 CHARACTER DANCE STYLE</span>
     <button type="button" data-copt="default" class="on">✨ CLASSIC GROOVE</button>
-    <a class="pill" href="char.html">+ RECORD NEW DANCE IN Z COMPANY ARTS</a>
+    <a class="pill" href="dance-stage.html?record=character">+ RECORD NEW DANCE IN Z COMPANY ARTS</a>
   </div>
   <div class="row" id="petDances">
     <span class="tag">🐾 PET DANCE STYLE</span>
     <button type="button" data-popt="default" class="on">✨ SIGNATURE PET DANCE</button>
   </div>
 </div>
-<script src="shared/crew-state.js?v=27"></script>
-<script src="world/crew-data.js?v=27"></script>
-<script src="world/crew.js?v=27"></script>
+<script src="shared/crew-state.js?v=28"></script>
+<script src="world/crew-data.js?v=28"></script>
+<script src="world/crew.js?v=28"></script>
 <script>
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 function fit(){const ipad=!!window.Z_IS_IPAD;const d=ipad?1:Math.min(2,devicePixelRatio||1);cv.width=innerWidth*d;cv.height=innerHeight*d;ctx.setTransform(d,0,0,d,0,0);if(ipad){cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';}}
