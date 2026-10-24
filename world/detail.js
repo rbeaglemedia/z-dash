@@ -5,6 +5,8 @@
 // crawlDetailDist; street (ground, up to streetSpeedMax) is the 60fps set;
 // rotate and airborne draw nothing. Roof trim and rooftop shapes stay off.
 // On-foot eye-level lines (b._footSegs) draw only while WALK_MODE.onFoot.
+// Interior room props are not part of that pass. They are built when a front
+// door or a garage door actually opens the room, and dropped again on the way out.
 (function () {
   if (window.DETAIL || !window.DETAIL_TUNE || typeof CITY === 'undefined' || typeof drawBldg !== 'function') return;
   const T = DETAIL_TUNE;
@@ -61,19 +63,11 @@
   }
   function seg(x1, y1, z1, x2, y2, z2) {
     stat.segs++;
-    const aok = camPoint(x1, y1, z1, A);
-    const bok = camPoint(x2, y2, z2, B);
-    if (!aok && !bok) return;
-    if (aok !== bok) {
-      const dz = B[2] - A[2];
-      if (dz > -1e-6 && dz < 1e-6) return;
-      const t = (NEAR_Z - A[2]) / dz;
-      const x = A[0] + (B[0] - A[0]) * t, y = A[1] + (B[1] - A[1]) * t;
-      if (!aok) { A[0] = x; A[1] = y; A[2] = NEAR_Z; }
-      else { B[0] = x; B[1] = y; B[2] = NEAR_Z; }
-    }
-    screenOf(A, SA); screenOf(B, SB);
-    ctx.moveTo(SA[0], SA[1]); ctx.lineTo(SB[0], SB[1]);
+    camPoint(x1, y1, z1, A);
+    camPoint(x2, y2, z2, B);
+    const s = nearSeg(A, B);
+    if (!s) return;
+    ctx.moveTo(s[0], s[1]); ctx.lineTo(s[2], s[3]);
   }
   function boxDist(b) {
     const x = cam.x < b.x0 ? b.x0 : cam.x > b.x1 ? b.x1 : cam.x;
@@ -838,10 +832,12 @@
   // Tier 3: eye-level micro-detail. Baked once per shop into b._footSegs, and only
   // while someone is actually on foot. Driving never scans buildings or allocates.
   const FOOTCAP = 176;
+  const FOOT_GEN = 2;
   const FOOT_N = 4;
   const footId = new Int16Array(FOOT_N);
   const footD = new Float32Array(FOOT_N);
   const footSeen = new Uint8Array(FOOT_N);
+  let footOx = 1e9, footOz = 1e9, footHold = 99;
   function fput(rec, col, x1, y1, z1, x2, y2, z2) {
     if (rec.n >= FOOTCAP) return;
     const o = rec.n * 6, a = rec.xyz;
@@ -1292,10 +1288,10 @@
     else footHome(rec, B, bay);
   }
   function bakeFoot(b) {
-    if (b._footSegs) return b._footSegs;
+    if (b._footSegs && b._footGen === FOOT_GEN) return b._footSegs;
     const B = footBasis(b);
     const rec = { n: 0, xyz: new Float32Array(FOOTCAP * 6), col: new Uint8Array(FOOTCAP) };
-    if (!B) { b._footSegs = rec; return rec; }
+    if (!B) { b._footSegs = rec; b._footGen = FOOT_GEN; return rec; }
     const purpose = purposeOf(b);
     bakeApron(rec, B);
     bakeMat(rec, B);
@@ -1303,10 +1299,34 @@
     const sl = flank(B, -1), sr = flank(B, 1);
     if (sl) bakePlanter(rec, B, sl, false);
     if (sr) { bakePlanter(rec, B, sr, true); bakeLamp(rec, B, sr); }
-    const bs = bakeBlade(rec, B, purpose);
-    bakeInterior(rec, B, purpose, bs);
+    bakeBlade(rec, B, purpose);
     b._footSegs = rec;
+    b._footGen = FOOT_GEN;
     return rec;
+  }
+  let indoorRec = null, indoorId = null;
+  function buildingOfDoor(door) {
+    if (!door) return null;
+    if (door.building && door.building.boxes) return door.building;
+    const id = door.buildingId;
+    if (id == null) return null;
+    for (let i = 0; i < BL.length; i++) if (BL[i] && BL[i].id === id) return BL[i];
+    return null;
+  }
+  function loadInterior(door) {
+    unloadInterior();
+    const b = buildingOfDoor(door);
+    if (!b) return null;
+    const B = footBasis(b);
+    const rec = { n: 0, xyz: new Float32Array(FOOTCAP * 6), col: new Uint8Array(FOOTCAP) };
+    if (B) bakeInterior(rec, B, (door && door.purpose) || purposeOf(b), bladeS(B));
+    indoorRec = rec;
+    indoorId = b.id;
+    return rec;
+  }
+  function unloadInterior() {
+    indoorRec = null;
+    indoorId = null;
   }
   function xzDist(b, wx, wz) {
     const x = wx < b.x0 ? b.x0 : wx > b.x1 ? b.x1 : wx;
@@ -1314,16 +1334,8 @@
     const dx = x - wx, dz = z - wz;
     return Math.sqrt(dx * dx + dz * dz);
   }
-  function onFootPass(c) {
-    stat.onFoot = 0;
-    stat.footSegs = 0;
-    if (!extraOn || T.onFootDetailEnabled === false) return;
-    if (typeof WALK_MODE === 'undefined' || !WALK_MODE || !WALK_MODE.onFoot) return;
-    const wx = WALK_MODE.wx != null ? +WALK_MODE.wx : +WALK_MODE.x;
-    const wz = WALK_MODE.wz != null ? +WALK_MODE.wz : +WALK_MODE.z;
-    if (wx !== wx || wz !== wz) return;
-    const dist = T.onFootDetailDist || 38;
-    for (let i = 0; i < FOOT_N; i++) { footId[i] = -1; footD[i] = 1e9; footSeen[i] = 0; }
+  function onFootPick(wx, wz, dist) {
+    for (let i = 0; i < FOOT_N; i++) { footId[i] = -1; footD[i] = 1e9; }
     for (let i = 0; i < BL.length; i++) {
       const b = BL[i];
       if (!shopOk(b) || !b.doors || !b.doors.length) continue;
@@ -1333,6 +1345,20 @@
       while (j > 0 && d < footD[j - 1]) { footD[j] = footD[j - 1]; footId[j] = footId[j - 1]; j--; }
       footD[j] = d; footId[j] = i;
     }
+    footOx = wx; footOz = wz; footHold = 0;
+  }
+  function onFootPass(c) {
+    stat.onFoot = 0;
+    stat.footSegs = 0;
+    if (!extraOn || T.onFootDetailEnabled === false) return;
+    if (typeof WALK_MODE === 'undefined' || !WALK_MODE || !WALK_MODE.onFoot || WALK_MODE.insideBuilding) return;
+    const wx = WALK_MODE.wx != null ? +WALK_MODE.wx : +WALK_MODE.x;
+    const wz = WALK_MODE.wz != null ? +WALK_MODE.wz : +WALK_MODE.z;
+    if (wx !== wx || wz !== wz) return;
+    const dist = T.onFootDetailDist || 38;
+    if (Math.hypot(wx - footOx, wz - footOz) > 2.5 || footHold > 8 || footId[0] < 0) onFootPick(wx, wz, dist);
+    else footHold++;
+    for (let i = 0; i < FOOT_N; i++) footSeen[i] = 0;
     let left = 480, drew = 0, segs = 0;
     const g = c || ctx;
     g.save();
@@ -1703,7 +1729,8 @@
   drawCityGround = function () {
     detailDraw();
     _drawCityGround();
-    pass(ctx);
+    // Storefronts and the eye-level pass are stroked once, after the building
+    // fills, from the tunnel wrapper. A second copy here only doubled the cost.
     if (!active) return;
     if (on.lanes || on.crosswalks || on.sidewalks || on.grass || on.river) {
       drawRoads();
@@ -1863,6 +1890,9 @@
     stat: stat,
     draw: detailDraw,
     pass: pass,
+    loadInterior: loadInterior,
+    unloadInterior: unloadInterior,
+    interior: function () { return indoorRec ? { id: indoorId, n: indoorRec.n } : null; },
     stats: function () { return stat; },
     counts: { lights: nL, signs: nS, trees: nT, patches: nP },
     baked: 1,
