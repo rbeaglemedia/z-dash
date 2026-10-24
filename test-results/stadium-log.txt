@@ -1,0 +1,13 @@
+sha 1c7a19f6eb54bec4e561b5461113327eede0545f
+viewport 844x390
+field {"hl":80,"hw":52,"goalW":34,"goalH":12.5,"goalD":11.5,"x0":778,"x1":882,"z0":220,"z1":380,"nLines":842,"halfSec":2.983,"showScore":false,"liveCeilAt740":11.5}
+probes [{"x":680,"surf":"paved","paved":true,"fl":0,"ce":null,"wl":null},{"x":690,"surf":"paved","paved":true,"fl":0,"ce":null,"wl":null},{"x":700,"surf":"paved","paved":true,"fl":0,"ce":null,"wl":null},{"x":710,"surf":"paved","paved":true,"fl":0,"ce":11.5,"wl":null},{"x":720,"surf":"paved","paved":true,"fl":0,"ce":11.5,"wl":null},{"x":730,"surf":"paved","paved":true,"fl":0,"ce":11.5,"wl":null},{"x":740,"surf":"paved","paved":true,"fl":0,"ce":11.5,"wl":null},{"x":750,"surf":"paved","paved":true,"fl":0,"ce":11.5,"wl":null},{"x":760,"surf":"paved","paved":true,"fl":0,"ce":11.5,"wl":null},{"x":770,"surf":"paved","paved":true,"fl":0,"ce":11.5,"wl":null},{"x":780,"surf":"paved","paved":true,"fl":0,"ce":null,"wl":null},{"x":790,"surf":"paved","paved":true,"fl":0,"ce":null,"wl":null},{"x":800,"surf":"paved","paved":true,"fl":0,"ce":null,"wl":null},{"x":810,"surf":"paved","paved":true,"fl":0,"ce":null,"wl":null},{"x":820,"surf":"paved","paved":true,"fl":0,"ce":null,"wl":null},{"x":830,"surf":"paved","paved":true,"fl":0,"ce":null,"wl":null}]
+drive {"steps":197,"x":830.24,"z":300,"y":0,"ground":true,"walls":0,"hards":0,"ceil":0,"v":60.18,"leftGround":null,"wallAt":null,"bore":[{"x":706.6,"z":300,"y":0,"g":true,"w":0,"v":37.7},{"x":707.2,"z":300,"y":0,"g":true,"w":0,"v":37.9},{"x":707.9,"z":300,"y":0,"g":true,"w":0,"v":38.1},{"x":708.5,"z":300,"y":0,"g":true,"w":0,"v":38.3},{"x":709.1,"z":300,"y":0,"g":true,"w":0,"v":38.5},{"x":709.8,"z":300,"y":0,"g":true,"w":0,"v":38.7},{"x":710.4,"z":300,"y":0,"g":true,"w":0,"v":38.9},{"x":711.1,"z":300,"y":0,"g":true,"w":0,"v":39.1},{"x":713.7,"z":300,"y":0,"g":true,"w":0,"v":39.9},{"x":724.1,"z":300,"y":0,"g":true,"w":0,"v":42.7},{"x":735.1,"z":300,"y":0,"g":true,"w":0,"v":45.3},{"x":746.8,"z":300,"y":0,"g":true,"w":0,"v":47.8},{"x":759,"z":300,"y":0,"g":true,"w":0,"v":50.1},{"x":771.9,"z":300,"y":0,"g":true,"w":0,"v":52.4}]}
+shot1 /workspace/test-results/stadium-tunnel.png {"cyan":1585,"mag":1425,"dark":20096}
+shot2 /workspace/test-results/stadium-inside.png {"cyan":1754,"mag":1051}
+fps 22.5, 21.3, 21.3, 21.3, 20
+console
+error: Failed to load resource: the server responded with a status of 404 (File not found)
+console-filtered 0
+PASS stadium
+checks size=true bore=true

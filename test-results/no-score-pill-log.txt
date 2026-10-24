@@ -1,0 +1,9 @@
+score pill check 57432539de79f2bf4c5bbfe79782e0465da08ce2
+viewport 844x390
+showScore false
+label SOUTH  0      NORTH  0
+band cyan 0 white 0 box {"x0":302,"y0":334,"x1":542,"y1":374,"cyan":0,"white":0,"n":9600,"W":844,"H":390}
+screenshot /workspace/test-results/no-score-pill.png
+PASS pill-hidden
+console
+console: Failed to load resource: the server responded with a status of 404 (File not found)
