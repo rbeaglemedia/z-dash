@@ -9,21 +9,24 @@ for(let i=0;i<30;i++){const a=rnd()*Math.PI*2,r=100+rnd()*1200;rings.push({x:Mat
 // river (sinks + slows), continuous bank lips, race track, loop, half-pipe, hoops, signs, far outlines =====
 const CITY=(()=>{let sd=90210;const cr=()=>(sd=(sd*16807)%2147483647)/2147483647;
   const BL=[],BX=[],RAMPS=[],PADS=[],TREES=[],LOTS=[],HOOPS=[],LOOPS=[],PIPES=[],TOWS=[],NEON=['#ff2a3d','#3ee6ff','#ffb020','#ff4fd8','#3ee6ff','#ff2a3d','#7dff6b'],WINC=['#ffd27a','#9ff3ff','#ffb3e6','#fff2c0'];
-  const XS0=-560,XS1=560,ZS0=-300,ZS1=2100,RIV={z0:1780,z1:1840,lip:0.8,land:6,wet:3,sink:0.6,step:0.8},HW={x:-450,hw:15},TUN={z0:500,z1:700,x0:-530,x1:-370,bx0:-465,bx1:-435,ceil:10,top:34},
-    PARK={x0:-340,x1:-160,z0:1010,z1:1190},STAD={x:830,z:300,r:102},TAXI={x0:38,x1:62,z0:-20,z1:1450},DT={x:420,z:1250},TRACK={cx:1000,cz:1100,L:360,R:80,w:22},
+  const LAY=(typeof CITY_LAYOUT!=='undefined'&&CITY_LAYOUT)||null,
+    XS0=LAY?LAY.bounds.x0:-560,XS1=LAY?LAY.bounds.x1:560,ZS0=LAY?LAY.bounds.z0:-300,ZS1=LAY?LAY.bounds.z1:2100,
+    RIV={z0:1780,z1:1840,lip:0.8,land:6,wet:3,sink:0.6,step:0.8},HW={x:-450,hw:15},TUN={z0:500,z1:700,x0:-530,x1:-370,bx0:-465,bx1:-435,ceil:10,top:34},
+    PARK={x0:-130,x1:-30,z0:-880,z1:-700},STAD={x:1000,z:1280,r:102},TAXI={x0:38,x1:62,z0:-20,z1:1450},DT={x:400,z:1720},
+    TRACK=LAY&&LAY.anchors?{cx:LAY.anchors.track.cx,cz:LAY.anchors.track.cz,L:LAY.anchors.track.L,R:LAY.anchors.track.R,w:LAY.anchors.track.w}:{cx:1000,cz:1100,L:360,R:80,w:22},
     BRIDGES=[[-14,14],[HW.x-HW.hw,HW.x+HW.hw]],GF=4.5,FLOOR=3.5,SIGNW=['Z-DASH','NEON','DANCE','DRIFT','NOS','ARCADE','PIZZA','JUMP','PIXEL','CAFE','PETS','GARAGE','TURBO','BEATS'];
   // ---- WORLD AS DATA (builder-mode ready): OBJS = placed objects {id,type,x,z,rot,w,d,h,p}; each type has a builder that makes render items + registers its colliders.
   const OBJS=[],HND=new Map();let NID=1,cur=null;
   const box=(b,o)=>{const q=Object.assign({y0:0},o,{b,oid:cur.id});b.boxes.push(q);BX.push(q);cur.boxes.push(q);return q;};
   const bldg=(o)=>{const b=Object.assign({boxes:[],deco:[],id:BL.length,oid:cur.id},o);BL.push(b);cur.bl.push(b);return b;};
   const ext=(o)=>{const r=((o.rot||0)%180+180)%180===90,w=r?o.d:o.w,d=r?o.w:o.d;return[o.x-w/2,o.x+w/2,o.z-d/2,o.z+d/2];};
-  // 20 m streets (highway excluded). A face borders one when it sits just outside that curb, not in an alley.
-  const roadsX=[],roadsZ=[];for(let x=150;x<=XS1;x+=100){roadsX.push(x);if(-x!==HW.x)roadsX.push(-x);}
-  for(let z=ZS0;z<=ZS1;z+=200)if(!(z>RIV.z0-10&&z<RIV.z1+10))roadsZ.push(z);
-  // door slots on street faces only: about one per 30 m, at most 3 a face. No street face = one door on the south wall.
-  function doorsOf(b){const q=b.boxes?b.boxes[0]:b,D=[],CURB=10,TOL=8,ov=(a0,a1,b0,b1)=>a1>b0+0.5&&a0<b1-0.5;
-    const onSt=(ax,fix,a0,a1)=>{if(ax==='z'){if(!ov(a0,a1,ZS0,1700)&&!ov(a0,a1,1900,ZS1))return false;for(const sx of roadsX){const w=sx-CURB,e=sx+CURB;if((fix<=w&&w-fix<=TOL)||(fix>=e&&fix-e<=TOL))return true;}}
-      else{if(!ov(a0,a1,-XS1,-150)&&!ov(a0,a1,150,XS1))return false;for(const sz of roadsZ){const s=sz-CURB,n=sz+CURB;if((fix<=s&&s-fix<=TOL)||(fix>=n&&fix-n<=TOL))return true;}}return false;};
+  // Street faces read the boulevard centerlines (ROAD_SEGS), not the old 100 m grid.
+  // A face borders a lane when it sits just outside that curb.
+  const roadsX=[],roadsZ=[];let ROAD_SEGS=[];
+  function doorsOf(b){const q=b.boxes?b.boxes[0]:b,D=[],CURB=10,TOL=10,ov=(a0,a1,b0,b1)=>a1>b0+0.5&&a0<b1-0.5;
+    const onSt=(ax,fix,a0,a1)=>{for(const r of ROAD_SEGS){if(r.kind==='tunnel')continue;const hw=(r.w||20)/2;
+      if(ax==='z'&&Math.abs(r.x0-r.x1)<1.5){const gap=Math.abs(r.x0-fix);if(gap<hw-0.4||gap>hw+TOL)continue;const z0=Math.min(r.z0,r.z1),z1=Math.max(r.z0,r.z1);if(ov(a0,a1,z0,z1))return true;}
+      if(ax==='x'&&Math.abs(r.z0-r.z1)<1.5){const gap=Math.abs(r.z0-fix);if(gap<hw-0.4||gap>hw+TOL)continue;const x0=Math.min(r.x0,r.x1),x1=Math.max(r.x0,r.x1);if(ov(a0,a1,x0,x1))return true;}}return false;};
     let any=0;for(const[ax,fix,n]of[['x',q.z0,[0,-1]],['x',q.z1,[0,1]],['z',q.x0,[-1,0]],['z',q.x1,[1,0]]]){const a0=ax==='x'?q.x0:q.z0,a1=ax==='x'?q.x1:q.z1,L=a1-a0;if(L<2||!onSt(ax,fix,a0,a1))continue;any=1;const k=Math.min(3,Math.max(1,Math.floor(L/30)||1));
       for(let i=0;i<k;i++){const a=a0+(L/k)*(i+.5);D.push(ax==='x'?[a,fix,n[0],n[1]]:[fix,a,n[0],n[1]]);}}
     if(!any)D.push([(q.x0+q.x1)/2,q.z0,0,-1]);return D;}
@@ -59,7 +62,13 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
    // loop-de-loop: entry line at (x,z) heading rot; R radius, w lane width, off = sideways shift of the exit lane. No colliders: the ride is a path (see cityMove)
    loop(o){const a=(o.rot||0)*D,L={x:o.x,z:o.z,ux:Math.sin(a),uz:Math.cos(a),R:o.h,w:o.w,off:(o.p||{}).off||9,oid:o.id,n:0};LOOPS.push(L);cur.loops.push(L);},
    // half-pipe along z: flat floor F, quarter curves C up to H, deck, back slope; floor-only surface (see gnd)
-   halfpipe(o){const p=o.p||{},Pp={cx:o.x,z0:o.z-o.d/2,z1:o.z+o.d/2,H:o.h,F:p.F||16,C:p.C||7,deck:p.deck||3,back:p.back||14,oid:o.id};Pp.hw=Pp.F/2+Pp.C+Pp.deck+Pp.back;Pp.x0=Pp.cx-Pp.hw;Pp.x1=Pp.cx+Pp.hw;PIPES.push(Pp);cur.pipes.push(Pp);}};
+   halfpipe(o){const p=o.p||{},Pp={cx:o.x,z0:o.z-o.d/2,z1:o.z+o.d/2,H:o.h,F:p.F||16,C:p.C||7,deck:p.deck||3,back:p.back||14,oid:o.id};Pp.hw=Pp.F/2+Pp.C+Pp.deck+Pp.back;Pp.x0=Pp.cx-Pp.hw;Pp.x1=Pp.cx+Pp.hw;PIPES.push(Pp);cur.pipes.push(Pp);},
+   // Welcome arch: two posts and a beam. The lane between the posts stays open (beam y0 is above the car).
+   arch(o){const p=o.p||{},axis=p.axis||'x',name=p.t||'CITY',cx=o.x,cz=o.z,sep=11,posts=axis==='x'?[[cx,cz-sep],[cx,cz+sep]]:[[cx-sep,cz],[cx+sep,cz]];
+     for(const[x,z]of posts){const b=bldg({x0:x-.7,x1:x+.7,z0:z-.7,z1:z+.7,cx:x,cz:z,c:p.c||'#ff4fd8',wc:'#fff2c0',dash:[1,9],wseed:0,kind:'pylon',top:12,rad:2});box(b,{x0:b.x0,x1:b.x1,z0:b.z0,z1:b.z1,y1:12});}
+     const x0=axis==='x'?cx-.45:cx-sep,x1=axis==='x'?cx+.45:cx+sep,z0=axis==='x'?cz-sep:cz-.45,z1=axis==='x'?cz+sep:cz+.45;
+     const beam=bldg({x0,x1,z0,z1,cx,cz,c:p.c||'#3ee6ff',wc:'#fff2c0',dash:[1,9],wseed:0,kind:'bill',slab:1,top:12,rad:12});
+     box(beam,{x0,x1,z0,z1,y0:10.6,y1:12});beam.deco.push(['sign',{x:cx,z:cz,y:11.3,nx:axis==='x'?1:0,nz:axis==='x'?0:1,w:16,h:1.15,t:name,word:name,c:'#ffe14d'}]);beam.sign=beam.deco[0][1];}};
   function build(o){cur={id:o.id,boxes:[],bl:[],ramps:[],pads:[],loops:[],pipes:[]};HND.set(o.id,cur);TYPES[o.type](o);const h=cur;cur=null;return h;}
   // PREFABS: named, self-contained pieces (default size/params, snap footprint). The city is built only by placing these, so builder mode can drop any of them.
   const PREFABS={
@@ -85,7 +94,8 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
     tunnel_seg:{label:'Tunnel Hill',type:'tunnel',w:160,d:200,h:34,snap:10,p:{bore:30,ceil:10}},
     bridge_seg:{label:'Bridge Towers',type:'bridge',w:36,d:60,h:62,snap:10,p:{py:18}},
     tow_truck:ZD_TOW_PREFAB,
-     lamp:{label:'Light Tower',type:'lamp',w:3,d:3,h:55,snap:5,p:{}}};
+     lamp:{label:'Light Tower',type:'lamp',w:3,d:3,h:55,snap:5,p:{}},
+    arch_gate:{label:'Welcome Arch',type:'arch',w:8,d:26,h:12,snap:1,p:{axis:'x',t:'CITY'}}};
   function placePrefab(name,x,z,ov){const f=PREFABS[name];ov=ov||{};const o={id:ov.id||NID++,prefab:name,type:f.type,x,z,rot:ov.rot||0,w:ov.w!=null?ov.w:f.w,d:ov.d!=null?ov.d:f.d,h:ov.h!=null?ov.h:f.h,p:Object.assign({},f.p,ov.p||{})};if(o.id>=NID)NID=o.id+1;OBJS.push(o);build(o);return o;}
   const ringHit=(x0,x1,z0,z1,h)=>{let lim=h;for(const r of rings){const dx=Math.max(x0-r.x,0,r.x-x1),dz=Math.max(z0-r.z,0,r.z-z1);if(Math.hypot(dx,dz)<r.r+12&&h>r.y-r.r-15)lim=Math.min(lim,r.y-r.r-20);}return lim;};
   // a street-facing neon sign on the ground-floor band or just above it
@@ -117,15 +127,12 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
       placePrefab('ramp_kick',x1-12,(z0+z1)/2,{rot:fl?180:0,p:{spot:sp}});placePrefab('ramp_kick',x1-12,(z0+z1)/2+(fl?-30:30),{rot:fl?180:0,p:{spot:sp,hid:1}});}
     else{placePrefab('ramp_med',cx,(z0+z1)/2,{rot:fl?180:0,p:{hoop:1,spot:sp}});placePrefab('ramp_kick',x1-12,(z0+z1)/2,{rot:fl?0:180,p:{spot:sp}});}
     placePrefab('ramp_curb',x0+3.5,(z0+z1)/2+12,{rot:90,p:{spot:sp}});placePrefab('ramp_curb',x1-3.5,(z0+z1)/2-12,{rot:270,p:{spot:sp}});}
-  // Six districts. North of the river stays an open builder sandbox: only the two HQ blocks sit at the bridge landing.
-  const BUILDER_ZONE={x0:-400,x1:540,z0:1860,z1:2100,label:'CITY BUILDER ZONE'};
-  const DISTRICTS=[
-    {id:'SPAWN_SOUTH',label:'Spawn & Runway South',x0:-560,x1:560,z0:-300,z1:400},
-    {id:'ARTS_GARAGE',label:'Arts & Garage District',x0:-560,x1:400,z0:400,z1:900},
-    {id:'PARKSIDE_WEST',label:'West Parkside',x0:-560,x1:-150,z0:700,z1:1850},
-    {id:'DOWNTOWN_CORE',label:'Downtown Core',x0:150,x1:450,z0:900,z1:1850},
-    {id:'SPORTS_EAST',label:'East Sports & Track',x0:350,x1:560,z0:300,z1:1200},
-    {id:'BUILDER_NORTH',label:'Waterfront City Builder',x0:-400,x1:540,z0:1860,z1:2100}];
+  // Option 1 districts. The cyan builder grid sits on Builder Bay, not the old north lot.
+  const DISTRICTS=LAY?LAY.districts.slice():[];
+  const BUILDER_ZONE={x0:820,x1:1060,z0:380,z1:560,label:'BUILDER BAY'};
+  const NET=LAY?LAY.buildNetwork():{roads:[],faces:{}};
+  ROAD_SEGS=NET.roads;
+  for(const r of ROAD_SEGS){if(Math.abs(r.x0-r.x1)<1.5)roadsX.push(r.x0);else if(Math.abs(r.z0-r.z1)<1.5)roadsZ.push(r.z0);}
   function faceSign(x0,x1,z0,z1,h,face,word,color){const span=face==='n'||face==='s'?x1-x0:z1-z0,long=(word||'').length>10,cap=span*.76,want=long?Math.min(span*.72,28):Math.min(16,Math.max(6,span*.55)),w=Math.max(4.2,Math.min(cap,want));
     const y0=Math.max(5.2,h-4.8),y1=Math.max(y0+2.2,Math.min(h-.35,Math.max(8.2,h-1.4))),y=(y0+y1)/2,off=.12,base={y,y0,y1,w,h:y1-y0,t:word,word,c:color};
     if(face==='s')return Object.assign(base,{x:(x0+x1)/2,z:z0-off,nx:0,nz:-1});
@@ -136,32 +143,20 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   function shop(x0,x1,z0,z1,h,spec){const sign=faceSign(x0,x1,z0,z1,h,spec.face,spec.sign,spec.c);
     if(spec.landmark){placePrefab('tower_landmark',(x0+x1)/2,(z0+z1)/2,{w:x1-x0,d:z1-z0,h,p:{purpose:spec.purpose,purposeLabel:spec.label,district:spec.district,sign,c:spec.c,pad:1}});return;}
     tower(x0,x1,z0,z1,h,{pad:spec.pad?1:0,tiers:1,c:spec.c,wc:spec.wc||'#fff2c0',dash:h>=24?[2,1.6]:[4.5,2.5],wseed:spec.seed,inset:.1,noRoof:1,roof:spec.roof,antH:spec.antH,purpose:spec.purpose,purposeLabel:spec.label,district:spec.district,sign,kind:'b'});}
-  shop(168,232,118,282,26,{pad:1,face:'s',purpose:'GARAGE',label:'SPEED & TUNING GARAGE',district:'SPAWN_SOUTH',sign:'GARAGE',c:'#ffb020',seed:1});
-  shop(-232,-168,518,682,62,{pad:1,face:'s',purpose:'SKY_DROP',label:'SKY-DROP HELIPAD DECK',district:'ARTS_GARAGE',sign:'JUMP',c:'#3ee6ff',seed:2});
-  shop(168,232,918,1082,18,{pad:1,face:'s',purpose:'SHOWROOM',label:'Z-DASH GLASS SHOWROOM',district:'DOWNTOWN_CORE',sign:'Z-DASH',c:'#3ee6ff',seed:3});
-  shop(-332,-268,1518,1682,34,{pad:1,face:'s',purpose:'NOS',label:'NOS & FUEL DEPOT',district:'PARKSIDE_WEST',sign:'NOS',c:'#ffe14d',seed:4});
-  shop(465,535,1165,1235,239,{landmark:1,face:'w',purpose:'SKY_DROP',label:'SKY TOWER',district:'DOWNTOWN_CORE',sign:'JUMP',c:'#3ee6ff',seed:5});
-  shop(264,308,140,188,11,{face:'w',purpose:'HOME',label:'PLAYER HOUSE & GARAGE',district:'SPAWN_SOUTH',sign:'HOME',c:'#7dff6b',seed:6});
-  shop(364,428,140,196,16,{face:'w',purpose:'SHOWROOM',label:'Z-DASH GLASS SHOWROOM',district:'SPAWN_SOUTH',sign:'Z-DASH',c:'#3ee6ff',seed:7});
-  shop(-236,-196,140,186,12,{face:'w',purpose:'NOS',label:'NOS & FUEL DEPOT',district:'SPAWN_SOUTH',sign:'NOS',c:'#ffe14d',seed:8});
-  shop(464,512,364,454,15,{face:'w',purpose:'GARAGE',label:'SPEED & TUNING GARAGE',district:'SPORTS_EAST',sign:'GARAGE',c:'#ffb020',seed:9});
-  shop(-336,-292,360,408,14,{face:'w',purpose:'NEON_PAINT',label:'ELLIE NEON PAINT STUDIO',district:'ARTS_GARAGE',sign:'NEON',c:'#ff4fd8',seed:10});
-  shop(-336,-292,760,808,15,{face:'w',purpose:'NEON_PAINT',label:'ELLIE NEON PAINT STUDIO',district:'PARKSIDE_WEST',sign:'NEON',c:'#ff4fd8',seed:11});
-  shop(-224,-164,360,424,18,{face:'e',purpose:'DANCE',label:'Z Company Arts',district:'ARTS_GARAGE',sign:'Z COMPANY ARTS',c:'#ff4fd8',wc:'#ffb3e6',roof:'ant',antH:14,seed:12});
-  shop(264,320,560,624,18,{face:'w',purpose:'ARCADE',label:'RETRO PIXEL ARCADE',district:'ARTS_GARAGE',sign:'ARCADE',c:'#3ee6ff',seed:13});
-  shop(-536,-496,960,1008,12,{face:'w',purpose:'HOME',label:'PLAYER HOUSE & GARAGE',district:'PARKSIDE_WEST',sign:'HOME',c:'#7dff6b',seed:14});
-  shop(-536,-496,1164,1212,12,{face:'w',purpose:'PETS',label:'PET RESCUE & CRITTER LOUNGE',district:'PARKSIDE_WEST',sign:'PETS',c:'#7dff6b',seed:15});
-  shop(-408,-364,964,1012,13,{face:'e',purpose:'PETS',label:'PET RESCUE & CRITTER LOUNGE',district:'PARKSIDE_WEST',sign:'PETS',c:'#7dff6b',seed:16});
-  shop(-336,-292,1314,1362,12,{face:'s',purpose:'CAFE',label:'NEON PIZZA & BOBA CAFE',district:'PARKSIDE_WEST',sign:'PIZZA',c:'#ff2a3d',seed:17});
-  shop(264,324,1160,1224,20,{face:'w',purpose:'DANCE',label:'Z Company Arts',district:'DOWNTOWN_CORE',sign:'Z COMPANY ARTS',c:'#ff4fd8',wc:'#ffb3e6',roof:'ant',antH:16,seed:18});
-  shop(364,412,1364,1412,13,{face:'w',purpose:'CAFE',label:'NEON PIZZA & BOBA CAFE',district:'DOWNTOWN_CORE',sign:'PIZZA',c:'#ff2a3d',seed:19});
-  shop(464,516,760,824,17,{face:'w',purpose:'ARCADE',label:'RETRO PIXEL ARCADE',district:'SPORTS_EAST',sign:'ARCADE',c:'#3ee6ff',seed:20});
-  shop(480,536,198,286,16,{face:'n',purpose:'SOCCER',label:'STADIUM PRO SHOP & ARENA CLUB',district:'SPORTS_EAST',sign:'TURBO',c:'#ffb020',seed:21});
-  shop(480,536,1018,1086,16,{face:'n',purpose:'SOCCER',label:'STADIUM PRO SHOP & ARENA CLUB',district:'SPORTS_EAST',sign:'TURBO',c:'#ffb020',seed:22});
-  shop(164,208,1856,1888,15,{face:'n',purpose:'BUILDER',label:'CITY BUILDER ARCHITECT HQ',district:'BUILDER_NORTH',sign:'PIXEL',c:'#7dff6b',seed:23});
-  shop(364,408,1856,1886,16,{face:'n',purpose:'BUILDER',label:'CITY BUILDER ARCHITECT HQ',district:'BUILDER_NORTH',sign:'PIXEL',c:'#7dff6b',seed:24});
-  placePrefab('ramp_kick',528,409,{p:{spot:'garage'}});
-  {let si=0;for(const[x0,x1,z0,z1]of[[260,340,-290,-110],[260,340,310,490],[160,240,310,490],[-540,-472,310,490],[-240,-160,1310,1490]]){LOTS.push({x0,x1,z0,z1,plaza:1});stuntSpot(x0,x1,z0,z1,si++);}}
+  const PLACE_LABEL={HOME:'PLAYER HOUSE & GARAGE',PETS:'PET RESCUE & CRITTER LOUNGE',GARAGE:'SPEED & TUNING GARAGE',SHOWROOM:'Z-DASH GLASS SHOWROOM',NEON_PAINT:'ELLIE NEON PAINT STUDIO',NOS:'NOS & FUEL DEPOT',DANCE:'Z Company Arts',CAFE:'NEON PIZZA & BOBA CAFE',ARCADE:'RETRO PIXEL ARCADE',SOCCER:'STADIUM PRO SHOP & ARENA CLUB',BUILDER:'CITY BUILDER ARCHITECT HQ',SKY_DROP:'SKY-DROP HELIPAD DECK',SNACK:'SNACK STAND'};
+  if(LAY){let seedN=1;for(const p of LAY.places){if(p.kind==='arch'){const cx=(p.x0+p.x1)/2,cz=(p.z0+p.z1)/2;let best=null,bd=1e9;for(const r of ROAD_SEGS){if(r.kind==='highway'||r.kind==='bridge')continue;let x,z,axis,d;
+      if(Math.abs(r.x0-r.x1)<1.5){const z0=Math.min(r.z0,r.z1),z1=Math.max(r.z0,r.z1);z=Math.max(z0,Math.min(z1,cz));x=r.x0;axis='z';d=Math.hypot(cx-x,cz-z);}
+      else if(Math.abs(r.z0-r.z1)<1.5){const x0=Math.min(r.x0,r.x1),x1=Math.max(r.x0,r.x1);x=Math.max(x0,Math.min(x1,cx));z=r.z0;axis='x';d=Math.hypot(cx-x,cz-z);}else continue;
+      if(d<bd){bd=d;best={x,z,axis};}}
+    if(!best||bd>90)best={x:cx,z:cz,axis:(p.x1-p.x0)>=(p.z1-p.z0)?'x':'z'};
+    placePrefab('arch_gate',best.x,best.z,{p:{axis:best.axis,t:p.sign,c:p.c}});continue;}
+    const face=p.purpose==='DANCE'?'e':(NET.faces[p.station+':'+p.name]||'s');
+    const label=p.landmark?'SKY TOWER':(PLACE_LABEL[p.purpose]||p.name);
+    shop(p.x0,p.x1,p.z0,p.z1,p.h,{pad:p.pad?1:0,face,purpose:p.purpose,label,district:p.district,sign:p.sign,c:p.c,wc:p.purpose==='DANCE'?'#ffb3e6':'#fff2c0',roof:p.roof,antH:p.antH,landmark:p.landmark?1:0,seed:seedN++});
+    const built=BL[BL.length-1];
+    if(built&&built.purpose&&built.boxes&&built.boxes[0]){const q=built.boxes[0];
+      const door=face==='n'?[(q.x0+q.x1)/2,q.z1,0,1]:face==='w'?[q.x0,(q.z0+q.z1)/2,-1,0]:face==='e'?[q.x1,(q.z0+q.z1)/2,1,0]:[(q.x0+q.x1)/2,q.z0,0,-1];
+      built.doors=[door];}}}
   placePrefab('tunnel_seg',(TUN.x0+TUN.x1)/2,(TUN.z0+TUN.z1)/2,{w:TUN.x1-TUN.x0,d:TUN.z1-TUN.z0,h:TUN.top,p:{bore:TUN.bx1-TUN.bx0,ceil:TUN.ceil}});
   placePrefab('bridge_seg',0,1810);
   for(const[a,b]of[[1,1],[1,-1],[-1,1],[-1,-1]])placePrefab('lamp',STAD.x+a*110,STAD.z+b*120);
@@ -178,15 +173,16 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   for(const[x,z,rot]of[[300,-345,180],[-300,-345,180],[600,520,90],[600,1500,90],[-600,960,270],[300,2150,0],[-260,2150,0],[-600,1500,270]])placePrefab('ramp_bank',x,z,{rot});
   for(const[x,z,rot]of[[400,300,90],[-300,900,270],[350,1400,0],[-250,300,180],[450,-200,0]])placePrefab('road_crest',x,z,{rot,p:{nm:'crest'}});
   // stunts: half-pipe and loop beside the runway
-  zdTowPlace(placePrefab);
+  for(const[x,z,rot]of[[-700,0,90],[500,0,270],[-990,-400,0],[840,300,0],[-900,860,90],[-450,1100,0]])placePrefab('tow_truck',x,z,{rot});
   placePrefab('halfpipe',-95,260,{});placePrefab('loop',-80,1440,{rot:0});
   // billboards along the highway shoulders and the runway corridor
   {let i=0;for(const z of[-150,150,330,900,1150,1450,2000]){const s=i%2?1:-1;placePrefab('billboard',HW.x+s*(HW.hw+6),z,{rot:90,p:{t:SIGNW[i%SIGNW.length],c:NEON[i%NEON.length]}});i++;}
    for(const[x,z,t,c]of[[-70,1000,'NEON WORLD','#3ee6ff'],[90,1720,'JUMP!','#ffb020'],[-60,1700,'RIVER','#7dff6b'],[110,-80,'Z-DASH','#ff4fd8']])placePrefab('billboard',x,z,{w:22,p:{t,c}});}
   // far areas: outline-only skyline blocks around the edges
   for(let i=0;i<34;i++){const a=i/34*Math.PI*2+.07,rx=1000+cr()*300,rz=1500+cr()*350,x=Math.cos(a)*rx,z=900+Math.sin(a)*rz;if(Math.abs(x)<60)continue;const w=40+cr()*60,d=40+cr()*60,h=Math.max(20,ringHit(x-w/2,x+w/2,z-d/2,z+d/2,30+cr()*90));if(h<20)continue;
-    if(Math.abs(x-HW.x)<90||Math.hypot(x-TRACK.cx,(z-TRACK.cz)*.6)<300||Math.hypot(x-STAD.x,z-STAD.z)<220)continue;
-    if(x+w/2>555&&x-w/2<920&&z+d/2>185&&z-d/2<415)continue;
+    if(Math.abs(x)<80&&z>-100&&z<1560)continue;
+    if(Math.abs(x-HW.x)<90||Math.hypot(x-TRACK.cx,(z-TRACK.cz)*.55)<TRACK.L/2+TRACK.R+40||Math.hypot(x-STAD.x,z-STAD.z)<220)continue;
+    if(DISTRICTS.some(q=>x+w/2>q.x0&&x-w/2<q.x1&&z+d/2>q.z0&&z-d/2<q.z1))continue;
     if(x+w/2>BUILDER_ZONE.x0&&x-w/2<BUILDER_ZONE.x1&&z+d/2>BUILDER_ZONE.z0&&z-d/2<BUILDER_ZONE.z1)continue;
     placePrefab('far_outline',x,z,{w,d,h:Math.round(h),p:{c:NEON[i%NEON.length]}});}
   for(let i=0;i<70;i++){const x=PARK.x0+6+cr()*(PARK.x1-PARK.x0-12),z=PARK.z0+6+cr()*(PARK.z1-PARK.z0-12);if(Math.abs(((x+1e4)%100)-50)>38||Math.abs(((z+1e4)%100))<14||Math.abs(((z+1e4)%100))>86)continue;TREES.push([x,z,5+cr()*4]);}
@@ -200,9 +196,9 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   // --- spatial hash (50 m cells), rebuilt on add/remove ---
   const CS=50,HM=new Map(),key=(i,j)=>i*100003+j;
   // Side or rear car access. Garages are recessed into the ground floor; cafes and pet shops get a short apron instead.
-  function parkBlocked(x,z,self){if(x>555&&x<920&&z>185&&z<415)return true;for(const r of RAMPS)if(x>r.x0&&x<r.x1&&z>r.z0&&z<r.z1)return true;for(const o of BL){if(o===self||!o.boxes)continue;const q=o.boxes[0];if(q&&x>q.x0&&x<q.x1&&z>q.z0&&z<q.z1&&q.y1>2)return true;}return false;}
+  function parkBlocked(x,z,self){if(Math.abs(x-STAD.x)<120&&Math.abs(z-STAD.z)<100)return true;if(Math.abs(x)<22&&z>-70&&z<1520)return true;for(const r of RAMPS)if(x>r.x0&&x<r.x1&&z>r.z0&&z<r.z1)return true;for(const o of BL){if(o===self||!o.boxes)continue;const q=o.boxes[0];if(q&&x>q.x0&&x<q.x1&&z>q.z0&&z<q.z1&&q.y1>2)return true;}return false;}
   function placeParking(){const BW=10,BD=9,LD=8;
-    for(const b of BL){if((b.kind!=='b'&&b.kind!=='landmark')||!b.purpose||!b.boxes||!b.boxes[0])continue;const q=b.boxes[0],sn=b.sign||{nx:0,nz:-1},lot=b.purpose==='CAFE'||b.purpose==='PETS';
+    for(const b of BL){if((b.kind!=='b'&&b.kind!=='landmark')||!b.purpose||!b.boxes||!b.boxes[0])continue;if(b.purpose==='NOS'||b.purpose==='SNACK')continue;const q=b.boxes[0],sn=b.sign||{nx:0,nz:-1},lot=b.purpose==='CAFE'||b.purpose==='PETS';
       let back=[-sn.nx||0,-sn.nz||0];if(!back[0]&&!back[1])back=[0,1];
       const faces=[back,[back[1],-back[0]],[-back[1],back[0]]];
       const dep=([nx,nz])=>nx?q.x1-q.x0:q.z1-q.z0,wid=([nx,nz])=>nx?q.z1-q.z0:q.x1-q.x0;
@@ -226,6 +222,9 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
       if(nx){slab({x0:nx>0?x0-th:x1,x1:nx>0?x0:x1+th,z0,z1});slab({x0,x1,z0:z0-th,z1:z0});slab({x0,x1,z0:z1,z1:z1+th});}
       else{slab({z0:nz>0?z0-th:z1,z1:nz>0?z0:z1+th,x0,x1});slab({z0,z1,x0:x0-th,x1:x0});slab({z0,z1,x0:x1,x1:x1+th});}}}
   placeParking();
+  if(typeof NOS_STATION!=='undefined'&&NOS_STATION.fit){const pushBox=(b,o)=>{const q=Object.assign({y0:0},o,{b,oid:b.oid});b.boxes.push(q);BX.push(q);return q;};
+    for(const b of BL)if(b.purpose==='NOS'){NOS_STATION.fit(b,pushBox);
+      if(b.nosStation&&b.nosStation.pumps&&b.nosStation.pumps.length)b.doors=b.nosStation.pumps.map(p=>[p.x,p.z,p.nx||0,p.nz||0,'pump']);}}
   function rehash(){HM.clear();for(const q of BX.concat(RAMPS)){for(let i=Math.floor((q.x0-2)/CS);i<=Math.floor((q.x1+2)/CS);i++)for(let j=Math.floor((q.z0-2)/CS);j<=Math.floor((q.z1+2)/CS);j++){const k=key(i,j);if(!HM.has(k))HM.set(k,[]);HM.get(k).push(q);}}}rehash();
   function add(o){if(o.prefab){o=placePrefab(o.prefab,o.x,o.z,o);rehash();ROADS.updateBlocked();return o.id;}o=Object.assign({id:NID++,rot:0,p:{}},o);if(o.id>=NID)NID=o.id+1;OBJS.push(o);build(o);rehash();ROADS.updateBlocked();return o.id;}
   function remove(id){const h=HND.get(id);if(!h)return false;const rm=(A,L)=>{for(const x of L){const i=A.indexOf(x);if(i>=0)A.splice(i,1);}};rm(BX,h.boxes);rm(BL,h.bl);rm(RAMPS,h.ramps);rm(PADS,h.pads);rm(LOOPS,h.loops);rm(PIPES,h.pipes);for(let i=HOOPS.length-1;i>=0;i--)if(HOOPS[i].oid===id)HOOPS.splice(i,1);
@@ -281,13 +280,12 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   function probe(x,z,y,py){if(py==null)py=y;const yh=Math.max(y,py),yl=Math.min(y,py),g0=gnd(x,z),box={fl:g0[0],ce:1e9,wl:null};const L=HM.get(key(Math.floor(x/CS),Math.floor(z/CS)));if(L)for(const q of L)soak(q,x,z,yh,yl,box);for(let i=0;i<LIVE.length;i++)soak(LIVE[i],x,z,yh,yl,box);
     return{fl:box.fl,ce:box.ce,wl:box.wl,st:g0[1]&&box.fl===g0[0]?1:0};}
   function live(q){if(q&&LIVE.indexOf(q)<0)LIVE.push(q);return q;}
-  { // street grid (100 m in x, 200 m in z) + highway (bridge, tunnel) + race track loop + track connector
-    const xs=[];for(let x=150;x<=XS1;x+=100)xs.push(x,-x);xs.sort((a,b)=>a-b);const o={noRebuild:1};
-    for(const x of xs){if(x===HW.x){ROADS.addRoad(x,ZS0-400,x,ZS1+400,Object.assign({w:30,kind:'highway',kindAt:(X,Z)=>Z>RIV.z0-50&&Z<RIV.z1+50?'bridge':(Z>TUN.z0&&Z<TUN.z1?'tunnel':'highway')},o));continue;}
-      ROADS.addRoad(x,ZS0,x,1700,o);ROADS.addRoad(x,1900,x,ZS1,o);}
-    for(let z=ZS0;z<=ZS1;z+=200){if(z>RIV.z0-10&&z<RIV.z1+10)continue;ROADS.addRoad(-XS1,z,-150,z,o);ROADS.addRoad(150,z,XS1,z,o);}
+  { // Boulevard lanes. Traffic reads ROADS.lanes after rebuild. Highway keeps its tunnel and bridge kinds.
+    const o={noRebuild:1};
+    for(const r of ROAD_SEGS){const kind=r.kind==='water'||r.kind==='lane'?'street':(r.kind||'street');
+      if(r.kind==='highway'){ROADS.addRoad(r.x0,r.z0,r.x1,r.z1,Object.assign({w:r.w||30,kind:'highway',kindAt:(X,Z)=>Z>RIV.z0-50&&Z<RIV.z1+50?'bridge':(Z>TUN.z0&&Z<TUN.z1?'tunnel':'highway')},o));continue;}
+      ROADS.addRoad(r.x0,r.z0,r.x1,r.z1,Object.assign({w:r.w||20,kind,step:r.kind==='bridge'?80:100},o));}
     const T=TRACK,pts=trackPts(0,12);for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];ROADS.addRoad(a[0],a[1],b[0],b[1],Object.assign({w:T.w,kind:'track',step:1e9},o));}
-    ROADS.addRoad(XS1,1100,T.cx-T.R,1100,Object.assign({kind:'street',step:120},o));
     ROADS.rebuild();}
   // race track: stadium-shaped oval (two straights along z + two half-circle bends); off = lateral offset from the centre line (+ = outside)
   function trackPts(off,nb){const T=TRACK,o=[],R=T.R+off,h=T.L/2;for(let i=0;i<=6;i++)o.push([T.cx+R,T.cz-h+T.L*i/6]);for(let i=1;i<nb;i++){const a=Math.PI*i/nb;o.push([T.cx+R*Math.cos(a),T.cz+h+R*Math.sin(a)]);}
@@ -295,19 +293,40 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   function trackDist(x,z){const T=TRACK,h=T.L/2,dz=z<T.cz-h?z-(T.cz-h):z>T.cz+h?z-(T.cz+h):0;return Math.hypot(x-T.cx,dz)-T.R;}
   const inR=(x,z,r)=>x>=r.x0&&x<=r.x1&&z>=r.z0&&z<=r.z1;
   // surfaceAt(x,z): 'paved' (runway, taxiway, streets, highway, bridges, tunnel, ramps, plazas, track, half-pipe), 'grass', 'park', 'water'
+  function onLane(x,z){for(let i=0;i<ROAD_SEGS.length;i++){const r=ROAD_SEGS[i];if(r.kind==='tunnel')continue;const hw=(r.w||20)/2;
+    if(Math.abs(r.x0-r.x1)<1.5){const z0=Math.min(r.z0,r.z1),z1=Math.max(r.z0,r.z1);if(Math.abs(x-r.x0)<=hw&&z>=z0&&z<=z1)return true;}
+    else if(Math.abs(r.z0-r.z1)<1.5){const x0=Math.min(r.x0,r.x1),x1=Math.max(r.x0,r.x1);if(Math.abs(z-r.z0)<=hw&&x>=x0&&x<=x1)return true;}}
+    return false;}
+  // Open land is grass. Paved is the runway, the taxiway, the boulevard lanes, the highway, the bridges, the track, and the ramps.
   function surfaceAt(x,z){if(Math.abs(x)<=16&&z>=-60&&z<=1500)return'paved';if(inR(x,z,TAXI)||(x>=0&&x<=62&&z>=-20&&z<=12))return'paved';
     for(const r of RAMPS)if(inR(x,z,r))return'paved';for(const Pp of PIPES)if(x>Pp.x0&&x<Pp.x1&&z>=Pp.z0&&z<=Pp.z1)return'paved';
     if(z>=RIV.z0&&z<=RIV.z1)return bridgeK(x)<0?'paved':'water';
-    if(Math.abs(x-HW.x)<=HW.hw&&z>=ZS0-400&&z<=ZS1+400)return'paved';
-    if(Math.abs(trackDist(x,z))<=TRACK.w/2+1)return'paved';if(Math.abs(z-1100)<=10&&x>=XS1&&x<=TRACK.cx-TRACK.R)return'paved';
+    if(Math.abs(x-HW.x)<=HW.hw&&z>=ZS0-80&&z<=ZS1+80)return'paved';
+    if(Math.abs(trackDist(x,z))<=TRACK.w/2+1)return'paved';
+    if(onLane(x,z))return'paved';
     if(window.SOCCER&&SOCCER.paved&&SOCCER.paved(x,z))return'paved';
-    if(Math.hypot(x-STAD.x,(z-STAD.z)/.8)<STAD.r-12)return'park';
-    if(x>=XS0-10&&x<=XS1+10&&z>=ZS0-10&&z<=ZS1+10&&Math.abs(x)>=140){if(x>=TUN.x0-5&&x<=TUN.x1+5&&z>=TUN.z0-5&&z<=TUN.z1+5)return'grass';
-      if(inR(x,z,PARK)){const sx=((Math.abs(x)-150)%100+100)%100,sz=((z+300)%200+200)%200;return(sx<=10||sx>=90||sz<=10||sz>=190)?'paved':'park';}return'paved';}
+    if(inR(x,z,PARK))return'park';
     return'grass';}
   const padAt=(x,z,y)=>PADS.find(p=>Math.abs(p.y-y)<1&&inR(x,z,p))||null;
   function hit(x,z,r,y){const pr=probe(x,z,y==null?0:y);if(!pr.wl)return null;const pk=pr.wl.b&&pr.wl.b.parking;if(pk&&pk.type==='garage'&&!pr.wl.bay&&garageZone(pk,x,z,y||0,r||0)===2)return null;return pr.wl;}
-  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,hit,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,buildings:BL,BX,roadsX,roadsZ,RAMPS,PADS,TREES,LOTS,HOOPS,RINGS:rings,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,BUILDER_ZONE,DISTRICTS,XS0,XS1,ZS0,ZS1,
+  // Same fingerprint PR #79 stores with a saved spot. A layout change moves the stamp.
+  function mapStamp(){let h=2166136261;const mix=v=>{h^=(v|0);h=Math.imul(h,16777619);};
+    mix(XS0);mix(XS1);mix(ZS0);mix(ZS1);mix(BL.length);mix(ROADS.nodes.length);mix(ROADS.edges.length);
+    mix(STAD.x);mix(STAD.z|0);mix(TRACK.cx);mix(TRACK.cz);mix(HW.x);mix(DT.x);mix(DT.z);mix(RIV.z0|0);mix(RIV.z1|0);
+    const step=Math.max(1,(BL.length/7)|0);
+    for(let i=0;i<BL.length;i+=step){const b=BL[i];if(!b)continue;mix(b.cx|0);mix(b.cz|0);mix((b.top||0)|0);}
+    return (h>>>0).toString(36);}
+  // True when a car can sit here. Resume (PR #79) calls this; a blocked save starts on the runway.
+  function spotClear(x,z,y){if(!Number.isFinite(x)||!Number.isFinite(z))return false;const pad=80;
+    if(x<XS0-pad||x>XS1+pad||z<ZS0-pad||z>ZS1+pad)return false;
+    let surf='grass';try{surf=surfaceAt(x,z);}catch(e){return false;}if(surf==='water')return false;
+    const yy=Number.isFinite(y)?y:0,top=Math.max(yy,0.4),bot=yy>3?yy-0.8:0;let pr=null;
+    try{pr=probe(x,z,top,bot);}catch(e){return false;}if(pr&&pr.wl)return false;return true;}
+  const placesOut=LAY?LAY.places.map(p=>{const o=Object.assign({},p);o.type=p.kind||p.type||'';o.cx=(p.x0+p.x1)/2;o.cz=(p.z0+p.z1)/2;return o;}):[];
+  const LAYOUT=LAY?{id:LAY.id,bounds:LAY.bounds,anchors:LAY.anchors,weather:LAY.weather,districts:DISTRICTS,places:placesOut,roads:ROAD_SEGS,river:LAY.anchors.river,bridges:LAY.anchors.bridges,highway:LAY.anchors.highway,tunnel:LAY.anchors.tunnel,runway:LAY.anchors.runway,track:LAY.anchors.track,field:LAY.anchors.field,trailerPad:LAY.trailerPad,faces:NET.faces,minimap:{bounds:LAY.bounds,roads:ROAD_SEGS,river:LAY.anchors.river,bridges:LAY.anchors.bridges,districts:DISTRICTS,places:placesOut}}:null;
+  function districts(){return DISTRICTS;}
+  function nodes(){return ROADS.nodes;}
+  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,hit,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,buildings:BL,BX,roadsX,roadsZ,RAMPS,PADS,TREES,LOTS,HOOPS,RINGS:rings,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,BUILDER_ZONE,DISTRICTS,districts,nodes,XS0,XS1,ZS0,ZS1,LAYOUT,mapStamp,spotClear,
     probe,gnd,riverY,pipeY,rampH,trackPts,trackDist,surfaceAt,padAt,inTunnel:(x,z)=>x>TUN.bx0&&x<TUN.bx1&&z>TUN.z0&&z<TUN.z1};})();
 const surfaceAt=CITY.surfaceAt;
 // walls: glancing scrapes along the tangent (keeps tangential speed, sparks), square hits bounce 2.5–4.5 m/s off the normal, airborne grazes deflect outward. Pushed out of q: no reset, no trap.

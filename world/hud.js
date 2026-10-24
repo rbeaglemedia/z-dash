@@ -14,7 +14,7 @@ let ktT=0;function kToast(s,ms=1600){const el=document.getElementById('kToast');
 function toast(s){const c=TOASTC[s];if(c)wMsg(s,c[0],c[1]);else kToast(s);}
 let vShown=0,vS=0,vT=0,hudStackBottom=168;
 // Heading-up minimap. City is baked once; each frame rotates that image by -yaw and blits it once. The Z icon stays pointing up.
-const MINI={X0:-1500,Z0:-900,X1:1900,Z1:2900,S:0.34,cv:null};
+const MINI={X0:-1650,Z0:-960,X1:1460,Z1:3060,S:0.22,cv:null};
 // Garage Z (world/garage.js) reads localStorage 'zdash.kid.v1' -> eq.paint (and wheels, windows, rims, tires, stance, spoiler, spcol).
 // The player model is always the 370Z; the save does not swap the car. No save leaves KID.paint at the default cyan #1aa6c8.
 // That cyan, and other map-like paints, disappear into the roads, runway, highways, track, ramps, or tow dots, so those fall back to white.
@@ -47,10 +47,10 @@ function zIconBake(){if(ZICON.cv)return;const paint=miniIconPaint(),N=160,cv=doc
   trace([[-.18,2.20],[.18,2.20],[.12,2.08],[-.12,2.08]]);c.closePath();c.fillStyle=ink;c.fill();
   ZICON.cv=cv;ZICON.paint=paint;}
 function miniHex(hex,a){const n=parseInt(String(hex||'').replace('#',''),16);if(!Number.isFinite(n))return`rgba(62,230,255,${a})`;return`rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
-// Giant dome. Live SOCCER.field wins once it is the big pitch (hw ≥ 40). Until then the approved 104×160 dome at (830, 300) is the fallback. Drawn each frame, not baked, so the ball can move.
-function miniField(){const live=(typeof SOCCER!=='undefined'&&SOCCER.field)||null,D={cx:830,cz:300,hw:52,hl:80,x0:778,x1:882,z0:220,z1:380};
+// Giant dome. Live SOCCER.field wins once it is the big pitch (hw ≥ 40). Until then the Field at (1000, 1280) is the fallback. Drawn each frame, not baked, so the ball can move.
+function miniField(){const live=(typeof SOCCER!=='undefined'&&SOCCER.field)||null,A=typeof CITY!=='undefined'&&CITY.LAYOUT&&CITY.LAYOUT.field,D=A?{cx:A.cx,cz:A.cz,hw:52,hl:80,x0:A.cx-52,x1:A.cx+52,z0:A.cz-80,z1:A.cz+80,roadX0:640}:{cx:1000,cz:1280,hw:52,hl:80,x0:948,x1:1052,z0:1200,z1:1360,roadX0:640};
   const src=live&&isFinite(live.cx)&&isFinite(live.hw)&&live.hw>=40?live:D,cx=src.cx,cz=src.cz,hw=src.hw||52,hl=src.hl||80;
-  return {cx,cz,hw,hl,x0:isFinite(src.x0)?src.x0:cx-hw,x1:isFinite(src.x1)?src.x1:cx+hw,z0:isFinite(src.z0)?src.z0:cz-hl,z1:isFinite(src.z1)?src.z1:cz+hl,goalW:src.goalW,goalD:src.goalD,domeRx:src.domeRx||src.domeHw,domeRz:src.domeRz||src.domeHl,roadX0:isFinite(src.roadX0)?src.roadX0:560,tunW:src.tunW||src.roadW};}
+  return {cx,cz,hw,hl,x0:isFinite(src.x0)?src.x0:cx-hw,x1:isFinite(src.x1)?src.x1:cx+hw,z0:isFinite(src.z0)?src.z0:cz-hl,z1:isFinite(src.z1)?src.z1:cz+hl,goalW:src.goalW,goalD:src.goalD,domeRx:src.domeRx||src.domeHw,domeRz:src.domeRz||src.domeHl,roadX0:isFinite(src.roadX0)?src.roadX0:640,tunW:src.tunW||src.roadW};}
 function miniFitPitch(){if(MINI.fit)return;MINI.fit=1;const F=miniField(),pad=24,rx=F.domeRx||F.hw+24,rz=F.domeRz||F.hl+20,x0=Math.min(F.roadX0,F.cx-rx)-pad,x1=Math.max(F.x1,F.cx+rx)+pad,z0=F.cz-rz-pad,z1=F.cz+rz+pad;if(x0<MINI.X0)MINI.X0=x0;if(x1>MINI.X1)MINI.X1=x1;if(z0<MINI.Z0)MINI.Z0=z0;if(z1>MINI.Z1)MINI.Z1=z1;}
 function miniDome(ppm){const F=miniField(),cx=(F.cx-P.x)*ppm,cy=-(F.cz-P.z)*ppm,rx=(F.domeRx||F.hw+24)*ppm,rz=(F.domeRz||F.hl+20)*ppm;
   ctx.save();ctx.lineJoin='round';
@@ -66,20 +66,25 @@ function miniDome(ppm){const F=miniField(),cx=(F.cx-P.x)*ppm,cy=-(F.cz-P.z)*ppm,
   goal(F.z0,-1,'#ff4fd8');goal(F.z1,1,'#7dfff2');
   const st=typeof SOCCER!=='undefined'&&SOCCER.state;if(st&&isFinite(st.x)&&isFinite(st.z)){ctx.beginPath();ctx.arc((st.x-P.x)*ppm,-(st.z-P.z)*ppm,3,0,7);ctx.fillStyle='#f4f7fb';ctx.fill();ctx.lineWidth=1.3;ctx.strokeStyle='#141414';ctx.stroke();}
   ctx.restore();}
-function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;miniFitPitch();const S=MINI.S,w=Math.ceil((MINI.X1-MINI.X0)*S),h=Math.ceil((MINI.Z1-MINI.Z0)*S),cv=document.createElement('canvas');cv.width=w;cv.height=h;const c=cv.getContext('2d'),X=x=>(x-MINI.X0)*S,Y=z=>(MINI.Z1-z)*S,C=CITY;
+function miniPlaceCol(p){if(!p)return'#3ee6ff';if(p.kind==='arch'||p.type==='arch')return'#ff4fd8';if(p.purpose==='NOS')return'#ffe14d';if(p.purpose==='GARAGE')return'#ffb020';if(p.purpose==='SKY_DROP')return'#3ee6ff';if(p.purpose==='SNACK'||p.purpose==='CAFE')return'#ff9a2e';return p.c||'#7dff6b';}
+function miniBake(){if(MINI.cv||typeof CITY==='undefined')return;const L=CITY.LAYOUT,M=L&&L.minimap,B=M&&M.bounds||L&&L.bounds;if(B){const pad=48;MINI.X0=B.x0-pad;MINI.X1=B.x1+pad;MINI.Z0=B.z0-pad;MINI.Z1=B.z1+pad;}miniFitPitch();const S=MINI.S,w=Math.ceil((MINI.X1-MINI.X0)*S),h=Math.ceil((MINI.Z1-MINI.Z0)*S),cv=document.createElement('canvas');cv.width=w;cv.height=h;const c=cv.getContext('2d'),X=x=>(x-MINI.X0)*S,Y=z=>(MINI.Z1-z)*S,C=CITY;
   c.fillStyle='#070314';c.fillRect(0,0,w,h);
-  c.fillStyle='rgba(8,40,90,.95)';c.fillRect(0,Y(C.RIV.z1),w,(C.RIV.z1-C.RIV.z0)*S);
+  const dists=(M&&M.districts)||(L&&L.districts)||C.DISTRICTS||[];
+  for(const d of dists){if(!d)continue;c.fillStyle='rgba(125,255,107,.07)';c.fillRect(X(d.x0),Y(d.z1),(d.x1-d.x0)*S,(d.z1-d.z0)*S);c.strokeStyle='rgba(125,255,107,.45)';c.lineWidth=1;c.strokeRect(X(d.x0),Y(d.z1),(d.x1-d.x0)*S,(d.z1-d.z0)*S);}
+  const riv=(M&&M.river)||(L&&L.river)||C.RIV;if(riv){c.fillStyle='rgba(8,40,90,.95)';c.fillRect(0,Y(riv.z1),w,(riv.z1-riv.z0)*S);}
   c.fillStyle='rgba(10,60,30,.85)';c.fillRect(X(C.PARK.x0),Y(C.PARK.z1),(C.PARK.x1-C.PARK.x0)*S,(C.PARK.z1-C.PARK.z0)*S);
-  const N=C.ROADS.nodes,roads=(pred,col,lw)=>{c.beginPath();for(const e of C.ROADS.edges){if(!e||!pred(e))continue;const A=N[e.a],B=N[e.b];c.moveTo(X(A.x),Y(A.z));c.lineTo(X(B.x),Y(B.z));}c.strokeStyle=col;c.lineWidth=lw;c.stroke();};
-  roads(e=>e.kind==='street','rgba(62,230,255,.8)',1.35);
-  roads(e=>e.kind==='highway'||e.kind==='bridge'||e.kind==='tunnel','#ffb020',2.1);
-  roads(e=>e.kind==='track','#ff4fd8',1.6);
+  const segs=(M&&M.roads)||(L&&L.roads)||[];
+  const strokeSeg=(r,col,lw)=>{if(!r)return;c.beginPath();c.moveTo(X(r.x0),Y(r.z0));c.lineTo(X(r.x1),Y(r.z1));c.strokeStyle=col;c.lineWidth=lw;c.stroke();};
+  if(segs.length){for(const r of segs){const k=r.kind;if(k==='highway'||k==='bridge'||k==='tunnel')strokeSeg(r,'#ffb020',2.2);else if(k==='track')strokeSeg(r,'#ff4fd8',1.6);else strokeSeg(r,'rgba(62,230,255,.9)',Math.max(1.1,(r.w||20)*S*0.45));}}
+  else{const N=C.ROADS.nodes;c.beginPath();for(const e of C.ROADS.edges){if(!e)continue;const A=N[e.a],B=N[e.b];c.moveTo(X(A.x),Y(A.z));c.lineTo(X(B.x),Y(B.z));}c.strokeStyle='rgba(62,230,255,.8)';c.lineWidth=1.35;c.stroke();}
+  const bridges=(M&&M.bridges)||(L&&L.bridges)||[];c.fillStyle='rgba(255,176,32,.72)';for(const b of bridges){if(!b)continue;c.fillRect(X(Math.min(b.x0,b.x1)),Y(Math.max(b.z0,b.z1)),Math.abs(b.x1-b.x0)*S,Math.abs(b.z1-b.z0)*S);}
   c.strokeStyle='#ffb020';c.lineWidth=1.5;c.strokeRect(X(C.TAXI.x0),Y(C.TAXI.z1),(C.TAXI.x1-C.TAXI.x0)*S,(C.TAXI.z1-C.TAXI.z0)*S);
-  for(const b of C.BL){const bw=b.x1-b.x0,bd=b.z1-b.z0;if(bw<6||bd<6)continue;const ol=b.kind==='outline';c.fillStyle=ol?'rgba(62,230,255,.08)':miniHex(b.c,.3);c.strokeStyle=ol?'rgba(62,230,255,.5)':(b.c||'#3ee6ff');c.lineWidth=1;c.fillRect(X(b.x0),Y(b.z1),bw*S,bd*S);c.strokeRect(X(b.x0),Y(b.z1),bw*S,bd*S);}
-  const z0=-40,z1=1500;c.fillStyle='rgba(62,230,255,.5)';c.fillRect(X(-15),Y(z1),30*S,(z1-z0)*S);c.strokeStyle='#e9fbff';c.lineWidth=2;c.strokeRect(X(-15),Y(z1),30*S,(z1-z0)*S);
-  c.strokeStyle='rgba(255,255,255,.92)';c.lineWidth=1.1;c.beginPath();for(let z=0;z<z1;z+=70){c.moveTo(X(0),Y(z));c.lineTo(X(0),Y(Math.min(z1,z+28)));}c.stroke();
+  const places=(M&&M.places)||(L&&L.places)||[];
+  for(const p of places){if(!p)continue;const bw=p.x1-p.x0,bd=p.z1-p.z0,col=miniPlaceCol(p);c.fillStyle=miniHex(col,.62);c.strokeStyle=col;c.lineWidth=1;c.fillRect(X(p.x0),Y(p.z1),Math.max(1.2,bw*S),Math.max(1.2,bd*S));c.strokeRect(X(p.x0),Y(p.z1),Math.max(1.2,bw*S),Math.max(1.2,bd*S));}
+  const rw=L&&L.runway||{x0:-16,x1:16,z0:-60,z1:1500};c.fillStyle='rgba(62,230,255,.5)';c.fillRect(X(rw.x0),Y(rw.z1),(rw.x1-rw.x0)*S,(rw.z1-rw.z0)*S);c.strokeStyle='#e9fbff';c.lineWidth=2;c.strokeRect(X(rw.x0),Y(rw.z1),(rw.x1-rw.x0)*S,(rw.z1-rw.z0)*S);
+  c.strokeStyle='rgba(255,255,255,.92)';c.lineWidth=1.1;c.beginPath();for(let z=Math.max(0,rw.z0);z<rw.z1;z+=70){c.moveTo(X(0),Y(z));c.lineTo(X(0),Y(Math.min(rw.z1,z+28)));}c.stroke();
   c.fillStyle='#ff9a2e';for(const r of C.RAMPS){if(r.hid||r.yb>0||r.nm==='tow')continue;c.fillRect(X((r.x0+r.x1)/2)-1.3,Y((r.z0+r.z1)/2)-1.3,2.6,2.6);}
-  MINI.cv=cv;}
+  MINI.cv=cv;MINI.layoutId=L&&L.id||'';}
 let miniSpan=0;
 const ZICON_W=.45; // visible car width ÷ sprite. Street width uses this.
 function miniTune(){return window.MINIMAP_TUNE||{spanClose:300,spanFar:3400,altClose:24,altFar:240,ease:.8,street:20,iconMin:20,poiPx:20,hotPulse:.16,hotMs:110};}

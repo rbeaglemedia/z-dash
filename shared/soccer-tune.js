@@ -10,18 +10,18 @@ window.SOCCER_TUNE = {
   bounciness: 0.55,   // restitution on the car, the ground, the lines, and the dome
   hitStrength: 1.12,  // scales the contact impulse. 1 = the momentum share alone.
   friction: 0.46,     // ground roll-out and the sideways grip on a car hit (spin)
-  // Dome stadium just outside the east city limit. West sideline is the tunnel mouth.
-  // 104 m wide (fieldHw 52) by 160 m goal-to-goal (fieldHl 80). Center (830, 300):
-  // x 778–882, z 220–380. Open ground past the bowl for nothing else to box it in.
-  fieldCx: 830,
-  fieldCz: 300,
+  // Dome on The Field. West sideline is the tunnel mouth.
+  // 104 m wide (fieldHw 52) by 160 m goal-to-goal (fieldHl 80). Center (1000, 1280):
+  // x 948–1052, z 1200–1360. The z=1280 boulevard stops at the west sideline.
+  fieldCx: 1000,
+  fieldCz: 1280,
   fieldHw: 52,
   fieldHl: 80,
-  // Boulevard from the z=300 street (city edge x=560) straight to the west sideline.
-  roadX0: 550,
-  roadX1: 778,
-  roadZ: 300,
-  roadHalfW: 13,
+  // Boulevard along z=1280 from x=640 straight to the west sideline.
+  roadX0: 640,
+  roadX1: 948,
+  roadZ: 1280,
+  roadHalfW: 10,
   // Mouth, crossbar, and net depth. Bigger than the old ~15 x 7 goal.
   goalW: 34,
   goalH: 12.5,
@@ -33,11 +33,11 @@ window.SOCCER_TUNE = {
   domeH: 48,
   // Drive-through tunnel. Bore z 287–313 is the road. Physics walls sit just
   // outside that bore and stop 6 m short of the sideline so the mouth stays open.
-  tunnelX0: 706,
-  tunnelX1: 778,
-  tunnelWallX1: 772,
-  tunnelZ0: 287,
-  tunnelZ1: 313,
+  tunnelX0: 860,
+  tunnelX1: 948,
+  tunnelWallX1: 942,
+  tunnelZ0: 1267,
+  tunnelZ1: 1293,
   tunnelH: 11.5,
   tunnelRoof: 15,
   showScore: false    // score pill stays off until the scoreboard comes back. GOAL! still flashes.
