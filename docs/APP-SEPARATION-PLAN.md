@@ -12,6 +12,7 @@ Today both apps are one website, and each big page still carries the other app i
 - `index.html` is about 7.3 MB. It is your dash, and it also contains a full copy of her game (Passenger Mode, DAD'S SHIFTS, the garage save). Your page does not load her separate Neon World scripts. The game text is still in the file.
 - One service worker and two home-screen manifests both claim the whole site. An update for one app can refresh the cache the other app uses.
 - Saves already sit in one place on the phone, because both pages are the same website (`z.beagle.games`). Her garage, dances, house, and unlocks are keys in that store. Nothing in this plan deletes those keys.
+- The 3D 370Z is one car, pasted in more than one place. Neon World loads the shared file. Your dash page, her menu, and Neon Flying each carry their own paste of those same bytes. Changing the shared file today leaves the pasted cars as they are. Every paste stays until you say otherwise. The check is in the section "The 370Z model" below.
 
 Step 1 is already underway on the FPS agent (`bc-da7101de`). This plan does not rebuild it. That step makes the Kid App stop loading the adult code, turns the old dashboard into a tile, and leaves Bluetooth, Spotify, and the car link idle until that tile is opened. The same agent is also stopping the old dashboard from keeping a frozen copy alive behind Neon World. When that step lands, her games no longer boot Dad's adapter stack.
 
@@ -26,13 +27,14 @@ What you would say yes to is marked **Needs your yes** on the steps below. The r
 | 1. Kid App stops loading adult code. Old dashboard becomes a tile. Connections stay idle. | Ellie can open a game without booting OBD, Spotify, or the mic. Already in progress on the FPS agent. | Theirs | Theirs. This plan does not touch `jr.html` until their pull request is in. | No. Already in progress. |
 | 2. A second copy of her saves, and a written list of which keys are hers. | A bad later step cannot be the only copy of the garage, dances, house, or unlocks. | Small | Low. Nothing is deleted. No new button unless you want one. | Only if you want a visible Backup button on her menu. The silent second copy does not need a yes. |
 | 3. Take her game out of your page, and keep adult code out of her pages. Same web addresses. | Your dash file no longer contains DAD'S SHIFTS. Her files no longer contain OBD or Spotify. | Large | Medium. Passenger Mode would leave your phone's dash page and live only in her app. | **Yes.** Your in-page Passenger Mode goes away. The Kid Z button and her iPad stay. |
+| M. One shared 370Z file, and one version stamp both apps read. Pasted copies stay until you say to remove them. | A new Z model reaches your page, her menu, Neon Flying, and Neon World together. | Small, after you say yes. | Low while each paste remains as a spare. | **Yes** before any paste is removed. **Yes** again if you would rather the two apps keep different cars on purpose. |
 | 4. Two service workers and two home-screen manifests that do not cover each other. | An update to the dash cannot reload her game cache, and the other way around. | Medium | Medium. A home-screen icon may need to be opened once after the update. | **Yes**, because an icon already on a phone might need that one open. |
 | 5. Move her pages under a `/jr/` folder. Old addresses keep working as redirects. | A clean kid bundle for a later store app. Saves stay, because the website name does not change. | Medium | Medium. Bookmarks and the installed icon follow the redirect. | **Yes**, for the new address. The redirects are permanent. |
 | 6. A small real-drive note your phone writes and her game reads. | DAD'S SHIFTS and BOXES can see a finished drive even when the two pages are not open together. The Garage Z save stays the key it already is. | Small | Low. Live QR pairing still works for a drive in progress. | No, as long as the note is only minutes, shift count, and the last drive time. |
 | 7. Two installed apps (Capacitor), still one website behind them. | C.F.R., Inc. can ship Z-DASH and Z-DASH JR as two store listings. Her app has no Spotify and no OBD. | Large | Medium. The adult app needs a small Bluetooth add-on. A plain web view cannot talk to the OBDLink. | **Yes.** App names, ids, icons, and the privacy forms. |
 | 8. Sharing after the two apps no longer share a website: a file she can AirDrop, the QR link, and only later an account. | Garage and real-drive boxes survive two separate store apps. | Medium, then large if there is an account | High if the website name changes first. Her phone would look empty. | **Yes** before any new domain, and **yes** before any account on `beagle.studio`. |
 
-Benefit, in one line each: step 1 makes her games lighter now; step 2 protects her stuff; steps 3–5 make the split real on the website; step 6 keeps DAD'S SHIFTS honest; steps 7–8 are the store.
+Benefit, in one line each: step 1 makes her games lighter now; step 2 protects her stuff; steps 3–5 make the split real on the website; step M makes a new 370Z show up in both apps; step 6 keeps DAD'S SHIFTS honest; steps 7–8 are the store.
 
 ## What is already true
 
@@ -94,8 +96,9 @@ z.beagle.games/jr/               Z-DASH JR
   icons/zdash-jr-*.png
 
 shared/                          only files both apps truly share
-  version stamp used by both workers, with each worker named apart
-  the 370Z mesh bytes, if a check shows they are the same file
+  version.js                     world stamp, plus a model stamp both workers read
+  assets/370z-glb.js             the one 370Z mesh (checked: same bytes in every paste)
+  zd-embed.js                    the credit line, and the pointer to that mesh
 ```
 
 Kid-only code stays under `/jr/` (or in today's `shared/` until step 5, then moves with her). That includes `ipad.js`, the car painter, tunes, crew state, unlock flags, and the traffic models. Adult code never imports those, and her pages never import `adult/`.
@@ -171,6 +174,7 @@ Rollback for each stage:
 | 1 | Revert the FPS agent's pull request. Her page goes back to loading the blocks it loads today. Saves are untouched. |
 | 2 | Delete the backup key in a one-line revert, or leave it. The real key was never moved. |
 | 3 | Revert the pull request. Passenger Mode returns inside `index.html`. Her files gain the adult blocks back only if that revert is what you want. Preview this revert on `/test/` before it hits `main`. |
+| M | Revert the pull request that pointed a page at the shared file. The paste in that page is still there, so the car she had remains. After a later yes removes a paste, put that paste back from git and preview it on `/test/` first. |
 | 4 | Put the single `sw.js` back. Cache names change with the version stamp, so the old worker installs and the pages reload. Do not delete her backup key. |
 | 5 | Point the redirects back at the root copies, which stay in the repo until you say the folder move is settled. |
 | 6 | Stop writing `zdash.realdrive.v1`. Her game falls back to the live QR link, which is the path she has now. |
@@ -178,6 +182,49 @@ Rollback for each stage:
 | 8 | Turn the account off. The file export and the QR link remain. Do not change `z.beagle.games` as part of turning an account off. |
 
 Home-screen icons: after step 4 or 5, open the icon once. If it shows the wrong app, remove the icon and add it again from the right page. Saves are still in the website, not in the icon.
+
+## The 370Z model
+
+Bob's guess is right: the car was copied. There is one mesh, and the site is holding several pastes of it. There is no `.glb` file on disk. The model is packed as text inside JavaScript. Decoded, that text is 1,800,836 bytes. SHA-256 `fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf`. Every paste below decodes to that same hash.
+
+It is the Sketchfab model NISSAN_370Z_IMPROVED by WolfGames36 (after hasancarspro454), license CC BY 4.0, exported by Sketchfab 17.8.0. The file has 369 meshes and 745 named parts, and no image textures. The credit is inside the model and again in `shared/zd-embed.js`. Her store app keeps that credit as text in the file. It does not call sketchfab.com.
+
+### Which app loads which
+
+| Where the bytes sit | Who uses them |
+| --- | --- |
+| `shared/assets/370z-glb.js` (2,401,140 bytes on disk, including the wrapper) | Neon World (`world.html`, `world-split.html`) and Neon Paint (`neon-paint.html`). They load this file, then `shared/zd-embed.js` points the viewer at it. |
+| Pasted inside `index.html` | Adult Z-DASH. The page does not request the shared file. The showroom viewer inside this page reads the paste. |
+| Pasted inside `jr.html` | Kid App menu. Same: the paste, and the page does not request the shared file. |
+| Pasted inside `fly3.html` | Neon Flying, the flying tile on her menu. |
+| Pasted inside `fly2.html` | An older flying test. No menu tile opens it. The bytes match. The file stays. |
+| `test/shared/assets/370z-glb.js`, `test/jr.html`, `test/fly3.html` | The hidden `/test` preview. The shared-file copy is byte-for-byte the live file today. It is a snapshot. A later edit to the live file leaves the preview alone until that preview is rebuilt. |
+
+History, from the commits: the model first lived in the adult demo. It was copied into Z-DASH JR when that app was added, then into the flying pages. On 22 Oct 2026 the Neon World split (`cbd7f34`) copied those bytes out to `shared/assets/370z-glb.js` and left the pastes in the big pages. That is the copy Bob remembered. The hashes still match, so none of the pastes has been edited on its own since.
+
+Two other drawings sit beside this mesh. They are separate, and this plan leaves them separate.
+
+- `shared/car-wire.js` is a hand-built outline of a 370Z (length 4.25 m and the proportions written in that file), used when she flies. Neon World loads that one file. It is a different picture from the Sketchfab mesh.
+- `shared/car-model.js` is the program that draws the Sketchfab mesh. Neon World and Neon Paint load it. The same program text is pasted inside `jr.html`, `fly2.html`, and `fly3.html`. The paste inside `index.html` is the same program through most of its length, and it is missing a few later lines (a camera field-of-view add, and two paint settings). Sharing the mesh leaves those programs where they are. Merging the drawing program is its own yes, and this plan does not ask for it yet.
+
+The other 3D files (sedan, SUV, police, the Kenney traffic set) follow the same paste pattern. Each file in `shared/assets/traffic/` matches the paste inside `index.html`, `jr.html`, `fly2.html`, and `fly3.html`. Neon World already loads the shared traffic files. Those cars belong to her world and move with her at step 5. One file each in the repo, her pages load it, and the pastes stay until you say otherwise. Step 3 is what takes those pastes out of the adult page, and that step already needs your yes.
+
+### One shared copy, and how a new model reaches both apps
+
+Keep a single copy in the repo: `shared/assets/370z-glb.js`, with `shared/zd-embed.js` as the credit and the pointer. Neon World already works this way. Step M points the adult page, her menu, and Neon Flying at that same file, the way Neon World does. Until that switch is proven on `/test/`, each paste stays in the page as the spare.
+
+A per-app copy is the setup you have now, and it is why a new model would miss someone. Editing the shared file updates Neon World and Neon Paint when the phone can reach the network. It leaves the car inside your dash page, her menu, and Neon Flying on the old paste. Choose a per-app copy only if you want the two apps to be allowed to show different cars. In that case each app gets its own file and its own stamp, and a new model reaches the other app when someone copies it on purpose. That choice is a yes. The default in this plan is the one shared file.
+
+Version stamp, so "both" is real:
+
+- Add `ZD_MODEL` next to `ZD_WORLD` in `shared/version.js`. The value is a short hash of the mesh bytes (today that hash begins `fdba257f6422`). Every page loads `shared/assets/370z-glb.js?m=` plus that same value. Bump the stamp only when the bytes change.
+- The `?v=30` on Neon World and the `?v=28` still on Neon Paint are the world number, and they already disagree, on the same file. The offline helper matches a shared file while ignoring that `?v=` number, so the number does not keep an old mesh and a new mesh apart in the cache. An online phone gets the new file on refresh, because those pages are network-first. An offline phone keeps the cached file until the cache name changes.
+- When the mesh changes, the stamp changes, and the cache name includes the stamp (`world-split-v` plus the world number plus `ZD_MODEL`, and later each app's own cache name). One activate drops the old mesh for every page that uses the shared file. Both workers from step 4 cache that one URL. Her saves are a different store and stay put.
+- The `/test` preview is a snapshot. Rebuilding that preview is part of shipping the new mesh, so the preview car matches.
+
+Store apps, at step 7: the build copies that one file into each app package. Her app still runs with no network, and the credit stays inside the file. Both apps record `ZD_MODEL` so you can see they match. A new model is a new build of both apps from the same file. Letting her installed app download the model from `z.beagle.games` later is a separate yes, because her network list stays empty until you approve a first-party host.
+
+Nothing in step M deletes a paste, the `/test` copies, the wireframe, or a traffic file. Removing a paste, after the shared file is what that page actually shows, is its own pull request and its own yes. Rollback before that yes is reverting the pull request that added the script tag; the paste is still in the file. Rollback after a paste has been removed is putting that paste back from git, previewed on `/test/` first.
 
 ## How this sits next to the other work
 
@@ -188,4 +235,4 @@ Home-screen icons: after step 4 or 5, open the icon once. If it shows the wrong 
 
 ## What this pull request does not do
 
-No file moves, no service-worker edits, no DNS, no store listings, no save migration. Build for a step starts when you write "plan approved, build it" and, on the steps marked above, "yes".
+No file moves, no service-worker edits, no DNS, no store listings, no save migration, and no model file deleted or merged. The 370Z check is a hash of the copies that are already in the repo. Build for a step starts when you write "plan approved, build it" and, on the steps marked above, "yes".
