@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Interior review</title>
+<style>
+  html,body{margin:0;background:#04140c;overflow:hidden;}
+  #c{display:block;}
+  #shot{position:absolute;left:0;top:0;}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script src="../world/planner-props.js"></script>
+<script src="../world/planner-tools.js"></script>
+<script src="../world/style-sampler.js"></script>
+<script src="../world/interiors-review.js"></script>
+<script>
+(function () {
+  const q = new URLSearchParams(location.search);
+  const room = q.get('room') || 'house';
+  const style = q.get('style') || '1';
+  const sheet = q.get('sheet') === '1';
+  const fromFiles = q.get('sheet') === 'files';
+  const dump = q.get('dump') === '1';
+  const W = sheet ? 1180 : (Number(q.get('w')) || 1180);
+  const H = sheet ? 820 : (Number(q.get('h')) || 820);
+  const cv = document.getElementById('c');
+  cv.width = W;
+  cv.height = H;
+  const g = cv.getContext('2d');
+  const list = INTERIOR_REVIEW.list(room) || [];
+  const spec = INTERIOR_REVIEW.find(room, style) || list[0];
+
+  function timed(draw) {
+    const N = 40;
+    const t0 = performance.now();
+    for (let i = 0; i < N; i++) draw(null);
+    return (performance.now() - t0) / N;
+  }
+
+  if (dump) {
+    const rooms = Object.keys(INTERIOR_REVIEW.rooms);
+    const rows = [];
+    for (let r = 0; r < rooms.length; r++) {
+      const items = INTERIOR_REVIEW.list(rooms[r]);
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const ms = timed(function () { INTERIOR_REVIEW.paint(g, 1180, 820, item, { label: false }); });
+        rows.push({ room: rooms[r], n: item.n, id: item.id, name: item.name, line: item.line, ms: Number(ms.toFixed(2)) });
+      }
+    }
+    const pre = document.createElement('pre');
+    pre.id = 'report';
+    pre.textContent = JSON.stringify(rows);
+    document.body.appendChild(pre);
+    document.body.dataset.ready = '1';
+    return;
+  }
+
+  if (fromFiles) {
+    g.fillStyle = '#04140c';
+    g.fillRect(0, 0, W, H);
+    const names = list.map(function (item) { return item.room + '-' + item.n + '-' + item.id + '.png'; });
+    let left = names.length;
+    const imgs = [];
+    names.forEach(function (name, i) {
+      const img = new Image();
+      img.onload = function () {
+        imgs[i] = img;
+        left--;
+        if (left === 0) drawFiles();
+      };
+      img.onerror = function () { left--; if (left === 0) drawFiles(); };
+      img.src = '../docs/interiors/' + name;
+    });
+    function drawFiles() {
+      g.fillStyle = '#04140c';
+      g.fillRect(0, 0, W, H);
+      g.fillStyle = '#e9fff2';
+      g.font = '800 28px sans-serif';
+      g.textAlign = 'left';
+      g.fillText((INTERIOR_REVIEW.rooms[room] || room) + '  ·  pick one', 16, 36);
+      const gap = 10, top = 52, cw = Math.floor((W - gap * 3) / 2), ch = Math.floor((H - top - gap * 3) / 2);
+      for (let i = 0; i < imgs.length; i++) {
+        if (!imgs[i]) continue;
+        const col = i % 2, row = Math.floor(i / 2);
+        const x = gap + col * (cw + gap);
+        const y = top + gap + row * (ch + gap);
+        g.drawImage(imgs[i], x, y, cw, ch);
+      }
+      const shot = document.createElement('img');
+      shot.id = 'shot';
+      shot.width = W;
+      shot.height = H;
+      shot.src = cv.toDataURL('image/png');
+      document.body.appendChild(shot);
+      cv.style.display = 'none';
+      document.body.dataset.ready = '1';
+    }
+    document.body.dataset.room = room;
+    return;
+  }
+
+  if (!spec || !list.length) {
+    g.fillStyle = '#04140c';
+    g.fillRect(0, 0, W, H);
+    g.fillStyle = '#e9fff2';
+    g.font = '700 28px sans-serif';
+    g.fillText('Pick a room: house, arcade, cafe, pets, soccer, builder', 24, 80);
+    document.body.dataset.ready = '1';
+    return;
+  }
+
+  if (sheet) {
+    g.fillStyle = '#04140c';
+    g.fillRect(0, 0, W, H);
+    g.fillStyle = '#e9fff2';
+    g.font = '800 28px sans-serif';
+    g.textAlign = 'left';
+    g.fillText(INTERIOR_REVIEW.rooms[room] + '  ·  pick one', 16, 36);
+    const cols = 2;
+    const rows = 2;
+    const top = 52;
+    const gap = 10;
+    const cw = Math.floor((W - gap * (cols + 1)) / cols);
+    const ch = Math.floor((H - top - gap * (rows + 1)) / rows);
+    const hold = document.createElement('canvas');
+    hold.width = cw;
+    hold.height = ch;
+    const hg = hold.getContext('2d');
+    const times = [];
+    for (let i = 0; i < list.length && i < 4; i++) {
+      const item = list[i];
+      const ms = timed(function () { INTERIOR_REVIEW.paint(hg, cw, ch, item, { ms: 0, label: true }); });
+      INTERIOR_REVIEW.paint(hg, cw, ch, item, { ms: ms, label: true });
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      g.drawImage(hold, gap + col * (cw + gap), top + gap + row * (ch + gap));
+      times.push(item.id + ':' + ms.toFixed(2));
+    }
+    document.body.dataset.ms = times.join(',');
+  } else {
+    const ms = timed(function () { INTERIOR_REVIEW.paint(g, W, H, spec, { label: false }); });
+    const painted = INTERIOR_REVIEW.paint(g, W, H, spec, { ms: ms, label: true });
+    document.title = room + ' ' + spec.id + ' ' + ms.toFixed(2);
+    document.body.dataset.ms = ms.toFixed(2);
+    document.body.dataset.boxes = String(painted.boxes);
+    document.body.dataset.style = spec.id;
+    document.body.dataset.name = spec.name;
+  }
+
+  const shot = document.createElement('img');
+  shot.id = 'shot';
+  shot.width = W;
+  shot.height = H;
+  shot.src = cv.toDataURL('image/png');
+  document.body.appendChild(shot);
+  cv.style.display = 'none';
+  document.body.dataset.room = room;
+  document.body.dataset.ready = '1';
+})();
+</script>
+</body>
+</html>

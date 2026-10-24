@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "fails": [],
+  "boxes": {
+    "house/1-glass": 26,
+    "house/2-cabin": 29,
+    "house/3-sky": 28,
+    "house/4-block": 25,
+    "arcade/1-retro": 32,
+    "arcade/2-pop": 22,
+    "arcade/3-space": 23,
+    "arcade/4-block": 21,
+    "cafe/1-beach": 40,
+    "cafe/2-wood": 28,
+    "cafe/3-pop": 34,
+    "cafe/4-night": 29,
+    "pets/1-garden": 40,
+    "pets/2-cabin": 27,
+    "pets/3-aqua": 28,
+    "pets/4-block": 19,
+    "soccer/1-pitch": 32,
+    "soccer/2-beach": 26,
+    "soccer/3-cup": 19,
+    "soccer/4-block": 15,
+    "builder/1-studio": 21,
+    "builder/2-space": 25,
+    "builder/3-wood": 28,
+    "builder/4-sky": 25
+  }
+}
