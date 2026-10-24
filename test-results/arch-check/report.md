@@ -1,6 +1,6 @@
 # Architecture check
 
-Target `cursor/house-row-styles-52fc` `48aace48b023`
+Target `cursor/house-row-styles-52fc` `ae8b9e25e9f4`
 
 Result: **FAIL**
 
@@ -127,8 +127,8 @@ Software GL. Milliseconds are this host, same idea as PERF-GUARD. Source for the
 | View | One building ms | Pass ms | Buildings | Cap one | Cap pass | Buffer |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
 | phone | 0.2 | 0.4 | 20 | 8 | 40 | 1688x780 |
-| ipad | 0.3 | 1.2 | 20 | 16 | 90 | 1024x768 |
-| pc | 0.1 | 0.3 | 20 | 8 | 40 | 1280x720 |
+| ipad | 0.3 | 1.3 | 20 | 16 | 90 | 1024x768 |
+| pc | 0.1 | 0.4 | 20 | 8 | 40 | 1280x720 |
 
 ## What held
 

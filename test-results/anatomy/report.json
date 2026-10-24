@@ -220,8 +220,8 @@
         "Builder HQ"
       ],
       "msgs": [
-        "NOS & Fuel Depot pet is 2.30× her height (426px against 185px). Her hip is 0.54 of that.",
-        "Ellie's house pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that.",
+        "NOS & Fuel Depot pet is 2.28× her height (425px against 186px). Her hip is 0.54 of that.",
+        "Ellie's house pet is 2.30× her height (426px against 185px). Her hip is 0.54 of that.",
         "Showroom shop pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that.",
         "Speed garage pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that."
       ],
@@ -234,7 +234,7 @@
         "interior-pets.png"
       ],
       "title": "The pet is taller than the character's hip",
-      "detail": "NOS & Fuel Depot pet is 2.30× her height (426px against 185px). Her hip is 0.54 of that. Ellie's house pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that. Showroom shop pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that. Speed garage pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that. Seen on: NOS & Fuel Depot, Ellie's house, Showroom shop, Speed garage, Dance studio, Pet lounge, Pizza cafe, Pixel arcade, Neon paint studio, Sky tower (+2)."
+      "detail": "NOS & Fuel Depot pet is 2.28× her height (425px against 186px). Her hip is 0.54 of that. Ellie's house pet is 2.30× her height (426px against 185px). Her hip is 0.54 of that. Showroom shop pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that. Speed garage pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that. Seen on: NOS & Fuel Depot, Ellie's house, Showroom shop, Speed garage, Dance studio, Pet lounge, Pizza cafe, Pixel arcade, Neon paint studio, Sky tower (+2)."
     },
     {
       "id": "scale-skip",
@@ -279,16 +279,16 @@
     "stats": [
       {
         "room": "NOS & Fuel Depot",
-        "petH": 426,
-        "whoH": 185,
-        "ratio": 2.303,
+        "petH": 425,
+        "whoH": 186,
+        "ratio": 2.285,
         "hip": 0.536
       },
       {
         "room": "Ellie's house",
         "petH": 426,
-        "whoH": 186,
-        "ratio": 2.29,
+        "whoH": 185,
+        "ratio": 2.303,
         "hip": 0.536
       },
       {
@@ -329,8 +329,8 @@
       {
         "room": "Pixel arcade",
         "petH": 426,
-        "whoH": 185,
-        "ratio": 2.303,
+        "whoH": 187,
+        "ratio": 2.278,
         "hip": 0.536
       },
       {
@@ -342,23 +342,23 @@
       },
       {
         "room": "Sky tower",
-        "petH": 427,
+        "petH": 426,
         "whoH": 186,
-        "ratio": 2.296,
+        "ratio": 2.29,
         "hip": 0.536
       },
       {
         "room": "Stadium",
-        "petH": 427,
+        "petH": 426,
         "whoH": 186,
-        "ratio": 2.296,
+        "ratio": 2.29,
         "hip": 0.536
       },
       {
         "room": "Builder HQ",
-        "petH": 427,
+        "petH": 426,
         "whoH": 186,
-        "ratio": 2.296,
+        "ratio": 2.29,
         "hip": 0.536
       }
     ],
@@ -390,6 +390,6 @@
   "walkStats": null,
   "sample": [],
   "checkerError": "",
-  "sha": "48aace48b023406c2c729c0b51a2a75c44b359a4",
+  "sha": "ae8b9e25e9f423b126d3c91094b0526967c46806",
   "branch": "cursor/house-row-styles-52fc"
 }

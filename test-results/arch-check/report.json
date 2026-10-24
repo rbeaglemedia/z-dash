@@ -1,6 +1,6 @@
 {
   "ok": false,
-  "sha": "48aace48b023406c2c729c0b51a2a75c44b359a4",
+  "sha": "ae8b9e25e9f423b126d3c91094b0526967c46806",
   "branch": "cursor/house-row-styles-52fc",
   "findings": [
     {
@@ -1634,12 +1634,12 @@
       "neighbors": 20,
       "one": {
         "median": 0.3,
-        "max": 0.8,
+        "max": 1,
         "n": 11
       },
       "pass": {
-        "median": 1.2,
-        "max": 1.9,
+        "median": 1.3,
+        "max": 2.8,
         "n": 9
       },
       "blurHits": 0
@@ -1659,8 +1659,8 @@
         "n": 11
       },
       "pass": {
-        "median": 0.3,
-        "max": 0.4,
+        "median": 0.4,
+        "max": 0.6,
         "n": 9
       },
       "blurHits": 0

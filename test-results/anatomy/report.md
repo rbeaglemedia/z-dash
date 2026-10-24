@@ -1,6 +1,6 @@
 # Anatomy check
 
-Target `cursor/house-row-styles-52fc` `48aace48b023`
+Target `cursor/house-row-styles-52fc` `ae8b9e25e9f4`
 
 Result: **FAIL**
 
@@ -24,7 +24,7 @@ Not scored. This tree has no jointed closet.
   NOS & Fuel Depot pet hangs 188px below her feet Ellie's house pet hangs 188px below her feet Showroom shop pet hangs 188px below her feet Speed garage pet hangs 188px below her feet Seen on: NOS & Fuel Depot, Ellie's house, Showroom shop, Speed garage, Dance studio, Pet lounge, Pizza cafe, Pixel arcade, Neon paint studio, Sky tower (+2).
   Shots: shots/interior-nos.png, shots/interior-home.png, shots/interior-showroom.png, shots/interior-garage.png, shots/interior-dance.png, shots/interior-pets.png
 - **The pet is taller than the character's hip** `pet-scale`
-  NOS & Fuel Depot pet is 2.30× her height (426px against 185px). Her hip is 0.54 of that. Ellie's house pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that. Showroom shop pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that. Speed garage pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that. Seen on: NOS & Fuel Depot, Ellie's house, Showroom shop, Speed garage, Dance studio, Pet lounge, Pizza cafe, Pixel arcade, Neon paint studio, Sky tower (+2).
+  NOS & Fuel Depot pet is 2.28× her height (425px against 186px). Her hip is 0.54 of that. Ellie's house pet is 2.30× her height (426px against 185px). Her hip is 0.54 of that. Showroom shop pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that. Speed garage pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that. Seen on: NOS & Fuel Depot, Ellie's house, Showroom shop, Speed garage, Dance studio, Pet lounge, Pizza cafe, Pixel arcade, Neon paint studio, Sky tower (+2).
   Shots: shots/interior-nos.png, shots/interior-home.png, shots/interior-showroom.png, shots/interior-garage.png, shots/interior-dance.png, shots/interior-pets.png
 
 ## Secondary

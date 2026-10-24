@@ -2,7 +2,7 @@
 
 ## ARCHITECTURE-CHECK
 
-**FAIL** on `cursor/house-row-styles-52fc` `48aace48b023`.
+**FAIL** on `cursor/house-row-styles-52fc` `ae8b9e25e9f4`.
 
 Kid App buildings only. 31 reviewed. Judged against `/workspace/docs/NEON-WORLD-STYLE.md`. Full log: `test-results/arch-check/report.md`.
 
@@ -41,8 +41,8 @@ Warnings (they do not fail the review):
 FPS (software GL, one near building / in-view pass):
 
 - phone 0.2 ms / 0.4 ms over 20 buildings
-- ipad 0.3 ms / 1.2 ms over 20 buildings
-- pc 0.1 ms / 0.3 ms over 20 buildings
+- ipad 0.3 ms / 1.3 ms over 20 buildings
+- pc 0.1 ms / 0.4 ms over 20 buildings
 
 Ramps: 39 (floor 70, no ceiling). River-edge small jumps: 3.
 Tunnel: 200 m × 160 m, bore 30 m, ceiling 10 m.
