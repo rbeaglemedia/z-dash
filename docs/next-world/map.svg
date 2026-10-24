@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 520" width="760" height="520">
+  <title>Option 1 districts and the proposed ramp</title>
+  <rect width="760" height="520" fill="#100818"/>
+  <text x="24" y="32" fill="#fff2c0" font-family="system-ui,Arial,sans-serif" font-size="16" font-weight="700">Option 1, The Boulevards</text>
+  <text x="24" y="52" fill="#8a7a9d" font-family="system-ui,Arial,sans-serif" font-size="12">North is up. Boxes show where each district sits. They are not to scale.</text>
+  <!-- Car Row -->
+  <rect x="140" y="70" width="420" height="44" fill="#102028" stroke="#3ee6ff"/>
+  <text x="300" y="97" fill="#3ee6ff" font-family="system-ui,Arial,sans-serif" font-size="14" text-anchor="middle">CAR ROW</text>
+  <!-- river -->
+  <rect x="120" y="132" width="500" height="16" fill="#0c2430" stroke="#3ee6ff" stroke-opacity="0.5"/>
+  <text x="630" y="145" fill="#3ee6ff" font-family="system-ui,Arial,sans-serif" font-size="11">river</text>
+  <!-- Track, tower, Field -->
+  <rect x="40" y="160" width="180" height="90" fill="#241808" stroke="#ffb020"/>
+  <text x="130" y="210" fill="#ffb020" font-family="system-ui,Arial,sans-serif" font-size="14" text-anchor="middle">THE TRACK</text>
+  <rect x="280" y="168" width="36" height="70" fill="#12323a" stroke="#3ee6ff"/>
+  <text x="298" y="256" fill="#3ee6ff" font-family="system-ui,Arial,sans-serif" font-size="11" text-anchor="middle">TOWER</text>
+  <rect x="470" y="160" width="170" height="90" fill="#102010" stroke="#7dff6b"/>
+  <text x="555" y="210" fill="#7dff6b" font-family="system-ui,Arial,sans-serif" font-size="14" text-anchor="middle">THE FIELD</text>
+  <!-- Stage, runway, Builder -->
+  <rect x="40" y="270" width="150" height="120" fill="#24101c" stroke="#ff4fd8"/>
+  <text x="115" y="335" fill="#ff4fd8" font-family="system-ui,Arial,sans-serif" font-size="14" text-anchor="middle">THE STAGE</text>
+  <rect x="250" y="250" width="28" height="160" fill="none" stroke="#3ee6ff" stroke-dasharray="4 3"/>
+  <text x="264" y="248" fill="#3ee6ff" font-family="system-ui,Arial,sans-serif" font-size="11" text-anchor="middle">runway</text>
+  <rect x="360" y="300" width="28" height="40" fill="#12323a" stroke="#3ee6ff"/>
+  <text x="420" y="324" fill="#8a7a9d" font-family="system-ui,Arial,sans-serif" font-size="11">jump roof</text>
+  <rect x="500" y="270" width="160" height="120" fill="#102018" stroke="#7dff6b"/>
+  <text x="580" y="335" fill="#7dff6b" font-family="system-ui,Arial,sans-serif" font-size="14" text-anchor="middle">BUILDER BAY</text>
+  <!-- Homestead -->
+  <rect x="200" y="410" width="200" height="70" fill="#142018" stroke="#7dff6b" stroke-width="2"/>
+  <text x="300" y="438" fill="#7dff6b" font-family="system-ui,Arial,sans-serif" font-size="14" text-anchor="middle">HOMESTEAD</text>
+  <circle cx="250" cy="458" r="8" fill="none" stroke="#ffe14d" stroke-width="3"/>
+  <text x="266" y="463" fill="#ffe14d" font-family="system-ui,Arial,sans-serif" font-size="12">ramp on the trailer pad</text>
+</svg>
