@@ -49,3 +49,11 @@ Open a look in the real painter with `world.html?rowShot=inside&homeStyle=2&notr
 Paint time on this machine, boxes only: style 1 is 0.21 ms, style 2 is 0.29 ms, style 3 is 0.23 ms, style 4 is 0.32 ms. All of those sit under the 9.1 ms Galaxy frame, so the picture says about 110 fps. This host is not a phone.
 
 Nothing here deploys. Live rooms for houses 2, 3, and 4 wait until those doors exist and Bob says go.
+
+## Ellie test
+
+The try page is `test/interior-try.html`. It opens `world.html?interiorTry=1&notraffic=1`. That query is the only way the try script loads. A normal walk does not show the buttons. This is a test link, and it does not go live from here.
+
+Houses stay one style each. The lobby has four house buttons, and a house room has a FAVORITE button with no 1 2 3 4 row. Cafe, arcade, pet lounge, soccer shop, and Builder HQ have buttons 1 2 3 4 plus FAVORITE. The style number is painted on the picture. Picks stay in this tab under `zdash.interior.try.v1`. Neon Paint, the garage, and the dance studio stay the apps they already are.
+
+Paint time for those try rooms on this machine is 0.07 ms to 0.21 ms. That is under the 9.1 ms Galaxy frame, so the picture says about 110 fps. This host is not a phone.

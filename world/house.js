@@ -438,14 +438,29 @@ function walkPaintCrew(g,foot,W,H){
   g.drawImage(walkCrewBuf,foot[0]-dw*0.40,foot[1]-dh*0.90,dw,dh);
   return true;
 }
+function interiorTryOn(){
+  try{return new URLSearchParams(location.search).get('interiorTry')==='1';}catch(e){return false;}
+}
 let houseStylesLoading=false;
 function walkEnsureHomeStyles(){
   if(window.HOUSE_ROW||houseStylesLoading||typeof document==='undefined')return;
   houseStylesLoading=true;
   const s=document.createElement('script');
-  s.src='world/house-styles.js?v=37';
+  s.src='world/house-styles.js?v=38';
   s.onload=function(){houseStylesLoading=false;};
   s.onerror=function(){houseStylesLoading=false;};
+  document.head.appendChild(s);
+}
+let interiorTryLoading=false;
+function walkEnsureTry(){
+  if(!interiorTryOn())return;
+  walkEnsureHomeStyles();
+  if(window.INTERIOR_TRY||interiorTryLoading||typeof document==='undefined')return;
+  interiorTryLoading=true;
+  const s=document.createElement('script');
+  s.src='world/interior-try.js?v=38';
+  s.onload=function(){interiorTryLoading=false;};
+  s.onerror=function(){interiorTryLoading=false;};
   document.head.appendChild(s);
 }
 function houseRowDoor(){
@@ -529,14 +544,26 @@ function walkPaintRoom(){
       const info=HOUSE_ROW.paint(g,W,H,door);
       HOUSE_ROW.last=info;
       if(card)card.dataset.room='HOME';
+      if(interiorTryOn()&&window.INTERIOR_TRY)INTERIOR_TRY.sync();
       return;
     }
+    if(interiorTryOn())return;
   }
   const W=Math.max(320,Math.floor((card&&card.clientWidth)||window.innerWidth||844));
   const H=Math.max(180,Math.floor((card&&card.clientHeight)||window.innerHeight||390));
   if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
   const g=cv.getContext('2d');if(!g)return;
   const purpose=door.purpose||'HOME';
+  if(interiorTryOn()&&purpose!=='HOME'){
+    walkEnsureTry();
+    if(window.INTERIOR_TRY&&INTERIOR_TRY.has(purpose)){
+      const info=INTERIOR_TRY.paint(g,W,H,purpose);
+      INTERIOR_TRY.last=info;
+      INTERIOR_TRY.sync();
+      if(card)card.dataset.room=purpose;
+      return;
+    }
+  }
   const house=purpose==='HOME'?walkHouseLoad():null;
   const theme=walkRoomTheme(purpose,house);
   const cam=(x,y,z)=>walkCam(x,y,z,W,H);
@@ -624,7 +651,7 @@ function houseRowQuery(){
   }catch(e){return {shot:'',style:''};}
 }
 function walkToast(s,col){
-  if(houseRowQuery().shot)return;
+  if(houseRowQuery().shot||interiorTryOn())return;
   if(typeof wMsg==='function')wMsg(s,col||'#7dff6b','');
   else if(typeof toast==='function')toast(s);
   else if(typeof kToast==='function')kToast(s);
@@ -1066,6 +1093,7 @@ function walkEnterDoor(){
   if(nx||nz)self.yaw=Math.atan2(nx,nz);
   self.door=door;self.parking=null;
   try{walkAct(door);}catch(e){return false;}
+  try{window.INTERIOR_TRY_HOUSE=0;}catch(e){}
   if(WALK_INDOOR[door.purpose]){self.insideBuilding=true;self.insideDoor=door;walkShowInterior(door);}
   else{self.insideBuilding=false;self.insideDoor=null;walkHideInterior();}
   walkSyncPill();walkSyncGait();walkSyncDyn();walkSyncEnterBtn();
@@ -1327,6 +1355,7 @@ let walkT=performance.now();
 function walkFrame(t){
   const dt=Math.min(0.05,Math.max(0,(t-walkT)/1000));walkT=t;
   try{houseRowTick();}catch(e){}
+  try{if(interiorTryOn()){walkEnsureTry();if(window.INTERIOR_TRY)INTERIOR_TRY.tick();}}catch(e){}
   try{WALK_MODE.update(dt);}catch(e){}
   walkNativeRAF(walkFrame);
 }

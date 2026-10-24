@@ -80,6 +80,8 @@ function houseForced() {
     const n = parseInt(new URLSearchParams(location.search).get('homeStyle') || '', 10);
     if (n >= 1 && n <= 4) return n;
   } catch (e) {}
+  const held = typeof window !== 'undefined' ? window.INTERIOR_TRY_HOUSE : 0;
+  if (held >= 1 && held <= 4) return held;
   return 0;
 }
 
@@ -149,7 +151,9 @@ function housePaint(g, W, H, door) {
   const where = pick.forced && pick.homes < pick.style
     ? ('STYLE ' + pick.style + '  ' + look.name.toUpperCase() + '  FOR HOUSE ' + pick.style)
     : ('HOUSE ' + pick.house + '  STYLE ' + pick.style + '  ' + look.name.toUpperCase());
-  g.fillText(where, 16, H - 38);
+  const star = (typeof window !== 'undefined' && window.INTERIOR_TRY && INTERIOR_TRY.houseStar)
+    ? INTERIOR_TRY.houseStar(pick) : '';
+  g.fillText(where + star, 16, H - 38);
   g.font = '700 15px sans-serif';
   g.fillText(look.line + '   ' + ms.toFixed(2) + ' ms   ' + fps, 16, H - 14);
   return { ms: ms, house: pick.house, style: pick.style, name: look.name, homes: pick.homes, forced: pick.forced };

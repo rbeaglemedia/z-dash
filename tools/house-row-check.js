@@ -13,10 +13,10 @@ const world = fs.readFileSync(path.join(root, 'world.html'), 'utf8');
 const split = fs.readFileSync(path.join(root, 'world-split.html'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
-if (!/house-styles\.js\?v=37/.test(house)) fail('interior script is not loaded from the house painter');
+if (!/house-styles\.js\?v=38/.test(house)) fail('interior script is not loaded from the house painter');
 if (/\bshadowBlur\s*=/.test(styles)) fail('house looks assign shadowBlur');
 if (index.includes('house-styles')) fail('adult index loads the house looks');
-if (!world.includes('house.js?v=37') || !split.includes('house.js?v=37')) fail('kid pages are not on world37');
+if (!world.includes('house.js?v=38') || !split.includes('house.js?v=38')) fail('kid pages are not on world38');
 
 const sandbox = { window: {}, globalThis: {}, performance: { now: function () { return 0; } }, URLSearchParams: URLSearchParams, location: { search: '' }, CITY: { BL: [] } };
 sandbox.globalThis = sandbox;
