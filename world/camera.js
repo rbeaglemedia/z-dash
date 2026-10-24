@@ -156,8 +156,8 @@ function nearSeg(p,q){
   if(!(a[2]>=NEAR)||!(b[2]>=NEAR))return null;
   const f=H*0.9,x1=W/2+a[0]*f/a[2],y1=H/2-a[1]*f/a[2],x2=W/2+b[0]*f/b[2],y2=H/2-b[1]*f/b[2];
   if(!isFinite(x1)||!isFinite(y1)||!isFinite(x2)||!isFinite(y2))return null;
-  const lim=Math.max(W,H)*4;
-  if(cut||Math.abs(x1)>lim||Math.abs(y1)>lim||Math.abs(x2)>lim||Math.abs(y2)>lim)return clip2d(x1,y1,x2,y2);
+  const pad=12;
+  if(cut||x1<-pad||y1<-pad||x1>W+pad||y1>H+pad||x2<-pad||y2<-pad||x2>W+pad||y2>H+pad)return clip2d(x1,y1,x2,y2);
   return[x1,y1,x2,y2];
 }
 function proj(x,y,z){
