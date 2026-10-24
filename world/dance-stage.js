@@ -37,10 +37,15 @@
     WAVE: [0.70, 0.00, 0.30, 0.26],
     MID: [0.30, 0.28, 0.40, 0.44]
   };
-  var CAM = {
-    video: { facingMode: 'user', width: { ideal: 640, max: 1280 }, height: { ideal: 480, max: 720 } },
-    audio: false
-  };
+  /* Pet recorder camera. Back lens (environment) unless the last flip is stored. */
+  var CAM_KEY = 'zdash.petcam.v1';
+  var camFacing = 'environment';
+  var camGen = 0;
+  var camDeviceId = '';
+  try {
+    var storedFace = localStorage.getItem(CAM_KEY);
+    if (storedFace === 'user' || storedFace === 'environment') camFacing = storedFace;
+  } catch (e) {}
 
   function cue(b, extra) {
     var c = { b: b };
@@ -161,7 +166,7 @@
   };
 
   var root, canvas, ctx, video, stream, topEl, footEl, waveBox, waveBtn, waveCap;
-  var backBtn, improveBtn, startBtn, freeBtn, recCharBtn, recPetBtn;
+  var backBtn, improveBtn, startBtn, freeBtn, recCharBtn, recPetBtn, flipBtn;
   var tabBtns = {}, stageRow, charRow, petRow, pillChar, pillPet, pillCharClassic, pillCharMine, pillPetClassic, pillPetMine;
   var improveEl, improveTop, improveBot, improveTitle, improveLeftCap, improveRightCap, improveKf, replayBtn, saveTuneBtn, closeImproveBtn;
   var chipBtns = {}, slotBtns = [], progBtn, dogBtn, simBtn, slotRow, classicBtn;
@@ -198,8 +203,11 @@
       '.zd-ds-util{margin-left:auto;white-space:nowrap;border-color:#ff4fd8 !important;background:rgba(255,79,216,.16) !important}',
       '.zd-ds-foot{position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;justify-content:center;align-items:center;gap:8px;padding:4px 10px calc(6px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(5,0,16,.94) 30%)}',
       '.zd-ds-row{display:flex;flex-wrap:nowrap;gap:8px;justify-content:center;align-items:center}',
+      '.zd-ds-petrow{flex-wrap:wrap}',
       '.zd-ds-row[hidden]{display:none !important}',
-      '.zd-ds button{font-family:Orbitron,sans-serif;font-weight:800;font-size:11px;letter-spacing:.3px;color:#fff;background:rgba(62,230,255,.1);border:1.5px solid rgba(62,230,255,.85);border-radius:999px;padding:4px 9px;cursor:pointer}',
+      '.zd-ds button{font-family:Orbitron,sans-serif;font-weight:800;font-size:11px;letter-spacing:.3px;color:#fff;background:rgba(62,230,255,.1);border:1.5px solid rgba(62,230,255,.85);border-radius:999px;padding:4px 9px;cursor:pointer;text-decoration:none;text-align:center;line-height:1.15}',
+      '.zd-ds-flip{display:inline-flex;align-items:center;justify-content:center;min-width:148px;min-height:40px;padding:8px 14px;white-space:nowrap;text-decoration:none;text-align:center;border-color:#ffe14d;background:rgba(255,225,77,.14)}',
+      '.zd-ds-flip[hidden]{display:none !important}',
       '.zd-ds-big{font-size:13px !important;padding:7px 18px !important;min-width:200px}',
       '.zd-ds-pill{display:flex;border:1.5px solid rgba(255,225,77,.85);border-radius:999px;overflow:hidden}',
       '.zd-ds-pill[hidden]{display:none !important}',
@@ -247,6 +255,8 @@
     ctx = canvas.getContext('2d', { alpha: false });
     video = el('video', 'zd-ds-vid');
     video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    video.playsInline = true;
     video.muted = true;
     video.autoplay = true;
     topEl = el('div', 'zd-ds-top');
@@ -301,7 +311,7 @@
     pillChar.appendChild(pillCharMine);
     charRow.appendChild(recCharBtn);
     charRow.appendChild(pillChar);
-    petRow = el('div', 'zd-ds-row');
+    petRow = el('div', 'zd-ds-row zd-ds-petrow');
     petRow.hidden = true;
     recPetBtn = el('button', 'zd-ds-big', '🔴 RECORD MY PET (6s)');
     recPetBtn.type = 'button';
@@ -319,7 +329,12 @@
     pillPetMine.addEventListener('click', function () { showRecorded('pet'); });
     pillPet.appendChild(pillPetClassic);
     pillPet.appendChild(pillPetMine);
+    flipBtn = el('button', 'zd-ds-flip', '↺ FLIP TO FRONT');
+    flipBtn.type = 'button';
+    flipBtn.addEventListener('click', flipCamera);
+    syncFlipBtn();
     petRow.appendChild(recPetBtn);
+    petRow.appendChild(flipBtn);
     petRow.appendChild(pillPet);
     footEl.appendChild(stageRow);
     footEl.appendChild(charRow);
@@ -536,6 +551,7 @@
       else if (state.improvePhase === 'rec') improveKf.textContent = 'RECORDING ' + takeFrames.length + '/' + (state.improveKind === 'pet' ? 40 : 40);
       else improveKf.textContent = 'KF ' + (Math.floor(state.improveIndex) + 1) + '/' + n;
     }
+    placeFlipBtn();
     refreshSlotLabels();
   }
 
@@ -624,14 +640,145 @@
   }
 
   /* ---------- camera ---------- */
+  function stopTracks(s) {
+    if (!s) return;
+    try { s.getTracks().forEach(function (t) { try { t.stop(); } catch (e2) {} }); } catch (e) {}
+  }
   function stopCamera() {
     state.cameraActive = false;
-    if (stream) {
-      try { stream.getTracks().forEach(function (t) { try { t.stop(); } catch (e) {} }); } catch (e) {}
-    }
+    stopTracks(stream);
     stream = null;
     if (video) { try { video.srcObject = null; } catch (e) {} }
     prevPix = null;
+  }
+  function rememberCam(facing) {
+    camFacing = facing === 'user' ? 'user' : 'environment';
+    try { localStorage.setItem(CAM_KEY, camFacing); } catch (e) {}
+    syncFlipBtn();
+  }
+  function syncFlipBtn() {
+    if (!flipBtn) return;
+    var front = camFacing === 'user';
+    flipBtn.textContent = front ? '↺ FLIP TO BACK' : '↺ FLIP TO FRONT';
+    flipBtn.setAttribute('aria-label', front ? 'Front camera on. Flip to the back camera.' : 'Back camera on. Flip to the front camera.');
+    flipBtn.setAttribute('aria-pressed', front ? 'true' : 'false');
+  }
+  function placeFlipBtn() {
+    if (!flipBtn) return;
+    var petScan = (state.improve && state.improveKind === 'pet') || state.tab === 'pet';
+    var host = (state.improve && state.improveKind === 'pet' && improveBot) ? improveBot : petRow;
+    if (host && flipBtn.parentNode !== host) {
+      if (host === improveBot) host.insertBefore(flipBtn, host.firstChild);
+      else host.appendChild(flipBtn);
+    }
+    if (flipBtn.hidden !== !petScan) flipBtn.hidden = !petScan;
+  }
+  function videoInputs() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return Promise.resolve([]);
+    return navigator.mediaDevices.enumerateDevices().then(function (list) {
+      var out = [];
+      (list || []).forEach(function (d) { if (d && d.kind === 'videoinput' && d.deviceId) out.push(d); });
+      return out;
+    }, function () { return []; });
+  }
+  function deviceForFacing(list, facing, currentId) {
+    var back = /back|rear|environment|world/i;
+    var front = /front|user|face|facetime/i;
+    var i, label;
+    for (i = 0; i < list.length; i++) {
+      label = list[i].label || '';
+      if (!label) continue;
+      if (facing === 'environment' && back.test(label) && !front.test(label)) return list[i].deviceId;
+      if (facing === 'user' && front.test(label)) return list[i].deviceId;
+    }
+    for (i = 0; i < list.length; i++) {
+      if (list[i].deviceId && list[i].deviceId !== currentId) return list[i].deviceId;
+    }
+    return '';
+  }
+  function lensConstraints(facing, deviceId) {
+    var video = { width: { ideal: 640, max: 1280 }, height: { ideal: 480, max: 720 } };
+    if (deviceId) video.deviceId = { exact: deviceId };
+    else video.facingMode = facing;
+    return { audio: false, video: video };
+  }
+  function attachStream(s, gen, requested) {
+    if (gen !== camGen || !state.open || state.userSim) { stopTracks(s); return; }
+    stream = s;
+    if (video) {
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.muted = true;
+      video.playsInline = true;
+      try { video.srcObject = s; } catch (e) {}
+      var p = video.play();
+      if (p && p.then) p.then(function () {}, function () {});
+    }
+    var reported = '';
+    try {
+      var tr = s.getVideoTracks && s.getVideoTracks()[0];
+      var settings = tr && tr.getSettings ? tr.getSettings() : null;
+      if (settings && settings.deviceId) camDeviceId = settings.deviceId;
+      if (settings && (settings.facingMode === 'user' || settings.facingMode === 'environment')) reported = settings.facingMode;
+    } catch (e2) {}
+    rememberCam(reported || requested);
+    state.cameraActive = true;
+    state.simActive = false;
+    prevPix = null;
+    updateChrome();
+  }
+  function openLens(requested) {
+    var want = requested === 'user' ? 'user' : 'environment';
+    var gen = ++camGen;
+    var prevId = camDeviceId;
+    stopCamera();
+    state.camTried = true;
+    rememberCam(want);
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      state.simActive = true;
+      updateChrome();
+      return;
+    }
+    function begin(deviceId) {
+      var chain = [];
+      if (deviceId) chain.push(lensConstraints(want, deviceId));
+      chain.push(lensConstraints(want, ''));
+      chain.push({ audio: false, video: { facingMode: { ideal: want }, width: { ideal: 640 }, height: { ideal: 480 } } });
+      function attempt(i) {
+        if (gen !== camGen) return;
+        if (i >= chain.length) {
+          state.cameraActive = false;
+          state.simActive = true;
+          updateChrome();
+          return;
+        }
+        navigator.mediaDevices.getUserMedia(chain[i]).then(function (s) {
+          if (gen !== camGen) { stopTracks(s); return; }
+          var id = '';
+          try {
+            var tr = s.getVideoTracks()[0];
+            id = tr && tr.getSettings ? (tr.getSettings().deviceId || '') : '';
+          } catch (e) {}
+          if (!deviceId && id && prevId && id === prevId) {
+            videoInputs().then(function (list) {
+              var alt = deviceForFacing(list, want, id);
+              if (alt && alt !== id && gen === camGen) { stopTracks(s); begin(alt); }
+              else attachStream(s, gen, want);
+            });
+            return;
+          }
+          attachStream(s, gen, want);
+        }, function () { attempt(i + 1); });
+      }
+      attempt(0);
+    }
+    if (prevId) videoInputs().then(function (list) { begin(deviceForFacing(list, want, prevId) || ''); });
+    else begin('');
+  }
+  function flipCamera() {
+    if (!state.open) return;
+    state.userSim = false;
+    openLens(camFacing === 'environment' ? 'user' : 'environment');
   }
   function camAvailable() {
     return new Promise(function (resolve) {
@@ -653,26 +800,7 @@
         state.cameraActive = false;
         return;
       }
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        state.simActive = true;
-        return;
-      }
-      navigator.mediaDevices.getUserMedia(CAM).then(function (s) {
-        if (!state.open || state.userSim) {
-          try { s.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
-          return;
-        }
-        stream = s;
-        video.srcObject = s;
-        var p = video.play();
-        if (p && p.then) p.then(function () {}, function () {});
-        state.cameraActive = true;
-        state.simActive = false;
-        prevPix = null;
-      }, function () {
-        state.cameraActive = false;
-        state.simActive = true;
-      });
+      openLens(camFacing);
     }, function () { state.simActive = true; });
   }
   function toggleSim() {
@@ -705,8 +833,10 @@
     try {
       mctx.save();
       mctx.setTransform(1, 0, 0, 1, 0, 0);
-      mctx.translate(160, 0);
-      mctx.scale(-1, 1);
+      if (camFacing === 'user') {
+        mctx.translate(160, 0);
+        mctx.scale(-1, 1);
+      }
       mctx.drawImage(video, 0, 0, 160, 120);
       mctx.restore();
       var img = mctx.getImageData(0, 0, 160, 120);
@@ -2786,9 +2916,11 @@
     ctx.fillRect(S.x, S.y, S.w, S.h);
     if (state.cameraActive && video && video.readyState >= 2) {
       ctx.save();
-      ctx.translate(S.x + S.w, S.y);
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, 0, 0, S.w, S.h);
+      if (camFacing === 'user') {
+        ctx.translate(S.x + S.w, S.y);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, 0, 0, S.w, S.h);
+      } else ctx.drawImage(video, S.x, S.y, S.w, S.h);
       ctx.restore();
       ctx.fillStyle = 'rgba(5,0,16,.38)';
       ctx.fillRect(S.x, S.y, S.w, S.h);
@@ -3498,6 +3630,7 @@
       return true;
     },
     isOpen: function () { return !!state.open; },
+    flipCamera: function () { flipCamera(); return camFacing; },
     getState: function () {
       var z = {};
       ZONE_IDS.forEach(function (id) { z[id] = Math.round((state.zoneEnergy[id] || 0) * 1000) / 1000; });
@@ -3511,6 +3644,8 @@
         hits: state.hits,
         poses: state.poses,
         cameraActive: !!state.cameraActive,
+        facing: camFacing,
+        mirror: camFacing === 'user',
         simActive: !!state.simActive || !!state.userSim || !state.cameraActive,
         zoneEnergy: z,
         bestScores: state.bestScores || {},

@@ -1,0 +1,16 @@
+OK phone opens facingMode environment
+OK phone state back camera, not mirrored
+OK stored environment
+OK back camera mirror flag is off
+polish phone {"text":"↺ FLIP TO FRONT","hidden":false,"textDecoration":"none","textAlign":"center","display":"flex","justify":"center","align":"center","w":148,"h":40,"clipped":false}
+OK flip button centered, no underline, 148x40
+OK old track stopped
+OK flip calls getUserMedia again for front
+OK front camera remembered and mirrored
+OK front camera mirror flag is on
+OK label ↺ FLIP TO BACK
+OK reload requests the remembered front camera
+OK ipad defaults to back camera
+polish ipad {"text":"↺ FLIP TO FRONT","hidden":false,"textDecoration":"none","textAlign":"center","display":"flex","justify":"center","align":"center","w":158,"h":40,"clipped":false}
+OK ipad flip button ↺ FLIP TO FRONT 158x40
+OK ipad flip to front
