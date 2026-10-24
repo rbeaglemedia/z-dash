@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "Mural floor for the Z dance buildings, the small river-edge ramps, and the solid-building count on main. A later mural wall must be at least this big. The river-edge ramps stay this size and this far from the water. Extra ramps are allowed. The building list is a snapshot of where main put them. Placements may change. The count stays at 24 unless docs/NEON-WORLD-STYLE.md raises Approved count. Do not edit the count to hide a block that loaded in the game.",
+  "note": "Mural floor for the Z dance buildings, the small river-edge ramps, the original ramp count, the tunnel, and the solid-building count on main. A later mural wall must be at least this big. The river-edge ramps stay this size and this far from the water. rampCount is the floor, including those launches. A later layout may have more ramps. It may not have fewer. The tunnel record is the size, shape, and length on main. Do not shrink it. The building list is a snapshot of where main put them. Placements may change. The building count stays at 24 unless docs/NEON-WORLD-STYLE.md raises Approved count. Do not edit these numbers to hide a smaller wall, a dropped ramp, or a shorter tunnel.",
   "capturedAt": "2026-10-24T05:21:27.482Z",
   "git": {
     "sha": "1b90d27e4b89a904c480f1f4292b44566871345c",
@@ -66,7 +66,19 @@
       "lipToWater": 8
     }
   ],
-  "rampLot": 24,
+  "rampCount": 70,
+  "rampLot": 70,
+  "tunnel": {
+    "length": 200,
+    "width": 160,
+    "bore": 30,
+    "ceil": 10,
+    "top": 34,
+    "along": "z",
+    "approach": 40,
+    "cx": -450,
+    "cz": 600
+  },
   "scales": {
     "person": 1.7,
     "pet": 0.74,

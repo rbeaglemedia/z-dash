@@ -928,6 +928,35 @@
     expect('door is clear', doorLayoutIssues([[20, 26, -1, 0]], [homeOk], toy).length > 0, false);
     expect('turbo is not soccer', purposeHit('TURBO', ['soccer', 'pitch'], false) !== '', false);
     expect('home word', purposeHit('HOME', ['home'], false) === '', false);
+    const rampToy = { x0: 0, x1: 8, z0: 0, z1: 10, dir: 0, h: 1.6, nm: 'street' };
+    function toyBlocks(rows) {
+      return groundBlockers(rows.map(function (q, i) {
+        return { id: i, kind: q.kind || 'b', purpose: '', boxes: [{ x0: q.x0, x1: q.x1, z0: q.z0, z1: q.z1, y0: q.y0 || 0, y1: q.y1 == null ? 8 : q.y1 }] };
+      }));
+    }
+    expect('ramp run is clear', rampApproachIssues([rampToy], toyBlocks([{ x0: 30, x1: 40, z0: -30, z1: -20 }])).length > 0, false);
+    expect('ramp run is blocked', rampApproachIssues([rampToy], toyBlocks([{ x0: 1, x1: 6, z0: -10, z1: -2 }])).length > 0, true);
+    expect('ramp landing is blocked', rampApproachIssues([rampToy], toyBlocks([{ x0: 1, x1: 6, z0: 12, z1: 18 }])).length > 0, true);
+    expect('beside the ramp is clear', rampApproachIssues([rampToy], toyBlocks([{ x0: 20, x1: 30, z0: -4, z1: 14 }])).length > 0, false);
+    expect('a board overhead is clear', rampApproachIssues([rampToy], toyBlocks([{ x0: 1, x1: 6, z0: -8, z1: -2, kind: 'bill', y0: 10, y1: 16 }])).length > 0, false);
+    expect('ramp count holds', rampShort(70, 70), false);
+    expect('extra ramps hold', rampShort(80, 70), false);
+    expect('ramp count dropped', rampShort(69, 70), true);
+    const tunLock = { length: 200, width: 160, bore: 30, ceil: 10, top: 34, along: 'z' };
+    expect('tunnel holds', tunnelDelta({ length: 200, width: 160, bore: 30, ceil: 10, top: 34, along: 'z' }, tunLock).length > 0, false);
+    expect('tunnel shrank', tunnelDelta({ length: 140, width: 160, bore: 30, ceil: 10, top: 34, along: 'z' }, tunLock).length > 0, true);
+    expect('tunnel missing', tunnelDelta(null, tunLock).length > 0, true);
+    const tunHills = [
+      { kind: 'hill', boxes: [{ x0: 0, x1: 65, z0: 0, z1: 200, y0: 0, y1: 34 }] },
+      { kind: 'hill', boxes: [{ x0: 95, x1: 160, z0: 0, z1: 200, y0: 0, y1: 34 }] },
+      { kind: 'hill', boxes: [{ x0: 65, x1: 95, z0: 0, z1: 200, y0: 10, y1: 34 }] }
+    ];
+    const tunRead = readTunnels(tunHills);
+    expect('tunnel reads', !(tunRead.length === 1 && Math.abs(tunRead[0].bore - 30) < 0.1 && Math.abs(tunRead[0].length - 200) < 0.1), false);
+    const tunLive = tunRead[0];
+    expect('tunnel mouth is blocked', tunnelMouthIssues(tunLive, toyBlocks([{ x0: 70, x1: 90, z0: -20, z1: -4 }]), 40).length > 0, true);
+    expect('tunnel mouth is clear', tunnelMouthIssues(tunLive, toyBlocks([{ x0: 70, x1: 90, z0: -80, z1: -50 }]), 40).length > 0, false);
+    expect('bore is blocked', tunnelMouthIssues(tunLive, toyBlocks([{ x0: 70, x1: 90, z0: 80, z1: 100 }]), 40).length > 0, true);
     expect('blur zero', [0, 0].some(function (v) { return v > 0.5; }), false);
     expect('blur glow', [0, 10].some(function (v) { return v > 0.5; }), true);
     if (PET >= PERSON) errors.push('pet reference is not shorter than the person');
@@ -970,7 +999,194 @@
     return out;
   }
 
-  const RAMP_LOT = 24;
+  const RAMP_FLOOR_MAIN = 70;
+  const APPROACH_RUN = 16;
+  const APPROACH_LAND = 16;
+  const TUNNEL_MOUTH = 40;
+  const TUNNEL_MAIN = { length: 200, width: 160, bore: 30, ceil: 10, top: 34, along: 'z', approach: TUNNEL_MOUTH, cx: -450, cz: 600 };
+
+  function rampFloor(baseline) {
+    const n = baseline && baseline.rampCount;
+    if (typeof n === 'number' && n > 0) return n;
+    return RAMP_FLOOR_MAIN;
+  }
+
+  function rampShort(live, floor) {
+    return live < floor;
+  }
+
+  function approachBox(r, which, dist) {
+    const dir = r.dir || 0;
+    const back = which === 'run';
+    if (dir === 0) return back ? { x0: r.x0, x1: r.x1, z0: r.z0 - dist, z1: r.z0 } : { x0: r.x0, x1: r.x1, z0: r.z1, z1: r.z1 + dist };
+    if (dir === 1) return back ? { x0: r.x0 - dist, x1: r.x0, z0: r.z0, z1: r.z1 } : { x0: r.x1, x1: r.x1 + dist, z0: r.z0, z1: r.z1 };
+    if (dir === 2) return back ? { x0: r.x0, x1: r.x1, z0: r.z1, z1: r.z1 + dist } : { x0: r.x0, x1: r.x1, z0: r.z0 - dist, z1: r.z0 };
+    return back ? { x0: r.x1, x1: r.x1 + dist, z0: r.z0, z1: r.z1 } : { x0: r.x0 - dist, x1: r.x0, z0: r.z0, z1: r.z1 };
+  }
+
+  function overlapXZ(a, b) {
+    return a.x1 > b.x0 + 0.25 && a.x0 < b.x1 - 0.25 && a.z1 > b.z0 + 0.25 && a.z0 < b.z1 - 0.25;
+  }
+
+  function groundBlockers(list) {
+    const out = [];
+    const rows = list || [];
+    for (let i = 0; i < rows.length; i++) {
+      const b = rows[i];
+      if (!b || !b.boxes) continue;
+      for (let k = 0; k < b.boxes.length; k++) {
+        const q = b.boxes[k];
+        const y0 = q.y0 || 0;
+        const y1 = q.y1 || 0;
+        if (y1 < 0.45 || y0 > 2.2) continue;
+        out.push({ x0: q.x0, x1: q.x1, z0: q.z0, z1: q.z1, kind: b.kind || '', id: b.id, purpose: b.purpose || '', hill: b.kind === 'hill' ? 1 : 0 });
+      }
+    }
+    return out;
+  }
+
+  function firstBlock(box, blockers, skipHill) {
+    for (let i = 0; i < blockers.length; i++) {
+      const q = blockers[i];
+      if (skipHill && q.hill) continue;
+      if (overlapXZ(box, q)) return q;
+    }
+    return null;
+  }
+
+  function rampApproachIssues(ramps, blockers) {
+    const issues = [];
+    const rows = ramps || [];
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.nm === 'tow') continue;
+      const run = firstBlock(approachBox(r, 'run', APPROACH_RUN), blockers, false);
+      const land = firstBlock(approachBox(r, 'land', APPROACH_LAND), blockers, false);
+      if (run) issues.push({ end: 'run-up', ramp: r, block: run });
+      if (land) issues.push({ end: 'landing', ramp: r, block: land });
+    }
+    return issues;
+  }
+
+  function approachHit(box) {
+    if (typeof CITY === 'undefined' || typeof CITY.hit !== 'function') return null;
+    const xLo = Math.min(box.x0, box.x1) + 0.5;
+    const xHi = Math.max(box.x0, box.x1) - 0.5;
+    const zLo = Math.min(box.z0, box.z1) + 0.5;
+    const zHi = Math.max(box.z0, box.z1) - 0.5;
+    if (xHi <= xLo || zHi <= zLo) return null;
+    const pts = [[(xLo + xHi) / 2, (zLo + zHi) / 2], [xLo, (zLo + zHi) / 2], [xHi, (zLo + zHi) / 2], [(xLo + xHi) / 2, zLo], [(xLo + xHi) / 2, zHi]];
+    for (let i = 0; i < pts.length; i++) {
+      const wall = CITY.hit(pts[i][0], pts[i][1], 0.35, 0);
+      if (!wall || wall.ramp) continue;
+      if (wall.b && wall.b.kind === 'hill') continue;
+      return wall;
+    }
+    return null;
+  }
+
+  function readTunnels(buildings) {
+    const hills = [];
+    const rows = buildings || [];
+    for (let i = 0; i < rows.length; i++) {
+      const b = rows[i];
+      if (!b || b.kind !== 'hill' || !b.boxes) continue;
+      for (let k = 0; k < b.boxes.length; k++) {
+        const q = b.boxes[k];
+        hills.push({ x0: q.x0, x1: q.x1, z0: q.z0, z1: q.z1, y0: q.y0 || 0, y1: q.y1 || b.top || 0, slab: (q.y0 || 0) >= 4 });
+      }
+    }
+    const found = [];
+    for (let i = 0; i < hills.length; i++) {
+      const s = hills[i];
+      if (!s.slab) continue;
+      const alongZ = (s.z1 - s.z0) >= (s.x1 - s.x0);
+      let left = null;
+      let right = null;
+      for (let k = 0; k < hills.length; k++) {
+        const w = hills[k];
+        if (w.slab || w.y0 >= 1 || w.y1 < 8) continue;
+        if (alongZ) {
+          if (Math.abs(w.z0 - s.z0) > 2 || Math.abs(w.z1 - s.z1) > 2) continue;
+          if (Math.abs(w.x1 - s.x0) < 1.5) left = w;
+          if (Math.abs(w.x0 - s.x1) < 1.5) right = w;
+        } else {
+          if (Math.abs(w.x0 - s.x0) > 2 || Math.abs(w.x1 - s.x1) > 2) continue;
+          if (Math.abs(w.z1 - s.z0) < 1.5) left = w;
+          if (Math.abs(w.z0 - s.z1) < 1.5) right = w;
+        }
+      }
+      if (!left || !right) continue;
+      const x0 = Math.min(left.x0, right.x0, s.x0);
+      const x1 = Math.max(left.x1, right.x1, s.x1);
+      const z0 = Math.min(left.z0, right.z0, s.z0);
+      const z1 = Math.max(left.z1, right.z1, s.z1);
+      const bore = alongZ ? (s.x1 - s.x0) : (s.z1 - s.z0);
+      const length = alongZ ? (s.z1 - s.z0) : (s.x1 - s.x0);
+      const width = alongZ ? (x1 - x0) : (z1 - z0);
+      found.push({
+        x0: x0, x1: x1, z0: z0, z1: z1,
+        cx: (x0 + x1) / 2, cz: (z0 + z1) / 2,
+        along: alongZ ? 'z' : 'x',
+        bore: bore, length: length, width: width,
+        ceil: s.y0, top: Math.max(left.y1, right.y1, s.y1),
+        boreBox: { x0: s.x0, x1: s.x1, z0: s.z0, z1: s.z1 }
+      });
+    }
+    return found;
+  }
+
+  function tunnelDelta(live, lock) {
+    if (!live) return ['missing'];
+    const problems = [];
+    if (Math.abs(live.length - lock.length) > 2) problems.push('length ' + rnd(live.length) + ' m');
+    if (Math.abs(live.width - lock.width) > 2) problems.push('width ' + rnd(live.width) + ' m');
+    if (Math.abs(live.bore - lock.bore) > 1) problems.push('bore ' + rnd(live.bore) + ' m');
+    if (Math.abs(live.ceil - lock.ceil) > 0.5) problems.push('ceiling ' + rnd(live.ceil) + ' m');
+    if (Math.abs(live.top - lock.top) > 1) problems.push('height ' + rnd(live.top) + ' m');
+    if (live.along !== lock.along) problems.push('axis ' + live.along);
+    return problems;
+  }
+
+  function tunnelMouths(t, dist) {
+    const b = t.boreBox;
+    if (t.along === 'x') {
+      return [
+        { name: 'west mouth', box: { x0: t.x0 - dist, x1: t.x0, z0: b.z0, z1: b.z1 } },
+        { name: 'east mouth', box: { x0: t.x1, x1: t.x1 + dist, z0: b.z0, z1: b.z1 } }
+      ];
+    }
+    return [
+      { name: 'south mouth', box: { x0: b.x0, x1: b.x1, z0: t.z0 - dist, z1: t.z0 } },
+      { name: 'north mouth', box: { x0: b.x0, x1: b.x1, z0: t.z1, z1: t.z1 + dist } }
+    ];
+  }
+
+  function tunnelMouthIssues(t, blockers, dist) {
+    if (!t || !t.boreBox) return [{ name: 'bore', block: { kind: 'missing' } }];
+    const issues = [];
+    const bore = firstBlock(t.boreBox, blockers, true);
+    if (bore) issues.push({ name: 'bore', block: bore });
+    const mouths = tunnelMouths(t, dist);
+    for (let i = 0; i < mouths.length; i++) {
+      const hit = firstBlock(mouths[i].box, blockers, true);
+      if (hit) issues.push({ name: mouths[i].name, block: hit });
+    }
+    return issues;
+  }
+
+  function tunnelLock(baseline) {
+    const saved = (baseline && baseline.tunnel) || {};
+    return {
+      length: typeof saved.length === 'number' ? saved.length : TUNNEL_MAIN.length,
+      width: typeof saved.width === 'number' ? saved.width : TUNNEL_MAIN.width,
+      bore: typeof saved.bore === 'number' ? saved.bore : TUNNEL_MAIN.bore,
+      ceil: typeof saved.ceil === 'number' ? saved.ceil : TUNNEL_MAIN.ceil,
+      top: typeof saved.top === 'number' ? saved.top : TUNNEL_MAIN.top,
+      along: saved.along || TUNNEL_MAIN.along,
+      approach: typeof saved.approach === 'number' ? saved.approach : TUNNEL_MAIN.approach
+    };
+  }
 
   function riverLip(r) {
     const dir = r.dir || 0;
@@ -1003,14 +1219,43 @@
     };
   }
 
+  function rampPlace(r) {
+    return rnd((r.x0 + r.x1) / 2) + ', ' + rnd((r.z0 + r.z1) / 2);
+  }
+
+  function blockName(q) {
+    if (!q) return 'a prop';
+    if (q.purpose) return q.kind + ' ' + q.purpose;
+    return q.kind || 'prop';
+  }
+
   function checkRamps(baseline, add) {
     const all = (CITY.RAMPS || []).filter(function (r) { return r && r.nm !== 'tow'; });
     const smallRiver = all.filter(function (r) {
       return r.nm === 'river' && (r.sz === 'small' || (r.h || 0) < 2.2);
     });
     const live = smallRiver.map(rampRecord);
-    if (all.length < RAMP_LOT) {
-      add('ramps', 'fail', 'Not enough ramps', 'The city should have a lot of ramps. This layout has ' + all.length + ', and the light floor is ' + RAMP_LOT + '. There is no upper limit, and a layout is not failed for having more.', null);
+    const floor = rampFloor(baseline);
+    if (rampShort(all.length, floor)) {
+      add('ramps', 'fail', 'Not enough ramps', 'This layout has ' + all.length + ' ramps besides tow-truck beds. The original city has ' + floor + ', including the river-edge launches. More than that is fine. Fewer is not.', null);
+    }
+    const blockers = groundBlockers(CITY.BL);
+    const blocked = rampApproachIssues(all, blockers);
+    for (let i = 0; i < all.length; i++) {
+      const r = all[i];
+      const runWall = approachHit(approachBox(r, 'run', APPROACH_RUN));
+      const landWall = approachHit(approachBox(r, 'land', APPROACH_LAND));
+      if (runWall) blocked.push({ end: 'run-up', ramp: r, block: { kind: (runWall.b && runWall.b.kind) || 'wall', purpose: (runWall.b && runWall.b.purpose) || '' } });
+      if (landWall) blocked.push({ end: 'landing', ramp: r, block: { kind: (landWall.b && landWall.b.kind) || 'wall', purpose: (landWall.b && landWall.b.purpose) || '' } });
+    }
+    const seenApproach = {};
+    for (let i = 0; i < blocked.length; i++) {
+      const issue = blocked[i];
+      const place = rampPlace(issue.ramp);
+      const key = issue.end + '|' + place;
+      if (seenApproach[key]) continue;
+      seenApproach[key] = 1;
+      add('ramps', 'fail', 'Ramp approach is blocked', 'Every ramp needs ' + APPROACH_RUN + ' m of clear run-up behind the low end and ' + APPROACH_LAND + ' m of clear landing past the lip. A building or a ground prop in that box fails. Another ramp does not.', { id: place, purpose: 'ramp', label: 'ramp', note: issue.end + ' blocked by ' + blockName(issue.block) });
     }
     const floors = (baseline && baseline.riverEdge) || [];
     for (let i = 0; i < floors.length; i++) {
@@ -1028,7 +1273,50 @@
         add('ramps', 'fail', 'River-edge ramp changed', 'That small jump stays the same height, length, direction, and distance from the water. It was ' + f.h + ' m high and ' + f.len + ' m long, lip ' + f.lipToWater + ' m from the water. It is now ' + hit.h + ' m high and ' + hit.len + ' m long, lip ' + hit.lipToWater + ' m from the water.', null);
       }
     }
-    return { count: all.length, lot: RAMP_LOT, riverEdge: live, locked: floors.length };
+    return { count: all.length, lot: floor, floor: floor, riverEdge: live, locked: floors.length, run: APPROACH_RUN, land: APPROACH_LAND, blocked: blocked.length };
+  }
+
+  function checkTunnel(baseline, add) {
+    const lock = tunnelLock(baseline);
+    const list = readTunnels(typeof CITY !== 'undefined' ? CITY.BL : []);
+    let match = null;
+    let nearest = null;
+    for (let i = 0; i < list.length; i++) {
+      const problems = tunnelDelta(list[i], lock);
+      if (!problems.length) { match = list[i]; break; }
+      if (!nearest || problems.length < nearest.problems.length) nearest = { tunnel: list[i], problems: problems };
+    }
+    const record = {
+      length: lock.length, width: lock.width, bore: lock.bore, ceil: lock.ceil, top: lock.top, along: lock.along, approach: lock.approach
+    };
+    if (!match) {
+      const was = lock.length + ' m long, ' + lock.width + ' m wide, bore ' + lock.bore + ' m, ceiling ' + lock.ceil + ' m, height ' + lock.top + ' m, open along ' + lock.along;
+      const now = nearest ? nearest.problems.join(', ') : 'no bore with walls and a raised roof';
+      add('tunnel', 'fail', list.length ? 'Tunnel changed' : 'Tunnel is missing', 'The existing tunnel stays the same size, shape, and length: ' + was + '. This layout has ' + now + '.', null);
+      return { ok: false, count: list.length, record: record, live: nearest ? nearest.tunnel : null };
+    }
+    const blockers = groundBlockers(CITY.BL);
+    const issues = tunnelMouthIssues(match, blockers, lock.approach);
+    const mouths = tunnelMouths(match, lock.approach);
+    const boreWall = approachHit(match.boreBox);
+    if (boreWall) issues.push({ name: 'bore', block: { kind: (boreWall.b && boreWall.b.kind) || 'wall', purpose: (boreWall.b && boreWall.b.purpose) || '' } });
+    for (let i = 0; i < mouths.length; i++) {
+      const wall = approachHit(mouths[i].box);
+      if (wall) issues.push({ name: mouths[i].name, block: { kind: (wall.b && wall.b.kind) || 'wall', purpose: (wall.b && wall.b.purpose) || '' } });
+    }
+    const seen = {};
+    for (let i = 0; i < issues.length; i++) {
+      const issue = issues[i];
+      if (seen[issue.name]) continue;
+      seen[issue.name] = 1;
+      add('tunnel', 'fail', 'Tunnel approach is blocked', 'The bore stays clear, and each mouth keeps ' + lock.approach + ' m of open pavement at the bore width. The tunnel walls and the ceiling are not blockers. A building or a ground prop in that run fails.', { id: issue.name, purpose: 'tunnel', label: 'tunnel', note: issue.name + ' blocked by ' + blockName(issue.block) });
+    }
+    return {
+      ok: !issues.length,
+      count: list.length,
+      record: record,
+      live: { length: rnd(match.length), width: rnd(match.width), bore: rnd(match.bore), ceil: rnd(match.ceil), top: rnd(match.top), along: match.along, cx: rnd(match.cx), cz: rnd(match.cz) }
+    };
   }
 
   const ARCH = {
@@ -1290,8 +1578,12 @@
       }
 
       const ramps = checkRamps(baseline, add);
+      const tunnel = checkTunnel(baseline, add);
       if (!findings.some(function (f) { return f.check === 'ramps'; })) {
-        passes.push('Lots of ramps (' + ramps.count + '). No upper limit. The small river-edge jump stays the one that clears the river at about 80 mph.');
+        passes.push(ramps.count + ' ramps, at least the original ' + ramps.floor + ', each with a clear run-up and landing. No upper limit. The small river-edge jump stays the one that clears the river at about 80 mph.');
+      }
+      if (!findings.some(function (f) { return f.check === 'tunnel'; })) {
+        passes.push('The tunnel keeps its length, bore, ceiling, and height, and both mouths stay clear.');
       }
 
       const roster = [];
@@ -1400,6 +1692,7 @@
         passes: passes,
         murals: murals,
         ramps: ramps,
+        tunnel: tunnel,
         roster: roster,
         tier: tier.stats,
         blurHits: blurHits

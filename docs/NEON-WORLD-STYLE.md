@@ -88,9 +88,9 @@ Each solid building has to read as its purpose at street level and from the air.
 
 ## Ramps
 
-Bob simplified this rule. The old strict ramp-count check is dropped.
+A new city layout keeps at least as many ramps as the original city on main. That count is 70, not counting tow-truck beds, and it includes the river-edge launches. More than 70 is fine. There is no upper limit. Dropping below 70 fails, including a layout that removes a river-edge launch and does not replace it.
 
-A layout needs a lot of ramps. That is the whole count rule. Twenty-four ramps, not counting tow-truck beds, is enough to call it a lot. More than that is fine. A layout is not rejected for going over a ramp number, and the maps do not have to mark every ramp.
+Every ramp needs a clear run-up and a clear landing. The run-up is 16 m behind the low end. The landing is 16 m past the lip. A relocated building or a ground prop in either box fails. Another ramp in that box does not. The ramp's own hill does not. A sign board that you can drive under does not.
 
 The river-edge ramp stays as it is now. It is a small ramp at the river bank. At about 80 mph it clears the river. Keep its position, its size, and its launch the same relative to the water. The checker locks the small river jumps in the city today (`nm` `river`, 1.6 m high, 10 m long, lip 8 m from the water):
 
@@ -102,7 +102,13 @@ The river-edge ramp stays as it is now. It is a small ramp at the river bank. At
 
 Each one stays within 8 m of that spot, within 0.2 m of that height, within 1 m of that length, on the same heading, and within 2 m of that lip-to-water gap. Adding another ramp beside them does not fail. Moving or shrinking one of those jumps does.
 
-Tow-truck beds are their own jumps. They are not part of this count, and they are not the river-edge ramp.
+Tow-truck beds are their own jumps. They are not part of this count, and they are not the river-edge ramp. Hidden banks, crests, and curb kickers are ramps. They count, and they need the same clear approaches.
+
+## Tunnel
+
+The existing tunnel stays essentially the same size, shape, and length. On main that is 200 m long, 160 m wide, a 30 m bore, a 10 m ceiling, and a 34 m hill, open along z. A missing tunnel fails. A shorter bore, a lower ceiling, a filled bore, or a turn onto the other axis fails. An extra tunnel beside it does not.
+
+Both mouths stay clear for 40 m at the bore width, and the bore itself stays clear. The tunnel's own walls and ceiling are not blockers. A building or a ground prop in a mouth or in the bore fails.
 
 ## What else the review still scores
 

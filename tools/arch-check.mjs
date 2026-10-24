@@ -351,7 +351,7 @@ function loadBaseline(root) {
 function writeBaseline(root, report, prev) {
   const next = {
     version: 1,
-    note: 'Mural floor for the Z dance buildings, the small river-edge ramps, and the solid-building count on main. A later mural wall must be at least this big. The river-edge ramps stay this size and this far from the water. Extra ramps are allowed. The building list is a snapshot of main. Placements may change. The count stays at buildings.length unless docs/NEON-WORLD-STYLE.md raises Approved count. Do not edit the count to hide a block that loaded in the game. Written by arch-check --write-baseline. Do not edit these numbers to hide a smaller wall or a moved river jump.',
+    note: 'Mural floor for the Z dance buildings, the small river-edge ramps, the original ramp count, the tunnel, and the solid-building count on main. A later mural wall must be at least this big. The river-edge ramps stay this size and this far from the water. rampCount is the floor, including those launches. A later layout may have more ramps. It may not have fewer. The tunnel record is the size, shape, and length. Do not shrink it. The building list is a snapshot of main. Placements may change. The building count stays at buildings.length unless docs/NEON-WORLD-STYLE.md raises Approved count. Written by arch-check --write-baseline. Do not edit these numbers to hide a smaller wall, a dropped ramp, or a shorter tunnel.',
     capturedAt: new Date().toISOString(),
     git: { sha: report.sha || '', branch: report.branch || '' },
     murals: (report.murals || []).map((m) => ({
@@ -366,7 +366,9 @@ function writeBaseline(root, report, prev) {
     })),
     buildings: (prev && prev.buildings && prev.buildings.length) ? prev.buildings : (report.roster || []),
     riverEdge: (prev && prev.riverEdge && prev.riverEdge.length) ? prev.riverEdge : ((report.ramps && report.ramps.riverEdge) || []),
-    rampLot: (report.ramps && report.ramps.lot) || (prev && prev.rampLot) || 24,
+    rampCount: (prev && typeof prev.rampCount === 'number' && prev.rampCount > 0) ? prev.rampCount : 70,
+    rampLot: (prev && typeof prev.rampCount === 'number' && prev.rampCount > 0) ? prev.rampCount : 70,
+    tunnel: (prev && prev.tunnel) ? prev.tunnel : ((report.tunnel && report.tunnel.record) || { length: 200, width: 160, bore: 30, ceil: 10, top: 34, along: 'z', approach: 40, cx: -450, cz: 600 }),
     scales: report.scales || (prev && prev.scales) || null
   };
   if (!next.murals.length && prev && prev.murals) next.murals = prev.murals;
@@ -654,6 +656,7 @@ function markdown(p) {
     ['mural', 'Z dance mural'],
     ['style', 'Style'],
     ['ramps', 'Ramps'],
+    ['tunnel', 'Tunnel'],
     ['shadow', 'shadowBlur'],
     ['fps', 'FPS'],
     ['capability', 'Capability'],
@@ -687,7 +690,7 @@ function markdown(p) {
   if (p.ramps && p.ramps.riverEdge) {
     lines.push('## River-edge ramps');
     lines.push('');
-    lines.push(p.ramps.count + ' ramps besides tow trucks. Light floor ' + p.ramps.lot + '. No upper limit.');
+    lines.push(p.ramps.count + ' ramps besides tow trucks. Floor ' + p.ramps.lot + ' (the original count, including the river-edge launches). No upper limit. Run-up ' + (p.ramps.run || 16) + ' m, landing ' + (p.ramps.land || 16) + ' m.');
     lines.push('');
     for (const r of p.ramps.riverEdge) lines.push('- ' + r.bank + ' bank ' + r.h + ' m × ' + r.len + ' m, lip ' + r.lipToWater + ' m from the water, at ' + r.cx + ', ' + r.cz);
     lines.push('');
@@ -770,6 +773,8 @@ function commentMd(p) {
   }
   if (p.ramps) {
     lines.push('Ramps: ' + p.ramps.count + ' (floor ' + p.ramps.lot + ', no ceiling). River-edge small jumps: ' + ((p.ramps.riverEdge && p.ramps.riverEdge.length) || 0) + '.');
+    if (p.tunnel && p.tunnel.live) lines.push('Tunnel: ' + p.tunnel.live.length + ' m × ' + p.tunnel.live.width + ' m, bore ' + p.tunnel.live.bore + ' m, ceiling ' + p.tunnel.live.ceil + ' m.');
+    else if (p.tunnel) lines.push('Tunnel: missing or changed.');
     lines.push('');
   }
   if (p.murals && p.murals.length) {
