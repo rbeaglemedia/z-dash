@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "note": "Generated from adventure/assets. Add a model by dropping the file in and adding one object here. No spinner code change.",
+  "models": [
+    {
+      "id": "ellie",
+      "name": "Ellie",
+      "file": "adventure/assets/Casual_Female.fbx",
+      "format": "fbx",
+      "kind": "human",
+      "group": "Adventure",
+      "height": 1.5,
+      "yaw": 0,
+      "role": "ellie"
+    },
+    {
+      "id": "fox",
+      "name": "Fox",
+      "file": "adventure/assets/pets/Fox.glb",
+      "format": "glb",
+      "kind": "pet",
+      "group": "Pets",
+      "height": 0.4,
+      "yaw": 3.141592653589793
+    },
+    {
+      "id": "cat",
+      "name": "Cat",
+      "file": "adventure/assets/pets/Cat.glb",
+      "format": "glb",
+      "kind": "pet",
+      "group": "Pets",
+      "height": 0.36,
+      "yaw": 1.5707963267948966
+    },
+    {
+      "id": "puppy",
+      "name": "Puppy",
+      "file": "adventure/assets/pets/Puppy.glb",
+      "format": "glb",
+      "kind": "pet",
+      "group": "Pets",
+      "height": 0.34,
+      "yaw": 1.5707963267948966
+    },
+    {
+      "id": "pug",
+      "name": "Suited Pug",
+      "file": "adventure/assets/later/Pug.fbx",
+      "format": "fbx",
+      "kind": "human",
+      "group": "Later",
+      "fit": "pack",
+      "yaw": 0,
+      "note": "CC0 pack pug. A costume character, not a heel pet."
+    },
+    {
+      "id": "aussie",
+      "name": "Australian Shepherd",
+      "file": "adventure/assets/pets/Aussie.glb",
+      "format": "glb",
+      "kind": "pet",
+      "group": "Pets",
+      "height": 0.48,
+      "yaw": 0,
+      "optional": true,
+      "note": "CC-BY file is not in this build. Drop Aussie.glb on this path and it loads."
+    },
+    {
+      "id": "neon-ellie",
+      "name": "Neon Ellie",
+      "kind": "neon-human",
+      "group": "Neon World",
+      "height": 1.75,
+      "outfit": "#ff3df2",
+      "skin": "#f0c8a8",
+      "hair": "ponytail"
+    },
+    {
+      "id": "neon-fox",
+      "name": "Nova Fox",
+      "kind": "neon-pet",
+      "group": "Neon World",
+      "height": 0.42,
+      "rig": { "len": 0.26, "leg": 0.16, "head": 0.088, "body": 0.068, "ear": "point", "earL": 0.075, "tail": 0.26, "color": "#ffb020" }
+    },
+    {
+      "id": "neon-cat",
+      "name": "Neon Kitty",
+      "kind": "neon-pet",
+      "group": "Neon World",
+      "height": 0.38,
+      "rig": { "len": 0.22, "leg": 0.14, "head": 0.084, "body": 0.058, "ear": "point", "earL": 0.05, "tail": 0.26, "color": "#ff4fd8" }
+    },
+    {
+      "id": "neon-dragon",
+      "name": "Mini Dragon",
+      "kind": "neon-pet",
+      "group": "Neon World",
+      "height": 0.4,
+      "rig": { "len": 0.25, "leg": 0.13, "head": 0.092, "body": 0.072, "ear": "horn", "earL": 0.06, "tail": 0.28, "wings": true, "color": "#7cff4f" }
+    },
+    {
+      "id": "neon-robo",
+      "name": "Cyber Pup",
+      "kind": "neon-pet",
+      "group": "Neon World",
+      "height": 0.42,
+      "rig": { "len": 0.26, "leg": 0.15, "head": 0.088, "body": 0.07, "ear": "antenna", "earL": 0.08, "tail": 0.07, "color": "#3ee6ff" }
+    }
+  ]
+}

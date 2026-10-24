@@ -1,0 +1,117 @@
+{
+  "fails": [],
+  "notes": [
+    "aussie not in this build"
+  ],
+  "shots": [
+    "phone-ellie.png",
+    "ipad-ellie.png",
+    "pc-compare.png",
+    "pc-turntable.png",
+    "pc-scrub.png"
+  ],
+  "fps": {
+    "phone-ellie.png": [
+      16.2,
+      16.8,
+      16.7,
+      17.1,
+      16.2
+    ],
+    "ipad-ellie.png": [
+      8.7,
+      16.7,
+      16.9,
+      16.7,
+      16.8
+    ],
+    "pc-compare.png": [
+      16.4,
+      16.9,
+      16.7,
+      16.5,
+      16.4
+    ],
+    "pc-turntable.png": [
+      12.7,
+      16.8,
+      16.6,
+      16.7,
+      16.6
+    ],
+    "pc-scrub.png": [
+      9.6,
+      16.5,
+      17.2,
+      16.6,
+      16.3
+    ]
+  },
+  "character": {
+    "fails": [],
+    "notes": [
+      "aussie not in this build"
+    ],
+    "label": "Ellie · Front · Idle · f0"
+  },
+  "viewerMeasure": {
+    "height": 1.499533422099913,
+    "minY": 0.0003067470300241199,
+    "maxY": 1.4998401691299372,
+    "length": 0.7105480639067485,
+    "headFrac": 0.24382745846695636,
+    "headY": 1.0158463013521162,
+    "neckY": 0.9527769830714432,
+    "hipY": 0.43854550788381025,
+    "footY": [
+      0.01961406975701966,
+      0.019020017355440795,
+      0.01961406975702337,
+      0.019020017355878466
+    ],
+    "bones": {
+      "head": true,
+      "neck": true,
+      "hips": true
+    }
+  },
+  "gameMeasure": {
+    "height": 1.499533422099913,
+    "minY": 0.0003067470300241199,
+    "maxY": 1.4998401691299372,
+    "length": 0.7105480639067485,
+    "headFrac": 0.24382745846695636,
+    "headY": 1.0158463013521162,
+    "neckY": 0.9527769830714432,
+    "hipY": 0.43854550788381025,
+    "footY": [
+      0.01961406975702337,
+      0.01961406975701966
+    ],
+    "bones": {
+      "head": true,
+      "neck": true,
+      "hips": true,
+      "upperArmL": true,
+      "lowerArmL": true,
+      "upperLegL": true,
+      "lowerLegL": true,
+      "footL": true,
+      "footR": true
+    }
+  },
+  "pixelMae": 0,
+  "car": {
+    "fails": [],
+    "notes": [],
+    "label": "370Z · 3/4 · GAME · f0",
+    "errors": []
+  },
+  "building": {
+    "fails": [],
+    "notes": [],
+    "label": "GARAGE · Front · GAME · f0",
+    "errors": []
+  },
+  "pass": true
+}
