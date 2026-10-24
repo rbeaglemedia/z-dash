@@ -926,7 +926,7 @@ function garageIdleQ(phase){
   q.look=10*Math.sin((phase||0)*1.1);
   return q;
 }
-const GARAGE_GLOW={dog:'#3ee6ff',cat:'#ff4ad8',bunny:'#fff04d',dragon:'#b48cff',fox:'#ffb020'};
+const GARAGE_GLOW={dog:'#b6ff4a',cat:'#ff4ad8',bunny:'#fff04d',dragon:'#b48cff',fox:'#ffb020'};
 function paintGaragePet(ctx,project,type,tSec,origin,faceDeg){
   if(!ctx||typeof project!=='function'||!origin||!type||type==='none')return false;
   ensureGarageRigs();

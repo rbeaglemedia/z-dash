@@ -9,9 +9,10 @@
      and the hatch still shut. The hinge clock runs 0..1 in GL.time (1.8s). */
   const DOOR = 0.38;
   const DOOR_TIME = 1.8;
-  const GAP = 0.55;
+  const GAP = 0.62;
   let door = 0;
   let halfW = 0;
+  let axis = 'z';
   let hingeBad = false;
   const cur = { pet: '', t: 0, on: false, phase: 'none', side: 1.5 };
 
@@ -32,9 +33,27 @@
       const hx = (b.max.x - b.min.x) / 2;
       const hz = (b.max.z - b.min.z) / 2;
       const w = Math.min(hx, hz);
-      if (w > 0.4 && w < 2.2) halfW = w;
+      if (w > 0.4 && w < 2.2) {
+        halfW = w;
+        axis = hx < hz ? 'x' : 'z';
+      }
     } catch (e) {}
     return (halfW || 0.95) + GAP;
+  }
+
+  /* Stand outside the doors, on the side the camera is looking at, so the pet
+     stays next to the opening instead of in front of the nose. */
+  function spot(yaw) {
+    const side = (halfW || 0.95) + GAP;
+    const h = +yaw || 0;
+    const cx = Math.cos(h);
+    const cz = Math.sin(h);
+    if (axis === 'x') {
+      const s = Math.abs(cx) < 0.2 ? 1 : (cx >= 0 ? 1 : -1);
+      return { x: s * side, y: 0, z: 0.05, face: s > 0 ? -90 : 90, side: side };
+    }
+    const s = Math.abs(cz) < 0.2 ? 1 : (cz >= 0 ? 1 : -1);
+    return { x: 0.05, y: 0, z: s * side, face: s > 0 ? 180 : 0, side: side };
   }
 
   function pose(dt, on, pet) {
@@ -60,11 +79,10 @@
     const CREW = window.CREW;
     if (!CREW || typeof CREW.paintGaragePet !== 'function') return false;
     if (door < 0.05) placeSide(X);
-    const side = (halfW || 0.95) + GAP;
-    cur.side = side;
-    const h = +yaw || 0;
-    const origin = { x: Math.sin(h) * side, y: 0, z: -Math.cos(h) * side };
-    const face = -h * 180 / Math.PI;
+    const at = spot(yaw);
+    cur.side = at.side;
+    const origin = { x: at.x, y: 0, z: at.z };
+    const face = at.face;
     ctx.save();
     const foot = X.project(origin.x, 0, origin.z);
     if (foot) {
@@ -93,6 +111,7 @@
         t: +cur.t.toFixed(3),
         door: +door.toFixed(3),
         side: +cur.side.toFixed(3),
+        axis: axis,
         on: cur.on,
         hinge: !!(Z && Z.S && Z.S.ok),
         hingeBad: hingeBad
