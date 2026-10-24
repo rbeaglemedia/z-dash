@@ -47,6 +47,8 @@
       + '<script src="world/dev-builder.js?v=dev40"><\/script>';
     if (html.indexOf('world/city.js') < 0) throw new Error('city');
     html = html.replace(/(<script src="\.\.\/world\/city\.js[^"]*"><\/script>)/, '$1' + inject);
+    html = html.replace(/(<script src="\.\.\/world\/house\.js[^"]*"><\/script>)/, '$1<script src="world/enter-play.js?v=enter1"><\/script>');
+    if (html.indexOf('enter-play.js') < 0) throw new Error('enter');
     html = html.replace('</body>', '<script src="world/drive-shot.js?v=dev40"><\/script></body>');
     html = html.replace('</body>', '<script src="../shared/fps-counter.js"><\/script></body>');
     if (html.indexOf('<head>') >= 0) html = html.replace('<head>', '<head>' + keep);
