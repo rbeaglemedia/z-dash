@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "budgets": { "fastMs": 10000, "slowIpadMs": 26000 },
+  "packs": [
+    {
+      "id": "shaders",
+      "kind": "gpu",
+      "label": "Lights and shaders",
+      "weight": 8,
+      "url": null
+    },
+    {
+      "id": "minimap",
+      "kind": "canvas",
+      "label": "City map",
+      "weight": 6,
+      "url": null
+    },
+    {
+      "id": "icons",
+      "kind": "canvas",
+      "label": "Icons",
+      "weight": 4,
+      "url": null
+    },
+    {
+      "id": "shops",
+      "kind": "geometry",
+      "label": "Shop fronts",
+      "weight": 10,
+      "url": null
+    },
+    {
+      "id": "traffic",
+      "kind": "sprite-grid",
+      "label": "Cars",
+      "weight": 72,
+      "url": null,
+      "elev": [0, 1, 2, 3, 4, -1, 5],
+      "atlas": {
+        "url": null,
+        "sheets": null,
+        "cell": 160,
+        "columns": 24,
+        "rows": 7,
+        "layout": "One PNG per paint. 24 columns are yaw buckets -12 through 11. Each row is one elev bucket, in the elev order above. Point sheets at [{paintIndex, url}] on a server and the game slices them into the same cache it bakes locally today."
+      }
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="robots" content="noindex"><link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="><script>(function(){function scrub(){if(!('caches' in window))return;caches.keys().then(function(keys){keys.forEach(function(k){caches.open(k).then(function(c){['/jr.html','/index.html','/world.html','/fly3.html'].forEach(function(logical){var req=new Request(location.origin+logical);c.match(req).then(function(hit){if(hit&&String(hit.url).indexOf('/test/')!==-1)c.delete(req);});});c.keys().then(function(reqs){reqs.forEach(function(req){try{if(new URL(req.url).pathname.indexOf('/test/')===0)c.delete(req);}catch(e){}});});});});});}scrub();var n=0,iv=setInterval(function(){scrub();if(++n>10)clearInterval(iv);},300);if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){navigator.serviceWorker.register('sw.js',{scope:'/test/',updateViaCache:'none'}).catch(function(){});}})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="manifest-jr.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Z-DASH JR">
+<meta name="robots" content="noindex,nofollow">
+<title>Z COMPANY ARTS — NEON DANCE STAGE</title>
+<!-- Stage shell. The top bar, one bottom action, and the separate Record to Improve App overlay are built by world/dance-stage.js. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect fill='%2307010f' width='16' height='16'/%3E%3Cpath d='M3 3h10v2H8.2L13 13h-2.4L6.2 5H3z' fill='%233ee6ff'/%3E%3C/svg%3E">
+<script src="shared/ipad.js?v=28"></script>
+<link rel="stylesheet" href="shared/fonts/orbitron.css">
+<link rel="stylesheet" href="shared/ipad.css?v=28">
+<style>
+  html, body { margin: 0; height: 100%; background: #07010f; overflow: hidden; }
+</style>
+<link rel="stylesheet" href="shared/menu-tiles.css">
+</head>
+<body>
+<script src="world/dance-stage.js?v=28"></script>
+<script>
+(function(){
+  var u = new URL(location.href);
+  var r = (u.searchParams.get("record") || u.searchParams.get("mode") || u.searchParams.get("tab") || "").toLowerCase();
+  DANCE_STAGE.open(r ? { record: r } : undefined);
+})();
+</script>
+<style>
+.zd-top-pause-btn{position:fixed;top:2px;right:4px;z-index:95;width:44px;height:44px;border-radius:12px;border:2px solid #9df2ff;background:rgba(12,6,28,.9);color:#e9fff2;font-size:20px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(62,230,255,.35);padding:0}
+.zd-top-pause-modal{position:fixed;inset:0;z-index:120;background:rgba(6,2,16,.84);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px;font-family:Orbitron,sans-serif}
+.zd-top-pause-modal.open{display:flex}
+.zd-top-pause-card{width:min(360px,92vw);padding:20px;border-radius:20px;border:2px solid #3ee6ff;background:rgba(12,5,28,.96);box-shadow:0 0 28px rgba(62,230,255,.35);display:flex;flex-direction:column;gap:10px;text-align:center}
+.zd-top-pause-title{font-size:20px;font-weight:900;letter-spacing:2px;color:#3ee6ff;text-shadow:0 0 12px #3ee6ff;margin-bottom:4px}
+.zd-top-pause-item{min-height:46px;border-radius:12px;border:2px solid #3ee6ff;background:rgba(20,10,44,.92);color:#e9fff2;font:900 13px/1 Orbitron,sans-serif;letter-spacing:1.2px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.zd-top-pause-item.primary{border-color:#7dff6b;color:#7dff6b;box-shadow:0 0 14px rgba(125,255,107,.3)}
+.zd-top-pause-item.pink{border-color:#ff4fd8;color:#ff4fd8}
+.zd-ds-top,.top{padding-right:58px !important}
+</style>
+<button id="kMenuB" class="zd-top-pause-btn" type="button" aria-label="Pause"><span>⏸</span></button>
+<div id="zdPauseModal" class="zd-top-pause-modal" role="dialog" aria-modal="true" aria-label="Paused">
+  <div class="zd-top-pause-card">
+    <div class="zd-top-pause-title">PAUSED</div>
+    <button type="button" class="zd-top-pause-item primary" id="zdPauseResume">▶ RESUME</button>
+    <a class="zd-top-pause-item" href="jr.html#garage">🚗 GARAGE</a>
+    <a class="zd-top-pause-item" href="world.html">🌆 NEON WORLD</a>
+    <a class="zd-top-pause-item pink" href="jr.html?kmenu=1">⌂ MAIN MENU</a>
+  </div>
+</div>
+<script>
+(function(){
+  var btn=document.getElementById('kMenuB'), mod=document.getElementById('zdPauseModal'), res=document.getElementById('zdPauseResume');
+  if(btn&&mod){
+    btn.addEventListener('click',function(){mod.classList.toggle('open');});
+    if(res)res.addEventListener('click',function(){mod.classList.remove('open');});
+    mod.addEventListener('click',function(e){if(e.target===mod)mod.classList.remove('open');});
+  }
+})();
+</script>
+</body>
+</html>

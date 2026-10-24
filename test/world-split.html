@@ -1,0 +1,285 @@
+<!DOCTYPE html><html lang="en"><head><meta name="robots" content="noindex"><link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="><script>(function(){function scrub(){if(!('caches' in window))return;caches.keys().then(function(keys){keys.forEach(function(k){caches.open(k).then(function(c){['/jr.html','/index.html','/world.html','/fly3.html'].forEach(function(logical){var req=new Request(location.origin+logical);c.match(req).then(function(hit){if(hit&&String(hit.url).indexOf('/test/')!==-1)c.delete(req);});});c.keys().then(function(reqs){reqs.forEach(function(req){try{if(new URL(req.url).pathname.indexOf('/test/')===0)c.delete(req);}catch(e){}});});});});});}scrub();var n=0,iv=setInterval(function(){scrub();if(++n>10)clearInterval(iv);},300);if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){navigator.serviceWorker.register('sw.js',{scope:'/test/',updateViaCache:'none'}).catch(function(){});}})();</script><script src="shared/ipad.js?v=30"></script><script>try{if(!(('ontouchstart' in window)||(navigator.maxTouchPoints>0))&&innerWidth>1024)document.documentElement.classList.add('pc-mode');}catch(e){}</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><link rel="manifest" href="manifest-jr.webmanifest"><meta name="theme-color" content="#000000"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Z-DASH JR"><meta name="robots" content="noindex,nofollow"><title>Neon World</title><link rel="stylesheet" href="shared/fonts/orbitron.css"><link rel="stylesheet" href="shared/ipad.css?v=30"><style>
+:root { --red:#ff2a3d; --red2:#ff5a66; --bg:#050506; --txt:#e9e3e4; --mute:#8a7a7d; --cyan:#3ee6ff; --amber:#ffb020; }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#000;color:var(--txt);font-family:'Orbitron',sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:none}
+
+/* ---- WANTED kid UI (copied from jr.html) ---- */
+.kid{position: fixed; inset: 0; z-index: 46; display: flex; flex-direction: column; background: #08020f; padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); font-family: 'Rajdhani', sans-serif;}
+.kid.hidden{display: none;}
+.ktabs{display: flex; gap: 4px; min-width: 0; overflow-x: auto; scrollbar-width: none;}
+.ktabs::-webkit-scrollbar{display: none;}
+.ktabs button{flex: none; font-family: 'Orbitron'; font-weight: 800; font-size: 12px; letter-spacing: 1.5px; color: #c9b6e6; background: rgba(255,255,255,.04); border: 2px solid #3a1550; border-radius: 16px; padding: 4px 12px; cursor: pointer;}
+.ktabs button.on{color: #fff; border-color: #ff4fd8; background: rgba(255,79,216,.22); box-shadow: 0 0 12px rgba(255,79,216,.55);}
+.kbody{position: relative; flex: 1; min-height: 0;}
+.kbody canvas{position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none;}
+.kround{position: absolute; right: 18px; bottom: 16px; width: min(118px, 30vh); height: min(118px, 30vh); border-radius: 50%; font-family: 'Orbitron'; font-weight: 900; font-size: clamp(16px, 5vh, 22px); letter-spacing: 1px; color: #fff; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; touch-action: manipulation;}
+.kround small{font-size: 9px; letter-spacing: 1px; font-family: 'Rajdhani'; margin-top: 2px;}
+.kround:active{transform: scale(.94);}
+.nfxcan{position: absolute; left: 50%; bottom: calc(100% + 8px); width: calc(20px * var(--cs, 1)); height: calc(42px * var(--cs, 1)); transform: translateX(-50%); border: 2px solid #e6c8ff; border-radius: 7px 7px 5px 5px; background: rgba(20,0,40,.55); box-shadow: 0 0 10px #b45cff, 0 0 4px #b45cff inset; pointer-events: none; overflow: visible;}
+.nfxcan::before{content: ""; position: absolute; left: 50%; top: -7px; width: 40%; height: 5px; transform: translateX(-50%); background: #e6c8ff; border-radius: 2px 2px 0 0; box-shadow: 0 0 6px #b45cff;}
+.nfxcan i{position: absolute; left: 2px; right: 2px; bottom: 2px; height: calc((100% - 4px) * var(--cf, 1)); border-radius: 3px; background: linear-gradient(0deg, #7a1fff, #d27bff 70%, #f4dcff); box-shadow: 0 0 8px #c060ff;}
+.nfxcan.seg::after{content: ''; position: absolute; left: 2px; right: 2px; top: 2px; bottom: 2px; border-radius: 3px; pointer-events: none; background: repeating-linear-gradient(0deg, transparent 0, transparent calc(100% / var(--sn, 3) - 2px), rgba(20,0,40,.95) calc(100% / var(--sn, 3) - 2px), rgba(20,0,40,.95) calc(100% / var(--sn, 3)));}
+.nfxcan b{position: absolute; left: 100%; top: -4px; margin-left: 3px; font: 900 10px Orbitron, sans-serif; color: #f4dcff; text-shadow: 0 0 5px #b45cff;}
+.kround.nfxa{transition: transform 70ms ease-out, filter 70ms ease-out, box-shadow 70ms ease-out;}
+.kround.nfxa.nfxp{transform: scale(.92) !important; filter: brightness(.78) saturate(1.15); box-shadow: 0 0 8px currentColor, 0 4px 14px rgba(0,0,0,.55) inset, 0 0 6px #fff inset !important; animation: none !important;}
+.kround.hidden, .kpill.hidden, .kgarage.hidden, .kcarui.hidden, .ktoast.hidden{display: none;}
+.kpill{font-family: 'Orbitron'; font-weight: 800; font-size: 11px; letter-spacing: 1.5px; color: #fff; background: rgba(62,230,255,.12); border: 2px solid #3ee6ff; border-radius: 16px; padding: 6px 12px; cursor: pointer;}
+.kpill:disabled{opacity: .4;}
+.kpill.hot{border-color: #ffe14d; background: rgba(255,225,77,.2); box-shadow: 0 0 14px rgba(255,225,77,.6); animation: kpulse2 .8s infinite alternate;}
+@keyframes kpulse2{ to { box-shadow: 0 0 24px rgba(255,225,77,.9); } }
+.ktoast{position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 3; font-family: 'Orbitron'; font-weight: 800; font-size: 13px; letter-spacing: 1px; color: #fff; background: rgba(18,5,34,.94); border: 2px solid #ffe14d; border-radius: 16px; padding: 8px 16px; box-shadow: 0 0 18px rgba(255,225,77,.5); transition: opacity .4s; white-space: nowrap;}
+.ktoast.fade{opacity: 0;}
+@media (max-width: 900px){.ktabs button{ font-size: 11px; padding: 3px 9px; letter-spacing: 1px; }}
+@media (max-width: 1000px){.ktabs button{ padding: 4px 10px; }}
+.khelp.hidden, .kover.hidden{display: none;}
+.kid .khdr{display: none;}
+.kpzbg{position: absolute; inset: 0; z-index: 20; background: rgba(8,2,15,.55);}
+.kpzbg.hidden{display: none;}
+.khome{position: absolute; z-index: 21; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: calc(100% - 12px); max-height: calc(100% - 8px); overflow: auto; background: rgba(8,2,15,.9); border: 2px solid #3ee6ff; border-radius: 16px; padding: 6px 10px 8px;}
+.khome.hidden{display: none;}
+.khome{padding-left: 42px; padding-right: 42px;}
+.kpzx{position: absolute; top: 5px; left: 5px; width: 32px; height: 32px; padding: 0; border-radius: 10px; border: 1.5px solid rgba(62,230,255,.7); background: rgba(62,230,255,.1); color: #fff; font: 900 15px sans-serif; cursor: pointer;}
+.kmenub.kopen{display: none;}
+.khome .kright{display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;}
+.khome .ktabs, .khome .kpzrow{display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; overflow: visible;}
+.khome .kpzrow.hidden{display: none;}
+.khome .ktabs button, .khome .kpzrow button{font: 900 clamp(11px, 3.2vh, 15px) 'Orbitron', sans-serif; letter-spacing: 1px; color: #12052a; background: linear-gradient(90deg, #ffe14d, #ff9a2e); border: 0; border-radius: 22px; padding: clamp(6px, 2vh, 10px) clamp(10px, 2.4vw, 18px); min-height: 38px; cursor: pointer;}
+.khome .kpzrow button{color: #fff; background: rgba(62,230,255,.16); border: 2px solid #3ee6ff;}
+.khome .ktabs button.on{outline: 3px solid #fff;}
+.kmenub{position: absolute; z-index: 22; width: 44px; height: 44px; padding: 0; border: 0; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent;}
+.kmenub span{width: 30px; height: 30px; border-radius: 9px; background: rgba(8,2,15,.45); border: 1.5px solid rgba(62,230,255,.55); color: rgba(255,255,255,.85); font: 900 14px sans-serif; line-height: 27px; text-align: center;}
+.kmenub.hidden{display: none;}
+.kmenub{left: calc(env(safe-area-inset-left, 0px) + 2px); bottom: 2px;}
+#kid[data-tab='drive'] .kmenub, #kid[data-tab='road'] .kmenub, #kid[data-tab='boost'] .kmenub{bottom: 54px;}
+.khome .ktilesm{display: none;}
+.kmain .ktabs, .kmain .kpzrow{display: none;}
+#kid[data-tab='drive'] .kmenub{width: 40px; height: 40px; left: 12px; top: 50%; bottom: auto; transform: translateY(-50%);}
+#kid[data-tab='drive'] .kmenub span{width: 40px; height: 40px; box-sizing: border-box; border-radius: 8px; border: 2px solid #3ee6ff; background: rgba(18,5,42,.85); color: #fff; font: 900 20px/36px sans-serif; box-shadow: 0 0 12px rgba(62,230,255,.45);}
+#kid:not([data-tab='drive']) .kmenub{left: auto; bottom: auto; top: 2px; right: var(--pzr, 4px); width: 48px; height: 48px;}
+#kid:not([data-tab='drive']) .kmenub span{width: 38px; height: 38px; line-height: 35px; font-size: 17px; border-radius: 11px;}
+#kid[data-tab='road']{--pzr: calc(25.7vw + 2px);}
+#kid[data-tab='wanted']{--pzr: max(212px, calc(21vw + 2px));}
+#kid[data-tab='drag']{--pzr: calc(8.8vw + 2px);}
+#kid[data-tab='boost']{--pzr: calc(37.3vw + 2px);}
+#kid[data-tab='car']{--pzr: calc(23.4vw + 4px);}
+#kid[data-tab='garage']{--pzr: calc(46% + 4px);}
+.khome:not(.kmain) .kpzrow:not(.hidden){display: contents;}
+.khome:not(.kmain) [data-m='resume']{order: 1;}
+.khome:not(.kmain) .ktabs{order: 2;}
+.khome:not(.kmain) [data-m='home']{order: 3;}
+.khome:not(.kmain) .kright{display: none;}
+.khome:not(.kmain) .ktabs button[data-k='drive']{display: none;}
+.khome:not(.kmain) .ktabs button{font: 800 clamp(9px, 2.6vh, 11px) 'Orbitron', sans-serif; letter-spacing: .5px; color: #fff; background: rgba(62,230,255,.08); border: 1.5px solid rgba(62,230,255,.6); border-radius: 12px; padding: 4px 8px; min-height: 30px;}
+.khome:not(.kmain) .kpzrow [data-m="resume"]{font-size: clamp(15px, 4.6vh, 20px); padding: clamp(8px, 2.4vh, 12px) 26px; color: #12052a; background: linear-gradient(90deg, #ffe14d, #ff9a2e); border: 0;}
+.kover{position: absolute; inset: 0; z-index: 8; display: flex; align-items: center; justify-content: center; padding: 10px; background: rgba(8,2,15,.62); backdrop-filter: blur(1.5px); overflow: auto;}
+.kcard{display: flex; gap: 14px; align-items: stretch; max-width: 900px; width: 100%; max-height: 100%;}
+.kline{display: flex; align-items: center; gap: 12px; font-size: clamp(15px, 4.3vh, 21px); font-weight: 700;}
+.kline .ki, .kc .ki{flex: 0 0 auto; width: clamp(30px, 8vh, 40px); height: clamp(30px, 8vh, 40px); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: rgba(62,230,255,.16); border: 2px solid #3ee6ff; color: #3ee6ff; font: 900 clamp(14px, 4vh, 19px) 'Orbitron', sans-serif;}
+.ki.coin{color: #ffe14d; border-color: #ffe14d; background: rgba(255,225,77,.14);}
+.ki.star{color: #ffe14d; border-color: #ff4fd8; background: rgba(255,79,216,.16);}
+.ki.box{color: #7dff6b; border-color: #7dff6b; background: rgba(125,255,107,.12);}
+.kline.kearn{font: 900 clamp(20px, 6vh, 30px) 'Orbitron', sans-serif; color: #ffe14d;}
+.kline.small{font-size: 14px; color: #c9b8e0; font-weight: 600;}
+.kbig{font: 900 clamp(20px, 6vh, 28px) 'Orbitron', sans-serif; letter-spacing: 2px; color: #12052a; background: linear-gradient(90deg, #ffe14d, #ff9a2e); border: 0; border-radius: 40px; padding: clamp(8px, 2.4vh, 14px) 34px; cursor: pointer; box-shadow: 0 0 22px rgba(255,225,77,.55); animation: kpulse 1.4s ease-in-out infinite;}
+.ksmall{font: 800 15px 'Orbitron', sans-serif; color: #fff; background: rgba(62,230,255,.12); border: 2px solid #3ee6ff; border-radius: 30px; padding: 10px 18px; cursor: pointer;}
+@media (max-width: 760px), (max-height: 380px){.kcard{ gap: 8px; }.kcollect .kc:nth-of-type(n) .ki{ width: 26px; height: 26px; font-size: 13px; }}
+.kdiff{display: flex; gap: 8px; justify-content: center; align-items: center; margin: 8px 0 2px;}
+.kdiff span{font: 800 13px Rajdhani, sans-serif; color: #bff6ff; letter-spacing: 1px;}
+.kdiff button{font: 900 13px Orbitron, sans-serif; padding: 7px 12px; border-radius: 999px; border: 2px solid #a46bff; background: rgba(40,12,70,.8); color: #fff;}
+.kdiff button.on{background: #ffe14d; color: #1a0633; border-color: #fff; box-shadow: 0 0 14px #ffe14d;}
+.kwnos{right: 20px; bottom: 20px; width: min(112px, 28vh); height: min(112px, 28vh); background: radial-gradient(circle at 40% 35%, #c8fbff, #3ee6ff 45%, #0b6a86); border: 4px solid #fff; box-shadow: 0 0 18px #3ee6ff; color: #04202a; font-size: clamp(16px, 4.6vh, 24px); opacity: .55;}
+.kwnos.ready{opacity: 1; box-shadow: 0 0 30px #3ee6ff, 0 0 10px #fff inset; animation: kwpulse .6s ease-in-out infinite alternate;}
+.kwbrake{right: calc(min(112px, 28vh) + 36px); bottom: 20px; width: min(92px, 23vh); height: min(92px, 23vh); background: radial-gradient(circle at 40% 35%, #ffc2c8, #ff2a3d 45%, #8a0614); border: 4px solid #fff; box-shadow: 0 0 22px #ff2a3d; animation: kwpulse .5s ease-in-out infinite alternate;}
+@keyframes kwpulse{ to { transform: scale(1.07); } }
+.kcard{min-height: 0;}
+.kintro .kbtnrow .kdiff{margin: 0; flex: 1 0 100%; justify-content: flex-start;}
+@media (max-height: 520px){.kline{ font-size: clamp(13px, 3.7vh, 17px); gap: 9px; line-height: 1.15; }.kline .ki, .kc .ki{ width: 28px; height: 28px; font-size: 13px; }.kline.small, .kmode{ font-size: 12px; }.kline.kearn{ font-size: clamp(17px, 5vh, 24px); }.kbig{ font-size: clamp(17px, 5vh, 22px); padding: 7px 26px; }.ksmall{ font-size: 12px; padding: 7px 12px; }.kdiff button{ font-size: 11px; padding: 5px 10px; }}
+@media (max-height: 380px){.kline .ki{ width: 24px; height: 24px; }}
+.kbtnrow .kdiff.klen button{min-width: 44px;}
+.kdiff .kallow{background: #ffe14d !important; color: #12052a !important; border-color: #ffe14d !important; animation: kpulse 1.2s ease-in-out infinite;}
+.kdiff .ktstat{font: 700 11px Rajdhani, sans-serif; color: #bff6ff; font-style: normal; margin-left: 6px;}
+.kdiff .ktutbtn{margin-left: 8px; border-color: #ffe14d !important; color: #ffe14d;}
+.kcard.kcard2{display: flex; flex-direction: row; gap: 12px; height: auto; max-height: 100%; align-items: stretch;}
+.kcard2 > .kact{flex: 0.85 1 0; min-width: 220px;}
+.kcard2 > .khow{flex: 1.15 1 0;}
+.kcard2 .kact{min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 8px; background: rgba(18,5,42,.94); border: 2px solid #ff4fd8; border-radius: 20px; padding: 12px 14px; box-shadow: 0 0 22px rgba(255,79,216,.35); color: #fff; overflow: hidden;}
+.kcard2 .kact h2{margin: 0; font: 900 clamp(18px, 5.4vh, 32px) 'Orbitron', sans-serif; letter-spacing: 2px; text-shadow: 0 0 14px #ff4fd8; line-height: 1.05;}
+.kcard2 .kopts{flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; overscroll-behavior: contain;}
+.kcard2 .kopts .kdiff{position: static; margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; justify-content: flex-start;}
+.kcard2 .kopts .kdiff > span{flex: 0 0 100%; font: 800 10px 'Orbitron', sans-serif; letter-spacing: 1.5px; color: #3ee6ff;}
+.kcard2 .kopts .kdiff .ktstat{flex: 1 0 100%; font-size: 12px;}
+.kcard2 .kready{color: #ffd0f4; font: 700 14px 'Rajdhani', sans-serif;}
+.kcard2 .kstart{flex: none; display: flex; gap: 8px; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid rgba(255,79,216,.35);}
+.kcard2 .kstart .kbig{flex: 1 1 auto;}
+.kcard2 .khow{min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; background: rgba(10,4,26,.94); border: 2px solid #3ee6ff; border-radius: 20px; padding: 12px 14px; color: #fff; font-family: 'Rajdhani', sans-serif; display: flex; flex-direction: column; gap: 6px;}
+.kcard2 .khow h4{margin: 0; font: 900 13px 'Orbitron', sans-serif; letter-spacing: 2px; color: #3ee6ff;}
+.kcard2 .khow .kcollect{background: none; border: 0; padding: 6px 0 0; border-top: 1px solid rgba(62,230,255,.3); border-radius: 0; box-shadow: none; overflow: visible; max-height: none;}
+@media (max-height: 420px){.kcard2 .kact, .kcard2 .khow{ padding: 8px 10px; border-radius: 14px; }.kcard2 .khow .kline{ font-size: 13px; }.kcard2 .khow .kline .ki{ width: 24px; height: 24px; font-size: 13px; }.kcard2 .kopts .kdiff button{ padding: 5px 9px; font-size: 11px; }}
+.kcard2 .kres.kres1{display: flex; gap: 6px; flex-wrap: nowrap; margin: 0; justify-content: flex-start;}
+.kcard2 .kres.kres1 > div{flex: 1 1 0; min-width: 0; padding: 4px 6px; border-radius: 10px; text-align: center;}
+.kcard2 .kres.kres1 small{display: block; font-size: 9px; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.kcard2 .kres.kres1 b{display: block; font-size: clamp(13px, 3.8vh, 18px); white-space: nowrap;}
+.kcard2 .kearn{font-size: clamp(15px, 4.6vh, 22px); margin: 0;}
+.kcard2 .kstart .kbig{font-size: clamp(14px, 4.2vh, 20px); padding: clamp(6px, 1.8vh, 12px) 14px; min-height: 44px;}
+.kcard2 .kstart .ksmall{font-size: 11px; padding: 6px 10px; min-height: 40px;}
+.kcard2 .kline{margin: 0; line-height: 1.2;}
+.kcard2 .khow .kline.small{font-size: 12px;}
+.kcard2 .kunlock{font-size: 12px; margin-top: 2px;}
+.kcard.kcard2{max-width: 860px;}
+.kcard2 .kact h2 small.kdlen{display: block; font-size: 10px; letter-spacing: 1.5px; color: #3ee6ff; text-shadow: none; margin-top: 2px;}
+@media (max-height: 420px){.kcard2 .kact h2{ font-size: 18px; }.kcard2 .kstart .ksmall{ min-height: 36px; padding: 4px 8px; }.kcard2 .kstart .kbig{ min-height: 40px; }.kcard2 .kopts{ gap: 5px; }.kover{ padding: 6px; }}
+.kcard.kcard2.kconfirm{max-width: 520px;}
+.kdiff.klv{flex-wrap: wrap; gap: 4px;}
+.kdiff.klv button{min-width: 34px; padding: 5px 8px; position: relative; line-height: 1;}
+.kdiff.klv button i{display: block; font-style: normal; font-size: 7px; letter-spacing: -1px; color: #ffe14d; margin-top: 2px;}
+.kdiff.klv button.on i{color: #1a0633;}
+.kdiff.klv button.locked{opacity: .45; border-style: dashed;}
+.kdiff.kwver button.kw2:not(.on){border-color: #ff3b4f; box-shadow: 0 0 10px rgba(255,59,79,.55), inset 0 0 8px rgba(62,123,255,.35);}
+.kdiff.kwver button.locked{opacity: .55; border-style: dashed;}
+.kready.kwlock2{color: #ffb3bd;}
+.kready.kw2new{color: #9df7ff; font-size: 12px;}
+.kbig.kw2go{background: linear-gradient(90deg, #ff2a3d, #3e7bff); color: #fff; animation: kw2glow 1s ease-in-out infinite alternate;}
+@media (prefers-reduced-motion: reduce){.kw2cel, .kbig.kw2go{ animation: none; }}
+/* Neon Flying: flight-only controls, built on WANTED's .kround / .kwnos / .kwbrake */
+.kid{font-family:'Rajdhani',sans-serif}
+.kround{display:flex;flex-direction:column;align-items:center;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none}
+.kround.nfxa{transition:transform 70ms ease-out,filter 70ms ease-out,box-shadow 70ms ease-out}
+.kfbrk{right:auto;left:20px;bottom:20px;width:min(92px,23vh);height:min(92px,23vh);background:radial-gradient(circle at 40% 35%,#ffc2c8,#ff2a3d 45%,#8a0614);border:4px solid #fff;box-shadow:0 0 22px #ff2a3d;font-size:clamp(13px,3.8vh,17px)}
+.kfthr{width:min(84px,21vh);height:min(84px,21vh);right:calc(min(112px,28vh) + 36px);background:radial-gradient(circle at 40% 35%,#ffd6f6,#ff4fd8 45%,#6a0a5a);border:4px solid #fff;box-shadow:0 0 18px #ff4fd8;font-size:clamp(13px,3.8vh,17px)}
+.kfthr small{font:900 clamp(16px,5vh,22px) 'Orbitron',sans-serif;margin-top:0}
+#tup{bottom:20px;width:min(100px,25vh);height:min(100px,25vh);font-size:clamp(11px,3.4vh,15px);letter-spacing:.5px}
+#tup small{font:800 9px 'Rajdhani',sans-serif;letter-spacing:1px;margin-top:2px}
+.kwnos.empty{opacity:.55;animation:none;box-shadow:0 0 10px #3ee6ff}
+#kOver .kcard2 .khow .kline .ki{font-size:clamp(14px,4vh,19px)}
+#c{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+/* fly3thr layout: LEFT thumb = NOS (bottom) + AIR BRAKE (above it); RIGHT thumb = hold THROTTLE */
+#nos{right:auto;left:20px;bottom:20px}
+#nos .nfxcan{left:calc(100% + 12px);bottom:18%;transform:none}
+.kfbrk{bottom:calc(min(112px,28vh) + 34px)}
+/* E-BRAKE pad: pops up to the right of AIR BRAKE, under the finger. Hidden unless that hold is live. */
+#ebpad{display:none;pointer-events:none;z-index:5;margin:0;background:radial-gradient(circle at 40% 35%,#ffe9a0,#ffb020 46%,#a85a00);border:4px solid #fff;box-shadow:0 0 28px #ffe14d,0 0 10px #fff inset;color:#2a1200;font-size:clamp(13px,3.8vh,17px)}
+#ebpad small{color:#2a1200;font:900 11px 'Orbitron',sans-serif;letter-spacing:1px}
+#ebpad.show{display:flex;animation:ebpop .12s ease-out}
+@keyframes ebpop{from{transform:scale(.62);opacity:.35}to{transform:none;opacity:1}}
+#tup{right:20px;bottom:20px;width:min(112px,28vh);height:min(112px,28vh);font-size:clamp(12px,3.6vh,16px)}
+
+/* WINGS toggle: right side, above THROTTLE (WANTED .kwoil purple) */
+.kfwng{right:20px;bottom:calc(min(112px,28vh) + 34px);width:min(84px,21vh);height:min(84px,21vh);background:radial-gradient(circle at 40% 35%,#e3c9ff,#8a4dff 45%,#1d0b3a);border:4px solid #fff;box-shadow:0 0 18px #c08cff;font-size:clamp(11px,3.4vh,15px)}
+.kfwng small{font:900 9px 'Orbitron',sans-serif;letter-spacing:1px;margin-top:2px}
+.kfwng.arcade{background:radial-gradient(circle at 40% 35%,#fff2a8,#ffb020 45%,#8a3c00);box-shadow:0 0 22px #ffe14d;color:#240c00}
+.kfwng.street{background:radial-gradient(circle at 40% 35%,#d8ffe6,#2fd980 45%,#093822);box-shadow:0 0 22px #7dff6b;color:#042414}
+/* MODE pad: pops up to the left of WINGS, naming the mode the slide will switch to. */
+#mdpad{display:none;pointer-events:none;z-index:5;margin:0;border:4px solid #fff;font-size:clamp(12px,3.5vh,16px)}
+#mdpad small{font:900 11px 'Orbitron',sans-serif;letter-spacing:1px}
+#mdpad.show{display:flex;animation:ebpop .12s ease-out}
+#mdpad.to-street{background:radial-gradient(circle at 40% 35%,#d8ffe6,#2fd980 45%,#093822);box-shadow:0 0 28px #7dff6b,0 0 10px #fff inset;color:#042414}
+#mdpad.to-arcade{background:radial-gradient(circle at 40% 35%,#fff2a8,#ffb020 45%,#8a3c00);box-shadow:0 0 28px #ffe14d,0 0 10px #fff inset;color:#240c00}
+
+.kid.flip180 .kbody{transform:rotate(180deg)}
+#kToast.ktoast{top:112px}  /* below the tilt gauge + runway hint */
+html.pc-mode .kover{align-items:flex-start;justify-content:center;padding:16px 18px 24px;overflow-y:auto}
+html.pc-mode .kcard.kcard2{height:auto;max-height:92vh;width:min(1080px,calc(100vw - 36px));overflow:hidden}
+html.pc-mode .kcard2>.kact,html.pc-mode .kcard2>.khow{min-height:0;max-height:92vh;overflow:hidden}
+html.pc-mode .kcard2 .kact{overflow:hidden;padding:10px 12px}
+html.pc-mode .kcard2 .kopts,html.pc-mode .kcard2 .khow{overflow-y:auto}
+html.pc-mode .kcard2 .kstart{flex:none}
+html.pc-mode .kcard2 .kact h2{font-size:24px}
+html.pc-mode .kcard2 .kline{font-size:14px}
+html.pc-mode .khome{top:4vh;transform:translate(-50%,0);max-height:92vh;overflow-y:auto;width:min(1120px,calc(100vw - 24px))}
+</style><link rel="stylesheet" href="shared/menu-tiles.css"></head><body>
+<div id="kid" class="kid" data-tab="wanted"><div class="kbody">
+<canvas id="c"></canvas>
+<button id="brk" class="kround kfbrk nfxa">BRAKE</button>
+<div id="ebpad" class="kround" aria-hidden="true">E-<small>BRAKE</small></div>
+<button id="wng" class="kround kfwng nfxa arcade">WINGS<small id="wngS">ARCADE</small></button>
+<div id="mdpad" class="kround" aria-hidden="true"><span id="mdpadT">STREET</span><small id="mdpadS">MODE</small></div>
+<button id="tup" class="kround kfthr nfxa">THROTTLE<small>HOLD</small></button>
+<button id="nos" class="kround kwnos ready nfxa">NOS<small>HOLD</small></button>
+<div id="kPzBg" class="kpzbg hidden"></div><div id="kHome" class="khome hidden"><button id="kPzX" class="kpzx" aria-label="Close menu">✕</button><div id="kPzRow" class="kpzrow"><button data-m="resume">▶ RESUME</button><button data-m="home">⌂ HOME / EXIT</button></div><div id="kTabs" class="ktabs"><button data-m="recal">⊙ TILT CENTER</button><button data-m="full">⛶ FULLSCREEN</button><button data-m="runway">↺ BACK TO RUNWAY</button><button data-m="skydrop">🪂 SKY DROP</button><button data-m="xray">RUNWAY X-RAY ON</button></div></div><button id="kMenuB" class="kmenub hidden" aria-label="Pause"><span>⏸</span></button>
+<div id="kOver" class="kover"><div class="kcard kcard2"><div class="kact"><h2>NEON WORLD!</h2><div class="kopts">
+<div class="kdiff"><span>SETUP</span><button class="on">STARTER WINGS</button></div>
+<div class="kdiff" id="kStartMode"><span>START</span><button data-sm="skydrop">🪂 SKY DROP</button><button data-sm="runway" class="on">🛫 RUNWAY</button><button data-sm="soccer">⚽ CAR SOCCER</button><button data-sm="wall">🧱 GRAFFITI WALL</button><button data-sm="paint">🎨 NEON PAINT</button></div>
+<div class="kdiff"><span>TILT</span><button id="kCalHint" class="on">📱 HOLD IT COMFY</button></div>
+<div class="kready">Hold the phone however is comfy, then tap START. Let go of THROTTLE to coast and slow down. That's your level: all tilt is from there. Re-center any time in ⏸.</div>
+</div><div class="kstart"><button id="ready" class="kbig">START</button></div></div>
+<div class="khow"><h4>HOW TO PLAY</h4>
+<div class="kline"><span class="ki">🛫</span><span>You start on the RUNWAY. Hold THROTTLE and build speed: <em>no lift until ROTATE speed</em> (the green mark).</span></div>
+<div class="kline"><span class="ki">🚪</span><span>WINGS start <em>CLOSED</em> (no lift, any speed). Tap WINGS to open the doors + hatch. Open early = gentle takeoff; stay closed, build speed, then open = <em>FAST LAUNCH</em>.</span></div>
+<div class="kline"><span class="ki">⬆️</span><span>When the bar says <em>PULL UP!</em> tilt the top of the phone toward you to lift off.</span></div>
+<div class="kline"><span class="ki">↔️</span><span>Tilt left/right to BANK and turn. Away = dive (gain speed), toward = climb (trade speed for height).</span></div>
+<div class="kline"><span class="ki">🌀</span><span>Tilt HARD left/right for a <em>BARREL ROLL</em>. Climb too steep and slow and she <em>STALLS</em>: let the nose drop, then pull up.</span></div>
+<div class="kline"><span class="ki">💨</span><span>Hold NOS for a burst. The bottle drains while held and refills on its own.</span></div>
+<div class="kline"><span class="ki">🧈</span><span>Land soft: slow down, nose a little up, AIR BRAKE. Float it in under 6 mph for a <em>BUTTER LANDING!</em></span></div>
+<div class="kline"><span class="ki">🛞</span><span>On the ground, hold AIR BRAKE to slow in a straight line. Slide that finger right and an <em>E-BRAKE</em> pad pops up under it. Lift or slide back off the pad and it vanishes. Hold THROTTLE with it to spin donuts.</span></div>
+<div class="kline small">Desktop: W/↑ throttle · S/↓ brake · Space e-brake · Shift NOS · F wings · G arcade/street · E building · C car · Esc pause · A/D steer</div>
+</div></div></div>
+<div id="kWreck" class="kover hidden"><div class="kcard"><div class="kact"><h2>WRECKED!</h2><div class="kready">Way too hard! Come in slow, nose a little up, and use AIR BRAKE.</div></div><div class="kstart"><button id="kWrR" class="kbig">↺ BACK TO RUNWAY</button><button id="kWrH" class="kbig" style="margin-top:10px;filter:hue-rotate(160deg)">⌂ HOME</button></div></div></div>
+<div id="kToast" class="ktoast hidden"></div>
+</div></div>
+
+<script src="shared/assets/370z-glb.js?v=30"></script>
+<script src="shared/assets/traffic/sedan.js?v=30"></script>
+<script src="shared/assets/traffic/hatchback.js?v=30"></script>
+<script src="shared/assets/traffic/van.js?v=30"></script>
+<script src="shared/assets/traffic/pickup.js?v=30"></script>
+<script src="shared/assets/traffic/suv.js?v=30"></script>
+<script src="shared/assets/traffic/police.js?v=30"></script>
+<script src="shared/assets/traffic/k-sedan.js?v=30"></script>
+<script src="shared/assets/traffic/k-sedan-sports.js?v=30"></script>
+<script src="shared/assets/traffic/k-hatchback-sports.js?v=30"></script>
+<script src="shared/assets/traffic/k-suv.js?v=30"></script>
+<script src="shared/assets/traffic/k-suv-luxury.js?v=30"></script>
+<script src="shared/assets/traffic/k-van.js?v=30"></script>
+<script src="shared/assets/traffic/k-taxi.js?v=30"></script>
+<script src="shared/assets/traffic/k-truck.js?v=30"></script>
+<script src="shared/assets/traffic/k-truck-flat.js?v=30"></script>
+<script src="shared/assets/traffic/k-delivery.js?v=30"></script>
+<script src="shared/assets/traffic/k-delivery-flat.js?v=30"></script>
+<script src="shared/assets/traffic/k-ambulance.js?v=30"></script>
+<script src="shared/assets/traffic/k-firetruck.js?v=30"></script>
+<script src="shared/assets/traffic/k-garbage-truck.js?v=30"></script>
+<script src="shared/assets/traffic/k-race.js?v=30"></script>
+<script src="shared/assets/traffic/k-race-future.js?v=30"></script>
+<script src="shared/assets/traffic/colormap.js?v=30"></script>
+<script src="shared/zd-embed.js?v=30"></script>
+<script src="shared/unlock.js?v=30"></script>
+<script src="shared/car-hinge.js?v=30"></script>
+<script src="shared/tune.js?v=30"></script>
+<script src="world/input.js?v=30"></script>
+<script src="shared/steering.js?v=30"></script>
+<script src="world/state.js?v=30"></script>
+<script src="world/camera.js?v=30"></script>
+<script src="shared/car-wire.js?v=30"></script>
+<script src="world/garage.js?v=30"></script>
+<script src="world/garagez.js?v=30"></script>
+<script src="shared/car-draw.js?v=30"></script>
+<script src="shared/minimap-tune.js?v=30"></script>
+<script src="world/hud.js?v=30"></script>
+<script src="world/phys-ground.js?v=30"></script>
+<script src="world/phys-air.js?v=30"></script>
+<script src="world/towtruck.js?v=30"></script>
+<script src="world/city.js?v=30"></script>
+<script src="world/ground.js?v=30"></script>
+<script src="world/ramps.js?v=30"></script>
+<script src="world/city-draw.js?v=30"></script>
+<script src="shared/detail-tune.js?v=30"></script>
+<script src="world/detail.js?v=30"></script>
+<script src="world/landings.js?v=30"></script>
+<script src="world/flight.js?v=30"></script>
+<script src="world/icon-garage.js?v=30"></script>
+<script src="world/house.js?v=30"></script>
+<script src="world/objectives.js?v=30"></script>
+<script src="world/sound.js?v=30"></script>
+<script src="shared/traffic-tune.js?v=30"></script>
+<script src="world/traffic.js?v=30"></script>
+<script src="world/towdrive.js?v=30"></script>
+<script src="shared/crew-state.js?v=30"></script>
+<script src="world/crew-data.js?v=30"></script>
+<script src="world/crew.js?v=30"></script>
+<script src="shared/soccer-tune.js?v=30"></script>
+<script src="world/soccer.js?v=30"></script>
+<script src="world/dance-stage.js?v=30"></script>
+<script src="world/neon-paint.js?v=30"></script>
+<script src="world/boot.js?v=30"></script>
+<script src="shared/car-model.js?v=30"></script>
+</body></html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta name="robots" content="noindex"><link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="><script>(function(){function scrub(){if(!('caches' in window))return;caches.keys().then(function(keys){keys.forEach(function(k){caches.open(k).then(function(c){['/jr.html','/index.html','/world.html','/fly3.html'].forEach(function(logical){var req=new Request(location.origin+logical);c.match(req).then(function(hit){if(hit&&String(hit.url).indexOf('/test/')!==-1)c.delete(req);});});c.keys().then(function(reqs){reqs.forEach(function(req){try{if(new URL(req.url).pathname.indexOf('/test/')===0)c.delete(req);}catch(e){}});});});});});}scrub();var n=0,iv=setInterval(function(){scrub();if(++n>10)clearInterval(iv);},300);if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){navigator.serviceWorker.register('sw.js',{scope:'/test/',updateViaCache:'none'}).catch(function(){});}})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="manifest-jr.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Z-DASH JR">
+<script src="shared/ipad.js?v=28"></script>
+<link rel="stylesheet" href="shared/ipad.css?v=28">
+<link rel="icon" href="data:,">
+<title>Crew</title>
+<style>
+html,body{margin:0;height:100%;background:#07010f;color:#f4ecff;font-family:system-ui,sans-serif}
+canvas{display:block;width:100%;height:100%}
+#bar{position:fixed;left:0;right:0;bottom:0;display:flex;flex-wrap:wrap;gap:6px;padding:8px;z-index:2;background:linear-gradient(transparent,#07010f 28%)}
+.row{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{flex:1 1 100%;font-size:10px;letter-spacing:.12em;font-weight:700;color:#ffb020}
+button,a.pill{flex:1;appearance:none;border:1px solid #ff4ad8;background:#140818;color:#fff;border-radius:999px;font-weight:700;letter-spacing:.06em;font-size:10px;padding:8px 4px;text-align:center;text-decoration:none}
+button.on{background:#ff4ad8;color:#1a0614}
+button.boy{border-color:#3ee6ff}
+button.boy.on{background:#3ee6ff;color:#041018}
+a.pill{flex:1 1 100%;border-style:dashed}
+</style>
+<link rel="stylesheet" href="shared/menu-tiles.css">
+</head><body>
+<canvas id="cv"></canvas>
+<div id="bar">
+  <div class="row">
+    <button type="button" data-g="idle">IDLE</button>
+    <button type="button" data-g="walk" class="on">WALK</button>
+    <button type="button" data-g="run">RUN</button>
+    <button type="button" data-g="dance">DANCE</button>
+    <button type="button" data-w="girl" class="on">WOMAN</button>
+    <button type="button" data-w="boy" class="boy">MAN</button>
+  </div>
+  <div class="row" id="charDances">
+    <span class="tag">💃 CHARACTER DANCE STYLE</span>
+    <button type="button" data-copt="default" class="on">✨ CLASSIC GROOVE</button>
+    <a class="pill" href="dance-stage.html?record=character">+ RECORD NEW DANCE IN Z COMPANY ARTS</a>
+  </div>
+  <div class="row" id="petDances">
+    <span class="tag">🐾 PET DANCE STYLE</span>
+    <button type="button" data-popt="default" class="on">✨ SIGNATURE PET DANCE</button>
+  </div>
+</div>
+<script src="shared/crew-state.js?v=28"></script>
+<script src="world/crew-data.js?v=28"></script>
+<script src="world/crew.js?v=28"></script>
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+function fit(){const ipad=!!window.Z_IS_IPAD;const d=ipad?1:Math.min(2,devicePixelRatio||1);cv.width=innerWidth*d;cv.height=innerHeight*d;ctx.setTransform(d,0,0,d,0,0);if(ipad){cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';}}
+addEventListener('resize',fit);fit();
+const qs=location.search;
+if(/[?&]gait=/.test(qs)){const g=(/gait=(\w+)/.exec(qs)||[])[1];if(g)CREWSTATE.setGait(g);}
+if(/[?&]who=boy/.test(qs))CREWSTATE.setWho('boy');
+if(/[?&]who=girl/.test(qs))CREWSTATE.setWho('girl');
+function fillRow(id, options, current, key){
+  const row=document.getElementById(id), tag=row.querySelector('.tag'), pill=row.querySelector('a.pill');
+  row.innerHTML='';
+  row.appendChild(tag);
+  options.forEach(o=>{
+    const b=document.createElement('button');
+    b.type='button';b.dataset[key]=o.id;b.textContent=o.label;
+    if(o.id===current)b.className='on';
+    row.appendChild(b);
+  });
+  if(pill)row.appendChild(pill);
+}
+let paintSig='';
+function paint(){
+  document.querySelectorAll('#bar [data-g],[data-w]').forEach(b=>{
+    if(b.dataset.g)b.classList.toggle('on',b.dataset.g===CREWSTATE.gait);
+    if(b.dataset.w)b.classList.toggle('on',b.dataset.w===CREWSTATE.who);
+  });
+  if(!window.CREW)return;
+  const co=CREW.getCharDanceOptions(), po=CREW.getPetDanceOptions();
+  const sig=JSON.stringify(co)+'|'+CREWSTATE.charDanceOpt+'|'+JSON.stringify(po)+'|'+CREWSTATE.petDanceOpt;
+  if(sig===paintSig){
+    document.querySelectorAll('[data-copt]').forEach(b=>b.classList.toggle('on',b.dataset.copt===CREWSTATE.charDanceOpt));
+    document.querySelectorAll('[data-popt]').forEach(b=>b.classList.toggle('on',b.dataset.popt===CREWSTATE.petDanceOpt));
+    return;
+  }
+  paintSig=sig;
+  fillRow('charDances',co,CREWSTATE.charDanceOpt,'copt');
+  fillRow('petDances',po,CREWSTATE.petDanceOpt,'popt');
+}
+document.getElementById('bar').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.g)CREWSTATE.setGait(b.dataset.g);
+  if(b.dataset.w)CREWSTATE.setWho(b.dataset.w);
+  if(b.dataset.copt)CREW.setCharDanceOpt(b.dataset.copt);
+  if(b.dataset.popt)CREW.setPetDanceOpt(b.dataset.popt);
+  paintSig='';
+  paint();
+});
+paint();
+if(/pets=1|sheet=1/.test(qs))document.getElementById('bar').style.display='none';
+function frame(t){const w=innerWidth,h=innerHeight;CREW.preview(ctx,w,h,t||performance.now());paint();requestAnimationFrame(frame);}
+requestAnimationFrame(frame);
+</script>
+<style>
+.zd-top-pause-btn{position:fixed;top:2px;right:4px;z-index:95;width:44px;height:44px;border-radius:12px;border:2px solid #9df2ff;background:rgba(12,6,28,.9);color:#e9fff2;font-size:20px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(62,230,255,.35);padding:0}
+.zd-top-pause-modal{position:fixed;inset:0;z-index:120;background:rgba(6,2,16,.84);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px;font-family:Orbitron,sans-serif}
+.zd-top-pause-modal.open{display:flex}
+.zd-top-pause-card{width:min(360px,92vw);padding:20px;border-radius:20px;border:2px solid #3ee6ff;background:rgba(12,5,28,.96);box-shadow:0 0 28px rgba(62,230,255,.35);display:flex;flex-direction:column;gap:10px;text-align:center}
+.zd-top-pause-title{font-size:20px;font-weight:900;letter-spacing:2px;color:#3ee6ff;text-shadow:0 0 12px #3ee6ff;margin-bottom:4px}
+.zd-top-pause-item{min-height:46px;border-radius:12px;border:2px solid #3ee6ff;background:rgba(20,10,44,.92);color:#e9fff2;font:900 13px/1 Orbitron,sans-serif;letter-spacing:1.2px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.zd-top-pause-item.primary{border-color:#7dff6b;color:#7dff6b;box-shadow:0 0 14px rgba(125,255,107,.3)}
+.zd-top-pause-item.pink{border-color:#ff4fd8;color:#ff4fd8}
+.zd-ds-top,.top{padding-right:58px !important}
+</style>
+<button id="kMenuB" class="zd-top-pause-btn" type="button" aria-label="Pause"><span>⏸</span></button>
+<div id="zdPauseModal" class="zd-top-pause-modal" role="dialog" aria-modal="true" aria-label="Paused">
+  <div class="zd-top-pause-card">
+    <div class="zd-top-pause-title">PAUSED</div>
+    <button type="button" class="zd-top-pause-item primary" id="zdPauseResume">▶ RESUME</button>
+    <a class="zd-top-pause-item" href="jr.html#garage">🚗 GARAGE</a>
+    <a class="zd-top-pause-item" href="world.html">🌆 NEON WORLD</a>
+    <a class="zd-top-pause-item pink" href="jr.html?kmenu=1">⌂ MAIN MENU</a>
+  </div>
+</div>
+<script>
+(function(){
+  var btn=document.getElementById('kMenuB'), mod=document.getElementById('zdPauseModal'), res=document.getElementById('zdPauseResume');
+  if(btn&&mod){
+    btn.addEventListener('click',function(){mod.classList.toggle('open');});
+    if(res)res.addEventListener('click',function(){mod.classList.remove('open');});
+    mod.addEventListener('click',function(e){if(e.target===mod)mod.classList.remove('open');});
+  }
+})();
+</script>
+</body></html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="robots" content="noindex"><link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="><script>(function(){function scrub(){if(!('caches' in window))return;caches.keys().then(function(keys){keys.forEach(function(k){caches.open(k).then(function(c){['/jr.html','/index.html','/world.html','/fly3.html'].forEach(function(logical){var req=new Request(location.origin+logical);c.match(req).then(function(hit){if(hit&&String(hit.url).indexOf('/test/')!==-1)c.delete(req);});});c.keys().then(function(reqs){reqs.forEach(function(req){try{if(new URL(req.url).pathname.indexOf('/test/')===0)c.delete(req);}catch(e){}});});});});});}scrub();var n=0,iv=setInterval(function(){scrub();if(++n>10)clearInterval(iv);},300);if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){navigator.serviceWorker.register('sw.js',{scope:'/test/',updateViaCache:'none'}).catch(function(){});}})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="manifest-jr.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Z-DASH JR">
+<meta name="robots" content="noindex,nofollow">
+<title>Neon Drawing</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%2307010f' width='32' height='32'/%3E%3Cpath d='M6 22 L16 6 L26 22' fill='none' stroke='%23ff4fd8' stroke-width='3'/%3E%3C/svg%3E">
+<script src="shared/ipad.js?v=28"></script>
+<link rel="stylesheet" href="shared/fonts/orbitron.css">
+<link rel="stylesheet" href="shared/ipad.css?v=28">
+<style>
+html,body{margin:0;height:100%;background:#07010f;overflow:hidden}
+</style>
+<link rel="stylesheet" href="shared/menu-tiles.css">
+</head>
+<body>
+<script src="shared/assets/370z-glb.js?v=28"></script>
+<script src="shared/zd-embed.js?v=28"></script>
+<script src="shared/car-model.js?v=28"></script>
+<script src="shared/car-hinge.js?v=28"></script>
+<script src="world/garage.js?v=28"></script>
+<script src="world/garagez.js?v=28"></script>
+<script src="world/neon-paint.js?v=28"></script>
+<script>
+(function () {
+  var q = location.search || '';
+  var hash = location.hash || '';
+  var wall = /(?:\?|&)mode=wall(?:&|$)/.test(q) || hash === '#wall' || /mode=wall/.test(hash);
+  var vinyl = '';
+  try { vinyl = new URLSearchParams(q).get('vinyl') || ''; } catch (e) { vinyl = ''; }
+  document.addEventListener('keydown', function (e) {
+    var t = e.target;
+    if (!t) return;
+    if (t.id === 'vinylNameInp' || t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable) return;
+  }, true);
+  NEON_PAINT.openStudio(wall ? { page: true, canvas: 'wall' } : { page: true, canvas: 'car', vinyl: vinyl });
+})();
+</script>
+</body>
+</html>

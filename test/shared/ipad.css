@@ -1,0 +1,290 @@
+/* iPad / tablet only. Every rule hangs off html.ipad-mode, which zSyncIPad
+   sets together with body.ipad-mode. Phones and non-touch PCs never match. */
+
+html.ipad-mode,
+html.ipad-mode body{
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+  user-select:none;
+  touch-action:manipulation;
+}
+html.ipad-mode canvas,
+html.ipad-mode #c,
+html.ipad-mode #brk,
+html.ipad-mode #ebpad,
+html.ipad-mode #wng,
+html.ipad-mode #mdpad,
+html.ipad-mode #tup,
+html.ipad-mode #nos,
+html.ipad-mode #emoteBtn,
+html.ipad-mode #emoteWheel,
+html.ipad-mode .kround,
+html.ipad-mode .np-stage canvas,
+html.ipad-mode .zd-ds canvas{
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+  user-select:none;
+  touch-action:none;
+}
+
+/* Thumb-zone drive + on-foot buttons. Left edge: brake / e-brake slide + NOS.
+   Right edge: wings / mode slide + throttle. Emote stays on the right edge. */
+html.ipad-mode #nos{
+  left:max(18px, env(safe-area-inset-left));
+  right:auto;
+  bottom:max(22px, env(safe-area-inset-bottom));
+  width:104px;
+  height:104px;
+}
+html.ipad-mode #brk.kfbrk{
+  left:max(18px, env(safe-area-inset-left));
+  right:auto;
+  bottom:calc(max(22px, env(safe-area-inset-bottom)) + 118px);
+  width:100px;
+  height:100px;
+}
+html.ipad-mode #tup{
+  left:auto;
+  right:max(18px, env(safe-area-inset-right));
+  top:auto;
+  bottom:max(22px, env(safe-area-inset-bottom));
+  width:108px;
+  height:108px;
+}
+html.ipad-mode #wng.kfwng{
+  left:auto;
+  right:max(18px, env(safe-area-inset-right));
+  top:auto;
+  bottom:calc(max(22px, env(safe-area-inset-bottom)) + 122px);
+  width:100px;
+  height:100px;
+}
+html.ipad-mode #brk,
+html.ipad-mode #nos,
+html.ipad-mode #tup,
+html.ipad-mode #wng,
+html.ipad-mode #emoteBtn{
+  font-size:15px;
+}
+html.ipad-mode #emoteBtn{
+  left:auto;
+  right:max(18px, env(safe-area-inset-right));
+  bottom:calc(max(22px, env(safe-area-inset-bottom)) + 236px);
+  transform:none;
+  width:96px;
+  height:96px;
+}
+html.ipad-mode #emoteWheel{
+  left:auto;
+  right:calc(max(18px, env(safe-area-inset-right)) + 48px);
+  bottom:calc(max(22px, env(safe-area-inset-bottom)) + 284px);
+  transform:none;
+}
+
+/* Top bar fallbacks. world/hud.js writes the exact CSS-pixel boxes each frame. */
+html.ipad-mode #kMenuB,
+html.ipad-mode #kid .kmenub{
+  position:fixed;
+  left:auto;
+  right:max(18px, env(safe-area-inset-right));
+  top:max(12px, env(safe-area-inset-top));
+  bottom:auto;
+  transform:none;
+  width:64px;
+  height:56px;
+  z-index:40;
+}
+html.ipad-mode #kMenuB.hidden,
+html.ipad-mode #kMenuB.kopen{display:none !important}
+html.ipad-mode #exitCarBtn,
+html.ipad-mode #enterBldBtn{
+  border-radius:16px;
+  font-size:12px;
+  z-index:96;
+}
+html.ipad-mode .khome:not(.kmain){
+  width:min(720px, calc(100vw - 36px));
+  max-height:calc(100vh - 36px);
+  padding:16px 20px 18px;
+  gap:10px;
+  overflow:auto;
+}
+html.ipad-mode .khome .ktabs button,
+html.ipad-mode .khome .kpzrow button{
+  min-height:48px;
+  font-size:14px;
+  padding:10px 16px;
+}
+
+/* Main menu: 5×3 landscape grid, all 15 tiles, no page scroll. */
+html.ipad-mode .kmain{
+  overflow:hidden;
+  justify-content:flex-start;
+  gap:8px;
+  padding:10px 16px 12px;
+  box-sizing:border-box;
+  max-height:100%;
+  width:auto;
+  max-width:none;
+  left:0;
+  right:0;
+  transform:none;
+}
+html.ipad-mode .kmain .kright{
+  flex:0 0 auto;
+  width:100%;
+  justify-content:center;
+  gap:10px;
+}
+html.ipad-mode .kmain .ktilesm{
+  flex:1 1 auto;
+  display:grid;
+  grid-template-columns:repeat(5, minmax(0, 1fr));
+  grid-template-rows:repeat(3, minmax(0, 1fr));
+  grid-auto-rows:minmax(0, 1fr);
+  width:min(1120px, 100%);
+  max-height:none;
+  height:auto;
+  min-height:0;
+  overflow:hidden;
+  align-content:stretch;
+  gap:8px;
+}
+html.ipad-mode .ktile{
+  min-height:0;
+  overflow:hidden;
+  padding:6px 4px;
+}
+html.ipad-mode .kti svg{max-height:min(64px, 8vh)}
+html.ipad-mode .ktn{font-size:clamp(10px, 1.4vw, 14px);letter-spacing:.4px}
+html.ipad-mode .kts{font-size:clamp(9px, 1.2vw, 12px)}
+@media (orientation: portrait){
+  html.ipad-mode .kmain .ktilesm{
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    grid-template-rows:repeat(5, minmax(0, 1fr));
+  }
+}
+
+/* 3D garage: side-by-side on landscape 4:3, stacked in portrait. */
+html.ipad-mode #kid[data-tab="garage"] .kgarage{
+  width:min(420px, 42%);
+  padding:14px 14px 18px;
+  gap:8px;
+  box-sizing:border-box;
+}
+html.ipad-mode #kid[data-tab="garage"] .gitems{
+  grid-template-columns:repeat(auto-fill, minmax(132px, 1fr));
+  gap:8px;
+}
+html.ipad-mode #kid[data-tab="garage"] .gcats button,
+html.ipad-mode #kid[data-tab="garage"] .gsecs button{
+  font-size:12px;
+  min-height:36px;
+  padding:8px 10px;
+}
+html.ipad-mode #kid[data-tab="garage"] .kmenub{
+  top:max(12px, env(safe-area-inset-top));
+  right:calc(min(420px, 42%) + 12px);
+  left:auto;
+  bottom:auto;
+  transform:none;
+  width:56px;
+  height:56px;
+}
+@media (orientation: portrait){
+  html.ipad-mode #kid[data-tab="garage"] .kgz{
+    top:max(12px, env(safe-area-inset-top));
+    bottom:auto;
+    left:max(12px, env(safe-area-inset-left));
+  }
+  html.ipad-mode #kid[data-tab="garage"] .kgarage{
+    top:48%;
+    left:0;
+    right:0;
+    bottom:0;
+    width:auto;
+    border-left:0;
+    border-top:2px solid #ff4fd8;
+    background:linear-gradient(180deg, rgba(8,2,15,.2), rgba(18,5,34,.96) 12%);
+  }
+  html.ipad-mode #kid[data-tab="garage"] .kmenub{
+    right:max(12px, env(safe-area-inset-right));
+    top:max(12px, env(safe-area-inset-top));
+  }
+}
+
+/* Neon paint + graffiti wall. */
+html.ipad-mode #np-studio .np-modes,
+html.ipad-mode #np-studio .np-top{
+  padding-right:108px;
+  padding-left:12px;
+  gap:8px;
+}
+html.ipad-mode #np-studio .np-top button,
+html.ipad-mode #np-studio .np-tools button,
+html.ipad-mode #np-studio .np-modes button{
+  font-size:12px;
+  min-height:36px;
+  padding:8px 12px;
+}
+html.ipad-mode #np-studio .np-main{grid-template-columns:1fr min(320px, 34vw)}
+html.ipad-mode #np-studio .np-colors button{
+  flex:0 0 36px;
+  width:36px;
+  height:36px;
+  min-height:36px;
+  padding:0;
+}
+html.ipad-mode #np-studio > .np-pauseb{
+  top:max(10px, env(safe-area-inset-top));
+  right:max(12px, env(safe-area-inset-right));
+  width:56px;
+  height:56px;
+}
+@media (orientation: portrait){
+  html.ipad-mode #np-studio .np-main{
+    grid-template-columns:1fr;
+    grid-template-rows:1fr auto;
+  }
+  html.ipad-mode #np-studio .np-tools{
+    max-height:42vh;
+    border-left:0;
+    border-top:1px solid rgba(62,230,255,.35);
+  }
+}
+
+/* Dance stage + shared pause button on the creative pages. */
+html.ipad-mode .zd-ds-top{
+  padding:8px 96px 8px 12px !important;
+  gap:8px;
+  flex-wrap:wrap;
+  min-height:52px;
+}
+html.ipad-mode .zd-ds button,
+html.ipad-mode .zd-ds-tab,
+html.ipad-mode .zd-ds-back,
+html.ipad-mode .zd-ds-util{
+  font-size:13px;
+  min-height:40px;
+  padding:8px 12px;
+}
+html.ipad-mode .zd-top-pause-btn{
+  top:max(10px, env(safe-area-inset-top));
+  right:max(12px, env(safe-area-inset-right));
+  width:56px;
+  height:56px;
+  z-index:96;
+}
+
+/* Crew toolbar. */
+html.ipad-mode #bar{
+  padding:12px 16px max(14px, env(safe-area-inset-bottom));
+  gap:8px;
+  right:0;
+}
+html.ipad-mode #bar button,
+html.ipad-mode #bar a.pill{
+  font-size:14px;
+  min-height:44px;
+  padding:12px 10px;
+}
