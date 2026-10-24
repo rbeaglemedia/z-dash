@@ -510,12 +510,59 @@ function walkPaintRoom(){
   g.fillStyle='#e9fff2';g.font='800 16px sans-serif';g.textAlign='left';g.fillText(theme.name,16,H-18);
   if(card)card.dataset.room=purpose;
 }
+const WALK_SESSION_KEY='zdash.neonworld.session.v1';
+function walkSessionFile(){
+  let file='world.html';
+  try{file=(location.pathname||'').split('/').pop()||'world.html';}catch(e){}
+  if(file!=='world.html'&&file!=='world-split.html')return 'world.html';
+  return file;
+}
+function walkRememberSession(){
+  if(typeof P==='undefined'||!P||typeof WALK_MODE==='undefined'||!WALK_MODE)return;
+  const door=WALK_MODE.insideDoor||WALK_MODE.door;
+  const snap={
+    v:1,page:walkSessionFile(),
+    onFoot:!!WALK_MODE.onFoot,x:+WALK_MODE.x||0,y:+WALK_MODE.y||0,z:+WALK_MODE.z||0,yaw:+WALK_MODE.yaw||0,
+    px:+P.x||0,py:+P.y||0,pz:+P.z||0,pyaw:+P.yaw||0,phd:+P.hd||0,
+    driveMode:P.driveMode||'street',
+    door:door?{x:door.x,z:door.z,nx:door.nx||0,nz:door.nz||0,standX:door.standX,standZ:door.standZ,y:door.y||0,purpose:door.purpose||'',buildingId:door.buildingId,dist:door.dist}:null
+  };
+  try{sessionStorage.setItem(WALK_SESSION_KEY,JSON.stringify(snap));}catch(e){}
+}
+function walkRestoreSession(){
+  let search='';
+  try{search=String(location.search||'');}catch(e){}
+  if(!/(?:^\?|&)npreturn=1(?:&|$)/.test(search))return false;
+  let snap=null;
+  try{snap=JSON.parse(sessionStorage.getItem(WALK_SESSION_KEY)||'null');}catch(e){snap=null;}
+  try{history.replaceState(null,'',location.pathname+(location.hash||''));}catch(e){}
+  if(!snap||snap.v!==1||typeof P==='undefined'||!P)return false;
+  P.x=+snap.px||0;P.y=+snap.py||0;P.z=+snap.pz||0;P.yaw=+snap.pyaw||0;P.hd=+snap.phd||P.yaw;P.v=0;P.ground=true;P.pitch=0;
+  if(snap.driveMode)P.driveMode=snap.driveMode;
+  WALK_MODE.onFoot=!!snap.onFoot;WALK_MODE.x=+snap.x||0;WALK_MODE.y=+snap.y||0;WALK_MODE.z=+snap.z||0;WALK_MODE.yaw=+snap.yaw||0;
+  WALK_MODE.insideBuilding=false;WALK_MODE.insideDoor=null;WALK_MODE._roofY=null;
+  if(snap.door)WALK_MODE.door=snap.door;
+  const over=document.getElementById('kOver');if(over)over.classList.add('hidden');
+  const menu=document.getElementById('kMenuB');if(menu)menu.classList.remove('hidden');
+  try{flying=true;}catch(e){}
+  return true;
+}
+function walkOpenPaintStudio(door){
+  walkRememberSession();
+  if(window.NEON_PAINT&&typeof window.NEON_PAINT.openStudio==='function'){
+    window.NEON_PAINT.openStudio({page:false,canvas:'car',fromWorld:true});
+    return true;
+  }
+  if(walkHeadless()){walkToast("ELLIE'S NEON PAINT STUDIO!",'#ff4fd8');return true;}
+  location.assign(WALK_PAGE.NEON_PAINT);
+  return true;
+}
 function walkLaunchStudio(purpose,door){
   if(purpose==='DANCE'&&window.DANCE_STAGE&&typeof window.DANCE_STAGE.open==='function'){
     window.DANCE_STAGE.open({building:walkDanceBuilding(door)});
     return true;
   }
-  if(purpose==='NEON_PAINT'&&typeof openNeonPaint==='function'&&!walkHeadless()){openNeonPaint();return true;}
+  if(purpose==='NEON_PAINT')return walkOpenPaintStudio(door);
   const page=WALK_PAGE[purpose];
   if(!page)return false;
   if(walkHeadless()){walkToast(page,WALK_DOOR[purpose]&&WALK_DOOR[purpose].color);return true;}
@@ -693,6 +740,11 @@ function walkSyncGait(){
   if(dance){dance.hidden=!on;dance.style.display='none';dance.classList.toggle('show',on);dance.classList.toggle('on',!!WALK_MODE.dancing);}
 }
 function walkShowInterior(door){
+  if(door&&door.purpose==='NEON_PAINT'){
+    walkHideInterior();
+    try{walkOpenPaintStudio(door);}catch(e){}
+    return;
+  }
   walkEnsurePill();
   if(window.DETAIL&&typeof DETAIL.loadInterior==='function')DETAIL.loadInterior(door);
   const card=typeof document!=='undefined'&&document.getElementById('walk-interior');
@@ -788,9 +840,6 @@ function walkAct(door){
     if(typeof showWreck==='function')showWreck(false);
     walkGreetPet();
     walkToast('WELCOME HOME, ELLIE! Z TUNED & READY',door.color);
-  }else if(purpose==='NEON_PAINT'){
-    if(walkHeadless())walkToast("ELLIE'S NEON PAINT STUDIO!",door.color);
-    else if(typeof openNeonPaint==='function')openNeonPaint();
   }else if(purpose==='GARAGE'){
     P.nosTank=1;
     WALK_MODE.ugI=(WALK_MODE.ugI+1)%WALK_UG.length;
@@ -914,6 +963,10 @@ function walkEnsureEnterBtn(){
   return btn;
 }
 function walkSyncEnterBtn(){
+  const live=typeof document!=='undefined'&&document.getElementById('enterBldBtn');
+  if(live&&document.getElementById('np-studio')){
+    live.style.display='none';live.setAttribute('aria-hidden','true');return;
+  }
   const btn=walkEnsureEnterBtn();
   if(!btn||btn.dataset.houseEnter!=='1')return;
   const lead=btn.querySelector('[data-k="lead"]'),sm=btn.querySelector('small');
@@ -1158,9 +1211,11 @@ window.WALK_MODE={
       walkSyncPill();walkSyncGait();walkSyncDyn();return;
     }
     if(this.insideBuilding){
-      this.vx=0;this.vz=0;this.speed=0;this.dancing=false;this.gait='walk';
-      walkRoomStep(this,d);
-      walkPaintRoom();
+      this.vx=0;this.vz=0;this.speed=0;this.dancing=false;this.gait='idle';
+      if(!(this.insideDoor&&this.insideDoor.purpose==='NEON_PAINT')){
+        walkRoomStep(this,d);
+        walkPaintRoom();
+      }
       walkSyncPill();walkSyncGait();walkSyncDyn();return;
     }
     walkIntegrate(this,d);
@@ -1169,6 +1224,7 @@ window.WALK_MODE={
   }
 };
 
+walkRestoreSession();
 walkEnsurePill();
 walkEnsureEnterBtn();
 walkLockEnter();
