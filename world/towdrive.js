@@ -233,7 +233,7 @@ const TOWDRIVE = (() => {
   // The cab is a moving city wall. cityWall would halve speed, lock heading, and
   // re-fire "BUMP! back on the runway" every frame, and the old side shove glued
   // the Z to the bumper. One hit pushes clear, knocks once, then ignores that truck.
-  const COOL = 0.8, SKIN = 0.8, GAP = 0.6, KNOCK = 6.5;
+  const SKIN = 0.8, GAP = 0.6;
   function truckOf(q) {
     if (!q) return null;
     for (let i = 0; i < trucks.length; i++) if (trucks[i].oid === q.oid) return trucks[i];
@@ -268,19 +268,7 @@ const TOWDRIVE = (() => {
   function cabTouch(q) {
     const tr = truckOf(q);
     if (!tr || P.wreck || P.loop) return false;
-    const now = P.simT || 0;
-    if ((tr.cool || 0) > now) return true;
-    const n = separateCab(q);
-    let hd = P.hd || P.yaw || 0;
-    const away = Math.sin(hd) * n.nx + Math.cos(hd) * n.nz;
-    if (away < 0) hd = Math.atan2(n.nx, n.nz);
-    else hd += (Math.sign(n.nx * Math.cos(hd) - n.nz * Math.sin(hd)) || 1) * (T.bumpYaw || 0.045);
-    P.hd = hd;
-    P.yaw = hd;
-    P.v = Math.max(KNOCK, Math.max(0, P.v || 0) * (T.bumpKeep != null ? T.bumpKeep : 0.92));
-    tr.cool = now + COOL;
-    tr.hits = (tr.hits || 0) + 1;
-    if (typeof fxBurst === 'function') fxBurst('spark', 6);
+    separateCab(q);
     return true;
   }
   function carry() {
