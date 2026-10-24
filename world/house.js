@@ -541,12 +541,18 @@ function walkPaintRoom(){
   }
   const room=WALK_MODE.room||{x:0,z:1.2,petX:1.1,petZ:1.6};
   const rz=4.6-room.z*0.55,pz=4.6-(room.petZ==null?room.z+0.4:room.petZ)*0.55;
+  const petX=room.petX==null?room.x+0.9:room.petX;
   const foot=cam(room.x,0.02,rz);
-  g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.ellipse(foot[0],foot[1],28,10,0,0,7);g.fill();
-  const crewOn=walkPaintCrew(g,foot,W,H);
-  if(!crewOn){walkDrawPerson(g,room.x,rz,W,H);walkDrawPetBody(g,room.petX==null?room.x+0.9:room.petX,pz,W,H);}
-  g.shadowBlur=0;g.fillStyle=kit?'#243044':'#e9fff2';g.font='800 16px sans-serif';g.textAlign='left';g.fillText(theme.name,16,H-18);
-  if(card)card.dataset.room=purpose;
+  g.fillStyle='rgba(0,0,0,.28)';g.beginPath();g.ellipse(foot[0],foot[1],22,8,0,0,7);g.fill();
+  const project=(x,y,z)=>{const p=walkCam(x,y,z,W,H),depth=Math.max(0.38,z+1.7);return [p[0],p[1],depth,1.45*H*0.58];};
+  const crewOn=window.CREW&&typeof CREW.paintCompanion==='function'&&CREW.paintCompanion(g,project,{x:room.x,y:0,z:rz,yaw:room.yaw||0},{x:petX,y:0,z:pz,yaw:(room.yaw||0)+0.5});
+  if(!crewOn){walkDrawPerson(g,room.x,rz,W,H);walkDrawPetBody(g,petX,pz,W,H);}
+  if(card){
+    card.dataset.room=purpose;
+    const h=card.querySelector('[data-k="title"]'),p=card.querySelector('[data-k="act"]');
+    if(h)h.textContent=theme.name;
+    if(p&&!p.textContent)p.textContent='ENTER';
+  }
 }
 function walkLaunchStudio(purpose,door){
   if(purpose==='DANCE'&&window.DANCE_STAGE&&typeof window.DANCE_STAGE.open==='function'){
@@ -689,7 +695,7 @@ function walkEnsurePill(){
   dance.addEventListener('click',()=>{if(WALK_MODE.onFoot)WALK_MODE.toggleDance();});
   root.append(run,dance);
   const roomCss=document.createElement('style');
-  roomCss.textContent='#walk-interior.show{display:block !important;background:#05010c !important;padding:0 !important;overflow:hidden !important;z-index:90 !important}#walk-room-cv{position:absolute !important;inset:0 !important;width:100% !important;height:100% !important;max-width:none !important;border:0 !important;border-radius:0 !important;box-shadow:none !important;background:#05010c !important;touch-action:none;z-index:0}#walk-interior h2,#walk-interior p{position:absolute;z-index:2;left:14px;margin:0;text-shadow:0 2px 8px #000}#walk-interior h2{top:56px}#walk-interior p{top:82px;max-width:42%}#walk-room-tools{position:absolute;z-index:2;left:12px;right:12px;bottom:14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}#walk-room-tools button{background:#3ee6ff}#walk-open-page,#walk-step-out{position:absolute;z-index:2;bottom:64px}#walk-open-page{right:14px}#walk-step-out{left:14px}';
+  roomCss.textContent='#walk-interior.show{display:block !important;background:#05010c !important;padding:0 !important;overflow:hidden !important;z-index:90 !important}#walk-room-cv{position:absolute !important;inset:0 !important;width:100% !important;height:100% !important;max-width:none !important;border:0 !important;border-radius:0 !important;box-shadow:none !important;background:#05010c !important;touch-action:none;z-index:0}#walk-room-label{position:absolute;z-index:3;left:12px;top:54px;width:112px;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}#walk-room-label h2,#walk-room-label p{position:static;left:auto;top:auto;max-width:112px;margin:0;text-align:center;line-height:1.2;letter-spacing:.3px;background:#f4f7fb;color:#243044;border-radius:999px;padding:4px 8px;text-shadow:none;box-sizing:border-box}#walk-room-label h2{font-size:11px}#walk-room-label p{font-size:11px;opacity:1}#walk-room-tools{position:absolute;z-index:2;left:12px;right:12px;bottom:14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}#walk-room-tools button{background:#3ee6ff}#walk-open-page,#walk-step-out{position:absolute;z-index:2;bottom:64px}#walk-open-page{right:14px}#walk-step-out{left:14px}';
   document.head.appendChild(roomCss);
   const room=document.createElement('div');
   room.id='walk-interior';room.hidden=true;
@@ -720,7 +726,8 @@ function walkEnsurePill(){
   const out=document.createElement('button');
   out.id='walk-step-out';out.type='button';out.textContent='🚪 STEP BACK OUTSIDE';
   out.addEventListener('click',()=>WALK_MODE.stepBackOutside());
-  room.append(title,blurb,canvas,tools,open,out);
+  const label=document.createElement('div');label.id='walk-room-label';label.append(title,blurb);
+  room.append(label,canvas,tools,open,out);
   root.appendChild(room);
 }
 function walkSyncGait(){

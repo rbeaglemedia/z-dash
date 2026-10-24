@@ -180,6 +180,28 @@
   }
 
   function paintThumb(item, w, h) {
+    const S = 280, T = 220, bg = [197, 208, 220];
+    const src = document.createElement('canvas');
+    src.width = S;
+    src.height = T;
+    const sg = src.getContext('2d', { willReadFrequently: true });
+    sg.shadowBlur = 0;
+    sg.fillStyle = '#c5d0dc';
+    sg.fillRect(0, 0, S, T);
+    drawKind(sg, item.kind || 'box', item.color, 0, 2.4, S, T);
+    const img = sg.getImageData(0, 0, S, T).data;
+    let x0 = S, y0 = T, x1 = 0, y1 = 0, ink = 0;
+    for (let y = 0; y < T; y++) {
+      for (let x = 0; x < S; x++) {
+        const i = (y * S + x) * 4;
+        if (Math.abs(img[i] - bg[0]) + Math.abs(img[i + 1] - bg[1]) + Math.abs(img[i + 2] - bg[2]) < 36) continue;
+        ink++;
+        if (x < x0) x0 = x;
+        if (y < y0) y0 = y;
+        if (x > x1) x1 = x;
+        if (y > y1) y1 = y;
+      }
+    }
     const c = document.createElement('canvas');
     c.width = w;
     c.height = h;
@@ -187,7 +209,12 @@
     g.shadowBlur = 0;
     g.fillStyle = '#f4f7fb';
     g.fillRect(0, 0, w, h);
-    drawKind(g, item.kind || 'box', item.color, 0, 4.15, w, h);
+    if (ink > 12 && x1 > x0 && y1 > y0) {
+      const bw = x1 - x0 + 1, bh = y1 - y0 + 1, pad = 4;
+      const fit = Math.min((w - pad * 2) / bw, (h - pad * 2) / bh);
+      const dw = bw * fit, dh = bh * fit;
+      g.drawImage(src, x0, y0, bw, bh, (w - dw) / 2, (h - dh) / 2, dw, dh);
+    }
     return c;
   }
   function ensureCat(catId) {
@@ -644,7 +671,7 @@
       '#walkItems{position:fixed;left:8px;top:56px;z-index:96;width:min(240px,46vw);max-height:min(240px,calc(100vh - 160px));overflow:hidden;display:none;flex-direction:column;gap:8px;padding:8px;border-radius:16px;border:2px solid #243044;background:rgba(244,247,251,.96);color:#243044;box-sizing:border-box;transition:none}' +
       '#walkItems button{display:flex;align-items:center;justify-content:center;min-height:36px;border-radius:10px;border:1.5px solid #243044;background:#fff;color:#243044;font:800 11px/1.1 Orbitron,sans-serif;padding:4px 6px;cursor:pointer;transition:none}' +
       '#walkItems .wi-body{display:flex;gap:8px;min-height:0;flex:1 1 auto;overflow:hidden}' +
-      '#walkItems .wi-cats{display:flex;flex-direction:column;gap:8px;width:48px;flex:0 0 48px;overflow-x:hidden;overflow-y:auto;max-height:100%}' +
+      '#walkItems .wi-cats{display:flex;flex-direction:column;gap:8px;width:48px;flex:0 0 48px;overflow-x:hidden;overflow-y:auto;max-height:188px}' +
       '#walkItems .wi-cats button{width:48px;min-height:44px;padding:4px 0}' +
       '#walkItems .wi-cats button.on{background:#243044;color:#f4f7fb}' +
       '#walkItems .wi-cats img{width:26px;height:26px;display:block;border-radius:6px}' +
@@ -1096,6 +1123,7 @@
         if (o.id === 'wng' || o.id === 'tup' || o.id === 'emoteBtn') sideL = Math.min(sideL, o.x);
         if (o.id === 'walk-step-out' || o.id === 'walk-room-tools' || o.id === 'walk-open-page') lowT = Math.min(lowT, o.y);
       }
+      lowT = Math.min(lowT, window.innerHeight - 100);
       const gap = 10;
       const top = Math.round(enterB + gap);
       const left = Math.round(brkR + gap);
@@ -1144,6 +1172,12 @@
       panel.style.maxHeight = Math.round(maxH) + 'px';
     }
   }
+  function parkRoomButtons(hold) {
+    const step = document.getElementById('walk-step-out');
+    const page = document.getElementById('walk-open-page');
+    if (step) step.style.display = hold ? 'none' : '';
+    if (page) page.style.display = hold ? 'none' : '';
+  }
   function sync() {
     const now = performance.now();
     const show = menuAllowed();
@@ -1165,6 +1199,7 @@
     if (btn) btn.style.display = show ? 'flex' : 'none';
     if (panel) panel.style.display = (show && open) ? 'flex' : 'none';
     if (show && btn) placeChrome(btn, panel);
+    parkRoomButtons(!!(show && open && window.WALK_MODE && WALK_MODE.insideBuilding));
     try { bindRoom(); } catch (e) {}
     refreshCount();
     moveDyn();
