@@ -1,6 +1,6 @@
 {
   "ok": false,
-  "sha": "1b90d27e4b89a904c480f1f4292b44566871345c",
+  "sha": "f6da9f45adfbfe7dbfbdeabdfb7a42c95f4edd41",
   "branch": "cursor/arch-check-652e",
   "findings": [
     {
@@ -366,10 +366,163 @@
       ]
     },
     {
+      "check": "brand",
+      "severity": "warn",
+      "title": "Buildings are still all-black",
+      "detail": "The shared drawer fills every solid building with #0a0612 and a neon edge. Keep the night sky. Add a glass band and a cyan, magenta, lime, or gold strip, made of boxes, so the block is not a black slab.",
+      "buildings": [
+        {
+          "id": 0,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "id": 1,
+          "purpose": "SKY_DROP",
+          "label": "SKY-DROP HELIPAD DECK"
+        },
+        {
+          "id": 2,
+          "purpose": "SHOWROOM",
+          "label": "Z-DASH GLASS SHOWROOM"
+        },
+        {
+          "id": 3,
+          "purpose": "NOS",
+          "label": "NOS & FUEL DEPOT"
+        },
+        {
+          "id": 4,
+          "purpose": "SKY_DROP",
+          "label": "SKY TOWER"
+        },
+        {
+          "id": 5,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        },
+        {
+          "id": 6,
+          "purpose": "SHOWROOM",
+          "label": "Z-DASH GLASS SHOWROOM"
+        },
+        {
+          "id": 7,
+          "purpose": "NOS",
+          "label": "NOS & FUEL DEPOT"
+        },
+        {
+          "id": 8,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "id": 9,
+          "purpose": "NEON_PAINT",
+          "label": "ELLIE NEON PAINT STUDIO"
+        },
+        {
+          "id": 10,
+          "purpose": "NEON_PAINT",
+          "label": "ELLIE NEON PAINT STUDIO"
+        },
+        {
+          "id": 11,
+          "purpose": "DANCE",
+          "label": "Z Company Arts"
+        },
+        {
+          "id": 12,
+          "purpose": "ARCADE",
+          "label": "RETRO PIXEL ARCADE"
+        },
+        {
+          "id": 13,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        },
+        {
+          "id": 14,
+          "purpose": "PETS",
+          "label": "PET RESCUE & CRITTER LOUNGE"
+        },
+        {
+          "id": 15,
+          "purpose": "PETS",
+          "label": "PET RESCUE & CRITTER LOUNGE"
+        },
+        {
+          "id": 16,
+          "purpose": "CAFE",
+          "label": "NEON PIZZA & BOBA CAFE"
+        },
+        {
+          "id": 17,
+          "purpose": "DANCE",
+          "label": "Z Company Arts"
+        },
+        {
+          "id": 18,
+          "purpose": "CAFE",
+          "label": "NEON PIZZA & BOBA CAFE"
+        },
+        {
+          "id": 19,
+          "purpose": "ARCADE",
+          "label": "RETRO PIXEL ARCADE"
+        },
+        {
+          "id": 20,
+          "purpose": "SOCCER",
+          "label": "STADIUM PRO SHOP & ARENA CLUB"
+        },
+        {
+          "id": 21,
+          "purpose": "SOCCER",
+          "label": "STADIUM PRO SHOP & ARENA CLUB"
+        },
+        {
+          "id": 22,
+          "purpose": "BUILDER",
+          "label": "CITY BUILDER ARCHITECT HQ"
+        },
+        {
+          "id": 23,
+          "purpose": "BUILDER",
+          "label": "CITY BUILDER ARCHITECT HQ"
+        }
+      ]
+    },
+    {
+      "check": "brand",
+      "severity": "warn",
+      "title": "Home is not a glass house yet",
+      "detail": "A home wants a lighter glass face and a cyan strip, still made of boxes.",
+      "buildings": [
+        {
+          "id": 5,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        },
+        {
+          "id": 13,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        }
+      ]
+    },
+    {
       "check": "shadow",
       "severity": "fail",
       "title": "Building pass set shadowBlur",
       "detail": "A review draw assigned a non-zero shadowBlur 386 times. The probe forced the value back to 0 so the shot still shows the building. Glow belongs off this path. Source: world/neon-paint.js:2708 (10); world/neon-paint.js:2719 (8); world/neon-paint.js:2740 (8); world/neon-paint.js:2770 (lw * (s.brush === 'spray' ? 2.2 : 1.4)); world/neon-paint.js:2775 (Math.max(2, lw * 0.3)).",
+      "buildings": []
+    },
+    {
+      "check": "capability",
+      "severity": "fail",
+      "title": "Beyond the stack: blur",
+      "detail": "Finished building draw uses a live blur. Draw a second brighter stroke, or a thin lit box. No blur.",
       "buildings": []
     }
   ],
@@ -377,12 +530,12 @@
     "Shape, doors, and garages match on Arcade, Street, and on foot.",
     "Dance mural walls are flat, on the face, and at least as big as the recorded floor.",
     "Lots of ramps (70). No upper limit. The small river-edge jump stays the one that clears the river at about 80 mph.",
+    "Finished buildings are straight boxes on the shared drawer. Curves, organic shells, and photoreal skins are not in this city.",
     "Every reviewed building uses the shared neon palette and the shared box drawer.",
     "Person doors sit on the street, wide enough and tall enough for a 1.7 m person.",
     "Footprints clear the 370Z, and heights clear a 1.7 m person and a 0.74 m pet.",
     "No floating boxes, intersecting volumes, or z-fighting faces in the reviewed set.",
-    "One near building and the in-view building pass stay inside the FPS caps on phone, iPad, and PC.",
-    "Mural floor written to tools/arch-check-baseline.json."
+    "One near building and the in-view building pass stay inside the FPS caps on phone, iPad, and PC."
   ],
   "shotNames": [
     "b0-garage-front-phone.png",
@@ -691,7 +844,8 @@
   },
   "counts": {
     "buildings": 24,
-    "fails": 5,
+    "fails": 6,
+    "warns": 2,
     "shots": 288
   },
   "buildings": [
@@ -1125,7 +1279,7 @@
         "lipToWater": 8
       }
     ],
-    "locked": 0
+    "locked": 3
   },
   "tier": {
     "arcade": {
@@ -1159,13 +1313,13 @@
       },
       "neighbors": 37,
       "one": {
-        "median": 0.1,
-        "max": 0.2,
+        "median": 0.2,
+        "max": 0.3,
         "n": 11
       },
       "pass": {
-        "median": 0.5,
-        "max": 0.7,
+        "median": 0.6,
+        "max": 0.9,
         "n": 9
       },
       "blurHits": 0
@@ -1180,13 +1334,13 @@
       },
       "neighbors": 37,
       "one": {
-        "median": 0.3,
-        "max": 1,
+        "median": 0.1,
+        "max": 0.7,
         "n": 11
       },
       "pass": {
-        "median": 1.2,
-        "max": 2,
+        "median": 1.1,
+        "max": 1.6,
         "n": 9
       },
       "blurHits": 0
@@ -1202,12 +1356,12 @@
       "neighbors": 37,
       "one": {
         "median": 0.1,
-        "max": 0.1,
+        "max": 0.3,
         "n": 11
       },
       "pass": {
         "median": 0.3,
-        "max": 0.5,
+        "max": 0.6,
         "n": 9
       },
       "blurHits": 0
@@ -1231,5 +1385,8 @@
     },
     "share": 0.7,
     "source": "pr62-published"
-  }
+  },
+  "styleGuide": "docs/NEON-WORLD-STYLE.md",
+  "plans": [],
+  "plansOnly": false
 }

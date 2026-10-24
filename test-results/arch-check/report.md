@@ -1,10 +1,10 @@
 # Architecture check
 
-Target `cursor/arch-check-652e` `1b90d27e4b89`
+Target `cursor/arch-check-652e` `f6da9f45adfb`
 
 Result: **FAIL**
 
-Reviewed 24 solid buildings. Shots: 288.
+Reviewed 24 solid buildings. Shots: 288. Style guide: `docs/NEON-WORLD-STYLE.md`.
 
 ## Scale
 
@@ -67,6 +67,20 @@ Pass.
 
 Pass.
 
+## Capability
+
+- **Beyond the stack: blur**
+  Finished building draw uses a live blur. Draw a second brighter stroke, or a thin lit box. No blur.
+
+## On brand
+
+- Warning: **Buildings are still all-black**
+  The shared drawer fills every solid building with #0a0612 and a neon edge. Keep the night sky. Add a glass band and a cyan, magenta, lime, or gold strip, made of boxes, so the block is not a black slab.
+  Buildings: GARAGE `0`; SKY_DROP `1`; SHOWROOM `2`; NOS `3`; SKY_DROP `4`; HOME `5`; SHOWROOM `6`; NOS `7`; GARAGE `8`; NEON_PAINT `9`; NEON_PAINT `10`; DANCE `11`; ARCADE `12`; HOME `13`; PETS `14`; PETS `15`; CAFE `16`; DANCE `17`; CAFE `18`; ARCADE `19`; SOCCER `20`; SOCCER `21`; BUILDER `22`; BUILDER `23`.
+- Warning: **Home is not a glass house yet**
+  A home wants a lighter glass face and a cyan strip, still made of boxes.
+  Buildings: HOME `5`; HOME `13`.
+
 ## River-edge ramps
 
 70 ramps besides tow trucks. Light floor 24. No upper limit.
@@ -86,8 +100,8 @@ Software GL. Milliseconds are this host, same idea as PERF-GUARD. Source for the
 
 | View | One building ms | Pass ms | Buildings | Cap one | Cap pass | Buffer |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| phone | 0.1 | 0.5 | 37 | 8 | 40 | 1688x780 |
-| ipad | 0.3 | 1.2 | 37 | 16 | 90 | 1024x768 |
+| phone | 0.2 | 0.6 | 37 | 8 | 40 | 1688x780 |
+| ipad | 0.1 | 1.1 | 37 | 16 | 90 | 1024x768 |
 | pc | 0.1 | 0.3 | 37 | 8 | 40 | 1280x720 |
 
 ## What held
@@ -95,12 +109,12 @@ Software GL. Milliseconds are this host, same idea as PERF-GUARD. Source for the
 - Shape, doors, and garages match on Arcade, Street, and on foot.
 - Dance mural walls are flat, on the face, and at least as big as the recorded floor.
 - Lots of ramps (70). No upper limit. The small river-edge jump stays the one that clears the river at about 80 mph.
+- Finished buildings are straight boxes on the shared drawer. Curves, organic shells, and photoreal skins are not in this city.
 - Every reviewed building uses the shared neon palette and the shared box drawer.
 - Person doors sit on the street, wide enough and tall enough for a 1.7 m person.
 - Footprints clear the 370Z, and heights clear a 1.7 m person and a 0.74 m pet.
 - No floating boxes, intersecting volumes, or z-fighting faces in the reviewed set.
 - One near building and the in-view building pass stay inside the FPS caps on phone, iPad, and PC.
-- Mural floor written to tools/arch-check-baseline.json.
 
 ## Shots
 
