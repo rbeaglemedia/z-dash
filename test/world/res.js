@@ -68,9 +68,15 @@
       }
       fit = { dpr: 1, bufW: W, bufH: H };
     }
+    // The cap shrinks a page only when the uncapped backing would pass it.
+    // Ellie's 1024×768 iPad is under 1440×1080, so the city stays the full page.
+    const fullDpr = mode === 'phone' ? Math.min(device, 2) : 1;
+    const fullW = Math.max(1, Math.round(w * fullDpr));
+    const fullH = Math.max(1, Math.round(h * fullDpr));
     return {
       mode: mode, dpr: fit.dpr, W: W, H: H, cssW: w, cssH: h,
-      bufW: fit.bufW, bufH: fit.bufH, device: device, cap: cap, area: w * h
+      bufW: fit.bufW, bufH: fit.bufH, device: device, cap: cap, area: w * h,
+      capBinds: fit.bufW * fit.bufH + 1 < fullW * fullH
     };
   }
 
@@ -183,6 +189,7 @@
       drawBuf: glSize(X).join('x'),
       raw: px ? zSpriteRaw(px) : 0,
       budget: px ? zSpriteBudget(px) : 0,
+      capBinds: !!plan.capBinds,
       viol: ZRES.log.length
     };
     ZRES.samples[reason] = rec;
@@ -205,17 +212,24 @@
         zResNoteCanvas(c.id || 'atlas', c, 8192, 4096);
         continue;
       }
+      if (c.id === 'zCar' || (X && c === X.canvas)) continue;
       const rect = c.getBoundingClientRect();
       if (rect.width < 240 || rect.height < 160) continue;
       const box = zResView(rect.width, rect.height);
       if (w <= box.bufW + 2 && h <= box.bufH + 2) continue;
       zResViol(c.id || 'view', w, h, box.bufW, box.bufH);
-      if (X && c === X.canvas) {
-        zResClampGl(X, Math.max(box.bufW, box.bufH));
-        continue;
-      }
       try { c.width = box.bufW; c.height = box.bufH; } catch (e) {}
     }
+    // The player car uses this same pass. Its budget is the city pixel
+    // density (so an iPad DPR-2 car cannot stay 960 on a DPR-1 page).
+    // There is no second cap. Traffic sheets and the tow atlas are not the car.
+    try {
+      if (typeof ZV !== 'undefined' && ZV && ZV.dispPx) {
+        const side = zSpriteBudget(ZV.dispPx);
+        if (X && X.canvas && (X.canvas.width > side + 1 || X.canvas.height > side + 1)) zResClampGl(X, side);
+        if (ZV.cv && (ZV.cv.width > side + 1 || ZV.cv.height > side + 1)) zResViol('car-blit', ZV.cv.width, ZV.cv.height, side, side);
+      }
+    } catch (e) {}
   }
 
   function paint() {
@@ -237,9 +251,9 @@
       return k + ' ' + (r ? (r.canvas + ' css ' + r.css + ' gl ' + r.gl + ' dpr ' + r.dpr + '/' + r.device) : '—');
     };
     el.textContent = [
-      'RES ' + (s.mode || '') + ' device ' + (s.device != null ? s.device : '') + ' applied ' + (s.dpr != null ? s.dpr : ''),
+      'RES ' + (s.mode || '') + ' device ' + (s.device != null ? s.device : '') + ' applied ' + (s.dpr != null ? s.dpr : '') + ' cap ' + (s.capBinds ? 'binds' : 'off'),
       'cap ' + (s.cap || '') + ' plan ' + (s.planBuf || '') + ' #c ' + (s.canvas || '') + ' css ' + (s.css || ''),
-      'car blit ' + (s.blit || '') + ' px ' + (s.carPx || 0) + ' budget ' + (s.budget || 0) + ' raw ' + (s.raw || 0),
+      'car blit ' + (s.blit || '') + ' px ' + (s.carPx || 0) + ' budget ' + (s.budget || 0) + ' raw ' + (s.raw || 0) + (ZRES.layered ? ' layer' : ' copy'),
       'gl ' + (s.gl || '') + ' drawBuf ' + (s.drawBuf || '') + ' viol ' + (s.viol || 0),
       line('parse'),
       line('load'),
@@ -304,11 +318,78 @@
     }
   }
 
-  // Copy the GL car into ZV.cv at exactly `rp` pixels. A buffer shorter than
-  // the budget is refused, so a warm-up cannot be stretched over the car.
-  // When the GL size changes, the same frame is rendered twice: some browsers
-  // still return the previous bitmap from drawImage until the next present.
-  function zPaintCar(X, rp, opts) {
+  // The FPS branch leaves the Z on its own GL canvas (#zCar, or the shared
+  // canvas once that canvas is in the page). Until that element is connected
+  // the 2D copy stays, so the picture does not change ahead of their layer.
+  function zCarLayer(X) {
+    const named = document.getElementById('zCar');
+    if (named && named.isConnected) return named;
+    const c = X && X.canvas;
+    if (c && c.isConnected && c.id !== 'c') return c;
+    return null;
+  }
+  // Same rectangle drawZ used for drawImage: center (x, y) in city pixels,
+  // square of `px`, rotated by `roll` radians. CSS only. The backing store
+  // stays at the sprite budget; assigning canvas.width would drop WebGL.
+  function zResPlaceCar(el, x, y, px, roll) {
+    if (!el || !(px > 0)) return null;
+    const city = document.getElementById('c');
+    const cr = city ? city.getBoundingClientRect() : { left: 0, top: 0, width: innerWidth, height: innerHeight };
+    let lw = cr.width, lh = cr.height;
+    try {
+      if (typeof W === 'number' && W > 0) lw = W;
+      if (typeof H === 'number' && H > 0) lh = H;
+    } catch (e) {}
+    const sx = cr.width / Math.max(1, lw);
+    const sy = cr.height / Math.max(1, lh);
+    const size = px * ((sx + sy) / 2);
+    const vx = cr.left + x * sx;
+    const vy = cr.top + y * sy;
+    const parent = el.offsetParent || document.documentElement;
+    const pr = parent.getBoundingClientRect();
+    el.style.position = 'absolute';
+    el.style.left = (vx - pr.left) + 'px';
+    el.style.top = (vy - pr.top) + 'px';
+    el.style.right = 'auto';
+    el.style.bottom = 'auto';
+    el.style.width = size + 'px';
+    el.style.height = size + 'px';
+    el.style.marginLeft = (-size / 2) + 'px';
+    el.style.marginTop = (-size / 2) + 'px';
+    el.style.transformOrigin = 'center center';
+    el.style.transform = 'rotate(' + (roll || 0) + 'rad)';
+    el.style.pointerEvents = 'none';
+    if (!el.style.zIndex) el.style.zIndex = '1';
+    const X = window.ZD && window.ZD.Xray;
+    const gl = X && X.canvas;
+    if (gl && gl !== el && el.contains && el.contains(gl)) {
+      gl.style.position = 'absolute';
+      gl.style.left = '0';
+      gl.style.top = '0';
+      gl.style.right = 'auto';
+      gl.style.bottom = 'auto';
+      gl.style.width = '100%';
+      gl.style.height = '100%';
+      gl.style.margin = '0';
+      gl.style.pointerEvents = 'none';
+    }
+    const box = {
+      x: x, y: y, px: px, roll: roll || 0,
+      css: Math.round(size),
+      left: Math.round(vx), top: Math.round(vy)
+    };
+    ZRES.carBox = box;
+    ZRES.layered = true;
+    return box;
+  }
+
+  // Draw the GL car at exactly `rp` pixels (this budget, pixelRatio 1).
+  // A buffer shorter than the budget is refused, so a warm-up cannot be
+  // stretched over the car. When the GL size changes, the same frame is
+  // rendered twice: some browsers still return the previous bitmap from
+  // drawImage until the next present. copy === false skips the 2D cache
+  // because the connected GL layer is the picture.
+  function zPaintCar(X, rp, opts, copy) {
     if (!X || !X.ready || !(rp > 0)) return false;
     opts = opts || {};
     opts.pixelRatio = 1;
@@ -332,18 +413,21 @@
       zResViol('car-gl', src.width, src.height, rp, rp);
       zResClampGl(X, rp);
     }
-    if (typeof ZV === 'undefined' || !ZV) return false;
-    if (!ZV.cv) {
-      ZV.cv = document.createElement('canvas');
-      ZV.cvg = ZV.cv.getContext('2d', { alpha: true });
+    ZRES.car = { t: Math.round(performance.now()), gl: [src.width, src.height], rp: rp, d: X._d || 0, copy: copy !== false };
+    ZRES.copied = copy !== false;
+    if (copy !== false) {
+      if (typeof ZV === 'undefined' || !ZV) return false;
+      if (!ZV.cv) {
+        ZV.cv = document.createElement('canvas');
+        ZV.cvg = ZV.cv.getContext('2d', { alpha: true });
+      }
+      if (ZV.cv.width !== rp || ZV.cv.height !== rp) { ZV.cv.width = rp; ZV.cv.height = rp; }
+      ZV.cvg.setTransform(1, 0, 0, 1, 0, 0);
+      ZV.cvg.clearRect(0, 0, rp, rp);
+      if (src.width !== rp || src.height !== rp) ZV.cvg.drawImage(src, 0, 0, src.width, src.height, 0, 0, rp, rp);
+      else ZV.cvg.drawImage(src, 0, 0);
+      ZV.sharp = rp;
     }
-    if (ZV.cv.width !== rp || ZV.cv.height !== rp) { ZV.cv.width = rp; ZV.cv.height = rp; }
-    ZV.cvg.setTransform(1, 0, 0, 1, 0, 0);
-    ZV.cvg.clearRect(0, 0, rp, rp);
-    if (src.width !== rp || src.height !== rp) ZV.cvg.drawImage(src, 0, 0, src.width, src.height, 0, 0, rp, rp);
-    else ZV.cvg.drawImage(src, 0, 0);
-    ZV.sharp = rp;
-    ZRES.car = { t: Math.round(performance.now()), gl: [src.width, src.height], rp: rp, d: X._d || 0 };
     if (ZRES.on) { try { snap('live'); paint(); } catch (e) {} }
     return true;
   }
@@ -359,4 +443,6 @@
   window.zResListen = zResListen;
   window.zResSnap = snap;
   window.zPaintCar = zPaintCar;
+  window.zCarLayer = zCarLayer;
+  window.zResPlaceCar = zResPlaceCar;
 })();

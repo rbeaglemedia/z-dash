@@ -20,10 +20,14 @@ function drawZ(){if(window.NOZ)return;const X=window.ZD&&ZD.Xray;if(!X||!X.ready
   else ZV.highT=0;
   // Traffic bakes share this GL buffer and zero _w/_h. That is not a player-size change.
   // The blit stays at the city budget (pixelRatio 1). A short GL buffer is not cached.
+  // A connected #zCar (or the GL canvas itself, once the FPS branch inserts it)
+  // is the same picture: same side, same rect, no 2D copy.
+  const layer=(typeof zCarLayer==='function')?zCarLayer(X):null;
   if(ZV.frame%ZV.every===0||ZV.lastPx!==rp){const opts={xray:false,showroom:!(window.GARAGEZ&&GARAGEZ.on),yaw:ZV.yawOff+ZV.yawSign*relYaw,pitch:elev,dist,tx:0,ty:ZV.ty,fov:26,drl:1,kid:KID,st:{t:performance.now()/1000,throttle:30+P.thr*70}};
-    if(typeof zPaintCar==='function'&&zPaintCar(X,rp,opts))ZV.lastPx=rp;}
+    if(typeof zPaintCar==='function'&&zPaintCar(X,rp,opts,!layer))ZV.lastPx=rp;}
   const roll=(P.bank+(P.ebRoll||0)-cam.roll)*ZV.rollSign;
-  if(ZV.cv&&ZV.cv.width>=rp-1&&ZV.cv.height>=rp-1){ctx.save();ctx.translate(sc[0],sc[1]);ctx.rotate(roll);ctx.drawImage(ZV.cv,0,0,ZV.cv.width,ZV.cv.height,-px/2,-px/2,px,px);ctx.restore();}
+  if(layer){if(typeof zResPlaceCar==='function')zResPlaceCar(layer,sc[0],sc[1],px,roll);}
+  else if(ZV.cv&&ZV.cv.width>=rp-1&&ZV.cv.height>=rp-1){ctx.save();ctx.translate(sc[0],sc[1]);ctx.rotate(roll);ctx.drawImage(ZV.cv,0,0,ZV.cv.width,ZV.cv.height,-px/2,-px/2,px,px);ctx.restore();}
   zFlameCvs();const yaw=ZV.yawOff+ZV.yawSign*relYaw,pit=elev,cy=Math.cos(yaw),sy=Math.sin(yaw),cP=Math.cos(pit),sP=Math.sin(pit);
   const tx=0,ty=ZV.ty,ex=tx+cy*cP*dist,ey=ty+sP*dist,ez=sy*cP*dist;let zx=ex-tx,zy=ey-ty,zz=ez,zl=Math.hypot(zx,zy,zz)||1;zx/=zl;zy/=zl;zz/=zl;
   let xx=zz,xy=0,xz=-zx,xl=Math.hypot(xx,xz);if(xl<1e-6){zz+=1e-4;zl=Math.hypot(zx,zy,zz);zx/=zl;zy/=zl;zz/=zl;xx=zz;xz=-zx;xl=Math.hypot(xx,xz);}xx/=xl;xz/=xl;
