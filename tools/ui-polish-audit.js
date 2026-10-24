@@ -829,6 +829,12 @@ const SCREENS = [
     id: 'crew', title: 'Crew',
     url: '/crew.html', viewports: PHONE_WIDE.concat(PC_LAP),
     budget: 18, wait: '#bar button', settle: 600
+  },
+  {
+    id: 'dev-builder', title: 'DEV Builder overlay',
+    url: '/test/dev-builder.html?demo=1&label=polish',
+    viewports: ALL_VP,
+    budget: 20, wait: '#devBuilder button', settle: 400
   }
 ];
 

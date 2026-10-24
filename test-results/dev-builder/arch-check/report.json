@@ -1,0 +1,23 @@
+{
+  "ok": true,
+  "sha": "",
+  "branch": "",
+  "findings": [],
+  "passes": [
+    "Nothing reviewed needs curves, photoreal detail, live blur, or a unique heavy mesh. Straight boxes, glow strips, and a light shared model stay inside the stack.",
+    "Brand matches the latest docs/NEON-WORLD-STYLE.md."
+  ],
+  "shotNames": [],
+  "checkerError": "",
+  "styleGuide": "docs/NEON-WORLD-STYLE.md",
+  "plans": [
+    "docs/DEV-BUILDER-ARCHITECTURE.md"
+  ],
+  "plansOnly": true,
+  "counts": {
+    "buildings": 0,
+    "fails": 0,
+    "warns": 0,
+    "shots": 0
+  }
+}
