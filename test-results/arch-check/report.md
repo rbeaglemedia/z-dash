@@ -1,10 +1,14 @@
 # Architecture check
 
-Target `cursor/arch-check-652e` `f6da9f45adfb`
+Target `cursor/arch-check-652e` `9061196bca87`
 
 Result: **FAIL**
 
 Reviewed 24 solid buildings. Shots: 288. Style guide: `docs/NEON-WORLD-STYLE.md`.
+
+## Placements
+
+Pass.
 
 ## Scale
 
@@ -45,6 +49,15 @@ Pass.
 - **Sign is not readable from the street**
   At the front camera the word "JUMP" is 6.35 px.
   Buildings: SKY_DROP `4`.
+
+## Purpose
+
+- **Purpose is not readable from the air**
+  A flying view has to show the purpose. A sky drop can use its helipad. A dance building can show the mural. Anything else needs its purpose word at least 10 px from the roof camera. Put that word on the roof in straight boxes and a glow strip.
+  Buildings: GARAGE `0` — sign "GARAGE" 9.7 px, roof is a helipad; SHOWROOM `2` — sign "Z-DASH" 9.78 px, roof is a helipad; NOS `3` — sign "NOS" 9.62 px, roof is a helipad; SOCCER `20` — sign "TURBO" 17.65 px, roof is a blank slab; SOCCER `21` — sign "TURBO" 22.34 px, roof is a blank slab; BUILDER `22` — sign "PIXEL" 30.96 px, roof is a blank slab; BUILDER `23` — sign "PIXEL" 30.53 px, roof is a blank slab.
+- **Purpose is not readable at street level**
+  The street sign has to use a word from that purpose in docs/NEON-WORLD-STYLE.md and measure at least 10 px at the front camera.
+  Buildings: SKY_DROP `4` — sign "JUMP" 4.59 px; wants sky, jump, helipad; SOCCER `20` — sign "TURBO" 25.67 px; wants soccer, pitch, goal, stadium, arena; SOCCER `21` — sign "TURBO" 32.12 px; wants soccer, pitch, goal, stadium, arena; BUILDER `22` — sign "PIXEL" 45.88 px; wants build, architect; BUILDER `23` — sign "PIXEL" 44.53 px; wants build, architect.
 
 ## Z dance mural
 
@@ -100,8 +113,8 @@ Software GL. Milliseconds are this host, same idea as PERF-GUARD. Source for the
 
 | View | One building ms | Pass ms | Buildings | Cap one | Cap pass | Buffer |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| phone | 0.2 | 0.6 | 37 | 8 | 40 | 1688x780 |
-| ipad | 0.1 | 1.1 | 37 | 16 | 90 | 1024x768 |
+| phone | 0.1 | 0.4 | 37 | 8 | 40 | 1688x780 |
+| ipad | 0.3 | 1.1 | 37 | 16 | 90 | 1024x768 |
 | pc | 0.1 | 0.3 | 37 | 8 | 40 | 1280x720 |
 
 ## What held
@@ -109,6 +122,7 @@ Software GL. Milliseconds are this host, same idea as PERF-GUARD. Source for the
 - Shape, doors, and garages match on Arcade, Street, and on foot.
 - Dance mural walls are flat, on the face, and at least as big as the recorded floor.
 - Lots of ramps (70). No upper limit. The small river-edge jump stays the one that clears the river at about 80 mph.
+- 24 solid buildings sit on the locked footprints from main. None were added, removed, or merged.
 - Finished buildings are straight boxes on the shared drawer. Curves, organic shells, and photoreal skins are not in this city.
 - Every reviewed building uses the shared neon palette and the shared box drawer.
 - Person doors sit on the street, wide enough and tall enough for a 1.7 m person.

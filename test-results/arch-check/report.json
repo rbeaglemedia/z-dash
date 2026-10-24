@@ -1,6 +1,6 @@
 {
   "ok": false,
-  "sha": "f6da9f45adfbfe7dbfbdeabdfb7a42c95f4edd41",
+  "sha": "9061196bca872171e584c8647283fa37431e79be",
   "branch": "cursor/arch-check-652e",
   "findings": [
     {
@@ -366,6 +366,94 @@
       ]
     },
     {
+      "check": "purpose",
+      "severity": "fail",
+      "title": "Purpose is not readable from the air",
+      "detail": "A flying view has to show the purpose. A sky drop can use its helipad. A dance building can show the mural. Anything else needs its purpose word at least 10 px from the roof camera. Put that word on the roof in straight boxes and a glow strip.",
+      "buildings": [
+        {
+          "note": "sign \"GARAGE\" 9.7 px, roof is a helipad",
+          "id": 0,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "note": "sign \"Z-DASH\" 9.78 px, roof is a helipad",
+          "id": 2,
+          "purpose": "SHOWROOM",
+          "label": "Z-DASH GLASS SHOWROOM"
+        },
+        {
+          "note": "sign \"NOS\" 9.62 px, roof is a helipad",
+          "id": 3,
+          "purpose": "NOS",
+          "label": "NOS & FUEL DEPOT"
+        },
+        {
+          "note": "sign \"TURBO\" 17.65 px, roof is a blank slab",
+          "id": 20,
+          "purpose": "SOCCER",
+          "label": "STADIUM PRO SHOP & ARENA CLUB"
+        },
+        {
+          "note": "sign \"TURBO\" 22.34 px, roof is a blank slab",
+          "id": 21,
+          "purpose": "SOCCER",
+          "label": "STADIUM PRO SHOP & ARENA CLUB"
+        },
+        {
+          "note": "sign \"PIXEL\" 30.96 px, roof is a blank slab",
+          "id": 22,
+          "purpose": "BUILDER",
+          "label": "CITY BUILDER ARCHITECT HQ"
+        },
+        {
+          "note": "sign \"PIXEL\" 30.53 px, roof is a blank slab",
+          "id": 23,
+          "purpose": "BUILDER",
+          "label": "CITY BUILDER ARCHITECT HQ"
+        }
+      ]
+    },
+    {
+      "check": "purpose",
+      "severity": "fail",
+      "title": "Purpose is not readable at street level",
+      "detail": "The street sign has to use a word from that purpose in docs/NEON-WORLD-STYLE.md and measure at least 10 px at the front camera.",
+      "buildings": [
+        {
+          "note": "sign \"JUMP\" 4.59 px; wants sky, jump, helipad",
+          "id": 4,
+          "purpose": "SKY_DROP",
+          "label": "SKY TOWER"
+        },
+        {
+          "note": "sign \"TURBO\" 25.67 px; wants soccer, pitch, goal, stadium, arena",
+          "id": 20,
+          "purpose": "SOCCER",
+          "label": "STADIUM PRO SHOP & ARENA CLUB"
+        },
+        {
+          "note": "sign \"TURBO\" 32.12 px; wants soccer, pitch, goal, stadium, arena",
+          "id": 21,
+          "purpose": "SOCCER",
+          "label": "STADIUM PRO SHOP & ARENA CLUB"
+        },
+        {
+          "note": "sign \"PIXEL\" 45.88 px; wants build, architect",
+          "id": 22,
+          "purpose": "BUILDER",
+          "label": "CITY BUILDER ARCHITECT HQ"
+        },
+        {
+          "note": "sign \"PIXEL\" 44.53 px; wants build, architect",
+          "id": 23,
+          "purpose": "BUILDER",
+          "label": "CITY BUILDER ARCHITECT HQ"
+        }
+      ]
+    },
+    {
       "check": "brand",
       "severity": "warn",
       "title": "Buildings are still all-black",
@@ -530,6 +618,7 @@
     "Shape, doors, and garages match on Arcade, Street, and on foot.",
     "Dance mural walls are flat, on the face, and at least as big as the recorded floor.",
     "Lots of ramps (70). No upper limit. The small river-edge jump stays the one that clears the river at about 80 mph.",
+    "24 solid buildings sit on the locked footprints from main. None were added, removed, or merged.",
     "Finished buildings are straight boxes on the shared drawer. Curves, organic shells, and photoreal skins are not in this city.",
     "Every reviewed building uses the shared neon palette and the shared box drawer.",
     "Person doors sit on the street, wide enough and tall enough for a 1.7 m person.",
@@ -844,7 +933,7 @@
   },
   "counts": {
     "buildings": 24,
-    "fails": 6,
+    "fails": 8,
     "warns": 2,
     "shots": 288
   },
@@ -1281,6 +1370,320 @@
     ],
     "locked": 3
   },
+  "roster": [
+    {
+      "id": 0,
+      "purpose": "GARAGE",
+      "label": "SPEED & TUNING GARAGE",
+      "sign": "GARAGE",
+      "x0": 168,
+      "x1": 232,
+      "z0": 118,
+      "z1": 282,
+      "h": 26,
+      "cx": 200,
+      "cz": 200
+    },
+    {
+      "id": 1,
+      "purpose": "SKY_DROP",
+      "label": "SKY-DROP HELIPAD DECK",
+      "sign": "JUMP",
+      "x0": -232,
+      "x1": -168,
+      "z0": 518,
+      "z1": 682,
+      "h": 62,
+      "cx": -200,
+      "cz": 600
+    },
+    {
+      "id": 2,
+      "purpose": "SHOWROOM",
+      "label": "Z-DASH GLASS SHOWROOM",
+      "sign": "Z-DASH",
+      "x0": 168,
+      "x1": 232,
+      "z0": 918,
+      "z1": 1082,
+      "h": 18,
+      "cx": 200,
+      "cz": 1000
+    },
+    {
+      "id": 3,
+      "purpose": "NOS",
+      "label": "NOS & FUEL DEPOT",
+      "sign": "NOS",
+      "x0": -332,
+      "x1": -268,
+      "z0": 1518,
+      "z1": 1682,
+      "h": 34,
+      "cx": -300,
+      "cz": 1600
+    },
+    {
+      "id": 4,
+      "purpose": "SKY_DROP",
+      "label": "SKY TOWER",
+      "sign": "JUMP",
+      "x0": 465,
+      "x1": 535,
+      "z0": 1165,
+      "z1": 1235,
+      "h": 239,
+      "cx": 500,
+      "cz": 1200
+    },
+    {
+      "id": 5,
+      "purpose": "HOME",
+      "label": "PLAYER HOUSE & GARAGE",
+      "sign": "HOME",
+      "x0": 264,
+      "x1": 308,
+      "z0": 140,
+      "z1": 188,
+      "h": 11,
+      "cx": 286,
+      "cz": 164
+    },
+    {
+      "id": 6,
+      "purpose": "SHOWROOM",
+      "label": "Z-DASH GLASS SHOWROOM",
+      "sign": "Z-DASH",
+      "x0": 364,
+      "x1": 428,
+      "z0": 140,
+      "z1": 196,
+      "h": 16,
+      "cx": 396,
+      "cz": 168
+    },
+    {
+      "id": 7,
+      "purpose": "NOS",
+      "label": "NOS & FUEL DEPOT",
+      "sign": "NOS",
+      "x0": -236,
+      "x1": -196,
+      "z0": 140,
+      "z1": 186,
+      "h": 12,
+      "cx": -216,
+      "cz": 163
+    },
+    {
+      "id": 8,
+      "purpose": "GARAGE",
+      "label": "SPEED & TUNING GARAGE",
+      "sign": "GARAGE",
+      "x0": 464,
+      "x1": 512,
+      "z0": 364,
+      "z1": 454,
+      "h": 15,
+      "cx": 488,
+      "cz": 409
+    },
+    {
+      "id": 9,
+      "purpose": "NEON_PAINT",
+      "label": "ELLIE NEON PAINT STUDIO",
+      "sign": "NEON",
+      "x0": -336,
+      "x1": -292,
+      "z0": 360,
+      "z1": 408,
+      "h": 14,
+      "cx": -314,
+      "cz": 384
+    },
+    {
+      "id": 10,
+      "purpose": "NEON_PAINT",
+      "label": "ELLIE NEON PAINT STUDIO",
+      "sign": "NEON",
+      "x0": -336,
+      "x1": -292,
+      "z0": 760,
+      "z1": 808,
+      "h": 15,
+      "cx": -314,
+      "cz": 784
+    },
+    {
+      "id": 11,
+      "purpose": "DANCE",
+      "label": "Z Company Arts",
+      "sign": "Z COMPANY ARTS",
+      "x0": -224,
+      "x1": -164,
+      "z0": 360,
+      "z1": 424,
+      "h": 18,
+      "cx": -194,
+      "cz": 392
+    },
+    {
+      "id": 12,
+      "purpose": "ARCADE",
+      "label": "RETRO PIXEL ARCADE",
+      "sign": "ARCADE",
+      "x0": 264,
+      "x1": 320,
+      "z0": 560,
+      "z1": 624,
+      "h": 18,
+      "cx": 292,
+      "cz": 592
+    },
+    {
+      "id": 13,
+      "purpose": "HOME",
+      "label": "PLAYER HOUSE & GARAGE",
+      "sign": "HOME",
+      "x0": -536,
+      "x1": -496,
+      "z0": 960,
+      "z1": 1008,
+      "h": 12,
+      "cx": -516,
+      "cz": 984
+    },
+    {
+      "id": 14,
+      "purpose": "PETS",
+      "label": "PET RESCUE & CRITTER LOUNGE",
+      "sign": "PETS",
+      "x0": -536,
+      "x1": -496,
+      "z0": 1164,
+      "z1": 1212,
+      "h": 12,
+      "cx": -516,
+      "cz": 1188
+    },
+    {
+      "id": 15,
+      "purpose": "PETS",
+      "label": "PET RESCUE & CRITTER LOUNGE",
+      "sign": "PETS",
+      "x0": -408,
+      "x1": -364,
+      "z0": 964,
+      "z1": 1012,
+      "h": 13,
+      "cx": -386,
+      "cz": 988
+    },
+    {
+      "id": 16,
+      "purpose": "CAFE",
+      "label": "NEON PIZZA & BOBA CAFE",
+      "sign": "PIZZA",
+      "x0": -336,
+      "x1": -292,
+      "z0": 1314,
+      "z1": 1362,
+      "h": 12,
+      "cx": -314,
+      "cz": 1338
+    },
+    {
+      "id": 17,
+      "purpose": "DANCE",
+      "label": "Z Company Arts",
+      "sign": "Z COMPANY ARTS",
+      "x0": 264,
+      "x1": 324,
+      "z0": 1160,
+      "z1": 1224,
+      "h": 20,
+      "cx": 294,
+      "cz": 1192
+    },
+    {
+      "id": 18,
+      "purpose": "CAFE",
+      "label": "NEON PIZZA & BOBA CAFE",
+      "sign": "PIZZA",
+      "x0": 364,
+      "x1": 412,
+      "z0": 1364,
+      "z1": 1412,
+      "h": 13,
+      "cx": 388,
+      "cz": 1388
+    },
+    {
+      "id": 19,
+      "purpose": "ARCADE",
+      "label": "RETRO PIXEL ARCADE",
+      "sign": "ARCADE",
+      "x0": 464,
+      "x1": 516,
+      "z0": 760,
+      "z1": 824,
+      "h": 17,
+      "cx": 490,
+      "cz": 792
+    },
+    {
+      "id": 20,
+      "purpose": "SOCCER",
+      "label": "STADIUM PRO SHOP & ARENA CLUB",
+      "sign": "TURBO",
+      "x0": 480,
+      "x1": 536,
+      "z0": 198,
+      "z1": 286,
+      "h": 16,
+      "cx": 508,
+      "cz": 242
+    },
+    {
+      "id": 21,
+      "purpose": "SOCCER",
+      "label": "STADIUM PRO SHOP & ARENA CLUB",
+      "sign": "TURBO",
+      "x0": 480,
+      "x1": 536,
+      "z0": 1018,
+      "z1": 1086,
+      "h": 16,
+      "cx": 508,
+      "cz": 1052
+    },
+    {
+      "id": 22,
+      "purpose": "BUILDER",
+      "label": "CITY BUILDER ARCHITECT HQ",
+      "sign": "PIXEL",
+      "x0": 164,
+      "x1": 208,
+      "z0": 1856,
+      "z1": 1888,
+      "h": 15,
+      "cx": 186,
+      "cz": 1872
+    },
+    {
+      "id": 23,
+      "purpose": "BUILDER",
+      "label": "CITY BUILDER ARCHITECT HQ",
+      "sign": "PIXEL",
+      "x0": 364,
+      "x1": 408,
+      "z0": 1856,
+      "z1": 1886,
+      "h": 16,
+      "cx": 386,
+      "cz": 1871
+    }
+  ],
   "tier": {
     "arcade": {
       "sig": "168,0,118,232,26,282#184,118,0,-1,|216,118,0,-1,|184,282,0,1,|216,282,0,1,|168,145.33,-1,0,|168,200,-1,0,|168,254.67,-1,0,|232,145.33,1,0,|232,200,1,0,|232,254.67,1,0,|200,273,0,1,garage#garage,195,205,273,282,200,273,4.4,0,1#26||-232,0,518,-168,62,682#-216,518,0,-1,|-184,518,0,-1,|-216,682,0,1,|-184,682,0,1,|-232,545.33,-1,0,|-232,600,-1,0,|-232,654.67,-1,0,|-168,545.33,1,0,|-168,600,1,0,|-168,654.67,1,0,|-200,673,0,1,garage#garage,-205,-195,673,682,-200,673,4.4,0,1#62||168,0,918,232,18,1082#184,918,0,-1,|216,918,0,-1,|184,1082,0,1,|216,1082,0,1,|168,945.33,-1,0,|168,1000,-1,0,|168,1054.67,-1,0,|232,945.33,1,0,|232,1000,1,0,|232,1054.67,1,0,|200,1073,0,1,garage#garage,195,205,1073,1082,200,1073,4.4,0,1#18||-332,0,1518,-268,34,1682#-316,1518,0,-1,|-284,1518,0,-1,|-316,1682,0,1,|-284,1682,0,1,|-332,1545.33,-1,0,|-332,1600,-1,0,|-332,1654.67,-1,0,|-268,1545.33,1,0,|-268,1600,1,0,|-268,1654.67,1,0,|-300,1673,0,1,garage#garage,-305,-295,1673,1682,-300,1673,4.4,0,1#34||465,0,1165,535,138.62,1235|475.5,138.62,1175.5,524.5,200.76,1224.5|482.85,200.76,1182.85,517.15,239,1217.15#465,1182.5,-1,0,|465,1217.5,-1,0,|535,1182.5,1,0,|535,1217.5,1,0,|526,1200,1,0,garage#garage,526,535,1195,1205,526,1200,4.4,1,0#239||264,0,140,308,11,188#264,164,-1,0,|299,164,1,0,garage#garage,299,308,159,169,299,164,4.4,1,0#11||364,0,140,428,16,196#364,168,-1,0,|419,168,1,0,garage#garage,419,428,163,173,419,168,4.4,1,0#16||-236,0,140,-196,12,186#-236,163,-1,0,|-205,163,1,0,garage#garage,-205,-196,158,168,-205,163,4.4,1,0#12||464,0,364,512,15,454#464,379,-1,0,|464,409,-1,0,|464,439,-1,0,|503,409,1,0,garage#garage,503,512,404,414,503,409,4.4,1,0#15||-336,0,360,-292,14,408#-336,384,-1,0,|-301,384,1,0,garage#garage,-301,-292,379,389,-301,384,4.4,1,0#14||-336,0,760,-292,15,808#-336,784,-1,0,|-301,784,1,0,garage#garage,-301,-292,779,789,-301,784,4.4,1,0#15||-224,0,360,-164,18,424#-164,376,1,0,|-164,408,1,0,|-215,392,-1,0,garage#garage,-224,-215,387,397,-215,392,4.4,-1,0#18||264,0,560,320,18,624#264,576,-1,0,|264,608,-1,0,|311,592,1,0,garage#garage,311,320,587,597,311,592,4.4,1,0#18||-536,0,960,-496,12,1008#-536,984,-1,0,|-505,984,1,0,garage#garage,-505,-496,979,989,-505,984,4.4,1,0#12||-536,0,1164,-496,12,1212#-536,1188,-1,0,|-496,1188,1,0,lot#lot,-496,-488,1183,1193,-496,1188,0,1,0#12||-408,0,964,-364,13,1012#-364,988,1,0,|-408,988,-1,0,lot#lot,-416,-408,983,993,-408,988,0,-1,0#13||-336,0,1314,-292,12,1362#-314,1314,0,-1,|-336,1338,-1,0,|-314,1362,0,1,lot#lot,-319,-309,1362,1370,-314,1362,0,0,1#12||264,0,1160,324,20,1224#264,1176,-1,0,|264,1208,-1,0,|315,1192,1,0,garage#garage,315,324,1187,1197,315,1192,4.4,1,0#20||364,0,1364,412,13,1412#364,1388,-1,0,|412,1388,1,0,lot#lot,412,420,1383,1393,412,1388,0,1,0#13||464,0,760,516,17,824#464,776,-1,0,|464,808,-1,0,|507,792,1,0,garage#garage,507,516,787,797,507,792,4.4,1,0#17||480,0,198,536,16,286#508,286,0,1,|536,220,1,0,|536,264,1,0,|508,207,0,-1,garage#garage,503,513,198,207,508,207,4.4,0,-1#16||480,0,1018,536,16,1086#508,1086,0,1,|536,1035,1,0,|536,1069,1,0,|508,1027,0,-1,garage#garage,503,513,1018,1027,508,1027,4.4,0,-1#16||164,0,1856,208,15,1888#186,1888,0,1,|186,1865,0,-1,garage#garage,181,191,1856,1865,186,1865,4.4,0,-1#15||364,0,1856,408,16,1886#386,1886,0,1,|386,1865,0,-1,garage#garage,381,391,1856,1865,386,1865,4.4,0,-1#16",
@@ -1313,13 +1716,13 @@
       },
       "neighbors": 37,
       "one": {
-        "median": 0.2,
-        "max": 0.3,
+        "median": 0.1,
+        "max": 0.4,
         "n": 11
       },
       "pass": {
-        "median": 0.6,
-        "max": 0.9,
+        "median": 0.4,
+        "max": 0.6,
         "n": 9
       },
       "blurHits": 0
@@ -1334,13 +1737,13 @@
       },
       "neighbors": 37,
       "one": {
-        "median": 0.1,
-        "max": 0.7,
+        "median": 0.3,
+        "max": 1,
         "n": 11
       },
       "pass": {
         "median": 1.1,
-        "max": 1.6,
+        "max": 1.2,
         "n": 9
       },
       "blurHits": 0
@@ -1356,7 +1759,7 @@
       "neighbors": 37,
       "one": {
         "median": 0.1,
-        "max": 0.3,
+        "max": 0.2,
         "n": 11
       },
       "pass": {
