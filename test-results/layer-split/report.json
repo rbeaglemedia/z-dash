@@ -1,0 +1,22 @@
+{
+  "cut": "stop copying the player WebGL car into the 2D canvas",
+  "held": "ground grid and ring glow batching stays off until Bob tests ?perf=1 on the Galaxy",
+  "indexHtml": "untouched",
+  "shadowBlurAdded": false,
+  "layers": ["#c city", "#zCar live WebGL", "#zFlame plus-lighter exhaust", "#zTop water fx hotdrop hud"],
+  "pose": {"x": 120, "z": 80, "y": 28, "yaw": 0.55, "pitch": -0.12, "bank": 0.2, "v": 55, "thr": 0.45, "wings": 1, "paused": true},
+  "compare": "same frozen frame. OLD is the previous drawImage blit onto one canvas. NEW is the live layer stack. Math.random fixed at 0.5.",
+  "frames": {
+    "phone": {"px": "1688x780", "exact": "90.01%", "within8": "94.64%", "within24": "97.90%", "carCropMeanAbs": 1.13, "outsideCarWithin24": "100%"},
+    "ipad": {"px": "2360x1640", "exact": "92.41%", "within8": "97.67%", "within24": "99.08%"},
+    "pc": {"px": "1440x900", "exact": "91.45%", "within8": "99.07%", "within24": "99.75%", "carInteriorMeanAbs": 2.1}
+  },
+  "note": "Remaining deltas sit on the rotated car's antialiased edge. City, HUD, and the area outside the car match. No full-frame tint from the flame layer.",
+  "flicker": {
+    "movingFrames": 90,
+    "phoneSize": "844x390 dpr 2",
+    "flickerN": 0,
+    "carCopyInPass": false,
+    "layerOrder": ["c", "zCar", "zFlame", "zTop"]
+  }
+}
