@@ -32,20 +32,19 @@ function wearLook(who){
   const W=window.CHARCLOSET&&CHARCLOSET.wear&&CHARCLOSET.wear();
   if(!W||!W.parts)return base;
   const p=W.parts,c=W.colors||{};
-  const head3=p.head==='tall'?0.22:0.18;
-  const torso3=p.body==='short'?0.15:0.20;
-  const thigh3=p.legs==='short'?0.11:0.16;
-  const shin3=p.legs==='short'?0.10:0.14;
-  const uarm3=p.arms==='short'?0.10:0.14;
-  const farm3=p.arms==='short'?0.08:0.12;
+  const short=p.body==='short';
+  const head3=0.16,torso3=short?0.18:0.22,thigh3=short?0.12:0.15,shin3=short?0.11:0.14;
+  const uarm3=short?0.11:0.13,farm3=short?0.10:0.12;
+  const top=c.top||c.shirt||base.cloth,bottom=c.bottom||c.pants||base.cloth2;
+  const hair=p.hair||'ponytail',hands=p.hands==='gloves'?'gloves':'mittens';
   return Object.assign({},base,{
-    head:head3*1.15,torso:torso3*1.15,thigh:thigh3*1.2,shin:shin3*1.15,neck:.04,uarm:uarm3*1.15,farm:farm3*1.15,
-    head3:head3,torso3:torso3,neck3:.03,thigh3:thigh3,shin3:shin3,uarm3:uarm3,farm3:farm3,
-    cloth:c.shirt||base.cloth,cloth2:c.pants||base.cloth2,hair:c.hair||base.hair,sole:c.shoes||'#ffffff',
-    trim:'#3ee6ff',accent:c.eye||'#3ee6ff',skin:c.skin||'#f2c7a5',hands:c.hands||c.skin||'#f2c7a5',hatColor:c.hat||c.shirt,
-    pony:p.hair==='ponytail'||p.hair==='long'?1:0,hood:p.shirt==='hoodie'?1:0,
-    hairStyle:p.hair||'bob',handStyle:p.hands||'mittens',headShape:p.head||'round',hat:p.hat||'none',
-    shoes:p.shoes||'sneakers',shorts:p.pants==='shorts'?1:0,face:p.face||'smile'
+    head:0.30,torso:torso3,thigh:thigh3,shin:shin3,neck:.045,uarm:uarm3,farm:farm3,
+    head3:head3,torso3:torso3,neck3:.045,thigh3:thigh3,shin3:shin3,uarm3:uarm3,farm3:farm3,
+    cloth:top,cloth2:bottom,hair:c.hair||base.hair,sole:c.shoes||'#ffffff',
+    trim:'#3ee6ff',accent:c.eye||'#3ee6ff',skin:c.skin||'#f2c7a5',hands:c.hands||c.skin||'#f2c7a5',
+    pony:hair==='ponytail'||hair==='long'?1:0,hood:(p.top||p.shirt)==='hoodie'?1:0,
+    hairStyle:hair,handStyle:hands,headShape:'round',hat:'none',shoes:p.shoes||'sneakers',
+    shorts:(p.bottom||p.pants)==='shorts'?1:0,face:'smile'
   });
 }
 let wearStamp='';
@@ -463,24 +462,27 @@ function customSpec(sm){
   return spec;
 }
 function humanSpec(gait,phase,tSec,allowCustom){
+  let spec;
   if(gait==='dance'){
-    if(allowCustom!==false){const sm=sampleHumanSelected(tSec);if(sm)return customSpec(sm);}
-    return builtinDance(((tSec%8)+8)%8/8);
+    if(allowCustom!==false){const sm=sampleHumanSelected(tSec);if(sm)spec=customSpec(sm);}
+    if(!spec)spec=builtinDance(((tSec%8)+8)%8/8);
+  }else{
+    spec=baseSpec();const s=Math.sin((phase||0)*Math.PI*2);
+    if(gait!=='walk'&&gait!=='run'){
+      const b=Math.sin((phase||0)*Math.PI*2);
+      spec.bob=.016*b;spec.headYaw=.18*Math.sin((phase||0)*Math.PI*2*.37);spec.headPitch=.04*b;
+      spec.sway=.03*b;spec.armL=.12;spec.armR=.1;spec.elbL=spec.elbR=.28;spec.kneeL=spec.kneeR=.06;
+    }else{
+      const run=gait==='run',A=(run?48:28)*Math.PI/180;
+      spec.armL=-A*s;spec.armR=A*s;spec.legL=A*s;spec.legR=-A*s;
+      spec.sway=(run?0.05:0.07)*Math.sin((phase||0)*Math.PI*4);
+      spec.lean=run?12*Math.PI/180:.04;
+      spec.elbL=spec.elbR=run?0.7:0.4;
+      spec.kneeL=.1+Math.max(0,-spec.legL)*1.05;spec.kneeR=.1+Math.max(0,-spec.legR)*1.05;
+      spec.bob=(run?0.04:0.02)*Math.abs(s);spec.headPitch=run?-.12:-.04;
+    }
   }
-  const spec=baseSpec(),s=Math.sin((phase||0)*Math.PI*2);
-  if(gait!=='walk'&&gait!=='run'){
-    const b=Math.sin((phase||0)*Math.PI*2);
-    spec.bob=.016*b;spec.headYaw=.18*Math.sin((phase||0)*Math.PI*2*.37);spec.headPitch=.04*b;
-    spec.sway=.03*b;spec.armL=.12;spec.armR=.1;spec.elbL=spec.elbR=.28;spec.kneeL=spec.kneeR=.06;
-    return spec;
-  }
-  const run=gait==='run',A=(run?48:28)*Math.PI/180;
-  spec.armL=-A*s;spec.armR=A*s;spec.legL=A*s;spec.legR=-A*s;
-  spec.sway=(run?0.05:0.07)*Math.sin((phase||0)*Math.PI*4);
-  spec.lean=run?12*Math.PI/180:.04;
-  spec.elbL=spec.elbR=run?0.7:0.4;
-  spec.kneeL=.1+Math.max(0,-spec.legL)*1.05;spec.kneeR=.1+Math.max(0,-spec.legR)*1.05;
-  spec.bob=(run?0.04:0.02)*Math.abs(s);spec.headPitch=run?-.12:-.04;
+  spec.gait=gait;spec.phase=phase||0;
   return spec;
 }
 function qFill(o){
@@ -626,19 +628,9 @@ function bone(ctx,a,b,r,fill,glow){
   ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
 }
 function paintFigure(ctx,look,spec,project,yaw,origin){
-  if(window.CHARCLOSET&&CHARCLOSET.sprite){
-    const o0=origin||{x:0,y:0,z:0};
-    const foot=project(o0.x,o0.y,o0.z),head=project(o0.x,o0.y+1.15,o0.z);
-    if(foot&&head){
-      const h=Math.abs(foot[1]-head[1]);
-      if(h>12){
-        const sp=CHARCLOSET.sprite(yaw||0,(spec&&spec.legL||0)>0.2?1:0);
-        const bw=h*sp.width/sp.height;
-        ctx.shadowBlur=0;
-        ctx.drawImage(sp,foot[0]-bw/2,Math.min(foot[1],head[1])-h*0.06,bw,h*1.05);
-        return;
-      }
-    }
+  if(window.CHARCLOSET&&CHARCLOSET.paintWorld){
+    CHARCLOSET.paintWorld(ctx,spec,project,yaw||0,origin||{x:0,y:0,z:0});
+    return;
   }
   const pts=figurePoints(look,spec),o=origin||{x:0,y:0,z:0},P={};
   for(const k in pts){const w=xform(pts[k],o.x,o.y,o.z,yaw||0);P[k]=project(w[0],w[1],w[2]);}
@@ -735,7 +727,8 @@ function drawStage(ctx,w,h,tSec){
   const who=whoNow(),gait=(window.CREWSTATE&&CREWSTATE.gait)||'idle';
   const phase=gait==='run'?tSec*1.55:gait==='walk'?tSec*.9:tSec*.35;
   const spec=humanSpec(gait,phase,tSec,true);
-  drawOne(ctx,who,spec,w*.4,h*.58,Math.min(h*.9,w*.62),hSpin);
+  const ym=/[?&]yaw=([-0-9.]+)/.exec(qs());
+  drawOne(ctx,who,spec,w*.4,h*.58,Math.min(h*.9,w*.62),ym?parseFloat(ym[1])||0:hSpin);
   const type=activePet();
   const q=groundPetQ(type,gait,phase,tSec,gait==='dance'?{bob:spec.bob}:null);
   q.yaw=(q.yaw||0)+(hSpin*180/Math.PI);
