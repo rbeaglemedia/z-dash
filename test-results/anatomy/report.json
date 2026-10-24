@@ -1,0 +1,612 @@
+{
+  "ok": true,
+  "calib": {
+    "ok": true,
+    "errors": [],
+    "good": {
+      "missing": false,
+      "figureH": 436,
+      "head": {
+        "gap": 0,
+        "ratio": 0.19036697247706422,
+        "centered": true,
+        "dx": 0,
+        "headH": 83,
+        "neck": true,
+        "top": 66,
+        "bottom": 148,
+        "cx": 209.5
+      },
+      "torso": {
+        "left": 160,
+        "right": 259,
+        "cx": 209.5,
+        "top": 148,
+        "hip": 273,
+        "shoulderY": 164,
+        "depth": 100,
+        "neckJoin": 0,
+        "hipJoin": 0,
+        "win0": 214,
+        "win1": 292
+      },
+      "arms": {
+        "L": {
+          "present": true,
+          "attachGap": 2,
+          "handGap": 0,
+          "angle": 19.6,
+          "up": false,
+          "n": 2259
+        },
+        "R": {
+          "present": true,
+          "attachGap": 2,
+          "handGap": 0,
+          "angle": 13.4,
+          "up": false,
+          "n": 2259
+        }
+      },
+      "legs": {
+        "L": {
+          "present": true,
+          "hipGap": 0,
+          "footGap": 0,
+          "angle": 5
+        },
+        "R": {
+          "present": true,
+          "hipGap": 0,
+          "footGap": 0,
+          "angle": 2.2
+        }
+      },
+      "lr": {
+        "ok": true,
+        "msg": ""
+      },
+      "ground": {
+        "floatPx": 0,
+        "clipPx": 1,
+        "slop": 17.44,
+        "groundY": 500,
+        "footY": 501
+      },
+      "buried": false,
+      "clip": "",
+      "components": [
+        {
+          "area": 29969,
+          "x0": 107,
+          "y0": 66,
+          "x1": 312,
+          "y1": 501
+        }
+      ]
+    },
+    "badProblems": [
+      {
+        "id": "head-neck",
+        "priority": 1,
+        "msg": "The head floats 52px above the body. No neck joins them"
+      },
+      {
+        "id": "torso-neck",
+        "priority": 2,
+        "msg": "The neck does not connect to the torso. Gap 52px"
+      },
+      {
+        "id": "arm-shoulder",
+        "priority": 2,
+        "msg": "Left arm does not leave the shoulder. Closest gap is 32px"
+      },
+      {
+        "id": "hand-arm",
+        "priority": 2,
+        "msg": "Left hand does not sit on the end of the arm. Gap 27px"
+      },
+      {
+        "id": "arm-shoulder",
+        "priority": 2,
+        "msg": "Right arm does not leave the shoulder. Closest gap is 32px"
+      },
+      {
+        "id": "hand-arm",
+        "priority": 2,
+        "msg": "Right hand does not sit on the end of the arm. Gap 27px"
+      },
+      {
+        "id": "feet-ground",
+        "priority": 2,
+        "msg": "Feet float 57px above the ground"
+      }
+    ],
+    "sideDeep": {
+      "left": 184,
+      "right": 255,
+      "cx": 219.5,
+      "top": 148,
+      "hip": 345,
+      "shoulderY": 166,
+      "depth": 72,
+      "neckJoin": 0,
+      "hipJoin": 0,
+      "win0": 214,
+      "win1": 292
+    },
+    "sideFlat": [
+      "head-neck",
+      "torso-depth",
+      "torso-hip"
+    ],
+    "walkGood": {
+      "step": 54,
+      "swing": 56,
+      "oppose": -0.929,
+      "together": -1,
+      "lifts": 4,
+      "swapL": 2,
+      "swapR": 2,
+      "floatMax": 0,
+      "bob": 9,
+      "figureH": 382
+    },
+    "walkBad": {
+      "step": 0,
+      "swing": 0,
+      "oppose": 0,
+      "together": 0,
+      "lifts": 0,
+      "swapL": 0,
+      "swapR": 0,
+      "floatMax": 40,
+      "bob": 0,
+      "figureH": 333
+    }
+  },
+  "findings": [
+    {
+      "id": "torso-held",
+      "severity": "note",
+      "priority": 9,
+      "title": "The torso keeps its depth from the front, the side, and the back",
+      "detail": "Walk chest width: front 84px, three-quarter 76px, side 57px, back 83px. Neck-to-torso and torso-to-hips stayed connected on those frames.",
+      "shots": [
+        "walk-side-0.png",
+        "walk-front-0.png",
+        "walk-back-0.png",
+        "walk-side.png"
+      ],
+      "views": [],
+      "msgs": []
+    },
+    {
+      "id": "clothes-secondary",
+      "severity": "note",
+      "priority": 9,
+      "title": "Clothes were checked only where they could break the body",
+      "detail": "Short body, bob, long hair, hoodie, jacket, shorts, skirt, boots, and gloves were rendered. A clothing fail is listed above only if the head, the torso, or a limb came apart.",
+      "shots": [],
+      "views": [],
+      "msgs": []
+    }
+  ],
+  "pets": {
+    "ok": true,
+    "findings": []
+  },
+  "passes": [
+    "The head stays centered on the shoulders",
+    "The head size is in the big stylized range",
+    "Left and right land on their own sides",
+    "The legs meet the hips"
+  ],
+  "coverage": [
+    "Closet preview, idle front, idle side, idle back, on-foot idle",
+    "Body and clothes that can change the silhouette: short body, bob, long hair, hoodie, jacket, shorts, skirt, boots, gloves",
+    "Walk: 8 on-foot frames at front, three-quarter, side, and back. Torso depth and neck/hip joins are checked on every frame",
+    "Pets: fox, cat, dragon, robo in idle, walk, closet, on foot"
+  ],
+  "shotNames": [
+    "closet-front.png",
+    "idle-front.png",
+    "idle-side.png",
+    "idle-back.png",
+    "onfoot-idle.png",
+    "part-body-short.png",
+    "part-hair-bob.png",
+    "part-hair-long.png",
+    "part-top-hoodie.png",
+    "part-top-jacket.png",
+    "part-bottom-shorts.png",
+    "part-bottom-skirt.png",
+    "part-shoes-boots.png",
+    "part-hands-gloves.png",
+    "walk-front-0.png",
+    "walk-front-2.png",
+    "walk-front-4.png",
+    "walk-front-6.png",
+    "walk-front.png",
+    "walk-three-quarter-0.png",
+    "walk-three-quarter-2.png",
+    "walk-three-quarter-4.png",
+    "walk-three-quarter-6.png",
+    "walk-three-quarter.png",
+    "walk-side-0.png",
+    "walk-side-2.png",
+    "walk-side-4.png",
+    "walk-side-6.png",
+    "walk-side.png",
+    "walk-back-0.png",
+    "walk-back-2.png",
+    "walk-back-4.png",
+    "walk-back-6.png",
+    "walk-back.png",
+    "pets.png"
+  ],
+  "walkStats": {
+    "step": 22,
+    "swing": 14,
+    "oppose": 0.8290000000000001,
+    "together": 0.092,
+    "lifts": 0,
+    "swapL": 1,
+    "swapR": 1,
+    "floatMax": 3.2,
+    "bob": 3,
+    "figureH": 292
+  },
+  "sample": [
+    {
+      "name": "closet-front",
+      "problems": [],
+      "measure": {
+        "missing": false,
+        "figureH": 259,
+        "head": {
+          "gap": 0,
+          "ratio": 0.28957528957528955,
+          "centered": true,
+          "dx": 0.08133698380103738,
+          "headH": 75,
+          "neck": true,
+          "top": 185,
+          "bottom": 259,
+          "cx": 210.58133698380104
+        },
+        "torso": {
+          "left": 176,
+          "right": 245,
+          "cx": 210.5,
+          "top": 259,
+          "hip": 437,
+          "shoulderY": 260,
+          "depth": 70,
+          "neckJoin": 0,
+          "hipJoin": 0,
+          "win0": 273,
+          "win1": 319
+        },
+        "arms": {
+          "L": {
+            "present": true,
+            "attachGap": 2,
+            "handGap": 0,
+            "angle": 2.8,
+            "up": false,
+            "n": 80
+          },
+          "R": {
+            "present": true,
+            "attachGap": 2,
+            "handGap": 0,
+            "angle": 2.2,
+            "up": false,
+            "n": 269
+          }
+        },
+        "legs": {
+          "L": {
+            "present": true,
+            "hipGap": 0,
+            "footGap": 1,
+            "angle": 20.6
+          },
+          "R": {
+            "present": true,
+            "hipGap": 0,
+            "footGap": 1,
+            "angle": 16.3
+          }
+        },
+        "lr": {
+          "ok": true,
+          "msg": ""
+        },
+        "ground": {
+          "floatPx": 0,
+          "clipPx": 6,
+          "slop": 10.36,
+          "groundY": 437,
+          "footY": 443
+        },
+        "buried": false,
+        "clip": "",
+        "components": [
+          {
+            "area": 15735,
+            "x0": 122,
+            "y0": 185,
+            "x1": 297,
+            "y1": 438
+          }
+        ]
+      },
+      "error": ""
+    },
+    {
+      "name": "idle-front",
+      "problems": [],
+      "measure": {
+        "missing": false,
+        "figureH": 294,
+        "head": {
+          "gap": 0,
+          "ratio": 0.2925170068027211,
+          "centered": true,
+          "dx": 0.5132062270421613,
+          "headH": 86,
+          "neck": true,
+          "top": 211,
+          "bottom": 296,
+          "cx": 209.48679377295784
+        },
+        "torso": {
+          "left": 167,
+          "right": 253,
+          "cx": 210,
+          "top": 296,
+          "hip": 387,
+          "shoulderY": 305,
+          "depth": 84,
+          "neckJoin": 0,
+          "hipJoin": 0,
+          "win0": 310,
+          "win1": 363
+        },
+        "arms": {
+          "L": {
+            "present": true,
+            "attachGap": 2,
+            "handGap": 0,
+            "angle": 1.1,
+            "up": false,
+            "n": 98
+          },
+          "R": {
+            "present": true,
+            "attachGap": 2,
+            "handGap": 0,
+            "angle": 1.1,
+            "up": false,
+            "n": 41
+          }
+        },
+        "legs": {
+          "L": {
+            "present": true,
+            "hipGap": 0,
+            "footGap": 0,
+            "angle": 0.7
+          },
+          "R": {
+            "present": true,
+            "hipGap": 0,
+            "footGap": 0,
+            "angle": 1.7
+          }
+        },
+        "lr": {
+          "ok": true,
+          "msg": ""
+        },
+        "ground": {
+          "floatPx": 0,
+          "clipPx": 5.764705882352928,
+          "slop": 11.76,
+          "groundY": 498.2352941176471,
+          "footY": 504
+        },
+        "buried": false,
+        "clip": "",
+        "components": [
+          {
+            "area": 20668,
+            "x0": 163,
+            "y0": 211,
+            "x1": 256,
+            "y1": 504
+          }
+        ]
+      },
+      "error": ""
+    },
+    {
+      "name": "idle-side",
+      "problems": [],
+      "measure": {
+        "missing": false,
+        "figureH": 294,
+        "head": {
+          "gap": 0,
+          "ratio": 0.2925170068027211,
+          "centered": true,
+          "dx": 0.9020512820512749,
+          "headH": 86,
+          "neck": true,
+          "top": 212,
+          "bottom": 297,
+          "cx": 211.59794871794873
+        },
+        "torso": {
+          "left": 184,
+          "right": 241,
+          "cx": 212.5,
+          "top": 297,
+          "hip": 400,
+          "shoulderY": 305,
+          "depth": 57,
+          "neckJoin": 0,
+          "hipJoin": 0,
+          "win0": 311,
+          "win1": 364
+        },
+        "arms": {
+          "L": {
+            "present": true,
+            "attachGap": 2,
+            "handGap": 0,
+            "angle": 2.2,
+            "up": false,
+            "n": 245
+          },
+          "R": {
+            "present": true,
+            "attachGap": 2,
+            "handGap": 0,
+            "angle": 1,
+            "up": false,
+            "n": 41
+          }
+        },
+        "legs": {
+          "L": {
+            "present": true,
+            "hipGap": 0,
+            "footGap": 20,
+            "angle": 6.4
+          },
+          "R": {
+            "present": true,
+            "hipGap": 0,
+            "footGap": 0,
+            "angle": 6.4
+          }
+        },
+        "lr": {
+          "ok": true,
+          "msg": ""
+        },
+        "ground": {
+          "floatPx": 0,
+          "clipPx": 6.764705882352928,
+          "slop": 11.76,
+          "groundY": 498.2352941176471,
+          "footY": 505
+        },
+        "buried": false,
+        "clip": "",
+        "components": [
+          {
+            "area": 15346,
+            "x0": 172,
+            "y0": 212,
+            "x1": 254,
+            "y1": 505
+          }
+        ]
+      },
+      "error": ""
+    },
+    {
+      "name": "walk-side-0",
+      "problems": [],
+      "measure": {
+        "missing": false,
+        "figureH": 292,
+        "head": {
+          "gap": 0,
+          "ratio": 0.2945205479452055,
+          "centered": true,
+          "dx": 6.844897959183669,
+          "headH": 86,
+          "neck": true,
+          "top": 214,
+          "bottom": 299,
+          "cx": 217.84489795918367
+        },
+        "torso": {
+          "left": 177,
+          "right": 245,
+          "cx": 211,
+          "top": 299,
+          "hip": 400,
+          "shoulderY": 306,
+          "depth": 58,
+          "neckJoin": 0,
+          "hipJoin": 0,
+          "win0": 313,
+          "win1": 365
+        },
+        "arms": {
+          "L": {
+            "present": true,
+            "attachGap": 2,
+            "handGap": 0,
+            "angle": 3.5,
+            "up": false,
+            "n": 465
+          },
+          "R": {
+            "present": true,
+            "attachGap": 2,
+            "handGap": 0,
+            "angle": 1,
+            "up": false,
+            "n": 552
+          }
+        },
+        "legs": {
+          "L": {
+            "present": true,
+            "hipGap": 0,
+            "footGap": 0,
+            "angle": 9.8
+          },
+          "R": {
+            "present": true,
+            "hipGap": 0,
+            "footGap": 0,
+            "angle": 0.5
+          }
+        },
+        "lr": {
+          "ok": true,
+          "msg": ""
+        },
+        "ground": {
+          "floatPx": 0,
+          "clipPx": 6.764705882352928,
+          "slop": 11.68,
+          "groundY": 498.2352941176471,
+          "footY": 505
+        },
+        "buried": false,
+        "clip": "",
+        "components": [
+          {
+            "area": 18661,
+            "x0": 162,
+            "y0": 214,
+            "x1": 262,
+            "y1": 505
+          }
+        ]
+      }
+    }
+  ],
+  "checkerError": "",
+  "sha": "a509260dae9e40a118bd0e5eda02fab54472d97b",
+  "branch": "HEAD"
+}

@@ -1,0 +1,395 @@
+{
+  "ok": false,
+  "calib": {
+    "ok": true,
+    "errors": [],
+    "good": {
+      "missing": false,
+      "figureH": 436,
+      "head": {
+        "gap": 0,
+        "ratio": 0.19036697247706422,
+        "centered": true,
+        "dx": 0,
+        "headH": 83,
+        "neck": true,
+        "top": 66,
+        "bottom": 148,
+        "cx": 209.5
+      },
+      "torso": {
+        "left": 160,
+        "right": 259,
+        "cx": 209.5,
+        "top": 148,
+        "hip": 273,
+        "shoulderY": 164,
+        "depth": 100,
+        "neckJoin": 0,
+        "hipJoin": 0,
+        "win0": 214,
+        "win1": 292
+      },
+      "arms": {
+        "L": {
+          "present": true,
+          "attachGap": 2,
+          "handGap": 0,
+          "angle": 19.6,
+          "up": false,
+          "n": 2259
+        },
+        "R": {
+          "present": true,
+          "attachGap": 2,
+          "handGap": 0,
+          "angle": 13.4,
+          "up": false,
+          "n": 2259
+        }
+      },
+      "legs": {
+        "L": {
+          "present": true,
+          "hipGap": 0,
+          "footGap": 0,
+          "angle": 5
+        },
+        "R": {
+          "present": true,
+          "hipGap": 0,
+          "footGap": 0,
+          "angle": 2.2
+        }
+      },
+      "lr": {
+        "ok": true,
+        "msg": ""
+      },
+      "ground": {
+        "floatPx": 0,
+        "clipPx": 1,
+        "slop": 17.44,
+        "groundY": 500,
+        "footY": 501
+      },
+      "buried": false,
+      "clip": "",
+      "components": [
+        {
+          "area": 29969,
+          "x0": 107,
+          "y0": 66,
+          "x1": 312,
+          "y1": 501
+        }
+      ]
+    },
+    "badProblems": [
+      {
+        "id": "head-neck",
+        "priority": 1,
+        "msg": "The head floats 52px above the body. No neck joins them"
+      },
+      {
+        "id": "torso-neck",
+        "priority": 2,
+        "msg": "The neck does not connect to the torso. Gap 52px"
+      },
+      {
+        "id": "arm-shoulder",
+        "priority": 2,
+        "msg": "Left arm does not leave the shoulder. Closest gap is 32px"
+      },
+      {
+        "id": "hand-arm",
+        "priority": 2,
+        "msg": "Left hand does not sit on the end of the arm. Gap 27px"
+      },
+      {
+        "id": "arm-shoulder",
+        "priority": 2,
+        "msg": "Right arm does not leave the shoulder. Closest gap is 32px"
+      },
+      {
+        "id": "hand-arm",
+        "priority": 2,
+        "msg": "Right hand does not sit on the end of the arm. Gap 27px"
+      },
+      {
+        "id": "feet-ground",
+        "priority": 2,
+        "msg": "Feet float 57px above the ground"
+      }
+    ],
+    "sideDeep": {
+      "left": 184,
+      "right": 255,
+      "cx": 219.5,
+      "top": 148,
+      "hip": 345,
+      "shoulderY": 166,
+      "depth": 72,
+      "neckJoin": 0,
+      "hipJoin": 0,
+      "win0": 214,
+      "win1": 292
+    },
+    "sideFlat": [
+      "head-neck",
+      "torso-depth",
+      "torso-hip"
+    ],
+    "walkGood": {
+      "step": 54,
+      "swing": 56,
+      "oppose": -0.929,
+      "together": -1,
+      "lifts": 4,
+      "swapL": 2,
+      "swapR": 2,
+      "floatMax": 0,
+      "bob": 9,
+      "figureH": 382
+    },
+    "walkBad": {
+      "step": 0,
+      "swing": 0,
+      "oppose": 0,
+      "together": 0,
+      "lifts": 0,
+      "swapL": 0,
+      "swapR": 0,
+      "floatMax": 40,
+      "bob": 0,
+      "figureH": 333
+    }
+  },
+  "findings": [
+    {
+      "id": "pet-floor",
+      "priority": 4,
+      "severity": "fail",
+      "views": [
+        "NOS & Fuel Depot",
+        "Ellie's house",
+        "Showroom shop",
+        "Speed garage",
+        "Dance studio",
+        "Pet lounge",
+        "Pizza cafe",
+        "Pixel arcade",
+        "Neon paint studio",
+        "Sky tower",
+        "Stadium",
+        "Builder HQ"
+      ],
+      "msgs": [
+        "NOS & Fuel Depot pet hangs 188px below her feet",
+        "Ellie's house pet hangs 188px below her feet",
+        "Showroom shop pet hangs 188px below her feet",
+        "Speed garage pet hangs 188px below her feet"
+      ],
+      "shots": [
+        "interior-nos.png",
+        "interior-home.png",
+        "interior-showroom.png",
+        "interior-garage.png",
+        "interior-dance.png",
+        "interior-pets.png"
+      ],
+      "title": "The pet is not standing on the floor",
+      "detail": "NOS & Fuel Depot pet hangs 188px below her feet Ellie's house pet hangs 188px below her feet Showroom shop pet hangs 188px below her feet Speed garage pet hangs 188px below her feet Seen on: NOS & Fuel Depot, Ellie's house, Showroom shop, Speed garage, Dance studio, Pet lounge, Pizza cafe, Pixel arcade, Neon paint studio, Sky tower (+2)."
+    },
+    {
+      "id": "pet-scale",
+      "priority": 4,
+      "severity": "fail",
+      "views": [
+        "NOS & Fuel Depot",
+        "Ellie's house",
+        "Showroom shop",
+        "Speed garage",
+        "Dance studio",
+        "Pet lounge",
+        "Pizza cafe",
+        "Pixel arcade",
+        "Neon paint studio",
+        "Sky tower",
+        "Stadium",
+        "Builder HQ"
+      ],
+      "msgs": [
+        "NOS & Fuel Depot pet is 2.30× her height (425px against 185px). Her hip is 0.54 of that.",
+        "Ellie's house pet is 2.30× her height (425px against 185px). Her hip is 0.54 of that.",
+        "Showroom shop pet is 2.28× her height (425px against 186px). Her hip is 0.54 of that.",
+        "Speed garage pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that."
+      ],
+      "shots": [
+        "interior-nos.png",
+        "interior-home.png",
+        "interior-showroom.png",
+        "interior-garage.png",
+        "interior-dance.png",
+        "interior-pets.png"
+      ],
+      "title": "The pet is taller than the character's hip",
+      "detail": "NOS & Fuel Depot pet is 2.30× her height (425px against 185px). Her hip is 0.54 of that. Ellie's house pet is 2.30× her height (425px against 185px). Her hip is 0.54 of that. Showroom shop pet is 2.28× her height (425px against 186px). Her hip is 0.54 of that. Speed garage pet is 2.29× her height (426px against 186px). Her hip is 0.54 of that. Seen on: NOS & Fuel Depot, Ellie's house, Showroom shop, Speed garage, Dance studio, Pet lounge, Pizza cafe, Pixel arcade, Neon paint studio, Sky tower (+2)."
+    },
+    {
+      "id": "scale-skip",
+      "severity": "note",
+      "priority": 9,
+      "title": "Scale check was not run on this tree",
+      "detail": "This tree has no room-scale drawer, so the hip and floor check was not run here.",
+      "shots": [],
+      "views": [],
+      "msgs": []
+    },
+    {
+      "id": "garage-skip",
+      "severity": "note",
+      "priority": 9,
+      "title": "Garage turntable check was not run on this tree",
+      "detail": "This tree has no garage turntable pet, so that scale check was not run here.",
+      "shots": [],
+      "views": [],
+      "msgs": []
+    }
+  ],
+  "pets": {
+    "ok": true,
+    "findings": []
+  },
+  "scale": {
+    "ok": false,
+    "ready": true,
+    "stats": [],
+    "note": "This tree has no room-scale drawer, so the hip and floor check was not run here."
+  },
+  "garage": {
+    "ok": true,
+    "ready": false,
+    "stats": [],
+    "note": "This tree has no garage turntable pet, so that scale check was not run here."
+  },
+  "interior": {
+    "ok": false,
+    "ready": true,
+    "stats": [
+      {
+        "room": "NOS & Fuel Depot",
+        "petH": 425,
+        "whoH": 185,
+        "ratio": 2.297,
+        "hip": 0.536
+      },
+      {
+        "room": "Ellie's house",
+        "petH": 425,
+        "whoH": 185,
+        "ratio": 2.297,
+        "hip": 0.536
+      },
+      {
+        "room": "Showroom shop",
+        "petH": 425,
+        "whoH": 186,
+        "ratio": 2.285,
+        "hip": 0.536
+      },
+      {
+        "room": "Speed garage",
+        "petH": 426,
+        "whoH": 186,
+        "ratio": 2.29,
+        "hip": 0.536
+      },
+      {
+        "room": "Dance studio",
+        "petH": 426,
+        "whoH": 186,
+        "ratio": 2.29,
+        "hip": 0.536
+      },
+      {
+        "room": "Pet lounge",
+        "petH": 426,
+        "whoH": 186,
+        "ratio": 2.29,
+        "hip": 0.536
+      },
+      {
+        "room": "Pizza cafe",
+        "petH": 426,
+        "whoH": 186,
+        "ratio": 2.29,
+        "hip": 0.536
+      },
+      {
+        "room": "Pixel arcade",
+        "petH": 426,
+        "whoH": 186,
+        "ratio": 2.29,
+        "hip": 0.536
+      },
+      {
+        "room": "Neon paint studio",
+        "petH": 426,
+        "whoH": 186,
+        "ratio": 2.29,
+        "hip": 0.536
+      },
+      {
+        "room": "Sky tower",
+        "petH": 426,
+        "whoH": 187,
+        "ratio": 2.278,
+        "hip": 0.536
+      },
+      {
+        "room": "Stadium",
+        "petH": 426,
+        "whoH": 186,
+        "ratio": 2.29,
+        "hip": 0.536
+      },
+      {
+        "room": "Builder HQ",
+        "petH": 426,
+        "whoH": 187,
+        "ratio": 2.278,
+        "hip": 0.536
+      }
+    ],
+    "note": ""
+  },
+  "passes": [],
+  "coverage": [
+    "No jointed closet in this tree, so the head, limb, and walk pixel suite was not scored here",
+    "Pets: fox, cat, dragon, robo joint check",
+    "Scale: pet beside the character in the house, the showroom shop, and outdoors, plus room props on the floor",
+    "Interiors: the pet and the woman measured in the painted room for the depot, the house, the shop, and every other building"
+  ],
+  "shotNames": [
+    "pets.png",
+    "interior-nos.png",
+    "interior-home.png",
+    "interior-showroom.png",
+    "interior-garage.png",
+    "interior-dance.png",
+    "interior-pets.png",
+    "interior-cafe.png",
+    "interior-arcade.png",
+    "interior-neon-paint.png",
+    "interior-sky-drop.png",
+    "interior-soccer.png",
+    "interior-builder.png"
+  ],
+  "closet": false,
+  "walkStats": null,
+  "sample": [],
+  "checkerError": "",
+  "sha": "7fac7a89425ba5972d5d53f30953d3454fdf2577",
+  "branch": "cursor/anatomy-check-3de5"
+}
