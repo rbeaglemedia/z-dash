@@ -1,0 +1,434 @@
+{
+  "ok": true,
+  "sha": "5baec787107180fbd566eeeceb15d31481abb427",
+  "branch": "HEAD",
+  "label": "PR 78 5baec78",
+  "checkerError": "",
+  "findings": [],
+  "shots": [
+    {
+      "id": "rear",
+      "range": "close",
+      "dist": 11,
+      "iou": 0.839,
+      "sourcePx": 480,
+      "displayed": 412,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 0,
+      "trafficBlobs": 0,
+      "player": {
+        "maskN": 79036,
+        "sat": 0.776,
+        "lum": 55,
+        "lumStd": 39.8,
+        "edge": 0.1,
+        "w": 1088,
+        "h": 460
+      },
+      "traffic": {
+        "maskN": 70212,
+        "sat": 0.769,
+        "lum": 54.6,
+        "lumStd": 36.2,
+        "edge": 0.104,
+        "w": 902,
+        "h": 460
+      },
+      "satRatio": 0.99,
+      "lumRatio": 0.91,
+      "edgeRatio": 1.04,
+      "silverExtra": 0,
+      "verdict": {
+        "ok": true,
+        "farLod": false,
+        "reasons": []
+      },
+      "file": "close-rear.png"
+    },
+    {
+      "id": "front",
+      "range": "close",
+      "dist": 12,
+      "iou": 0.73,
+      "sourcePx": 480,
+      "displayed": 378,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 3,
+      "trafficBlobs": 1,
+      "player": {
+        "maskN": 49551,
+        "sat": 0.696,
+        "lum": 74,
+        "lumStd": 52.4,
+        "edge": 0.147,
+        "w": 1006,
+        "h": 460
+      },
+      "traffic": {
+        "maskN": 45794,
+        "sat": 0.692,
+        "lum": 74.4,
+        "lumStd": 51.6,
+        "edge": 0.166,
+        "w": 956,
+        "h": 460
+      },
+      "satRatio": 0.99,
+      "lumRatio": 0.98,
+      "edgeRatio": 1.13,
+      "silverExtra": -2,
+      "verdict": {
+        "ok": true,
+        "farLod": false,
+        "reasons": []
+      },
+      "file": "close-front.png"
+    },
+    {
+      "id": "side",
+      "range": "close",
+      "dist": 12,
+      "iou": 0.664,
+      "sourcePx": 480,
+      "displayed": 378,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 4,
+      "trafficBlobs": 2,
+      "player": {
+        "maskN": 164667,
+        "sat": 0.745,
+        "lum": 67.7,
+        "lumStd": 41.6,
+        "edge": 0.115,
+        "w": 1488,
+        "h": 460
+      },
+      "traffic": {
+        "maskN": 134774,
+        "sat": 0.753,
+        "lum": 65.3,
+        "lumStd": 40.6,
+        "edge": 0.117,
+        "w": 1278,
+        "h": 460
+      },
+      "satRatio": 1.01,
+      "lumRatio": 0.98,
+      "edgeRatio": 1.02,
+      "silverExtra": -2,
+      "verdict": {
+        "ok": true,
+        "farLod": false,
+        "reasons": []
+      },
+      "file": "close-side.png"
+    },
+    {
+      "id": "three",
+      "range": "close",
+      "dist": 13,
+      "iou": 0.582,
+      "sourcePx": 480,
+      "displayed": 349,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 2,
+      "trafficBlobs": 0,
+      "player": {
+        "maskN": 26808,
+        "sat": 0.711,
+        "lum": 86.2,
+        "lumStd": 46.3,
+        "edge": 0.289,
+        "w": 814,
+        "h": 460
+      },
+      "traffic": {
+        "maskN": 23311,
+        "sat": 0.714,
+        "lum": 88.2,
+        "lumStd": 44.2,
+        "edge": 0.276,
+        "w": 728,
+        "h": 460
+      },
+      "satRatio": 1,
+      "lumRatio": 0.95,
+      "edgeRatio": 0.96,
+      "silverExtra": -2,
+      "verdict": {
+        "ok": true,
+        "farLod": false,
+        "reasons": []
+      },
+      "file": "close-three.png"
+    },
+    {
+      "id": "rear",
+      "range": "far",
+      "dist": 260,
+      "iou": 0.666,
+      "sourcePx": 480,
+      "displayed": 17,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 5,
+      "trafficBlobs": 2,
+      "player": {
+        "maskN": 27782,
+        "sat": 0.43,
+        "lum": 143.5,
+        "lumStd": 60,
+        "edge": 0.124,
+        "w": 579,
+        "h": 420
+      },
+      "traffic": {
+        "maskN": 50083,
+        "sat": 0.521,
+        "lum": 93.5,
+        "lumStd": 50.8,
+        "edge": 0.039,
+        "w": 768,
+        "h": 420
+      },
+      "verdict": {
+        "ok": true,
+        "farLod": true,
+        "reasons": [
+          "Far LOD. A simpler shape is allowed past the close range."
+        ]
+      },
+      "file": "far-rear.png"
+    },
+    {
+      "id": "front",
+      "range": "far",
+      "dist": 260,
+      "iou": 0.726,
+      "sourcePx": 480,
+      "displayed": 17,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 4,
+      "trafficBlobs": 2,
+      "player": {
+        "maskN": 29435,
+        "sat": 0.413,
+        "lum": 155.9,
+        "lumStd": 59.7,
+        "edge": 0.114,
+        "w": 579,
+        "h": 420
+      },
+      "traffic": {
+        "maskN": 50728,
+        "sat": 0.517,
+        "lum": 92.5,
+        "lumStd": 50.8,
+        "edge": 0.038,
+        "w": 768,
+        "h": 420
+      },
+      "verdict": {
+        "ok": true,
+        "farLod": true,
+        "reasons": [
+          "Far LOD. A simpler shape is allowed past the close range."
+        ]
+      },
+      "file": "far-front.png"
+    },
+    {
+      "id": "side",
+      "range": "far",
+      "dist": 260,
+      "iou": 0.551,
+      "sourcePx": 480,
+      "displayed": 17,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 6,
+      "trafficBlobs": 1,
+      "player": {
+        "maskN": 49539,
+        "sat": 0.479,
+        "lum": 130,
+        "lumStd": 55.1,
+        "edge": 0.115,
+        "w": 700,
+        "h": 420
+      },
+      "traffic": {
+        "maskN": 67077,
+        "sat": 0.474,
+        "lum": 106.1,
+        "lumStd": 66.4,
+        "edge": 0.044,
+        "w": 871,
+        "h": 420
+      },
+      "verdict": {
+        "ok": true,
+        "farLod": true,
+        "reasons": [
+          "Far LOD. A simpler shape is allowed past the close range."
+        ]
+      },
+      "file": "far-side.png"
+    },
+    {
+      "id": "three",
+      "range": "far",
+      "dist": 280,
+      "iou": 0.663,
+      "sourcePx": 480,
+      "displayed": 16,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 7,
+      "trafficBlobs": 1,
+      "player": {
+        "maskN": 33139,
+        "sat": 0.48,
+        "lum": 132.5,
+        "lumStd": 58.1,
+        "edge": 0.132,
+        "w": 656,
+        "h": 420
+      },
+      "traffic": {
+        "maskN": 37587,
+        "sat": 0.535,
+        "lum": 90.6,
+        "lumStd": 42.8,
+        "edge": 0.041,
+        "w": 630,
+        "h": 420
+      },
+      "verdict": {
+        "ok": true,
+        "farLod": true,
+        "reasons": [
+          "Far LOD. A simpler shape is allowed past the close range."
+        ]
+      },
+      "file": "far-three.png"
+    }
+  ],
+  "fps": {
+    "bakeMs": 1441,
+    "on": 367.4,
+    "off": 367.6,
+    "delta": -0.2,
+    "samplesOn": [
+      362.9,
+      365.5,
+      367.4,
+      379.4,
+      419.5
+    ],
+    "samplesOff": [
+      255.8,
+      258.5,
+      367.6,
+      377.1,
+      378.7
+    ],
+    "alive": 12,
+    "noise": 122.9
+  },
+  "gl": "WebKit WebGL / WebKit",
+  "boot": {
+    "ok": true,
+    "errors": [],
+    "gl": "WebKit WebGL / WebKit",
+    "source": {
+      "ok": true,
+      "reasons": [],
+      "file": "assets/370z.glb",
+      "source": "glb",
+      "bytesha": "fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf",
+      "embedSha": "fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf",
+      "creditSha": "fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf",
+      "script": "shared/assets/370z-glb.js",
+      "bytes": 1800836,
+      "playerVerts": 34275,
+      "cloneVerts": 0,
+      "sharedGeom": 0,
+      "fetched": []
+    },
+    "cloned": 66,
+    "cars": 30,
+    "flags": {
+      "tunePx": 480,
+      "fullDist": 150,
+      "boxDist": 400
+    },
+    "playerPaint": ""
+  },
+  "source": {
+    "script": "shared/assets/370z-glb.js",
+    "file": "assets/370z.glb",
+    "bytes": 1800836,
+    "bytesha": "fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf",
+    "runtime": {
+      "ok": true,
+      "reasons": [],
+      "file": "assets/370z.glb",
+      "source": "glb",
+      "bytesha": "fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf",
+      "embedSha": "fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf",
+      "creditSha": "fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf",
+      "script": "shared/assets/370z-glb.js",
+      "bytes": 1800836,
+      "playerVerts": 34275,
+      "cloneVerts": 0,
+      "sharedGeom": 0,
+      "fetched": []
+    }
+  },
+  "static": {
+    "spritePx": 480,
+    "usesCloseSprite": true,
+    "wheelDecal": false,
+    "wheelPx": 0
+  },
+  "shotNotes": [
+    "- `close-rear.png` close rear — pass",
+    "- `close-front.png` close front — pass",
+    "- `close-side.png` close side — pass",
+    "- `close-three.png` close three — pass",
+    "- `far-rear.png` far rear — pass",
+    "- `far-front.png` far front — pass",
+    "- `far-side.png` far side — pass",
+    "- `far-three.png` far three — pass"
+  ]
+}

@@ -1,0 +1,467 @@
+{
+  "ok": false,
+  "sha": "ffac55c16407de0689cf2a07d2ad4c2130a893aa",
+  "branch": "HEAD",
+  "label": "PR 78 ffac55c",
+  "checkerError": "",
+  "findings": [
+    {
+      "rule": 3,
+      "severity": "fail",
+      "id": "bake-px",
+      "title": "Close traffic bake is 160 px",
+      "detail": "shared/traffic-tune.js spritePx is 160. A close copy of the 370Z has to be at least 256 px at the source. A 160 px bake reads smeared once the chase camera stretches it.",
+      "shots": [
+        "close-rear.png",
+        "close-front.png",
+        "close-side.png",
+        "close-three.png"
+      ]
+    },
+    {
+      "rule": 2,
+      "severity": "fail",
+      "id": "wheel-decal",
+      "title": "Traffic wheels are screen-space cards",
+      "detail": "world/traffic.js drawWheels composites a 16 px wheel picture in screen space (16×16). The card faces the camera. Squashing it does not put a tire in the wheel well, and it does not steer about the vertical axle.",
+      "shots": [
+        "close-rear.png",
+        "close-front.png",
+        "close-side.png",
+        "close-three.png"
+      ]
+    },
+    {
+      "rule": 1,
+      "severity": "fail",
+      "id": "close-shape",
+      "title": "Close copy does not match his Z",
+      "detail": "rear: Silhouette does not match his Z (IoU 0.40). side: Silhouette does not match his Z (IoU 0.52). three: Silhouette does not match his Z (IoU 0.26).",
+      "shots": [
+        "close-rear.png",
+        "close-side.png",
+        "close-three.png"
+      ]
+    },
+    {
+      "rule": 3,
+      "severity": "fail",
+      "id": "bake-visual",
+      "title": "Close picture is coarse on screen",
+      "detail": "rear: The copy is smeared. Edge detail is 26% of his Z. front: The copy is smeared. Edge detail is 29% of his Z.",
+      "shots": [
+        "close-rear.png",
+        "close-front.png"
+      ]
+    }
+  ],
+  "shots": [
+    {
+      "id": "rear",
+      "range": "close",
+      "dist": 11,
+      "iou": 0.396,
+      "sourcePx": 160,
+      "displayed": 412,
+      "tunePx": 160,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 4,
+      "wheelDecal": true,
+      "playerBlobs": 1,
+      "trafficBlobs": 4,
+      "player": {
+        "maskN": 77674,
+        "sat": 0.734,
+        "lum": 50.2,
+        "lumStd": 42.9,
+        "edge": 0.1,
+        "w": 1088,
+        "h": 460
+      },
+      "traffic": {
+        "maskN": 74876,
+        "sat": 0.708,
+        "lum": 44.9,
+        "lumStd": 29.5,
+        "edge": 0.026,
+        "w": 902,
+        "h": 460
+      },
+      "satRatio": 0.96,
+      "lumRatio": 0.69,
+      "edgeRatio": 0.26,
+      "silverExtra": 3,
+      "verdict": {
+        "ok": false,
+        "farLod": false,
+        "reasons": [
+          "Wheels are flat camera-facing cards, not tires sitting in the wells.",
+          "Close bake is 160 px. The floor is 256. A 160 px bake is too coarse.",
+          "Silhouette does not match his Z (IoU 0.40).",
+          "The copy is smeared. Edge detail is 26% of his Z.",
+          "3 extra round silver marks. From this angle a real wheel is thin, not a star facing the lens."
+        ]
+      },
+      "file": "close-rear.png"
+    },
+    {
+      "id": "front",
+      "range": "close",
+      "dist": 12,
+      "iou": 0.625,
+      "sourcePx": 160,
+      "displayed": 378,
+      "tunePx": 160,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 4,
+      "wheelDecal": true,
+      "playerBlobs": 6,
+      "trafficBlobs": 4,
+      "player": {
+        "maskN": 82024,
+        "sat": 0.707,
+        "lum": 56.7,
+        "lumStd": 47.8,
+        "edge": 0.093,
+        "w": 1006,
+        "h": 460
+      },
+      "traffic": {
+        "maskN": 90977,
+        "sat": 0.711,
+        "lum": 46.9,
+        "lumStd": 30.7,
+        "edge": 0.027,
+        "w": 956,
+        "h": 460
+      },
+      "satRatio": 1.01,
+      "lumRatio": 0.64,
+      "edgeRatio": 0.29,
+      "silverExtra": -2,
+      "verdict": {
+        "ok": false,
+        "farLod": false,
+        "reasons": [
+          "Wheels are flat camera-facing cards, not tires sitting in the wells.",
+          "Close bake is 160 px. The floor is 256. A 160 px bake is too coarse.",
+          "The copy is smeared. Edge detail is 29% of his Z."
+        ]
+      },
+      "file": "close-front.png"
+    },
+    {
+      "id": "side",
+      "range": "close",
+      "dist": 12,
+      "iou": 0.524,
+      "sourcePx": 160,
+      "displayed": 378,
+      "tunePx": 160,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 4,
+      "wheelDecal": true,
+      "playerBlobs": 3,
+      "trafficBlobs": 5,
+      "player": {
+        "maskN": 152424,
+        "sat": 0.725,
+        "lum": 62.5,
+        "lumStd": 41.3,
+        "edge": 0.086,
+        "w": 1488,
+        "h": 460
+      },
+      "traffic": {
+        "maskN": 131010,
+        "sat": 0.722,
+        "lum": 50.9,
+        "lumStd": 32.9,
+        "edge": 0.038,
+        "w": 1278,
+        "h": 460
+      },
+      "satRatio": 1,
+      "lumRatio": 0.8,
+      "edgeRatio": 0.44,
+      "silverExtra": 2,
+      "verdict": {
+        "ok": false,
+        "farLod": false,
+        "reasons": [
+          "Wheels are flat camera-facing cards, not tires sitting in the wells.",
+          "Close bake is 160 px. The floor is 256. A 160 px bake is too coarse.",
+          "Silhouette does not match his Z (IoU 0.52)."
+        ]
+      },
+      "file": "close-side.png"
+    },
+    {
+      "id": "three",
+      "range": "close",
+      "dist": 13,
+      "iou": 0.263,
+      "sourcePx": 160,
+      "displayed": 349,
+      "tunePx": 160,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 4,
+      "wheelDecal": true,
+      "playerBlobs": 2,
+      "trafficBlobs": 4,
+      "player": {
+        "maskN": 62352,
+        "sat": 0.754,
+        "lum": 50.1,
+        "lumStd": 41,
+        "edge": 0.107,
+        "w": 814,
+        "h": 460
+      },
+      "traffic": {
+        "maskN": 53282,
+        "sat": 0.72,
+        "lum": 44.2,
+        "lumStd": 29.6,
+        "edge": 0.048,
+        "w": 728,
+        "h": 460
+      },
+      "satRatio": 0.95,
+      "lumRatio": 0.72,
+      "edgeRatio": 0.45,
+      "silverExtra": 2,
+      "verdict": {
+        "ok": false,
+        "farLod": false,
+        "reasons": [
+          "Wheels are flat camera-facing cards, not tires sitting in the wells.",
+          "Close bake is 160 px. The floor is 256. A 160 px bake is too coarse.",
+          "Silhouette does not match his Z (IoU 0.26).",
+          "2 extra round silver marks. From this angle a real wheel is thin, not a star facing the lens."
+        ]
+      },
+      "file": "close-three.png"
+    },
+    {
+      "id": "rear",
+      "range": "far",
+      "dist": 260,
+      "iou": 0.724,
+      "sourcePx": 160,
+      "displayed": 17,
+      "tunePx": 160,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 7,
+      "trafficBlobs": 3,
+      "player": {
+        "maskN": 71186,
+        "sat": 0.655,
+        "lum": 71.7,
+        "lumStd": 69.4,
+        "edge": 0.05,
+        "w": 579,
+        "h": 420
+      },
+      "traffic": {
+        "maskN": 114324,
+        "sat": 0.68,
+        "lum": 56.2,
+        "lumStd": 47.8,
+        "edge": 0.018,
+        "w": 768,
+        "h": 420
+      },
+      "verdict": {
+        "ok": true,
+        "farLod": true,
+        "reasons": [
+          "Far LOD. A simpler shape is allowed past the close range."
+        ]
+      },
+      "file": "far-rear.png"
+    },
+    {
+      "id": "front",
+      "range": "far",
+      "dist": 260,
+      "iou": 0.752,
+      "sourcePx": 160,
+      "displayed": 17,
+      "tunePx": 160,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 4,
+      "trafficBlobs": 2,
+      "player": {
+        "maskN": 72629,
+        "sat": 0.642,
+        "lum": 78.3,
+        "lumStd": 74.7,
+        "edge": 0.048,
+        "w": 579,
+        "h": 420
+      },
+      "traffic": {
+        "maskN": 114969,
+        "sat": 0.678,
+        "lum": 56,
+        "lumStd": 47.5,
+        "edge": 0.018,
+        "w": 768,
+        "h": 420
+      },
+      "verdict": {
+        "ok": true,
+        "farLod": true,
+        "reasons": [
+          "Far LOD. A simpler shape is allowed past the close range."
+        ]
+      },
+      "file": "far-front.png"
+    },
+    {
+      "id": "side",
+      "range": "far",
+      "dist": 260,
+      "iou": 0.627,
+      "sourcePx": 160,
+      "displayed": 17,
+      "tunePx": 160,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 6,
+      "trafficBlobs": 1,
+      "player": {
+        "maskN": 93383,
+        "sat": 0.631,
+        "lum": 83.5,
+        "lumStd": 63.8,
+        "edge": 0.062,
+        "w": 700,
+        "h": 420
+      },
+      "traffic": {
+        "maskN": 140803,
+        "sat": 0.648,
+        "lum": 67.1,
+        "lumStd": 59.7,
+        "edge": 0.022,
+        "w": 871,
+        "h": 420
+      },
+      "verdict": {
+        "ok": true,
+        "farLod": true,
+        "reasons": [
+          "Far LOD. A simpler shape is allowed past the close range."
+        ]
+      },
+      "file": "far-side.png"
+    },
+    {
+      "id": "three",
+      "range": "far",
+      "dist": 280,
+      "iou": 0.338,
+      "sourcePx": 160,
+      "displayed": 16,
+      "tunePx": 160,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 6,
+      "trafficBlobs": 2,
+      "player": {
+        "maskN": 60391,
+        "sat": 0.622,
+        "lum": 85.3,
+        "lumStd": 68.2,
+        "edge": 0.073,
+        "w": 656,
+        "h": 420
+      },
+      "traffic": {
+        "maskN": 67925,
+        "sat": 0.652,
+        "lum": 62,
+        "lumStd": 45.5,
+        "edge": 0.023,
+        "w": 630,
+        "h": 420
+      },
+      "verdict": {
+        "ok": true,
+        "farLod": true,
+        "reasons": [
+          "Far LOD. A simpler shape is allowed past the close range."
+        ]
+      },
+      "file": "far-three.png"
+    }
+  ],
+  "fps": {
+    "bakeMs": 988,
+    "on": 267.2,
+    "off": 211.7,
+    "delta": 55.5,
+    "samplesOn": [
+      243.9,
+      251.7,
+      267.2,
+      274.9,
+      293
+    ],
+    "samplesOff": [
+      187,
+      188.6,
+      211.7,
+      234.7,
+      266.6
+    ],
+    "alive": 12,
+    "noise": 79.6
+  },
+  "gl": "WebKit WebGL / WebKit",
+  "boot": {
+    "ok": true,
+    "errors": [],
+    "gl": "WebKit WebGL / WebKit",
+    "cloned": 427,
+    "cars": 30,
+    "flags": {
+      "tunePx": 160,
+      "fullDist": 150,
+      "boxDist": 400
+    },
+    "playerPaint": ""
+  },
+  "static": {
+    "spritePx": 160,
+    "usesCloseSprite": true,
+    "wheelDecal": true,
+    "wheelPx": 16
+  },
+  "shotNotes": [
+    "- `close-rear.png` close rear — FAIL",
+    "- `close-front.png` close front — FAIL",
+    "- `close-side.png` close side — FAIL",
+    "- `close-three.png` close three — FAIL",
+    "- `far-rear.png` far rear — pass",
+    "- `far-front.png` far front — pass",
+    "- `far-side.png` far side — pass",
+    "- `far-three.png` far three — pass"
+  ]
+}
