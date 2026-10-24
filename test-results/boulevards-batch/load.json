@@ -1,0 +1,21 @@
+{
+  "gameSha": "17710011b05ce19a450897ebb8aed09027f8b672",
+  "note": "Headless Chrome software GL. Frame times are vsync buckets on this machine, not Bob's phone. Three phone pairs at Car Row, car frozen, 28 frames each.",
+  "fpsPhoneMs": {
+    "beforeLive6541c3e": [66.6, 66.6, 66.6],
+    "after": [50.1, 66.6, 66.6]
+  },
+  "cold": {
+    "phone": { "lit": 324, "finite": true, "paint": 186, "xray": false, "loopErr": "", "build": "finite-cruise", "speedsFinite": true, "trucks": 6 },
+    "ipad": { "lit": 670, "finite": true, "paint": 186, "xray": false, "loopErr": "", "build": "finite-cruise", "speedsFinite": true, "trucks": 6 },
+    "pc": { "lit": 757, "finite": true, "paint": 186, "xray": false, "loopErr": "", "build": "finite-cruise", "speedsFinite": true, "trucks": 6 }
+  },
+  "upgradeFromLiveWorld35": {
+    "before": { "lit": 324, "paint": 0, "xray": true, "caches": ["zdash-f5f4db3cffe9-world35", "world-split-v35"], "build": "finite-cruise", "speedsFinite": true },
+    "after": { "lit": 324, "paint": 186, "xray": false, "caches": ["zdash-f5f4db3cffe9-world35", "world-split-v35"], "build": "finite-cruise", "speedsFinite": true, "loopErr": "" },
+    "ipadLit": 672,
+    "pcLit": 760
+  },
+  "overlap": "street-overlap-check OK on 1771001",
+  "arch": "review exit 0, sha 1771001, 1 building blocks a road (sky tower driveway), 0 doors with no road. Live main had 32 buildings blocking a road."
+}

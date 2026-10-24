@@ -1,6 +1,6 @@
 {
   "ok": false,
-  "sha": "6541c3e8faa1d807c9a30b4e9b14562bedfb16fc",
+  "sha": "17710011b05ce19a450897ebb8aed09027f8b672",
   "branch": "cursor/boulevards-batch-ef23",
   "findings": [
     {
@@ -1990,12 +1990,12 @@
       "neighbors": 20,
       "one": {
         "median": 0.2,
-        "max": 0.2,
+        "max": 0.6,
         "n": 11
       },
       "pass": {
-        "median": 0.4,
-        "max": 0.5,
+        "median": 0.6,
+        "max": 1.2,
         "n": 9
       },
       "blurHits": 0
@@ -2010,13 +2010,13 @@
       },
       "neighbors": 20,
       "one": {
-        "median": 0.5,
-        "max": 0.9,
+        "median": 0.4,
+        "max": 1.1,
         "n": 11
       },
       "pass": {
-        "median": 1.5,
-        "max": 1.8,
+        "median": 1.6,
+        "max": 2.4,
         "n": 9
       },
       "blurHits": 0
@@ -2037,7 +2037,7 @@
       },
       "pass": {
         "median": 0.3,
-        "max": 0.5,
+        "max": 1.2,
         "n": 9
       },
       "blurHits": 0

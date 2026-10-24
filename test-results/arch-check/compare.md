@@ -5,7 +5,7 @@ Command: node tools/arch-check.mjs --root <tree> --no-shots --review
 The harness in that worktree was given city-layout.js and nos-station.js so it reviews the boulevard city. Exit 0 is the review mode. The city still fails checks that were already true on live main 6541c3e.
 
 Live main 6541c3e: 17 fails, 2 warnings. 32 buildings block a road. 0 doors with no road.
-This branch: 16 fails, 2 warnings. 1 building blocks a road (the sky tower's own driveway, same spur as live). 0 doors with no road.
+This branch at 1771001: 17 fails, 2 warnings. 1 building blocks a road (the sky tower's own driveway, same spur as live). 0 doors with no road.
 
 Same on both trees, so not introduced here:
 - Garage mouth graphic is narrower than the 370Z (20 buildings).
