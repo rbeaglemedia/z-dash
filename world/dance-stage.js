@@ -2681,7 +2681,8 @@
   var SAVE_LABEL = '💾 SAVE / DOWNLOAD CLIP FOR TUNING';
   var clipBusy = false, clipQueued = false, pendingClip = null, pendingNeedsTap = false;
   var compareDancerId = '';
-  /* Right pane. 'ingame' is today's stage dancer. registerCompareDancer('player', fn) swaps the player's character in later. */
+  /* Right pane slot. fn(cx, cy, sc, sample, now, ctx). 'ingame' is today's dancer.
+     registerCompareDancer('player', fn) can swap in the player's character later. */
   var compareSlots = {
     ingame: function (cx, cy, sc, sample, now) {
       drawFigure(cx, cy, sc, (sample && sample.pose) || sample, now, 1);
@@ -2975,8 +2976,8 @@
       var drawSlot = compareSlots[slot] || compareSlots.ingame;
       var sc = Math.max(0.62, Math.min(1.05, pw / 280, h / 230));
       var sample = rec || {};
-      if (slot === 'pet') drawSlot(x2 + pw / 2, y + h * 0.74, sc, sample.pet ? sample : { pet: livePetPose(now) }, now);
-      else drawSlot(x2 + pw / 2, y + h * 0.8, sc, sample.pose ? sample : { pose: livePose(now) }, now);
+      if (slot === 'pet') drawSlot(x2 + pw / 2, y + h * 0.74, sc, sample.pet ? sample : { pet: livePetPose(now) }, now, c);
+      else drawSlot(x2 + pw / 2, y + h * 0.8, sc, sample.pose ? sample : { pose: livePose(now) }, now, c);
       if (forVideo) {
         c.save();
         c.font = '800 18px Orbitron,sans-serif';
