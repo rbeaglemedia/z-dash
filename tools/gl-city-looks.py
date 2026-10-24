@@ -209,6 +209,76 @@ def roof_cap(dr, proj, x, z, w, d, h, color):
     dr.polygon(quad, fill=color)
 
 
+def mix(p, q, t):
+    return (p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t)
+
+
+def bilerp(quad, u, v):
+    # quad: (u0,v0), (u1,v0), (u1,v1), (u0,v1)
+    return mix(mix(quad[0], quad[1], u), mix(quad[3], quad[2], u), v)
+
+
+def dance(dr, proj, tier, kind):
+    # Z Company Arts. One rectangle in both tiers. The mural quad does not move.
+    x, z, w, d, h = 6, -6, 12, 5, 10
+    wall = (36, 12, 32) if kind != 'b' else (196, 150, 148)
+    box(dr, proj, x, z, w, d, h, 'glass' if kind != 'b' else 'pastel')
+    front = [proj(x, 0, z + 0.05), proj(x + w, 0, z + 0.05),
+             proj(x + w, h, z + 0.05), proj(x, h, z + 0.05)]
+    dr.polygon(front, fill=wall)
+    # Same fractions muralFrame uses on the 18 m Arts box: y0 3.2, height 9.9, 92% of the face.
+    y0 = h * (3.2 / 18.0)
+    y1 = h * ((3.2 + 9.9) / 18.0)
+    x0 = x + w * 0.04
+    x1 = x + w * 0.96
+    mz = z + 0.12
+    mural = [proj(x0, y0, mz), proj(x1, y0, mz), proj(x1, y1, mz), proj(x0, y1, mz)]
+    dr.polygon(mural, fill=(22, 11, 40))
+
+    def mpt(u, v):
+        return bilerp(mural, u, v)
+
+    def mline(pts, fill, width):
+        dr.line([mpt(u, v) for u, v in pts], fill=fill, width=width)
+
+    mline([(0.12, 0.78), (0.40, 0.78), (0.12, 0.28), (0.40, 0.28)], CYAN, 3)
+    mline([(0.52, 0.62), (0.52, 0.40)], MAG, 3)
+    mline([(0.40, 0.56), (0.52, 0.62), (0.66, 0.52)], MAG, 3)
+    mline([(0.52, 0.40), (0.42, 0.22)], CYAN, 3)
+    mline([(0.52, 0.40), (0.64, 0.22)], AMBER, 3)
+    head = mpt(0.52, 0.74)
+    dr.ellipse([head[0] - 5, head[1] - 5, head[0] + 5, head[1] + 5], outline=MAG, width=2)
+    band = [mpt(0.02, 0.86), mpt(0.98, 0.86), mpt(0.98, 0.98), mpt(0.02, 0.98)]
+    dr.polygon(band, fill=(6, 2, 16))
+    dr.line(band + [band[0]], fill=CYAN, width=2)
+    label = mpt(0.50, 0.92)
+    dr.text((label[0] - 52, label[1] - 6), 'Z COMPANY ARTS', fill=CYAN)
+    dr.line(mural + [mural[0]], fill=MAG, width=3)
+    # Trim, sign, and entrance sit outside the mural quad.
+    trim_w = 2 if tier == 'arcade' else 4
+    dr.line(front + [front[0]], fill=MAG, width=trim_w)
+    sign = [proj(x0, y1 + 0.15, mz), proj(x1, y1 + 0.15, mz),
+            proj(x1, min(h - 0.3, y1 + 0.7), mz), proj(x0, min(h - 0.3, y1 + 0.7), mz)]
+    dr.polygon(sign, fill=(12, 4, 20) if tier == 'arcade' else MAG)
+    dr.line(sign + [sign[0]], fill=CYAN, width=2)
+    roof_cap(dr, proj, x, z, w, d, h, CYAN if kind != 'b' else (180, 90, 78))
+    mast = proj(x + w * 0.72, h, z + d * 0.5)
+    tip = proj(x + w * 0.72, h + 1.6, z + d * 0.5)
+    dr.line([mast, tip], fill=CYAN, width=2)
+    # Entrance on the side wall, clear of the mural face.
+    side = [proj(x - 0.05, 0, z + 0.4), proj(x - 0.05, 0, z + 1.8),
+            proj(x - 0.05, h * 0.28, z + 1.8), proj(x - 0.05, h * 0.28, z + 0.4)]
+    dr.polygon(side, fill=(20, 8, 16))
+    dr.line(side + [side[0]], fill=CYAN, width=2)
+    if tier == 'street':
+        # Side-wall awning only. It does not cross the mural face.
+        y = h * 0.32
+        lip = [proj(x, y, z + 0.25), proj(x, y, z + 1.95),
+               proj(x - 1.5, y - 0.35, z + 2.05), proj(x - 1.5, y - 0.35, z + 0.15)]
+        dr.polygon(lip, fill=MAG)
+        dr.line(lip + [lip[0]], fill=MAG, width=2)
+
+
 def awning(dr, proj, x, z, w, h, color):
     y = h * 0.34
     quad = [proj(x + w * 0.2, y, z - 0.1), proj(x + w * 0.8, y, z - 0.1),
@@ -237,13 +307,13 @@ def scene(kind, w, h, tier):
     caps = []
     if kind == 'a':
         specs = [(-26, -40, 10, 8, 28), (-12, -38, 12, 9, 46), (4, -42, 14, 10, 34),
-                 (22, -36, 9, 8, 22), (-8, -18, 8, 7, 16), (8, -16, 7, 6, 12)]
+                 (22, -36, 9, 8, 22), (-8, -18, 8, 7, 16)]
         caps = specs
         for s in specs:
             box(dr, proj, *s, 'glass')
     elif kind == 'b':
         specs = [(-26, -40, 10, 8, 22), (-12, -38, 12, 9, 30), (4, -42, 14, 10, 26),
-                 (22, -36, 9, 8, 18), (-8, -18, 8, 7, 12), (8, -16, 7, 6, 10)]
+                 (22, -36, 9, 8, 18), (-8, -18, 8, 7, 12)]
         caps = specs
         for s in specs:
             box(dr, proj, *s, 'pastel')
@@ -254,16 +324,20 @@ def scene(kind, w, h, tier):
         box(dr, proj, 2, -42, 12, 9, 30, 'glass')
         box(dr, proj, 18, -36, 8, 7, 18, 'glass')
         house(dr, proj, -10, -16, 9, 7, 11)
-        stadium(dr, proj, 6, -14, 16, 8)
+        stadium(dr, proj, -24, -22, 12, 7)
     # Doors, garages, and the baked roof cap match. Street only adds the storefront.
+    # The Z dance rectangle is drawn after these so its flat mural face stays whole.
     door(dr, proj, -8, -18, 8, 16)
-    garage(dr, proj, 8, -16, 7, 12)
+    if kind == 'c':
+        garage(dr, proj, 18, -36, 8, 7)
+    else:
+        garage(dr, proj, 22, -36, 9, 8)
     cap = CYAN if kind != 'b' else (180, 90, 78)
     for spec in caps:
         roof_cap(dr, proj, spec[0], spec[1], spec[2], spec[3], spec[4], cap)
     if tier == 'street':
         awning(dr, proj, -8, -18, 8, 16, AMBER)
-        awning(dr, proj, 8, -16, 7, 12, MAG)
+    dance(dr, proj, tier, kind)
     titles = {
         'a': '(a) procedural',
         'b': '(b) free kit palette',
@@ -274,7 +348,7 @@ def scene(kind, w, h, tier):
     dr.rectangle([0, h - bar_h, w, h], fill=(8, 2, 16))
     dr.text((12, h - bar_h + 6), 'MOCKUP  ' + titles[kind] + '   ' + tier_name, fill=(233, 227, 228))
     dr.text((12, h - bar_h + 22), MS[(kind, tier)] + '   building pass only, not measured on a phone', fill=(62, 230, 255))
-    dr.text((12, h - bar_h + 36), 'Not in the game. Shapes match across tiers. No model files.', fill=(138, 122, 125))
+    dr.text((12, h - bar_h + 36), 'Z DANCE wall stays flat. Mural matches both tiers.', fill=(138, 122, 125))
     return img
 
 
