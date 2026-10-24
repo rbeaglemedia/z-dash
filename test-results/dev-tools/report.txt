@@ -1,0 +1,95 @@
+PASS	live html byte-identical to HEAD	index.html jr.html world.html
+PASS	live index.html has no fps-counter include	absent
+PASS	live jr.html has no fps-counter include	absent
+PASS	live world.html has no fps-counter include	absent
+PASS	include test/crew.html	present
+PASS	include test/dance-stage.html	present
+PASS	include test/dev/fixture.html	present
+PASS	include test/fly3.html	present
+PASS	include test/garage-hub.html	present
+PASS	include test/index.html	present
+PASS	include test/jr.html	present
+PASS	include test/neon-paint.html	present
+PASS	include test/world-split.html	present
+PASS	include test/world.html	present
+PASS	future page adventure.html	not in this branch. Include shared/fps-counter.js
+PASS	future page test/viewer.html	not in this branch. Include ../shared/fps-counter.js
+PASS	future page test/car-spinner.html	not in this branch. Include ../shared/fps-counter.js
+PASS	future page test/building-viewer.html	not in this branch. Include ../shared/fps-counter.js
+PASS	future page test/builder.html	not in this branch. Include ../shared/fps-counter.js
+PASS	fps counter has no canvas shadowBlur	shared/fps-counter.js
+PASS	fps counter skips neon world	skip when world/hud.js or world/boot.js is on the page
+PASS	fixture trace vs FPS Lab median	lab 10.10ms trace 10.09ms error 0.1% frames 120/240
+PASS	per-system timers sum to frame time	frames 120 max |total-sum| 0.0000ms closed 0
+PASS	section timers match burned time	physics 0.86 vs 0.86; traffic 2.00 vs 2.00; buildings 4.00 vs 4.00; car 1.00 vs 1.00; effects 0.50 vs 0.50; minimap 0.50 vs 0.50; hud 0.62 vs 0.62; weather 0.38 vs 0.38; other 0.26 vs 0.26
+PASS	fixture does not log dips for its own frames	dips 0 budget 16.7 avg 10.13
+PASS	counter frames stay tiny	tiny n 120 median 0.038ms
+PASS	4Hz graph does not create the dips	extra dips 0 avg before 10.13 after 10.13 polls 8
+PASS	fixture shows the FPS pill	{"text":"60 FPS","top":6,"rightGap":6,"w":65,"h":22,"font":13,"weight":700,"family":"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace","pe":"none","nudge":"","vw":844,"vh":390,"overlaps":[],"bg":"rgba(7, 4, 16, 0.86)"}
+PASS	tool overhead off (null checks)	0.0017 ms/frame of checks, 250 items
+PASS	world.html dev off loads no tool scripts	[]
+PASS	normal play keeps tune defaults and hides the wrench	{"maxSpeed":90,"air":65,"fric":0.5,"perf":false,"wrench":false,"hook":false}
+PASS	world FPS samples with tools off	99.90, 99.90, 83.30, 83.30, 83.20 ms median
+PASS	five corner taps open the PIN pad	zd-pin
+PASS	new PIN unlocks this device only	hash length 64 maxSpeed 90
+PASS	?dev=1 shows the wrench and does not apply caps	{"unlock":null,"match":true,"wrench":true,"stats":false}
+PASS	tool overhead on (frame clock)	0.0760 ms/frame of checks, 250 items
+PASS	on vs off frame-time pairs	off 99.90, 99.90, 83.30, 83.30, 83.20 on 100.00, 116.60, 83.20, 83.30, 83.30 delta 3.36ms limit 16.70ms
+PASS	kill switches restore exactly	{"forced":0,"back":14,"sameSet":true,"sameGet":true,"own0":false,"on":true,"own1":false,"patched":false}
+PASS	short benchmark scores the fixed route	{"id":"highway-west-v1","seconds":1.2,"z0":0,"z":-133.08150000000006}
+PASS	closing the clock leaves ZD_PERF null	{"perf":null,"panel":false}
+PASS	a failed tool shows a message and the game keeps drawing	banner A dev tool failed to load (does-not-exist.js). The game is still running. raf 32
+PASS	Neon World test page does not double the FPS pill	{"skipped":"neon-world","el":false,"hud":true}
+PASS	phone tab fps	minBtn 44 nudge  fps avg 21.38 · p95 18.87 · p99 18.26 · worst 18.12 ms avg 46.77 · p95 53 · p99 54.76 · worst 55.2 physics 0 traffic 0.5
+PASS	phone tab speed	minBtn 44 nudge  Real default is about 322 mph. Nothing is applied until you tap a speed or Apply. Normal play stays on the real default.
+PASS	phone tab physics	minBtn 44 nudge  Test only. Apply sends these numbers to this drive. Reset restores the real defaults. A speed cap, if applied, still win
+PASS	phone tab ellie	minBtn 44 nudge  All Love it Meh No Copy JSON Download Clear No votes yet. Love it, Meh, and No stay on every screen.
+PASS	phone tab character	minBtn 44 nudge  ZD_TOOL_MODULES.character.mount(host, ctx). Fallback page test/viewer.html. window.__VIEWER fields: ready, setModel, set
+PASS	phone tab car	minBtn 44 nudge  ZD_TOOL_MODULES.car.mount(host, ctx). Fallback page test/car-spinner.html. Garage and Neon Paint open in the game frame.
+PASS	phone tab building	minBtn 44 nudge  ZD_TOOL_MODULES.building.mount(host, ctx). Fallback page test/building-viewer.html. Agent bc-fb37f92e. Dropping the page
+PASS	phone tab builder	minBtn 44 nudge  ZD_TOOL_MODULES.builder.mount(host, ctx). Fallback page test/builder.html from cursor/planner-port-plan-cbd5. Agent bc-4
+PASS	phone tab device	minBtn 44 nudge  viewport 844 × 390 dpr 2 touch yes (5) hover no deviceMemory 16 GB cores 4 webgl ANGLE (Google, Vulkan 1.3.0 (SwiftShade
+PASS	hub pill is top-right and clear of buttons	{"text":"35 FPS","top":6,"rightGap":6,"w":65,"h":22,"font":13,"weight":700,"family":"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace","pe":"none","nudge":"","vw":844,"vh":390,"overlaps":[],"bg":"rgba(7, 4, 16, 0.86)"}
+PASS	hub does not add a second pill inside Neon World	{"parent":true,"child":false}
+PASS	traffic kill saves and applies in the hub	{"on":true,"saved":"{\"traffic\":true}"}
+PASS	saved kill does not leak into a normal Neon World visit	{"kill":true,"match":true,"max":90}
+PASS	hub FPS tab reapplies the saved kill and says so	{"on":true,"msg":"Traffic is off (saved kill switch)."}
+PASS	300 mph cap applies only in this drive	{"max":83.82000000000008,"expect":83.82000000000008,"air":83.82000000000008,"layer":true}
+PASS	speed Apply off restores the real default	{"max":90,"layer":null,"match":true}
+PASS	physics apply changes this drive	groundFric 0.2
+PASS	physics reset restores defaults	{"tune":0.5,"draft":0.5,"match":true}
+PASS	preset load fills the sliders and does not apply	{"draft":0.2,"tune":0.5}
+PASS	speed and physics never leak into normal play	{"max":90,"fric":0.5,"hook":true}
+PASS	Ellie vote saves and exports	{"n":1,"vote":"love","href":"http://127.0.0.1:8766/world.html?dev=1&zdhub=1","title":"Neon World","box":true}
+PASS	last tool and dock persist	{"tab":"device","collapsed":true,"game":"world"}
+PASS	a throwing tool does not break the game	{"msg":"A dev tool hit an error: builder boom. The game is still running.","n":32,"canvas":true}
+PASS	pill dance	{"text":"60 FPS","top":110,"rightGap":6,"w":65,"h":22,"font":13,"weight":700,"family":"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace","pe":"none","nudge":"below #kMenuB, button.zd-ds-util, button.zd-ds-wave","vw":844,"vh":390,"overlaps":[],"bg":"rgba(7, 4, 16, 0.86)"}
+PASS	pill nudge dance	below #kMenuB, button.zd-ds-util, button.zd-ds-wave
+PASS	pill crew	{"text":"60 FPS","top":52,"rightGap":6,"w":65,"h":22,"font":13,"weight":700,"family":"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace","pe":"none","nudge":"below #kMenuB","vw":844,"vh":390,"overlaps":[],"bg":"rgba(7, 4, 16, 0.86)"}
+PASS	pill nudge crew	below #kMenuB
+PASS	pill paint	{"text":"7 FPS","top":56,"rightGap":6,"w":57,"h":22,"font":13,"weight":700,"family":"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace","pe":"none","nudge":"below #kMenuB","vw":844,"vh":390,"overlaps":[],"bg":"rgba(7, 4, 16, 0.86)"}
+PASS	pill nudge paint	below #kMenuB
+PASS	pill jr	{"text":"7 FPS","top":6,"rightGap":224,"w":57,"h":22,"font":13,"weight":700,"family":"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace","pe":"none","nudge":"beside #btnSettings, #btnLayout, #kMeterTap, #btnFs","vw":844,"vh":390,"overlaps":[],"bg":"rgba(7, 4, 16, 0.86)"}
+PASS	pill nudge jr	beside #btnSettings, #btnLayout, #kMeterTap, #btnFs
+PASS	pill fly3	{"text":"11 FPS","top":6,"rightGap":6,"w":65,"h":22,"font":13,"weight":700,"family":"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace","pe":"none","nudge":"","vw":844,"vh":390,"overlaps":[],"bg":"rgba(7, 4, 16, 0.86)"}
+PASS	pill stays in the corner on fly3	gap 6
+PASS	ipad-1180x820 tab fps	Waiting for frames…Budget 16.7 ms (60 fps)Budget 33 ms (30 fps)TrafficGlowMinima
+PASS	ipad-1180x820 tab speed	Real default is about 322 mph. Nothing is applied until you tap a speed or Apply
+PASS	ipad-1180x820 tab physics	Test only. Apply sends these numbers to this drive. Reset restores the real defa
+PASS	ipad-1180x820 tab ellie	AllLove itMehNoCopy JSONDownloadClearlove · Neon World2026-10-24T21:51:27.856Z h
+PASS	ipad-1180x820 tab character	ZD_TOOL_MODULES.character.mount(host, ctx). Fallback page test/viewer.html. wind
+PASS	ipad-1180x820 tab car	ZD_TOOL_MODULES.car.mount(host, ctx). Fallback page test/car-spinner.html. Garag
+PASS	ipad-1180x820 tab building	ZD_TOOL_MODULES.building.mount(host, ctx). Fallback page test/building-viewer.ht
+PASS	ipad-1180x820 tab builder	ZD_TOOL_MODULES.builder.mount(host, ctx). Fallback page test/builder.html from c
+PASS	ipad-1180x820 tab device	viewport1180 × 820dpr1touchyes (5)hovernodeviceMemory16 GBcores4webglANGLE (Goog
+PASS	pc-1366x768 tab fps	Waiting for frames…Budget 16.7 ms (60 fps)Budget 33 ms (30 fps)TrafficGlowMinima
+PASS	pc-1366x768 tab speed	Real default is about 322 mph. Nothing is applied until you tap a speed or Apply
+PASS	pc-1366x768 tab physics	Test only. Apply sends these numbers to this drive. Reset restores the real defa
+PASS	pc-1366x768 tab ellie	AllLove itMehNoCopy JSONDownloadClearlove · Neon World2026-10-24T21:51:27.856Z h
+PASS	pc-1366x768 tab character	ZD_TOOL_MODULES.character.mount(host, ctx). Fallback page test/viewer.html. wind
+PASS	pc-1366x768 tab car	ZD_TOOL_MODULES.car.mount(host, ctx). Fallback page test/car-spinner.html. Garag
+PASS	pc-1366x768 tab building	ZD_TOOL_MODULES.building.mount(host, ctx). Fallback page test/building-viewer.ht
+PASS	pc-1366x768 tab builder	ZD_TOOL_MODULES.builder.mount(host, ctx). Fallback page test/builder.html from c
+PASS	pc-1366x768 tab device	viewport1366 × 768dpr1touchnohovernodeviceMemory16 GBcores4webglANGLE (Google, V
+PASS	root service worker does not rewrite /test/	Z-DASH Dev Tools zd-app
+PASS	tools service worker scope is /test/	http://127.0.0.1:8766/test/

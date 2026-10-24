@@ -1,0 +1,482 @@
+{
+  "pass": 95,
+  "fail": 0,
+  "total": 95,
+  "results": [
+    {
+      "name": "live html byte-identical to HEAD",
+      "pass": true,
+      "detail": "index.html jr.html world.html"
+    },
+    {
+      "name": "live index.html has no fps-counter include",
+      "pass": true,
+      "detail": "absent"
+    },
+    {
+      "name": "live jr.html has no fps-counter include",
+      "pass": true,
+      "detail": "absent"
+    },
+    {
+      "name": "live world.html has no fps-counter include",
+      "pass": true,
+      "detail": "absent"
+    },
+    {
+      "name": "include test/crew.html",
+      "pass": true,
+      "detail": "present"
+    },
+    {
+      "name": "include test/dance-stage.html",
+      "pass": true,
+      "detail": "present"
+    },
+    {
+      "name": "include test/dev/fixture.html",
+      "pass": true,
+      "detail": "present"
+    },
+    {
+      "name": "include test/fly3.html",
+      "pass": true,
+      "detail": "present"
+    },
+    {
+      "name": "include test/garage-hub.html",
+      "pass": true,
+      "detail": "present"
+    },
+    {
+      "name": "include test/index.html",
+      "pass": true,
+      "detail": "present"
+    },
+    {
+      "name": "include test/jr.html",
+      "pass": true,
+      "detail": "present"
+    },
+    {
+      "name": "include test/neon-paint.html",
+      "pass": true,
+      "detail": "present"
+    },
+    {
+      "name": "include test/world-split.html",
+      "pass": true,
+      "detail": "present"
+    },
+    {
+      "name": "include test/world.html",
+      "pass": true,
+      "detail": "present"
+    },
+    {
+      "name": "future page adventure.html",
+      "pass": true,
+      "detail": "not in this branch. Include shared/fps-counter.js"
+    },
+    {
+      "name": "future page test/viewer.html",
+      "pass": true,
+      "detail": "not in this branch. Include ../shared/fps-counter.js"
+    },
+    {
+      "name": "future page test/car-spinner.html",
+      "pass": true,
+      "detail": "not in this branch. Include ../shared/fps-counter.js"
+    },
+    {
+      "name": "future page test/building-viewer.html",
+      "pass": true,
+      "detail": "not in this branch. Include ../shared/fps-counter.js"
+    },
+    {
+      "name": "future page test/builder.html",
+      "pass": true,
+      "detail": "not in this branch. Include ../shared/fps-counter.js"
+    },
+    {
+      "name": "fps counter has no canvas shadowBlur",
+      "pass": true,
+      "detail": "shared/fps-counter.js"
+    },
+    {
+      "name": "fps counter skips neon world",
+      "pass": true,
+      "detail": "skip when world/hud.js or world/boot.js is on the page"
+    },
+    {
+      "name": "fixture trace vs FPS Lab median",
+      "pass": true,
+      "detail": "lab 10.10ms trace 10.09ms error 0.1% frames 120/240"
+    },
+    {
+      "name": "per-system timers sum to frame time",
+      "pass": true,
+      "detail": "frames 120 max |total-sum| 0.0000ms closed 0"
+    },
+    {
+      "name": "section timers match burned time",
+      "pass": true,
+      "detail": "physics 0.86 vs 0.86; traffic 2.00 vs 2.00; buildings 4.00 vs 4.00; car 1.00 vs 1.00; effects 0.50 vs 0.50; minimap 0.50 vs 0.50; hud 0.62 vs 0.62; weather 0.38 vs 0.38; other 0.26 vs 0.26"
+    },
+    {
+      "name": "fixture does not log dips for its own frames",
+      "pass": true,
+      "detail": "dips 0 budget 16.7 avg 10.13"
+    },
+    {
+      "name": "counter frames stay tiny",
+      "pass": true,
+      "detail": "tiny n 120 median 0.038ms"
+    },
+    {
+      "name": "4Hz graph does not create the dips",
+      "pass": true,
+      "detail": "extra dips 0 avg before 10.13 after 10.13 polls 8"
+    },
+    {
+      "name": "fixture shows the FPS pill",
+      "pass": true,
+      "detail": "{\"text\":\"60 FPS\",\"top\":6,\"rightGap\":6,\"w\":65,\"h\":22,\"font\":13,\"weight\":700,\"family\":\"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace\",\"pe\":\"none\",\"nudge\":\"\",\"vw\":844,\"vh\":390,\"overlaps\":[],\"bg\":\"rgba(7, 4, 16, 0.86)\"}"
+    },
+    {
+      "name": "tool overhead off (null checks)",
+      "pass": true,
+      "detail": "0.0017 ms/frame of checks, 250 items"
+    },
+    {
+      "name": "world.html dev off loads no tool scripts",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "name": "normal play keeps tune defaults and hides the wrench",
+      "pass": true,
+      "detail": "{\"maxSpeed\":90,\"air\":65,\"fric\":0.5,\"perf\":false,\"wrench\":false,\"hook\":false}"
+    },
+    {
+      "name": "world FPS samples with tools off",
+      "pass": true,
+      "detail": "99.90, 99.90, 83.30, 83.30, 83.20 ms median"
+    },
+    {
+      "name": "five corner taps open the PIN pad",
+      "pass": true,
+      "detail": "zd-pin"
+    },
+    {
+      "name": "new PIN unlocks this device only",
+      "pass": true,
+      "detail": "hash length 64 maxSpeed 90"
+    },
+    {
+      "name": "?dev=1 shows the wrench and does not apply caps",
+      "pass": true,
+      "detail": "{\"unlock\":null,\"match\":true,\"wrench\":true,\"stats\":false}"
+    },
+    {
+      "name": "tool overhead on (frame clock)",
+      "pass": true,
+      "detail": "0.0760 ms/frame of checks, 250 items"
+    },
+    {
+      "name": "on vs off frame-time pairs",
+      "pass": true,
+      "detail": "off 99.90, 99.90, 83.30, 83.30, 83.20 on 100.00, 116.60, 83.20, 83.30, 83.30 delta 3.36ms limit 16.70ms"
+    },
+    {
+      "name": "kill switches restore exactly",
+      "pass": true,
+      "detail": "{\"forced\":0,\"back\":14,\"sameSet\":true,\"sameGet\":true,\"own0\":false,\"on\":true,\"own1\":false,\"patched\":false}"
+    },
+    {
+      "name": "short benchmark scores the fixed route",
+      "pass": true,
+      "detail": "{\"id\":\"highway-west-v1\",\"seconds\":1.2,\"z0\":0,\"z\":-133.08150000000006}"
+    },
+    {
+      "name": "closing the clock leaves ZD_PERF null",
+      "pass": true,
+      "detail": "{\"perf\":null,\"panel\":false}"
+    },
+    {
+      "name": "a failed tool shows a message and the game keeps drawing",
+      "pass": true,
+      "detail": "banner A dev tool failed to load (does-not-exist.js). The game is still running. raf 32"
+    },
+    {
+      "name": "Neon World test page does not double the FPS pill",
+      "pass": true,
+      "detail": "{\"skipped\":\"neon-world\",\"el\":false,\"hud\":true}"
+    },
+    {
+      "name": "phone tab fps",
+      "pass": true,
+      "detail": "minBtn 44 nudge  fps avg 21.38 · p95 18.87 · p99 18.26 · worst 18.12 ms avg 46.77 · p95 53 · p99 54.76 · worst 55.2 physics 0 traffic 0.5"
+    },
+    {
+      "name": "phone tab speed",
+      "pass": true,
+      "detail": "minBtn 44 nudge  Real default is about 322 mph. Nothing is applied until you tap a speed or Apply. Normal play stays on the real default."
+    },
+    {
+      "name": "phone tab physics",
+      "pass": true,
+      "detail": "minBtn 44 nudge  Test only. Apply sends these numbers to this drive. Reset restores the real defaults. A speed cap, if applied, still win"
+    },
+    {
+      "name": "phone tab ellie",
+      "pass": true,
+      "detail": "minBtn 44 nudge  All Love it Meh No Copy JSON Download Clear No votes yet. Love it, Meh, and No stay on every screen."
+    },
+    {
+      "name": "phone tab character",
+      "pass": true,
+      "detail": "minBtn 44 nudge  ZD_TOOL_MODULES.character.mount(host, ctx). Fallback page test/viewer.html. window.__VIEWER fields: ready, setModel, set"
+    },
+    {
+      "name": "phone tab car",
+      "pass": true,
+      "detail": "minBtn 44 nudge  ZD_TOOL_MODULES.car.mount(host, ctx). Fallback page test/car-spinner.html. Garage and Neon Paint open in the game frame."
+    },
+    {
+      "name": "phone tab building",
+      "pass": true,
+      "detail": "minBtn 44 nudge  ZD_TOOL_MODULES.building.mount(host, ctx). Fallback page test/building-viewer.html. Agent bc-fb37f92e. Dropping the page"
+    },
+    {
+      "name": "phone tab builder",
+      "pass": true,
+      "detail": "minBtn 44 nudge  ZD_TOOL_MODULES.builder.mount(host, ctx). Fallback page test/builder.html from cursor/planner-port-plan-cbd5. Agent bc-4"
+    },
+    {
+      "name": "phone tab device",
+      "pass": true,
+      "detail": "minBtn 44 nudge  viewport 844 × 390 dpr 2 touch yes (5) hover no deviceMemory 16 GB cores 4 webgl ANGLE (Google, Vulkan 1.3.0 (SwiftShade"
+    },
+    {
+      "name": "hub pill is top-right and clear of buttons",
+      "pass": true,
+      "detail": "{\"text\":\"35 FPS\",\"top\":6,\"rightGap\":6,\"w\":65,\"h\":22,\"font\":13,\"weight\":700,\"family\":\"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace\",\"pe\":\"none\",\"nudge\":\"\",\"vw\":844,\"vh\":390,\"overlaps\":[],\"bg\":\"rgba(7, 4, 16, 0.86)\"}"
+    },
+    {
+      "name": "hub does not add a second pill inside Neon World",
+      "pass": true,
+      "detail": "{\"parent\":true,\"child\":false}"
+    },
+    {
+      "name": "traffic kill saves and applies in the hub",
+      "pass": true,
+      "detail": "{\"on\":true,\"saved\":\"{\\\"traffic\\\":true}\"}"
+    },
+    {
+      "name": "saved kill does not leak into a normal Neon World visit",
+      "pass": true,
+      "detail": "{\"kill\":true,\"match\":true,\"max\":90}"
+    },
+    {
+      "name": "hub FPS tab reapplies the saved kill and says so",
+      "pass": true,
+      "detail": "{\"on\":true,\"msg\":\"Traffic is off (saved kill switch).\"}"
+    },
+    {
+      "name": "300 mph cap applies only in this drive",
+      "pass": true,
+      "detail": "{\"max\":83.82000000000008,\"expect\":83.82000000000008,\"air\":83.82000000000008,\"layer\":true}"
+    },
+    {
+      "name": "speed Apply off restores the real default",
+      "pass": true,
+      "detail": "{\"max\":90,\"layer\":null,\"match\":true}"
+    },
+    {
+      "name": "physics apply changes this drive",
+      "pass": true,
+      "detail": "groundFric 0.2"
+    },
+    {
+      "name": "physics reset restores defaults",
+      "pass": true,
+      "detail": "{\"tune\":0.5,\"draft\":0.5,\"match\":true}"
+    },
+    {
+      "name": "preset load fills the sliders and does not apply",
+      "pass": true,
+      "detail": "{\"draft\":0.2,\"tune\":0.5}"
+    },
+    {
+      "name": "speed and physics never leak into normal play",
+      "pass": true,
+      "detail": "{\"max\":90,\"fric\":0.5,\"hook\":true}"
+    },
+    {
+      "name": "Ellie vote saves and exports",
+      "pass": true,
+      "detail": "{\"n\":1,\"vote\":\"love\",\"href\":\"http://127.0.0.1:8766/world.html?dev=1&zdhub=1\",\"title\":\"Neon World\",\"box\":true}"
+    },
+    {
+      "name": "last tool and dock persist",
+      "pass": true,
+      "detail": "{\"tab\":\"device\",\"collapsed\":true,\"game\":\"world\"}"
+    },
+    {
+      "name": "a throwing tool does not break the game",
+      "pass": true,
+      "detail": "{\"msg\":\"A dev tool hit an error: builder boom. The game is still running.\",\"n\":32,\"canvas\":true}"
+    },
+    {
+      "name": "pill dance",
+      "pass": true,
+      "detail": "{\"text\":\"60 FPS\",\"top\":110,\"rightGap\":6,\"w\":65,\"h\":22,\"font\":13,\"weight\":700,\"family\":\"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace\",\"pe\":\"none\",\"nudge\":\"below #kMenuB, button.zd-ds-util, button.zd-ds-wave\",\"vw\":844,\"vh\":390,\"overlaps\":[],\"bg\":\"rgba(7, 4, 16, 0.86)\"}"
+    },
+    {
+      "name": "pill nudge dance",
+      "pass": true,
+      "detail": "below #kMenuB, button.zd-ds-util, button.zd-ds-wave"
+    },
+    {
+      "name": "pill crew",
+      "pass": true,
+      "detail": "{\"text\":\"60 FPS\",\"top\":52,\"rightGap\":6,\"w\":65,\"h\":22,\"font\":13,\"weight\":700,\"family\":\"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace\",\"pe\":\"none\",\"nudge\":\"below #kMenuB\",\"vw\":844,\"vh\":390,\"overlaps\":[],\"bg\":\"rgba(7, 4, 16, 0.86)\"}"
+    },
+    {
+      "name": "pill nudge crew",
+      "pass": true,
+      "detail": "below #kMenuB"
+    },
+    {
+      "name": "pill paint",
+      "pass": true,
+      "detail": "{\"text\":\"7 FPS\",\"top\":56,\"rightGap\":6,\"w\":57,\"h\":22,\"font\":13,\"weight\":700,\"family\":\"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace\",\"pe\":\"none\",\"nudge\":\"below #kMenuB\",\"vw\":844,\"vh\":390,\"overlaps\":[],\"bg\":\"rgba(7, 4, 16, 0.86)\"}"
+    },
+    {
+      "name": "pill nudge paint",
+      "pass": true,
+      "detail": "below #kMenuB"
+    },
+    {
+      "name": "pill jr",
+      "pass": true,
+      "detail": "{\"text\":\"7 FPS\",\"top\":6,\"rightGap\":224,\"w\":57,\"h\":22,\"font\":13,\"weight\":700,\"family\":\"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace\",\"pe\":\"none\",\"nudge\":\"beside #btnSettings, #btnLayout, #kMeterTap, #btnFs\",\"vw\":844,\"vh\":390,\"overlaps\":[],\"bg\":\"rgba(7, 4, 16, 0.86)\"}"
+    },
+    {
+      "name": "pill nudge jr",
+      "pass": true,
+      "detail": "beside #btnSettings, #btnLayout, #kMeterTap, #btnFs"
+    },
+    {
+      "name": "pill fly3",
+      "pass": true,
+      "detail": "{\"text\":\"11 FPS\",\"top\":6,\"rightGap\":6,\"w\":65,\"h\":22,\"font\":13,\"weight\":700,\"family\":\"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace\",\"pe\":\"none\",\"nudge\":\"\",\"vw\":844,\"vh\":390,\"overlaps\":[],\"bg\":\"rgba(7, 4, 16, 0.86)\"}"
+    },
+    {
+      "name": "pill stays in the corner on fly3",
+      "pass": true,
+      "detail": "gap 6"
+    },
+    {
+      "name": "ipad-1180x820 tab fps",
+      "pass": true,
+      "detail": "Waiting for frames…Budget 16.7 ms (60 fps)Budget 33 ms (30 fps)TrafficGlowMinima"
+    },
+    {
+      "name": "ipad-1180x820 tab speed",
+      "pass": true,
+      "detail": "Real default is about 322 mph. Nothing is applied until you tap a speed or Apply"
+    },
+    {
+      "name": "ipad-1180x820 tab physics",
+      "pass": true,
+      "detail": "Test only. Apply sends these numbers to this drive. Reset restores the real defa"
+    },
+    {
+      "name": "ipad-1180x820 tab ellie",
+      "pass": true,
+      "detail": "AllLove itMehNoCopy JSONDownloadClearlove · Neon World2026-10-24T21:51:27.856Z h"
+    },
+    {
+      "name": "ipad-1180x820 tab character",
+      "pass": true,
+      "detail": "ZD_TOOL_MODULES.character.mount(host, ctx). Fallback page test/viewer.html. wind"
+    },
+    {
+      "name": "ipad-1180x820 tab car",
+      "pass": true,
+      "detail": "ZD_TOOL_MODULES.car.mount(host, ctx). Fallback page test/car-spinner.html. Garag"
+    },
+    {
+      "name": "ipad-1180x820 tab building",
+      "pass": true,
+      "detail": "ZD_TOOL_MODULES.building.mount(host, ctx). Fallback page test/building-viewer.ht"
+    },
+    {
+      "name": "ipad-1180x820 tab builder",
+      "pass": true,
+      "detail": "ZD_TOOL_MODULES.builder.mount(host, ctx). Fallback page test/builder.html from c"
+    },
+    {
+      "name": "ipad-1180x820 tab device",
+      "pass": true,
+      "detail": "viewport1180 × 820dpr1touchyes (5)hovernodeviceMemory16 GBcores4webglANGLE (Goog"
+    },
+    {
+      "name": "pc-1366x768 tab fps",
+      "pass": true,
+      "detail": "Waiting for frames…Budget 16.7 ms (60 fps)Budget 33 ms (30 fps)TrafficGlowMinima"
+    },
+    {
+      "name": "pc-1366x768 tab speed",
+      "pass": true,
+      "detail": "Real default is about 322 mph. Nothing is applied until you tap a speed or Apply"
+    },
+    {
+      "name": "pc-1366x768 tab physics",
+      "pass": true,
+      "detail": "Test only. Apply sends these numbers to this drive. Reset restores the real defa"
+    },
+    {
+      "name": "pc-1366x768 tab ellie",
+      "pass": true,
+      "detail": "AllLove itMehNoCopy JSONDownloadClearlove · Neon World2026-10-24T21:51:27.856Z h"
+    },
+    {
+      "name": "pc-1366x768 tab character",
+      "pass": true,
+      "detail": "ZD_TOOL_MODULES.character.mount(host, ctx). Fallback page test/viewer.html. wind"
+    },
+    {
+      "name": "pc-1366x768 tab car",
+      "pass": true,
+      "detail": "ZD_TOOL_MODULES.car.mount(host, ctx). Fallback page test/car-spinner.html. Garag"
+    },
+    {
+      "name": "pc-1366x768 tab building",
+      "pass": true,
+      "detail": "ZD_TOOL_MODULES.building.mount(host, ctx). Fallback page test/building-viewer.ht"
+    },
+    {
+      "name": "pc-1366x768 tab builder",
+      "pass": true,
+      "detail": "ZD_TOOL_MODULES.builder.mount(host, ctx). Fallback page test/builder.html from c"
+    },
+    {
+      "name": "pc-1366x768 tab device",
+      "pass": true,
+      "detail": "viewport1366 × 768dpr1touchnohovernodeviceMemory16 GBcores4webglANGLE (Google, V"
+    },
+    {
+      "name": "root service worker does not rewrite /test/",
+      "pass": true,
+      "detail": "Z-DASH Dev Tools zd-app"
+    },
+    {
+      "name": "tools service worker scope is /test/",
+      "pass": true,
+      "detail": "http://127.0.0.1:8766/test/"
+    }
+  ]
+}
