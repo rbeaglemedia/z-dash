@@ -2,6 +2,7 @@
 // Style sampler. A temporary row of walk-in shells so Ellie can compare looks.
 // Move SAMPLER_ROW when the dance district lands. Room art does not use map coordinates.
 // The six real rooms (house, arcade, cafe, pet lounge, soccer shop, builder) stay for later.
+// Room furniture reads docs/planner/PROP-CATALOG.json through PLANNER_PROPS.
 const SAMPLER_ROW = { x: -268, z0: -56, step: 16, w: 14, d: 12 };
 const SAMPLER_KEY = 'zdash.sampler.likes.v1';
 
@@ -370,13 +371,13 @@ SAMPLER.toggle = function (id) {
 };
 
 function samplerPlacedProps(roomId) {
-  const live = typeof EDITOR_CORE !== 'undefined' && EDITOR_CORE && EDITOR_CORE.live;
+  const live = typeof PLANNER_TOOLS !== 'undefined' && PLANNER_TOOLS && PLANNER_TOOLS.live;
   if (live && live.open && live.roomId === roomId && Array.isArray(live.props)) return live.props;
   if (typeof ROOM_PLACE === 'undefined' || !ROOM_PLACE || typeof ROOM_PLACE.read !== 'function') return [];
   const saved = ROOM_PLACE.read(roomId) || [];
   if (saved.length) return saved;
-  if (roomId === 'house' && !ROOM_PLACE.hasSave() && typeof EDITOR_CORE !== 'undefined' && EDITOR_CORE && typeof EDITOR_CORE.r1House === 'function') {
-    return EDITOR_CORE.r1House();
+  if (roomId === 'house' && !ROOM_PLACE.hasSave() && typeof PLANNER_TOOLS !== 'undefined' && PLANNER_TOOLS && typeof PLANNER_TOOLS.r1House === 'function') {
+    return PLANNER_TOOLS.r1House();
   }
   return [];
 }
@@ -429,10 +430,10 @@ SAMPLER.paint = function (g, W, H, id, opts) {
   boxes.sort((a, b) => (b.z - b.d / 2) - (a.z - a.d / 2));
   for (let i = 0; i < shell.length; i++) samplerDrawBox(g, shell[i], view);
   for (let i = 0; i < boxes.length; i++) samplerDrawBox(g, boxes[i], view);
-  const live = typeof EDITOR_CORE !== 'undefined' && EDITOR_CORE && EDITOR_CORE.live;
+  const live = typeof PLANNER_TOOLS !== 'undefined' && PLANNER_TOOLS && PLANNER_TOOLS.live;
   if (live && live.open && live.roomId === room.id && live.sel != null && live.props[live.sel]) {
     const item = live.props[live.sel];
-    const spec = (EDITOR_CORE.sizes && EDITOR_CORE.sizes[item.prop]) || { w: 0.8, d: 0.8 };
+    const spec = (PLANNER_TOOLS.sizes && PLANNER_TOOLS.sizes[item.prop]) || { w: 0.8, d: 0.8 };
     samplerDrawBox(g, samplerBox(item.x, item.z, 0.02, spec.w + 0.16, 0.045, spec.d + 0.16, '#3ee6ff', '#04140c'), view);
   }
   const who = samplerActors(opts);

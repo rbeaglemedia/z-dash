@@ -47,7 +47,7 @@ Sofas, tables, screens, TV stands, and speakers come from `PLANNER_PROPS` in `wo
 
 Ellie's house uses the same painter at 24 by 18 by 4.8 meters. The saved furniture choice picks a catalog set: a sofa, a TV stand, speakers on a table, or a screen on a table. The saved color tints that screen. The pet bed is a low catalog table. The four saved controls and their keys stay as they are.
 
-Build, on the house interior, opens pack B. The shared calls are in `docs/EDITOR-CORE.md`. The save key is `zdash.ellie.builder.v1`. The first visit shows an 85 inch TV and an LED poster on the far wall, a tall speaker, and a standing kiosk. Done stores that list.
+Build, on the house interior, opens pack B. The shared calls are in `world/planner-tools.js` (`docs/EDITOR-CORE.md`). The save key is `zdash.ellie.builder.v1`. The first visit shows an 85 inch TV and an LED poster on the far wall, a tall speaker, and a standing kiosk. Done stores that list.
 
 ## The heart
 

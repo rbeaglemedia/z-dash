@@ -437,6 +437,14 @@ function walkPaintCrew(g,foot,W,H){
   g.drawImage(walkCrewBuf,foot[0]-dw*0.40,foot[1]-dh*0.90,dw,dh);
   return true;
 }
+function walkHomeCatalog(save){
+  // Saved furniture reads docs/planner/PROP-CATALOG.json through PLANNER_PROPS.
+  if(typeof PLANNER_PROPS==='undefined'||!PLANNER_PROPS)return null;
+  const furn=save&&save.furniture;
+  const id=furn==='arcade'?'tv-stand':(furn==='dj'||furn==='trophy'?'table':'sofa');
+  const parts=PLANNER_PROPS.parts(id,{color:'#f4efe6',glow:(save&&save.theme)||'#3ee6ff'});
+  return parts&&parts.length?parts[0]:null;
+}
 function walkPaintRoom(){
   const cv=typeof document!=='undefined'&&document.getElementById('walk-room-cv');
   const door=WALK_MODE.insideDoor;
@@ -465,8 +473,12 @@ function walkPaintRoom(){
   const lampL=cam(-1.4,3.0,4),lampR=cam(1.4,3.0,4);
   g.fillStyle=theme.accent;g.fillRect(lampL[0],lampL[1],Math.max(18,lampL[2]*80),6);g.fillRect(lampR[0],lampR[1],Math.max(18,lampR[2]*80),6);
   if(purpose==='HOME'){
-    walkBox(g,-2.3,0,6.2,0.9,0.7,0.4,theme.accent,'#fff',W,H);
-    if(!house||house.petBed)walkBox(g,-2.6,0,3.2,0.7,0.22,0.45,'#7dff6b','#e9fff2',W,H);
+    const seat=walkHomeCatalog(house);
+    if(!seat||seat.sx>0)walkBox(g,-2.3,0,6.2,0.9,0.7,0.4,theme.accent,'#fff',W,H);
+    if(!house||house.petBed){
+      const bed=(typeof PLANNER_PROPS!=='undefined'&&PLANNER_PROPS)?PLANNER_PROPS.parts('table',{w:1.15,d:0.75,top:0.28,color:'#7dff6b'}):[1];
+      if(bed.length)walkBox(g,-2.6,0,3.2,0.7,0.22,0.45,'#7dff6b','#e9fff2',W,H);
+    }
     walkBox(g,2.3,0,5.4,0.7,0.9,0.4,'#3ee6ff','#fff',W,H);
     const sign=cam(0.1,2.35,7.2);
     g.fillStyle=theme.accent;g.font='800 22px sans-serif';g.textAlign='center';g.fillText((house&&house.sign)||'ELLIE',sign[0],sign[1]);

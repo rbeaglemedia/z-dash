@@ -1196,7 +1196,14 @@
     const t = bay.s1 - span * 0.06;
     frect(rec, B, 3, t - span * 0.1, -0.34, 0.4, t, -0.34, 1.22);
   }
+  function homeCatalogPiece() {
+    // The home footprint reads docs/planner/PROP-CATALOG.json through PLANNER_PROPS.
+    if (typeof PLANNER_PROPS === 'undefined' || !PLANNER_PROPS || typeof PLANNER_PROPS.get !== 'function') return null;
+    return PLANNER_PROPS.get('sofa') || PLANNER_PROPS.get('table');
+  }
   function footHome(rec, B, bay) {
+    const piece = homeCatalogPiece();
+    if (piece && piece.id && piece.id !== 'sofa' && piece.id !== 'table') return;
     const s0 = bay.s0, s1 = bay.s1;
     const ls = s0 + (s1 - s0) * 0.16;
     fl(rec, B, 3, ls, -0.65, 0.15, ls, -0.65, 1.85);

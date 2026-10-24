@@ -1,6 +1,6 @@
 /* Ellie's Builder, pack B, inside the 24 by 18 m house.
    Build shows after she is already inside. The bar lives on the interior card.
-   Tool rules live in editor-core.js. This file is the buttons and the floor map. */
+   Tool rules live in planner-tools.js. This file is the buttons and the floor map. */
 'use strict';
 
 let ellieSession = null;
@@ -24,7 +24,7 @@ const ELLIE_BUILDER = {
 
 function ellieEnsure() {
   if (ellieSession) return ellieSession;
-  ellieSession = EDITOR_CORE.create({
+  ellieSession = PLANNER_TOOLS.create({
     role: 'ellie',
     roomId: 'house',
     saveKey: 'zdash.ellie.builder.v1'
@@ -94,9 +94,9 @@ function ellieMount(root, opts) {
     ellieBtn('Delete', 'Delete', () => ellieAct('delete')),
     ellieBtn('Done', 'Done', () => { ellieAct('done'); ellieHide(); })
   );
-  for (let i = 0; i < EDITOR_CORE.palette.length; i++) {
-    const id = EDITOR_CORE.palette[i];
-    const spec = EDITOR_CORE.sizes[id];
+  for (let i = 0; i < PLANNER_TOOLS.palette.length; i++) {
+    const id = PLANNER_TOOLS.palette[i];
+    const spec = PLANNER_TOOLS.sizes[id];
     const b = ellieBtn(spec.name, spec.name, () => { ellieArmed = id; ellieRefresh(); });
     b.dataset.prop = id;
     rowB.appendChild(b);
@@ -106,8 +106,8 @@ function ellieMount(root, opts) {
   const walk = ellieBtn('Walk', 'Walk', () => ellieAct('walk'));
   walk.dataset.view = 'walk';
   rowB.append(floor, walk);
-  for (let i = 0; i < EDITOR_CORE.swatches.length; i++) {
-    const sw = EDITOR_CORE.swatches[i];
+  for (let i = 0; i < PLANNER_TOOLS.swatches.length; i++) {
+    const sw = PLANNER_TOOLS.swatches[i];
     const b = ellieBtn('', sw.label + ' glow', () => ellieAct('swatch', sw.hex));
     b.className = 'swatch';
     b.dataset.glow = sw.hex;
@@ -284,7 +284,7 @@ function ellieUp(e) {
   const prop = session.props[session.sel];
   if (!prop) return;
   const pt = elliePoint(e, cv);
-  const kind = EDITOR_CORE.kind(prop.prop);
+  const kind = PLANNER_TOOLS.kind(prop.prop);
   if (session.view === 'floor' && ellieFloorMap) {
     const w = ellieFloorMap.toWorld(pt.x, pt.y);
     session.move({ x: w.x, y: prop.y, z: w.z, kind: kind });
@@ -312,7 +312,7 @@ function ellieWalkHit(px, py, W, H) {
   let bestD = 1e9;
   for (let i = 0; i < session.props.length; i++) {
     const item = session.props[i];
-    const spec = EDITOR_CORE.sizes[item.prop] || { h: 1, w: 1 };
+    const spec = PLANNER_TOOLS.sizes[item.prop] || { h: 1, w: 1 };
     const p = ellieProject(item.x, item.y + spec.h * 0.5, item.z);
     if (!p) continue;
     const dz = Math.max(0.35, item.z - SAMPLER.view.camZ);
@@ -330,7 +330,7 @@ function ellieWalkHit(px, py, W, H) {
   for (let i = 0; i < session.props.length; i++) {
     const item = session.props[i];
     if (item.wall) continue;
-    const spec = EDITOR_CORE.sizes[item.prop] || { w: 0.8, d: 0.8 };
+    const spec = PLANNER_TOOLS.sizes[item.prop] || { w: 0.8, d: 0.8 };
     if (Math.abs(floor.x - item.x) < spec.w * 0.5 + 0.35 && Math.abs(floor.z - item.z) < spec.d * 0.5 + 0.35) return i;
   }
   return null;
@@ -364,7 +364,7 @@ function ellieFloorHit(px, py) {
   let bestD = 1.2;
   for (let i = 0; i < session.props.length; i++) {
     const item = session.props[i];
-    const spec = EDITOR_CORE.sizes[item.prop] || { w: 0.8, d: 0.8 };
+    const spec = PLANNER_TOOLS.sizes[item.prop] || { w: 0.8, d: 0.8 };
     const dx = Math.abs(w.x - item.x);
     const dz = Math.abs(w.z - item.z);
     if (dx <= spec.w * 0.5 + 0.3 && dz <= spec.d * 0.5 + 0.3) {
@@ -377,8 +377,9 @@ function ellieFloorHit(px, py) {
 
 function elliePaintFloor(g, W, H, opts) {
   opts = opts || {};
-  const session = ellieSession || (typeof EDITOR_CORE !== 'undefined' && EDITOR_CORE.live);
-  const list = session && session.props ? session.props : (EDITOR_CORE.r1House ? EDITOR_CORE.r1House() : []);
+  const tools = typeof PLANNER_TOOLS !== 'undefined' ? PLANNER_TOOLS : null;
+  const session = ellieSession || (tools && tools.live);
+  const list = session && session.props ? session.props : (tools && tools.r1House ? tools.r1House() : []);
   const top = 86;
   const bottom = 150;
   const side = 24;
@@ -428,7 +429,7 @@ function elliePaintFloor(g, W, H, opts) {
   }
   for (let i = 0; i < list.length; i++) {
     const item = list[i];
-    const spec = EDITOR_CORE.sizes[item.prop] || { w: 0.8, d: 0.8, h: 1 };
+    const spec = PLANNER_TOOLS.sizes[item.prop] || { w: 0.8, d: 0.8, h: 1 };
     const c = map.toScreen(item.x, item.z);
     const rw = Math.max(10, spec.w * scale);
     const rd = Math.max(10, spec.d * scale);

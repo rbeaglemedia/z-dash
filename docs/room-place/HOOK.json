@@ -1,7 +1,7 @@
 {
   "v": 1,
   "units": "m",
-  "status": "describe, read, and snap are on the kid pages. EDITOR_CORE writes the Ellie save.",
+  "status": "describe, read, and snap are on the kid pages. PLANNER_TOOLS writes the Ellie save.",
   "pages": ["world.html", "world-split.html", "test/world.html", "test/world-split.html"],
   "frame": {
     "origin": "Floor, center of the door wall. x = 0, z = 0, y = 0.",
@@ -20,7 +20,7 @@
   },
   "save": {
     "key": "zdash.ellie.builder.v1",
-    "writer": "EDITOR_CORE, Ellie pack B. The DEV Builder calls the same file.",
+    "writer": "PLANNER_TOOLS, Ellie pack B. The DEV Builder calls the same file.",
     "reader": "ROOM_PLACE.read, called by the walk painter",
     "doNotWrite": ["zdash.house.v1", "zdash.kid.v1", "zdash.sampler.likes.v1"],
     "shape": {

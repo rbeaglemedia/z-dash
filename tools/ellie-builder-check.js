@@ -26,14 +26,26 @@ function load(file) {
 
 load('world/planner-props.js');
 load('world/room-place.js');
+load('world/planner-tools.js');
 load('world/style-sampler.js');
-load('world/editor-core.js');
 
 const fail = [];
 const hook = JSON.parse(fs.readFileSync(path.join(root, 'docs/room-place/HOOK.json'), 'utf8'));
 const RP = ctx.ROOM_PLACE;
-const EC = ctx.EDITOR_CORE;
+const EC = ctx.PLANNER_TOOLS;
 const PP = ctx.PLANNER_PROPS;
+
+if (!EC || typeof EC.snap !== 'function' || typeof EC.rotate !== 'function' || typeof EC.roof !== 'function' || typeof EC.createHistory !== 'function' || typeof EC.create !== 'function') {
+  fail.push('shared tools missing');
+}
+const grid = EC && EC.snap(3, 5, 2);
+if (!grid || grid.x !== 4 || grid.z !== 6) fail.push('grid snap ' + JSON.stringify(grid));
+if (!EC || EC.rotate(0) !== 90 || EC.rotate(0, 'deg15') !== 15) fail.push('rotate steps');
+if (fs.existsSync(path.join(root, 'world/editor-core.js'))) fail.push('editor-core.js is still a second core');
+const houseSrc = fs.readFileSync(path.join(root, 'world/house.js'), 'utf8');
+const detailSrc = fs.readFileSync(path.join(root, 'world/detail.js'), 'utf8');
+if (!/PLANNER_PROPS/.test(houseSrc) || !/PROP-CATALOG/.test(houseSrc)) fail.push('house.js misses the prop catalog');
+if (!/PLANNER_PROPS/.test(detailSrc) || !/PROP-CATALOG/.test(detailSrc)) fail.push('detail.js misses the prop catalog');
 
 if (JSON.stringify(RP.rooms) !== JSON.stringify(hook.rooms)) fail.push('rooms drifted from HOOK.json');
 
@@ -152,13 +164,13 @@ again.select(2);
 for (let i = 0; i < 120; i++) again.turn();
 if (!again.undo().ok) fail.push('undo stack');
 
-const files = ['world/room-place.js', 'world/editor-core.js', 'world/ellie-builder.js', 'world/planner-props.js', 'world/style-sampler.js'];
+const files = ['world/room-place.js', 'world/planner-tools.js', 'world/ellie-builder.js', 'world/planner-props.js', 'world/style-sampler.js'];
 for (const file of files) {
   const src = fs.readFileSync(path.join(root, file), 'utf8');
   if (/shadowBlur\s*=/.test(src)) fail.push(file + ' sets shadowBlur');
 }
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-if (/ellie-builder|room-place\.js|editor-core/.test(index)) fail.push('adult page loads the builder');
+if (/ellie-builder|room-place\.js|editor-core|planner-tools/.test(index)) fail.push('adult page loads the builder');
 
 const report = { ok: fail.length === 0, fails: fail };
 fs.mkdirSync(path.join(root, 'test-results/ellie-builder'), { recursive: true });
