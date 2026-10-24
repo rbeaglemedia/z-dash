@@ -1,0 +1,35 @@
+{
+  "merge": "48aace48b023406c2c729c0b51a2a75c44b359a4",
+  "rollback": "dda6e7013debd4f597ca5794ba37f63652e9a21d",
+  "world": "36",
+  "stamp": "1792873806-world36",
+  "testedOn": "48aace48b023406c2c729c0b51a2a75c44b359a4",
+  "live": "https://z.beagle.games",
+  "pagesBuild": "built",
+  "sha256": {
+    "shared/version.js": "51533161001b10e43c2850d6183fd28b674639c54d7c33d0da345a1bdb268d57",
+    "sw.js": "49258fa8a87ddb77fe80034e1b983e43075eb1a4f69a41734e532d682249eb71",
+    "world.html": "0a2c601e1db1b91510b19aeda04fc3f980283c3d8e86ed0c1191ee33ce9d81df",
+    "world-split.html": "0a2c601e1db1b91510b19aeda04fc3f980283c3d8e86ed0c1191ee33ce9d81df",
+    "world/city-layout.js": "ca1e58e20834bb76358e5107ab68bdf452182a73fbb4a19c20c429336259700d",
+    "world/city-draw.js": "418b2200c9b166e7b563601cf208f5adc718d66925582e2da747e2429e1cef78",
+    "world/hud.js": "0205fcc82ea51dd362ef17407684ab5776a8a3ac05418cfdfd6118abc56c04cc",
+    "index.html": "b623d4f8a933b9acf94993c05d71f0ec737060185560d9d2d772355548b1d4bf",
+    ".well-known/assetlinks.json": "a7e830b120cfbd2eea2e2649740abff2669ac05ae60184b36517ec8b999bd60d"
+  },
+  "indexUnchangedVsRollback": true,
+  "assetlinks": { "status": 200, "contentType": "application/json; charset=utf-8", "unchanged": true },
+  "cold": {
+    "phone": { "lit": 324, "paint": 186, "xray": false, "finite": true, "build": "finite-cruise", "trucks": 6, "speedsFinite": true, "zgl": true, "controller": false, "layout": "option1-boulevards", "script": "world/city-layout.js?v=36", "label": [-195, 2260] },
+    "ipad": { "lit": 670, "paint": 186, "xray": false, "finite": true, "build": "finite-cruise", "trucks": 6, "speedsFinite": true, "zgl": true },
+    "pc": { "lit": 757, "paint": 186, "xray": false, "finite": true, "build": "finite-cruise", "trucks": 6, "speedsFinite": true, "zgl": true },
+    "splitPhone": { "lit": 324, "paint": 186, "xray": false, "finite": true, "build": "finite-cruise", "layout": "option1-boulevards" }
+  },
+  "upgradeFrom": "dda6e70 world35",
+  "upgrade": {
+    "before": { "worldCaches": ["zdash-f5f4db3cffe9-world35", "world-split-v35"], "paint": 0, "xray": true, "lit": 324, "finite": true },
+    "afterPhone": { "worldCaches": ["zdash-f5f4db3cffe9-world36", "world-split-v36"], "paint": 186, "xray": false, "lit": 324, "finite": true, "label": [-195, 2260] },
+    "afterIpad": { "lit": 670, "paint": 186, "xray": false, "finite": true },
+    "afterPc": { "lit": 757, "paint": 186, "xray": false, "finite": true }
+  }
+}
