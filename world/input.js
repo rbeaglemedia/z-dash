@@ -27,11 +27,7 @@ function onFootNow(){const W=window.WALK_MODE;return !!(W&&W.onFoot);}
 function canExitCar(){const W=window.WALK_MODE;return !!(W&&!W.onFoot&&typeof W.canGetOut==='function'&&W.canGetOut());}
 function syncWingsBtn(){const b=document.getElementById('wng');if(!b)return;
   if(onFootNow()){if(typeof syncOnFootButtons==='function')syncOnFootButtons();return;}
-  const s=document.getElementById('wngS'),hasP=typeof P!=='undefined',open=!!(hasP&&P.wings),street=!open&&hasP&&P.driveMode==='street';
-  b.classList.remove('enter-car','exit-car');
-  b.classList.toggle('open',open);b.classList.toggle('arcade',!open&&!street);b.classList.toggle('street',street);
-  b.style.background='';b.style.boxShadow='';b.style.color='';
-  if(s)s.textContent=open?'OPEN':street?'STREET':'ARCADE';}
+  paintDriveWings();}
 syncWingsBtn();
 function bootWingsBtn(){try{if(typeof P!=='undefined'&&P.driveMode!=='street'&&P.driveMode!=='arcade')P.driveMode='arcade';syncWingsBtn();}catch(e){}}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',bootWingsBtn);else bootWingsBtn();
@@ -145,8 +141,8 @@ function setBtnFace(el,main,smallText,smallId){if(!el)return;const can=el.queryS
   [...el.childNodes].forEach(n=>{if(n!==can)n.remove();});
   const sm=document.createElement('small');if(smallId)sm.id=smallId;sm.textContent=smallText;
   el.insertBefore(document.createTextNode(main),can||null);el.insertBefore(sm,can||null);}
-function paintDriveWings(){const b=document.getElementById('wng');if(!b)return;const s=document.getElementById('wngS'),hasP=typeof P!=='undefined',open=!!(hasP&&P.wings),street=!open&&hasP&&P.driveMode==='street';
-  b.classList.remove('enter-car','exit-car');b.classList.toggle('open',open);b.classList.toggle('arcade',!open&&!street);b.classList.toggle('street',street);
+function paintDriveWings(){const b=document.getElementById('wng');if(!b)return;const s=document.getElementById('wngS'),hasP=typeof P!=='undefined',open=!!(hasP&&P.wings),street=hasP&&P.driveMode==='street';
+  b.classList.remove('enter-car','exit-car','open');b.classList.toggle('arcade',!street);b.classList.toggle('street',!!street);
   b.style.background='';b.style.boxShadow='';b.style.color='';if(s)s.textContent=open?'OPEN':street?'STREET':'ARCADE';}
 function applyFootMode(mode){const tup=document.getElementById('tup'),nos=document.getElementById('nos'),brk=document.getElementById('brk'),wng=document.getElementById('wng');
   const can=nos&&nos.querySelector('.nfxcan');if(can)can.style.visibility=mode==='walk'?'hidden':'';
