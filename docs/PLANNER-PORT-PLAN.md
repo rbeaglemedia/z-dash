@@ -1,6 +1,8 @@
 # Planner port plan
 
-Phase 1 only. Nothing here is in the live game. `world.html`, `world-split.html`, and adult `index.html` are untouched. Nothing deploys. The full port waits for Bob to write "plan approved, build it".
+Phase 1 only. Nothing here is in the live game. `world.html`, `world-split.html`, and adult `index.html` are untouched. Nothing deploys. The full port waits for Bob to write "plan approved, build it". The picks below stay open except the map-publish rule. No build and no deploy until he picks the rest.
+
+Bob confirmed on Oct 24: DEV Builder map edits use **P2**. A map edit goes to a `/test/` link first. A second explicit go publishes that tested map to the live Neon World, and the previous live map is kept for rollback. This two-step path is only for those map edits. Ellie's Builder, the drop-objects tool, new tools, the new world page, and every other feature still deploy straight to live on his go.
 
 ## Access
 
@@ -209,7 +211,7 @@ DEV writes the city through one new call, `CITY.editorDoc()`. It does not exist 
 | Who | Bob | Ellie, from her own house |
 | Reach | The current Neon World: buildings, roads, NOS stations, spawns, props, interiors. A new art style is the piece that stays on the new world | Her build area on the current Neon World, and the same tools if that room exists on the new world |
 | City and roads | Yes, on the Option 1 map | No. Those tools are off |
-| Save | Test first, then the current Neon World on Bob's explicit go, with a rollback | Her device only, the same way her home choices already save |
+| Save | Map edits: `/test/` first, then the live map on a second explicit go, previous map kept. Confirmed Oct 24 | Her device only, the same way her home choices already save. One go when he says to ship it |
 | Menu | Hidden. A Bob-only unlock on the current game | Place, inside a room on the current Neon World. Her fuller builder is on that same house |
 
 The map seed is Option 1, The Boulevards (`cursor/city-layout-plan-ef23`, agent `bc-3ff1a27b`). It does not seed from today's 24 shops, and it does not seed from Option 2.
@@ -274,15 +276,17 @@ DEV save, test, publish, rollback:
 | --- | --- | --- |
 | 1. Save | This browser only, `localStorage` key `zdash.city.editor.v1` | Bob, any time, in DEV |
 | 2. Drive this | `/test/world.html` reads that key when present, else the committed layout | Bob. The live page keeps the last published map until the next go |
-| 3. Publish | A reviewed commit that copies the tested JSON into the layout the live Neon World loads | Bob's explicit go, same bar as "yes, do it". A new art style is not this commit |
-| 4. Rollback | "Restore published" copies the previous live JSON back over the test key, and that commit reverts | Bob |
+| 3. Publish | A reviewed commit that copies the tested JSON into the layout the live Neon World loads | Bob's second explicit go, same bar as "yes, do it". The first go only updates the `/test/` link. A new art style is not this commit |
+| 4. Rollback | The previous live map file is kept beside the new one. "Restore published" copies that previous file back, and that commit reverts | Bob |
 
 | Choice | How far one go goes |
 | --- | --- |
-| P1 | One explicit go writes the live Neon World layout. The previous file is kept beside it for rollback. A new art style is not included |
-| P2 | The first go updates `/test/` only. A second explicit go updates the live Neon World. A new art style still goes to the new world, on its own go |
+| P1 | One explicit go writes the live Neon World layout. The previous file is kept beside it for rollback. Closed for map edits on Oct 24 |
+| P2 | The first go updates `/test/` only. A second explicit go updates the live Neon World. The previous live map is kept for rollback. A new art style still goes to the new world, on its own go |
 
-This plan recommends **P2**.
+**P2 is confirmed** for DEV Builder map edits (Oct 24). A map edit is a change to buildings, roads, NOS stations, spawns, or the layout `CITY.editorDoc()` writes. The first go puts that layout on a `/test/` link. The live page keeps the last published map until the second go. That second go is a separate explicit yes. The file it replaces stays in the repo so the live map can be rolled back.
+
+This exception is only the map. It does not cover Ellie's Builder, the drop-objects tool, a new tool, the trailer, or the new world page. Those still deploy straight to live when Bob says go. They do not wait for a second publish step.
 
 ### CITY.editorDoc()
 
@@ -501,7 +505,7 @@ Agent `bc-3ff1a27b` keeps ownership of Option 1. DEV consumes their file. Their 
 1. Unlock: **U1** on the live page and **U2** on `/test/`, or U3 (gesture, no PIN).
 2. Snap: **S1** (2 m city, 0.5 m in her room), S2, or S3.
 3. DEV reach for the first test: M1, **M2**, or M3. M3 is the full reach, when he wants it.
-4. Publish: P1 (one go writes the live map) or **P2** (test go, then a second go).
+4. Publish: **P2 confirmed Oct 24** for DEV Builder map edits only. `/test/` first, second go publishes live, previous map kept. P1 is closed for the map. Other features still go live in one step on his go.
 5. Her area: **L1** (inside the 24 × 18 m house), L2 (80 × 50 m of yard), or L3 (a Builder Bay lot).
 6. Her entry: **H1** (Build inside the house) or H2 (at the door).
 7. Her tools: pack A (move and turn only), **pack B** (plus Copy, the size readout, Floor and Walk, four neon swatches), or pack C (B plus a new stick-together of 4).
@@ -511,7 +515,7 @@ Agent `bc-3ff1a27b` keeps ownership of Option 1. DEV consumes their file. Their 
 11. Drop-objects first test: **R1** (current house, tech only, snap to drop slots), R2 (house, tech plus seats and tables, still on drop slots), or R3 (house plus the eight sampler rooms). The five later rooms stay stubbed.
 12. Objects and buildings, from the study below: **O1** (catalog tech on today's house) with **O3** (short hitch trailer, tall trailer parked on the new world), **D1** (move today's boxes), or D2, D3, D4.
 
-Bold items are the recommendation. Nothing here is built. The zip has been read. The stand-in meshes stay until a later build. Review shots of the real shapes wait with that build.
+Bold items are the recommendation, except item 4, which Bob confirmed. The other picks are still open. Nothing here is built, and nothing deploys, until he picks them and writes "plan approved, build it". The zip has been read. The stand-in meshes stay until that build. Review shots of the real shapes wait with it.
 
 ## The new world
 
@@ -530,7 +534,7 @@ One HTML page, the same kind of split page as `world.html`: its own document, it
 
 The JR menu gains one tile, in `KTILES` in `jr.html`, directly after the existing NEON WORLD tile (`k: 'world'`, which already goes to `world.html`). The click path is the same `navMap` assign that tile uses. The new tile uses the same unlock as Neon World, `zd_world_unlocked`, so a locked world stays a locked pair. UI Polish reviews the label before the tile is visible. The adult page does not get a copy of the tile.
 
-Until Bob's explicit go, the page is reachable on `/test/` by URL only. The JR tile is the go that puts it on her menu. `sw.js` learns the new filename in `pageKey` and `isSplitPath` at that go, so a refresh caches the new page on its own and does not treat it as `index.html` or replace the `world.html` cache entry.
+Until Bob's explicit go, the page is reachable on `/test/` by URL only. The JR tile is the go that puts it on her menu. That is one go, straight to live. It is not the two-step map path. `sw.js` learns the new filename in `pageKey` and `isSplitPath` at that go, so a refresh caches the new page on its own and does not treat it as `index.html` or replace the `world.html` cache entry.
 
 | Name | Tile | File | Why it is on the list |
 | --- | --- | --- | --- |
@@ -699,4 +703,4 @@ This plan recommends **D1** first. **D3** is the new-world look to draw when he 
 
 ## What this phase does not do
 
-It does not copy the planner into the repo. It does not copy the planner's `index.html` onto Z-DASH `index.html`. It does not edit the live world, the adult page, the driver screens, Ellie's saved home, or the Garage Z link. It does not place the trailer pad in `city.js`. It does not build `CITY.editorDoc`, either builder, the drop-objects tool, or the new world page. It does not add the JR tile. It does not post on the Interiors PRs. It does not deploy.
+It does not copy the planner into the repo. It does not copy the planner's `index.html` onto Z-DASH `index.html`. It does not edit the live world, the adult page, the driver screens, Ellie's saved home, or the Garage Z link. It does not place the trailer pad in `city.js`. It does not build `CITY.editorDoc`, either builder, the drop-objects tool, or the new world page. It does not add the JR tile. It does not post on the Interiors PRs. It does not deploy. P2 is noted and not built. The other picks are still open.
