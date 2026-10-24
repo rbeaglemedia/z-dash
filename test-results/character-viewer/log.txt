@@ -1,11 +1,11 @@
 hub contract 1 modules character,car,building
 broken module stayed inside its card, tabs 3
 character sweep fails 0
-phone-ellie.png frames 8.5, 16.9, 16.6, 16.4, 17
-ipad-ellie.png frames 0.4, 14.3, 16.6, 17.1, 16.7
-pc-compare.png frames 7.6, 16.6, 16.5, 16.7, 17
-pc-turntable.png frames 17.3, 13.7, 16.7, 17.4, 15.9
-pc-scrub.png frames 3.3, 16.8, 16.1, 16.6, 17.1
+phone-ellie.png frames 16.2, 16.8, 16.7, 17.1, 16.2
+ipad-ellie.png frames 8.7, 16.7, 16.9, 16.7, 16.8
+pc-compare.png frames 16.4, 16.9, 16.7, 16.5, 16.4
+pc-turntable.png frames 12.7, 16.8, 16.6, 16.7, 16.6
+pc-scrub.png frames 9.6, 16.5, 17.2, 16.6, 16.3
 pixel mae 0
 car sweep fails 0
 building sweep fails 0
