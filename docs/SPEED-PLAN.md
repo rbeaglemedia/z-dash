@@ -25,6 +25,8 @@ The 2018 base iPad is the machine that cannot leave iPadOS 17. It has an A10 chi
 
 A loading screen of about 10 seconds on a fast device, and longer on the iPad, is a fair trade. The game may bake cars, glow, and shaders then. The picture during play stays the picture you have now unless you say yes to a change below.
 
+Which tricks from a big console game (the GTA kind) we can borrow, before the App Store and after it, is the section "AAA console tricks (GTA-style)" at the end. That section does not start a second car-copy fix, a second resolution clamp, or a second WebGL city.
+
 ### Where the time goes
 
 Measured in a lab browser that fakes the graphics chip in software (SwiftShader). Those milliseconds are **not** the Galaxy's frame rate and **not** the iPad's frame rate. The counts — how many strokes, how big the pictures — are what the code does on the real devices too. Full numbers are in `test-results/speed-plan-profile.json`.
@@ -190,6 +192,189 @@ Pass looks like this:
 - Galaxy: the worst common frame under about 9 ms, meter steady at 110 or better, no 55/115 flicker.
 - iPad: a flat 30 or better, no drops to 5. A flat 60 is a win. A miss of 30 after items 1–5 is the point where a native renderer gets a real conversation.
 
+## AAA console tricks (GTA-style)
+
+Planning only. Nothing here is a build.
+
+### For Bob
+
+GTA stays smooth by drawing less of the city, drawing the repeated parts in one pass, and refusing to show a half-finished frame. Almost all of that works in the browser, on the Galaxy and on Ellie's iPad, before any App Store build. Putting Neon World in a store shell does not turn those tricks on. The shell is still the same web page. The one trick that waits until after the app is packaged is a native Metal drawing program, and only if the iPad still cannot hold a flat 30 after the work already ranked above.
+
+Three jobs stay where they are. This section does not rebuild them.
+
+- Taking the Z copy off the frame is item 1 above. A console game never copies the car back onto a flat picture. That is still the change that can move the Galaxy toward a steady 110.
+- The resolution clamp is the resolution audit's job (item 3). The iPad size ladder is pull request 56.
+- A graphics-chip city is pull request 59, grown by item 5. Instancing, a resolution knob, and a sharper car on top of a softer city belong inside that city, after you accept the picture.
+
+What the lab already showed, so the gains below stay honest: with the Z turned off, the city and the dashboard were about 3 ms of script. There are 88 buildings and 30 traffic cars. Far buildings are already skipped. Close-up windows already turn off while she is moving. Traffic is already a small picture per car, and that cache is what hitching for 20–70 ms was about. The ground grid was about 0.5 ms. A trick aimed at the city cannot, by itself, produce a steady 110. A steady 110 still needs item 1, then the steady clock.
+
+### Where each trick sits
+
+| Trick | When it can run | Where it sits against the plan | Galaxy, toward a steady 110 | iPad, toward a steady 60 or a flat 30 |
+| --- | --- | --- | --- | --- |
+| Fixed frame cap and pacing | Browser, now | This is item 2. Pull request 56 already steadies the car skip. | The difference between 55–115 flicker and a held 110, after the frame fits in about 9 ms. | Holds 60, or a flat 30 when 60 does not fit. Stops the drops to 5. |
+| Baked lighting and glow | Browser, now | This is item 4. | A few milliseconds after item 1, if glow is what `?perf=1` still names. | The other large cut on the A10, beside the car copy. |
+| Dynamic resolution and upscaling, car kept sharp | Browser, now, once the Z is its own layer | Fold into item 5. The clamp stays with the audit. The ladder stays with pull request 56. | Full size. No gain, and no softening. | The path from a flat 30 toward 60. The city goes soft. The Z stays sharp. |
+| Instancing and batching | Browser WebGL, inside pull request 59 | After item 5, in that same city. The canvas grid is yes/no 4. | About nothing. The city is already the cheap part. | Useful only if the graphics-chip city is still the slow pass. |
+| LOD and distance impostors | Browser, now. A billboard building waits for the WebGL city. | Traffic and window distances already do this. A new building impostor is after item 5, and only if a profile names buildings. | Under a millisecond. Does not make 110. | Small, after the car copy and the glow are gone. |
+| Frustum and occlusion culling | Frustum is already on. Hardware occlusion is the wrong tool. | Leave `cityItems` as it is. | None on top of today's skip. | None you would feel. The flying view sees the skyline. |
+| Texture atlases | Browser WebGL, after the city has real textures | Not a step in the ranked plan. The Z model has no pictures inside it. | None today. | None today. |
+| Pooling and a quiet frame | Browser, now | Pull request 56 already reuses the frame list. A further pass waits for a real-phone spike. | Removes a hitch. Does not raise the steady number. | Same. The 20–70 ms traffic hitch is the one already queued for the loading card. |
+| World streaming | Not for this city | Off the plan unless the map grows a lot. | None. Can add a hitch. | None. Can add a hitch. |
+| Metal, after the App Store | Only a native app, after packaging | This is item 7. The store shell is not this. | A new drawing program. Out of scope while item 1 can fit the frame. | The conversation starts only if items 1–5 still miss a flat 30 on Ellie's iPad. |
+
+### Fixed frame cap and pacing
+
+**When:** the browser, now. A store shell uses the same clock.
+
+GTA picks 30 or 60 and holds it. It would rather repeat a finished picture than show a late one. Neon World currently asks the screen for the next frame the moment the last one ends, so a 120 Hz Galaxy can alternate a heavy frame and a light one.
+
+This is item 2. Pull request 56 already stops the Z-skip from flapping (skip when the car's own frame stays over 8.6 ms, return under 7.2 ms). The clock on top of that is: Galaxy stays on the 120 Hz beat while a frame fits in 8.3 ms, otherwise a flat 60. iPad holds 60 while a frame fits in 16.7 ms, otherwise a flat 30.
+
+- Galaxy: this is how 110 stays 110 instead of flickering 55–115. It cannot create a 9 ms frame. Item 1 has to do that.
+- iPad: a flat 30 is the acceptable result. A flat 60 is the later measurement.
+- Risk: locking 60 on the Galaxy on a day the frame would have fit throws away the 120 Hz panel. The gap in item 2 is what stops the hunt.
+- Effort: small. One clock. No second pacer.
+- Picture: the same scene, shown on a steadier beat. Yes/no 2.
+
+### Baked lighting and glow
+
+**When:** the browser, now, during the loading card. A store shell does not bake glow for us.
+
+GTA lights the world while the level loads, then draws those light pictures. It does not re-blur the neon every frame. Neon World still does. About 50 live glows a frame, and the rule is no new `shadowBlur`.
+
+This is item 4. Horizon, rings, and dashboard glows become small pictures made at load, then pasted. Slow devices first. Every device only after side-by-side shots match (yes/no 3).
+
+- Galaxy: a few milliseconds, which is the gap between "close to 110" and "holding 110" after item 1. Use `?perf=1` on the phone before doing it there.
+- iPad: large. Blur cost on the A10 does not shrink just because the buffer shrinks.
+- Risk: the glow looks different. Shots from the same camera spots decide it.
+- Effort: medium. The loading card in pull request 56 is the place. No new blur radius.
+- Picture: meant to match. If it does not, it stays on the iPad only, and you still sign that iPad look.
+
+### Dynamic resolution and upscaling, with the car kept sharp
+
+**When:** the browser, now. WebGL can draw into a smaller picture and stretch it up. The store shell uses the same stretch.
+
+GTA drops the world's internal size when a frame is late, stretches that picture up to the screen, and keeps the car and the HUD sharp. The soft part is the city. The car is not soft.
+
+Neon World already has two pieces of this, and they stay with their owners:
+
+- Pull request 56's iPad ladder shrinks the whole flat picture (100% down to 38%) only while that iPad misses about 55 fps. The pasted Z shrinks with it, so the car goes soft too.
+- The resolution audit clamps every offscreen picture, including the 960×960 car buffer on the iPad versus 480×480 on the phone. That clamp is theirs.
+
+The piece this plan adds, inside item 5 after you accept the WebGL city, is the split GTA uses. The city image is the one that shrinks and gets stretched. The Z stays on its own graphics-chip layer at the sharp size the audit allows, and the dashboard stays vectors on the full-size canvas, which is how it is drawn today. The Z layer is not stretched. Before item 1, the Z is still a picture copied onto the city, so shrinking the city softens the car and the copy is still the frame. Upscaling does not get the Galaxy to 110.
+
+- Galaxy: stay at full size. The ladder and the upscale are iPad-only, same rule as the preview.
+- iPad: this is the path from a flat 30 toward a flat 60, after the copy and the glow are gone. Promise 30. Treat 60 as a measurement.
+- Risk: a city that is softer than the car can look like a sticker if the gap is huge. The ladder's existing steps are the limit. A fast iPad that is holding the frame stays full size.
+- Effort: medium, and only inside `world/gl-city.js` plus the layer from item 1. No second clamp, no second ladder.
+- Picture: Galaxy unchanged. iPad city softer only while the frame is late. The Z stays at the clamped sharp size.
+
+### Instancing and batching of traffic, windows, and the grid
+
+**When:** real instancing is WebGL, in the browser, inside pull request 59. The flat canvas cannot instance. Packaging does not add it.
+
+GTA draws every traffic car, every repeated window, and every lamp as one batch: one shape, many positions. Neon World draws each of those as its own line on the canvas.
+
+What is already cheap, so a batch has little to win:
+
+- Windows: at most 4 wall faces with a grid, and none of them while she is cruising or flying. The open-air frame measured 0 window faces.
+- Lamps and trees: a few billboard dots inside a distance budget (6 lamps, 8 trees). The word "instanced" in the tune file means those dots, not a graphics-chip batch.
+- Traffic: 30 cars, 12 simulated, each a cached picture. Once the cache is warm the traffic pass was about 0 ms. A graphics-chip instance of the traffic meshes would replace that picture cache. It is a follow-up inside the WebGL city if you want traffic to be real meshes. It is not a canvas change.
+- Grid: about 0.5 ms, roughly 90 strokes. One stroke for the same lines is yes/no 4. It does not move either device to its goal.
+
+- Galaxy: under a millisecond on the canvas. On a WebGL city that is already a few tenths of a millisecond of script, instancing is polish unless `?perf=1` names that pass.
+- iPad: the same, until the graphics-chip city is the slow pass. Then one batch of windows and one batch of traffic is the right cut, inside pull request 59, not a new project.
+- Risk: a batch that sorts wrong flickers a window or a car through a building. Traffic as meshes would drop the angle-step look of today's pictures, which is a picture change and needs your eye.
+- Effort: small for the one-stroke grid. Medium for instances inside the existing WebGL city. Large if someone starts a second city to do it.
+- Picture: the grid is the same lines. Instanced windows should match. Instanced traffic meshes are a visible change and wait for a yes.
+
+### LOD and distance impostors
+
+**When:** the browser, now. Billboard impostors are a WebGL or canvas picture. The store shell does not load the city in chunks for us.
+
+GTA draws a near building as a model and a far building as a flat picture (an impostor), and swaps as you approach. Neon World already has a simple version. Far buildings are skipped past the draw distance. Mid buildings lose their roof detail. Windows exist only up close, and only a few of them. Traffic at a distance is already an impostor: a baked picture, with an angle step you can see.
+
+A GTA-style building impostor would replace a far tower with a picture. The city has 88 buildings, and the ones past the draw distance are already gone. The measured open-air city is about 3 ms of script. An impostor pass has to beat that, and it has to avoid the traffic hitch (20–70 ms the first time a picture is made).
+
+- Galaxy: under a millisecond if it does anything. Not the 110 project.
+- iPad: small, and only after item 1 and item 4, if a profile still names buildings. It is not the cut that turns 5–30 into a flat 30.
+- Risk: the building pops when the picture swaps for the model. That pop is a picture change, so it would be iPad-only, and only after you have seen it.
+- Effort: medium. Bake the far pictures on the loading card, the way traffic already bakes. Do not invent a second detail system beside `shared/detail-tune.js`.
+- Picture: a swap you can see if the impostor is coarse. Near buildings stay as they are.
+
+### Frustum and occlusion culling
+
+**When:** the frustum test is already in the browser. A hardware occlusion query is the wrong tool on this page, before or after the store.
+
+GTA skips anything outside the camera, and skips anything hidden behind a closer building. Neon World already skips anything outside the camera: `cityItems` drops a building that is past the draw distance or off the sides of the view. That is the frustum test.
+
+Occlusion (hidden behind another building) is a weak win here. She is often in the air, looking at a skyline, so most towers are visible on purpose. A graphics-chip occlusion query answers by reading a result back from the chip. That read is the same kind of stall as the car copy. This plan does not add it.
+
+- Galaxy: no gain on top of today's skip.
+- iPad: no gain you would feel. A query would risk a new stall.
+- Risk: a tighter frustum makes a tower pop at the edge of the screen. Today's margin stays.
+- Effort: none. Leave the test that is there.
+- Picture: unchanged.
+
+### Texture atlases
+
+**When:** the browser, once a WebGL material actually has pictures. Not before. The store shell does not need an atlas either.
+
+GTA packs many small pictures into one sheet so the chip does not switch pictures all frame. The 370Z file has materials and no images. The city is drawn with strokes and flat colors. There is no pile of tiny textures to pack.
+
+An atlas becomes useful if pull request 59, or a later Z material, grows a set of small pictures (signs, window cards, light glows). Pack them once at load. That is a loading-screen job, not a frame job, and it waits until those pictures exist.
+
+- Galaxy: none today.
+- iPad: none today. An atlas does not make the A10 hold 30.
+- Risk: a bad pack puts the wrong picture on a sign. Easy to see, easy to revert.
+- Effort: small, later, inside the WebGL city. Not a ranked step now.
+- Picture: the same, if the pack is right.
+
+### Object pooling and a frame that does not collect garbage
+
+**When:** the browser, now. A store shell runs the same JavaScript.
+
+GTA reuses the same lists and the same cars every frame so the engine does not stop to clean up memory. A cleanup pause is a hitch, not a lower average.
+
+Pull request 56 already reuses the per-frame item list. Traffic already reuses a cache of 140 pictures. The driving math was under 0.1 ms in the October 22 bisect. This lab's city script was about 3 ms. The hitch we have measured is the traffic cache filling (20–70 ms), and the loading card in pull request 56 is what pays that before you fly.
+
+A further "allocate nothing" pass is worth doing when `?perf=1` on the real Galaxy or the real iPad shows a single spiked frame that the graph calls garbage. It is not worth doing ahead of the car copy on a guess.
+
+- Galaxy: a hitch goes away. The steady 110 number does not move.
+- iPad: the same. A hitch reads as a drop toward 5. Removing one is good. It is not the flat-30 plan.
+- Risk: a reused list that still holds last frame's building draws a ghost. The preview's pool is the pattern to copy.
+- Effort: small, after a profile names it. No new pool beside the one in pull request 56.
+- Picture: unchanged.
+
+### World streaming and chunk load / unload
+
+**When:** not for this world, in the browser or in a store build.
+
+GTA streams because the map does not fit in memory. A neighborhood loads as you drive in, and the one behind you unloads. Neon World's city is one generated town: 88 buildings, 150 boxes, seed 90210, all of it already in the page. It fits. The frame cost of that town, without the Z, was about 3 ms of script.
+
+Unloading a chunk would save memory we are not short of in the page, and the next time she flies back the chunk would hitch the way the traffic cache hitchs. That is the failure mode. Streaming becomes a real idea only if a later world is many times this city. It is not a step on the way to 110 or to a flat 30, and the App Store does not make this city large.
+
+- Galaxy: no frame gain. A hitch if a chunk comes back.
+- iPad: the same, with less memory to spare (2 GB, shared with iPadOS). The page's city is still small next to that. The 370Z text and the pasted pages are the heavy files, and those are the separation plan's problem, not a streaming problem.
+- Risk: a missing block of city, or a hitch on the way back.
+- Effort: large, for no measured frame win.
+- Picture: a hole, if it fails. Identical, if it works and never unloads anything you can see.
+
+### Metal, after the App Store
+
+**When:** only after packaging, and only as a native drawing program. The Capacitor shell is still WebKit on the iPad and the system web view on the Galaxy. That shell can do every trick above. It cannot run Metal.
+
+GTA on a console draws with the console's own graphics API. On Ellie's iPad that API is Metal. On the Galaxy it is Vulkan. Roblox does the same kind of thing. Neon World's store build, as item 7 describes it, is the page inside a web view. Full screen, no browser bar, a little speed, the same drawing, including the same WebGL.
+
+A Metal (and Vulkan) renderer is a new program for the city, the Z, and the traffic. It throws out the flat canvas and the copy. It is the right conversation only after items 1 through 5 have been measured on Ellie's iPad and a flat 30 still misses. Item 7 already says that. This section does not start the rewrite, and it does not move that rewrite to "before the store."
+
+- Galaxy: if item 1 fits in about 9 ms, Metal is extra. The web graphics chip can hold 110.
+- iPad: the only technique on this list that can pass a ceiling WebGL cannot. We do not know that ceiling yet. The promise before that measurement is still a flat 30 from items 1, 3, 4, and 5.
+- Risk: a second game to keep in sync with the web one, for as long as both exist.
+- Effort: a new drawing program. Larger than items 1 through 5 together.
+- Picture: has to be accepted all over again. Screenshots from the same spots.
+
 ### What this pull request does not do
 
-No gameplay edits. No `shadowBlur` added. No change to `index.html`. No deploy. No second WebGL prototype. No second iPad ladder. No FPS Guard copy. The build starts when you write "plan approved, build it", and only for the items you said yes to.
+No gameplay edits. No `shadowBlur` added. No change to `index.html`. No deploy. No second WebGL prototype. No second iPad ladder. No FPS Guard copy. No Metal prototype. The build starts when you write "plan approved, build it", and only for the items you said yes to.
