@@ -1,0 +1,19 @@
+---RAMPS---
+{
+  "pieces": 82,
+  "geometry": "same height, length, width, rotation",
+  "current": [],
+  "A": [],
+  "B": [],
+  "halfpipe": {
+    "name": "half-pipe",
+    "x0": -127,
+    "x1": -63,
+    "z0": 200,
+    "z1": 320,
+    "h": 5,
+    "note": "beside the runway, x -95, z 260. 64 m wide including the decks, 120 m long, 5 m walls."
+  },
+  "loop": "entry x -80, z 1440, heading north. Radius 12 m, lane 8 m, exit shifts 9 m east."
+}
+svg written

@@ -1,0 +1,654 @@
+{
+  "boulevard": [
+    {
+      "name": "HOME",
+      "station": "yard",
+      "kind": "home",
+      "x0": -272,
+      "x1": -228,
+      "z0": -664,
+      "z1": -616
+    },
+    {
+      "name": "PETS",
+      "station": "yard",
+      "kind": "pets",
+      "x0": -212,
+      "x1": -168,
+      "z0": -664,
+      "z1": -616
+    },
+    {
+      "name": "GARAGE",
+      "station": "yard",
+      "kind": "garage",
+      "x0": -302,
+      "x1": -138,
+      "z0": -792,
+      "z1": -728
+    },
+    {
+      "name": "TOWER",
+      "station": "tower",
+      "kind": "tower",
+      "x0": 365,
+      "x1": 435,
+      "z0": 1685,
+      "z1": 1755
+    },
+    {
+      "name": "JUMP ROOF",
+      "station": "deck",
+      "kind": "deck",
+      "x0": -242,
+      "x1": -178,
+      "z0": 1158,
+      "z1": 1322
+    },
+    {
+      "name": "SHOWROOM",
+      "station": "car-w",
+      "kind": "show",
+      "x0": -602,
+      "x1": -438,
+      "z0": 2288,
+      "z1": 2352
+    },
+    {
+      "name": "BAY",
+      "station": "car-w",
+      "kind": "bay",
+      "x0": -530,
+      "x1": -510,
+      "z0": 2393,
+      "z1": 2407
+    },
+    {
+      "name": "PAINT",
+      "station": "car-c",
+      "kind": "paint",
+      "x0": -22,
+      "x1": 22,
+      "z0": 2292,
+      "z1": 2340
+    },
+    {
+      "name": "SNACK",
+      "station": "car-c",
+      "kind": "snack",
+      "x0": -6,
+      "x1": 6,
+      "z0": 2391,
+      "z1": 2401
+    },
+    {
+      "name": "NOS",
+      "station": "car-e",
+      "kind": "nos",
+      "x0": 458,
+      "x1": 622,
+      "z0": 2288,
+      "z1": 2352
+    },
+    {
+      "name": "PAD",
+      "station": "car-e",
+      "kind": "pad",
+      "x0": 526,
+      "x1": 554,
+      "z0": 2386,
+      "z1": 2414
+    },
+    {
+      "name": "CAR ROW",
+      "station": "car-gate",
+      "kind": "arch",
+      "x0": -993,
+      "x1": -967,
+      "z0": 2256,
+      "z1": 2264
+    },
+    {
+      "name": "THE STAGE",
+      "station": "dance-gate",
+      "kind": "arch",
+      "x0": -994,
+      "x1": -986,
+      "z0": -633,
+      "z1": -607
+    },
+    {
+      "name": "BAY",
+      "station": "dance-gate",
+      "kind": "bay",
+      "x0": -907,
+      "x1": -893,
+      "z0": -630,
+      "z1": -610
+    },
+    {
+      "name": "CAFE",
+      "station": "dance-s",
+      "kind": "cafe",
+      "x0": -1082,
+      "x1": -1038,
+      "z0": -104,
+      "z1": -56
+    },
+    {
+      "name": "NOS",
+      "station": "dance-s",
+      "kind": "kitnos",
+      "x0": -908,
+      "x1": -892,
+      "z0": -86,
+      "z1": -74
+    },
+    {
+      "name": "DANCE",
+      "station": "dance-n",
+      "kind": "dance",
+      "x0": -1090,
+      "x1": -1030,
+      "z0": 428,
+      "z1": 492
+    },
+    {
+      "name": "PAD",
+      "station": "dance-n",
+      "kind": "pad",
+      "x0": -914,
+      "x1": -886,
+      "z0": 446,
+      "z1": 474
+    },
+    {
+      "name": "BUILDER BAY",
+      "station": "build-gate",
+      "kind": "arch",
+      "x0": 836,
+      "x1": 844,
+      "z0": -633,
+      "z1": -607
+    },
+    {
+      "name": "BAY",
+      "station": "build-gate",
+      "kind": "bay",
+      "x0": 953,
+      "x1": 967,
+      "z0": -630,
+      "z1": -610
+    },
+    {
+      "name": "ARCADE",
+      "station": "build-s",
+      "kind": "arcade",
+      "x0": 872,
+      "x1": 928,
+      "z0": -112,
+      "z1": -48
+    },
+    {
+      "name": "SNACK",
+      "station": "build-s",
+      "kind": "snack",
+      "x0": 974,
+      "x1": 986,
+      "z0": -85,
+      "z1": -75
+    },
+    {
+      "name": "BUILDER",
+      "station": "build-n",
+      "kind": "builder",
+      "x0": 878,
+      "x1": 922,
+      "z0": 444,
+      "z1": 476
+    },
+    {
+      "name": "PAD",
+      "station": "build-n",
+      "kind": "pad",
+      "x0": 966,
+      "x1": 994,
+      "z0": 446,
+      "z1": 474
+    },
+    {
+      "name": "NOS",
+      "station": "build-nos",
+      "kind": "kitnos",
+      "x0": 1172,
+      "x1": 1188,
+      "z0": 194,
+      "z1": 206
+    },
+    {
+      "name": "THE TRACK",
+      "station": "track-e",
+      "kind": "arch",
+      "x0": -573,
+      "x1": -547,
+      "z0": 856,
+      "z1": 864
+    },
+    {
+      "name": "SNACK",
+      "station": "track-e",
+      "kind": "snack",
+      "x0": -566,
+      "x1": -554,
+      "z0": 795,
+      "z1": 805
+    },
+    {
+      "name": "BAY",
+      "station": "track-w",
+      "kind": "bay",
+      "x0": -1490,
+      "x1": -1470,
+      "z0": 853,
+      "z1": 867
+    },
+    {
+      "name": "NOS",
+      "station": "track-w",
+      "kind": "kitnos",
+      "x0": -1488,
+      "x1": -1472,
+      "z0": 794,
+      "z1": 806
+    },
+    {
+      "name": "PAD",
+      "station": "track-pad",
+      "kind": "pad",
+      "x0": -1214,
+      "x1": -1186,
+      "z0": 1566,
+      "z1": 1594
+    },
+    {
+      "name": "SOCCER",
+      "station": "field-shop",
+      "kind": "soccer",
+      "x0": 732,
+      "x1": 788,
+      "z0": 1236,
+      "z1": 1324
+    },
+    {
+      "name": "PAD",
+      "station": "field-shop",
+      "kind": "pad",
+      "x0": 666,
+      "x1": 694,
+      "z0": 1266,
+      "z1": 1294
+    },
+    {
+      "name": "THE FIELD",
+      "station": "field-s",
+      "kind": "arch",
+      "x0": 967,
+      "x1": 993,
+      "z0": 856,
+      "z1": 864
+    },
+    {
+      "name": "SNACK",
+      "station": "field-s",
+      "kind": "snack",
+      "x0": 1034,
+      "x1": 1046,
+      "z0": 855,
+      "z1": 865
+    },
+    {
+      "name": "BAY",
+      "station": "field-e",
+      "kind": "bay",
+      "x0": 1170,
+      "x1": 1190,
+      "z0": 1273,
+      "z1": 1287
+    },
+    {
+      "name": "NOS",
+      "station": "field-e",
+      "kind": "kitnos",
+      "x0": 1172,
+      "x1": 1188,
+      "z0": 1334,
+      "z1": 1346
+    }
+  ],
+  "squares": [
+    {
+      "name": "HOME",
+      "station": "yard",
+      "kind": "home",
+      "x0": -272,
+      "x1": -228,
+      "z0": -664,
+      "z1": -616
+    },
+    {
+      "name": "PETS",
+      "station": "yard",
+      "kind": "pets",
+      "x0": -212,
+      "x1": -168,
+      "z0": -664,
+      "z1": -616
+    },
+    {
+      "name": "GARAGE",
+      "station": "yard",
+      "kind": "garage",
+      "x0": -302,
+      "x1": -138,
+      "z0": -792,
+      "z1": -728
+    },
+    {
+      "name": "TOWER",
+      "station": "tower",
+      "kind": "tower",
+      "x0": 365,
+      "x1": 435,
+      "z0": 1685,
+      "z1": 1755
+    },
+    {
+      "name": "JUMP ROOF",
+      "station": "deck",
+      "kind": "deck",
+      "x0": 158,
+      "x1": 222,
+      "z0": 558,
+      "z1": 722
+    },
+    {
+      "name": "SHOWROOM",
+      "station": "car-w",
+      "kind": "show",
+      "x0": -352,
+      "x1": -288,
+      "z0": 2398,
+      "z1": 2562
+    },
+    {
+      "name": "BAY",
+      "station": "car-w",
+      "kind": "bay",
+      "x0": -390,
+      "x1": -370,
+      "z0": 2473,
+      "z1": 2487
+    },
+    {
+      "name": "NOS",
+      "station": "car-e",
+      "kind": "nos",
+      "x0": 288,
+      "x1": 352,
+      "z0": 2398,
+      "z1": 2562
+    },
+    {
+      "name": "PAINT",
+      "station": "car-s",
+      "kind": "paint",
+      "x0": -22,
+      "x1": 22,
+      "z0": 2136,
+      "z1": 2184
+    },
+    {
+      "name": "CAR ROW",
+      "station": "car-s",
+      "kind": "arch",
+      "x0": 57,
+      "x1": 83,
+      "z0": 2096,
+      "z1": 2104
+    },
+    {
+      "name": "PAD",
+      "station": "car-n",
+      "kind": "pad",
+      "x0": -14,
+      "x1": 14,
+      "z0": 2786,
+      "z1": 2814
+    },
+    {
+      "name": "SNACK",
+      "station": "car-n",
+      "kind": "snack",
+      "x0": -6,
+      "x1": 6,
+      "z0": 2855,
+      "z1": 2865
+    },
+    {
+      "name": "DANCE",
+      "station": "dance-w",
+      "kind": "dance",
+      "x0": -1310,
+      "x1": -1250,
+      "z0": -32,
+      "z1": 32
+    },
+    {
+      "name": "PAD",
+      "station": "dance-w",
+      "kind": "pad",
+      "x0": -1374,
+      "x1": -1346,
+      "z0": 26,
+      "z1": 54
+    },
+    {
+      "name": "CAFE",
+      "station": "dance-s",
+      "kind": "cafe",
+      "x0": -1002,
+      "x1": -958,
+      "z0": -344,
+      "z1": -296
+    },
+    {
+      "name": "NOS",
+      "station": "dance-s",
+      "kind": "kitnos",
+      "x0": -988,
+      "x1": -972,
+      "z0": -406,
+      "z1": -394
+    },
+    {
+      "name": "BAY",
+      "station": "dance-e",
+      "kind": "bay",
+      "x0": -670,
+      "x1": -650,
+      "z0": 63,
+      "z1": 77
+    },
+    {
+      "name": "THE STAGE",
+      "station": "dance-c",
+      "kind": "arch",
+      "x0": -993,
+      "x1": -967,
+      "z0": -4,
+      "z1": 4
+    },
+    {
+      "name": "BUILDER",
+      "station": "build-n",
+      "kind": "builder",
+      "x0": 878,
+      "x1": 922,
+      "z0": 444,
+      "z1": 476
+    },
+    {
+      "name": "PAD",
+      "station": "build-n",
+      "kind": "pad",
+      "x0": 966,
+      "x1": 994,
+      "z0": 526,
+      "z1": 554
+    },
+    {
+      "name": "ARCADE",
+      "station": "build-s",
+      "kind": "arcade",
+      "x0": 872,
+      "x1": 928,
+      "z0": -492,
+      "z1": -428
+    },
+    {
+      "name": "SNACK",
+      "station": "build-s",
+      "kind": "snack",
+      "x0": 974,
+      "x1": 986,
+      "z0": -545,
+      "z1": -535
+    },
+    {
+      "name": "BAY",
+      "station": "build-w",
+      "kind": "bay",
+      "x0": 450,
+      "x1": 470,
+      "z0": 73,
+      "z1": 87
+    },
+    {
+      "name": "NOS",
+      "station": "build-w",
+      "kind": "kitnos",
+      "x0": 452,
+      "x1": 468,
+      "z0": 134,
+      "z1": 146
+    },
+    {
+      "name": "BUILDER BAY",
+      "station": "build-c",
+      "kind": "arch",
+      "x0": 887,
+      "x1": 913,
+      "z0": -4,
+      "z1": 4
+    },
+    {
+      "name": "THE TRACK",
+      "station": "track-e",
+      "kind": "arch",
+      "x0": -704,
+      "x1": -696,
+      "z0": 987,
+      "z1": 1013
+    },
+    {
+      "name": "SNACK",
+      "station": "track-e",
+      "kind": "snack",
+      "x0": -706,
+      "x1": -694,
+      "z0": 1055,
+      "z1": 1065
+    },
+    {
+      "name": "BAY",
+      "station": "track-w",
+      "kind": "bay",
+      "x0": -1330,
+      "x1": -1310,
+      "z0": 1453,
+      "z1": 1467
+    },
+    {
+      "name": "NOS",
+      "station": "track-w",
+      "kind": "kitnos",
+      "x0": -1328,
+      "x1": -1312,
+      "z0": 1514,
+      "z1": 1526
+    },
+    {
+      "name": "PAD",
+      "station": "track-pad",
+      "kind": "pad",
+      "x0": -714,
+      "x1": -686,
+      "z0": 626,
+      "z1": 654
+    },
+    {
+      "name": "SOCCER",
+      "station": "field-shop",
+      "kind": "soccer",
+      "x0": 832,
+      "x1": 888,
+      "z0": 1276,
+      "z1": 1364
+    },
+    {
+      "name": "PAD",
+      "station": "field-shop",
+      "kind": "pad",
+      "x0": 766,
+      "x1": 794,
+      "z0": 1306,
+      "z1": 1334
+    },
+    {
+      "name": "THE FIELD",
+      "station": "field-w",
+      "kind": "arch",
+      "x0": 356,
+      "x1": 364,
+      "z0": 1227,
+      "z1": 1253
+    },
+    {
+      "name": "SNACK",
+      "station": "field-w",
+      "kind": "snack",
+      "x0": 414,
+      "x1": 426,
+      "z0": 1175,
+      "z1": 1185
+    },
+    {
+      "name": "BAY",
+      "station": "field-e",
+      "kind": "bay",
+      "x0": 1310,
+      "x1": 1330,
+      "z0": 1313,
+      "z1": 1327
+    },
+    {
+      "name": "NOS",
+      "station": "field-e",
+      "kind": "kitnos",
+      "x0": 1312,
+      "x1": 1328,
+      "z0": 1374,
+      "z1": 1386
+    }
+  ]
+}
