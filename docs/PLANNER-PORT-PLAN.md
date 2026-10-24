@@ -189,7 +189,7 @@ The object swap stays paused until the zip from agent `bc-04ef9a95` arrives. Whe
 1. **Builder HQ mode.** Walls, shapes, and roofs. DEV Builder uses this on the city.
 2. **House object placement.** Ellie's Builder. Starts inside her house. Reuses the planner objects, especially the tech.
 
-The venue section stays out. A following section will study the planner objects as whole sets and one by one, then propose better objects and building designs for Neon World, as ideas for Bob to pick from. That study needs the real objects. The City Editor below does not.
+The venue section stays out. A following section will study the planner objects as whole sets and one by one, then propose better objects and building designs, as ideas for Bob to pick from. Those designs land on the new world page, not on the frozen Neon World. That study needs the real objects. The City Editor below does not.
 
 ## City Editor
 
@@ -198,9 +198,9 @@ Plan only. No editor code in this phase. Two builders sit on one editor core. Th
 | | DEV Builder | Ellie's Builder |
 | --- | --- | --- |
 | Who | Bob | Ellie, from her own house |
-| Reach | The whole Neon World, eventually: buildings, roads, NOS stations, spawns, props, interiors | Her build area only |
+| Reach | The new world page, eventually: buildings, roads, NOS stations, spawns, props, interiors | Her build area on that page only |
 | City and roads | Yes, on the Option 1 map | No. Those tools are off |
-| Save | Test first, then the live world on Bob's explicit go, with a rollback | Her device only, the same way her home choices already save |
+| Save | Test first, then the new world on Bob's explicit go, with a rollback. The current Neon World is not the target | Her device only, the same way her home choices already save |
 | Menu | Hidden. A Bob-only unlock | A Build control inside her house |
 
 The map seed is Option 1, The Boulevards (`cursor/city-layout-plan-ef23`, agent `bc-3ff1a27b`). It does not seed from today's 24 shops, and it does not seed from Option 2.
@@ -259,14 +259,14 @@ DEV save, test, publish, rollback:
 | Step | Where it lands | Who allows it |
 | --- | --- | --- |
 | 1. Save | This browser only, `localStorage` key `zdash.city.editor.v1` | Bob, any time, in DEV |
-| 2. Drive this | `/test/world.html` reads that key when present, else the committed layout file | Bob. Live `world.html` keeps today's map |
-| 3. Publish | A reviewed commit that copies the tested JSON into the file the live city loads | Bob's explicit go, same bar as "yes, do it" |
-| 4. Rollback | "Restore published" copies the previous live JSON back over the test key, and the publish commit reverts | Bob |
+| 2. Drive this | The new world's test page reads that key when present, else its committed layout copy | Bob. `world.html` stays the frozen Neon World |
+| 3. Publish | A reviewed commit that copies the tested JSON into the new world's layout file | Bob's explicit go, same bar as "yes, do it" |
+| 4. Rollback | "Restore published" copies the previous new-world JSON back over the test key, and that commit reverts. `world.html` is not in the revert | Bob |
 
 | Choice | How far one go goes |
 | --- | --- |
-| P1 | One explicit go writes the live map file. The previous file is kept beside it for rollback |
-| P2 | The first go updates `/test/` only. A second explicit go updates the live map |
+| P1 | One explicit go writes the new world's layout file. The previous file is kept beside it for rollback. `world.html` stays frozen |
+| P2 | The first go updates the new world's `/test/` page only. A second explicit go updates that world's live page. `world.html` stays frozen |
 
 This plan recommends **P2**.
 
@@ -426,7 +426,7 @@ Agent `bc-3ff1a27b` keeps ownership of Option 1. DEV consumes their file. Their 
 1. Put the boulevard roads, the two spawns, and the bounds in the same layout file as the buildings. Keep Option 2 out of the file the game loads.
 2. Add `h` and `face` on every building. Unique places keep today's heights. Kit sizes stay the ones in their plan (bay about 20×14×8, NOS kiosk about 16×12×6, pad about 28×28×6, snack about 12×10×5, arch about 8 m deep and 12 m tall).
 3. Mark the locked skeleton: highway, bridges, river, tunnel, runway, ramps, half-pipe, loop, player spawn, Sky Drop start. M3 is allowed to edit those marks. The file still ships with them locked.
-4. On `test/world/city.js` only, after their build is approved: load the file instead of the 24 `shop()` calls and instead of the generated grid. Call `ROADS.addRoad` and `ROADS.rebuild`. Leave live `world/city.js` on today's map until publish step 3.
+4. Option 1 may land once on `world/city.js`. That landing is the freeze. After it, `world/city.js` takes bug fixes and FPS fixes only. The data-driven loader, `ROADS.addRoad`, and `ROADS.rebuild` from the layout file belong to the new world page, not to a second edit of the frozen city.
 5. Map kinds to purposes: bay → GARAGE, small and big NOS → NOS, pad → SKY_DROP, snack → the stall, arch → posts with an open lane. One BUILDER. Empty lots stay empty.
 6. Export `bounds` for the test minimap. The test copy of `miniBake` uses them. The live HUD stays as it is.
 7. Do not cache the old road grid. Traffic builds lanes from `CITY.ROADS` at page load, so a test reload is enough.
@@ -442,9 +442,67 @@ Agent `bc-3ff1a27b` keeps ownership of Option 1. DEV consumes their file. Their 
 6. Her entry: **H1** (Build inside the house) or H2 (at the door).
 7. Her tools: pack A (move and turn only), **pack B** (plus duplicate, align, three sizes, measure, Floor view, four neon swatches), or pack C (B plus stick-together).
 8. New DEV tools: pack N1 (roads, stamp, NOS and spawns, minimap, FPS meter), **pack N2** (N1 plus bulk move, traffic preview, color picker), or pack N3 (N2 plus prop scatter).
+9. New world name: **Neon Bay**, The Boulevards, Z City, or Neon World 2. The section below is the full choice.
 
 Bold items are the recommendation. Nothing here is built. The object swap and the review shots still wait on the planner zip. The tool names above are the ones Bob listed. The zip confirms the real functions.
 
+## The new world
+
+Bob's decision: after the Option 1 layout lands, the current Neon World freezes. Later changes there are bug fixes and FPS fixes. Major redesigns go to a new world on its own page. That includes the DEV Builder, Ellie's Builder, the planner objects and tools, and the new building designs from the object study. This phase still does not build the page. The object swap still waits on the zip.
+
+The current game stays the one she already plays.
+
+- `world.html` and `world-split.html` stay the frozen city. Adult `index.html` is not a home for the new tile.
+- Option 1, The Boulevards, is allowed to land once, as City Layout's build. That is the freeze line.
+- After the freeze, a planner wall, a remixed prop, a road drag, or a new building does not get patched into `world/city.js`.
+- Soccer, Sky Drop, the runway, and today's drive keep working on that page.
+
+### Its own page and tile
+
+One HTML page, the same kind of split page as `world.html`: its own document, its own city script, the shared car, house, and crew readers. It is not a mode flag on `world.html`.
+
+The JR menu gains one tile, in `KTILES` in `jr.html`, directly after the existing NEON WORLD tile (`k: 'world'`, which already goes to `world.html`). The click path is the same `navMap` assign that tile uses. The new tile uses the same unlock as Neon World, `zd_world_unlocked`, so a locked world stays a locked pair. UI Polish reviews the label before the tile is visible. The adult page does not get a copy of the tile.
+
+Until Bob's explicit go, the page is reachable on `/test/` by URL only. The JR tile is the go that puts it on her menu. `sw.js` learns the new filename in `pageKey` and `isSplitPath` at that go, so a refresh caches the new page on its own and does not treat it as `index.html` or replace the `world.html` cache entry.
+
+| Name | Tile | File | Why it is on the list |
+| --- | --- | --- | --- |
+| Neon Bay | NEON BAY, sub "build the next city" | `neon-bay.html` | Recommended. Sits beside Neon World. Builder Bay is already the district where the new tools live |
+| The Boulevards | THE BOULEVARDS, sub "the next map" | `boulevards.html` | Says it starts from Option 1. Long for a tile |
+| Z City | Z CITY, sub "her next city" | `z-city.html` | Short. Matches the Z she already drives |
+| Neon World 2 | NEON WORLD 2, sub "the new map" | `world-2.html` | Makes the freeze obvious. The number is the plain one |
+
+This plan recommends **Neon Bay**.
+
+### Starts from a copy of Option 1
+
+The moment Option 1 is the frozen map, copy that layout into the new world's own file (`neon-bay/layout.json`, or the matching folder for the name he picks). If the freeze has not happened yet, the seed is the boulevard list already in this plan: the boxes from City Layout and the roads from `roadsFor('boulevard')`.
+
+After the copy, the two files diverge.
+
+- DEV save, test, and publish write the new world's layout only.
+- Rollback restores the previous copy of that file.
+- `world/city.js` is not on either side of that write.
+- Ellie's props stay in `zdash.ellie.builder.v1` and draw on the new page only. The frozen house ignores that key.
+
+### Shared saves, car, pet, and home
+
+One device, one Ellie. The new page reads the keys the current world already reads. It does not invent a second profile.
+
+| Already hers | Key | What the new page does |
+| --- | --- | --- |
+| Car, paint, parts | `zdash.kid.v1` → `eq` | Same 370Z mesh. Garage Z still changes nothing except `eq`. A paint she sets in either place shows in both |
+| Pet | `zdash.kid.v1` → `pet`, and the crew data the current world already loads | Same pet, same height 0.74 m. No second pet key |
+| Home choices | `zdash.house.v1`, and the `house` object inside `zdash.kid.v1` | Wall, sign, sofa, arcade, pet bed, and dance floor stay those checkboxes. Both pages read them. The builder does not write them |
+| Her placed props | `zdash.ellie.builder.v1` | New key. The new page draws it inside her boundary. `world.html` does not read it |
+| DEV test layout | `zdash.city.editor.v1` | This browser, the new page only |
+
+The new page may include the existing garage and house controls, and those controls keep their current write path. A new field inside `zdash.kid.v1` or `zdash.house.v1` is not how the builder stores props. Old readers keep working because the keys they already understand are unchanged.
+
+### What stays playable
+
+She can open NEON WORLD and the new tile from the same menu. NEON WORLD loads `world.html` and the frozen city. The new tile loads the new page and the copied layout. Drive, fly, Garage Z, the pet, and the house checkboxes work on both. A bad DEV drag rolls back the new layout and leaves the frozen city as it was.
+
 ## What this phase does not do
 
-It does not copy the planner. It does not edit the live world, the adult page, the driver screens, Ellie's saved home, or the Garage Z link. It does not place the trailer pad in `city.js`. It does not build the City Editor. It does not deploy.
+It does not copy the planner. It does not edit the live world, the adult page, the driver screens, Ellie's saved home, or the Garage Z link. It does not place the trailer pad in `city.js`. It does not build the City Editor or the new world page. It does not add the JR tile. It does not deploy.
