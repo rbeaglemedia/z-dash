@@ -163,9 +163,9 @@
     s.textContent = [
       '.gitems:has(.vinyl-card),.gitems:has(.vinyl-empty),.gitems:has(.vinyl-status){grid-template-columns:1fr}',
       '.vinyl-status{grid-column:1/-1;margin:0 0 4px;text-align:center;font:900 15px/1.2 Orbitron,sans-serif;letter-spacing:.8px;color:#ffe14d;text-shadow:0 0 10px #ffe14d}',
-      '.vinyl-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:6px}',
-      '.vinyl-actions .gitem{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-decoration:none}',
-      '.vinyl-card{grid-column:1/-1;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px 12px}',
+      '.vinyl-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr;gap:6px}',
+      '.vinyl-actions .gitem{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;text-decoration:none;color:inherit}',
+      '.vinyl-card{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 12px;text-align:center}',
       '.vinyl-name{display:block;font:900 18px/1.15 Orbitron,sans-serif;letter-spacing:.7px;color:#fff;text-shadow:0 0 10px #ff4fd8}',
       '.vinyl-card.eq .vinyl-name{color:#ffe14d;text-shadow:0 0 10px #ffe14d}',
       '.vinyl-meta{font:800 11px Orbitron,sans-serif;letter-spacing:1px;color:#c9b6e6}',
@@ -173,7 +173,7 @@
       '.vinyl-dots{display:flex;gap:4px;min-height:14px}',
       '.vinyl-dots i{width:14px;height:14px;border-radius:50%;box-shadow:0 0 8px currentColor;border:1px solid #fff}',
       '.vinyl-acts{display:flex;flex-wrap:wrap;gap:8px}',
-      '.vinyl-acts button,.vinyl-acts a{font:800 10px Orbitron,sans-serif;color:#fff;border:1.5px solid #3ee6ff;border-radius:999px;padding:4px 8px;background:rgba(62,230,255,.12);text-decoration:none;cursor:pointer}',
+      '.vinyl-acts button,.vinyl-acts a{font:800 10px Orbitron,sans-serif;color:#fff;border:1.5px solid #3ee6ff;border-radius:999px;padding:4px 8px;background:rgba(62,230,255,.12);text-align:center;text-decoration:none;cursor:pointer}',
       '.vinyl-empty{grid-column:1/-1;padding:8px;border:1.5px dashed #3ee6ff;border-radius:12px;color:#efe7ff}',
       '.vinyl-empty p{margin:0 0 8px;font:700 14px/1.35 Rajdhani,sans-serif}',
       '.vinyl-secs{display:flex;gap:4px;margin:4px 0}',
@@ -181,6 +181,9 @@
       '.vinyl-secs button.on{border-color:#ff4fd8;background:rgba(255,79,216,.22);box-shadow:0 0 10px rgba(255,79,216,.45)}'
     ].join('');
     document.head.appendChild(s);
+  }
+  function gLink(href, icon, title, sub) {
+    return '<a class="gitem glink" href="' + href + '"><span class="gico" aria-hidden="true">' + icon + '</span><b class="vinyl-name">' + title + '</b>' + (sub ? '<span class="vinyl-meta">' + sub + '</span>' : '') + '</a>';
   }
   function vinylsHtml() {
     vinylCss();
@@ -191,11 +194,11 @@
     const noneOn = state.activeId == null;
     let html = '<div class="vinyl-status">' + vinylEsc(status) + '</div>';
     html += '<div class="vinyl-actions">';
-    html += '<a class="gitem" href="neon-paint.html"><b class="vinyl-name">+ NEW VINYL IN 3D CAR PAINT</b><span class="vinyl-meta">BLANK CAR · SAVE ADDS IT HERE</span></a>';
+    html += gLink('neon-paint.html', '🎨', '+ NEW VINYL IN 3D CAR PAINT', 'BLANK CAR · SAVE ADDS IT HERE');
     html += '<button type="button" class="gitem' + (noneOn ? ' eq' : '') + '" data-vinyl-clear="1"><b>REMOVE FROM CAR (NO VINYL)</b>' + (noneOn ? '<em class="vinyl-badge">EQUIPPED</em>' : '<span class="vinyl-meta">TAP TO UNEQUIP</span>') + '</button>';
     html += '</div>';
     if (!state.items.length) {
-      html += '<div class="vinyl-empty"><p>Any design you save in 3D Car Paint shows up here as a collectible vinyl. You can remove one, and only one can be on the car. Studio Graffiti Wall drawings stay on the wall.</p><a class="gitem" href="neon-paint.html"><b class="vinyl-name">OPEN 3D CAR PAINT</b></a></div>';
+      html += '<div class="vinyl-empty"><p>Any design you save in 3D Car Paint shows up here as a collectible vinyl. You can remove one, and only one can be on the car. Studio Graffiti Wall drawings stay on the wall.</p>' + gLink('neon-paint.html', '🎨', 'OPEN 3D CAR PAINT', '') + '</div>';
       return html;
     }
     state.items.forEach((item, idx) => {
@@ -1281,22 +1284,22 @@
     if (sub === 'sign') return HOUSE_SIGNS.map(function (s) { return wOpt(house.sign === s.id, 'data-hsign="' + s.id + '"', s.name, 'CUSTOM NEON SIGN'); }).join('');
     if (sub === 'pet') return CREW_PETS.map(function (p) { return wOpt((crew.pet || 'fox') === p[0], 'data-cpet="' + p[0] + '"', '🐾 ' + p[1], 'COMPANION PET'); }).join('');
     if (sub === 'character') return CREW_CHARS.map(function (p) { return wOpt((crew.character || 'woman') === p[0], 'data-cchar="' + p[0] + '"', '👤 ' + p[1], 'CHARACTER OUTFIT'); }).join('');
-    if (sub === 'enter') return '<a class="gitem vinyl-card" href="crew.html"><b class="vinyl-name">🚪 ENTER HOME / CREW STUDIO</b></a>';
-    if (sub === 'paintapp') return '<a class="gitem vinyl-card" href="neon-paint.html"><b class="vinyl-name">🎨 3D CAR PAINT</b></a>';
-    if (sub === 'wallapp') return '<a class="gitem vinyl-card" href="neon-paint.html?mode=wall"><b class="vinyl-name">🧱 Z COMPANY ARTS GRAFFITI WALL</b></a>';
-    if (sub === 'danceapp') return '<a class="gitem vinyl-card" href="dance-stage.html"><b class="vinyl-name">💃 DANCE STAGE</b></a>';
+    if (sub === 'enter') return gLink('crew.html', '🚪', 'ENTER HOME / CREW STUDIO', 'COMPANION PET AND CHARACTER') + gLink('world.html', '🏠', 'WALK INTO NEON WORLD', 'HOME BUILDINGS USE THIS DECOR');
+    if (sub === 'paintapp') return gLink('neon-paint.html', '🎨', '3D CAR PAINT', 'PAINT THE 370Z · SAVED VINYLS SHOW UP IN GARAGE');
+    if (sub === 'wallapp') return gLink('neon-paint.html?mode=wall', '🧱', 'Z COMPANY ARTS GRAFFITI WALL', 'WALL ART STAYS ON THE WALL');
+    if (sub === 'danceapp') return gLink('dance-stage.html', '💃', 'DANCE STAGE', 'RECORD A CHARACTER OR PET DANCE');
     return '';
   }
   function worldDrillHtml() {
     if (!wNav || wNav.lvl <= 1) {
       return '<div class="glevel">' + WDRILL.roots.map(function (r) {
-        return '<button type="button" class="gbig" data-groot="' + r.id + '"><span class="gem">' + r.emoji + '</span><b>' + r.emoji + ' ' + r.title + '</b><em>' + r.kicker + '</em><small>' + r.blurb + '</small></button>';
+        return '<button type="button" class="gbig" data-groot="' + r.id + '"><span class="gem">' + r.emoji + '</span><b>' + r.title + '</b><em>' + r.kicker + '</em><small>' + r.blurb + '</small></button>';
       }).join('') + '</div>';
     }
     if (wNav.lvl === 2) {
       const list = WDRILL.broad[wNav.root] || [];
       return wCrumb() + '<div class="glevel">' + list.map(function (b) {
-        return '<button type="button" class="gbig" data-gbroad="' + b.id + '"><span class="gem">' + b.emoji + '</span><b>' + b.emoji + ' ' + b.title + '</b><small>' + b.blurb + '</small></button>';
+        return '<button type="button" class="gbig" data-gbroad="' + b.id + '"><span class="gem">' + b.emoji + '</span><b>' + b.title + '</b><small>' + b.blurb + '</small></button>';
       }).join('') + '</div>';
     }
     return wCrumb() + wPills() + '<div class="gitems" id="kVinylBody">' + worldItemsHtml() + '</div>';
@@ -2016,7 +2019,7 @@
       '#kGarageDrill .gcrumbs button{background:transparent;border:0;color:#3ee6ff;font:inherit;cursor:pointer;padding:4px 2px}',
       '#kGarageDrill .gcrumbs button.on{color:#fff}',
       '#kGarageDrill .glevel{display:flex;flex-direction:column;gap:8px}',
-      '#kGarageDrill .gbig{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;width:100%;border-radius:14px;border:2px solid #3ee6ff;background:rgba(62,230,255,.1);color:#fff;padding:8px 10px;cursor:pointer}',
+      '#kGarageDrill .gbig{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;width:100%;border-radius:14px;border:2px solid #3ee6ff;background:rgba(62,230,255,.1);color:#fff;padding:8px 10px;cursor:pointer}',
       '#kGarageDrill .gbig .gem{font-size:22px;line-height:1}',
       '#kGarageDrill .gbig b{font:900 15px/1.15 Orbitron,sans-serif;letter-spacing:.4px}',
       '#kGarageDrill .gbig em{font-style:normal;font:800 11px Orbitron,sans-serif;color:#ffe14d}',
@@ -2025,7 +2028,7 @@
       '#kGarageDrill .gcats button{flex:0 0 auto;white-space:nowrap;min-height:32px;font:800 11px Orbitron,sans-serif;color:#efe7ff;background:transparent;border:2px solid #3a1550;border-radius:12px;padding:6px 10px;cursor:pointer}',
       '#kGarageDrill .gcats button.on{color:#fff;border-color:#3ee6ff;background:rgba(62,230,255,.15)}',
       '#kGarageDrill .gitems{display:flex;flex-direction:column;gap:6px}',
-      '#kGarageDrill .gitem{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border-radius:12px;border:1.5px solid rgba(62,230,255,.45);background:rgba(255,255,255,.04);color:#fff;padding:8px 10px;cursor:pointer;text-decoration:none;box-sizing:border-box}',
+      '#kGarageDrill .gitem{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;border-radius:12px;border:1.5px solid rgba(62,230,255,.45);background:rgba(255,255,255,.04);color:#fff;padding:8px 10px;cursor:pointer;text-decoration:none;box-sizing:border-box}',
       '#kGarageDrill .gitem.eq{border-color:#ffe14d;box-shadow:0 0 10px rgba(255,225,77,.35)}',
       'html.pc-mode #kHome.ghh-ready{width:min(1120px,calc(100vw - 24px));max-height:92vh;overflow-y:auto;top:4vh;transform:translate(-50%,0);padding:42px 12px 10px 44px;gap:6px;align-items:stretch;box-sizing:border-box}',
       'html.pc-mode #kHome.ghh-ready #kGamesWrap{max-height:none;overflow:visible}',

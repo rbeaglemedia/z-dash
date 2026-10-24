@@ -1524,7 +1524,7 @@
       '#np-studio .np-vinyls{display:flex;flex-direction:column;gap:8px}',
       '#np-studio .np-vchip{display:flex;flex-wrap:wrap;gap:8px;align-items:center}',
       '#np-studio .np-vinyls button{font-size:12px;padding:8px;min-height:36px;border-radius:10px}',
-      '#np-studio .np-vchip button[data-vinyl-act="edit"]{flex:1 1 100%;text-align:left;white-space:normal}',
+      '#np-studio .np-vchip button[data-vinyl-act="edit"]{flex:1 1 100%;text-align:center;white-space:normal}',
       '#np-studio .np-vchip button[data-vinyl-act="equip"],#np-studio .np-vchip button[data-vinyl-act="del"]{flex:0 0 auto}',
       '#np-studio .np-vchip.eq button[data-vinyl-act="edit"]{border-color:#ffe14d;box-shadow:0 0 8px #ffe14d}',
       '#np-studio #vinylNameInp{width:100%;min-height:42px;font:800 14px Orbitron,sans-serif;color:#fff;background:#120818;border:2px solid #ffe14d;border-radius:12px;padding:8px 10px;letter-spacing:.3px}'

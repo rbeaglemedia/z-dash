@@ -11,6 +11,7 @@
  *   5. PNG screenshots (and a contact sheet when Pillow is available)
  *   6. adult index.html never loads Kid App scripts or storage, and the
  *      Kid Z launcher stays clickable above the CONNECT LIVE landing screen
+ *   7. kid menu buttons and tiles: no underline, text-align center
  *
  * Usage:
  *   node tools/ui-polish-audit.js --out /opt/cursor/artifacts/ui-polish/before
@@ -428,6 +429,52 @@ const AUDIT_JS = String.raw`
   function add(severity, kind, msg, extra) {
     issues.push(Object.assign({ severity: severity, kind: kind, msg: msg }, extra || {}));
   }
+
+  // Kid menu buttons and tiles: no browser underline, title text centered.
+  const MENU_SEL = [
+    '#kTilesM .ktile', '#kStartMode button', '.kdiff button', '.kmain .ktabs button',
+    '#kGarage .gitem', '#kGarage .gbig', '#kGarage .gcats button', '#kGarage .gback',
+    '#kGarage .gcrumbs button', '#kGarage .kpill',
+    '#kGarageDrill .gitem', '#kGarageDrill .gbig', '#kGarageDrill .gcats button',
+    '#kGarageDrill .gback', '#kGarageDrill .gcrumbs button',
+    '#kHome .kpzrow button', '#kHome .ktabs button', '#kHome a.ghh-go', '#kPzX', '.kpzx',
+    '#bar button', '#bar a',
+    '.zd-top-pause-item', '.zd-ds-top button', '.zd-ds-top a', '.zd-ds-foot button',
+    '.np-modes button', '.np-top button', '.np-top a', '.np-tools button',
+    '.np-pausec button', '.np-pausec a', '.np-pauseb',
+    'a.glink', 'a.pill', 'a.gitem', '.vinyl-acts button', '.vinyl-acts a'
+  ].join(',');
+  function menuCentered(st) {
+    const align = (st.textAlign || '').toLowerCase();
+    return align === 'center' || align === '-webkit-center';
+  }
+  function menuUnderlined(st) {
+    const deco = ((st.textDecorationLine || '') + ' ' + (st.textDecoration || '')).toLowerCase();
+    return deco.indexOf('underline') >= 0;
+  }
+  const menuSeen = new Set();
+  document.querySelectorAll(MENU_SEL).forEach(function (el) {
+    if (menuSeen.has(el) || !cssVisible(el)) return;
+    if (el.closest('input, textarea, select')) return;
+    menuSeen.add(el);
+    const who = labelOf(el) || el.tagName.toLowerCase();
+    const parts = [el];
+    el.querySelectorAll('b, span, em, small').forEach(function (kid) {
+      if (kid.closest('.greq, .gdesc, .gpbtns, .gprog, .vinyl-dots, .sw, input, textarea')) return;
+      if (!cssVisible(kid)) return;
+      const kidText = (kid.innerText || '').replace(/\s+/g, ' ').trim();
+      if (!kidText) return;
+      parts.push(kid);
+    });
+    parts.forEach(function (node) {
+      const nodeText = (node.innerText || node.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim();
+      if (!nodeText) return;
+      const st = getComputedStyle(node);
+      const bit = node === el ? who : (nodeText.slice(0, 48) + ' in ' + who);
+      if (menuUnderlined(st)) add('error', 'menu-underline', bit + ' is underlined', { name: who });
+      if (!menuCentered(st)) add('error', 'menu-align', bit + ' text is ' + (st.textAlign || 'unset') + ', not centered', { name: who });
+    });
+  });
 
   function clippedBox(n) {
     let x = n.x, y = n.y, r = n.r, b = n.b;

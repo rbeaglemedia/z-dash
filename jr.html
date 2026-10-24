@@ -767,6 +767,7 @@ html.ipad-mode .kmain .ktilesm{grid-template-rows:repeat(2,minmax(0,1fr))}
   html.ipad-mode .kmain .ktilesm{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr))}
 }
 </style>
+<link rel="stylesheet" href="shared/menu-tiles.css">
 </head>
 <body>
 <div id="wakeWarn" class="wakewarn hidden" title="The screen may turn off: tap to retry keeping it on">☾ SCREEN MAY SLEEP</div>
@@ -13245,9 +13246,9 @@ var qrcode = function() {
     s.textContent = [
       '.gitems:has(.vinyl-card),.gitems:has(.vinyl-empty),.gitems:has(.vinyl-status){grid-template-columns:1fr}',
       '.vinyl-status{grid-column:1/-1;margin:0 0 4px;text-align:center;font:900 15px/1.2 Orbitron,sans-serif;letter-spacing:.8px;color:#ffe14d;text-shadow:0 0 10px #ffe14d}',
-      '.vinyl-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:6px}',
-      '.vinyl-actions .gitem{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-decoration:none}',
-      '.vinyl-card{grid-column:1/-1;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px 12px}',
+      '.vinyl-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr;gap:6px}',
+      '.vinyl-actions .gitem{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;text-decoration:none;color:inherit}',
+      '.vinyl-card{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 12px;text-align:center}',
       '.vinyl-name{display:block;font:900 18px/1.15 Orbitron,sans-serif;letter-spacing:.7px;color:#fff;text-shadow:0 0 10px #ff4fd8}',
       '.vinyl-card.eq .vinyl-name{color:#ffe14d;text-shadow:0 0 10px #ffe14d}',
       '.vinyl-meta{font:800 11px Orbitron,sans-serif;letter-spacing:1px;color:#c9b6e6}',
@@ -13255,7 +13256,7 @@ var qrcode = function() {
       '.vinyl-dots{display:flex;gap:4px;min-height:14px}',
       '.vinyl-dots i{width:14px;height:14px;border-radius:50%;box-shadow:0 0 8px currentColor;border:1px solid #fff}',
       '.vinyl-acts{display:flex;flex-wrap:wrap;gap:8px}',
-      '.vinyl-acts button,.vinyl-acts a{font:800 10px Orbitron,sans-serif;color:#fff;border:1.5px solid #3ee6ff;border-radius:999px;padding:4px 8px;background:rgba(62,230,255,.12);text-decoration:none;cursor:pointer}',
+      '.vinyl-acts button,.vinyl-acts a{font:800 10px Orbitron,sans-serif;color:#fff;border:1.5px solid #3ee6ff;border-radius:999px;padding:4px 8px;background:rgba(62,230,255,.12);text-align:center;text-decoration:none;cursor:pointer}',
       '.vinyl-empty{grid-column:1/-1;padding:8px;border:1.5px dashed #3ee6ff;border-radius:12px;color:#efe7ff}',
       '.vinyl-empty p{margin:0 0 8px;font:700 14px/1.35 Rajdhani,sans-serif}',
       '.vinyl-secs{display:flex;gap:4px;margin:4px 0}',
@@ -13273,11 +13274,11 @@ var qrcode = function() {
     const noneOn = state.activeId == null;
     let html = '<div class="vinyl-status">' + vinylEsc(status) + '</div>';
     html += '<div class="vinyl-actions">';
-    html += '<a class="gitem" href="neon-paint.html"><b class="vinyl-name">+ NEW VINYL IN 3D CAR PAINT</b><span class="vinyl-meta">BLANK CAR · SAVE ADDS IT HERE</span></a>';
+    html += gLink('neon-paint.html', '🎨', '+ NEW VINYL IN 3D CAR PAINT', 'BLANK CAR · SAVE ADDS IT HERE');
     html += '<button type="button" class="gitem' + (noneOn ? ' eq' : '') + '" data-vinyl-clear="1"><b>REMOVE FROM CAR (NO VINYL)</b>' + (noneOn ? '<em class="vinyl-badge">EQUIPPED</em>' : '<span class="vinyl-meta">TAP TO UNEQUIP</span>') + '</button>';
     html += '</div>';
     if (!state.items.length) {
-      html += '<div class="vinyl-empty"><p>Any design you save in 3D Car Paint shows up here as a collectible vinyl. You can remove one, and only one can be on the car. Studio Graffiti Wall drawings stay on the wall.</p><a class="gitem" href="neon-paint.html"><b class="vinyl-name">OPEN 3D CAR PAINT</b></a></div>';
+      html += '<div class="vinyl-empty"><p>Any design you save in 3D Car Paint shows up here as a collectible vinyl. You can remove one, and only one can be on the car. Studio Graffiti Wall drawings stay on the wall.</p>' + gLink('neon-paint.html', '🎨', 'OPEN 3D CAR PAINT', '') + '</div>';
       return html;
     }
     state.items.forEach((item, idx) => {
@@ -13465,6 +13466,9 @@ var qrcode = function() {
   function gOpt(on, attrs, name, sub) {
     return '<button type="button" class="gitem' + (on ? ' eq' : '') + '" ' + attrs + '><b>' + name + '</b>' + (sub ? '<span>' + sub + '</span>' : '') + (on ? '<em class="vinyl-badge">EQUIPPED</em>' : '') + '</button>';
   }
+  function gLink(href, icon, title, sub) {
+    return '<a class="gitem glink" href="' + href + '"><span class="gico" aria-hidden="true">' + icon + '</span><b class="vinyl-name">' + title + '</b>' + (sub ? '<span class="vinyl-meta">' + sub + '</span>' : '') + '</a>';
+  }
   function homeLevelHtml() {
     const sub = gNav.sub;
     const house = gHouse();
@@ -13475,10 +13479,10 @@ var qrcode = function() {
     if (sub === 'sign') return GHOUSE_SIGNS.map((s) => gOpt(house.sign === s[0], 'data-hsign="' + s[0] + '"', s[1], 'CUSTOM NEON SIGN')).join('');
     if (sub === 'pet') return GCREW_PETS.map((p) => gOpt((crew.pet || 'fox') === p[0], 'data-cpet="' + p[0] + '"', '🐾 ' + p[1], 'COMPANION PET')).join('');
     if (sub === 'character') return GCREW_CHARS.map((p) => gOpt((crew.character || 'woman') === p[0], 'data-cchar="' + p[0] + '"', '👤 ' + p[1], 'CHARACTER OUTFIT')).join('');
-    if (sub === 'enter') return '<a class="gitem" href="crew.html"><b class="vinyl-name">🚪 ENTER HOME / CREW STUDIO</b><span class="vinyl-meta">COMPANION PET AND CHARACTER</span></a><a class="gitem" href="world.html"><b class="vinyl-name">🏠 WALK INTO NEON WORLD</b><span class="vinyl-meta">HOME BUILDINGS USE THIS DECOR</span></a>';
-    if (sub === 'paintapp') return '<a class="gitem" href="neon-paint.html"><b class="vinyl-name">🎨 3D CAR PAINT</b><span class="vinyl-meta">PAINT THE 370Z · SAVED VINYLS SHOW UP IN GARAGE</span></a>';
-    if (sub === 'wallapp') return '<a class="gitem" href="neon-paint.html?mode=wall"><b class="vinyl-name">🧱 Z COMPANY ARTS GRAFFITI WALL</b><span class="vinyl-meta">WALL ART STAYS ON THE WALL</span></a>';
-    if (sub === 'danceapp') return '<a class="gitem" href="dance-stage.html"><b class="vinyl-name">💃 DANCE STAGE</b><span class="vinyl-meta">RECORD A CHARACTER OR PET DANCE</span></a>';
+    if (sub === 'enter') return gLink('crew.html', '🚪', 'ENTER HOME / CREW STUDIO', 'COMPANION PET AND CHARACTER') + gLink('world.html', '🏠', 'WALK INTO NEON WORLD', 'HOME BUILDINGS USE THIS DECOR');
+    if (sub === 'paintapp') return gLink('neon-paint.html', '🎨', '3D CAR PAINT', 'PAINT THE 370Z · SAVED VINYLS SHOW UP IN GARAGE');
+    if (sub === 'wallapp') return gLink('neon-paint.html?mode=wall', '🧱', 'Z COMPANY ARTS GRAFFITI WALL', 'WALL ART STAYS ON THE WALL');
+    if (sub === 'danceapp') return gLink('dance-stage.html', '💃', 'DANCE STAGE', 'RECORD A CHARACTER OR PET DANCE');
     return '';
   }
   function bindHome(el) {
@@ -13508,10 +13512,10 @@ var qrcode = function() {
     const el = $('#kGarage');
     let body = '';
     if (gNav.lvl <= 1) {
-      body = '<div class="glevel">' + GDRILL.roots.map((r) => '<button type="button" class="gbig" data-groot="' + r.id + '"><span class="gem">' + r.emoji + '</span><b>' + r.emoji + ' ' + r.title + '</b><em>' + r.kicker + '</em><small>' + r.blurb + '</small></button>').join('') + '</div>';
+      body = '<div class="glevel">' + GDRILL.roots.map((r) => '<button type="button" class="gbig" data-groot="' + r.id + '"><span class="gem">' + r.emoji + '</span><b>' + r.title + '</b><em>' + r.kicker + '</em><small>' + r.blurb + '</small></button>').join('') + '</div>';
     } else if (gNav.lvl === 2) {
       const list = GDRILL.broad[gNav.root] || [];
-      body = '<div class="glevel">' + list.map((b) => '<button type="button" class="gbig" data-gbroad="' + b.id + '"><span class="gem">' + b.emoji + '</span><b>' + b.emoji + ' ' + b.title + '</b><small>' + b.blurb + '</small></button>').join('') + '</div>';
+      body = '<div class="glevel">' + list.map((b) => '<button type="button" class="gbig" data-gbroad="' + b.id + '"><span class="gem">' + b.emoji + '</span><b>' + b.title + '</b><small>' + b.blurb + '</small></button>').join('') + '</div>';
     } else body = gSubPills() + '<div class="gitems">' + homeLevelHtml() + '</div>';
     el.innerHTML = gHeadHtml() + gCrumbHtml() + body;
     bindNav(el);
