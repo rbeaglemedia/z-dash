@@ -28,21 +28,25 @@ Either way the airport does not move, and the buildings stay the black placehold
 
 To change a later round, name the block. "Slide the arcades north" changes one pair of buildings. The other option does not have to be redrawn.
 
+## Outsides stay the same size
+
+Footprints and heights stay exactly as planned. The black boxes do not get bigger. A note that the buildings feel small is about the rooms inside, once you walk in. A bigger room is a later interior pass. It is not this map, and it does not change a street, a ramp, or a run-up.
+
 ## The current city
 
-North is up. Cyan strip down the middle is the runway and the flying lane. That strip is the anchor.
+North is up. Cyan strip down the middle is the runway and the flying lane. That strip is the anchor. Every arrow is a ramp, and the tip is the launch. The white arrows on the banks are the river launches.
 
 ![Current Neon World, top-down](city-layout/current.png)
 
 ## Option A — Sky Drop stays on the west
 
-Home streets on the west, car shops split by the park, play on the east, the tower alone. The big cyan jump roof stays on the west shoulder of the runway, where she already glides to it.
+Home streets on the west, car shops split by the park, play on the east, the tower alone. The big cyan jump roof stays on the west shoulder of the runway, where she already glides to it. Same 82 ramps as today. Two plaza lots slide so a shop does not sit on a run-up.
 
 ![Option A, top-down](city-layout/option-a.png)
 
 ## Option B — Sky Drop moves to the east
 
-Same streets, same buildings, same tower. Only the cyan jump roof crosses the runway and sits with the arcades.
+Same streets, same buildings, same tower, same ramps. Only the cyan jump roof crosses the runway and sits with the arcades. It does not cover a ramp or a landing.
 
 ![Option B, top-down](city-layout/option-b.png)
 
@@ -68,7 +72,193 @@ The mouths stay clear for 60 m, which is the lead-in the game already uses when 
 
 The pale green bars on the maps are those two clear mouths. They are not a new tunnel.
 
-There are still a lot of ramps. This pass does not remove any. Two old plaza rectangles sit under a new arcade and a new cafe. At build time those two plazas, ramps included, slide to the nearest empty block. They are not deleted. The airport ramps, river jumps, highway jump, street ramp, and taxi ramp are not in those plazas and do not move.
+The ramp count, the river launches, and the two plaza slides are in the next section. The tunnel is not one of those slides.
+
+## Ramps and jumps
+
+Counted from the placements in `world/city.js` on current main. **82 ramp pieces, plus the half-pipe and the loop.** Options A and B keep all 82. Same height, same length, same width, same rotation, so the slope the car launches on does not change. No new ramps were added, so none are marked new. Twelve pieces move, because two plazas have to slide out from under a shop. The other 70 stay on today's coordinates.
+
+The angle in the tables is the rise over the length. That is the slope the game uses when the car leaves the lip. A kicker is 1.6 m over 10 m (9.1°). A medium is 3.5 m over 24 m (8.3°). A big launch is 7.5 m over 60 m (7.1°). The highway ramp is already the odd one in the game, 6 m over 60 m (5.7°), and it stays that way.
+
+### River edge
+
+Ten river jumps. None of them move, and none of them change height or length. The three kickers are the just-over jumps: 8 m wide, 10 m long, 1.6 m high, 9.1°, on the same bank spots as today. At a normal run they land in the water. That water is the landing they were built for, and it stays clear.
+
+- South bank, x −40, z 1767, launches north. This is the runway-side jump. The run-up is the open shoulder south of it (the checked box is x −44..−36, z 1750..1762). Landing is the river, z 1780..1840.
+- North bank, x 60, z 1853, launches south into that same water. Run-up is north of it, x 56..64, z 1858..1870, clear of both builder HQs.
+- South bank, x −250, z 1767, launches north into the water. Same size, same angle.
+
+The two big launches are the ones that clear the river. Their far-bank strips are empty:
+
+- South bank, x 120, z 1742, 7.1°, launches north. Run-up x 112..128, z 1672..1712. Landing on the north bank, x 112..128, z 1846..1880. The builder HQs start at x 164, so they are not in that strip.
+- North bank, x −120, z 1878, 7.1°, launches south. Run-up x −128..−112, z 1908..1948, up into the open sandbox. Landing on the south bank, x −128..−112, z 1740..1774, short of the west car shops.
+
+The five medium river ramps stay at 8.3°. A normal run drops them in the water. A faster run reaches the far bank, and those strips are clear too (x −106..−94, x 244..256, and x −256..−244, plus the two beside the bridges at x 94..106 and x 294..306). The north car shops end at z 1686, south of the south-bank landing, and they do not share an x with a landing that would hit them.
+
+### How a landing was judged clear
+
+A relocated building is a block if it overlaps the ramp, the ground behind it, or the ground past the lip. The checked distance is 40 m for a big launch, the highway ramp, the taxiway ramp, or the street ramp; 24 m for a medium or an embankment; 12 m for a kicker, a curb, or a road hump. A tow truck uses the lane behind its bed. The little gap kicker on each truck (the steep lip, starting 1.5 m up on the bed) is part of that same jump. River kickers use the water as the landing. River mediums and big launches use the far-bank strip, with the water in between left open.
+
+That check is clean for today's city, for Option A, and for Option B. The log is `docs/city-layout/ramp-check.txt`.
+
+### What slides
+
+Plaza 3 today is x 160..240, z 310..490. The new arcade covers it. One block north (z 510..690) still puts the big launch's 40 m run-up inside that arcade. The lot goes to **x 160..240, z 520..700**, so the run-up starts at z 492, clear of the arcade by 6 m. Same six pieces, same angles, same directions.
+
+Plaza 4 today is x −540..−472, z 310..490. The new west pizza shop covers it. The next block south (z 110..290) still puts that launch's run-up inside the pizza shop. The lot goes to **x −540..−472, z −90..90**, the open west block beside spawn, so the run-up is the cross street. Same six pieces.
+
+Plazas 1, 2, and 5 stay. So do the airport ramps, the river jumps, the highway ramp, the street ramp, the taxiway ramp, the garage kicker, the embankments, the road humps, the six tow trucks, the half-pipe, and the loop.
+
+The half-pipe stays at x −95, z 260 (footprint x −127..−63, z 200..320, walls 5 m), with 20 m of open ground at both ends. The loop stays at x −80, z 1440, heading north, radius 12 m, lane 8 m, exit 9 m to the east. The west car shops do not reach it.
+
+Option B's jump roof is about 8 m east of tow truck 1 (x 254, z 600). The truck's landing is only as wide as the bed, and it does not enter the building. The drive check on that gap stays in the test section.
+
+The arrows on all three maps are these ramps. White arrows are the river edge.
+
+### Full list, today's positions
+
++x is east, +z is north. Size is width × length × height, in meters, before a rotation turns a side-facing ramp. The run-up and landing boxes are the ones the check used.
+
+### plaza (30)
+
+| # | Ramp | Place | Size (w×d×h m) | Angle | Launches | Run-up | Landing |
+|---|---|---|---|---|---|---|---|
+| 1 | plaza 1 launch | x 300, z -248 | 16×60×7.5 | 7.1° | north | 40 m south (x 292..308, z -318..-278) | 40 m north (x 292..308, z -218..-178) |
+| 2 | plaza 1 medium | x 276, z -130 | 12×24×3.5 | 8.3° | south | 24 m north (x 270..282, z -118..-94) | 24 m south (x 270..282, z -166..-142) |
+| 3 | plaza 1 kick | x 328, z -200 | 8×10×1.6 | 9.1° | north | 12 m south (x 324..332, z -217..-205) | 12 m north (x 324..332, z -195..-183) |
+| 4 | plaza 1 hidden kick, hidden | x 328, z -170 | 8×10×1.6 | 9.1° | north | 12 m south (x 324..332, z -187..-175) | 12 m north (x 324..332, z -165..-153) |
+| 5 | plaza 1 curb west | x 263.5, z -188 | 10×5×0.8 | 9.1° | east | 12 m west (x 249..261, z -193..-183) | 12 m east (x 266..278, z -193..-183) |
+| 6 | plaza 1 curb east | x 336.5, z -212 | 10×5×0.8 | 9.1° | west | 12 m east (x 339..351, z -217..-207) | 12 m west (x 322..334, z -217..-207) |
+| 7 | plaza 2 launch | x 300, z 448 | 16×60×7.5 | 7.1° | south | 40 m north (x 292..308, z 478..518) | 40 m south (x 292..308, z 378..418) |
+| 8 | plaza 2 medium | x 276, z 330 | 12×24×3.5 | 8.3° | north | 24 m south (x 270..282, z 294..318) | 24 m north (x 270..282, z 342..366) |
+| 9 | plaza 2 kick | x 328, z 400 | 8×10×1.6 | 9.1° | south | 12 m north (x 324..332, z 405..417) | 12 m south (x 324..332, z 383..395) |
+| 10 | plaza 2 hidden kick, hidden | x 328, z 370 | 8×10×1.6 | 9.1° | south | 12 m north (x 324..332, z 375..387) | 12 m south (x 324..332, z 353..365) |
+| 11 | plaza 2 curb west | x 263.5, z 412 | 10×5×0.8 | 9.1° | east | 12 m west (x 249..261, z 407..417) | 12 m east (x 266..278, z 407..417) |
+| 12 | plaza 2 curb east | x 336.5, z 388 | 10×5×0.8 | 9.1° | west | 12 m east (x 339..351, z 383..393) | 12 m west (x 322..334, z 383..393) |
+| 13 | plaza 3 launch | x 200, z 352 | 16×60×7.5 | 7.1° | north | 40 m south (x 192..208, z 282..322) | 40 m north (x 192..208, z 382..422) |
+| 14 | plaza 3 medium | x 176, z 470 | 12×24×3.5 | 8.3° | south | 24 m north (x 170..182, z 482..506) | 24 m south (x 170..182, z 434..458) |
+| 15 | plaza 3 kick | x 228, z 400 | 8×10×1.6 | 9.1° | north | 12 m south (x 224..232, z 383..395) | 12 m north (x 224..232, z 405..417) |
+| 16 | plaza 3 hidden kick, hidden | x 228, z 430 | 8×10×1.6 | 9.1° | north | 12 m south (x 224..232, z 413..425) | 12 m north (x 224..232, z 435..447) |
+| 17 | plaza 3 curb west | x 163.5, z 412 | 10×5×0.8 | 9.1° | east | 12 m west (x 149..161, z 407..417) | 12 m east (x 166..178, z 407..417) |
+| 18 | plaza 3 curb east | x 236.5, z 388 | 10×5×0.8 | 9.1° | west | 12 m east (x 239..251, z 383..393) | 12 m west (x 222..234, z 383..393) |
+| 19 | plaza 4 launch | x -506, z 448 | 16×60×7.5 | 7.1° | south | 40 m north (x -514..-498, z 478..518) | 40 m south (x -514..-498, z 378..418) |
+| 20 | plaza 4 medium | x -524, z 330 | 12×24×3.5 | 8.3° | north | 24 m south (x -530..-518, z 294..318) | 24 m north (x -530..-518, z 342..366) |
+| 21 | plaza 4 kick | x -484, z 400 | 8×10×1.6 | 9.1° | south | 12 m north (x -488..-480, z 405..417) | 12 m south (x -488..-480, z 383..395) |
+| 22 | plaza 4 hidden kick, hidden | x -484, z 370 | 8×10×1.6 | 9.1° | south | 12 m north (x -488..-480, z 375..387) | 12 m south (x -488..-480, z 353..365) |
+| 23 | plaza 4 curb west | x -536.5, z 412 | 10×5×0.8 | 9.1° | east | 12 m west (x -551..-539, z 407..417) | 12 m east (x -534..-522, z 407..417) |
+| 24 | plaza 4 curb east | x -475.5, z 388 | 10×5×0.8 | 9.1° | west | 12 m east (x -473..-461, z 383..393) | 12 m west (x -490..-478, z 383..393) |
+| 25 | plaza 5 launch | x -200, z 1352 | 16×60×7.5 | 7.1° | north | 40 m south (x -208..-192, z 1282..1322) | 40 m north (x -208..-192, z 1382..1422) |
+| 26 | plaza 5 medium | x -224, z 1470 | 12×24×3.5 | 8.3° | south | 24 m north (x -230..-218, z 1482..1506) | 24 m south (x -230..-218, z 1434..1458) |
+| 27 | plaza 5 kick | x -172, z 1400 | 8×10×1.6 | 9.1° | north | 12 m south (x -176..-168, z 1383..1395) | 12 m north (x -176..-168, z 1405..1417) |
+| 28 | plaza 5 hidden kick, hidden | x -172, z 1430 | 8×10×1.6 | 9.1° | north | 12 m south (x -176..-168, z 1413..1425) | 12 m north (x -176..-168, z 1435..1447) |
+| 29 | plaza 5 curb west | x -236.5, z 1412 | 10×5×0.8 | 9.1° | east | 12 m west (x -251..-239, z 1407..1417) | 12 m east (x -234..-222, z 1407..1417) |
+| 30 | plaza 5 curb east | x -163.5, z 1388 | 10×5×0.8 | 9.1° | west | 12 m east (x -161..-149, z 1383..1393) | 12 m west (x -178..-166, z 1383..1393) |
+
+### garage (1)
+
+| # | Ramp | Place | Size (w×d×h m) | Angle | Launches | Run-up | Landing |
+|---|---|---|---|---|---|---|---|
+| 31 | garage kicker | x 528, z 409 | 8×10×1.6 | 9.1° | north | 12 m south (x 524..532, z 392..404) | 12 m north (x 524..532, z 414..426) |
+
+### base (3)
+
+| # | Ramp | Place | Size (w×d×h m) | Angle | Launches | Run-up | Landing |
+|---|---|---|---|---|---|---|---|
+| 32 | taxiway ramp | x 50, z 790 | 16×60×7.5 | 7.1° | north | 40 m south (x 42..58, z 720..760) | 40 m north (x 42..58, z 820..860) |
+| 33 | street ramp | x 250, z 350 | 14×40×4 | 5.7° | north | 40 m south (x 243..257, z 290..330) | 40 m north (x 243..257, z 370..410) |
+| 34 | highway ramp | x -450, z 1630 | 24×60×6 | 5.7° | north | 40 m south (x -462..-438, z 1560..1600) | 40 m north (x -462..-438, z 1660..1700) |
+
+### airport (13)
+
+| # | Ramp | Place | Size (w×d×h m) | Angle | Launches | Run-up | Landing |
+|---|---|---|---|---|---|---|---|
+| 35 | airport med | x 120, z 150 | 12×24×3.5 | 8.3° | north | 24 m south (x 114..126, z 114..138) | 24 m north (x 114..126, z 162..186) |
+| 36 | airport kick | x 120, z 420 | 8×10×1.6 | 9.1° | north | 12 m south (x 116..124, z 403..415) | 12 m north (x 116..124, z 425..437) |
+| 37 | airport launch | x 120, z 640 | 16×60×7.5 | 7.1° | north | 40 m south (x 112..128, z 570..610) | 40 m north (x 112..128, z 670..710) |
+| 38 | airport med | x 120, z 1000 | 12×24×3.5 | 8.3° | south | 24 m north (x 114..126, z 1012..1036) | 24 m south (x 114..126, z 964..988) |
+| 39 | airport kick, hidden | x 120, z 1250 | 8×10×1.6 | 9.1° | north | 12 m south (x 116..124, z 1233..1245) | 12 m north (x 116..124, z 1255..1267) |
+| 40 | airport kick | x 125, z 1390 | 8×10×1.6 | 9.1° | south | 12 m north (x 121..129, z 1395..1407) | 12 m south (x 121..129, z 1373..1385) |
+| 41 | airport med | x -40, z 520 | 12×24×3.5 | 8.3° | north | 24 m south (x -46..-34, z 484..508) | 24 m north (x -46..-34, z 532..556) |
+| 42 | airport launch | x -110, z 700 | 16×60×7.5 | 7.1° | north | 40 m south (x -118..-102, z 630..670) | 40 m north (x -118..-102, z 730..770) |
+| 43 | airport kick, hidden | x -40, z 900 | 8×10×1.6 | 9.1° | north | 12 m south (x -44..-36, z 883..895) | 12 m north (x -44..-36, z 905..917) |
+| 44 | airport med | x -110, z 1100 | 12×24×3.5 | 8.3° | south | 24 m north (x -116..-104, z 1112..1136) | 24 m south (x -116..-104, z 1064..1088) |
+| 45 | airport kick | x -40, z 1250 | 8×10×1.6 | 9.1° | north | 12 m south (x -44..-36, z 1233..1245) | 12 m north (x -44..-36, z 1255..1267) |
+| 46 | airport kick | x -125, z 1600 | 8×10×1.6 | 9.1° | south | 12 m north (x -129..-121, z 1605..1617) | 12 m south (x -129..-121, z 1583..1595) |
+| 47 | airport kick, hidden | x -40, z 60 | 8×10×1.6 | 9.1° | south | 12 m north (x -44..-36, z 65..77) | 12 m south (x -44..-36, z 43..55) |
+
+### river (10)
+
+| # | Ramp | Place | Size (w×d×h m) | Angle | Launches | Run-up | Landing |
+|---|---|---|---|---|---|---|---|
+| 48 | river south bank launch | x 120, z 1742 | 16×60×7.5 | 7.1° | north | 40 m south (x 112..128, z 1672..1712) | north bank after the water (x 112..128, z 1846..1880) |
+| 49 | river south bank med | x -100, z 1760 | 12×24×3.5 | 8.3° | north | 24 m south (x -106..-94, z 1724..1748) | north bank after the water (x -106..-94, z 1846..1880) |
+| 50 | river south bank kick | x -40, z 1767 | 8×10×1.6 | 9.1° | north | 12 m south (x -44..-36, z 1750..1762) | water, by design (the just-over jump) (x -44..-36, z 1780..1840) |
+| 51 | river north bank med | x 100, z 1860 | 12×24×3.5 | 8.3° | south | 24 m north (x 94..106, z 1872..1896) | south bank after the water (x 94..106, z 1740..1774) |
+| 52 | river north bank launch | x -120, z 1878 | 16×60×7.5 | 7.1° | south | 40 m north (x -128..-112, z 1908..1948) | south bank after the water (x -128..-112, z 1740..1774) |
+| 53 | river north bank kick | x 60, z 1853 | 8×10×1.6 | 9.1° | south | 12 m north (x 56..64, z 1858..1870) | water, by design (the just-over jump) (x 56..64, z 1780..1840) |
+| 54 | river south bank med | x 250, z 1760 | 12×24×3.5 | 8.3° | north | 24 m south (x 244..256, z 1724..1748) | north bank after the water (x 244..256, z 1846..1880) |
+| 55 | river south bank kick | x -250, z 1767 | 8×10×1.6 | 9.1° | north | 12 m south (x -254..-246, z 1750..1762) | water, by design (the just-over jump) (x -254..-246, z 1780..1840) |
+| 56 | river north bank med | x 300, z 1860 | 12×24×3.5 | 8.3° | south | 24 m north (x 294..306, z 1872..1896) | south bank after the water (x 294..306, z 1740..1774) |
+| 57 | river north bank med | x -250, z 1860 | 12×24×3.5 | 8.3° | south | 24 m north (x -256..-244, z 1872..1896) | south bank after the water (x -256..-244, z 1740..1774) |
+
+### bank (8)
+
+| # | Ramp | Place | Size (w×d×h m) | Angle | Launches | Run-up | Landing |
+|---|---|---|---|---|---|---|---|
+| 58 | embankment, hidden | x 300, z -345 | 20×30×4 | 7.6° | south | 24 m north (x 290..310, z -330..-306) | 24 m south (x 290..310, z -384..-360) |
+| 59 | embankment, hidden | x -300, z -345 | 20×30×4 | 7.6° | south | 24 m north (x -310..-290, z -330..-306) | 24 m south (x -310..-290, z -384..-360) |
+| 60 | embankment, hidden | x 600, z 520 | 20×30×4 | 7.6° | east | 24 m west (x 561..585, z 510..530) | 24 m east (x 615..639, z 510..530) |
+| 61 | embankment, hidden | x 600, z 1500 | 20×30×4 | 7.6° | east | 24 m west (x 561..585, z 1490..1510) | 24 m east (x 615..639, z 1490..1510) |
+| 62 | embankment, hidden | x -600, z 960 | 20×30×4 | 7.6° | west | 24 m east (x -585..-561, z 950..970) | 24 m west (x -639..-615, z 950..970) |
+| 63 | embankment, hidden | x 300, z 2150 | 20×30×4 | 7.6° | north | 24 m south (x 290..310, z 2111..2135) | 24 m north (x 290..310, z 2165..2189) |
+| 64 | embankment, hidden | x -260, z 2150 | 20×30×4 | 7.6° | north | 24 m south (x -270..-250, z 2111..2135) | 24 m north (x -270..-250, z 2165..2189) |
+| 65 | embankment, hidden | x -600, z 1500 | 20×30×4 | 7.6° | west | 24 m east (x -585..-561, z 1490..1510) | 24 m west (x -639..-615, z 1490..1510) |
+
+### crest (5)
+
+| # | Ramp | Place | Size (w×d×h m) | Angle | Launches | Run-up | Landing |
+|---|---|---|---|---|---|---|---|
+| 66 | road crest, hidden | x 400, z 300 | 20×19×1.8 | 5.4° | east | 12 m west (x 378.5..390.5, z 290..310) | 12 m east (x 409.5..421.5, z 290..310) |
+| 67 | road crest, hidden | x -300, z 900 | 20×19×1.8 | 5.4° | west | 12 m east (x -290.5..-278.5, z 890..910) | 12 m west (x -321.5..-309.5, z 890..910) |
+| 68 | road crest, hidden | x 350, z 1400 | 20×19×1.8 | 5.4° | north | 12 m south (x 340..360, z 1378.5..1390.5) | 12 m north (x 340..360, z 1409.5..1421.5) |
+| 69 | road crest, hidden | x -250, z 300 | 20×19×1.8 | 5.4° | south | 12 m north (x -260..-240, z 309.5..321.5) | 12 m south (x -260..-240, z 278.5..290.5) |
+| 70 | road crest, hidden | x 450, z -200 | 20×19×1.8 | 5.4° | north | 12 m south (x 440..460, z -221.5..-209.5) | 12 m north (x 440..460, z -190.5..-178.5) |
+
+### tow (12)
+
+| # | Ramp | Place | Size (w×d×h m) | Angle | Launches | Run-up | Landing |
+|---|---|---|---|---|---|---|---|
+| 71 | tow 1 bed | x 254, z 597.3 | 3.6×8.7×2.6 | 16.7° | north | 24 m south (x 252.2..255.8, z 569..593) | 24 m north (x 252.2..255.8, z 601.7..625.7) |
+| 72 | tow 1 gap kicker | x 254, z 603 | 3.6×2.6×1.2 | 24.8° | north | same truck |  |
+| 73 | tow 2 bed | x -354, z 1202.7 | 3.6×8.7×2.6 | 16.7° | south | 24 m north (x -355.8..-352.2, z 1207..1231) | 24 m south (x -355.8..-352.2, z 1174.3..1198.3) |
+| 74 | tow 2 gap kicker | x -354, z 1197 | 3.6×2.6×1.2 | 24.8° | south | same truck |  |
+| 75 | tow 3 bed | x -154, z 797.3 | 3.6×8.7×2.6 | 16.7° | north | 24 m south (x -155.8..-152.2, z 769..793) | 24 m north (x -155.8..-152.2, z 801.7..825.7) |
+| 76 | tow 3 gap kicker | x -154, z 803 | 3.6×2.6×1.2 | 24.8° | north | same truck |  |
+| 77 | tow 4 bed | x -246, z -2.7 | 3.6×8.7×2.6 | 16.7° | north | 24 m south (x -247.8..-244.2, z -31..-7) | 24 m north (x -247.8..-244.2, z 1.7..25.7) |
+| 78 | tow 4 gap kicker | x -246, z 3 | 3.6×2.6×1.2 | 24.8° | north | same truck |  |
+| 79 | tow 5 bed | x 154, z 1597.3 | 3.6×8.7×2.6 | 16.7° | north | 24 m south (x 152.2..155.8, z 1569..1593) | 24 m north (x 152.2..155.8, z 1601.7..1625.7) |
+| 80 | tow 5 gap kicker | x 154, z 1603 | 3.6×2.6×1.2 | 24.8° | north | same truck |  |
+| 81 | tow 6 bed | x -546, z 402.7 | 3.6×8.7×2.6 | 16.7° | south | 24 m north (x -547.8..-544.2, z 407..431) | 24 m south (x -547.8..-544.2, z 374.3..398.3) |
+| 82 | tow 6 gap kicker | x -546, z 397 | 3.6×2.6×1.2 | 24.8° | south | same truck |  |
+
+### Plaza 3 and plaza 4 on options A and B
+
+Same pieces as the rows above. Only the place, the run-up, and the landing move.
+
+| # | Ramp | Place | Size (w×d×h m) | Angle | Launches | Run-up | Landing |
+|---|---|---|---|---|---|---|---|
+| 13 | plaza 3 launch | x 200, z 562 | 16×60×7.5 | 7.1° | north | 40 m south (x 192..208, z 492..532) | 40 m north (x 192..208, z 592..632) |
+| 14 | plaza 3 medium | x 176, z 680 | 12×24×3.5 | 8.3° | south | 24 m north (x 170..182, z 692..716) | 24 m south (x 170..182, z 644..668) |
+| 15 | plaza 3 kick | x 228, z 610 | 8×10×1.6 | 9.1° | north | 12 m south (x 224..232, z 593..605) | 12 m north (x 224..232, z 615..627) |
+| 16 | plaza 3 hidden kick, hidden | x 228, z 640 | 8×10×1.6 | 9.1° | north | 12 m south (x 224..232, z 623..635) | 12 m north (x 224..232, z 645..657) |
+| 17 | plaza 3 curb west | x 163.5, z 622 | 10×5×0.8 | 9.1° | east | 12 m west (x 149..161, z 617..627) | 12 m east (x 166..178, z 617..627) |
+| 18 | plaza 3 curb east | x 236.5, z 598 | 10×5×0.8 | 9.1° | west | 12 m east (x 239..251, z 593..603) | 12 m west (x 222..234, z 593..603) |
+| 19 | plaza 4 launch | x -506, z 48 | 16×60×7.5 | 7.1° | south | 40 m north (x -514..-498, z 78..118) | 40 m south (x -514..-498, z -22..18) |
+| 20 | plaza 4 medium | x -524, z -70 | 12×24×3.5 | 8.3° | north | 24 m south (x -530..-518, z -106..-82) | 24 m north (x -530..-518, z -58..-34) |
+| 21 | plaza 4 kick | x -484, z 0 | 8×10×1.6 | 9.1° | south | 12 m north (x -488..-480, z 5..17) | 12 m south (x -488..-480, z -17..-5) |
+| 22 | plaza 4 hidden kick, hidden | x -484, z -30 | 8×10×1.6 | 9.1° | south | 12 m north (x -488..-480, z -25..-13) | 12 m south (x -488..-480, z -47..-35) |
+| 23 | plaza 4 curb west | x -536.5, z 12 | 10×5×0.8 | 9.1° | east | 12 m west (x -551..-539, z 7..17) | 12 m east (x -534..-522, z 7..17) |
+| 24 | plaza 4 curb east | x -475.5, z -12 | 10×5×0.8 | 9.1° | west | 12 m east (x -473..-461, z -17..-7) | 12 m west (x -490..-478, z -17..-7) |
 
 ## What moves, and why
 
@@ -137,7 +327,7 @@ Option A is the lighter of the two. The jump roof stays at 1 near building, and 
 
 ## What is removed
 
-Nothing. Same 24 buildings, same ramps, same roads, same river, same tunnel, same dome, same track, same park, same builder sandbox. Two plazas slide aside at build time so they aren't buried under an arcade and a cafe. Their ramps go with them.
+Nothing. Same 24 buildings, same 82 ramps, same half-pipe, same loop, same roads, same river, same tunnel, same dome, same track, same park, same builder sandbox. Two plazas slide so they are not buried under an arcade and a cafe. Their ramps go with them, at the same angles.
 
 ## Ideas for Bob
 
@@ -165,11 +355,13 @@ For the Architecture Check agent, bc-c7ace59c. This PR is a plan. It does not ch
 | Black placeholder boxes | Unchanged. No new meshes. |
 | Airport | Runway, taxiway, half-pipe, loop, and shoulder ramps unchanged. Both options are drawn around them. |
 | Tunnel | No change. Hill, bore, 10 m ceiling, and cyan guide lines stay. Both 60 m mouths are clear of new buildings. A second tunnel is an idea only, on the east avenue, and is not in either option. |
-| River and bridges | Unchanged. River-edge jumps unchanged, including the small jump that clears the water at about 80 mph. |
+| River and bridges | Unchanged. All 10 river jumps stay, including the three 9.1° kickers that land in the water. Far-bank strips for the big launches are clear. |
 | Builder HQs | Seeds 23 and 24 stay on today's pads. Moving them overlaps the north-bank jumps. Sandbox north of the river unchanged. |
 | Roads, traffic, Hot Drop, tows | Centerlines unchanged. Traffic stays 30. No building covers a tow point. |
 | Spawn | (0, 0). |
-| Plazas | Two rectangles overlap new buildings. Not done here. At build time the arcade lot slides one block north (x 160..240, z 510..690) and the pizza lot slides one block south (x −540..−472, z 110..290). Ramps go with them. |
+| Ramps | 82 pieces on main, plus the half-pipe and the loop. A and B keep 82, at the same height, length, and rotation. No new ramps. Run-ups and landings are clear of relocated buildings, including every river-edge launch. Please verify the count and the landings. |
+| Plazas | Two rectangles overlap new buildings. Not done here. At build time the arcade lot slides to x 160..240, z 520..700, and the pizza lot slides to x −540..−472, z −90..90. A one-block slide still leaves a big-launch run-up inside a shop. Ramps go with the lots. The other three plazas stay. |
+| Building size | Footprints and heights unchanged. Interior room size is not this plan. |
 | FPS files | Not touched. |
 | Adult `index.html` | Not touched. |
 
@@ -197,7 +389,7 @@ These look up a building by its purpose, or they draw whatever boxes the city bu
 
 ### What has to be done or it breaks (both options)
 
-- **Two plazas have to slide, or their ramps spawn inside shops.** The ramps are built inside the plaza rectangle. The new arcade covers the lot at x 160..240, z 310..490. The new south pizza shop covers the lot at x −540..−472, z 310..490. Leave them and those ramps are inside the buildings, and the doors are a mess. Slide the arcade lot one block north, to x 160..240, z 510..690. Slide the pizza lot one block south, to x −540..−472, z 110..290. The other three plazas stay. Same slide for A and B.
+- **Two plazas have to slide, or their ramps spawn inside shops.** The ramps are built inside the plaza rectangle. The new arcade covers the lot at x 160..240, z 310..490. The new south pizza shop covers the lot at x −540..−472, z 310..490. Leave them and those ramps are inside the buildings, and the doors are a mess. Slide the arcade lot to x 160..240, z 520..700. Slide the pizza lot to x −540..−472, z −90..90. One block is not enough: the big launch on each lot still needs 40 m of clear ground, and that run-up would end inside the shop. The other three plazas stay. Same slide for A and B. Do not change a ramp's height, length, or rotation while doing it.
 - **Keep the street faces in the table.** A wall that is not on a street gets a fallback door on the south side, which can open into an alley. The faces in this plan were checked against the curb rule, so the generated doors land on the street.
 
 ### Option A only

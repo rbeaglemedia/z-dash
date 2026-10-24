@@ -2,6 +2,7 @@
 // Validates the two proposed Neon World layouts and writes top-down SVGs.
 // World: +x east, +z north. Roads every 100 m in x and 200 m in z.
 import fs from 'fs';
+import { buildRamps, PLAZAS_NOW, PLAZAS_AB, checkClear, sameGeometry, inventoryLines, HALFPIPE, LOOP } from './ramps.mjs';
 
 const ROADX = [-550, -450, -350, -250, -150, 150, 250, 350, 450, 550];
 const ROADZ = [-300, -100, 100, 300, 500, 700, 900, 1100, 1300, 1500, 1700, 1900, 2100];
@@ -83,7 +84,7 @@ const SKY_B = [2, 'SKY DROP', 'SKY_DROP', 264, 328, 518, 682, 62, 's', 'PLAY'];
 const OPT_A = [SKY_A, ...BASE].sort((a, b) => a[0] - b[0]);
 const OPT_B = [SKY_B, ...BASE].sort((a, b) => a[0] - b[0]);
 
-const PLAZAS = [[260, 340, -290, -110], [260, 340, 310, 490], [160, 240, 310, 490], [-540, -472, 310, 490], [-240, -160, 1310, 1490]];
+const PLAZAS = PLAZAS_NOW;
 
 function box(b) { return { id: b[0], name: b[1], purpose: b[2], x0: b[3], x1: b[4], z0: b[5], z1: b[6], h: b[7], face: b[8], district: b[9] }; }
 function overlap(a, b) {
@@ -94,7 +95,7 @@ function extRamp(x, z, w, d, rot) {
   const W = swap ? d : w, D = swap ? w : d;
   return { x0: x - W / 2, x1: x + W / 2, z0: z - D / 2, z1: z + D / 2 };
 }
-// Fixed ramps only, used as a clearance check. Not drawn on the maps.
+// Fixed ramps only, used as a building-footprint clearance check. The full set, including plazas, is drawn.
 const PF = { kick: [8, 10], med: [12, 24], launch: [16, 60], small: [14, 40], big: [16, 60], bank: [20, 30], crest: [20, 19] };
 function rampAt(tag, kind, x, z, rot, w, d) {
   const base = PF[kind];
@@ -284,13 +285,49 @@ function mouthGap(list) {
 console.log('---TUNNEL---');
 console.log(JSON.stringify({ changes: 'none', A: mouthGap(OPT_A), B: mouthGap(OPT_B) }));
 
+const rampsNow = buildRamps(PLAZAS_NOW);
+const rampsAB = buildRamps(PLAZAS_AB);
+const geom = sameGeometry(rampsNow, rampsAB);
+const boxList = (list) => list.map(box);
+const rampReport = {
+  pieces: rampsNow.length,
+  geometry: geom || 'same height, length, width, rotation',
+  current: checkClear(rampsNow, boxList(CUR)),
+  A: checkClear(rampsAB, boxList(OPT_A)),
+  B: checkClear(rampsAB, boxList(OPT_B)),
+  halfpipe: HALFPIPE,
+  loop: LOOP.note
+};
+console.log('---RAMPS---');
+console.log(JSON.stringify(rampReport, null, 2));
+if (geom || rampReport.A.length || rampReport.B.length) {
+  console.error('RAMP CHECK FAILED');
+  process.exitCode = 1;
+}
+
 const COL = {
   HOME: '#7dff6b', SHOWROOM: '#3ee6ff', NEON_PAINT: '#ff4fd8', GARAGE: '#ffb020',
   NOS: '#ffe14d', DANCE: '#ff4fd8', PETS: '#7dff6b', CAFE: '#ff2a3d',
   ARCADE: '#3ee6ff', SKY_DROP: '#9ffbff', SOCCER: '#ffb020', BUILDER: '#b6ff9a'
 };
 
-function svgFor(title, subtitle, list, districts) {
+function rampArrow(r) {
+  const cx = (r.x0 + r.x1) / 2, cz = (r.z0 + r.z1) / 2;
+  if (r.dir === 0) return [[r.x0, r.z0], [r.x1, r.z0], [cx, r.z1]];
+  if (r.dir === 2) return [[r.x0, r.z1], [r.x1, r.z1], [cx, r.z0]];
+  if (r.dir === 1) return [[r.x0, r.z0], [r.x0, r.z1], [r.x1, cz]];
+  return [[r.x1, r.z0], [r.x1, r.z1], [r.x0, cz]];
+}
+function rampFill(r) {
+  if (r.group === 'river') return '#f4feff';
+  if (r.group === 'airport' || r.nm === 'taxiway') return '#7ee7ff';
+  if (r.group === 'plaza') return '#ffb020';
+  if (r.group === 'tow') return '#ffe14d';
+  if (r.group === 'bank' || r.group === 'crest') return '#cbb6e6';
+  return '#ff8a3d';
+}
+
+function svgFor(title, subtitle, list, districts, ramps) {
   const x0 = -700, x1 = 1280, z0 = -420, z1 = 2280;
   const W = 1400, H = 1860, padL = 70, padR = 250, padT = 92, padB = 70;
   const iw = W - padL - padR, ih = H - padT - padB;
@@ -366,6 +403,23 @@ function svgFor(title, subtitle, list, districts) {
     const tall = b.h >= 60 ? ' ★' : '';
     parts.push(`<text x="${X(cx)}" y="${Y(cz) + 4}" fill="#140818" font-size="11" font-weight="700" text-anchor="middle" font-family="ui-sans-serif,sans-serif">${b.name}${tall}</text>`);
   }
+  // every ramp, tip points the way the car launches
+  parts.push(`<rect x="${X(HALFPIPE.x0)}" y="${Y(HALFPIPE.z1)}" width="${X(HALFPIPE.x1) - X(HALFPIPE.x0)}" height="${Y(HALFPIPE.z0) - Y(HALFPIPE.z1)}" fill="none" stroke="#7ee7ff" stroke-width="1.4"/>`);
+  parts.push(`<text x="${X(-95)}" y="${Y(260)}" fill="#7ee7ff" font-size="9" text-anchor="middle" font-family="ui-sans-serif,sans-serif">HALF-PIPE</text>`);
+  parts.push(`<circle cx="${X(LOOP.x)}" cy="${Y(LOOP.z)}" r="7" fill="none" stroke="#ffb020" stroke-width="1.6"/>`);
+  parts.push(`<text x="${X(LOOP.x)}" y="${Y(LOOP.z) - 10}" fill="#ffb020" font-size="9" text-anchor="middle" font-family="ui-sans-serif,sans-serif">LOOP</text>`);
+  for (const r of ramps) {
+    const raw = rampArrow(r).map((p) => [X(p[0]), Y(p[1])]);
+    const xs = raw.map((p) => p[0]), ys = raw.map((p) => p[1]);
+    const bw = Math.max(...xs) - Math.min(...xs), bh = Math.max(...ys) - Math.min(...ys);
+    const midX = (Math.min(...xs) + Math.max(...xs)) / 2, midY = (Math.min(...ys) + Math.max(...ys)) / 2;
+    const need = r.group === 'river' ? 9 : 6;
+    const s = Math.max(1, need / Math.max(bw, bh, 0.8));
+    const pts = raw.map((p) => (midX + (p[0] - midX) * s).toFixed(1) + ',' + (midY + (p[1] - midY) * s).toFixed(1)).join(' ');
+    const stroke = r.group === 'river' ? '#3ee6ff' : '#140818';
+    const sw = r.group === 'river' ? 1.3 : 0.4;
+    parts.push(`<polygon points="${pts}" fill="${rampFill(r)}" fill-opacity="0.95" stroke="${stroke}" stroke-width="${sw}"/>`);
+  }
   // spawn + sky drop launch
   parts.push(`<circle cx="${X(0)}" cy="${Y(0)}" r="7" fill="#fff" stroke="#3ee6ff" stroke-width="2"/>`);
   parts.push(`<text x="${X(0) + 12}" y="${Y(0) + 4}" fill="#fff" font-size="12" font-family="ui-sans-serif,sans-serif">SPAWN</text>`);
@@ -384,7 +438,7 @@ function svgFor(title, subtitle, list, districts) {
     ly += 20;
   }
   ly += 8;
-  const notes = ['Cyan strip = runway flying lane', 'Amber = highway, 30 m', 'Green hill = tunnel, unchanged', 'Green bars = clear tunnel mouths', 'Pink oval = race track', 'Pink dome = soccer field', 'Green dash = builder sandbox', '★ = tall roof (62 m or 239 m)'];
+  const notes = ['Arrows are ramps. Tip = launch.', 'White = river edge, same angles', 'Cyan arrows = airport ramps', 'Amber arrows = plaza jumps', 'Orange = street, highway, garage', 'Yellow = tow-truck jumps', 'Lilac = banks and road humps', 'No new ramps. Count matches.', 'Cyan strip = runway flying lane', 'Amber road = highway, 30 m', 'Green hill = tunnel, unchanged', 'Green bars = clear tunnel mouths', 'Pink oval = race track', 'Pink dome = soccer field', 'Green dash = builder sandbox', '★ = tall roof (62 m or 239 m)'];
   for (const n of notes) {
     parts.push(`<text x="${W - 220}" y="${ly}" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">${n}</text>`);
     ly += 16;
@@ -412,8 +466,8 @@ const outDir = new URL('.', import.meta.url).pathname.startsWith('/workspace/')
 fs.mkdirSync(outDir, { recursive: true });
 fs.mkdirSync('/tmp/city-maps', { recursive: true });
 for (const dir of [outDir, '/tmp/city-maps']) {
-  fs.writeFileSync(dir + '/current.svg', svgFor('Neon World — current city', 'North is up. Same 24 buildings, scattered across overlapping districts.', CUR, distCur));
-  fs.writeFileSync(dir + '/option-a.svg', svgFor('Option A — Sky Drop stays on the west', 'Airport stays in the middle. Homes on the west. Car shops west of the park and north-east. Play on the east. One tower.', OPT_A, distNew));
-  fs.writeFileSync(dir + '/option-b.svg', svgFor('Option B — Sky Drop moves to the east', 'Same city as A. Only the Sky Drop deck crosses the runway, to sit with the arcades.', OPT_B, distNew));
+  fs.writeFileSync(dir + '/current.svg', svgFor('Neon World — current city', 'North is up. Every ramp is an arrow. The tip is the launch. River arrows stay on the banks.', CUR, distCur, rampsNow));
+  fs.writeFileSync(dir + '/option-a.svg', svgFor('Option A — Sky Drop stays on the west', 'Same 82 ramps, same angles. Two plaza lots slide so their run-ups stay clear. River launches do not move.', OPT_A, distNew, rampsAB));
+  fs.writeFileSync(dir + '/option-b.svg', svgFor('Option B — Sky Drop moves to the east', 'Same ramps as A. Only the Sky Drop deck crosses the runway. It does not sit on a ramp or a landing.', OPT_B, distNew, rampsAB));
 }
 console.log('svg written');

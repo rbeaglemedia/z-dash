@@ -2,7 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1860" viewBox="0 0 1400 1860">
 <rect width="1400" height="1860" fill="#070314"/>
 <text x="36" y="40" fill="#e9fbff" font-family="ui-sans-serif,Segoe UI,sans-serif" font-size="28" font-weight="700">Option A — Sky Drop stays on the west</text>
-<text x="36" y="68" fill="#b9a8d4" font-family="ui-sans-serif,Segoe UI,sans-serif" font-size="16">Airport stays in the middle. Homes on the west. Car shops west of the park and north-east. Play on the east. One tower.</text>
+<text x="36" y="68" fill="#b9a8d4" font-family="ui-sans-serif,Segoe UI,sans-serif" font-size="16">Same 82 ramps, same angles. Two plaza lots slide so their run-ups stay clear. River launches do not move.</text>
 <rect x="146.36363636363637" y="1469.2666666666667" width="610.9090909090909" height="245.26666666666665" fill="rgba(62,230,255,0.04)" stroke="#3ee6ff" stroke-dasharray="5 4"/>
 <text x="451.8181818181818" y="1485.2666666666667" fill="#3ee6ff" font-size="13" font-family="ui-sans-serif,sans-serif" text-anchor="middle">SPAWN — OPEN RUNWAY</text>
 <rect x="146.36363636363637" y="896.9777777777778" width="223.63636363636363" height="572.2888888888889" fill="rgba(125,255,107,0.05)" stroke="#7dff6b" stroke-dasharray="5 4"/>
@@ -134,6 +134,92 @@
 <text x="553.2727272727273" y="352.58666666666664" fill="#140818" font-size="11" font-weight="700" text-anchor="middle" font-family="ui-sans-serif,sans-serif">BUILDER</text>
 <rect x="650.3636363636364" y="339.78222222222223" width="24" height="18.866666666666674" fill="#b6ff9a" fill-opacity="0.85" stroke="#070314" stroke-width="1"/>
 <text x="662.3636363636364" y="353.21555555555557" fill="#140818" font-size="11" font-weight="700" text-anchor="middle" font-family="ui-sans-serif,sans-serif">BUILDER</text>
+<rect x="382.5454545454545" y="1324.6222222222223" width="34.90909090909099" height="75.4666666666667" fill="none" stroke="#7ee7ff" stroke-width="1.4"/>
+<text x="400" y="1362.3555555555556" fill="#7ee7ff" font-size="9" text-anchor="middle" font-family="ui-sans-serif,sans-serif">HALF-PIPE</text>
+<circle cx="408.1818181818182" cy="620.2666666666667" r="7" fill="none" stroke="#ffb020" stroke-width="1.6"/>
+<text x="408.1818181818182" y="610.2666666666667" fill="#ffb020" font-size="9" text-anchor="middle" font-family="ui-sans-serif,sans-serif">LOOP</text>
+<polygon points="611.1,1700.7 619.8,1700.7 615.5,1663.0" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="599.1,1600.1 605.6,1600.1 602.4,1615.2" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="628.5,1654.8 632.9,1654.8 630.7,1648.5" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="628.5,1635.9 632.9,1635.9 630.7,1629.6" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="594.2,1647.2 594.2,1641.0 596.9,1644.1" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="636.7,1662.3 636.7,1656.0 634.0,1659.2" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="611.1,1225.3 619.8,1225.3 615.5,1263.0" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="599.1,1325.9 605.6,1325.9 602.4,1310.8" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="628.5,1271.2 632.9,1271.2 630.7,1277.5" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="628.5,1290.0 632.9,1290.0 630.7,1296.3" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="594.2,1269.9 594.2,1263.6 596.9,1266.8" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="636.7,1285.0 636.7,1278.7 634.0,1281.9" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="556.5,1191.3 565.3,1191.3 560.9,1153.6" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="544.5,1090.7 551.1,1090.7 547.8,1105.8" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="574.0,1145.4 578.4,1145.4 576.2,1139.1" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="574.0,1126.5 578.4,1126.5 576.2,1120.2" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="539.6,1137.8 539.6,1131.6 542.4,1134.7" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="582.2,1152.9 582.2,1146.6 579.5,1149.8" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="171.5,1476.8 180.2,1476.8 175.8,1514.5" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="162.7,1577.4 169.3,1577.4 166.0,1562.3" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="185.6,1522.7 190.0,1522.7 187.8,1529.0" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="185.6,1541.6 190.0,1541.6 187.8,1547.9" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="157.8,1521.5 157.8,1515.2 160.5,1518.3" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="193.8,1536.6 193.8,1530.3 191.1,1533.4" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="338.4,694.5 347.1,694.5 342.7,656.7" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="326.4,593.9 332.9,593.9 329.6,608.9" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="355.8,648.6 360.2,648.6 358.0,642.3" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="355.8,629.7 360.2,629.7 358.0,623.4" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="321.5,641.0 321.5,634.7 324.2,637.9" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="364.0,656.1 364.0,649.8 361.3,653.0" fill="#ffb020" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="737.6,1271.8 742.0,1271.8 739.8,1265.5" fill="#ff8a3d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="474.7,1047.9 483.5,1047.9 479.1,1010.2" fill="#7ee7ff" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="584.4,1318.3 592.0,1318.3 588.2,1293.2" fill="#ff8a3d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="199.8,519.6 212.9,519.6 206.4,481.9" fill="#ff8a3d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="514.0,1439.1 520.5,1439.1 517.3,1424.0" fill="#7ee7ff" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="515.1,1264.9 519.5,1264.9 517.3,1258.6" fill="#7ee7ff" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="512.9,1142.2 521.6,1142.2 517.3,1104.5" fill="#7ee7ff" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="514.0,889.4 520.5,889.4 517.3,904.5" fill="#7ee7ff" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="515.1,742.9 519.5,742.9 517.3,736.6" fill="#7ee7ff" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="517.8,648.6 522.2,648.6 520.0,654.9" fill="#7ee7ff" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="426.7,1206.4 433.3,1206.4 430.0,1191.3" fill="#7ee7ff" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="387.5,1104.5 396.2,1104.5 391.8,1066.8" fill="#7ee7ff" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="427.8,963.0 432.2,963.0 430.0,956.7" fill="#7ee7ff" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="388.5,826.5 395.1,826.5 391.8,841.6" fill="#7ee7ff" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="427.8,742.9 432.2,742.9 430.0,736.6" fill="#7ee7ff" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="381.5,516.5 385.8,516.5 383.6,522.8" fill="#7ee7ff" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="427.8,1485.0 432.2,1485.0 430.0,1491.3" fill="#7ee7ff" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="512.9,449.2 521.6,449.2 517.3,411.5" fill="#f4feff" fill-opacity="0.95" stroke="#3ee6ff" stroke-width="1.3"/>
+<polygon points="394.0,426.6 400.5,426.6 397.3,411.5" fill="#f4feff" fill-opacity="0.95" stroke="#3ee6ff" stroke-width="1.3"/>
+<polygon points="426.9,419.1 433.1,419.1 430.0,410.1" fill="#f4feff" fill-opacity="0.95" stroke="#3ee6ff" stroke-width="1.3"/>
+<polygon points="503.1,348.6 509.6,348.6 506.4,363.7" fill="#f4feff" fill-opacity="0.95" stroke="#3ee6ff" stroke-width="1.3"/>
+<polygon points="382.0,325.9 390.7,325.9 386.4,363.7" fill="#f4feff" fill-opacity="0.95" stroke="#3ee6ff" stroke-width="1.3"/>
+<polygon points="481.4,356.0 487.7,356.0 484.5,365.0" fill="#f4feff" fill-opacity="0.95" stroke="#3ee6ff" stroke-width="1.3"/>
+<polygon points="584.9,426.6 591.5,426.6 588.2,411.5" fill="#f4feff" fill-opacity="0.95" stroke="#3ee6ff" stroke-width="1.3"/>
+<polygon points="312.3,419.1 318.6,419.1 315.5,410.1" fill="#f4feff" fill-opacity="0.95" stroke="#3ee6ff" stroke-width="1.3"/>
+<polygon points="612.2,348.6 618.7,348.6 615.5,363.7" fill="#f4feff" fill-opacity="0.95" stroke="#3ee6ff" stroke-width="1.3"/>
+<polygon points="312.2,348.6 318.7,348.6 315.5,363.7" fill="#f4feff" fill-opacity="0.95" stroke="#3ee6ff" stroke-width="1.3"/>
+<polygon points="610.0,1733.4 620.9,1733.4 615.5,1752.3" fill="#cbb6e6" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="282.7,1733.4 293.6,1733.4 288.2,1752.3" fill="#cbb6e6" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="770.9,1205.1 770.9,1192.6 787.3,1198.8" fill="#cbb6e6" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="770.9,588.8 770.9,576.2 787.3,582.5" fill="#cbb6e6" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="132.7,928.4 132.7,915.8 116.4,922.1" fill="#cbb6e6" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="610.0,183.2 620.9,183.2 615.5,164.3" fill="#cbb6e6" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="304.5,183.2 315.5,183.2 310.0,164.3" fill="#cbb6e6" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="132.7,588.8 132.7,576.2 116.4,582.5" fill="#cbb6e6" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="664.8,1343.5 664.8,1330.9 675.2,1337.2" fill="#cbb6e6" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="293.4,966.2 293.4,953.6 283.0,959.9" fill="#cbb6e6" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="637.3,651.4 648.2,651.4 642.7,639.4" fill="#cbb6e6" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="310.0,1331.2 320.9,1331.2 315.5,1343.2" fill="#cbb6e6" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="691.8,1657.6 702.7,1657.6 697.3,1645.7" fill="#cbb6e6" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="589.3,1153.2 591.4,1153.2 590.4,1147.2" fill="#ffe14d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="587.4,1149.1 593.4,1149.1 590.4,1144.2" fill="#ffe14d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="257.6,766.5 259.8,766.5 258.7,772.5" fill="#ffe14d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="255.7,770.6 261.7,770.6 258.7,775.6" fill="#ffe14d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="366.7,1027.4 368.9,1027.4 367.8,1021.4" fill="#ffe14d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="364.8,1023.4 370.8,1023.4 367.8,1018.4" fill="#ffe14d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="316.6,1530.5 318.7,1530.5 317.6,1524.5" fill="#ffe14d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="314.6,1526.5 320.6,1526.5 317.6,1521.5" fill="#ffe14d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="534.7,524.3 536.9,524.3 535.8,518.3" fill="#ffe14d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="532.8,520.3 538.8,520.3 535.8,515.3" fill="#ffe14d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="152.9,1269.6 155.1,1269.6 154.0,1275.6" fill="#ffe14d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
+<polygon points="151.0,1273.7 157.0,1273.7 154.0,1278.7" fill="#ffe14d" fill-opacity="0.95" stroke="#140818" stroke-width="0.4"/>
 <circle cx="451.8181818181818" cy="1525.8666666666666" r="7" fill="#fff" stroke="#3ee6ff" stroke-width="2"/>
 <text x="463.8181818181818" y="1529.8666666666666" fill="#fff" font-size="12" font-family="ui-sans-serif,sans-serif">SPAWN</text>
 <circle cx="550" cy="1198.8444444444444" r="5" fill="none" stroke="#ffe14d" stroke-width="2"/>
@@ -165,12 +251,20 @@
 <text x="1202" y="361" fill="#e9fbff" font-size="13" font-family="ui-sans-serif,sans-serif">Soccer shop</text>
 <rect x="1180" y="370" width="16" height="12" fill="#b6ff9a"/>
 <text x="1202" y="381" fill="#e9fbff" font-size="13" font-family="ui-sans-serif,sans-serif">Builder HQ</text>
-<text x="1180" y="398" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Cyan strip = runway flying lane</text>
-<text x="1180" y="414" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Amber = highway, 30 m</text>
-<text x="1180" y="430" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Green hill = tunnel, unchanged</text>
-<text x="1180" y="446" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Green bars = clear tunnel mouths</text>
-<text x="1180" y="462" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Pink oval = race track</text>
-<text x="1180" y="478" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Pink dome = soccer field</text>
-<text x="1180" y="494" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Green dash = builder sandbox</text>
-<text x="1180" y="510" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">★ = tall roof (62 m or 239 m)</text>
+<text x="1180" y="398" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Arrows are ramps. Tip = launch.</text>
+<text x="1180" y="414" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">White = river edge, same angles</text>
+<text x="1180" y="430" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Cyan arrows = airport ramps</text>
+<text x="1180" y="446" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Amber arrows = plaza jumps</text>
+<text x="1180" y="462" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Orange = street, highway, garage</text>
+<text x="1180" y="478" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Yellow = tow-truck jumps</text>
+<text x="1180" y="494" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Lilac = banks and road humps</text>
+<text x="1180" y="510" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">No new ramps. Count matches.</text>
+<text x="1180" y="526" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Cyan strip = runway flying lane</text>
+<text x="1180" y="542" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Amber road = highway, 30 m</text>
+<text x="1180" y="558" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Green hill = tunnel, unchanged</text>
+<text x="1180" y="574" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Green bars = clear tunnel mouths</text>
+<text x="1180" y="590" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Pink oval = race track</text>
+<text x="1180" y="606" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Pink dome = soccer field</text>
+<text x="1180" y="622" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">Green dash = builder sandbox</text>
+<text x="1180" y="638" fill="#b9a8d4" font-size="12" font-family="ui-sans-serif,sans-serif">★ = tall roof (62 m or 239 m)</text>
 </svg>
