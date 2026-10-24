@@ -1,0 +1,34 @@
+{
+  "v": 1,
+  "id": "proof-shell",
+  "units": "m",
+  "name": "Stand-in shell",
+  "note": "Written for the proof. Not exported from venue.js. Venue names are absent because that file was not readable.",
+  "floors": [
+    { "id": "g", "y": 0, "h": 3.2 },
+    { "id": "1", "y": 3.2, "h": 2.8 }
+  ],
+  "slabs": [
+    { "x": 6, "y": 0.06, "z": 4, "sx": 12.4, "sy": 0.12, "sz": 8.4, "color": "#e7d3b4" },
+    { "x": 5, "y": 3.2, "z": 3, "sx": 10, "sy": 0.12, "sz": 6, "color": "#f3eee6" }
+  ],
+  "walls": [
+    { "floor": "g", "a": [0, 0], "b": [10, 0], "y": 0, "h": 3.2, "t": 0.22, "color": "#f7f4ee", "openings": [{ "kind": "door", "at": 2.4, "w": 1.4, "h": 2.3 }] },
+    { "floor": "g", "a": [10, 0], "b": [10, 6], "y": 0, "h": 3.2, "t": 0.22, "color": "#f7f4ee", "openings": [{ "kind": "window", "at": 3, "w": 1.8, "h": 1.2, "sill": 1.0 }] },
+    { "floor": "g", "a": [10, 6], "b": [0, 6], "y": 0, "h": 3.2, "t": 0.22, "color": "#f4f7fb", "openings": [{ "kind": "window", "at": 5, "w": 2.4, "h": 1.4, "sill": 0.9 }] },
+    { "floor": "g", "a": [0, 6], "b": [0, 0], "y": 0, "h": 3.2, "t": 0.22, "color": "#f7f4ee" },
+    { "floor": "1", "a": [0, 0], "b": [10, 0], "y": 3.2, "h": 2.6, "t": 0.2, "color": "#f7f4ee", "openings": [{ "kind": "window", "at": 5, "w": 2.2, "h": 1.1, "sill": 0.8 }] },
+    { "floor": "1", "a": [10, 0], "b": [10, 6], "y": 3.2, "h": 2.6, "t": 0.2, "color": "#f7f4ee" },
+    { "floor": "1", "a": [10, 6], "b": [0, 6], "y": 3.2, "h": 2.6, "t": 0.2, "color": "#f4f7fb", "openings": [{ "kind": "window", "at": 5, "w": 2.6, "h": 1.2, "sill": 0.75 }] },
+    { "floor": "1", "a": [0, 6], "b": [0, 0], "y": 3.2, "h": 2.6, "t": 0.2, "color": "#f7f4ee" }
+  ],
+  "roofs": [
+    { "kind": "flat", "y": 5.8, "poly": [[0, 0], [10, 0], [10, 6], [0, 6]], "overhang": 0.55, "t": 0.16, "color": "#efe6d8" },
+    { "kind": "pitched", "y": 0, "ridge": [[12.2, 1.2], [12.2, 5.2]], "span": 4.2, "pitch": 34, "overhang": 0.35, "color": "#e4c99a" },
+    { "kind": "dome", "c": [14.6, 7.4], "r": 1.8, "y": 2.4, "color": "#f7f4ee" },
+    { "kind": "canopy", "a": [1.2, -0.15], "b": [4.6, -0.15], "y": 2.7, "depth": 1.6, "color": "#f7f4ee" }
+  ],
+  "trim": [
+    { "floor": "g", "y": 3.12, "h": 0.08, "color": "#3ee6ff" }
+  ]
+}

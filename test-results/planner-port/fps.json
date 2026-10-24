@@ -1,0 +1,623 @@
+{
+  "note": "Headless Chrome --disable-gpu. Draw cost is one instanced draw, taken as the mean of five trials of 40 draws plus gl.finish, divided by 40. CPU throttle matches the city-builder clip: phone 4, iPad 2, PC 1. These are lab costs, not a Galaxy frame and not an iPad frame. A cost under 9.1 ms is inside the Galaxy 110 fps budget. A cost under 16.7 ms is inside a 60 fps iPad budget.",
+  "chrome": "Chrome/156.0.8078.47",
+  "rows": [
+    {
+      "viewport": "phone",
+      "css": "844x390",
+      "dpr": 3,
+      "throttle": 4,
+      "scene": "house",
+      "ready": true,
+      "error": "",
+      "instances": 35,
+      "draws": 1,
+      "tris": 420,
+      "samples": [
+        0,
+        0.0025000000023283064,
+        0,
+        0,
+        0.020000000001164153
+      ],
+      "meanMs": 0.004500000000698492,
+      "rafHeavy": [
+        316.6,
+        333.30000000000007,
+        350,
+        333.29999999999995,
+        333.3000000000002
+      ],
+      "fps": 222222,
+      "buffer": [
+        1688,
+        780
+      ],
+      "videoPaused": false
+    },
+    {
+      "viewport": "phone",
+      "css": "844x390",
+      "dpr": 3,
+      "throttle": 4,
+      "scene": "shell",
+      "ready": true,
+      "error": "",
+      "instances": 45,
+      "draws": 1,
+      "tris": 540,
+      "samples": [
+        0,
+        0,
+        0,
+        0.004999999998835847,
+        0
+      ],
+      "meanMs": 0.0009999999997671693,
+      "rafHeavy": [
+        100,
+        116.59999999999991,
+        116.70000000000005,
+        100,
+        116.59999999999991
+      ],
+      "fps": 1000000,
+      "buffer": [
+        1688,
+        780
+      ],
+      "videoPaused": true
+    },
+    {
+      "viewport": "phone",
+      "css": "844x390",
+      "dpr": 3,
+      "throttle": 4,
+      "scene": "remix-row",
+      "ready": true,
+      "error": "",
+      "instances": 57,
+      "draws": 1,
+      "tris": 684,
+      "samples": [
+        0.0025000000023283064,
+        0.0024999999965075403,
+        0,
+        0,
+        0
+      ],
+      "meanMs": 0.0009999999997671693,
+      "rafHeavy": [
+        33.30000000000007,
+        66.69999999999993,
+        33.39999999999998,
+        50,
+        66.60000000000002
+      ],
+      "fps": 1000000,
+      "buffer": [
+        1688,
+        780
+      ],
+      "videoPaused": true
+    },
+    {
+      "viewport": "phone",
+      "css": "844x390",
+      "dpr": 3,
+      "throttle": 4,
+      "scene": "trailer",
+      "ready": true,
+      "error": "",
+      "instances": 17,
+      "draws": 1,
+      "tris": 204,
+      "samples": [
+        0.020000000001164153,
+        0,
+        0,
+        0,
+        0.01000000000349246
+      ],
+      "meanMs": 0.006000000000931323,
+      "rafHeavy": [
+        266.6,
+        266.70000000000005,
+        250,
+        266.5999999999999,
+        250
+      ],
+      "fps": 166667,
+      "buffer": [
+        1688,
+        780
+      ],
+      "videoPaused": false
+    },
+    {
+      "viewport": "phone",
+      "css": "844x390",
+      "dpr": 3,
+      "throttle": 4,
+      "scene": "budget",
+      "ready": true,
+      "error": "",
+      "instances": 136,
+      "draws": 1,
+      "tris": 1632,
+      "samples": [
+        0,
+        0,
+        0.0025000000023283064,
+        0.0024999999965075403,
+        0
+      ],
+      "meanMs": 0.0009999999997671693,
+      "rafHeavy": [
+        100,
+        116.69999999999993,
+        133.30000000000007,
+        116.60000000000002,
+        100
+      ],
+      "fps": 1000000,
+      "buffer": [
+        1688,
+        780
+      ],
+      "videoPaused": false
+    },
+    {
+      "viewport": "ipad",
+      "css": "1024x768",
+      "dpr": 2,
+      "throttle": 2,
+      "scene": "house",
+      "ready": true,
+      "error": "",
+      "instances": 35,
+      "draws": 1,
+      "tris": 420,
+      "samples": [
+        0,
+        0.0075000000011641536,
+        0,
+        0,
+        0
+      ],
+      "meanMs": 0.0015000000002328307,
+      "rafHeavy": [
+        650,
+        666.5999999999999,
+        666.5999999999999,
+        683.4000000000001,
+        649.8999999999996
+      ],
+      "fps": 666667,
+      "buffer": [
+        2048,
+        1536
+      ],
+      "videoPaused": false
+    },
+    {
+      "viewport": "ipad",
+      "css": "1024x768",
+      "dpr": 2,
+      "throttle": 2,
+      "scene": "shell",
+      "ready": true,
+      "error": "",
+      "instances": 45,
+      "draws": 1,
+      "tris": 540,
+      "samples": [
+        0.004999999998835847,
+        0,
+        0.004999999998835847,
+        0,
+        0
+      ],
+      "meanMs": 0.0019999999995343387,
+      "rafHeavy": [
+        283.4,
+        283.20000000000005,
+        283.39999999999986,
+        283.3000000000002,
+        283.4000000000001
+      ],
+      "fps": 500000,
+      "buffer": [
+        2048,
+        1536
+      ],
+      "videoPaused": true
+    },
+    {
+      "viewport": "ipad",
+      "css": "1024x768",
+      "dpr": 2,
+      "throttle": 2,
+      "scene": "remix-row",
+      "ready": true,
+      "error": "",
+      "instances": 57,
+      "draws": 1,
+      "tris": 684,
+      "samples": [
+        0.0075000000011641536,
+        0.0024999999965075403,
+        0,
+        0,
+        0
+      ],
+      "meanMs": 0.0019999999995343387,
+      "rafHeavy": [
+        66.59999999999991,
+        83.30000000000007,
+        83.39999999999998,
+        83.29999999999995,
+        66.60000000000002
+      ],
+      "fps": 500000,
+      "buffer": [
+        2048,
+        1536
+      ],
+      "videoPaused": true
+    },
+    {
+      "viewport": "ipad",
+      "css": "1024x768",
+      "dpr": 2,
+      "throttle": 2,
+      "scene": "trailer",
+      "ready": true,
+      "error": "",
+      "instances": 17,
+      "draws": 1,
+      "tris": 204,
+      "samples": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "meanMs": 0,
+      "rafHeavy": [
+        550,
+        566.5999999999999,
+        566.5999999999999,
+        566.7000000000003,
+        583.2999999999997
+      ],
+      "fps": null,
+      "buffer": [
+        2048,
+        1536
+      ],
+      "videoPaused": false
+    },
+    {
+      "viewport": "ipad",
+      "css": "1024x768",
+      "dpr": 2,
+      "throttle": 2,
+      "scene": "budget",
+      "ready": true,
+      "error": "",
+      "instances": 136,
+      "draws": 1,
+      "tris": 1632,
+      "samples": [
+        0,
+        0.0024999999965075403,
+        0,
+        0.004999999998835847,
+        0
+      ],
+      "meanMs": 0.0014999999990686775,
+      "rafHeavy": [
+        150,
+        150,
+        166.70000000000005,
+        166.5999999999999,
+        150.0999999999999
+      ],
+      "fps": 666667,
+      "buffer": [
+        2048,
+        1536
+      ],
+      "videoPaused": false
+    },
+    {
+      "viewport": "pc",
+      "css": "1366x768",
+      "dpr": 1,
+      "throttle": 1,
+      "scene": "house",
+      "ready": true,
+      "error": "",
+      "instances": 35,
+      "draws": 1,
+      "tris": 420,
+      "samples": [
+        0,
+        0,
+        0,
+        0.0075000000011641536,
+        0
+      ],
+      "meanMs": 0.0015000000002328307,
+      "rafHeavy": [
+        233.29999999999995,
+        216.70000000000005,
+        200,
+        216.5999999999999,
+        216.70000000000005
+      ],
+      "fps": 666667,
+      "buffer": [
+        1366,
+        768
+      ],
+      "videoPaused": false
+    },
+    {
+      "viewport": "pc",
+      "css": "1366x768",
+      "dpr": 1,
+      "throttle": 1,
+      "scene": "shell",
+      "ready": true,
+      "error": "",
+      "instances": 45,
+      "draws": 1,
+      "tris": 540,
+      "samples": [
+        0.0025000000023283064,
+        0,
+        0,
+        0.0025000000023283064,
+        0.0024999999965075403
+      ],
+      "meanMs": 0.0015000000002328307,
+      "rafHeavy": [
+        83.29999999999995,
+        66.70000000000005,
+        83.29999999999995,
+        83.39999999999998,
+        83.30000000000007
+      ],
+      "fps": 666667,
+      "buffer": [
+        1366,
+        768
+      ],
+      "videoPaused": true
+    },
+    {
+      "viewport": "pc",
+      "css": "1366x768",
+      "dpr": 1,
+      "throttle": 1,
+      "scene": "remix-row",
+      "ready": true,
+      "error": "",
+      "instances": 57,
+      "draws": 1,
+      "tris": 684,
+      "samples": [
+        0,
+        0,
+        0,
+        0,
+        0.0025000000023283064
+      ],
+      "meanMs": 0.0005000000004656613,
+      "rafHeavy": [
+        33.39999999999998,
+        33.19999999999993,
+        33.5,
+        33.200000000000045,
+        50
+      ],
+      "fps": 2000000,
+      "buffer": [
+        1366,
+        768
+      ],
+      "videoPaused": true
+    },
+    {
+      "viewport": "pc",
+      "css": "1366x768",
+      "dpr": 1,
+      "throttle": 1,
+      "scene": "trailer",
+      "ready": true,
+      "error": "",
+      "instances": 17,
+      "draws": 1,
+      "tris": 204,
+      "samples": [
+        0.0024999999965075403,
+        0.0024999999965075403,
+        0,
+        0,
+        0
+      ],
+      "meanMs": 0.0009999999986030161,
+      "rafHeavy": [
+        166.70000000000005,
+        183.29999999999995,
+        183.30000000000007,
+        183.39999999999986,
+        183.30000000000018
+      ],
+      "fps": 1000000,
+      "buffer": [
+        1366,
+        768
+      ],
+      "videoPaused": false
+    },
+    {
+      "viewport": "pc",
+      "css": "1366x768",
+      "dpr": 1,
+      "throttle": 1,
+      "scene": "budget",
+      "ready": true,
+      "error": "",
+      "instances": 136,
+      "draws": 1,
+      "tris": 1632,
+      "samples": [
+        0,
+        0.0025000000023283064,
+        0,
+        0,
+        0
+      ],
+      "meanMs": 0.0005000000004656613,
+      "rafHeavy": [
+        83.39999999999998,
+        83.30000000000007,
+        83.29999999999995,
+        83.29999999999995,
+        83.30000000000007
+      ],
+      "fps": 2000000,
+      "buffer": [
+        1366,
+        768
+      ],
+      "videoPaused": false
+    }
+  ],
+  "shots": [
+    {
+      "file": "test-results/planner-port/phone-house.png",
+      "scene": "house",
+      "remix": "",
+      "viewport": "phone",
+      "instances": 35,
+      "meanMs": 0.003500000000931323
+    },
+    {
+      "file": "test-results/planner-port/phone-shell.png",
+      "scene": "shell",
+      "remix": "",
+      "viewport": "phone",
+      "instances": 45,
+      "meanMs": 0.0015000000002328307
+    },
+    {
+      "file": "test-results/planner-port/phone-props.png",
+      "scene": "props",
+      "remix": "",
+      "viewport": "phone",
+      "instances": 24,
+      "meanMs": 0.003999999999068677
+    },
+    {
+      "file": "test-results/planner-port/ipad-house.png",
+      "scene": "house",
+      "remix": "",
+      "viewport": "ipad",
+      "instances": 35,
+      "meanMs": 0.0004999999993015081
+    },
+    {
+      "file": "test-results/planner-port/ipad-shell.png",
+      "scene": "shell",
+      "remix": "",
+      "viewport": "ipad",
+      "instances": 45,
+      "meanMs": 0.0014999999990686775
+    },
+    {
+      "file": "test-results/planner-port/ipad-props.png",
+      "scene": "props",
+      "remix": "",
+      "viewport": "ipad",
+      "instances": 24,
+      "meanMs": 0.0010000000009313225
+    },
+    {
+      "file": "test-results/planner-port/ipad-remix-food-truck.png",
+      "scene": "remix",
+      "remix": "food-truck",
+      "viewport": "ipad",
+      "instances": 14,
+      "meanMs": 0
+    },
+    {
+      "file": "test-results/planner-port/ipad-remix-welcome-gate.png",
+      "scene": "remix",
+      "remix": "welcome-gate",
+      "viewport": "ipad",
+      "instances": 18,
+      "meanMs": 0.0029999999993015085
+    },
+    {
+      "file": "test-results/planner-port/ipad-remix-ticket-booth.png",
+      "scene": "remix",
+      "remix": "ticket-booth",
+      "viewport": "ipad",
+      "instances": 7,
+      "meanMs": 0
+    },
+    {
+      "file": "test-results/planner-port/ipad-remix-speaker-tower.png",
+      "scene": "remix",
+      "remix": "speaker-tower",
+      "viewport": "ipad",
+      "instances": 13,
+      "meanMs": 0.0009999999997671693
+    },
+    {
+      "file": "test-results/planner-port/ipad-remix-snack-counter.png",
+      "scene": "remix",
+      "remix": "snack-counter",
+      "viewport": "ipad",
+      "instances": 9,
+      "meanMs": 0.0015000000002328307
+    },
+    {
+      "file": "test-results/planner-port/ipad-trailer.png",
+      "scene": "trailer",
+      "remix": "",
+      "viewport": "ipad",
+      "instances": 17,
+      "meanMs": 0.0005000000004656613
+    },
+    {
+      "file": "test-results/planner-port/pc-house.png",
+      "scene": "house",
+      "remix": "",
+      "viewport": "pc",
+      "instances": 35,
+      "meanMs": 0
+    },
+    {
+      "file": "test-results/planner-port/pc-shell.png",
+      "scene": "shell",
+      "remix": "",
+      "viewport": "pc",
+      "instances": 45,
+      "meanMs": 0.017500000002328306
+    },
+    {
+      "file": "test-results/planner-port/pc-trailer.png",
+      "scene": "trailer",
+      "remix": "",
+      "viewport": "pc",
+      "instances": 17,
+      "meanMs": 0
+    }
+  ]
+}
