@@ -39,7 +39,18 @@ Shape options, each drawn in Arcade and in Street. The flat wall in front is the
 | Shoulder | A taller mass sits behind the right edge. The front wall is still the full rectangle. |
 | Crown | A set-back roof rises behind the top of the same wall. |
 
-Files: `test-results/gl-city/looks/dance-options-{arcade|street}-{phone|ipad|pc}.png` and `dance-options-sheet.png`. The city looks use one option each so the shape is not tied to the art source: (a) box, (b) shoulder, (c) crown.
+Files for the side-by-side options: `test-results/gl-city/looks/dance-options-{arcade|street}-{phone|ipad|pc}.png` and `dance-options-sheet.png`. The city looks use one option each so the shape is not tied to the art source: (a) box, (b) shoulder, (c) crown.
+
+Architecture Check (`bc-c7ace59c`) reviews building changes before they are reported to Bob. Its standard shots are the ones below, at phone 844×390, iPad 1024×768, and PC 1280×720. Street front and the three-quarter view use the Street surface. The roof / flying view uses Arcade. The on-foot close-up uses the on-foot surface. The wall, the door, and the mural quad are the same in all four.
+
+| Shot | File view name | Surface |
+|---|---|---|
+| Street front | `front` | Street |
+| Three-quarter | `threeq` | Street |
+| Roof / flying | `roof` | Arcade |
+| On-foot close-up | `foot` | On foot |
+
+Each dance shape has those twelve frames: `test-results/arch-check/shots/b-DANCE-{box|shoulder|crown}-{front|threeq|roof|foot}-{phone|ipad|pc}.png`. The same files are under `test-results/gl-city/looks/dance-{shape}-{view}-{size}.png`. The iPad contact sheet is `dance-review-sheet.png`. A 1.7 m person, a 0.74 m pet, and a 4.25 × 1.85 × 1.32 m car sit in the shot for scale. The person door is 1.2 × 2.3 m at street level, in the left margin, clear of the mural. The checker's own tool is not on a branch yet, so these frames are the evidence that review will use. This proposal does not mark that review passed.
 
 ### `?perf=1` readout (specified, not built)
 

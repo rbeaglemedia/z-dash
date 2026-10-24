@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Proposal mockups for the building-look hold. Not the game. No model files."""
+import math
 import os
 from PIL import Image, ImageDraw
 
@@ -403,6 +404,203 @@ def options_scene(tier, w, h):
     return img
 
 
+# Architecture Check standard shots (bc-c7ace59c). Four views, three viewports.
+# Street front and three-quarter use the Street surface. Roof/flying uses Arcade.
+# On-foot close-up uses the on-foot surface. The mural wall is the same in all of them.
+REVIEW_VIEWS = [
+    ('phone', 844, 390),
+    ('ipad', 1024, 768),
+    ('pc', 1280, 720),
+]
+REVIEW_SHOTS = (
+    ('front', 'street', 'STREET FRONT'),
+    ('threeq', 'street', 'THREE-QUARTER'),
+    ('roof', 'arcade', 'ROOF / FLYING'),
+    ('foot', 'onfoot', 'ON-FOOT CLOSE-UP'),
+)
+# Arts & Garage stand-in: east mural wall 64 m wide by 18 m tall. +z faces the street.
+WALL_X0, WALL_X1, WALL_H, WALL_Z, WALL_D = -32.0, 32.0, 18.0, 0.0, 16.0
+
+
+def look_proj(w, h, eye, target, fov=52):
+    ex, ey, ez = eye
+    fx, fy, fz = target[0] - ex, target[1] - ey, target[2] - ez
+    fl = math.hypot(fx, fy, fz) or 1.0
+    fx, fy, fz = fx / fl, fy / fl, fz / fl
+    rx, ry, rz = -fz, 0.0, fx
+    rl = math.hypot(rx, ry, rz) or 1.0
+    rx, ry, rz = rx / rl, ry / rl, rz / rl
+    ux = ry * fz - rz * fy
+    uy = rz * fx - rx * fz
+    uz = rx * fy - ry * fx
+    focal = (h * 0.5) / math.tan(math.radians(fov) * 0.5)
+
+    def proj(x, y, z):
+        dx, dy, dz = x - ex, y - ey, z - ez
+        depth = dx * fx + dy * fy + dz * fz
+        if depth < 0.35:
+            depth = 0.35
+        sx = dx * rx + dy * ry + dz * rz
+        sy = dx * ux + dy * uy + dz * uz
+        return (w * 0.5 + sx * focal / depth, h * 0.5 - sy * focal / depth)
+
+    return proj
+
+
+def shot_cameras(w, h):
+    focal = (h * 0.5) / math.tan(math.radians(52) * 0.5)
+    depth = 32.0 * focal / (0.36 * w)
+    depth = max(28.0, min(64.0, depth))
+    return {
+        'front': ((0.0, 2.2, depth), (0.0, 8.0, 0.0)),
+        'threeq': ((depth * 0.75, max(3.0, WALL_H * 0.15), depth * 0.62), (0.0, 8.0, -4.0)),
+        'roof': ((14.0, WALL_H + max(12.0, WALL_H * 0.35), 24.0), (0.0, 16.0, -8.0)),
+        'foot': ((-30.2, 1.65, 6.2), (-30.6, 2.6, 0.15)),
+    }
+
+
+def cull_face(dr, proj, pts, fill, outline=None, width=2):
+    poly = [proj(*p) for p in pts]
+    area = 0.0
+    for i in range(len(poly)):
+        x0, y0 = poly[i]
+        x1, y1 = poly[(i + 1) % len(poly)]
+        area += (x1 - x0) * (y1 + y0)
+    if area > 0:
+        return None
+    dr.polygon(poly, fill=fill)
+    if outline:
+        dr.line(poly + [poly[0]], fill=outline, width=width)
+    return poly
+
+
+def window_grid(dr, proj, x0, x1, y0, y1, z, tier):
+    step = 4.2 if tier == 'arcade' else 2.4
+    y = y0
+    row = 0
+    while y < y1 - 1.2:
+        if tier == 'arcade' and row % 2:
+            y += step * 0.7
+            row += 1
+            continue
+        x = x0
+        col = 0
+        while x < x1 - 1.2:
+            if (row + col) % 5 == 0:
+                x += step
+                col += 1
+                continue
+            color = CYAN if (row + col) % 3 else MAG
+            cull_face(dr, proj, [
+                (x, y, z), (x + 1.1, y, z), (x + 1.1, y + 1.4, z), (x, y + 1.4, z)
+            ], color)
+            x += step
+            col += 1
+        y += step * 0.75
+        row += 1
+
+
+def paint_mural(dr, quad):
+    dr.polygon(quad, fill=(22, 11, 40))
+
+    def mpt(u, v):
+        return bilerp(quad, u, v)
+
+    def mline(pts, fill, width):
+        dr.line([mpt(u, v) for u, v in pts], fill=fill, width=width)
+
+    mline([(0.12, 0.78), (0.40, 0.78), (0.12, 0.28), (0.40, 0.28)], CYAN, 3)
+    mline([(0.52, 0.62), (0.52, 0.40)], MAG, 3)
+    mline([(0.40, 0.56), (0.52, 0.62), (0.66, 0.52)], MAG, 3)
+    mline([(0.52, 0.40), (0.42, 0.22)], CYAN, 3)
+    mline([(0.52, 0.40), (0.64, 0.22)], AMBER, 3)
+    head = mpt(0.52, 0.74)
+    span = abs(quad[1][0] - quad[0][0])
+    rad = max(2, int(span * 0.03))
+    dr.ellipse([head[0] - rad, head[1] - rad, head[0] + rad, head[1] + rad], outline=MAG, width=2)
+    band = [mpt(0.02, 0.86), mpt(0.98, 0.86), mpt(0.98, 0.98), mpt(0.02, 0.98)]
+    dr.polygon(band, fill=(6, 2, 16))
+    dr.line(band + [band[0]], fill=CYAN, width=2)
+    label = mpt(0.50, 0.92)
+    word = 'Z COMPANY ARTS' if span > 160 else 'Z ARTS'
+    dr.text((label[0] - (54 if span > 160 else 22), label[1] - 6), word, fill=CYAN)
+    dr.line(quad + [quad[0]], fill=MAG, width=3)
+
+
+def review_frame(shape, view, tier, w, h, title):
+    img = Image.new('RGB', (w, h))
+    sky(img)
+    dr = ImageDraw.Draw(img)
+    eye, target = shot_cameras(w, h)[view]
+    proj = look_proj(w, h, eye, target)
+    for i in range(-9, 10):
+        x = i * 5.0
+        dr.line([proj(x, 0.02, -6), proj(x, 0.02, 42)], fill=(48, 18, 58), width=1)
+    for i in range(0, 9):
+        z = i * 5.0
+        dr.line([proj(-48, 0.02, z), proj(48, 0.02, z)], fill=(48, 18, 58), width=1)
+    # Extra mass is behind the mural wall. Same footprint at every tier.
+    if shape == 'shoulder':
+        cull_face(dr, proj, [(14, 0, -5), (36, 0, -5), (36, 26, -5), (14, 26, -5)], (32, 14, 40), MAG, 2)
+        cull_face(dr, proj, [(36, 0, -5), (36, 0, -22), (36, 26, -22), (36, 26, -5)], (24, 10, 32))
+        cull_face(dr, proj, [(14, 26, -5), (36, 26, -5), (36, 26, -22), (14, 26, -22)], (18, 8, 28))
+        window_grid(dr, proj, 32.4, 35.2, 2.0, 24.0, -4.85, tier)
+    elif shape == 'crown':
+        cull_face(dr, proj, [(-14, 0, -7), (14, 0, -7), (14, 30, -7), (-14, 30, -7)], (32, 14, 40), CYAN, 2)
+        cull_face(dr, proj, [(14, 0, -7), (14, 0, -20), (14, 30, -20), (14, 30, -7)], (24, 10, 32))
+        cull_face(dr, proj, [(-14, 30, -7), (14, 30, -7), (14, 30, -20), (-14, 30, -20)], (18, 8, 28))
+        window_grid(dr, proj, -12.0, 12.0, 19.2, 28.5, -6.85, tier)
+    # Flat mural wall, 64 m by 18 m, same facing in every shot.
+    zf = WALL_Z
+    cull_face(dr, proj, [
+        (WALL_X0, 0, zf), (WALL_X1, 0, zf), (WALL_X1, WALL_H, zf), (WALL_X0, WALL_H, zf)
+    ], (36, 12, 32), MAG, 2 if tier == 'arcade' else 4)
+    cull_face(dr, proj, [
+        (WALL_X1, 0, zf), (WALL_X1, 0, zf - WALL_D), (WALL_X1, WALL_H, zf - WALL_D), (WALL_X1, WALL_H, zf)
+    ], (26, 10, 28))
+    cull_face(dr, proj, [
+        (WALL_X0, 0, zf - WALL_D), (WALL_X0, 0, zf), (WALL_X0, WALL_H, zf), (WALL_X0, WALL_H, zf - WALL_D)
+    ], (26, 10, 28))
+    cull_face(dr, proj, [
+        (WALL_X0, WALL_H, zf), (WALL_X1, WALL_H, zf), (WALL_X1, WALL_H, zf - WALL_D), (WALL_X0, WALL_H, zf - WALL_D)
+    ], (20, 8, 24))
+    roof_z = zf - 0.4
+    cull_face(dr, proj, [
+        (-22, WALL_H + 0.25, roof_z), (22, WALL_H + 0.25, roof_z),
+        (22, WALL_H + 0.25, roof_z - 6), (-22, WALL_H + 0.25, roof_z - 6)
+    ], CYAN)
+    dr.line([proj(18, WALL_H, -6), proj(18, WALL_H + 3.2, -6)], fill=CYAN, width=2)
+    # Person door in the left margin, below the mural. 1.2 m by 2.3 m, y starts at 0.
+    door = [(-31.6, 0, 0.16), (-30.4, 0, 0.16), (-30.4, 2.3, 0.16), (-31.6, 2.3, 0.16)]
+    cull_face(dr, proj, door, (20, 8, 16), CYAN, 2)
+    if tier != 'arcade':
+        cull_face(dr, proj, [
+            (-31.8, 2.45, 0.2), (-30.2, 2.45, 0.2), (-30.0, 2.15, 1.5), (-32.0, 2.15, 1.5)
+        ], MAG)
+    sign_fill = (12, 4, 20) if tier == 'arcade' else MAG
+    cull_face(dr, proj, [
+        (-29.4, 13.5, 0.18), (29.4, 13.5, 0.18), (29.4, 15.6, 0.18), (-29.4, 15.6, 0.18)
+    ], sign_fill, CYAN, 2)
+    # Scale props. Person 1.7 m, pet 0.74 m, car 4.25 x 1.85 x 1.32 m.
+    cull_face(dr, proj, [(-29.3, 0, 3.1), (-28.8, 0, 3.1), (-28.8, 1.7, 3.1), (-29.3, 1.7, 3.1)], (233, 227, 228), CYAN, 1)
+    cull_face(dr, proj, [(-27.6, 0, 3.5), (-26.7, 0, 3.5), (-26.7, 0.74, 3.5), (-27.6, 0.74, 3.5)], GREEN)
+    cull_face(dr, proj, [(4.0, 0, 9.0), (8.25, 0, 9.0), (8.25, 1.32, 9.0), (4.0, 1.32, 9.0)], (16, 16, 24), CYAN, 2)
+    cull_face(dr, proj, [(8.25, 0, 9.0), (8.25, 0, 10.85), (8.25, 1.32, 10.85), (8.25, 1.32, 9.0)], (10, 10, 16))
+    # Mural last, so trim and the entrance cannot cover it. Same quad every shot.
+    y0, y1 = 3.2, 3.2 + 9.9
+    x0, x1 = WALL_X0 + 64.0 * 0.04, WALL_X1 - 64.0 * 0.04
+    mz = 0.22
+    quad = [proj(x0, y0, mz), proj(x1, y0, mz), proj(x1, y1, mz), proj(x0, y1, mz)]
+    paint_mural(dr, quad)
+    tier_name = {'street': 'STREET', 'arcade': 'ARCADE', 'onfoot': 'ON FOOT'}[tier]
+    bar_h = 54 if h < 500 else 62
+    dr.rectangle([0, h - bar_h, w, h], fill=(8, 2, 16))
+    dr.text((12, h - bar_h + 6), 'ARCH SHOT  DANCE %s  %s  %s' % (shape.upper(), title, tier_name), fill=(233, 227, 228))
+    dr.text((12, h - bar_h + 22), 'Mural wall 64 x 18 m, same facing. Person 1.7 m, car 4.25 m.', fill=(62, 230, 255))
+    dr.text((12, h - bar_h + 36), 'Mockup for Architecture Check. Not in the game.', fill=(138, 122, 125))
+    return img
+
+
 def main():
     os.makedirs(ROOT, exist_ok=True)
     os.makedirs(ART, exist_ok=True)
@@ -463,6 +661,45 @@ def main():
     opt.save(opt_path)
     opt.save(os.path.join(ART, 'dance-options-sheet.png'))
     print(opt_path, opt.size)
+    shot_dir = os.path.join(os.path.dirname(__file__), '..', 'test-results', 'arch-check', 'shots')
+    art_shots = '/opt/cursor/artifacts/arch-check/shots'
+    os.makedirs(shot_dir, exist_ok=True)
+    os.makedirs(art_shots, exist_ok=True)
+    ipad_frames = []
+    for shape in ('box', 'shoulder', 'crown'):
+        row = []
+        for view, tier, title in REVIEW_SHOTS:
+            for name, vw, vh in REVIEW_VIEWS:
+                img = review_frame(shape, view, tier, vw, vh, title)
+                leaf = 'b-DANCE-%s-%s-%s.png' % (shape, view, name)
+                img.save(os.path.join(shot_dir, leaf))
+                img.save(os.path.join(art_shots, leaf))
+                img.save(os.path.join(ROOT, 'dance-%s-%s-%s.png' % (shape, view, name)))
+                img.save(os.path.join(ART, 'dance-%s-%s-%s.png' % (shape, view, name)))
+                print(leaf, img.size)
+                if name == 'ipad':
+                    row.append(img)
+        ipad_frames.append(row)
+    cell_h = 170
+    gap = 6
+    thumbs = []
+    for row in ipad_frames:
+        thumbs.append([im.resize((int(im.size[0] * cell_h / im.size[1]), cell_h), Image.BILINEAR) for im in row])
+    sheet_w = sum(th.size[0] for th in thumbs[0]) + gap * (len(thumbs[0]) + 1)
+    sheet_h = cell_h * len(thumbs) + gap * (len(thumbs) + 1)
+    board = Image.new('RGB', (sheet_w, sheet_h), (8, 2, 16))
+    yy = gap
+    for row in thumbs:
+        xx = gap
+        for th in row:
+            board.paste(th, (xx, yy))
+            xx += th.size[0] + gap
+        yy += cell_h + gap
+    board_path = os.path.join(ROOT, 'dance-review-sheet.png')
+    board.save(board_path)
+    board.save(os.path.join(ART, 'dance-review-sheet.png'))
+    board.save(os.path.join(art_shots, 'dance-review-sheet.png'))
+    print(board_path, board.size)
 
 
 if __name__ == '__main__':
