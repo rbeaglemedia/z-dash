@@ -29,7 +29,7 @@ Scenes, pinned from the outside so the game source stays untouched:
 | house | Inside Ellie's spawn HOME with the room item buttons open |
 | closet | Same room. Clicks a closet / wardrobe control when the page has one. Until then it opens the furniture item list (`furniture-drill`) |
 
-Frame ms is the time spent inside the animation callbacks for that frame. The house loop and the city loop both get counted when they share a frame. Median, 1% low (mean of the slowest 1% of frames), and max are recorded, plus DOM nodes and rAF rate.
+Frame ms is the time spent inside the animation callbacks for that frame. The house loop and the city loop both get counted when they share a frame. The reported median is the median of the slower half of those frames: several views paint on one frame and spend the next one almost idle, and a plain median flips between those two costs when a single sample is added. 1% low (mean of the slowest 1% of frames) and max are recorded too, plus DOM nodes and rAF rate.
 
 Flicker is a separate pass. It downscales the game canvases (`#cback`, `#cgl`, `#c`, or the room canvas when the interior is up) and flags a frame where a large region goes blank for one frame or flashes and comes back.
 

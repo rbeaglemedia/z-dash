@@ -130,8 +130,13 @@ function frameStats(samples) {
   const body = s.length > 8 ? s.slice(3) : s.slice();
   if (!body.length) return null;
   const sorted = body.slice().sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  const median = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  // Median of the slower half. Several scenes paint on one frame and spend the
+  // next frame almost idle, so a plain median flips between those two modes
+  // when a single sample is added or dropped. The slower half stays on the
+  // loaded paint. A scene whose frames are all cheap (the house) stays cheap.
+  const loaded = sorted.slice(Math.floor(sorted.length / 2));
+  const mid = Math.floor(loaded.length / 2);
+  const median = loaded.length % 2 ? loaded[mid] : (loaded[mid - 1] + loaded[mid]) / 2;
   const nLow = Math.max(1, Math.ceil(sorted.length * 0.01));
   const worst = sorted.slice(-nLow);
   const low1 = worst.reduce((a, b) => a + b, 0) / worst.length;
@@ -425,7 +430,7 @@ function markdownReport(current, judged, opts) {
   lines.push('**Heap** (' + (h.viewport || current.heap && current.heap.viewport || '?') + ', ' + Math.round((h.durationMs || 0) / 1000) + 's flight): ' + h.result + ' — ' + (h.reason || ''));
   if (h.steady) lines.push('');
   lines.push('');
-  lines.push('Frame ms is the work inside the animation callbacks for that frame (summed when the page schedules more than one). It is not the vsync gap, and it is not a Galaxy or A10 frame rate.');
+  lines.push('Frame ms is the work inside the animation callbacks for that frame (summed when the page schedules more than one). The median is the median of the slower half of those frames, so a cheap frame between paints does not hide the loaded one. It is not the vsync gap, and it is not a Galaxy or A10 frame rate.');
   lines.push('Fail rules: that median worse than 5%, the 1% low (mean of the slowest 1% of frames) worse than 10%, any flicker frame, or a heap that climbs through all three thirds of the flight and does not come back.');
   lines.push('');
   lines.push('Run `' + (current.git && current.git.sha ? current.git.sha.slice(0, 12) : '?') + '` on `' + (current.git && current.git.branch || '?') + '`. Baseline `enforce` is **' + (current.baselineEnforce === true ? 'true' : 'false') + '**' + (current.baselineSha ? ' (baseline sha ' + String(current.baselineSha).slice(0, 12) + ')' : '') + '.');
@@ -451,7 +456,11 @@ function selfTest() {
   for (let i = 0; i < 30; i++) steady.push(16 + (i % 2 ? 0.4 : 0));
   const st = frameStats(steady);
   eq('median near 16', st && Math.abs(st.medianMs - 16.2) < 0.5);
-  eq('low1 above median', st && st.low1Ms >= st.medianMs);
+  eq('low1 above median', st && st.low1Ms >= st.medianMs - 0.01);
+  const split = [];
+  for (let i = 0; i < 40; i++) split.push(i % 2 ? 2 : 70);
+  const sp = frameStats(split);
+  eq('alternating cheap frames do not hide the loaded median', sp && sp.medianMs > 60 && sp.medianMs < 80);
 
   const shots = [];
   const N = 48 * 27;
