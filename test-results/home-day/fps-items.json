@@ -1,0 +1,753 @@
+{
+  "commit": "79e33812c3a8eb70c7e8ebb1f80f85df8cc89fb3",
+  "devices": [
+    {
+      "id": "phone",
+      "note": "headless phone viewport, no CPU throttle",
+      "throttle": 1,
+      "rooms": {
+        "HOME": {
+          "purpose": "HOME",
+          "lum": 742,
+          "sample": [
+            244,
+            247,
+            251
+          ],
+          "w": 844,
+          "h": 390,
+          "room": "HOME",
+          "btn": {
+            "display": "flex",
+            "x": 8,
+            "y": 5,
+            "w": 72,
+            "h": 44
+          },
+          "enter": {
+            "display": "none",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          },
+          "scale": 1,
+          "cap": 8
+        },
+        "CAFE": {
+          "purpose": "CAFE",
+          "lum": 742,
+          "sample": [
+            244,
+            247,
+            251
+          ],
+          "w": 844,
+          "h": 390,
+          "room": "CAFE",
+          "btn": {
+            "display": "flex",
+            "x": 8,
+            "y": 5,
+            "w": 72,
+            "h": 44
+          },
+          "enter": {
+            "display": "flex",
+            "x": 258,
+            "y": 5,
+            "w": 98,
+            "h": 44
+          },
+          "scale": 1,
+          "cap": 8
+        },
+        "PETS": {
+          "purpose": "PETS",
+          "lum": 742,
+          "sample": [
+            244,
+            247,
+            251
+          ],
+          "w": 844,
+          "h": 390,
+          "room": "PETS",
+          "btn": {
+            "display": "flex",
+            "x": 8,
+            "y": 5,
+            "w": 72,
+            "h": 44
+          },
+          "enter": {
+            "display": "flex",
+            "x": 258,
+            "y": 5,
+            "w": 98,
+            "h": 44
+          },
+          "scale": 1,
+          "cap": 8
+        },
+        "SHOWROOM": {
+          "purpose": "SHOWROOM",
+          "lum": 742,
+          "sample": [
+            244,
+            247,
+            251
+          ],
+          "w": 844,
+          "h": 390,
+          "room": "SHOWROOM",
+          "btn": {
+            "display": "flex",
+            "x": 8,
+            "y": 5,
+            "w": 72,
+            "h": 44
+          },
+          "enter": {
+            "display": "flex",
+            "x": 258,
+            "y": 5,
+            "w": 98,
+            "h": 44
+          },
+          "scale": 1,
+          "cap": 8
+        }
+      },
+      "fps": {
+        "menuOpen": {
+          "fps": 60.151123483883104,
+          "frameMs": 16.624793388405124,
+          "n": 121,
+          "menuFps": 60.151123483883104,
+          "menuMs": 16.624793388405124,
+          "menuN": 121,
+          "fullFps": 0,
+          "fullMs": 0,
+          "fullN": 0,
+          "cap": 12,
+          "scale": 1,
+          "placed": 0,
+          "atCap": false,
+          "menuOpen": true
+        },
+        "fullWarm": {
+          "fps": 3.7294878170099195,
+          "frameMs": 268.1333333330849,
+          "n": 6,
+          "menuFps": 3.7294878170099195,
+          "menuMs": 268.1333333330849,
+          "menuN": 6,
+          "fullFps": 3.7294878170099195,
+          "fullMs": 268.1333333330849,
+          "fullN": 6,
+          "cap": 12,
+          "scale": 1,
+          "placed": 12,
+          "atCap": true,
+          "menuOpen": true
+        },
+        "full": {
+          "fps": 7.200460829493091,
+          "frameMs": 138.87999999999994,
+          "n": 15,
+          "menuFps": 7.200460829493091,
+          "menuMs": 138.87999999999994,
+          "menuN": 15,
+          "fullFps": 7.200460829493091,
+          "fullMs": 138.87999999999994,
+          "fullN": 15,
+          "cap": 4,
+          "scale": 0.5,
+          "placed": 12,
+          "atCap": true,
+          "menuOpen": true
+        },
+        "bench": {
+          "per": 0.001388888888888889,
+          "cap": 4,
+          "scale": 0.5,
+          "placed": 12,
+          "worldDrawn": 4,
+          "loaded": [
+            "seating",
+            "plants",
+            "fun",
+            "pets",
+            "surfaces"
+          ]
+        },
+        "suggestRaw": 0,
+        "suggestSafe": 0
+      },
+      "menu": {
+        "cats": [
+          "seating"
+        ],
+        "after": [
+          "seating",
+          "plants"
+        ],
+        "grid": 2,
+        "names": [
+          "PLANT"
+        ],
+        "panel": "flex",
+        "btn": "flex",
+        "overlapEnter": 0,
+        "btnBox": {
+          "d": "flex",
+          "x": 8,
+          "y": 5,
+          "w": 72,
+          "h": 44
+        },
+        "panelBox": {
+          "d": "flex",
+          "x": 8,
+          "y": 64,
+          "w": 168,
+          "h": 164
+        },
+        "enterBox": {
+          "d": "flex",
+          "x": 258,
+          "y": 5,
+          "w": 98,
+          "h": 44
+        },
+        "align": "center",
+        "deco": "none"
+      },
+      "filled": {
+        "cap": 12,
+        "placed": 12,
+        "over": false,
+        "refusedEarly": false,
+        "worldWillDraw": true,
+        "btn": "flex"
+      },
+      "hidden": {
+        "on": "flex",
+        "toggleBack": false,
+        "afterGetIn": "none",
+        "panel": "none",
+        "fly": "none",
+        "drive": "none",
+        "pause": "none",
+        "homeHidden": false,
+        "preview": [
+          221,
+          241,
+          254,
+          640,
+          180
+        ]
+      }
+    },
+    {
+      "id": "ipad-a10",
+      "note": "iPad viewport with Chrome CPU throttle 6x as an A10 stand-in, not a real A10",
+      "throttle": 6,
+      "rooms": {
+        "HOME": {
+          "purpose": "HOME",
+          "lum": 748,
+          "sample": [
+            247,
+            249,
+            252
+          ],
+          "w": 1180,
+          "h": 820,
+          "room": "HOME",
+          "btn": {
+            "display": "flex",
+            "x": 8,
+            "y": 5,
+            "w": 72,
+            "h": 44
+          },
+          "enter": {
+            "display": "none",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          },
+          "scale": 1,
+          "cap": 8
+        },
+        "CAFE": {
+          "purpose": "CAFE",
+          "lum": 748,
+          "sample": [
+            247,
+            249,
+            252
+          ],
+          "w": 1180,
+          "h": 820,
+          "room": "CAFE",
+          "btn": {
+            "display": "flex",
+            "x": 8,
+            "y": 5,
+            "w": 72,
+            "h": 44
+          },
+          "enter": {
+            "display": "flex",
+            "x": 196,
+            "y": 12,
+            "w": 156,
+            "h": 56
+          },
+          "scale": 1,
+          "cap": 8
+        },
+        "PETS": {
+          "purpose": "PETS",
+          "lum": 748,
+          "sample": [
+            247,
+            249,
+            252
+          ],
+          "w": 1180,
+          "h": 820,
+          "room": "PETS",
+          "btn": {
+            "display": "flex",
+            "x": 8,
+            "y": 5,
+            "w": 72,
+            "h": 44
+          },
+          "enter": {
+            "display": "flex",
+            "x": 196,
+            "y": 12,
+            "w": 156,
+            "h": 56
+          },
+          "scale": 1,
+          "cap": 8
+        },
+        "SHOWROOM": {
+          "purpose": "SHOWROOM",
+          "lum": 748,
+          "sample": [
+            247,
+            249,
+            252
+          ],
+          "w": 1180,
+          "h": 820,
+          "room": "SHOWROOM",
+          "btn": {
+            "display": "flex",
+            "x": 8,
+            "y": 5,
+            "w": 72,
+            "h": 44
+          },
+          "enter": {
+            "display": "flex",
+            "x": 196,
+            "y": 12,
+            "w": 156,
+            "h": 56
+          },
+          "scale": 1,
+          "cap": 8
+        }
+      },
+      "fps": {
+        "menuOpen": {
+          "fps": 42.431876947556844,
+          "frameMs": 23.567187500000003,
+          "n": 128,
+          "menuFps": 42.431876947556844,
+          "menuMs": 23.567187500000003,
+          "menuN": 128,
+          "fullFps": 0,
+          "fullMs": 0,
+          "fullN": 0,
+          "cap": 8,
+          "scale": 1,
+          "placed": 0,
+          "atCap": false,
+          "menuOpen": true
+        },
+        "fullWarm": {
+          "fps": 3.061474406073964,
+          "frameMs": 326.64000000000016,
+          "n": 5,
+          "menuFps": 3.061474406073964,
+          "menuMs": 326.64000000000016,
+          "menuN": 5,
+          "fullFps": 3.061474406073964,
+          "fullMs": 326.64000000000016,
+          "fullN": 5,
+          "cap": 8,
+          "scale": 1,
+          "placed": 8,
+          "atCap": true,
+          "menuOpen": true
+        },
+        "full": {
+          "fps": 3.174703958855837,
+          "frameMs": 314.98999999999995,
+          "n": 10,
+          "menuFps": 3.174703958855837,
+          "menuMs": 314.98999999999995,
+          "menuN": 10,
+          "fullFps": 3.174703958855837,
+          "fullMs": 314.98999999999995,
+          "fullN": 10,
+          "cap": 4,
+          "scale": 0.5,
+          "placed": 8,
+          "atCap": true,
+          "menuOpen": true
+        },
+        "bench": {
+          "per": 0.008888888886819284,
+          "cap": 4,
+          "scale": 0.5,
+          "placed": 8,
+          "worldDrawn": 4,
+          "loaded": [
+            "seating",
+            "plants",
+            "fun",
+            "pets",
+            "surfaces"
+          ]
+        },
+        "suggestRaw": 0,
+        "suggestSafe": 0
+      },
+      "menu": {
+        "cats": [
+          "seating"
+        ],
+        "after": [
+          "seating",
+          "plants"
+        ],
+        "grid": 2,
+        "names": [
+          "PLANT"
+        ],
+        "panel": "flex",
+        "btn": "flex",
+        "overlapEnter": 0,
+        "btnBox": {
+          "d": "flex",
+          "x": 8,
+          "y": 5,
+          "w": 72,
+          "h": 44
+        },
+        "panelBox": {
+          "d": "flex",
+          "x": 8,
+          "y": 64,
+          "w": 168,
+          "h": 315
+        },
+        "enterBox": {
+          "d": "flex",
+          "x": 196,
+          "y": 12,
+          "w": 156,
+          "h": 56
+        },
+        "align": "center",
+        "deco": "none"
+      },
+      "filled": {
+        "cap": 8,
+        "placed": 8,
+        "over": false,
+        "refusedEarly": false,
+        "worldWillDraw": true,
+        "btn": "flex"
+      },
+      "hidden": {
+        "on": "flex",
+        "toggleBack": false,
+        "afterGetIn": "none",
+        "panel": "none",
+        "fly": "none",
+        "drive": "none",
+        "pause": "none",
+        "homeHidden": false,
+        "preview": [
+          221,
+          241,
+          254,
+          640,
+          180
+        ]
+      }
+    },
+    {
+      "id": "pc",
+      "note": "headless PC viewport, no CPU throttle",
+      "throttle": 1,
+      "rooms": {
+        "HOME": {
+          "purpose": "HOME",
+          "lum": 742,
+          "sample": [
+            244,
+            247,
+            251
+          ],
+          "w": 1366,
+          "h": 768,
+          "room": "HOME",
+          "btn": {
+            "display": "flex",
+            "x": 8,
+            "y": 5,
+            "w": 72,
+            "h": 44
+          },
+          "enter": {
+            "display": "none",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          },
+          "scale": 1,
+          "cap": 8
+        },
+        "CAFE": {
+          "purpose": "CAFE",
+          "lum": 742,
+          "sample": [
+            244,
+            247,
+            251
+          ],
+          "w": 1366,
+          "h": 768,
+          "room": "CAFE",
+          "btn": {
+            "display": "flex",
+            "x": 8,
+            "y": 5,
+            "w": 72,
+            "h": 44
+          },
+          "enter": {
+            "display": "flex",
+            "x": 314,
+            "y": 8,
+            "w": 98,
+            "h": 52
+          },
+          "scale": 1,
+          "cap": 8
+        },
+        "PETS": {
+          "purpose": "PETS",
+          "lum": 742,
+          "sample": [
+            244,
+            247,
+            251
+          ],
+          "w": 1366,
+          "h": 768,
+          "room": "PETS",
+          "btn": {
+            "display": "flex",
+            "x": 8,
+            "y": 5,
+            "w": 72,
+            "h": 44
+          },
+          "enter": {
+            "display": "flex",
+            "x": 314,
+            "y": 8,
+            "w": 98,
+            "h": 52
+          },
+          "scale": 1,
+          "cap": 8
+        },
+        "SHOWROOM": {
+          "purpose": "SHOWROOM",
+          "lum": 742,
+          "sample": [
+            244,
+            247,
+            251
+          ],
+          "w": 1366,
+          "h": 768,
+          "room": "SHOWROOM",
+          "btn": {
+            "display": "flex",
+            "x": 8,
+            "y": 5,
+            "w": 72,
+            "h": 44
+          },
+          "enter": {
+            "display": "flex",
+            "x": 314,
+            "y": 8,
+            "w": 98,
+            "h": 52
+          },
+          "scale": 1,
+          "cap": 8
+        }
+      },
+      "fps": {
+        "menuOpen": {
+          "fps": 60.39129566777551,
+          "frameMs": 16.55867768595657,
+          "n": 121,
+          "menuFps": 60.39129566777551,
+          "menuMs": 16.55867768595657,
+          "menuN": 121,
+          "fullFps": 0,
+          "fullMs": 0,
+          "fullN": 0,
+          "cap": 12,
+          "scale": 1,
+          "placed": 0,
+          "atCap": false,
+          "menuOpen": true
+        },
+        "fullWarm": {
+          "fps": 5.312084993367779,
+          "frameMs": 188.24999999972056,
+          "n": 8,
+          "menuFps": 5.312084993367779,
+          "menuMs": 188.24999999972056,
+          "menuN": 8,
+          "fullFps": 5.312084993367779,
+          "fullMs": 188.24999999972056,
+          "fullN": 8,
+          "cap": 12,
+          "scale": 1,
+          "placed": 12,
+          "atCap": true,
+          "menuOpen": true
+        },
+        "full": {
+          "fps": 14.880238083809347,
+          "frameMs": 67.20322580645158,
+          "n": 31,
+          "menuFps": 14.880238083809347,
+          "menuMs": 67.20322580645158,
+          "menuN": 31,
+          "fullFps": 14.880238083809347,
+          "fullMs": 67.20322580645158,
+          "fullN": 31,
+          "cap": 4,
+          "scale": 0.5,
+          "placed": 12,
+          "atCap": true,
+          "menuOpen": true
+        },
+        "bench": {
+          "per": 0.0016666666708058783,
+          "cap": 4,
+          "scale": 0.5,
+          "placed": 12,
+          "worldDrawn": 4,
+          "loaded": [
+            "seating",
+            "plants",
+            "fun",
+            "pets",
+            "surfaces"
+          ]
+        },
+        "suggestRaw": 0,
+        "suggestSafe": 0
+      },
+      "menu": {
+        "cats": [
+          "seating"
+        ],
+        "after": [
+          "seating",
+          "plants"
+        ],
+        "grid": 2,
+        "names": [
+          "PLANT"
+        ],
+        "panel": "flex",
+        "btn": "flex",
+        "overlapEnter": 0,
+        "btnBox": {
+          "d": "flex",
+          "x": 8,
+          "y": 5,
+          "w": 72,
+          "h": 44
+        },
+        "panelBox": {
+          "d": "flex",
+          "x": 8,
+          "y": 64,
+          "w": 168,
+          "h": 315
+        },
+        "enterBox": {
+          "d": "flex",
+          "x": 314,
+          "y": 8,
+          "w": 98,
+          "h": 52
+        },
+        "align": "center",
+        "deco": "none"
+      },
+      "filled": {
+        "cap": 12,
+        "placed": 12,
+        "over": false,
+        "refusedEarly": false,
+        "worldWillDraw": true,
+        "btn": "flex"
+      },
+      "hidden": {
+        "on": "flex",
+        "toggleBack": false,
+        "afterGetIn": "none",
+        "panel": "none",
+        "fly": "none",
+        "drive": "none",
+        "pause": "none",
+        "homeHidden": false,
+        "preview": [
+          221,
+          241,
+          254,
+          640,
+          180
+        ]
+      }
+    }
+  ],
+  "checks": []
+}
