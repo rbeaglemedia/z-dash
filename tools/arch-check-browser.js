@@ -745,7 +745,7 @@
     const streetOk = (hit && streetPx >= 10) || (key === 'DANCE' && muralStreet);
     if (!streetOk) {
       const wordList = generic ? 'any word' : (words.join(', ') || '(none listed)');
-      add('purpose', 'fail', 'Purpose is not readable at street level', 'The street sign has to say the purpose and measure at least 10 px at the front camera. Words for this purpose: ' + wordList + '.', Object.assign({ note: 'sign "' + (text || 'none') + '" ' + streetPx + ' px' }, ref));
+      add('purpose', 'fail', 'Purpose is not readable at street level', 'The street sign has to use a word from that purpose in docs/NEON-WORLD-STYLE.md and measure at least 10 px at the front camera.', Object.assign({ note: 'sign "' + (text || 'none') + '" ' + streetPx + ' px; wants ' + wordList }, ref));
     }
     const airPx = signFontPx(b, viewSpec(b, 'roof'));
     const feat = roofFeature(b);
