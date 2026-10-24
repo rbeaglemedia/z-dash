@@ -17,11 +17,15 @@ function drawZ(){ZV.drew=0;if(window.NOZ)return;const X=window.ZD&&ZD.Xray;if(!X
   // The cached sprite is blitted every frame, so a skipped render never leaves a hole.
   ZV.drew=ZV.frame%ZV.every===0||ZV.lastPx!==rp;
   if(ZV.drew){const tCar=performance.now();X.render(ctx,0,0,rp,rp,{xray:false,showroom:!(window.GARAGEZ&&GARAGEZ.on),yaw:ZV.yawOff+ZV.yawSign*relYaw,pitch:elev,dist,tx:0,ty:ZV.ty,fov:26,drl:1,noDraw:true,kid:KID,st:{t:performance.now()/1000,throttle:30+P.thr*70}});
+    const tCopy=window.perfAdd?performance.now():0;
     const src=X.canvas;if(ZV.cv.width!==src.width||ZV.cv.height!==src.height){ZV.cv.width=src.width;ZV.cv.height=src.height;}
     ZV.cvg.setTransform(1,0,0,1,0,0);ZV.cvg.clearRect(0,0,ZV.cv.width,ZV.cv.height);ZV.cvg.drawImage(src,0,0);
-    ZV.carMs=performance.now()-tCar;}
+    ZV.carMs=performance.now()-tCar;
+    if(tCopy){window.perfAdd('carGl',tCopy-tCar);window.perfAdd('carCopy',performance.now()-tCopy);}}
   else ZV.carMs=0;
-  ZV.lastPx=rp;const roll=(P.bank+(P.ebRoll||0)-cam.roll)*ZV.rollSign;ctx.save();ctx.translate(sc[0],sc[1]);ctx.rotate(roll);ctx.drawImage(ZV.cv,0,0,ZV.cv.width,ZV.cv.height,-px/2,-px/2,px,px);ctx.restore();
+  ZV.lastPx=rp;const roll=(P.bank+(P.ebRoll||0)-cam.roll)*ZV.rollSign;ctx.save();ctx.translate(sc[0],sc[1]);ctx.rotate(roll);
+  const tBlit=window.perfAdd?performance.now():0;ctx.drawImage(ZV.cv,0,0,ZV.cv.width,ZV.cv.height,-px/2,-px/2,px,px);if(tBlit)window.perfAdd('carBlit',performance.now()-tBlit);ctx.restore();
+  const tFl=window.perfAdd?performance.now():0;
   zFlameCvs();const yaw=ZV.yawOff+ZV.yawSign*relYaw,pit=elev,cy=Math.cos(yaw),sy=Math.sin(yaw),cP=Math.cos(pit),sP=Math.sin(pit);
   const tx=0,ty=ZV.ty,ex=tx+cy*cP*dist,ey=ty+sP*dist,ez=sy*cP*dist;let zx=ex-tx,zy=ey-ty,zz=ez,zl=Math.hypot(zx,zy,zz)||1;zx/=zl;zy/=zl;zz/=zl;
   let xx=zz,xy=0,xz=-zx,xl=Math.hypot(xx,xz);if(xl<1e-6){zz+=1e-4;zl=Math.hypot(zx,zy,zz);zx/=zl;zy/=zl;zz/=zl;xx=zz;xz=-zx;xl=Math.hypot(xx,xz);}xx/=xl;xz/=xl;
@@ -31,7 +35,8 @@ function drawZ(){ZV.drew=0;if(window.NOZ)return;const X=window.ZD&&ZD.Xray;if(!X
   for(const t of ZTIP){const p=spPt(t[0],t[1],t[2]);if(!p)continue;let dx=t[0]-t[3],dy=t[1]-t[4],dz=t[2]-t[5],dl=Math.hypot(dx,dy,dz)||1;dx/=dl;dy/=dl;dz/=dl;const fl=.85+Math.random()*.3,r=Math.max(2,f/d0*(.10+P.thr*.18+(nos?.28:0))*fl);
     ctx.drawImage(img,p[0]-r,p[1]-r,r*2,r*2);
     if(TUNE.jetEngines){const len=(1.5+P.thr*3)*fl*P.tf,q=spPt(t[0]+dx*len,t[1]+dy*len,t[2]+dz*len);if(q){ctx.strokeStyle='#3ee6ff';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();}}}
-  ctx.globalCompositeOperation='source-over';}
+  ctx.globalCompositeOperation='source-over';
+  if(tFl)window.perfAdd('flame',performance.now()-tFl);}
 // A 120 Hz panel presents a frame that finishes under ~8.3 ms at full rate, and
 // the next slot (16.6 ms, about 60 FPS) when it misses. Skipping the car on
 // every other frame is the fast slot. The 70–90 reading is those two slots

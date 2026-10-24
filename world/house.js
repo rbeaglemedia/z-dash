@@ -1179,7 +1179,7 @@ walkEnsurePill();
 walkEnsureEnterBtn();
 walkLockEnter();
 setTimeout(walkLockEnter,0);
-setInterval(walkLockEnter,400);
+setInterval(function(){const t=window.perfAdd?performance.now():0;walkLockEnter();if(t)window.perfAdd('timer',performance.now()-t);},400);
 addEventListener('keydown',e=>{
   if(e.code==='ShiftLeft'||e.code==='ShiftRight'){WALK_MODE._shift=true;walkSyncGait();return;}
   if(e.repeat||e.code!=='KeyE'||WALK_MODE.insideBuilding)return;
@@ -1203,15 +1203,21 @@ if(typeof CITY!=='undefined'&&CITY&&CITY.DYN){
 const walkNativeRAF=window.requestAnimationFrame.bind(window);
 let walkCityLoop=null,walkT=performance.now();
 window.requestAnimationFrame=function(fn){
+  if(window.Z_PERF&&window.Z_PERF.on)window.Z_PERF.raf=(window.Z_PERF.raf||0)+1;
   if(typeof fn==='function'&&fn.name==='loop'){
     if(!walkCityLoop){
       const game=fn;
       walkCityLoop=function(t){
         const hidden=typeof document!=='undefined'&&document.hidden;
         if(!hidden){
+          if(typeof window.perfBegin==='function')window.perfBegin();
           const dt=Math.min(0.05,Math.max(0,(t-walkT)/1000));walkT=t;
+          const tw=window.perfAdd?performance.now():0;
           try{WALK_MODE.update(dt);}catch(e){}
+          if(tw)window.perfAdd('walk',performance.now()-tw);
+          const td=window.perfAdd?performance.now():0;
           try{if(typeof syncOnFootButtons==='function')syncOnFootButtons();}catch(e){}
+          if(td)window.perfAdd('dom',performance.now()-td);
           if(WALK_MODE.insideBuilding){WALK_MODE.cityHoldFrames=(WALK_MODE.cityHoldFrames||0)+1;walkNativeRAF(walkCityLoop);return;}
         }
         game(t);

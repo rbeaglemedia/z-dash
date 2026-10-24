@@ -152,7 +152,7 @@ const TRAFFIC = (() => {
   }
   function blank(sim) {
     const c = {sim, on:false, lane:null, s:0, v:0, v0:0, yaw:0, x:0, z:0, y:0, pi:0, turn:null, rollS:-1, blend:0, blend0:0, bx:0, bz:0, by:0, utT:0, was:false, tick:0, hit:false, hitT:0, fade:1, vx:0, vy:0, vz:0, spin:0, roll:0, vroll:0, braking:false, yawRate:0, accel:0, bodyRoll:0, pitch:0, slip:0, suspY:0, suspV:0, ground:true, gy:0, airVx:0, airVz:0, arc:null, rampSeen:0, rampYes:false};
-    c.slot = {draw:() => drawOne(c)};
+    c.slot = {draw:() => drawOne(c), traffic:1};
     return c;
   }
   function rollSpeed(kind) {

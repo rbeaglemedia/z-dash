@@ -371,8 +371,12 @@
     mcan.width = 160;
     mcan.height = 120;
     mctx = mcan.getContext('2d', { willReadFrequently: true });
-    if (!rafOn) { rafOn = true; requestAnimationFrame(raf); }
     return true;
+  }
+  function armRaf() {
+    if (rafOn || !state.open) return;
+    rafOn = true;
+    requestAnimationFrame(raf);
   }
 
   function isStandalone() {
@@ -3450,6 +3454,7 @@
   }
 
   function raf(t) {
+    if (!state.open) { rafOn = false; return; }
     var dt = lastT ? Math.min(0.05, (t - lastT) / 1000) : 0.016;
     lastT = t;
     try { step(dt, t); } catch (e) { fault(e); }
@@ -3468,6 +3473,7 @@
       }
       state.building = (o && o.building) || building || state.building;
       state.open = true;
+      armRaf();
       rewarded = false;
       if (root) {
         root.classList.add('zd-ds-on');
@@ -3498,6 +3504,7 @@
       return true;
     },
     isOpen: function () { return !!state.open; },
+    armed: function () { return !!rafOn; },
     getState: function () {
       var z = {};
       ZONE_IDS.forEach(function (id) { z[id] = Math.round((state.zoneEnergy[id] || 0) * 1000) / 1000; });
@@ -3706,7 +3713,7 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
-  setInterval(function () { try { hookWalk(); wrapInput(); } catch (e) {} }, 1000);
+  setInterval(function () { const t = window.perfAdd ? performance.now() : 0; try { hookWalk(); wrapInput(); } catch (e) {} if (t) window.perfAdd('timer', performance.now() - t); }, 1000);
   window.addEventListener('keydown', function (e) {
     if (!api.isOpen()) return;
     if (e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'Space') {
