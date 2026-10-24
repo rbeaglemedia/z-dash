@@ -983,6 +983,64 @@
         passes.push('Lots of ramps (' + ramps.count + '). No upper limit. The small river-edge jump stays the one that clears the river at about 80 mph.');
       }
 
+      const style = baseline && baseline.style;
+      if (style && style.ok) {
+        function ruleFor(list, needle) {
+          const n = String(needle || '').toLowerCase();
+          const rows = list || [];
+          for (let i = 0; i < rows.length; i++) {
+            const triggers = rows[i].triggers || [];
+            for (let t = 0; t < triggers.length; t++) {
+              if (triggers[t].indexOf(n) >= 0 || n.indexOf(triggers[t]) >= 0) return rows[i];
+            }
+          }
+          return null;
+        }
+        let custom = 0;
+        let heavy = 0;
+        const homes = [];
+        for (let i = 0; i < list.length; i++) {
+          const b = list[i];
+          const ref = refOf(b);
+          if (typeof b.draw === 'function') {
+            custom++;
+            const alt = ruleFor(style.capability, 'unique mesh');
+            add('capability', 'fail', 'Building leaves the shared box kit', (alt && alt.simpler) || 'Instance one kit of boxes.', ref);
+          }
+          if ((b.boxes || []).length > 36) {
+            heavy++;
+            const alt = ruleFor(style.capability, 'unique mesh');
+            add('capability', 'warn', 'A lot of one-off pieces', (alt && alt.simpler) || 'Repeat one kit instead of a new piece for every floor.', ref);
+          }
+          const word = ((b.sign && b.sign.t) || '') + ' ' + (b.purposeLabel || '');
+          const baby = ruleFor(style.drift, 'baby');
+          if (baby && /baby|toddler|preschool|cute overload/i.test(word)) add('brand', 'warn', 'Copy sounds babyish', baby.simpler, ref);
+          const hard = style.hard || [];
+          for (let h = 0; h < hard.length; h++) {
+            const triggers = hard[h].triggers || [];
+            for (let t = 0; t < triggers.length; t++) {
+              if (word.toLowerCase().indexOf(triggers[t]) >= 0) add('brand', 'fail', 'Building breaks the brand', hard[h].simpler, ref);
+            }
+          }
+          if (b.purpose === 'HOME') homes.push(ref);
+        }
+        const black = ruleFor(style.drift, 'black');
+        if (black && list.length) {
+          add('brand', 'warn', 'Buildings are still all-black', 'The shared drawer fills every solid building with #0a0612 and a neon edge. ' + black.simpler, null);
+          const held = findings.filter(function (f) { return f.title === 'Buildings are still all-black'; })[0];
+          if (held) {
+            for (let i = 0; i < list.length; i++) held.buildings.push(refOf(list[i]));
+          }
+        }
+        const homeRule = ruleFor(style.drift, 'home');
+        if (homeRule) {
+          for (let i = 0; i < homes.length; i++) add('brand', 'warn', 'Home is not a glass house yet', homeRule.simpler, homes[i]);
+        }
+        if (!custom && !heavy && !findings.some(function (f) { return f.check === 'capability' && f.severity === 'fail'; })) {
+          passes.push('Finished buildings are straight boxes on the shared drawer. Curves, organic shells, and photoreal skins are not in this city.');
+        }
+      }
+
       const blurHits = installBlurProbe.hits.length - blurBefore;
       if (blurHits) add('shadow', 'fail', 'Building pass set shadowBlur', 'A review draw assigned a non-zero shadowBlur ' + blurHits + ' times. The probe forced the value back to 0 so the shot still shows the building. Glow belongs off this path.', null);
 

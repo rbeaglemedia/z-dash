@@ -17,6 +17,7 @@ on:
       - 'tools/arch-check-baseline.json'
       - 'tools/ARCH-CHECK.md'
       - 'docs/NEON-WORLD-STYLE.md'
+      - 'docs/**'
       - '.github/workflows/arch-check.yml'
   workflow_dispatch:
 

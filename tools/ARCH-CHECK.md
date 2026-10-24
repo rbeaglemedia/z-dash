@@ -21,6 +21,8 @@ node tools/arch-check.mjs --out test-results/arch-check
 | `--review` | Exit 0 when the architecture fails, so CI can post the comment and stay green. A checker or calibration failure still exits 2. |
 | `--write-baseline` | Record today's dance-mural sizes in `tools/arch-check-baseline.json`. Later runs compare against that floor. They do not raise it. |
 | `--fps-baseline <file>` | PERF-GUARD baseline JSON. Default is `tools/perf-guard-baseline.json` when that file is in the tree. |
+| `--plan <file>` | Also read this building plan or proposal. Repeat the flag for more than one file. |
+| `--plans-only` | Judge plans against the style guide and skip Chrome. Use this before a build, when there is no new city yet. |
 
 Needs Node and `google-chrome` (`CHROME` overrides the binary). No npm packages. Software GL (`--disable-gpu`), same host caveat as PERF-GUARD (PR #62): milliseconds are this machine, not a phone.
 
@@ -72,13 +74,17 @@ Calibration runs first. It must pass a good person door (1.4×2.4 m at street le
 
 **Z dance mural.** Buildings with purpose `DANCE`, or a sign tagged Z Company Arts. The mural quad is one plane, no wider than the face, and inside the wall. The front shot must show mural fill (blue lift) or the pink frame `#ff4fd8`. Area is compared with `tools/arch-check-baseline.json` (match by center within 40 m). A wall more than about 2% under that floor fails. Equality passes. `--write-baseline` records the floor; a later run never raises it.
 
-**Style.** Stroke color is one of `#ff2a3d #3ee6ff #ffb020 #ff4fd8 #7dff6b #ffe14d #fff2c0 #ffd27a #9ff3ff #ffb3e6 #8a7a9d`. Fill `#0a0612` is the neon night style and is not a fail. A custom `b.draw` is a fail.
+**Style.** Stroke color is one of `#ff2a3d #3ee6ff #ffb020 #ff4fd8 #7dff6b #ffe14d #fff2c0 #ffd27a #9ff3ff #ffb3e6 #8a7a9d`. Fill `#0a0612` is not a palette fail. A black slab is brand drift (a warning) while the block is still a night-city building. A custom `b.draw` fails the palette check and the capability check.
 
 **Ramps.** A light check, written down in `docs/NEON-WORLD-STYLE.md`. The city should have a lot of ramps: at least 24 that are not tow-truck beds. There is no upper limit. A layout is not failed for having more ramps than today, and the checker does not inventory or reject a count above that floor. The small river-edge jumps (purpose `river`, small) stay as they are now: same place within 8 m, same height within 0.2 m, same length within 1 m, same direction, and the same lip distance from the water within 2 m. That is the jump that clears the river at about 80 mph. Extra ramps, including extra river jumps, pass. Tow-truck beds are not part of the count.
 
 **shadowBlur.** A runtime probe counts non-zero assignments during the review draws and forces them to 0 so the shot still renders. A static scan covers all of `world/city-draw.js` and `world/detail.js`, plus `paintMural` and `drawBuildingGraffiti` in `world/neon-paint.js`. The car studio and the tow truck glow are not building fails. Any non-zero hit fails.
 
 **FPS.** One near building, and the in-view `drawBldg` set, on software GL. Phone buffer is 1688×780 (DPR 2). iPad is 1024×768 at DPR 1 with CPU throttle ×4. PC is 1280×720 at DPR 1. Caps: one building ≤ 8 ms phone, 16 ms iPad, 8 ms PC. The pass cap is the lower of 40 / 90 / 40 ms and 70% of the PERF-GUARD building-face median. If `tools/perf-guard-baseline.json` is absent, the published PR #62 face numbers are used (phone 68.9 ms, iPad 170.1 ms, PC 65.2 ms) and the report says `pr62-published`. This is not the 19-scene PERF-GUARD bench.
+
+**Capability.** Read from `docs/NEON-WORLD-STYLE.md` on every run, so Bob's latest edit is the bar. The stack is canvas 2D / WebGL in Safari and Chrome, a base iPad (iPadOS 17.7.8) and Bob's Galaxy, Galaxy steady at 110 fps or better, iPad steady at 60 or 30, no `shadowBlur`, procedural instanced geometry or one light CC0 low-poly used many times, and straight boxes. Heavy curves, organic shapes, photoreal detail, a unique sculpted mesh, and a live blur fail. The simpler build from the matching style-guide bullet is the recommendation. The past miss is the curvy 370Z Stillen bumper. A sentence that only forbids the risky word is not a flag. Finished boxes pass. A building pass that sets `shadowBlur` fails here as well as under the shadow check. A custom draw path fails. More than 36 boxes on one building is a warning.
+
+**On brand.** Same file, latest copy. Drift (all-black fill, a home that is not a glass house with a cyan strip, babyish copy) is a warning with a suggestion. It does not fail the review. A hard break (copying a Roblox or Brookhaven asset, dropping neon for a photoreal daylight city) fails. Brookhaven named as the feeling to aim at is not a break. Signs and labels are scanned the same way. Plans and proposals are scanned before a build: pass `--plan`, and any `docs/*.md` whose name contains `plan`, `proposal`, or `building` (the style guide itself is not a plan). `--plans-only` skips the city.
 
 ## Shots
 
@@ -103,7 +109,7 @@ The first committed run is `--write-baseline` on the main the branch was cut fro
 
 ## CI
 
-`.github/workflows/arch-check.yml` runs on pull requests that touch building or checker files, and on `workflow_dispatch`. It runs `node tools/arch-check.mjs --review` and posts or updates one comment marked `<!-- ARCHITECTURE-CHECK -->`. An architecture fail stays green. A checker crash fails the job. Artifacts are the report and the shots.
+`.github/workflows/arch-check.yml` runs on pull requests that touch building files, checker files, the style guide, or any other doc a plan might live in, and on `workflow_dispatch`. It runs `node tools/arch-check.mjs --review` and posts or updates one comment marked `<!-- ARCHITECTURE-CHECK -->`. An architecture fail stays green. Brand warnings stay in the comment and do not fail the job. A checker crash fails the job. Artifacts are the report and the shots.
 
 ## What this is not
 

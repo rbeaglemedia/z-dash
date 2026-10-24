@@ -40,7 +40,9 @@ function parseArgs(argv) {
     shots: true,
     writeBaseline: false,
     only: '',
-    fpsBaseline: ''
+    fpsBaseline: '',
+    plans: [],
+    plansOnly: false
   };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
@@ -52,6 +54,8 @@ function parseArgs(argv) {
     else if (a === '--write-baseline') out.writeBaseline = true;
     else if (a === '--only') out.only = String(argv[++i] || '');
     else if (a === '--fps-baseline') out.fpsBaseline = path.resolve(argv[++i]);
+    else if (a === '--plan') out.plans.push(path.resolve(argv[++i]));
+    else if (a === '--plans-only') out.plansOnly = true;
     else if (a === '--help') out.help = true;
     else throw new Error('Unknown arg ' + a);
   }
@@ -386,6 +390,208 @@ function writeReport(dir, report) {
   return md;
 }
 
+function sectionBody(md, heading) {
+  const lines = String(md || '').split('\n');
+  const want = heading.trim();
+  let start = -1;
+  let level = 0;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim() === want) {
+      start = i + 1;
+      level = (want.match(/^#+/) || ['#'])[0].length;
+      break;
+    }
+  }
+  if (start < 0) return '';
+  let end = lines.length;
+  for (let i = start; i < lines.length; i++) {
+    const m = /^(#+)\s/.exec(lines[i]);
+    if (m && m[1].length <= level) { end = i; break; }
+  }
+  return lines.slice(start, end).join('\n');
+}
+
+function styleRules(body) {
+  const rules = [];
+  for (const line of String(body || '').split('\n')) {
+    const m = /^\s*-\s+(.+)$/.exec(line);
+    if (!m || m[1].indexOf('|') < 0) continue;
+    const parts = m[1].split('|');
+    const triggers = parts[0].split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+    const simpler = parts.slice(1).join('|').trim();
+    if (triggers.length && simpler) rules.push({ triggers, simpler });
+  }
+  return rules;
+}
+
+function labeledLine(body, label) {
+  const re = new RegExp('^' + label + ':\\s*(.+)$', 'im');
+  const m = re.exec(String(body || ''));
+  return m ? m[1].trim() : '';
+}
+
+function loadStyle(root) {
+  const file = path.join(root, 'docs', 'NEON-WORLD-STYLE.md');
+  let md = '';
+  try { md = fs.readFileSync(file, 'utf8'); }
+  catch (e) { return { ok: false, file, error: e.message, capability: [], drift: [], hard: [] }; }
+  const brand = sectionBody(md, '## Brand');
+  return {
+    ok: true,
+    file: 'docs/NEON-WORLD-STYLE.md',
+    mood: labeledLine(brand, 'Mood'),
+    homes: labeledLine(brand, 'Homes'),
+    ellie: labeledLine(brand, 'Ellie'),
+    capability: styleRules(sectionBody(md, '## Capability')),
+    drift: styleRules(sectionBody(md, '### Drift')),
+    hard: styleRules(sectionBody(md, '### Hard breaks'))
+  };
+}
+
+function discoverPlans(root, explicit) {
+  const out = (explicit || []).slice();
+  const docs = path.join(root, 'docs');
+  if (fs.existsSync(docs)) {
+    for (const name of fs.readdirSync(docs)) {
+      if (!/\.md$/i.test(name)) continue;
+      if (/neon-world-style/i.test(name)) continue;
+      if (/plan|proposal|building/i.test(name)) out.push(path.join(docs, name));
+    }
+  }
+  return [...new Set(out)];
+}
+
+function planClaims(text) {
+  const claims = [];
+  for (const raw of String(text || '').split('\n')) {
+    const line = raw.replace(/^\s*[-*]\s+/, '').replace(/^\s*#+\s+/, '').trim();
+    if (!line || line.startsWith('|') || line.startsWith('```')) continue;
+    claims.push(line);
+  }
+  return claims;
+}
+
+function claimNegated(sentence, at, termLen) {
+  const beforeNeg = /don'?t|do not|never|avoid|instead of|rather than|\bno\b|\bnot\b|without|forbid|forbidden|banned|drop the|away from|move off|moving off|moving away|won'?t|will not/;
+  let before = sentence.slice(Math.max(0, at - 90), at);
+  const cut = Math.max(before.lastIndexOf('. '), before.lastIndexOf('; '));
+  if (cut >= 0) before = before.slice(cut + 1);
+  if (beforeNeg.test(before)) return true;
+  let after = sentence.slice(at + termLen, at + termLen + 80);
+  const stop = after.search(/[.;]/);
+  if (stop >= 0) after = after.slice(0, stop);
+  return /don'?t|do not|never|avoid|forbidden|banned|not allowed|won'?t|will not/.test(after);
+}
+
+function scanPlanText(text, rules) {
+  const hits = [];
+  for (const claim of planClaims(text)) {
+    const low = claim.toLowerCase();
+    for (const rule of rules) {
+      let caught = '';
+      for (const term of rule.triggers) {
+        const at = low.indexOf(term);
+        if (at < 0) continue;
+        if (claimNegated(low, at, term.length)) continue;
+        caught = term;
+        break;
+      }
+      if (!caught) continue;
+      hits.push({ rule, term: caught, claim: claim.slice(0, 220) });
+    }
+  }
+  return hits;
+}
+
+function pushFinding(report, finding) {
+  report.findings = report.findings || [];
+  const prev = report.findings.find((f) => f.check === finding.check && f.title === finding.title && f.severity === finding.severity);
+  if (prev) {
+    if (finding.detail && prev.detail.indexOf(finding.detail) < 0) prev.detail += ' ' + finding.detail;
+    return prev;
+  }
+  report.findings.push(finding);
+  return finding;
+}
+
+function applyGuide(report, style, planFiles) {
+  report.styleGuide = style && style.file ? style.file : 'docs/NEON-WORLD-STYLE.md';
+  report.passes = report.passes || [];
+  report.findings = report.findings || [];
+  if (!style || !style.ok) {
+    pushFinding(report, {
+      check: 'brand',
+      severity: 'warn',
+      title: 'Style guide was not loaded',
+      detail: 'docs/NEON-WORLD-STYLE.md could not be read, so this run did not judge brand or capability against Bob\'s latest edits.',
+      buildings: []
+    });
+    return;
+  }
+  const shadow = (report.findings || []).some((f) => f.check === 'shadow' && f.severity === 'fail');
+  const blurRule = style.capability.find((r) => r.triggers.some((t) => t.indexOf('blur') >= 0));
+  if (shadow && blurRule) {
+    pushFinding(report, {
+      check: 'capability',
+      severity: 'fail',
+      title: 'Beyond the stack: blur',
+      detail: 'Finished building draw uses a live blur. ' + blurRule.simpler,
+      buildings: []
+    });
+  }
+  const plans = [];
+  for (const file of planFiles || []) {
+    let text = '';
+    try { text = fs.readFileSync(file, 'utf8'); }
+    catch (e) {
+      pushFinding(report, {
+        check: 'capability',
+        severity: 'fail',
+        title: 'Plan could not be read',
+        detail: file + ' — ' + e.message,
+        buildings: []
+      });
+      continue;
+    }
+    const rel = file.includes('docs' + path.sep) ? 'docs/' + path.basename(file) : path.basename(file);
+    plans.push(rel);
+    for (const hit of scanPlanText(text, style.capability)) {
+      pushFinding(report, {
+        check: 'capability',
+        severity: 'fail',
+        title: 'Plan is beyond the stack',
+        detail: rel + ' asks for "' + hit.term + '". ' + hit.rule.simpler + ' Quote: ' + hit.claim,
+        buildings: []
+      });
+    }
+    for (const hit of scanPlanText(text, style.hard)) {
+      pushFinding(report, {
+        check: 'brand',
+        severity: 'fail',
+        title: 'Plan breaks the brand',
+        detail: rel + ' — "' + hit.term + '". ' + hit.rule.simpler + ' Quote: ' + hit.claim,
+        buildings: []
+      });
+    }
+    for (const hit of scanPlanText(text, style.drift)) {
+      pushFinding(report, {
+        check: 'brand',
+        severity: 'warn',
+        title: 'Plan drifts from the brand',
+        detail: rel + ' — "' + hit.term + '". ' + hit.rule.simpler + ' Quote: ' + hit.claim,
+        buildings: []
+      });
+    }
+  }
+  report.plans = plans;
+  const capFail = report.findings.some((f) => f.check === 'capability' && f.severity === 'fail');
+  const brandFail = report.findings.some((f) => f.check === 'brand' && f.severity === 'fail');
+  if (!capFail) report.passes.push('Nothing reviewed needs curves, photoreal detail, live blur, or a unique heavy mesh. Straight boxes, glow strips, and a light shared model stay inside the stack.');
+  if (!brandFail && !report.findings.some((f) => f.check === 'brand' && f.severity === 'warn')) {
+    report.passes.push('Brand matches the latest docs/NEON-WORLD-STYLE.md.');
+  }
+}
+
 function buildingLine(b) {
   const note = b.note ? ' — ' + b.note : '';
   return (b.purpose || b.label || 'building') + ' `' + b.id + '`' + note;
@@ -399,7 +605,8 @@ function markdown(p) {
   lines.push('');
   lines.push('Result: **' + (p.ok ? 'PASS' : 'FAIL') + '**');
   lines.push('');
-  lines.push('Reviewed ' + ((p.counts && p.counts.buildings) || 0) + ' solid buildings. Shots: ' + ((p.shotNames && p.shotNames.length) || 0) + '.');
+  lines.push('Reviewed ' + ((p.counts && p.counts.buildings) || 0) + ' solid buildings. Shots: ' + ((p.shotNames && p.shotNames.length) || 0) + '. Style guide: `' + (p.styleGuide || 'docs/NEON-WORLD-STYLE.md') + '`.');
+  if (p.plans && p.plans.length) lines.push('Plans: ' + p.plans.join(', ') + '.');
   lines.push('');
   if (p.checkerError) {
     lines.push('Checker error: ' + p.checkerError);
@@ -424,15 +631,29 @@ function markdown(p) {
     ['style', 'Style'],
     ['ramps', 'Ramps'],
     ['shadow', 'shadowBlur'],
-    ['fps', 'FPS']
+    ['fps', 'FPS'],
+    ['capability', 'Capability'],
+    ['brand', 'On brand']
   ];
   for (const [id, title] of order) {
-    const items = (p.findings || []).filter((f) => f.check === id && f.severity === 'fail');
+    const fails = (p.findings || []).filter((f) => f.check === id && f.severity === 'fail');
+    const warns = (p.findings || []).filter((f) => f.check === id && f.severity === 'warn');
     lines.push('## ' + title);
     lines.push('');
-    if (!items.length) lines.push('Pass.');
-    for (const f of items) {
+    if (p.plansOnly && id !== 'capability' && id !== 'brand') {
+      lines.push('Not run. This was a plan review, before a city build.');
+      lines.push('');
+      continue;
+    }
+    if (!fails.length && !warns.length) lines.push('Pass.');
+    for (const f of fails) {
       lines.push('- **' + f.title + '**');
+      lines.push('  ' + f.detail);
+      const names = (f.buildings || []).map(buildingLine);
+      if (names.length) lines.push('  Buildings: ' + names.join('; ') + '.');
+    }
+    for (const f of warns) {
+      lines.push('- Warning: **' + f.title + '**');
       lines.push('  ' + f.detail);
       const names = (f.buildings || []).map(buildingLine);
       if (names.length) lines.push('  Buildings: ' + names.join('; ') + '.');
@@ -495,14 +716,26 @@ function commentMd(p) {
   lines.push('');
   lines.push('**' + (p.ok ? 'PASS' : 'FAIL') + '** on `' + (p.branch || '') + '` `' + (p.sha || '').slice(0, 12) + '`.');
   lines.push('');
-  lines.push('Kid App buildings only. ' + ((p.counts && p.counts.buildings) || 0) + ' reviewed. Full log: `test-results/arch-check/report.md`.');
+  lines.push('Kid App buildings only. ' + ((p.counts && p.counts.buildings) || 0) + ' reviewed. Judged against `' + (p.styleGuide || 'docs/NEON-WORLD-STYLE.md') + '`. Full log: `test-results/arch-check/report.md`.');
+  if (p.plans && p.plans.length) lines.push('Plans: ' + p.plans.join(', ') + '.');
   lines.push('');
   const fails = (p.findings || []).filter((f) => f.severity === 'fail');
+  const warns = (p.findings || []).filter((f) => f.severity === 'warn');
   if (!fails.length) lines.push('No architecture fails.');
   for (const f of fails) {
     const n = (f.buildings || []).length;
     lines.push('- **' + f.title + '**' + (n ? ' (' + n + ')' : ''));
     lines.push('  ' + f.detail);
+  }
+  if (warns.length) {
+    lines.push('');
+    lines.push('Warnings (they do not fail the review):');
+    lines.push('');
+    for (const f of warns) {
+      const n = (f.buildings || []).length;
+      lines.push('- **' + f.title + '**' + (n ? ' (' + n + ')' : ''));
+      lines.push('  ' + f.detail);
+    }
   }
   lines.push('');
   if (p.fps && p.fps.length) {
@@ -527,15 +760,16 @@ function commentMd(p) {
 async function main() {
   const args = parseArgs(process.argv);
   if (args.help) {
-    console.log('node tools/arch-check.mjs [--root tree] [--out dir] [--no-shots] [--review] [--write-baseline] [--only PURPOSE] [--fps-baseline file]');
+    console.log('node tools/arch-check.mjs [--root tree] [--out dir] [--no-shots] [--review] [--write-baseline] [--only PURPOSE] [--fps-baseline file] [--plan file] [--plans-only]');
     return;
   }
   const meta = readCommit(args.root);
   const baseline = loadBaseline(args.root);
-  const server = await startServer(args.root, args.port);
-  const srvPort = server.address().port;
-  const debugPort = 9400 + Math.floor(Math.random() * 500);
-  const chrome = launchChrome(debugPort);
+  const style = loadStyle(args.root);
+  const planFiles = discoverPlans(args.root, args.plans);
+  const guidePayload = Object.assign({}, baseline || { murals: [] }, { style: style });
+  let server = null;
+  let chrome = null;
   let cdp = null;
   const report = {
     ok: false,
@@ -548,6 +782,11 @@ async function main() {
     checkerError: ''
   };
   try {
+    if (args.plansOnly) throw Object.assign(new Error('skip-city'), { skipCity: true });
+    server = await startServer(args.root, args.port);
+    const srvPort = server.address().port;
+    const debugPort = 9400 + Math.floor(Math.random() * 500);
+    chrome = launchChrome(debugPort);
     const ver = await waitJson('http://127.0.0.1:' + debugPort + '/json/version', 80);
     cdp = new Cdp(ver.webSocketDebuggerUrl);
     await cdp.send('Target.setDiscoverTargets', { discover: true });
@@ -571,7 +810,7 @@ async function main() {
     }
     const scales = await cdp.eval('ARCH.preload()');
     report.scales = scales;
-    const pageReport = await cdp.eval('ARCH.run(' + JSON.stringify(baseline || { murals: [] }) + ')', 300000);
+    const pageReport = await cdp.eval('ARCH.run(' + JSON.stringify(guidePayload) + ')', 300000);
     Object.assign(report, pageReport, { sha: meta.sha, branch: meta.branch, shots: [], shotNames: [] });
     report.findings = report.findings || [];
     report.passes = report.passes || [];
@@ -608,27 +847,36 @@ async function main() {
         }
       }
     }
-    report.ok = !!(report.calib && report.calib.ok) && !(report.findings || []).some((f) => f.severity === 'fail') && !report.checkerError;
-    report.counts = report.counts || { buildings: 0, fails: 0 };
-    report.counts.fails = (report.findings || []).filter((f) => f.severity === 'fail').length;
-    report.counts.shots = report.shotNames.length;
   } catch (e) {
-    report.checkerError = String(e && e.stack || e);
-    report.ok = false;
-    if (!report.findings) report.findings = [];
-    if (!report.passes) report.passes = [];
+    if (!(e && e.skipCity)) {
+      report.checkerError = String(e && e.stack || e);
+      if (!report.findings) report.findings = [];
+      if (!report.passes) report.passes = [];
+    }
   } finally {
+    applyGuide(report, style, planFiles);
+    report.plansOnly = !!args.plansOnly;
+    const failN = (report.findings || []).filter((f) => f.severity === 'fail').length;
+    const cityOk = args.plansOnly ? !report.checkerError : !!(report.calib && report.calib.ok);
+    report.ok = cityOk && !failN && !report.checkerError;
+    report.counts = report.counts || { buildings: args.plansOnly ? 0 : 0, fails: 0 };
+    report.counts.fails = failN;
+    report.counts.warns = (report.findings || []).filter((f) => f.severity === 'warn').length;
+    report.counts.shots = (report.shotNames || []).length;
     writeReport(args.out, report);
     if (cdp) cdp.close();
-    try { chrome.child.kill('SIGKILL'); } catch (e) {}
-    try { fs.rmSync(chrome.dir, { recursive: true, force: true }); } catch (e) {}
-    server.close();
+    if (chrome) {
+      try { chrome.child.kill('SIGKILL'); } catch (e) {}
+      try { fs.rmSync(chrome.dir, { recursive: true, force: true }); } catch (e) {}
+    }
+    if (server) server.close();
   }
   const fails = (report.findings || []).filter((f) => f.severity === 'fail').length;
-  console.log((report.ok ? 'PASS' : 'FAIL') + ' findings=' + fails + ' shots=' + (report.shotNames || []).length + ' out=' + args.out);
+  const warns = (report.findings || []).filter((f) => f.severity === 'warn').length;
+  console.log((report.ok ? 'PASS' : 'FAIL') + ' findings=' + fails + ' warnings=' + warns + ' shots=' + (report.shotNames || []).length + ' out=' + args.out);
   console.log('sha ' + (report.sha || ''));
   for (const f of report.findings || []) {
-    if (f.severity === 'fail') console.log(f.check + ' ' + f.title + ' n=' + ((f.buildings && f.buildings.length) || 0));
+    if (f.severity === 'fail' || f.severity === 'warn') console.log(f.severity + ' ' + f.check + ' ' + f.title + ' n=' + ((f.buildings && f.buildings.length) || 0));
   }
   if (report.checkerError) console.log('CHECKER ' + report.checkerError.split('\n')[0]);
   if (report.calib && !report.calib.ok) {
