@@ -34,6 +34,10 @@ Exit 2 is the checker’s browser file, not a city break on this branch.
 
 `world/`, `adventure/`, `index.html`, `world.html`, `jr.html`, and `adventure.html` match `origin/main`. A harness load of those files reports `CITY` as an object and `drawBldg` as a function. `window.ARCH` stays undefined, and `__ARCH_READY` is `missing`, because `tools/arch-check-browser.js` is not on `main` or on this branch. It lives on `origin/cursor/arch-check-652e`. Serving that file makes the same harness report `ready`. `docs/NEON-WORLD-STYLE.md` is also only on that branch. Neither file was copied here.
 
-## Integration
+## Integration — PASS (exit 0)
 
-Recorded after the push onto `main`.
+`node /tmp/zd-checks/tools/integration-check.js --branch origin/cursor/character-viewer-f5bb --base origin/main` on `fe75a94`.
+
+Systems touched: none. No missing dependents. The diff against `origin/main` is `tools/dev/`, `tools/viewer-check.js`, `test/tools.html`, and `test-results/character-viewer/`.
+
+Self-test PASS after reading `docs/INTEGRATION-MAP.md` from `origin/cursor/integration-check-b88c`. That doc is not on this branch and was not committed.
