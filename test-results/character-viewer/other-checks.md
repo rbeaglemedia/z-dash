@@ -42,6 +42,10 @@ The spinner shows those official findings as CHECK lines (report `PR 78 ffac55c`
 
 Harness did not start (`missing`) even though city state was complete. Style guide `docs/NEON-WORLD-STYLE.md` is not on this branch (1 warning). Findings: 0. Shots: 0. This is a checker/harness miss, not a reviewed building fail. The official titles from that agent’s report (sha 896fb969, 24 buildings, 8 fails, 2 warns) are shown as CHECK lines. The live city bar still shows the game door fail.
 
-## Integration
+## Integration — PASS (exit 0)
 
-Recorded after the push of this source. See the commit that follows this note.
+`node /tmp/zd-checks/tools/integration-check.js --branch origin/cursor/character-viewer-f5bb --base origin/cursor/adventure-world-plan-52cf` on `94407f7`.
+
+Systems touched: none. No missing dependents. The diff against `origin/cursor/adventure-world-plan-52cf` is `tools/dev/`, `tools/viewer-check.js`, `test/tools.html`, and `test-results/character-viewer/`.
+
+Self-test PASS after reading `docs/INTEGRATION-MAP.md` from `origin/cursor/integration-check-b88c`. That doc is not on this branch and was not committed.
