@@ -87,8 +87,13 @@ function miniOnSeg(r,x,z){const x0=Math.min(r.x0,r.x1),x1=Math.max(r.x0,r.x1),z0
 function miniDistrictPoint(d,L){const roads=((L.minimap&&L.minimap.roads)||L.roads||[]).filter(r=>r&&!r.spur&&(r.kind==='street'||r.kind==='lane'));const mx=(d.x0+d.x1)/2,mz=(d.z0+d.z1)/2;let best=null;for(const r of roads){const hit=miniOnSeg(r,mx,mz);if(!hit)continue;const inside=hit.x>=Math.min(d.x0,d.x1)&&hit.x<=Math.max(d.x0,d.x1)&&hit.z>=Math.min(d.z0,d.z1)&&hit.z<=Math.max(d.z0,d.z1);if(!inside)continue;const score=(r.kind==='street'?0:100)+hit.d;if(!best||score<best.score)best={x:hit.x,z:hit.z,score};}return best||{x:mx,z:mz};}
 function miniDistricts(cx,cy,mw,mh,yaw,ppm){const L=miniLayout();if(!L)return;const list=(L.minimap&&L.minimap.districts)||L.districts;if(!list)return;const co=Math.cos(yaw),si=Math.sin(yaw),pad=14,hx=mw/2-pad,hy=mh/2-pad;
   for(const d of list){if(!d||!isFinite(d.x0)||!isFinite(d.x1)||!isFinite(d.z0)||!isFinite(d.z1))continue;const w=Math.abs(d.x1-d.x0)*ppm,h=Math.abs(d.z1-d.z0)*ppm;if(Math.max(w,h)<52)continue;const at=miniDistrictPoint(d,L),dx=at.x-P.x,dz=at.z-P.z,sx=(dx*co-dz*si)*ppm,sy=(-dx*si-dz*co)*ppm;if(Math.abs(sx)>hx||Math.abs(sy)>hy)continue;ctx.save();ctx.translate(cx+sx,cy+sy);hT(ctx,String(d.label||d.id||''),0,3,Math.max(8,Math.min(12,Math.max(w,h)/12)),miniDistCol(d.id),'center',H_FONT,800,3);ctx.restore();}}
-function miniWxLabels(cx,cy,mw,mh,yaw,ppm,span){const L=miniLayout();if(!L||!L.weather||span<1200)return;const co=Math.cos(yaw),si=Math.sin(yaw),pad=14,hx=mw/2-pad,hy=mh/2-pad;
-  for(const b of L.weather){if(!b||!isFinite(b.x0)||!isFinite(b.z0)||!b.name)continue;const mx=(b.x0+b.x1)/2,mz=(b.z0+b.z1)/2,dx=mx-P.x,dz=mz-P.z,sx=(dx*co-dz*si)*ppm,sy=(-dx*si-dz*co)*ppm;if(Math.abs(sx)>hx||Math.abs(sy)>hy)continue;ctx.save();ctx.globalAlpha=.72;ctx.translate(cx+sx,cy+sy);hT(ctx,String(b.name),0,3,8,'#d5e6ff','center',H_FONT,700,2);ctx.restore();}}
+function miniWxLabels(cx,cy,mw,mh,yaw,ppm,span){
+  if(window.ZD_KILL&&ZD_KILL.weather)return;
+  var __p=window.ZD_PERF,__t=__p?performance.now():0;
+  const L=miniLayout();if(!L||!L.weather||span<1200)return;const co=Math.cos(yaw),si=Math.sin(yaw),pad=14,hx=mw/2-pad,hy=mh/2-pad;
+  for(const b of L.weather){if(!b||!isFinite(b.x0)||!isFinite(b.z0)||!b.name)continue;const mx=(b.x0+b.x1)/2,mz=(b.z0+b.z1)/2,dx=mx-P.x,dz=mz-P.z,sx=(dx*co-dz*si)*ppm,sy=(-dx*si-dz*co)*ppm;if(Math.abs(sx)>hx||Math.abs(sy)>hy)continue;ctx.save();ctx.globalAlpha=.72;ctx.translate(cx+sx,cy+sy);hT(ctx,String(b.name),0,3,8,'#d5e6ff','center',H_FONT,700,2);ctx.restore();}
+  if(__p){try{var __d=performance.now()-__t;__p.add('weather',__d);__p.add('minimap',-__d);}catch(e){window.ZD_PERF=null;}}
+}
 // Giant dome. A live big pitch wins. Otherwise the layout field anchor. The old dome is only the fallback when neither exists.
 function miniField(){const L=miniLayout(),A=miniAnchor(L,'field')||(L&&L.field),live=(typeof SOCCER!=='undefined'&&SOCCER.field)||null,box=src=>{const cx=src.cx,cz=src.cz,hw=src.hw||52,hl=src.hl||80;return {cx,cz,hw,hl,x0:isFinite(src.x0)?src.x0:cx-hw,x1:isFinite(src.x1)?src.x1:cx+hw,z0:isFinite(src.z0)?src.z0:cz-hl,z1:isFinite(src.z1)?src.z1:cz+hl,goalW:src.goalW,goalD:src.goalD,domeRx:src.domeRx||src.domeHw||src.rx,domeRz:src.domeRz||src.domeHl||src.ry,roadX0:isFinite(src.roadX0)?src.roadX0:NaN,tunW:src.tunW||src.roadW};};
   if(live&&isFinite(live.cx)&&isFinite(live.hw)&&live.hw>=40)return box(live);
@@ -253,7 +258,7 @@ function syncPcFps(){const on=document.documentElement.classList.contains('pc-mo
   if(!on){if(n)n.remove();return;}
   if(!n){n=document.createElement('div');n.id='pcFps';n.setAttribute('aria-label','Frames per second');(document.querySelector('.kbody')||document.body).appendChild(n);}
   const v=Math.max(0,Math.round(typeof fps==='number'?fps:0));const t=v+' FPS';if(n.textContent!==t)n.textContent=t;}
-function drawHud(dt){const t=performance.now()/1000,w=W,h=H,ipad=zIpadOn(),s=ipad?1:clamp(h/378,.72,1.35);ctx.save();ctx.scale(s,s);const Wd=w/s,Hh=h/s,TU=TUNE;
+function drawHud(dt){var __zh=typeof zdT==='function'?zdT():-1;const t=performance.now()/1000,w=W,h=H,ipad=zIpadOn(),s=ipad?1:clamp(h/378,.72,1.35);ctx.save();ctx.scale(s,s);const Wd=w/s,Hh=h/s,TU=TUNE;
   const cssL=ipad&&typeof zIpadChrome==='function'?zIpadChrome(innerWidth,innerHeight):null;
   const sx=cssL?W/Math.max(1,innerWidth):1,sy=cssL?H/Math.max(1,innerHeight):1;
   const scBox=b=>b?{x:b.x*sx,y:b.y*sy,w:b.w*sx,h:b.h*sy}:null;
@@ -261,7 +266,9 @@ function drawHud(dt){const t=performance.now()/1000,w=W,h=H,ipad=zIpadOn(),s=ipa
   if(ipad)placeIpadDom(true,cssL);else placeIpadDom(false);
   vS+=(P.v*2.237-vS)*(1-Math.exp(-dt/.3));vT+=dt;if(vT>.14){vT=0;const r=Math.round(vS);if(Math.abs(vS-vShown)>.75||r===0)vShown=r;}
   // TOP LEFT: minimap in the slot the ALT/THR panel used on main (x 12, y 10, 196×134)
-  {const mapW=L?L.map.w:Math.min(196,Math.max(96,Wd/2-79));drawMini(L?L.map.x:12,L?L.map.y:10,mapW,L?L.map.h:134,dt);}
+  if(typeof zdAdd==='function')zdAdd('hud',__zh);__zh=typeof zdT==='function'?zdT():-1;
+  if(!(window.ZD_KILL&&ZD_KILL.minimap)){const mapW=L?L.map.w:Math.min(196,Math.max(96,Wd/2-79));drawMini(L?L.map.x:12,L?L.map.y:10,mapW,L?L.map.h:134,dt);}
+  if(typeof zdAdd==='function')zdAdd('minimap',__zh);__zh=typeof zdT==='function'?zdT():-1;
   // TOP CENTRE: ROTATE speed cue (WANTED's level / ramp bar)
   {const gw=L?L.tilt.w:118,gh=L?L.tilt.h:58,gx=L?L.tilt.x:Wd/2-gw/2,gy=L?L.tilt.y:6,cm=window.TCMD||[0,0],ok=P.ground&&P.rotOK,cx=gx+gw/2,cy=gy+gh/2,on=(typeof tiltOk==='function'&&tiltOk())||document.documentElement.classList.contains('pc-mode');
     ctx.save();ctx.beginPath();ctx.roundRect(gx,gy,gw,gh,12);ctx.fillStyle='rgba(10,5,24,.82)';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=on?H_CYAN:'#55507a';ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=6;ctx.stroke();
@@ -306,7 +313,7 @@ function drawHud(dt){const t=performance.now()/1000,w=W,h=H,ipad=zIpadOn(),s=ipa
   // NOS bottle on the NOS button (WANTED's .nfxcan)
   if(!nosCan){nosCan=document.createElement('div');nosCan.className='nfxcan';nosCan.innerHTML='<i></i><b></b>';document.getElementById('nos').appendChild(nosCan);}
   const f=Math.round(P.nosTank*200)/200;if(f!==nosCan.f){nosCan.f=f;nosCan.style.setProperty('--cf',f);document.getElementById('nos').classList.toggle('ready',f>=.99);document.getElementById('nos').classList.toggle('empty',f<.05);}
-  syncPcFps();}
+  syncPcFps();if(typeof zdAdd==='function')zdAdd('hud',__zh);}
 let nosCan=null;
 // ===== pause menu (WANTED ⏸ → RESUME / row / HOME) =====
 let paused=false;function kPause(on){paused=on;document.getElementById('kHome').classList.toggle('hidden',!on);document.getElementById('kPzBg').classList.toggle('hidden',!on);document.getElementById('kMenuB').classList.toggle('kopen',on);}

@@ -40,6 +40,9 @@ self.addEventListener('fetch', (e) => {
   const req = e.request, url = new URL(req.url);
   if (req.method !== 'GET' || url.origin !== self.location.origin) return; // Spotify etc. go straight to the network
   if (url.pathname === '/.well-known' || url.pathname.startsWith('/.well-known/')) return; // asset links: network only, never the page cache
+  // Dev tools live under /test/ with their own manifest and test/sw.js (scope /test/ only).
+  // Do not cache them and do not let pageKey() serve index.html for a /test/ navigation.
+  if (url.pathname === '/test' || url.pathname.startsWith('/test/')) return;
   if (isAdvPath(url)) { // own cache, NETWORK FIRST. A miss must not fall through to the index.html key.
     e.respondWith(caches.open(ADV_CACHE).then((c) => c.match(req, { ignoreSearch: true }).then((hit) => {
       let timer;

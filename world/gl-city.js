@@ -495,7 +495,7 @@
     const len = screenLen(seg[0], seg[1]);
     if (!(len > 0.4)) return false;
     const half = Math.max(0.4, width) * 0.5;
-    const glowExtra = glowOn ? GLOW_PX : 0;
+    const glowExtra = api.glow ? GLOW_PX : 0;
     const drawHalf = half + glowExtra * 0.5;
     const core = glowExtra > 0 ? (half / drawHalf) : 1;
     // core is a uniform for the whole line pass. Mixed widths still fade from the
@@ -683,7 +683,7 @@
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    const core = glowOn ? (api._core || 0.35) : 1;
+    const core = api.glow ? (api._core || 0.35) : 1;
     if (fillN) {
       gl.useProgram(program);
       uniforms(program, 1);

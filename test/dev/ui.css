@@ -1,0 +1,75 @@
+#zd-app, #zd-panel, #zd-pin, #zd-banner {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  color: #f4ecff;
+}
+#zd-app { margin: 0; min-height: 100%; background: #07040f; }
+#zd-app #zd-shell { min-height: 100vh; display: flex; flex-direction: column; }
+#zd-app #zd-bar, #zd-panel #zd-panel-bar {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  padding: calc(env(safe-area-inset-top, 0px) + 8px) 108px 8px calc(env(safe-area-inset-left, 0px) + 8px);
+  background: #12081f;
+}
+#zd-app #zd-bar h1 { margin: 0; font-size: 16px; letter-spacing: .4px; }
+#zd-app .zd-game-label { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+#zd-app #zd-game, #zd-app select, #zd-panel select, #zd-app input, #zd-panel input, #zd-app textarea, #zd-panel textarea {
+  min-height: 48px; font-size: 16px; color: #fff; background: #1b1030; border: 2px solid #3ee6ff; border-radius: 10px; padding: 8px;
+}
+#zd-app #zd-votes, #zd-panel #zd-votes { display: flex; gap: 8px; flex-wrap: wrap; }
+#zd-app #zd-error, #zd-banner {
+  margin: 8px; padding: 12px 14px; background: #3a1020; border: 2px solid #ff5a7a; border-radius: 10px; font-size: 16px;
+}
+#zd-app #zd-error[hidden], #zd-panel[hidden], #zd-shell[hidden], #zd-banner[hidden] { display: none; }
+#zd-app #zd-body { flex: 1; display: flex; min-height: 0; }
+#zd-app #zd-tabs, #zd-panel #zd-tabs { display: flex; gap: 8px; padding: 8px; }
+#zd-app #zd-stage { flex: 1; display: flex; min-width: 0; min-height: 0; }
+#zd-app #zd-game-frame { flex: 1; border: 0; background: #000; min-width: 0; }
+#zd-app #dock, #zd-panel #zd-panel-dock { overflow: auto; padding: 8px; background: #100818; }
+#zd-app .zd-btn, #zd-panel .zd-btn, #zd-pin .zd-btn, #zd-wrench {
+  min-height: 48px; min-width: 48px; padding: 10px 14px; border-radius: 12px;
+  border: 2px solid #3ee6ff; background: #1b1030; color: #fff; font-size: 16px; font-weight: 700;
+}
+#zd-app .zd-btn[aria-selected="true"], #zd-panel .zd-btn[aria-selected="true"], #zd-app .zd-btn[aria-pressed="true"], #zd-panel .zd-btn[aria-pressed="true"] {
+  background: #ff4fd8; color: #1a0614;
+}
+#zd-app .zd-row, #zd-panel .zd-row, #zd-pin .zd-keys { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+#zd-app .zd-msg, #zd-panel .zd-msg { font-size: 15px; line-height: 1.35; }
+#zd-app .zd-nums, #zd-panel .zd-nums { font: 700 15px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+#zd-app .zd-sys, #zd-panel .zd-sys, #zd-app .zd-out, #zd-panel .zd-out { white-space: pre-wrap; width: 100%; min-height: 72px; }
+#zd-app .zd-graph, #zd-panel .zd-graph { width: 100%; height: 88px; background: #12081c; }
+#zd-app .zd-card, #zd-panel .zd-card { border: 1px solid #3a1550; border-radius: 10px; padding: 8px; margin: 8px 0; }
+#zd-app .zd-device, #zd-panel .zd-device { display: grid; grid-template-columns: 140px 1fr; gap: 6px 10px; }
+#zd-app .zd-slot, #zd-panel .zd-slot { width: 100%; min-height: 240px; border: 0; background: #000; }
+#zd-wrench {
+  position: fixed; top: calc(env(safe-area-inset-top, 0px) + 8px); left: 50%; transform: translateX(-50%);
+  z-index: 70; width: 56px; height: 56px;
+}
+#zd-panel {
+  position: fixed; left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+  max-height: 70vh; overflow: auto; z-index: 75; background: #100818; border: 2px solid #3ee6ff; border-radius: 16px;
+}
+#zd-pin {
+  position: fixed; inset: 0; z-index: 85; background: rgba(7, 4, 15, .94);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
+}
+#zd-pin .zd-dots { font: 700 28px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 8px; }
+#zd-banner { position: fixed; left: 8px; right: 8px; top: calc(env(safe-area-inset-top, 0px) + 8px); z-index: 90; }
+#zd-app .lil-gui, #zd-panel .lil-gui { font-size: 15px; }
+#zd-app .lil-gui .controller, #zd-panel .lil-gui .controller { min-height: 44px; }
+#zd-app.zd-collapsed #dock { display: none; }
+@media (max-width: 800px) {
+  #zd-app #zd-tabs, #zd-panel #zd-tabs { overflow-x: auto; flex-wrap: nowrap; }
+  #zd-app #zd-body { flex-direction: column; }
+  #zd-app #zd-stage { flex-direction: column; }
+  #zd-app #zd-game-frame { height: 42vh; flex: none; }
+  #zd-app #dock { height: 46vh; }
+}
+@media (min-width: 801px) {
+  #zd-app #zd-tabs { flex-direction: column; width: 168px; }
+  #zd-app #dock { width: min(420px, 38vw); }
+}
+@media (max-height: 420px) {
+  #zd-app .zd-btn, #zd-panel .zd-btn, #zd-pin .zd-btn { min-height: 44px; }
+  #zd-app #zd-game-frame { height: 36vh; }
+  #zd-app #dock { height: 40vh; }
+}

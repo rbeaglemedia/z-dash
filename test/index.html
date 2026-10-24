@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12081f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ZD Tools">
+<title>Z-DASH Dev Tools</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/tools-180.png">
+<link rel="stylesheet" href="dev/ui.css">
+</head>
+<body id="zd-app">
+<div id="zd-gate"></div>
+<div id="zd-shell" hidden>
+  <header id="zd-bar">
+    <h1>Z-DASH Tools</h1>
+    <label class="zd-game-label">Game
+      <select id="zd-game"></select>
+    </label>
+    <div id="zd-votes"></div>
+    <button type="button" id="zd-collapse" class="zd-btn">Hide dock</button>
+    <button type="button" id="zd-lock" class="zd-btn">Lock this device</button>
+  </header>
+  <div id="zd-error" role="alert" hidden></div>
+  <div id="zd-body">
+    <nav id="zd-tabs"></nav>
+    <div id="zd-stage">
+      <iframe id="zd-game-frame" title="Game"></iframe>
+      <section id="dock"></section>
+    </div>
+  </div>
+</div>
+<script src="../shared/fps-counter.js"></script>
+<script src="modules/api.js"></script>
+<script src="dev/panels.js"></script>
+<script src="hub.js"></script>
+</body>
+</html>

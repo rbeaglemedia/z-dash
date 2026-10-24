@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FPS Lab fixture</title>
+</head>
+<body>
+<script src="perf.js"></script>
+<script src="../../shared/fps-counter.js"></script>
+<script>
+(function () {
+  var TARGET = { physics: 0.8, traffic: 2, buildings: 4, car: 1, effects: 0.5, minimap: 0.4, hud: 0.6, weather: 0.3, other: 0.2 };
+  window.ZD_PERF = ZD_PERF_FACTORY();
+  window.ZD_PERF.setBudget(16.7);
+  var actual = {};
+  var k;
+  for (k in TARGET) actual[k] = 0;
+  var walls = [];
+  var frames = 0;
+  function burn(ms) {
+    var end = performance.now() + ms;
+    while (performance.now() < end) {}
+  }
+  function frame() {
+    var wall0 = performance.now();
+    var p = ZD_PERF;
+    p.begin();
+    for (k in TARGET) {
+      var t0 = performance.now();
+      burn(TARGET[k]);
+      var dt = performance.now() - t0;
+      actual[k] += dt;
+      p.add(k, dt);
+    }
+    p.end();
+    walls.push(performance.now() - wall0);
+    frames++;
+    if (frames < 120) requestAnimationFrame(frame);
+    else {
+      var n = frames;
+      var avg = {};
+      for (k in actual) avg[k] = actual[k] / n;
+      window.__LAB = { done: true, frames: n, target: TARGET, actual: avg, snap: p.snapshot(), sums: p.frameSums(), walls: walls };
+    }
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

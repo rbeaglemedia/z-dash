@@ -45,6 +45,7 @@
     if (html.indexOf('world/city.js') < 0) throw new Error('city');
     html = html.replace(/(<script src="\.\.\/world\/city\.js[^"]*"><\/script>)/, '$1' + inject);
     html = html.replace('</body>', '<script src="world/drive-shot.js?v=dev38"><\/script></body>');
+    html = html.replace('</body>', '<script src="../shared/fps-counter.js"><\/script></body>');
     if (html.indexOf('<head>') >= 0) html = html.replace('<head>', '<head>' + keep);
     else html = keep + html;
     document.open();
