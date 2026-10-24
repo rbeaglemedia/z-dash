@@ -538,6 +538,11 @@
         buttons[i].classList.toggle('on', buttons[i].dataset.item === armed);
       }
     }
+    const showAct = !!(armed || selected >= 0);
+    const rot = document.getElementById('walkItemRotate');
+    const rm = document.getElementById('walkItemRemove');
+    if (rot) rot.style.display = showAct ? 'flex' : 'none';
+    if (rm) rm.style.display = showAct ? 'flex' : 'none';
   }
   function bumpCap() {
     if (cap >= 12) {
@@ -671,7 +676,7 @@
       '#walkItems{position:fixed;left:8px;top:56px;z-index:96;width:min(240px,46vw);max-height:min(240px,calc(100vh - 160px));overflow:hidden;display:none;flex-direction:column;gap:8px;padding:8px;border-radius:16px;border:2px solid #243044;background:rgba(244,247,251,.96);color:#243044;box-sizing:border-box;transition:none}' +
       '#walkItems button{display:flex;align-items:center;justify-content:center;min-height:36px;border-radius:10px;border:1.5px solid #243044;background:#fff;color:#243044;font:800 11px/1.1 Orbitron,sans-serif;padding:4px 6px;cursor:pointer;transition:none}' +
       '#walkItems .wi-body{display:flex;gap:8px;min-height:0;flex:1 1 auto;overflow:hidden}' +
-      '#walkItems .wi-cats{display:flex;flex-direction:column;gap:8px;width:48px;flex:0 0 48px;overflow-x:hidden;overflow-y:auto;max-height:188px}' +
+      '#walkItems .wi-cats{display:flex;flex-direction:column;gap:8px;width:48px;flex:0 0 48px;min-height:0;overflow-x:hidden;overflow-y:auto;max-height:188px}' +
       '#walkItems .wi-cats button{width:48px;min-height:44px;padding:4px 0}' +
       '#walkItems .wi-cats button.on{background:#243044;color:#f4f7fb}' +
       '#walkItems .wi-cats img{width:26px;height:26px;display:block;border-radius:6px}' +
@@ -1202,6 +1207,7 @@
     parkRoomButtons(!!(show && open && window.WALK_MODE && WALK_MODE.insideBuilding));
     try { bindRoom(); } catch (e) {}
     refreshCount();
+    refreshActs();
     moveDyn();
   }
 
