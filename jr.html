@@ -12383,6 +12383,7 @@ var qrcode = function() {
       X.render(ctx, rx, ry, rw, rh, { xray: false, yaw: K.yaw, pitch: 0.24, dist: Math.max(garage ? 10.5 : 9.6, need) * (K.gzS ?? 1), ty: 0.45 + (1 - (K.gzS ?? 1)) * 0.12, fov, drl: 1, kid: L, noDraw: true, st: { t, throttle: 40 + 40 * Math.sin(t * 2) } });
       ctx.save(); ringR.forEach((r, i) => { const pts = X.groundRing(r); if (pts.length < 3) return; ctx.beginPath(); pts.forEach((p, j) => (j ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.closePath(); ctx.strokeStyle = L.glow; ctx.globalAlpha = 0.55 - i * 0.14; ctx.lineWidth = 5 - i; if (!(ZD.perf && ZD.perf.low)) { ctx.shadowColor = L.glow; ctx.shadowBlur = 12; } ctx.stroke(); }); ctx.restore();
       ctx.drawImage(X.canvas, rx, ry, rw, rh);
+      if (window.GPET) GPET.draw(ctx, X, K.yaw);
     }
     T(ctx, P.name, cw / 2, 40, garage ? 22 : 28, '#ffffff', 'center', FONT, 900, 14);
     if (!garage) {
@@ -13345,6 +13346,7 @@ var qrcode = function() {
     }
   };
   let gNav = { lvl: 1, root: null, broad: null, sub: null };
+  let gPetHover = null;
   const GHOUSE_KEY = 'zdash.house.v1';
   const GCREW_KEY = 'zdash.crew.v1';
   const GHOUSE_WALLS = [['neon-grid', 'NEON GRID', '#3ee6ff'], ['bubblegum', 'BUBBLEGUM', '#ff4fd8'], ['midnight', 'MIDNIGHT', '#9b5cff'], ['lime-loft', 'LIME LOFT', '#7dff6b']];
@@ -13495,7 +13497,15 @@ var qrcode = function() {
     el.querySelectorAll('[data-hwall]').forEach((b) => b.addEventListener('click', () => { gSaveHouse({ wall: b.dataset.hwall }); renderGarage(); }));
     el.querySelectorAll('[data-hsign]').forEach((b) => b.addEventListener('click', () => { gSaveHouse({ sign: b.dataset.hsign }); renderGarage(); }));
     el.querySelectorAll('[data-hitem]').forEach((b) => b.addEventListener('click', () => { const k = b.dataset.hitem; const h = gHouse(); const p = {}; p[k] = !h[k]; gSaveHouse(p); renderGarage(); }));
-    el.querySelectorAll('[data-cpet]').forEach((b) => b.addEventListener('click', () => { gSaveCrew({ pet: b.dataset.cpet }); renderGarage(); }));
+    el.querySelectorAll('[data-cpet]').forEach((b) => {
+      b.addEventListener('click', () => { gSaveCrew({ pet: b.dataset.cpet }); gPetHover = null; renderGarage(); });
+      const peek = () => { gPetHover = b.dataset.cpet; };
+      const clear = () => { if (gPetHover === b.dataset.cpet) gPetHover = null; };
+      b.addEventListener('pointerenter', peek);
+      b.addEventListener('pointerleave', clear);
+      b.addEventListener('focus', peek);
+      b.addEventListener('blur', clear);
+    });
     el.querySelectorAll('[data-cchar]').forEach((b) => b.addEventListener('click', () => { gSaveCrew({ character: b.dataset.cchar }); renderGarage(); }));
   }
   function bindNav(el) {
@@ -13733,6 +13743,7 @@ var qrcode = function() {
     K.wheelAng += ((f.speed || 0) * 0.44704 / 0.33) * dt;
     if (K.real && (f.speed || 0) > 3) { const before = Math.floor(P.ride / BOX_EVERY); P.ride += dt; if (Math.floor(P.ride / BOX_EVERY) > before) { P.boxes++; toast('PART BOX EARNED! Open it in the GARAGE', 3200); if (K.tab === 'garage') renderGarage(); } }
     const { ctx, w, h } = ZD.fit($('#kCv'));
+    if (window.GPET) GPET.pose(dt, K.tab === 'garage' && gNav.lvl >= 3 && gNav.root === 'home' && gNav.sub === 'pet', gPetHover || (gCrew().pet || 'fox'));
     if (K.tab === 'drive') drawDrive(ctx, w, h, f, dt, t); else if (K.tab === 'car') drawCar(ctx, w, h, f, dt, t, false); else if (K.tab === 'garage') drawCar(ctx, w, h, f, dt, t, true); else if (K.tab === 'road') drawRoad(ctx, w, h, f, dt, t); else if (K.tab === 'boost') drawBoost(ctx, w, h, f, dt, t); else if (K.tab === 'drag') drawDrag(ctx, w, h, f, K.dragFrozen ? 0 : dt, t); else if (K.tab === 'wanted') drawWanted(ctx, w, h, f, dt, t);
     drawParts(ctx, dt);
     if (now - hudT > 250) { hudT = now; $('#kStars').textContent = `★ ${P.stars}`; $('#kCoins').textContent = `● ${P.coins}`; $('#kSrc').textContent = K.srcLabel === 'PRACTICE' ? '' : K.srcLabel; $('#kBadge').textContent = K.real ? 'REAL DRIVE ×2' : 'PRACTICE'; $('#kBadge').classList.toggle('real', !!K.real); $('#kSrc').classList.toggle('live', K.srcLabel === 'LIVE'); if (ZD.Music) { const on = ZD.Music.sync === 'mic'; $('#kSync').textContent = `♪ MUSIC SYNC: ${on ? 'ON' : 'OFF'}`; $('#kSync').classList.toggle('hot', on); } }
@@ -13835,5 +13846,9 @@ var qrcode = function() {
  let n=0;(function t(){if(!(window.ZDKID&&add())&&n++<200)setTimeout(t,100);})();
 })();</script>
 <script src="world/neon-paint.js?v=28"></script>
+<script src="shared/car-hinge.js?v=30"></script>
+<script src="world/crew-data.js?v=30"></script>
+<script src="world/crew.js?v=30"></script>
+<script src="world/garage-pet.js?v=30"></script>
 </body>
 </html>

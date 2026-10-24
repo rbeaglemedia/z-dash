@@ -907,6 +907,35 @@ window.addEventListener&&window.addEventListener('storage',e=>{
 });
 try{new BroadcastChannel('zdash-customdance').onmessage=()=>{hRaw=null;hObjRaw='';};}catch(e){}
 try{new BroadcastChannel('zdash-petdance').onmessage=()=>{pRaw=null;pObjRaw='';};}catch(e){}
+/* Garage turntable only. Standing idle, no saved dance clip, feet stay on y=0.
+   Star Bunny is not in the shared rig (that would change the world pet cycle);
+   it is added here the first time the garage preview draws one. */
+function ensureGarageRigs(){
+  if(D.PET_RIG.bunny)return;
+  D.PET_RIG.bunny={n:'STAR BUNNY',len:.20,leg:.13,head:.070,body:.052,ear:'point',earL:.11,tail:'stub',tailL:.045,tailR:.03,snout:.016};
+}
+function garageRig(type){
+  if(type==='dog')return 'robo';
+  if(type==='bunny')return 'bunny';
+  return D.PET_RIG[type]?type:'fox';
+}
+function garageIdleQ(phase){
+  const q=qFill();
+  q.bob=.012*Math.sin((phase||0)*2);
+  q.wag=.22*Math.sin((phase||0)*3);
+  q.look=10*Math.sin((phase||0)*1.1);
+  return q;
+}
+const GARAGE_GLOW={dog:'#3ee6ff',cat:'#ff4ad8',bunny:'#fff04d',dragon:'#b48cff',fox:'#ffb020'};
+function paintGaragePet(ctx,project,type,tSec,origin,faceDeg){
+  if(!ctx||typeof project!=='function'||!origin||!type||type==='none')return false;
+  ensureGarageRigs();
+  const rig=garageRig(type);
+  if(!D.PET_RIG[rig])return false;
+  const q=tSec<SIG?sigDance(type,Math.max(0,Math.min(.999,tSec/SIG))):garageIdleQ(tSec);
+  q.yaw=(q.yaw||0)+(faceDeg||0);
+  return paintPetStanding(ctx,rig,q,project,GARAGE_GLOW[type]||'#ffb020',origin);
+}
 if(typeof drawWaterline==='function'&&!drawWaterline.__crewHooked){
   const _dw=drawWaterline;
   drawWaterline=function(){
@@ -920,6 +949,7 @@ window.CREW={
   update,
   preview,
   paintCompanion,
+  paintGaragePet,
   petScale:PET_DRAW_SCALE,
   parts(who){const w=who==='boy'?'boy':who==='girl'?'girl':whoNow();return (st.rigs&&st.rigs[w]&&st.rigs[w].parts)||logical[w];},
   debugHuman(gait,tSec,phase){syncDanceOpts();return humanSpec(gait,phase==null?tSec:phase,tSec,true);},
