@@ -58,6 +58,17 @@ def shade(c, k):
     return tuple(max(0, min(255, int(v * k))) for v in c)
 
 
+TIER = 'arcade'
+MS = {
+    ('a', 'arcade'): 'Arcade est. 0.4-1.2 ms',
+    ('a', 'street'): 'Street est. 0.7-2.0 ms',
+    ('b', 'arcade'): 'Arcade est. 0.8-2.0 ms atlased',
+    ('b', 'street'): 'Street est. 2-6 ms if materials split',
+    ('c', 'arcade'): 'Arcade est. 0.5-1.6 ms',
+    ('c', 'street'): 'Street est. 0.8-2.5 ms',
+}
+
+
 def win_atlas(dr, poly, kind):
     xs = [p[0] for p in poly]
     ys = [p[1] for p in poly]
@@ -68,7 +79,14 @@ def win_atlas(dr, poly, kind):
     col = 0
     row_h = 7 if (y1 - y0) > 80 else 5
     y = y0
+    row = 0
     while y < y1 - 3:
+        # Arcade keeps a sparse window grid. Street fills the same wall.
+        if TIER == 'arcade' and row % 2:
+            y += row_h
+            row += 1
+            col += 1
+            continue
         x = x0
         cyc = 0
         while x < x1 - 3:
@@ -91,9 +109,10 @@ def win_atlas(dr, poly, kind):
                     continue
                 ww, hh = 5, max(2, row_h - 3)
             dr.rectangle([x, y, x + ww, y + hh], fill=color)
-            x += 9
+            x += 16 if TIER == 'arcade' else 8
             cyc += 1
         y += row_h
+        row += 1
         col += 1
 
 
@@ -166,7 +185,41 @@ def stadium(dr, proj, x, z, w, d):
     dr.line([rim_a, rim_b], fill=AMBER, width=3)
 
 
-def scene(kind, w, h):
+def door(dr, proj, x, z, w, h):
+    # Same door in Arcade and Street. Only the surface around it changes.
+    quad = [proj(x + w * 0.38, 0, z - 0.15), proj(x + w * 0.62, 0, z - 0.15),
+            proj(x + w * 0.62, h * 0.28, z - 0.15), proj(x + w * 0.38, h * 0.28, z - 0.15)]
+    dr.polygon(quad, fill=(20, 8, 16))
+    dr.line(quad + [quad[0]], fill=CYAN, width=2)
+
+
+def garage(dr, proj, x, z, w, h):
+    # Same garage opening in both tiers.
+    quad = [proj(x + w * 0.12, 0, z - 0.15), proj(x + w * 0.48, 0, z - 0.15),
+            proj(x + w * 0.48, h * 0.22, z - 0.15), proj(x + w * 0.12, h * 0.22, z - 0.15)]
+    dr.polygon(quad, fill=(16, 10, 22))
+    dr.line(quad + [quad[0]], fill=AMBER, width=2)
+
+
+def roof_cap(dr, proj, x, z, w, d, h, color):
+    # Static baked roof mark. Drawn the same in Arcade and Street (flying still sees it).
+    y = h + 0.2
+    quad = [proj(x + w * 0.18, y, z + d * 0.38), proj(x + w * 0.82, y, z + d * 0.38),
+            proj(x + w * 0.82, y, z + d * 0.62), proj(x + w * 0.18, y, z + d * 0.62)]
+    dr.polygon(quad, fill=color)
+
+
+def awning(dr, proj, x, z, w, h, color):
+    y = h * 0.34
+    quad = [proj(x + w * 0.2, y, z - 0.1), proj(x + w * 0.8, y, z - 0.1),
+            proj(x + w * 0.84, y - 1.2, z - 2.2), proj(x + w * 0.16, y - 1.2, z - 2.2)]
+    dr.polygon(quad, fill=color)
+    dr.line(quad + [quad[0]], fill=color, width=2)
+
+
+def scene(kind, w, h, tier):
+    global TIER
+    TIER = tier
     img = Image.new('RGB', (w, h))
     hy = sky(img)
     dr = ImageDraw.Draw(img)
@@ -180,33 +233,48 @@ def scene(kind, w, h):
         f = h * 0.85
         return (w * 0.50 + x * f / zz, hy - y * f / zz)
 
-    # back to front (larger z first)
+    # back to front (larger z first). Caps sit on the same boxes in both tiers.
+    caps = []
     if kind == 'a':
         specs = [(-26, -40, 10, 8, 28), (-12, -38, 12, 9, 46), (4, -42, 14, 10, 34),
                  (22, -36, 9, 8, 22), (-8, -18, 8, 7, 16), (8, -16, 7, 6, 12)]
+        caps = specs
         for s in specs:
             box(dr, proj, *s, 'glass')
     elif kind == 'b':
         specs = [(-26, -40, 10, 8, 22), (-12, -38, 12, 9, 30), (4, -42, 14, 10, 26),
                  (22, -36, 9, 8, 18), (-8, -18, 8, 7, 12), (8, -16, 7, 6, 10)]
+        caps = specs
         for s in specs:
             box(dr, proj, *s, 'pastel')
     else:
+        caps = [(-28, -44, 9, 8, 24), (2, -42, 12, 9, 30), (18, -36, 8, 7, 18)]
         box(dr, proj, -28, -44, 9, 8, 24, 'glass')
         spire(dr, proj, -14, -48, 8, 52)
         box(dr, proj, 2, -42, 12, 9, 30, 'glass')
         box(dr, proj, 18, -36, 8, 7, 18, 'glass')
         house(dr, proj, -10, -16, 9, 7, 11)
         stadium(dr, proj, 6, -14, 16, 8)
+    # Doors, garages, and the baked roof cap match. Street only adds the storefront.
+    door(dr, proj, -8, -18, 8, 16)
+    garage(dr, proj, 8, -16, 7, 12)
+    cap = CYAN if kind != 'b' else (180, 90, 78)
+    for spec in caps:
+        roof_cap(dr, proj, spec[0], spec[1], spec[2], spec[3], spec[4], cap)
+    if tier == 'street':
+        awning(dr, proj, -8, -18, 8, 16, AMBER)
+        awning(dr, proj, 8, -16, 7, 12, MAG)
     titles = {
-        'a': '(a) procedural glass, neon trim, window atlas',
-        'b': '(b) free low-poly kit, original palette',
-        'c': '(c) hybrid: glass city plus house, spire, stadium',
+        'a': '(a) procedural',
+        'b': '(b) free kit palette',
+        'c': '(c) hybrid',
     }
-    bar_h = 36 if h < 500 else 44
+    tier_name = 'ARCADE  lighter windows, static roof' if tier == 'arcade' else 'STREET  same shape, storefronts on'
+    bar_h = 54 if h < 500 else 62
     dr.rectangle([0, h - bar_h, w, h], fill=(8, 2, 16))
-    dr.text((12, h - bar_h + 8), 'MOCKUP  ' + titles[kind], fill=(233, 227, 228))
-    dr.text((12, h - bar_h + 24), 'Not in the game. No model files downloaded.', fill=(138, 122, 125))
+    dr.text((12, h - bar_h + 6), 'MOCKUP  ' + titles[kind] + '   ' + tier_name, fill=(233, 227, 228))
+    dr.text((12, h - bar_h + 22), MS[(kind, tier)] + '   building pass only, not measured on a phone', fill=(62, 230, 255))
+    dr.text((12, h - bar_h + 36), 'Not in the game. Shapes match across tiers. No model files.', fill=(138, 122, 125))
     return img
 
 
@@ -215,29 +283,26 @@ def main():
     os.makedirs(ART, exist_ok=True)
     made = []
     for kind in ('a', 'b', 'c'):
-        for name, w, h in VIEWS:
-            img = scene(kind, w, h)
-            path = os.path.join(ROOT, '%s-%s.png' % (kind, name))
-            img.save(path)
-            img.save(os.path.join(ART, '%s-%s.png' % (kind, name)))
-            made.append(path)
-            print(path, img.size)
-    # contact sheet: 3 rows, cells scaled to height 220
-    cell_h = 220
+        for tier in ('arcade', 'street'):
+            for name, w, h in VIEWS:
+                img = scene(kind, w, h, tier)
+                path = os.path.join(ROOT, '%s-%s-%s.png' % (kind, tier, name))
+                img.save(path)
+                img.save(os.path.join(ART, '%s-%s-%s.png' % (kind, tier, name)))
+                made.append(path)
+                print(path, img.size)
+    # contact sheet: each look, Arcade then Street, iPad frame
+    cell_h = 200
     gap = 8
     row_w = []
     thumbs = []
     for kind in ('a', 'b', 'c'):
-        row = []
-        width = 0
-        for name, w, h in VIEWS:
-            im = Image.open(os.path.join(ROOT, '%s-%s.png' % (kind, name)))
-            th = im.resize((int(w * cell_h / h), cell_h), Image.BILINEAR)
-            row.append(th)
-            width += th.size[0] + gap
-        thumbs.append(row)
-        row_w.append(width)
-    sheet = Image.new('RGB', (max(row_w), cell_h * 3 + gap * 4), (8, 2, 16))
+        for tier in ('arcade', 'street'):
+            im = Image.open(os.path.join(ROOT, '%s-%s-ipad.png' % (kind, tier)))
+            th = im.resize((int(im.size[0] * cell_h / im.size[1]), cell_h), Image.BILINEAR)
+            thumbs.append([th])
+            row_w.append(th.size[0] + gap)
+    sheet = Image.new('RGB', (max(row_w) + gap, cell_h * len(thumbs) + gap * (len(thumbs) + 1)), (8, 2, 16))
     y = gap
     for row in thumbs:
         x = gap

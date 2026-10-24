@@ -1,21 +1,45 @@
 # Neon World WebGL buildings (prototype)
 
-**On hold.** Bob changed the goal on 2026-10-24. Do not build the new look until the current FPS round lands (car-copy removal and the resolution clamp) and Bob says go. Do not touch `index.html`.
+**On hold.** Bob changed the goal on 2026-10-24. The new look stays unbuilt until the current FPS round lands (car-copy removal and the resolution clamp) and Bob says go. `index.html` stays untouched. Color and detail land one object type at a time, buildings first. Cars, props, and the rest wait.
 
-The look proposal below is for Bob to pick. No renderer work, and no model files in the repo, until the FPS round lands and Bob says go.
+The look proposal below is for Bob to pick. This branch keeps the black-solid `?gl=1` fallback. No model files are in the repo.
+
+## Detail tiers (approved plan, folded into the look)
+
+Shapes, doors, and garages are the same at every tier. Only the surface changes.
+
+| Tier | When | Surface |
+|---|---|---|
+| Arcade | `P.driveMode === 'arcade'`, and while airborne | Lighter window grid. A static baked roof cap so a flyover still reads. This is a baked mark in the atlas, separate from the live `roofTrim` stroke in `shared/detail-tune.js` (`roofTrim: false`, because that stroke held downtown near 26 fps against about 60 with it off). |
+| Street | `P.driveMode === 'street'`, on the ground | The same boxes, doors, and garages, plus richer eye-level facade and storefront detail for each building purpose. |
+| On foot | `WALK_MODE.onFoot` | Highest tier. Extra eye-level detail inside `onFootDetailDist` (38 m). This tier is outside the WINGS toggle. |
+
+Street storefronts cover the 24 `shop()` buildings in `world/city.js`, across six districts (`SPAWN_SOUTH`, `ARTS_GARAGE`, `PARKSIDE_WEST`, `DOWNTOWN_CORE`, `SPORTS_EAST`, `BUILDER_NORTH`) and twelve purposes in `WALK_DOOR` (`HOME`, `SHOWROOM`, `NEON_PAINT`, `GARAGE`, `NOS`, `DANCE`, `PETS`, `CAFE`, `ARCADE`, `SKY_DROP`, `SOCCER`, `BUILDER`). The existing caps stay: `storefrontDist` 48 m, `storefrontMaxSpeed` 12, `storefrontMaxSegs` 260, `faceBudget` / `maxWindowFaces` 4.
+
+The WINGS control is the live A/B. `toggleDrive()` / `setDriveMode()` in `world/input.js` flips `P.driveMode` between `arcade` and `street`. Bob compares those two on the Galaxy by flipping WINGS / STREET. On-foot detail stays on its own path and is not what that toggle measures.
+
+### `?perf=1` readout (specified, not built)
+
+When the look is built, `?perf=1` shows two fields on the existing perf line:
+
+1. The tier in force: `ON FOOT` when `WALK_MODE.onFoot`, otherwise `STREET` when `P.driveMode === 'street'`, otherwise `ARCADE`.
+2. The building-pass milliseconds for that frame (the building submit, kept apart from car, ground, and HUD).
+
+The readout is off unless the query is present, so a normal session pays nothing for it. No `shadowBlur`. This branch does not add the readout. It lands with the building look, after the FPS round and after Bob says go.
 
 ## Building source proposal (still on hold)
 
-Bob asked whether Neon World needs more free 3D building models or should build them in-game. Three options. Mockups are drawings at the phone (844×390), iPad (1024×768), and PC (1366×768) sizes. They are not screenshots of the game. Files: `test-results/gl-city/looks/`.
+Bob asked whether Neon World needs more free 3D building models or should build them in-game. Three options, each drawn in Arcade and in Street. Mockups are drawings at the phone (844×390), iPad (1024×768), and PC (1366×768) sizes. They are drawings, not screenshots of the game. Files: `test-results/gl-city/looks/` named `{a|b|c}-{arcade|street}-{phone|ipad|pc}.png`, plus `sheet.png` (six iPad frames, Arcade then Street for each look).
 
-Millisecond figures are estimates for the building pass on a Galaxy-class GPU. They were not measured on a phone or an iPad. The basis is the black-solid spike: 4–27 buildings submitted in 0.1–0.5 ms of JS on SwiftShader, while the whole software frame was 14–24 ms. That software frame does not transfer to a device. The budget is the whole frame, not just buildings: under about 9 ms on the Galaxy (steady 110+), and 16.7 ms or 33 ms on iPad (steady 60 or 30). The car, ground, and HUD still share that frame. Glow is baked into the window atlas. No `shadowBlur`.
+Millisecond figures are estimates for the building pass on a Galaxy-class GPU. They were not measured on a phone or an iPad. The basis is the black-solid spike: 4–27 buildings submitted in 0.1–0.5 ms of JS on SwiftShader, while the whole software frame was 14–24 ms. That software frame does not transfer to a device. The budget is the whole frame: under about 9 ms on the Galaxy (steady 110+), and 16.7 ms or 33 ms on iPad (steady 60 or 30). The car, ground, and HUD still share that frame. Glow is baked into the window atlas. No `shadowBlur`. On-foot detail is a further small add inside 38 m, and it is not the number the WINGS toggle is for.
 
 | | (a) procedural | (b) free models | (c) hybrid |
 |---|---|---|---|
-| What | Instanced box, glass, neon trim, one window atlas. LOD drops far faces to a flat color. Built from today's `CITY.BL` boxes. | Kenney and Quaternius low-poly kits, used as the city. | Same as (a) for the blocks. A few landmarks (spire, pitched-roof house, stadium) as their own meshes. |
-| Building-pass estimate | 0.5–2 ms if it is one or two instanced draws. | 2–6 ms if each mesh keeps its own material. About 1–3 ms if everything is forced onto one atlas and instanced. | 0.7–2.5 ms: (a) plus one extra draw for a handful of landmarks. |
-| Download | One atlas, about 0.3–0.6 MB. No meshes. | Kenney City Kit (Commercial) 2.1 is published as a 4.1 MB zip (OpenGameArt). Quaternius "LowPoly Buildings" (2018) is published as a 2.5 MB zip there. A trimmed runtime set could be smaller and was not measured, because nothing was downloaded. | About 0.3–0.6 MB if the landmarks are built in code. Add about 0.2–1 MB only if a few outside meshes are added later. |
-| Style | Full control. Cyan, magenta, glass, the same family as the homes. Risk: the skyline can look repeated. | Low until recolored. Kenney's city kits are flat, friendly low-poly, not synthwave. A Quaternius cyberpunk kit may sit closer, and it was not opened. | High, if the landmarks use the same trim and atlas. The skyline gets a house, a tower, and a stadium without a new palette. |
+| What | Instanced box, glass, neon trim, one window atlas. LOD drops far faces to a flat color. Built from today's `CITY.BL` boxes. | Kenney and Quaternius low-poly kits, used as the city. | Same as (a) for the blocks. A few landmarks (spire, pitched-roof house, stadium) as their own meshes, built in the same primitive kit. |
+| Arcade building pass | 0.4–1.2 ms. Sparse windows, one baked roof cap, no purpose storefronts. | 0.8–2 ms with one shared atlas. | 0.5–1.6 ms. |
+| Street building pass | 0.7–2.0 ms. Same draws, denser windows, storefronts only on the near purposeful buildings (the caps above). | 2–6 ms if each mesh keeps its own material. | 0.8–2.5 ms. |
+| Download | One atlas, about 0.3–0.6 MB. No meshes. | Published zips, none of them in this repo: Kenney City Kit Commercial 2.1 is 4.1 MB, Kenney City Kit Suburban 2.0 is 3 MB, KayKit City Builder Bits free edition is 4.6 MB. The 2018 OpenGameArt "LowPoly Buildings" zip is 2.5 MB and is a different upload from the 2019 Quaternius Buildings Pack, which publishes no zip size. A trimmed runtime set was not measured. | About 0.3–0.6 MB if the landmarks are built in code. Add about 0.2–1 MB only if a few outside meshes are added later. |
+| Style | Full control. Cyan, magenta, glass, the same family as the homes. Risk: the skyline can look repeated. | Needs a recolor into neon. The shortlist below is bright toy-block and pastel houses. Quaternius Cyberpunk Game Kit is characters, platforms, and turrets, so it is out. No CC0 glass-curtain tower pack turned up. The closest towers are Kenney's commercial block skyscrapers. | High, if the landmarks use the same trim and atlas. The skyline gets a house, a tower, and a stadium in the same palette. |
 | License, for an App Store build by C.F.R., Inc. | None. The art is ours. | See the license notes under this table. Each zip's own license file has to be read before ship. This is not legal advice. | None if the landmarks are in-code. A later Kenney mesh stays low-risk only after that zip's license file is checked. Do not host Quaternius files on a public URL. |
 | Effort | Medium. One instanced shader and an atlas on boxes the city already has. | High. Import, fit each model to a `CITY.BL` footprint, retexture into the neon palette, and keep a license log. | A step past (a): three landmark assemblies in the same primitive kit. |
 
@@ -26,7 +50,19 @@ License notes, checked 2026-10-24 from the publishers' pages, not from files in 
 - Older Quaternius uploads on OpenGameArt are marked CC0, including LowPoly Buildings (2.5 MB, 2018). A third-party pack list checked 2026-10-10 still tags many Quaternius packs CC0, including a cyberpunk kit. That disagrees with the site-wide QAL enough that the license file inside each zip is the one that counts.
 - QAL also fights the idea of serving the original models from a URL later. CC0 does not.
 
-**Recommendation: (c), with the landmarks built in code, not downloaded.** The city is already boxes, so instanced glass and a window atlas is the FPS path and the style path. A house roof, a spire, and a stadium rim are enough skyline, and they do not need Kenney or Quaternius. Free models are not required. If Bob later wants a silhouette this kit cannot make, the only pack to consider is a Kenney CC0 zip, after he picks and after the license file in that zip is read. No downloads until then.
+### Style-reference shortlist (research only)
+
+Checked 2026-10-24 from the publishers' pages. Nothing was downloaded into the repo. Poly Pizza is a viewer, not the author, and it mixes CC0 with CC-BY. A Poly Pizza label is not the license. For an App Store archive the zip has to come from the author so `License.txt` is in the file. CC-BY is commercial-OK with a credits line. NC packs are out. This is not legal advice.
+
+| Pack | License on the page | Size / polys | Fit for a bright Neon World |
+|---|---|---|---|
+| [Kenney City Kit Suburban 2.0](https://kenney.nl/assets/city-kit-suburban) | CC0 on Kenney's support page. Confirm `License.txt` in the zip. | OpenGameArt zip 3 MB. Kenney's page lists no tris. A HydeCo parse of the houses reports 21 types, about 770–2062 tris. Preview: https://opengameart.org/sites/default/files/preview_1324.png | Pitched roofs, garages, yards, pastel. Closest Brookhaven silhouette. Needs a neon recolor. |
+| [Kenney City Kit Commercial 2.1](https://kenney.nl/assets/city-kit-commercial) | Same CC0 claim. Confirm the zip. | OpenGameArt zip 4.1 MB. Page says 50+ objects (awnings, signs). Per-model tris were not counted here. A third-party count (promoteindex, claimed 2026-10-21) says 41 models and a CC0 `License.txt`. We did not open the zip. Preview: https://opengameart.org/sites/default/files/preview_1327.png | Block towers, window grids, shop awnings, flat bright colors. Useful shop and tower silhouettes. These are solid blocks with window grids, which is the look (a) and (c) can build in code. |
+| [KayKit City Builder Bits 1.0, free edition](https://kaylousberg.itch.io/city-builder-bits) | Itch page and `LICENSE.txt` are CC0 1.0 (commercial OK, credit optional). The itch blurb also asks people not to resell unmodified copies. That sentence is outside the CC0 grant. Paid add-ons (8.1 MB at $3.95, source 9.1 MB at $5.95) are out of this shortlist. | Free download 4.6 MB. HydeCo parse: buildings about 435–1885 tris, one 1024 gradient atlas. | Brightest toy-city of the set, fewer house shapes than Kenney suburban. Poly Pizza mirror: https://poly.pizza/bundle/City-Builder-Bits-1wLdnIddSx |
+| [Quaternius Buildings Pack](https://quaternius.com/packs/buildings.html) (Jan 2019) | The live page's license field says CC0, 9 models, commercial OK. Site-wide QAL v1.0 (2026-08-28) forbids redistributing the assets as assets and does not apply retroactively to copies already obtained under an earlier version. The zip's own license file is the one that counts, and it has not been read. | Page prints no poly count and no zip size. Do not assign the 2018 OpenGameArt 2.5 MB "LowPoly Buildings" zip to this pack. The two archives were not compared. Preview: https://quaternius.com/assets/images/fullres/buildings.jpg | Bright simple low-poly. Hold until the zip license file is read. |
+| [Quaternius Ultimate Buildings](https://quaternius.com/packs/ultimatetexturedbuildings.html) (Dec 2019) and [Simple Buildings](https://quaternius.com/packs/simplebuildings.html) (Aug 2017) | Pages state commercial use. The license field did not print CC0. A 2019 Patreon post called Ultimate CC0. Hold until each zip's license file is read. | Ultimate: 76 textured modular pieces, no size printed. Simple: 10 models (hospital, houses, shop), no size printed. Previews on those pages. | Textured and simple low-poly. Out of the pick until the license file is in hand. |
+
+**Recommendation: (c), with the landmarks built in code.** The city is already boxes, so instanced glass and a window atlas is the FPS path and the style path, and the Arcade-to-Street gap stays inside the building-pass rows above. A house roof, a spire, and a stadium rim are enough skyline. Free models stay style references. If Bob later wants a silhouette this kit cannot make, the pack to open is a Kenney CC0 zip, after he picks and after `License.txt` in that zip is read. Downloads wait for that pick. KayKit's paid add-ons stay out. Quaternius stays on hold until a zip license file is read, and those files would not be hosted from a public URL.
 
 The new target is not a match to today's black buildings. Move off the black fill while keeping Neon World: cyan and magenta neon, synthwave, glass and bright accents in the same family as the Brookhaven-inspired homes. The frame still has to fit the steady-FPS budget: Galaxy steady 110+ with the whole frame under about 9 ms, iPad steady 60 and 30. Use instancing or batching, LOD, and baked glow. No `shadowBlur`. The drawing that ships today stays as the fallback.
 
