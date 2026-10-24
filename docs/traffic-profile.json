@@ -1,0 +1,55 @@
+{
+  "profiledSha": "e279c9a79a885abd11a500b018938f835f48e34c",
+  "date": "2026-10-24",
+  "harness": "headless Chrome, --disable-gpu --enable-unsafe-swiftshader, viewport 844x390, deviceScaleFactor 3, touch, CPU throttle 4x. Game canvas 1688x780, DPR 2. world.html on main.",
+  "note": "Full-frame ms are the throttled city, not Galaxy fps. 110 fps is 9.1 ms. FLY.fps clamps dt at 50 ms so it reads ~20 whenever the frame is slower than that. Use the isolated rows.",
+  "model": {"liveMeshes": 687, "liveTris": 41573, "wheels": 4, "flattenedCloneMeshes": 427, "wingHinges": 0},
+  "map": {"lanes": 810, "straight": 718, "turns": 2016, "sim": 12, "dots": 18},
+  "run1_street_250_200": {
+    "frames": 10,
+    "frameMs": 203.25,
+    "updateMs": 1.07,
+    "collectMs": 16.28,
+    "drawMs": 0.72,
+    "drawsPerFrame": 30,
+    "probesInUpdate": 23.6,
+    "bakesPerFrame": 0.2,
+    "cache": 25,
+    "noTrafficRafFrameMs": 188.91
+  },
+  "run2_after_6s_at_250_400": {
+    "frames": 10,
+    "frameMs": 259.84,
+    "updateMs": 1.26,
+    "collectMs": 31.11,
+    "drawMs": 1.56,
+    "drawsPerFrame": 36,
+    "bakesPerFrame": 0.4,
+    "cache": 25,
+    "playerStepMedianMs": 0,
+    "clone4OnceMs": 31.2,
+    "pose4FlattenedMedianMs": 0.8,
+    "onePass4Cars160pxMs": 13.3
+  },
+  "jsUnderThrottle": {
+    "spring12_trafficK_ms": 0.019,
+    "spring12_playerK_ms": 0.001,
+    "spring30_playerK_ms": 0.008,
+    "probe4_ms": 0.022,
+    "probe12_ms": 0.049,
+    "probe30_ms": 0.113
+  },
+  "glSwiftShaderMedianMs": {
+    "oneCar64": 11,
+    "oneCar96": 8.4,
+    "oneCar160": 8.9,
+    "oneCar256": 8.7,
+    "fourCars64": 25.6,
+    "fourCars96": 31,
+    "fourCars160": 33.9,
+    "fourCars256": 70.1,
+    "poseOneLiveCar": 0.6
+  },
+  "wheelDecalsMs": {"cars4": 0.17, "cars12": 0.52, "cars30": 3.637, "secondSpriteBlit12": 0.06},
+  "audit": {"cars": 30, "onRunway": 0, "inSolid": 0, "offLane": 0}
+}
