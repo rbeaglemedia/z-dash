@@ -21,8 +21,12 @@ function drawZ(){if(window.NOZ)return;const X=window.ZD&&ZD.Xray;if(!X||!X.ready
   if(!ZV.cv){ZV.cv=document.createElement('canvas');ZV.cvg=ZV.cv.getContext('2d',{alpha:true});}
   // Traffic bakes share this GL buffer and zero _w/_h. That is not a player-size change.
   if(ZV.frame%ZV.every===0||ZV.lastPx!==rp){X.render(ctx,0,0,rp,rp,{xray:false,showroom:!(window.GARAGEZ&&GARAGEZ.on),yaw:ZV.yawOff+ZV.yawSign*relYaw,pitch:elev,dist,tx:0,ty:ZV.ty,fov:26,drl:1,noDraw:true,kid:KID,st:{t:performance.now()/1000,throttle:30+P.thr*70}});
-    const src=X.canvas;if(ZV.cv.width!==src.width||ZV.cv.height!==src.height){ZV.cv.width=src.width;ZV.cv.height=src.height;}
-    ZV.cvg.setTransform(1,0,0,1,0,0);ZV.cvg.clearRect(0,0,ZV.cv.width,ZV.cv.height);ZV.cvg.drawImage(src,0,0);}
+    // A synchronous drawImage of this preserved WebGL buffer stalls the next
+    // car render (hundreds of ms) once the GPU readback backs up. Snapshot
+    // asynchronously and keep the previous sprite until that snapshot lands.
+    const src=X.canvas,w=src.width,h=src.height,seq=ZV._bmpSeq=(ZV._bmpSeq||0)+1;
+    const blit=bmp=>{if(seq!==ZV._bmpSeq){if(bmp&&bmp.close)bmp.close();return;}if(ZV.cv.width!==w||ZV.cv.height!==h){ZV.cv.width=w;ZV.cv.height=h;}ZV.cvg.setTransform(1,0,0,1,0,0);ZV.cvg.clearRect(0,0,ZV.cv.width,ZV.cv.height);ZV.cvg.drawImage(bmp||src,0,0);if(bmp&&bmp.close)bmp.close();};
+    if(typeof createImageBitmap==='function'){createImageBitmap(src).then(blit).catch(()=>blit(null));}else blit(null);}
   ZV.lastPx=rp;const roll=(P.bank+(P.ebRoll||0)-cam.roll)*ZV.rollSign;ctx.save();ctx.translate(sc[0],sc[1]);ctx.rotate(roll);ctx.drawImage(ZV.cv,0,0,ZV.cv.width,ZV.cv.height,-px/2,-px/2,px,px);ctx.restore();
   zFlameCvs();const yaw=ZV.yawOff+ZV.yawSign*relYaw,pit=elev,cy=Math.cos(yaw),sy=Math.sin(yaw),cP=Math.cos(pit),sP=Math.sin(pit);
   const tx=0,ty=ZV.ty,ex=tx+cy*cP*dist,ey=ty+sP*dist,ez=sy*cP*dist;let zx=ex-tx,zy=ey-ty,zz=ez,zl=Math.hypot(zx,zy,zz)||1;zx/=zl;zy/=zl;zz/=zl;
