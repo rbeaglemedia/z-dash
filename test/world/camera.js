@@ -1,6 +1,6 @@
 'use strict';
 // ===== CAMERA / PROJECTION =====
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');let W=0,H=0,DPR=1;
+const cv=document.getElementById('c');let ctx=cv.getContext('2d');let W=0,H=0,DPR=1;
 // Desktop PCs fill a huge backing store (often 1080p at devicePixelRatio 2) and the
 // 2D city cannot keep up. Cap that buffer only. Phones keep the exact sizing below.
 // iPad (touch, including 1180×820 and 1366×1024) is not a desktop PC: hasTouch is
@@ -44,6 +44,7 @@ function resize(){
   const bw=W*DPR,bh=H*DPR;
   if(window.Z_PERF&&window.Z_PERF.on){window.Z_PERF.resizeN=(window.Z_PERF.resizeN||0)+1;if(cv.width===bw&&cv.height===bh)window.Z_PERF.resizeSame=(window.Z_PERF.resizeSame||0)+1;}
   cv.width=bw;cv.height=bh;ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(typeof zSyncLayers==='function')zSyncLayers();
 }
 function ipadScale(){return {boost:ipadBoost,step:ipadStepI,ema:+ipadEma.toFixed(4),lock:ipadLock};}
 function ipadPause(s){
@@ -110,6 +111,44 @@ function ipadFit(frame){
     ipadGood=Math.max(0,ipadGood-frame*0.25);
   }
 }
+// The player car is the WebGL canvas itself, placed between the city and the
+// HUD. Flames sit on their own canvas so they can add light without tinting the
+// HUD. Water, sparks, the hot drop, and the HUD share the top canvas, which
+// stays transparent so the city and the car show through. No extra shadowBlur.
+let zFlameCtx=null,zTopCtx=null,zCityCtx=null;
+function zEnsureLayers(){
+  if(zTopCtx)return;
+  const css=document.createElement('style');
+  css.textContent='#zFlame,#zTop{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;background:transparent}#zFlame{mix-blend-mode:plus-lighter}#zCar{pointer-events:none;background:transparent;transform-origin:50% 50%}';
+  document.head.appendChild(css);
+  const parent=cv.parentElement||document.body;
+  const flame=document.createElement('canvas');flame.id='zFlame';flame.setAttribute('aria-hidden','true');
+  const top=document.createElement('canvas');top.id='zTop';top.setAttribute('aria-hidden','true');
+  parent.insertBefore(flame,cv.nextSibling);
+  parent.insertBefore(top,flame.nextSibling);
+  zFlameCtx=flame.getContext('2d',{alpha:true});
+  zTopCtx=top.getContext('2d',{alpha:true});
+  zSyncLayers();
+}
+function zSyncLayers(){
+  if(!zTopCtx)return;
+  const flame=zFlameCtx.canvas,top=zTopCtx.canvas;
+  if(flame.width!==cv.width||flame.height!==cv.height){flame.width=cv.width;flame.height=cv.height;}
+  if(top.width!==cv.width||top.height!==cv.height){top.width=cv.width;top.height=cv.height;}
+  zFlameCtx.setTransform(DPR,0,0,DPR,0,0);
+  zTopCtx.setTransform(DPR,0,0,DPR,0,0);
+  flame.style.width=cv.style.width;flame.style.height=cv.style.height;
+  top.style.width=cv.style.width;top.style.height=cv.style.height;
+}
+function zBeginOver(){
+  zEnsureLayers();
+  zSyncLayers();
+  zTopCtx.setTransform(DPR,0,0,DPR,0,0);
+  zTopCtx.clearRect(0,0,W,H);
+  zTopCtx.globalAlpha=1;zTopCtx.globalCompositeOperation='source-over';zTopCtx.shadowBlur=0;
+  zCityCtx=ctx;ctx=zTopCtx;return true;
+}
+function zEndOver(){if(zCityCtx)ctx=zCityCtx;}
 addEventListener('resize',resize);resize();
 const cam={x:0,y:0,z:0,yaw:0,pitch:0,roll:0};
 // Flight pull-up damping. boot.js aims the chase cam with the raw nose pitch, which
