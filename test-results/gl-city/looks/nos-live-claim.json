@@ -1,0 +1,37 @@
+{
+  "shops": [
+    {
+      "id": 3,
+      "kind": "depot",
+      "pumps": 2,
+      "boxes": 10,
+      "h": 34
+    },
+    {
+      "id": 7,
+      "kind": "station",
+      "pumps": 2,
+      "boxes": 10,
+      "h": 12
+    }
+  ],
+  "claimed": {
+    "tank": 1,
+    "hot": 30,
+    "inside": false,
+    "onFoot": false,
+    "hit": false
+  },
+  "kiosk": {
+    "tank": 0.2,
+    "hot": 0,
+    "inside": false
+  },
+  "under": {
+    "ce": 3.4,
+    "wl": false,
+    "fl": 0
+  },
+  "pumpWall": true,
+  "postWall": true
+}
