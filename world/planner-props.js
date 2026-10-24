@@ -1,7 +1,8 @@
 /* Kid-page door for the planner-port catalog (PR #82).
    These meshes are the stand-in boxes from test/planner-port/catalog.js.
    They are not copied from rbeaglemedia/event-space-planner.
-   Published ids: screen, sofa, table, tv-stand, speaker, truss-seg, led-trailer.
+   Published ids: screen, sofa, table, tv-stand, speaker, truss-seg, led-trailer,
+   tv85, ledposter, kiosk.
    parts() also accepts the baker names tvStand, trussSeg, and ledTrailer.
    A screen faces +z. Turn it with yaw Math.PI to show the lit face to a
    camera that looks toward +z. Swap the bakers when the real modules land.
@@ -108,6 +109,34 @@ function trussSeg(o) {
 }
 
 /* LED trailer body. Screen is the side face. video only when this is the towed one. */
+/* R1 tech. Envelope is the real object in feet converted at 0.3048.
+   tv85 is 6.2 x 1.1 x 3.6 ft. The screen sits on the far wall with its
+   bottom at 1.15 m. ledposter is 2.1 x 1.6 x 6.7 ft, same bottom.
+   kiosk is 1.5 x 1.5 x 4 ft and stands on the floor. */
+function tv85(o) {
+  o = o || {};
+  const glow = o.glow || '#3ee6ff';
+  const parts = screen({ w: 1.90, h: 1.08, d: 0.08, color: '#1b1e26', glow: glow, bezel: 0.06 });
+  parts.push(part(0, 0.04, -0.12, 0.28, 0.08, 0.16, '#c8c2b8', 0));
+  return parts;
+}
+function ledposter(o) {
+  o = o || {};
+  const glow = o.glow || '#ff4fd8';
+  return screen({ w: 0.64, h: 2.03, d: 0.08, color: '#1b1e26', glow: glow, bezel: 0.04 });
+}
+function kiosk(o) {
+  o = o || {};
+  const glow = o.glow || '#3ee6ff';
+  return [
+    part(0, 0.04, 0, 0.42, 0.08, 0.42, '#2c313c', 0),
+    part(0, 0.46, 0, 0.36, 0.76, 0.32, '#f4efe6', 0),
+    part(0, 0.96, 0.12, 0.40, 0.36, 0.06, '#1b1e26', 0),
+    part(0, 0.96, 0.16, 0.32, 0.26, 0.02, glow, 1),
+    part(0, 1.19, 0, 0.16, 0.06, 0.16, '#c8c2b8', 0)
+  ];
+}
+
 function ledTrailer(o) {
   const L = o.len || 4.2, W = o.w || 2.05, H = o.h || 2.35;
   const body = o.color || '#f4f1ea';
@@ -225,7 +254,8 @@ const REMIXES = [
 
 const PLANNER_BUILDERS={
   screen:screen, table:table, sofa:sofa, tvStand:tvStand,
-  speaker:speaker, trussSeg:trussSeg, ledTrailer:ledTrailer
+  speaker:speaker, trussSeg:trussSeg, ledTrailer:ledTrailer,
+  tv85:tv85, ledposter:ledposter, kiosk:kiosk
 };
 const PLANNER_ENTRIES=[
   {id:'screen', title:'Screen', base:'screen'},
@@ -234,7 +264,10 @@ const PLANNER_ENTRIES=[
   {id:'tv-stand', title:'TV stand', base:'tvStand'},
   {id:'speaker', title:'Speaker', base:'speaker'},
   {id:'truss-seg', title:'Truss segment', base:'trussSeg'},
-  {id:'led-trailer', title:'LED trailer', base:'ledTrailer'}
+  {id:'led-trailer', title:'LED trailer', base:'ledTrailer'},
+  {id:'tv85', title:'85 inch TV', base:'tv85'},
+  {id:'ledposter', title:'LED poster', base:'ledposter'},
+  {id:'kiosk', title:'Standing kiosk', base:'kiosk'}
 ];
 function plannerBuilder(id){
   if(PLANNER_BUILDERS[id])return PLANNER_BUILDERS[id];

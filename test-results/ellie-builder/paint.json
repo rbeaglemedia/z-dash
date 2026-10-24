@@ -1,0 +1,35 @@
+[
+  {
+    "name": "phone",
+    "info": "Phone · Ellie's house · L1 | 0.61 | ok",
+    "bytes": 50029
+  },
+  {
+    "name": "ipad",
+    "info": "iPad · Ellie's house · L1 | 0.44 | ok",
+    "bytes": 49708
+  },
+  {
+    "name": "pc",
+    "info": "PC · Ellie's house · L1 | 0.44 | ok",
+    "bytes": 51468
+  },
+  {
+    "name": "pc-floor",
+    "info": "PC · Ellie's house · Floor | 0.08 | ok",
+    "bytes": 41053
+  },
+  {
+    "name": "buttons",
+    "info": {
+      "before": "wall-far-left:tv85,wall-far-right:ledposter,floor-left:speaker,floor-right:kiosk",
+      "yawSame": true,
+      "kioskYaw": 3.1416,
+      "glow": "#ffffff",
+      "house": "{\"theme\":\"#3ee6ff\"}",
+      "kid": "{\"house\":1}",
+      "save": "{\"v\":1,\"rooms\":{\"house\":{\"props\":[{\"prop\":\"tv85\",\"x\":-5.5,\"y\":1.15,\"z\":17.4,\"yaw\":3.1416,\"wall\":\"far\",\"slot\":\"wall-far-left\",\"params\":{\"glow\":\"#ffffff\"}},{\"prop\":\"ledposter\",\"x\":5.5,\"y\":1.15,\"z\":17.4,\"yaw\":3.1416,\"wall\":\"far\",\"slot\":\"wall-far-right\",\"params\":{\"glow\":\"#ff4fd8\"}},{\"prop\":\"speaker\",\"x\":-5,\"y\":0,\"z\":8,\"yaw\":3.141592653589793,\"wall\":null,\"slot\":\"floor-left\",\"params\":{\"w\":0.38,\"h\":1.83,\"d\":0.38,\"glow\":\"#ffb020\"}},{\"prop\":\"kiosk\",\"x\":5,\"y\":0,\"z\":9,\"yaw\":3.141592653589793,\"wall\":null,\"slot\":\"floor-right\",\"params\":{\"glow\":\"#3ee6ff\"}}]}}}",
+      "barHidden": true
+    }
+  }
+]
