@@ -1,6 +1,10 @@
 /* Shared planner tools for the DEV Builder and for Ellie's Builder.
    Interiors agent bc-80a1fc6f: load this file. Do not copy it.
    Call PLANNER_TOOLS. The room tool uses snap, rotate, moveHosts, copySpot, and history.
+   A walk-in room's size comes from Bob's saved Interior Builder layout
+   (zdash.interior.layout.v1). Until that save exists, the current Interiors
+   room stays the default. The builder's unit is 1 foot. Item snap is 0.5 ft.
+   A saved room may be larger than the building's outside footprint.
    The DEV Builder also uses roof, measure, alignFace, groupMove, and guardM2.
    Units are metres. There is no canvas shadowBlur in this file. */
 'use strict';

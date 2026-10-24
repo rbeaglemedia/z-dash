@@ -1,0 +1,6042 @@
+{
+  "unit": "feet",
+  "room": {
+    "name": "30 × 40",
+    "note": "The indoor size chip. The preset is built in this closed rectangle before a door is added.",
+    "w": 30,
+    "l": 40,
+    "outline": [
+      [
+        0,
+        0
+      ],
+      [
+        30,
+        0
+      ],
+      [
+        30,
+        40
+      ],
+      [
+        0,
+        40
+      ]
+    ]
+  },
+  "levels": [
+    {
+      "id": "essentials",
+      "name": "Essentials",
+      "note": "Furniture + minimal tech"
+    },
+    {
+      "id": "standard",
+      "name": "Standard",
+      "note": "About half the tech"
+    },
+    {
+      "id": "showcase",
+      "name": "Showcase",
+      "note": "Every screen, kiosk and charger"
+    }
+  ],
+  "preselected": "showcase",
+  "gapsFt": {
+    "classRow": 3.25,
+    "classCentre": 4.5,
+    "classSide": 3.5,
+    "wall": 3,
+    "banquetChairBacks": 5,
+    "boothAisle": 10,
+    "regQueue": 9,
+    "regBehind": 5.1,
+    "door": 3
+  },
+  "snap": {
+    "top": "Sits on a table, counter, or lectern top. The host is the surface under it.",
+    "edge": "Tucks to a table edge. Banquet chairs use this. edgeFor on the table names which edge items fit.",
+    "wall": "Hangs on a wall (room wall, booth wall, or pipe and drape). A TV in this mode is the panel and mount, without the floor stand.",
+    "wallfloor": "Stands on the floor against a room wall or a booth back wall.",
+    "backwall": "Stands inside a booth against its back wall.",
+    "nearwall": "Stands on the floor against a room wall."
+  },
+  "place": {
+    "end": "Queue barricades, feeder cable, and cable ramps pull flush end to end.",
+    "outside": "The generator sits outside the room."
+  },
+  "sets": [
+    {
+      "level": "essentials",
+      "presets": [
+        {
+          "id": "booth",
+          "name": "Booth",
+          "note": "10 x 10 booths along the walls, a table in each",
+          "recipe": "10 × 10 booths along the walls, 10.5 ft apart, with a 10 ft aisle when the room is deep enough. Each booth gets a 6 ft table. Standard and Showcase add a 55 in TV on the back wall, a laptop or tablet on the table, LED posters, charging towers on the aisle, and one LED wall at the entrance.",
+          "count": 8,
+          "members": [
+            {
+              "catalogId": "booth10",
+              "count": 4,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "table6",
+              "count": 4,
+              "placement": "on the floor"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "booth10",
+              "x": 10,
+              "z": 5.5,
+              "a": 0
+            },
+            {
+              "i": 1,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 5.75,
+              "a": 0
+            },
+            {
+              "i": 2,
+              "catalogId": "booth10",
+              "x": 20.5,
+              "z": 5.5,
+              "a": 0
+            },
+            {
+              "i": 3,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 5.75,
+              "a": 0
+            },
+            {
+              "i": 4,
+              "catalogId": "booth10",
+              "x": 9.5,
+              "z": 34.5,
+              "a": 3.142
+            },
+            {
+              "i": 5,
+              "catalogId": "table6",
+              "x": 9.5,
+              "z": 34.75,
+              "a": 0
+            },
+            {
+              "i": 6,
+              "catalogId": "booth10",
+              "x": 20.5,
+              "z": 34.5,
+              "a": 3.142
+            },
+            {
+              "i": 7,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 34.75,
+              "a": 0
+            }
+          ]
+        },
+        {
+          "id": "classroom",
+          "name": "Classroom",
+          "note": "Rows of tables facing a podium",
+          "recipe": "Rows of 6 ft tables facing the front, two banquet chairs on the near edge of each table. A lectern sits up front with a laptop. Standard uses a projector screen; Showcase uses an LED wall, a laptop and tablet on the tables, side TVs, speakers, and a poster wall at the entrance.",
+          "count": 26,
+          "members": [
+            {
+              "catalogId": "podium",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "laptop",
+              "count": 1,
+              "placement": "attached (top)"
+            },
+            {
+              "catalogId": "table6",
+              "count": 8,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "chair",
+              "count": 16,
+              "placement": "attached (edge)"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "podium",
+              "x": 15,
+              "z": 1.834,
+              "a": 0
+            },
+            {
+              "i": 1,
+              "catalogId": "laptop",
+              "x": 15,
+              "z": 1.834,
+              "a": 0,
+              "y": 3.833,
+              "mode": "top",
+              "host": 0
+            },
+            {
+              "i": 2,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 3,
+              "catalogId": "chair",
+              "x": 8.4,
+              "z": 9.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 2
+            },
+            {
+              "i": 4,
+              "catalogId": "chair",
+              "x": 11.6,
+              "z": 9.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 2
+            },
+            {
+              "i": 5,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 6,
+              "catalogId": "chair",
+              "x": 18.9,
+              "z": 9.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 5
+            },
+            {
+              "i": 7,
+              "catalogId": "chair",
+              "x": 22.1,
+              "z": 9.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 5
+            },
+            {
+              "i": 8,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 14.75,
+              "a": 0
+            },
+            {
+              "i": 9,
+              "catalogId": "chair",
+              "x": 8.4,
+              "z": 16.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 8
+            },
+            {
+              "i": 10,
+              "catalogId": "chair",
+              "x": 11.6,
+              "z": 16.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 8
+            },
+            {
+              "i": 11,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 14.75,
+              "a": 0
+            },
+            {
+              "i": 12,
+              "catalogId": "chair",
+              "x": 18.9,
+              "z": 16.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 11
+            },
+            {
+              "i": 13,
+              "catalogId": "chair",
+              "x": 22.1,
+              "z": 16.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 11
+            },
+            {
+              "i": 14,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 21.75,
+              "a": 0
+            },
+            {
+              "i": 15,
+              "catalogId": "chair",
+              "x": 8.4,
+              "z": 23.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 14
+            },
+            {
+              "i": 16,
+              "catalogId": "chair",
+              "x": 11.6,
+              "z": 23.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 14
+            },
+            {
+              "i": 17,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 21.75,
+              "a": 0
+            },
+            {
+              "i": 18,
+              "catalogId": "chair",
+              "x": 18.9,
+              "z": 23.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 17
+            },
+            {
+              "i": 19,
+              "catalogId": "chair",
+              "x": 22.1,
+              "z": 23.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 17
+            },
+            {
+              "i": 20,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 28.75,
+              "a": 0
+            },
+            {
+              "i": 21,
+              "catalogId": "chair",
+              "x": 8.4,
+              "z": 30.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 20
+            },
+            {
+              "i": 22,
+              "catalogId": "chair",
+              "x": 11.6,
+              "z": 30.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 20
+            },
+            {
+              "i": 23,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 28.75,
+              "a": 0
+            },
+            {
+              "i": 24,
+              "catalogId": "chair",
+              "x": 18.9,
+              "z": 30.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 23
+            },
+            {
+              "i": 25,
+              "catalogId": "chair",
+              "x": 22.1,
+              "z": 30.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 23
+            }
+          ]
+        },
+        {
+          "id": "banquet",
+          "name": "Banquet",
+          "note": "Round tables with 8 chairs",
+          "recipe": "60 in rounds on a grid. Eight banquet chairs sit on a 3.2 ft radius around each table, with 5 ft between chair backs. A front band holds the stage tech: an LED wall, a lectern with a laptop, side TVs, corner speakers, and entrance posters. Showcase adds the extra speakers and a charging tower.",
+          "count": 36,
+          "members": [
+            {
+              "catalogId": "round60",
+              "count": 4,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "chair",
+              "count": 32,
+              "placement": "attached (edge)"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "round60",
+              "x": 8.5,
+              "z": 15.5,
+              "a": 0
+            },
+            {
+              "i": 1,
+              "catalogId": "chair",
+              "x": 8.5,
+              "z": 18.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 2,
+              "catalogId": "chair",
+              "x": 10.645,
+              "z": 17.645,
+              "a": 3.927,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 3,
+              "catalogId": "chair",
+              "x": 11.534,
+              "z": 15.5,
+              "a": 4.712,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 4,
+              "catalogId": "chair",
+              "x": 10.645,
+              "z": 13.355,
+              "a": 5.498,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 5,
+              "catalogId": "chair",
+              "x": 8.5,
+              "z": 12.467,
+              "a": 6.283,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 6,
+              "catalogId": "chair",
+              "x": 6.355,
+              "z": 13.355,
+              "a": 0.785,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 7,
+              "catalogId": "chair",
+              "x": 5.467,
+              "z": 15.5,
+              "a": 1.571,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 8,
+              "catalogId": "chair",
+              "x": 6.355,
+              "z": 17.645,
+              "a": 2.356,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 9,
+              "catalogId": "round60",
+              "x": 8.5,
+              "z": 29,
+              "a": 0
+            },
+            {
+              "i": 10,
+              "catalogId": "chair",
+              "x": 8.5,
+              "z": 32.034,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 11,
+              "catalogId": "chair",
+              "x": 10.645,
+              "z": 31.145,
+              "a": 3.927,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 12,
+              "catalogId": "chair",
+              "x": 11.534,
+              "z": 29,
+              "a": 4.712,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 13,
+              "catalogId": "chair",
+              "x": 10.645,
+              "z": 26.855,
+              "a": 5.498,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 14,
+              "catalogId": "chair",
+              "x": 8.5,
+              "z": 25.967,
+              "a": 6.283,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 15,
+              "catalogId": "chair",
+              "x": 6.355,
+              "z": 26.855,
+              "a": 0.785,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 16,
+              "catalogId": "chair",
+              "x": 5.467,
+              "z": 29,
+              "a": 1.571,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 17,
+              "catalogId": "chair",
+              "x": 6.355,
+              "z": 31.145,
+              "a": 2.356,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 18,
+              "catalogId": "round60",
+              "x": 22,
+              "z": 15.5,
+              "a": 0
+            },
+            {
+              "i": 19,
+              "catalogId": "chair",
+              "x": 22,
+              "z": 18.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 20,
+              "catalogId": "chair",
+              "x": 24.145,
+              "z": 17.645,
+              "a": 3.927,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 21,
+              "catalogId": "chair",
+              "x": 25.034,
+              "z": 15.5,
+              "a": 4.712,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 22,
+              "catalogId": "chair",
+              "x": 24.145,
+              "z": 13.355,
+              "a": 5.498,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 23,
+              "catalogId": "chair",
+              "x": 22,
+              "z": 12.467,
+              "a": 6.283,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 24,
+              "catalogId": "chair",
+              "x": 19.855,
+              "z": 13.355,
+              "a": 0.785,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 25,
+              "catalogId": "chair",
+              "x": 18.967,
+              "z": 15.5,
+              "a": 1.571,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 26,
+              "catalogId": "chair",
+              "x": 19.855,
+              "z": 17.645,
+              "a": 2.356,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 27,
+              "catalogId": "round60",
+              "x": 22,
+              "z": 29,
+              "a": 0
+            },
+            {
+              "i": 28,
+              "catalogId": "chair",
+              "x": 22,
+              "z": 32.034,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 29,
+              "catalogId": "chair",
+              "x": 24.145,
+              "z": 31.145,
+              "a": 3.927,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 30,
+              "catalogId": "chair",
+              "x": 25.034,
+              "z": 29,
+              "a": 4.712,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 31,
+              "catalogId": "chair",
+              "x": 24.145,
+              "z": 26.855,
+              "a": 5.498,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 32,
+              "catalogId": "chair",
+              "x": 22,
+              "z": 25.967,
+              "a": 6.283,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 33,
+              "catalogId": "chair",
+              "x": 19.855,
+              "z": 26.855,
+              "a": 0.785,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 34,
+              "catalogId": "chair",
+              "x": 18.967,
+              "z": 29,
+              "a": 1.571,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 35,
+              "catalogId": "chair",
+              "x": 19.855,
+              "z": 31.145,
+              "a": 2.356,
+              "mode": "edge",
+              "host": 27
+            }
+          ]
+        },
+        {
+          "id": "theater",
+          "name": "Theater",
+          "note": "Rows of chairs facing a stage (36 in rows)",
+          "recipe": "Banquet chairs in rows 36 in apart, 18 in wide, facing the front wall, with a centre aisle. The front holds an LED wall, a lectern with a laptop, and speakers. Showcase adds projector screens beside the LED wall, side speakers, a poster wall, a kiosk, and a charging tower.",
+          "count": 110,
+          "members": [
+            {
+              "catalogId": "chair",
+              "count": 108,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "podium",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "laptop",
+              "count": 1,
+              "placement": "attached (top)"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 1,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 2,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 3,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 4,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 5,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 6,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 7,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 8,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 9,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 10,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 11,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 12,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 13,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 14,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 15,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 16,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 17,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 18,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 19,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 20,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 21,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 22,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 23,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 24,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 25,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 26,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 27,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 28,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 29,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 30,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 31,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 32,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 33,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 34,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 35,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 36,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 37,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 38,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 39,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 40,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 41,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 42,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 43,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 44,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 45,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 46,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 47,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 48,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 49,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 50,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 51,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 52,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 53,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 54,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 55,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 56,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 57,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 58,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 59,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 60,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 61,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 62,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 63,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 64,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 65,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 66,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 67,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 68,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 69,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 70,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 71,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 72,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 73,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 74,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 75,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 76,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 77,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 78,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 79,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 80,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 81,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 82,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 83,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 84,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 85,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 86,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 87,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 88,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 89,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 90,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 91,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 92,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 93,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 94,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 95,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 96,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 97,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 98,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 99,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 100,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 101,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 102,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 103,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 104,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 105,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 106,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 107,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 108,
+              "catalogId": "podium",
+              "x": 15,
+              "z": 1.834,
+              "a": 0
+            },
+            {
+              "i": 109,
+              "catalogId": "laptop",
+              "x": 15,
+              "z": 1.834,
+              "a": 0,
+              "y": 3.833,
+              "mode": "top",
+              "host": 108
+            }
+          ]
+        },
+        {
+          "id": "registration",
+          "name": "Registration",
+          "note": "Check-in tables, laptops, signs and kiosks",
+          "recipe": "Up to four 6 ft check-in tables, two chairs behind each, laptops on the tables. Standard adds a second laptop and a 75 in TV behind the desks. Showcase uses an LED wall instead of that TV, plus monitors, LED posters, kiosks in the queue, and a charging tower.",
+          "count": 12,
+          "members": [
+            {
+              "catalogId": "table6",
+              "count": 3,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "chair",
+              "count": 6,
+              "placement": "attached (edge)"
+            },
+            {
+              "catalogId": "laptop",
+              "count": 3,
+              "placement": "attached (top)"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "table6",
+              "x": 8,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 1,
+              "catalogId": "chair",
+              "x": 6.4,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 2,
+              "catalogId": "chair",
+              "x": 9.6,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 3,
+              "catalogId": "laptop",
+              "x": 6.1,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 0
+            },
+            {
+              "i": 4,
+              "catalogId": "table6",
+              "x": 15,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 5,
+              "catalogId": "chair",
+              "x": 13.4,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 4
+            },
+            {
+              "i": 6,
+              "catalogId": "chair",
+              "x": 16.6,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 4
+            },
+            {
+              "i": 7,
+              "catalogId": "laptop",
+              "x": 13.1,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 4
+            },
+            {
+              "i": 8,
+              "catalogId": "table6",
+              "x": 22,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 9,
+              "catalogId": "chair",
+              "x": 20.4,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 8
+            },
+            {
+              "i": 10,
+              "catalogId": "chair",
+              "x": 23.6,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 8
+            },
+            {
+              "i": 11,
+              "catalogId": "laptop",
+              "x": 20.1,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "level": "standard",
+      "presets": [
+        {
+          "id": "booth",
+          "name": "Booth",
+          "note": "10 x 10 booths along the walls, a table in each",
+          "recipe": "10 × 10 booths along the walls, 10.5 ft apart, with a 10 ft aisle when the room is deep enough. Each booth gets a 6 ft table. Standard and Showcase add a 55 in TV on the back wall, a laptop or tablet on the table, LED posters, charging towers on the aisle, and one LED wall at the entrance.",
+          "count": 16,
+          "members": [
+            {
+              "catalogId": "booth10",
+              "count": 4,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "table6",
+              "count": 4,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "tv55",
+              "count": 2,
+              "placement": "attached (wall)"
+            },
+            {
+              "catalogId": "laptop",
+              "count": 4,
+              "placement": "attached (top)"
+            },
+            {
+              "catalogId": "tower",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "led",
+              "count": 1,
+              "placement": "on the floor"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "booth10",
+              "x": 10,
+              "z": 5.5,
+              "a": 0
+            },
+            {
+              "i": 1,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 5.75,
+              "a": 0
+            },
+            {
+              "i": 2,
+              "catalogId": "tv55",
+              "x": 10,
+              "z": 0.795,
+              "a": 0,
+              "y": 3.833,
+              "mode": "wall",
+              "host": 0
+            },
+            {
+              "i": 3,
+              "catalogId": "laptop",
+              "x": 8.5,
+              "z": 5.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 1
+            },
+            {
+              "i": 4,
+              "catalogId": "booth10",
+              "x": 20.5,
+              "z": 5.5,
+              "a": 0
+            },
+            {
+              "i": 5,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 5.75,
+              "a": 0
+            },
+            {
+              "i": 6,
+              "catalogId": "laptop",
+              "x": 19,
+              "z": 5.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 5
+            },
+            {
+              "i": 7,
+              "catalogId": "booth10",
+              "x": 9.5,
+              "z": 34.5,
+              "a": 3.142
+            },
+            {
+              "i": 8,
+              "catalogId": "table6",
+              "x": 9.5,
+              "z": 34.75,
+              "a": 0
+            },
+            {
+              "i": 9,
+              "catalogId": "tv55",
+              "x": 9.5,
+              "z": 39.205,
+              "a": 3.142,
+              "y": 3.833,
+              "mode": "wall",
+              "host": 7
+            },
+            {
+              "i": 10,
+              "catalogId": "laptop",
+              "x": 8,
+              "z": 34.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 8
+            },
+            {
+              "i": 11,
+              "catalogId": "booth10",
+              "x": 20.5,
+              "z": 34.5,
+              "a": 3.142
+            },
+            {
+              "i": 12,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 34.75,
+              "a": 0
+            },
+            {
+              "i": 13,
+              "catalogId": "laptop",
+              "x": 19,
+              "z": 34.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 12
+            },
+            {
+              "i": 14,
+              "catalogId": "tower",
+              "x": 15.167,
+              "z": 20.167,
+              "a": 0
+            },
+            {
+              "i": 15,
+              "catalogId": "led",
+              "x": 1.25,
+              "z": 19.921,
+              "a": 1.571
+            }
+          ]
+        },
+        {
+          "id": "classroom",
+          "name": "Classroom",
+          "note": "Rows of tables facing a podium",
+          "recipe": "Rows of 6 ft tables facing the front, two banquet chairs on the near edge of each table. A lectern sits up front with a laptop. Standard uses a projector screen; Showcase uses an LED wall, a laptop and tablet on the tables, side TVs, speakers, and a poster wall at the entrance.",
+          "count": 33,
+          "members": [
+            {
+              "catalogId": "screen",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "podium",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "laptop",
+              "count": 5,
+              "placement": "attached (top)"
+            },
+            {
+              "catalogId": "table6",
+              "count": 8,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "chair",
+              "count": 16,
+              "placement": "attached (edge)"
+            },
+            {
+              "catalogId": "speaker",
+              "count": 2,
+              "placement": "on the floor"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "screen",
+              "x": 15,
+              "z": 1.185,
+              "a": 0,
+              "mode": "wallfloor"
+            },
+            {
+              "i": 1,
+              "catalogId": "podium",
+              "x": 22,
+              "z": 1.834,
+              "a": 0
+            },
+            {
+              "i": 2,
+              "catalogId": "laptop",
+              "x": 22,
+              "z": 1.834,
+              "a": 0,
+              "y": 3.833,
+              "mode": "top",
+              "host": 1
+            },
+            {
+              "i": 3,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 4,
+              "catalogId": "chair",
+              "x": 8.4,
+              "z": 9.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 3
+            },
+            {
+              "i": 5,
+              "catalogId": "chair",
+              "x": 11.6,
+              "z": 9.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 3
+            },
+            {
+              "i": 6,
+              "catalogId": "laptop",
+              "x": 8.4,
+              "z": 8.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 3
+            },
+            {
+              "i": 7,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 8,
+              "catalogId": "chair",
+              "x": 18.9,
+              "z": 9.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 7
+            },
+            {
+              "i": 9,
+              "catalogId": "chair",
+              "x": 22.1,
+              "z": 9.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 7
+            },
+            {
+              "i": 10,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 14.75,
+              "a": 0
+            },
+            {
+              "i": 11,
+              "catalogId": "chair",
+              "x": 8.4,
+              "z": 16.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 10
+            },
+            {
+              "i": 12,
+              "catalogId": "chair",
+              "x": 11.6,
+              "z": 16.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 10
+            },
+            {
+              "i": 13,
+              "catalogId": "laptop",
+              "x": 8.4,
+              "z": 15.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 10
+            },
+            {
+              "i": 14,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 14.75,
+              "a": 0
+            },
+            {
+              "i": 15,
+              "catalogId": "chair",
+              "x": 18.9,
+              "z": 16.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 14
+            },
+            {
+              "i": 16,
+              "catalogId": "chair",
+              "x": 22.1,
+              "z": 16.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 14
+            },
+            {
+              "i": 17,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 21.75,
+              "a": 0
+            },
+            {
+              "i": 18,
+              "catalogId": "chair",
+              "x": 8.4,
+              "z": 23.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 17
+            },
+            {
+              "i": 19,
+              "catalogId": "chair",
+              "x": 11.6,
+              "z": 23.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 17
+            },
+            {
+              "i": 20,
+              "catalogId": "laptop",
+              "x": 8.4,
+              "z": 22.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 17
+            },
+            {
+              "i": 21,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 21.75,
+              "a": 0
+            },
+            {
+              "i": 22,
+              "catalogId": "chair",
+              "x": 18.9,
+              "z": 23.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 21
+            },
+            {
+              "i": 23,
+              "catalogId": "chair",
+              "x": 22.1,
+              "z": 23.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 21
+            },
+            {
+              "i": 24,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 28.75,
+              "a": 0
+            },
+            {
+              "i": 25,
+              "catalogId": "chair",
+              "x": 8.4,
+              "z": 30.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 24
+            },
+            {
+              "i": 26,
+              "catalogId": "chair",
+              "x": 11.6,
+              "z": 30.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 24
+            },
+            {
+              "i": 27,
+              "catalogId": "laptop",
+              "x": 8.4,
+              "z": 29.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 24
+            },
+            {
+              "i": 28,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 28.75,
+              "a": 0
+            },
+            {
+              "i": 29,
+              "catalogId": "chair",
+              "x": 18.9,
+              "z": 30.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 28
+            },
+            {
+              "i": 30,
+              "catalogId": "chair",
+              "x": 22.1,
+              "z": 30.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 28
+            },
+            {
+              "i": 31,
+              "catalogId": "speaker",
+              "x": 1.125,
+              "z": 1.125,
+              "a": 0
+            },
+            {
+              "i": 32,
+              "catalogId": "speaker",
+              "x": 28.625,
+              "z": 1.125,
+              "a": 0
+            }
+          ]
+        },
+        {
+          "id": "banquet",
+          "name": "Banquet",
+          "note": "Round tables with 8 chairs",
+          "recipe": "60 in rounds on a grid. Eight banquet chairs sit on a 3.2 ft radius around each table, with 5 ft between chair backs. A front band holds the stage tech: an LED wall, a lectern with a laptop, side TVs, corner speakers, and entrance posters. Showcase adds the extra speakers and a charging tower.",
+          "count": 44,
+          "members": [
+            {
+              "catalogId": "round60",
+              "count": 4,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "chair",
+              "count": 32,
+              "placement": "attached (edge)"
+            },
+            {
+              "catalogId": "led",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "podium",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "laptop",
+              "count": 1,
+              "placement": "attached (top)"
+            },
+            {
+              "catalogId": "tv75",
+              "count": 2,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "speaker",
+              "count": 2,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "ledposter",
+              "count": 1,
+              "placement": "on the floor"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "round60",
+              "x": 8.5,
+              "z": 15.5,
+              "a": 0
+            },
+            {
+              "i": 1,
+              "catalogId": "chair",
+              "x": 8.5,
+              "z": 18.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 2,
+              "catalogId": "chair",
+              "x": 10.645,
+              "z": 17.645,
+              "a": 3.927,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 3,
+              "catalogId": "chair",
+              "x": 11.534,
+              "z": 15.5,
+              "a": 4.712,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 4,
+              "catalogId": "chair",
+              "x": 10.645,
+              "z": 13.355,
+              "a": 5.498,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 5,
+              "catalogId": "chair",
+              "x": 8.5,
+              "z": 12.467,
+              "a": 6.283,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 6,
+              "catalogId": "chair",
+              "x": 6.355,
+              "z": 13.355,
+              "a": 0.785,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 7,
+              "catalogId": "chair",
+              "x": 5.467,
+              "z": 15.5,
+              "a": 1.571,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 8,
+              "catalogId": "chair",
+              "x": 6.355,
+              "z": 17.645,
+              "a": 2.356,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 9,
+              "catalogId": "round60",
+              "x": 8.5,
+              "z": 29,
+              "a": 0
+            },
+            {
+              "i": 10,
+              "catalogId": "chair",
+              "x": 8.5,
+              "z": 32.034,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 11,
+              "catalogId": "chair",
+              "x": 10.645,
+              "z": 31.145,
+              "a": 3.927,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 12,
+              "catalogId": "chair",
+              "x": 11.534,
+              "z": 29,
+              "a": 4.712,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 13,
+              "catalogId": "chair",
+              "x": 10.645,
+              "z": 26.855,
+              "a": 5.498,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 14,
+              "catalogId": "chair",
+              "x": 8.5,
+              "z": 25.967,
+              "a": 6.283,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 15,
+              "catalogId": "chair",
+              "x": 6.355,
+              "z": 26.855,
+              "a": 0.785,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 16,
+              "catalogId": "chair",
+              "x": 5.467,
+              "z": 29,
+              "a": 1.571,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 17,
+              "catalogId": "chair",
+              "x": 6.355,
+              "z": 31.145,
+              "a": 2.356,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 18,
+              "catalogId": "round60",
+              "x": 22,
+              "z": 15.5,
+              "a": 0
+            },
+            {
+              "i": 19,
+              "catalogId": "chair",
+              "x": 22,
+              "z": 18.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 20,
+              "catalogId": "chair",
+              "x": 24.145,
+              "z": 17.645,
+              "a": 3.927,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 21,
+              "catalogId": "chair",
+              "x": 25.034,
+              "z": 15.5,
+              "a": 4.712,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 22,
+              "catalogId": "chair",
+              "x": 24.145,
+              "z": 13.355,
+              "a": 5.498,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 23,
+              "catalogId": "chair",
+              "x": 22,
+              "z": 12.467,
+              "a": 6.283,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 24,
+              "catalogId": "chair",
+              "x": 19.855,
+              "z": 13.355,
+              "a": 0.785,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 25,
+              "catalogId": "chair",
+              "x": 18.967,
+              "z": 15.5,
+              "a": 1.571,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 26,
+              "catalogId": "chair",
+              "x": 19.855,
+              "z": 17.645,
+              "a": 2.356,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 27,
+              "catalogId": "round60",
+              "x": 22,
+              "z": 29,
+              "a": 0
+            },
+            {
+              "i": 28,
+              "catalogId": "chair",
+              "x": 22,
+              "z": 32.034,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 29,
+              "catalogId": "chair",
+              "x": 24.145,
+              "z": 31.145,
+              "a": 3.927,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 30,
+              "catalogId": "chair",
+              "x": 25.034,
+              "z": 29,
+              "a": 4.712,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 31,
+              "catalogId": "chair",
+              "x": 24.145,
+              "z": 26.855,
+              "a": 5.498,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 32,
+              "catalogId": "chair",
+              "x": 22,
+              "z": 25.967,
+              "a": 6.283,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 33,
+              "catalogId": "chair",
+              "x": 19.855,
+              "z": 26.855,
+              "a": 0.785,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 34,
+              "catalogId": "chair",
+              "x": 18.967,
+              "z": 29,
+              "a": 1.571,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 35,
+              "catalogId": "chair",
+              "x": 19.855,
+              "z": 31.145,
+              "a": 2.356,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 36,
+              "catalogId": "led",
+              "x": 15,
+              "z": 0.935,
+              "a": 0,
+              "mode": "wallfloor"
+            },
+            {
+              "i": 37,
+              "catalogId": "podium",
+              "x": 22,
+              "z": 1.834,
+              "a": 0
+            },
+            {
+              "i": 38,
+              "catalogId": "laptop",
+              "x": 22,
+              "z": 1.834,
+              "a": 0,
+              "y": 3.833,
+              "mode": "top",
+              "host": 37
+            },
+            {
+              "i": 39,
+              "catalogId": "tv75",
+              "x": 0.31,
+              "z": 14.049,
+              "a": 1.571,
+              "y": 3.583,
+              "mode": "wall"
+            },
+            {
+              "i": 40,
+              "catalogId": "tv75",
+              "x": 29.69,
+              "z": 14.049,
+              "a": -1.571,
+              "y": 3.583,
+              "mode": "wall"
+            },
+            {
+              "i": 41,
+              "catalogId": "speaker",
+              "x": 1.125,
+              "z": 1.125,
+              "a": 0
+            },
+            {
+              "i": 42,
+              "catalogId": "speaker",
+              "x": 28.625,
+              "z": 1.125,
+              "a": 0
+            },
+            {
+              "i": 43,
+              "catalogId": "ledposter",
+              "x": 9.05,
+              "z": 38.279,
+              "a": 3.142
+            }
+          ]
+        },
+        {
+          "id": "theater",
+          "name": "Theater",
+          "note": "Rows of chairs facing a stage (36 in rows)",
+          "recipe": "Banquet chairs in rows 36 in apart, 18 in wide, facing the front wall, with a centre aisle. The front holds an LED wall, a lectern with a laptop, and speakers. Showcase adds projector screens beside the LED wall, side speakers, a poster wall, a kiosk, and a charging tower.",
+          "count": 114,
+          "members": [
+            {
+              "catalogId": "chair",
+              "count": 108,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "led",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "podium",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "laptop",
+              "count": 1,
+              "placement": "attached (top)"
+            },
+            {
+              "catalogId": "speaker",
+              "count": 2,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "ledposter",
+              "count": 1,
+              "placement": "on the floor"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 1,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 2,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 3,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 4,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 5,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 6,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 7,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 8,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 9,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 10,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 11,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 12,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 13,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 14,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 15,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 16,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 17,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 18,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 19,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 20,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 21,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 22,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 23,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 24,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 25,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 26,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 27,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 28,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 29,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 30,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 31,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 32,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 33,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 34,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 35,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 36,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 37,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 38,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 39,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 40,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 41,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 42,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 43,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 44,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 45,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 46,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 47,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 48,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 49,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 50,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 51,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 52,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 53,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 54,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 55,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 56,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 57,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 58,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 59,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 60,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 61,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 62,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 63,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 64,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 65,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 66,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 67,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 68,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 69,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 70,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 71,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 72,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 73,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 74,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 75,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 76,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 77,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 78,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 79,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 80,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 81,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 82,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 83,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 84,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 85,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 86,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 87,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 88,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 89,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 90,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 91,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 92,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 93,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 94,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 95,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 96,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 97,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 98,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 99,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 100,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 101,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 102,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 103,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 104,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 105,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 106,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 107,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 108,
+              "catalogId": "led",
+              "x": 15,
+              "z": 0.935,
+              "a": 0,
+              "mode": "wallfloor"
+            },
+            {
+              "i": 109,
+              "catalogId": "podium",
+              "x": 8.5,
+              "z": 4.334,
+              "a": 0
+            },
+            {
+              "i": 110,
+              "catalogId": "laptop",
+              "x": 8.5,
+              "z": 4.334,
+              "a": 0,
+              "y": 3.833,
+              "mode": "top",
+              "host": 109
+            },
+            {
+              "i": 111,
+              "catalogId": "speaker",
+              "x": 1.125,
+              "z": 1.625,
+              "a": 0
+            },
+            {
+              "i": 112,
+              "catalogId": "speaker",
+              "x": 28.625,
+              "z": 1.625,
+              "a": 0
+            },
+            {
+              "i": 113,
+              "catalogId": "ledposter",
+              "x": 9.05,
+              "z": 38.279,
+              "a": 3.142
+            }
+          ]
+        },
+        {
+          "id": "registration",
+          "name": "Registration",
+          "note": "Check-in tables, laptops, signs and kiosks",
+          "recipe": "Up to four 6 ft check-in tables, two chairs behind each, laptops on the tables. Standard adds a second laptop and a 75 in TV behind the desks. Showcase uses an LED wall instead of that TV, plus monitors, LED posters, kiosks in the queue, and a charging tower.",
+          "count": 18,
+          "members": [
+            {
+              "catalogId": "tv75",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "table6",
+              "count": 3,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "chair",
+              "count": 6,
+              "placement": "attached (edge)"
+            },
+            {
+              "catalogId": "laptop",
+              "count": 6,
+              "placement": "attached (top)"
+            },
+            {
+              "catalogId": "kiosk",
+              "count": 2,
+              "placement": "on the floor"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "tv75",
+              "x": 15,
+              "z": 0.31,
+              "a": 0,
+              "y": 3.583,
+              "mode": "wall"
+            },
+            {
+              "i": 1,
+              "catalogId": "table6",
+              "x": 8,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 2,
+              "catalogId": "chair",
+              "x": 6.4,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 1
+            },
+            {
+              "i": 3,
+              "catalogId": "chair",
+              "x": 9.6,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 1
+            },
+            {
+              "i": 4,
+              "catalogId": "laptop",
+              "x": 6.1,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 1
+            },
+            {
+              "i": 5,
+              "catalogId": "laptop",
+              "x": 9.9,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 1
+            },
+            {
+              "i": 6,
+              "catalogId": "table6",
+              "x": 15,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 7,
+              "catalogId": "chair",
+              "x": 13.4,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 6
+            },
+            {
+              "i": 8,
+              "catalogId": "chair",
+              "x": 16.6,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 6
+            },
+            {
+              "i": 9,
+              "catalogId": "laptop",
+              "x": 13.1,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 6
+            },
+            {
+              "i": 10,
+              "catalogId": "laptop",
+              "x": 16.9,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 6
+            },
+            {
+              "i": 11,
+              "catalogId": "table6",
+              "x": 22,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 12,
+              "catalogId": "chair",
+              "x": 20.4,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 11
+            },
+            {
+              "i": 13,
+              "catalogId": "chair",
+              "x": 23.6,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 11
+            },
+            {
+              "i": 14,
+              "catalogId": "laptop",
+              "x": 20.1,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 11
+            },
+            {
+              "i": 15,
+              "catalogId": "laptop",
+              "x": 23.9,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 11
+            },
+            {
+              "i": 16,
+              "catalogId": "kiosk",
+              "x": 10.25,
+              "z": 19.25,
+              "a": 0
+            },
+            {
+              "i": 17,
+              "catalogId": "kiosk",
+              "x": 20.25,
+              "z": 19.25,
+              "a": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "level": "showcase",
+      "presets": [
+        {
+          "id": "booth",
+          "name": "Booth",
+          "note": "10 x 10 booths along the walls, a table in each",
+          "recipe": "10 × 10 booths along the walls, 10.5 ft apart, with a 10 ft aisle when the room is deep enough. Each booth gets a 6 ft table. Standard and Showcase add a 55 in TV on the back wall, a laptop or tablet on the table, LED posters, charging towers on the aisle, and one LED wall at the entrance.",
+          "count": 24,
+          "members": [
+            {
+              "catalogId": "booth10",
+              "count": 4,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "table6",
+              "count": 4,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "tv55",
+              "count": 4,
+              "placement": "attached (wall)"
+            },
+            {
+              "catalogId": "laptop",
+              "count": 2,
+              "placement": "attached (top)"
+            },
+            {
+              "catalogId": "ipad",
+              "count": 4,
+              "placement": "attached (top)"
+            },
+            {
+              "catalogId": "ledposter",
+              "count": 4,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "tower",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "led",
+              "count": 1,
+              "placement": "on the floor"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "booth10",
+              "x": 10,
+              "z": 5.5,
+              "a": 0
+            },
+            {
+              "i": 1,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 5.75,
+              "a": 0
+            },
+            {
+              "i": 2,
+              "catalogId": "tv55",
+              "x": 10,
+              "z": 0.795,
+              "a": 0,
+              "y": 3.833,
+              "mode": "wall",
+              "host": 0
+            },
+            {
+              "i": 3,
+              "catalogId": "laptop",
+              "x": 8.5,
+              "z": 5.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 1
+            },
+            {
+              "i": 4,
+              "catalogId": "ipad",
+              "x": 11.5,
+              "z": 5.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 1
+            },
+            {
+              "i": 5,
+              "catalogId": "ledposter",
+              "x": 14.05,
+              "z": 9.279,
+              "a": 0
+            },
+            {
+              "i": 6,
+              "catalogId": "booth10",
+              "x": 20.5,
+              "z": 5.5,
+              "a": 0
+            },
+            {
+              "i": 7,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 5.75,
+              "a": 0
+            },
+            {
+              "i": 8,
+              "catalogId": "tv55",
+              "x": 20.5,
+              "z": 0.795,
+              "a": 0,
+              "y": 3.833,
+              "mode": "wall",
+              "host": 6
+            },
+            {
+              "i": 9,
+              "catalogId": "ipad",
+              "x": 19,
+              "z": 5.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 7
+            },
+            {
+              "i": 10,
+              "catalogId": "ledposter",
+              "x": 24.55,
+              "z": 9.279,
+              "a": 0
+            },
+            {
+              "i": 11,
+              "catalogId": "booth10",
+              "x": 9.5,
+              "z": 34.5,
+              "a": 3.142
+            },
+            {
+              "i": 12,
+              "catalogId": "table6",
+              "x": 9.5,
+              "z": 34.75,
+              "a": 0
+            },
+            {
+              "i": 13,
+              "catalogId": "tv55",
+              "x": 9.5,
+              "z": 39.205,
+              "a": 3.142,
+              "y": 3.833,
+              "mode": "wall",
+              "host": 11
+            },
+            {
+              "i": 14,
+              "catalogId": "laptop",
+              "x": 8,
+              "z": 34.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 12
+            },
+            {
+              "i": 15,
+              "catalogId": "ipad",
+              "x": 11,
+              "z": 34.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 12
+            },
+            {
+              "i": 16,
+              "catalogId": "ledposter",
+              "x": 13.55,
+              "z": 30.779,
+              "a": 3.142
+            },
+            {
+              "i": 17,
+              "catalogId": "booth10",
+              "x": 20.5,
+              "z": 34.5,
+              "a": 3.142
+            },
+            {
+              "i": 18,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 34.75,
+              "a": 0
+            },
+            {
+              "i": 19,
+              "catalogId": "tv55",
+              "x": 20.5,
+              "z": 39.205,
+              "a": 3.142,
+              "y": 3.833,
+              "mode": "wall",
+              "host": 17
+            },
+            {
+              "i": 20,
+              "catalogId": "ipad",
+              "x": 19,
+              "z": 34.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 18
+            },
+            {
+              "i": 21,
+              "catalogId": "ledposter",
+              "x": 24.55,
+              "z": 30.779,
+              "a": 3.142
+            },
+            {
+              "i": 22,
+              "catalogId": "tower",
+              "x": 15.167,
+              "z": 20.167,
+              "a": 0
+            },
+            {
+              "i": 23,
+              "catalogId": "led",
+              "x": 1.25,
+              "z": 19.921,
+              "a": 1.571
+            }
+          ]
+        },
+        {
+          "id": "classroom",
+          "name": "Classroom",
+          "note": "Rows of tables facing a podium",
+          "recipe": "Rows of 6 ft tables facing the front, two banquet chairs on the near edge of each table. A lectern sits up front with a laptop. Standard uses a projector screen; Showcase uses an LED wall, a laptop and tablet on the tables, side TVs, speakers, and a poster wall at the entrance.",
+          "count": 50,
+          "members": [
+            {
+              "catalogId": "led",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "podium",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "laptop",
+              "count": 9,
+              "placement": "attached (top)"
+            },
+            {
+              "catalogId": "table6",
+              "count": 8,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "chair",
+              "count": 16,
+              "placement": "attached (edge)"
+            },
+            {
+              "catalogId": "ipad",
+              "count": 8,
+              "placement": "attached (top)"
+            },
+            {
+              "catalogId": "tv75",
+              "count": 2,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "speaker",
+              "count": 2,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "tower",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "ledposter",
+              "count": 2,
+              "placement": "linked run"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "led",
+              "x": 15,
+              "z": 0.935,
+              "a": 0,
+              "mode": "wallfloor"
+            },
+            {
+              "i": 1,
+              "catalogId": "podium",
+              "x": 22,
+              "z": 1.834,
+              "a": 0
+            },
+            {
+              "i": 2,
+              "catalogId": "laptop",
+              "x": 22,
+              "z": 1.834,
+              "a": 0,
+              "y": 3.833,
+              "mode": "top",
+              "host": 1
+            },
+            {
+              "i": 3,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 4,
+              "catalogId": "chair",
+              "x": 8.4,
+              "z": 9.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 3
+            },
+            {
+              "i": 5,
+              "catalogId": "chair",
+              "x": 11.6,
+              "z": 9.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 3
+            },
+            {
+              "i": 6,
+              "catalogId": "laptop",
+              "x": 8.4,
+              "z": 8.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 3
+            },
+            {
+              "i": 7,
+              "catalogId": "ipad",
+              "x": 11.6,
+              "z": 8.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 3
+            },
+            {
+              "i": 8,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 9,
+              "catalogId": "chair",
+              "x": 18.9,
+              "z": 9.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 8
+            },
+            {
+              "i": 10,
+              "catalogId": "chair",
+              "x": 22.1,
+              "z": 9.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 8
+            },
+            {
+              "i": 11,
+              "catalogId": "laptop",
+              "x": 18.9,
+              "z": 8.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 8
+            },
+            {
+              "i": 12,
+              "catalogId": "ipad",
+              "x": 22.1,
+              "z": 8.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 8
+            },
+            {
+              "i": 13,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 14.75,
+              "a": 0
+            },
+            {
+              "i": 14,
+              "catalogId": "chair",
+              "x": 8.4,
+              "z": 16.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 13
+            },
+            {
+              "i": 15,
+              "catalogId": "chair",
+              "x": 11.6,
+              "z": 16.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 13
+            },
+            {
+              "i": 16,
+              "catalogId": "laptop",
+              "x": 8.4,
+              "z": 15.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 13
+            },
+            {
+              "i": 17,
+              "catalogId": "ipad",
+              "x": 11.6,
+              "z": 15.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 13
+            },
+            {
+              "i": 18,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 14.75,
+              "a": 0
+            },
+            {
+              "i": 19,
+              "catalogId": "chair",
+              "x": 18.9,
+              "z": 16.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 20,
+              "catalogId": "chair",
+              "x": 22.1,
+              "z": 16.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 21,
+              "catalogId": "laptop",
+              "x": 18.9,
+              "z": 15.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 18
+            },
+            {
+              "i": 22,
+              "catalogId": "ipad",
+              "x": 22.1,
+              "z": 15.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 18
+            },
+            {
+              "i": 23,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 21.75,
+              "a": 0
+            },
+            {
+              "i": 24,
+              "catalogId": "chair",
+              "x": 8.4,
+              "z": 23.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 23
+            },
+            {
+              "i": 25,
+              "catalogId": "chair",
+              "x": 11.6,
+              "z": 23.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 23
+            },
+            {
+              "i": 26,
+              "catalogId": "laptop",
+              "x": 8.4,
+              "z": 22.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 23
+            },
+            {
+              "i": 27,
+              "catalogId": "ipad",
+              "x": 11.6,
+              "z": 22.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 23
+            },
+            {
+              "i": 28,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 21.75,
+              "a": 0
+            },
+            {
+              "i": 29,
+              "catalogId": "chair",
+              "x": 18.9,
+              "z": 23.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 28
+            },
+            {
+              "i": 30,
+              "catalogId": "chair",
+              "x": 22.1,
+              "z": 23.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 28
+            },
+            {
+              "i": 31,
+              "catalogId": "laptop",
+              "x": 18.9,
+              "z": 22.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 28
+            },
+            {
+              "i": 32,
+              "catalogId": "ipad",
+              "x": 22.1,
+              "z": 22.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 28
+            },
+            {
+              "i": 33,
+              "catalogId": "table6",
+              "x": 10,
+              "z": 28.75,
+              "a": 0
+            },
+            {
+              "i": 34,
+              "catalogId": "chair",
+              "x": 8.4,
+              "z": 30.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 33
+            },
+            {
+              "i": 35,
+              "catalogId": "chair",
+              "x": 11.6,
+              "z": 30.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 33
+            },
+            {
+              "i": 36,
+              "catalogId": "laptop",
+              "x": 8.4,
+              "z": 29.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 33
+            },
+            {
+              "i": 37,
+              "catalogId": "ipad",
+              "x": 11.6,
+              "z": 29.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 33
+            },
+            {
+              "i": 38,
+              "catalogId": "table6",
+              "x": 20.5,
+              "z": 28.75,
+              "a": 0
+            },
+            {
+              "i": 39,
+              "catalogId": "chair",
+              "x": 18.9,
+              "z": 30.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 38
+            },
+            {
+              "i": 40,
+              "catalogId": "chair",
+              "x": 22.1,
+              "z": 30.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 38
+            },
+            {
+              "i": 41,
+              "catalogId": "laptop",
+              "x": 18.9,
+              "z": 29.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 38
+            },
+            {
+              "i": 42,
+              "catalogId": "ipad",
+              "x": 22.1,
+              "z": 29.05,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 38
+            },
+            {
+              "i": 43,
+              "catalogId": "tv75",
+              "x": 0.31,
+              "z": 21.665,
+              "a": 1.571,
+              "y": 3.583,
+              "mode": "wall"
+            },
+            {
+              "i": 44,
+              "catalogId": "tv75",
+              "x": 29.69,
+              "z": 21.665,
+              "a": -1.571,
+              "y": 3.583,
+              "mode": "wall"
+            },
+            {
+              "i": 45,
+              "catalogId": "speaker",
+              "x": 1.125,
+              "z": 1.125,
+              "a": 0
+            },
+            {
+              "i": 46,
+              "catalogId": "speaker",
+              "x": 28.625,
+              "z": 1.125,
+              "a": 0
+            },
+            {
+              "i": 47,
+              "catalogId": "tower",
+              "x": 8.667,
+              "z": 38.167,
+              "a": 3.142
+            },
+            {
+              "i": 48,
+              "catalogId": "ledposter",
+              "x": 21.05,
+              "z": 38.279,
+              "a": 3.142,
+              "links": [
+                49
+              ]
+            },
+            {
+              "i": 49,
+              "catalogId": "ledposter",
+              "x": 23.15,
+              "z": 38.279,
+              "a": 3.142,
+              "links": [
+                48
+              ]
+            }
+          ]
+        },
+        {
+          "id": "banquet",
+          "name": "Banquet",
+          "note": "Round tables with 8 chairs",
+          "recipe": "60 in rounds on a grid. Eight banquet chairs sit on a 3.2 ft radius around each table, with 5 ft between chair backs. A front band holds the stage tech: an LED wall, a lectern with a laptop, side TVs, corner speakers, and entrance posters. Showcase adds the extra speakers and a charging tower.",
+          "count": 50,
+          "members": [
+            {
+              "catalogId": "round60",
+              "count": 4,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "chair",
+              "count": 32,
+              "placement": "attached (edge)"
+            },
+            {
+              "catalogId": "led",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "podium",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "laptop",
+              "count": 1,
+              "placement": "attached (top)"
+            },
+            {
+              "catalogId": "tv75",
+              "count": 2,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "speaker",
+              "count": 4,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "ledposter",
+              "count": 3,
+              "placement": "linked run"
+            },
+            {
+              "catalogId": "ledposter",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "tower",
+              "count": 1,
+              "placement": "on the floor"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "round60",
+              "x": 8.5,
+              "z": 15.5,
+              "a": 0
+            },
+            {
+              "i": 1,
+              "catalogId": "chair",
+              "x": 8.5,
+              "z": 18.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 2,
+              "catalogId": "chair",
+              "x": 10.645,
+              "z": 17.645,
+              "a": 3.927,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 3,
+              "catalogId": "chair",
+              "x": 11.534,
+              "z": 15.5,
+              "a": 4.712,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 4,
+              "catalogId": "chair",
+              "x": 10.645,
+              "z": 13.355,
+              "a": 5.498,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 5,
+              "catalogId": "chair",
+              "x": 8.5,
+              "z": 12.467,
+              "a": 6.283,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 6,
+              "catalogId": "chair",
+              "x": 6.355,
+              "z": 13.355,
+              "a": 0.785,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 7,
+              "catalogId": "chair",
+              "x": 5.467,
+              "z": 15.5,
+              "a": 1.571,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 8,
+              "catalogId": "chair",
+              "x": 6.355,
+              "z": 17.645,
+              "a": 2.356,
+              "mode": "edge",
+              "host": 0
+            },
+            {
+              "i": 9,
+              "catalogId": "round60",
+              "x": 8.5,
+              "z": 29,
+              "a": 0
+            },
+            {
+              "i": 10,
+              "catalogId": "chair",
+              "x": 8.5,
+              "z": 32.034,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 11,
+              "catalogId": "chair",
+              "x": 10.645,
+              "z": 31.145,
+              "a": 3.927,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 12,
+              "catalogId": "chair",
+              "x": 11.534,
+              "z": 29,
+              "a": 4.712,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 13,
+              "catalogId": "chair",
+              "x": 10.645,
+              "z": 26.855,
+              "a": 5.498,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 14,
+              "catalogId": "chair",
+              "x": 8.5,
+              "z": 25.967,
+              "a": 6.283,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 15,
+              "catalogId": "chair",
+              "x": 6.355,
+              "z": 26.855,
+              "a": 0.785,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 16,
+              "catalogId": "chair",
+              "x": 5.467,
+              "z": 29,
+              "a": 1.571,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 17,
+              "catalogId": "chair",
+              "x": 6.355,
+              "z": 31.145,
+              "a": 2.356,
+              "mode": "edge",
+              "host": 9
+            },
+            {
+              "i": 18,
+              "catalogId": "round60",
+              "x": 22,
+              "z": 15.5,
+              "a": 0
+            },
+            {
+              "i": 19,
+              "catalogId": "chair",
+              "x": 22,
+              "z": 18.534,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 20,
+              "catalogId": "chair",
+              "x": 24.145,
+              "z": 17.645,
+              "a": 3.927,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 21,
+              "catalogId": "chair",
+              "x": 25.034,
+              "z": 15.5,
+              "a": 4.712,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 22,
+              "catalogId": "chair",
+              "x": 24.145,
+              "z": 13.355,
+              "a": 5.498,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 23,
+              "catalogId": "chair",
+              "x": 22,
+              "z": 12.467,
+              "a": 6.283,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 24,
+              "catalogId": "chair",
+              "x": 19.855,
+              "z": 13.355,
+              "a": 0.785,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 25,
+              "catalogId": "chair",
+              "x": 18.967,
+              "z": 15.5,
+              "a": 1.571,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 26,
+              "catalogId": "chair",
+              "x": 19.855,
+              "z": 17.645,
+              "a": 2.356,
+              "mode": "edge",
+              "host": 18
+            },
+            {
+              "i": 27,
+              "catalogId": "round60",
+              "x": 22,
+              "z": 29,
+              "a": 0
+            },
+            {
+              "i": 28,
+              "catalogId": "chair",
+              "x": 22,
+              "z": 32.034,
+              "a": 3.142,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 29,
+              "catalogId": "chair",
+              "x": 24.145,
+              "z": 31.145,
+              "a": 3.927,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 30,
+              "catalogId": "chair",
+              "x": 25.034,
+              "z": 29,
+              "a": 4.712,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 31,
+              "catalogId": "chair",
+              "x": 24.145,
+              "z": 26.855,
+              "a": 5.498,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 32,
+              "catalogId": "chair",
+              "x": 22,
+              "z": 25.967,
+              "a": 6.283,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 33,
+              "catalogId": "chair",
+              "x": 19.855,
+              "z": 26.855,
+              "a": 0.785,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 34,
+              "catalogId": "chair",
+              "x": 18.967,
+              "z": 29,
+              "a": 1.571,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 35,
+              "catalogId": "chair",
+              "x": 19.855,
+              "z": 31.145,
+              "a": 2.356,
+              "mode": "edge",
+              "host": 27
+            },
+            {
+              "i": 36,
+              "catalogId": "led",
+              "x": 15,
+              "z": 0.935,
+              "a": 0,
+              "mode": "wallfloor"
+            },
+            {
+              "i": 37,
+              "catalogId": "podium",
+              "x": 22,
+              "z": 1.834,
+              "a": 0
+            },
+            {
+              "i": 38,
+              "catalogId": "laptop",
+              "x": 22,
+              "z": 1.834,
+              "a": 0,
+              "y": 3.833,
+              "mode": "top",
+              "host": 37
+            },
+            {
+              "i": 39,
+              "catalogId": "tv75",
+              "x": 0.31,
+              "z": 14.049,
+              "a": 1.571,
+              "y": 3.583,
+              "mode": "wall"
+            },
+            {
+              "i": 40,
+              "catalogId": "tv75",
+              "x": 29.69,
+              "z": 14.049,
+              "a": -1.571,
+              "y": 3.583,
+              "mode": "wall"
+            },
+            {
+              "i": 41,
+              "catalogId": "speaker",
+              "x": 1.125,
+              "z": 1.125,
+              "a": 0
+            },
+            {
+              "i": 42,
+              "catalogId": "speaker",
+              "x": 28.625,
+              "z": 1.125,
+              "a": 0
+            },
+            {
+              "i": 43,
+              "catalogId": "speaker",
+              "x": 1.125,
+              "z": 38.625,
+              "a": 0
+            },
+            {
+              "i": 44,
+              "catalogId": "speaker",
+              "x": 28.625,
+              "z": 38.625,
+              "a": 0
+            },
+            {
+              "i": 45,
+              "catalogId": "ledposter",
+              "x": 9.05,
+              "z": 38.279,
+              "a": 3.142,
+              "links": [
+                46
+              ]
+            },
+            {
+              "i": 46,
+              "catalogId": "ledposter",
+              "x": 6.95,
+              "z": 38.279,
+              "a": 3.142,
+              "links": [
+                45,
+                47
+              ]
+            },
+            {
+              "i": 47,
+              "catalogId": "ledposter",
+              "x": 4.85,
+              "z": 38.279,
+              "a": 3.142,
+              "links": [
+                46
+              ]
+            },
+            {
+              "i": 48,
+              "catalogId": "ledposter",
+              "x": 21.05,
+              "z": 38.279,
+              "a": 3.142
+            },
+            {
+              "i": 49,
+              "catalogId": "tower",
+              "x": 23.667,
+              "z": 38.167,
+              "a": 3.142
+            }
+          ]
+        },
+        {
+          "id": "theater",
+          "name": "Theater",
+          "note": "Rows of chairs facing a stage (36 in rows)",
+          "recipe": "Banquet chairs in rows 36 in apart, 18 in wide, facing the front wall, with a centre aisle. The front holds an LED wall, a lectern with a laptop, and speakers. Showcase adds projector screens beside the LED wall, side speakers, a poster wall, a kiosk, and a charging tower.",
+          "count": 120,
+          "members": [
+            {
+              "catalogId": "chair",
+              "count": 108,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "led",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "podium",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "laptop",
+              "count": 1,
+              "placement": "attached (top)"
+            },
+            {
+              "catalogId": "speaker",
+              "count": 4,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "ledposter",
+              "count": 3,
+              "placement": "linked run"
+            },
+            {
+              "catalogId": "ledposter",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "kiosk",
+              "count": 1,
+              "placement": "on the floor"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 1,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 2,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 3,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 4,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 5,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 6,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 7,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 8,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 9,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 10,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 11,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 9.334,
+              "a": 3.142
+            },
+            {
+              "i": 12,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 13,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 14,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 15,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 16,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 17,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 18,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 19,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 20,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 21,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 22,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 23,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 12.334,
+              "a": 3.142
+            },
+            {
+              "i": 24,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 25,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 26,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 27,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 28,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 29,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 30,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 31,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 32,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 33,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 34,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 35,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 15.334,
+              "a": 3.142
+            },
+            {
+              "i": 36,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 37,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 38,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 39,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 40,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 41,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 42,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 43,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 44,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 45,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 46,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 47,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 18.334,
+              "a": 3.142
+            },
+            {
+              "i": 48,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 49,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 50,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 51,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 52,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 53,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 54,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 55,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 56,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 57,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 58,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 59,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 21.334,
+              "a": 3.142
+            },
+            {
+              "i": 60,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 61,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 62,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 63,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 64,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 65,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 66,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 67,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 68,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 69,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 70,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 71,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 24.334,
+              "a": 3.142
+            },
+            {
+              "i": 72,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 73,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 74,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 75,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 76,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 77,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 78,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 79,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 80,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 81,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 82,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 83,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 27.334,
+              "a": 3.142
+            },
+            {
+              "i": 84,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 85,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 86,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 87,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 88,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 89,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 90,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 91,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 92,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 93,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 94,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 95,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 30.334,
+              "a": 3.142
+            },
+            {
+              "i": 96,
+              "catalogId": "chair",
+              "x": 12.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 97,
+              "catalogId": "chair",
+              "x": 10.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 98,
+              "catalogId": "chair",
+              "x": 9.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 99,
+              "catalogId": "chair",
+              "x": 7.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 100,
+              "catalogId": "chair",
+              "x": 6.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 101,
+              "catalogId": "chair",
+              "x": 4.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 102,
+              "catalogId": "chair",
+              "x": 18.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 103,
+              "catalogId": "chair",
+              "x": 19.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 104,
+              "catalogId": "chair",
+              "x": 21.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 105,
+              "catalogId": "chair",
+              "x": 22.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 106,
+              "catalogId": "chair",
+              "x": 24.25,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 107,
+              "catalogId": "chair",
+              "x": 25.75,
+              "z": 33.334,
+              "a": 3.142
+            },
+            {
+              "i": 108,
+              "catalogId": "led",
+              "x": 15,
+              "z": 0.935,
+              "a": 0,
+              "mode": "wallfloor"
+            },
+            {
+              "i": 109,
+              "catalogId": "podium",
+              "x": 8.5,
+              "z": 4.334,
+              "a": 0
+            },
+            {
+              "i": 110,
+              "catalogId": "laptop",
+              "x": 8.5,
+              "z": 4.334,
+              "a": 0,
+              "y": 3.833,
+              "mode": "top",
+              "host": 109
+            },
+            {
+              "i": 111,
+              "catalogId": "speaker",
+              "x": 1.125,
+              "z": 1.625,
+              "a": 0
+            },
+            {
+              "i": 112,
+              "catalogId": "speaker",
+              "x": 28.625,
+              "z": 1.625,
+              "a": 0
+            },
+            {
+              "i": 113,
+              "catalogId": "speaker",
+              "x": 1.125,
+              "z": 24.625,
+              "a": 0
+            },
+            {
+              "i": 114,
+              "catalogId": "speaker",
+              "x": 28.625,
+              "z": 24.625,
+              "a": 0
+            },
+            {
+              "i": 115,
+              "catalogId": "ledposter",
+              "x": 9.05,
+              "z": 38.279,
+              "a": 3.142,
+              "links": [
+                116
+              ]
+            },
+            {
+              "i": 116,
+              "catalogId": "ledposter",
+              "x": 6.95,
+              "z": 38.279,
+              "a": 3.142,
+              "links": [
+                115,
+                117
+              ]
+            },
+            {
+              "i": 117,
+              "catalogId": "ledposter",
+              "x": 4.85,
+              "z": 38.279,
+              "a": 3.142,
+              "links": [
+                116
+              ]
+            },
+            {
+              "i": 118,
+              "catalogId": "ledposter",
+              "x": 21.05,
+              "z": 38.279,
+              "a": 3.142
+            },
+            {
+              "i": 119,
+              "catalogId": "kiosk",
+              "x": 23.75,
+              "z": 38.25,
+              "a": 3.142
+            }
+          ]
+        },
+        {
+          "id": "registration",
+          "name": "Registration",
+          "note": "Check-in tables, laptops, signs and kiosks",
+          "recipe": "Up to four 6 ft check-in tables, two chairs behind each, laptops on the tables. Standard adds a second laptop and a 75 in TV behind the desks. Showcase uses an LED wall instead of that TV, plus monitors, LED posters, kiosks in the queue, and a charging tower.",
+          "count": 24,
+          "members": [
+            {
+              "catalogId": "led",
+              "count": 1,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "table6",
+              "count": 3,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "chair",
+              "count": 6,
+              "placement": "attached (edge)"
+            },
+            {
+              "catalogId": "laptop",
+              "count": 6,
+              "placement": "attached (top)"
+            },
+            {
+              "catalogId": "monitor",
+              "count": 3,
+              "placement": "attached (top)"
+            },
+            {
+              "catalogId": "kiosk",
+              "count": 4,
+              "placement": "on the floor"
+            },
+            {
+              "catalogId": "tower",
+              "count": 1,
+              "placement": "on the floor"
+            }
+          ],
+          "items": [
+            {
+              "i": 0,
+              "catalogId": "led",
+              "x": 15,
+              "z": 0.935,
+              "a": 0,
+              "mode": "wallfloor"
+            },
+            {
+              "i": 1,
+              "catalogId": "table6",
+              "x": 8,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 2,
+              "catalogId": "chair",
+              "x": 6.4,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 1
+            },
+            {
+              "i": 3,
+              "catalogId": "chair",
+              "x": 9.6,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 1
+            },
+            {
+              "i": 4,
+              "catalogId": "laptop",
+              "x": 6.1,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 1
+            },
+            {
+              "i": 5,
+              "catalogId": "laptop",
+              "x": 9.9,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 1
+            },
+            {
+              "i": 6,
+              "catalogId": "monitor",
+              "x": 8,
+              "z": 7.35,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 1
+            },
+            {
+              "i": 7,
+              "catalogId": "table6",
+              "x": 15,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 8,
+              "catalogId": "chair",
+              "x": 13.4,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 7
+            },
+            {
+              "i": 9,
+              "catalogId": "chair",
+              "x": 16.6,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 7
+            },
+            {
+              "i": 10,
+              "catalogId": "laptop",
+              "x": 13.1,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 7
+            },
+            {
+              "i": 11,
+              "catalogId": "laptop",
+              "x": 16.9,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 7
+            },
+            {
+              "i": 12,
+              "catalogId": "monitor",
+              "x": 15,
+              "z": 7.35,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 7
+            },
+            {
+              "i": 13,
+              "catalogId": "table6",
+              "x": 22,
+              "z": 7.75,
+              "a": 0
+            },
+            {
+              "i": 14,
+              "catalogId": "chair",
+              "x": 20.4,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 13
+            },
+            {
+              "i": 15,
+              "catalogId": "chair",
+              "x": 23.6,
+              "z": 5.967,
+              "a": 0,
+              "mode": "edge",
+              "host": 13
+            },
+            {
+              "i": 16,
+              "catalogId": "laptop",
+              "x": 20.1,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 13
+            },
+            {
+              "i": 17,
+              "catalogId": "laptop",
+              "x": 23.9,
+              "z": 7.75,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 13
+            },
+            {
+              "i": 18,
+              "catalogId": "monitor",
+              "x": 22,
+              "z": 7.35,
+              "a": 0,
+              "y": 2.5,
+              "mode": "top",
+              "host": 13
+            },
+            {
+              "i": 19,
+              "catalogId": "kiosk",
+              "x": 10.25,
+              "z": 19.25,
+              "a": 0
+            },
+            {
+              "i": 20,
+              "catalogId": "kiosk",
+              "x": 20.25,
+              "z": 19.25,
+              "a": 0
+            },
+            {
+              "i": 21,
+              "catalogId": "kiosk",
+              "x": 5.25,
+              "z": 19.25,
+              "a": 0
+            },
+            {
+              "i": 22,
+              "catalogId": "kiosk",
+              "x": 25.25,
+              "z": 19.25,
+              "a": 0
+            },
+            {
+              "i": 23,
+              "catalogId": "tower",
+              "x": 22.667,
+              "z": 1.167,
+              "a": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

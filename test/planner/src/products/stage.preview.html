@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>4 × 8 stage deck</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #03192f; color: #f4f8fc; font: 15px/1.4 system-ui, sans-serif; }
+  #wrap { display: grid; grid-template-columns: 1fr 320px; height: 100%; }
+  canvas { width: 100%; height: 100%; display: block; }
+  aside { padding: 18px 16px; background: #0b2e55; overflow: auto; }
+  h1 { font-size: 20px; margin: 0 0 8px; }
+  button { margin: 0 8px 8px 0; background: #2f7ed8; color: #fff; border: 0; border-radius: 6px; padding: 8px 10px; font: inherit; cursor: pointer; }
+  button.on { outline: 2px solid #5fd4ff; }
+  .muted { color: #b9c6d8; }
+  ul { padding-left: 18px; }
+  li { margin: 0 0 8px; }
+  #measure { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="cv"></canvas>
+  <aside>
+    <h1>4 × 8 stage deck</h1>
+    <p class="muted">Code-drawn. True scale, 1 square = 1 ft. Not in the catalog until the registration line is added.</p>
+    <p>
+      <button id="one" type="button">One deck</button>
+      <button id="pair" type="button" class="on">Two snapped</button>
+      <button id="quad" type="button">Four snapped</button>
+    </p>
+    <p id="measure"></p>
+    <p id="flag"></p>
+    <ul id="flags"></ul>
+  </aside>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { stageProduct, buildStageMesh, stageSnap, stageJoins, stageLinkFlush, STAGE_UNCONFIRMED } from './stage.js';
+
+const cv = document.getElementById('cv');
+const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setClearColor(0x03192f, 1);
+const scene = new THREE.Scene();
+scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+const sun = new THREE.DirectionalLight(0xffffff, 0.95);
+sun.position.set(10, 18, 8);
+scene.add(sun);
+const grid = new THREE.GridHelper(24, 24, 0x5fd4ff, 0x1d4a8d);
+grid.position.y = 0.001;
+scene.add(grid);
+const cam = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
+const controls = new OrbitControls(cam, cv);
+controls.target.set(4, 1, 1);
+controls.enableDamping = true;
+const root = new THREE.Group();
+scene.add(root);
+
+const deck = (uid, x = 0, z = 0) => ({ uid, type: 'stage', x, z, a: 0 });
+function layout(kind) {
+  const items = [deck('a', 0, 0)];
+  const add = (uid, px, pz) => {
+    const it = deck(uid);
+    const p = stageSnap(items, it, px, pz, 0);
+    if (!p) throw new Error('snap failed for ' + uid);
+    it.x = p.x; it.z = p.z;
+    items.push(it);
+    stageLinkFlush(items, it);
+  };
+  if (kind !== 'one') add('b', 8.15, 0.05);
+  if (kind === 'quad') { add('c', 0.05, 4.15); add('d', 8.1, 4.1); }
+  return items;
+}
+
+let measured = '';
+function show(kind) {
+  for (const b of document.querySelectorAll('aside button')) b.classList.toggle('on', b.id === kind);
+  while (root.children.length) root.remove(root.children[0]);
+  const items = layout(kind);
+  let min = new THREE.Vector3(Infinity, Infinity, Infinity), max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+  for (const it of items) {
+    const joins = stageJoins(items, it);
+    const g = buildStageMesh(stageProduct, { ...joins, stairs: true, skirt: true });
+    g.position.set(it.x, 0, it.z);
+    g.rotation.y = it.a;
+    root.add(g);
+    const b = new THREE.Box3().setFromObject(g);
+    min.min(b.min); max.max(b.max);
+  }
+  const size = max.clone().sub(min);
+  measured = `Measured footprint ${size.x.toFixed(3)} × ${size.z.toFixed(3)} ft, top at ${max.y.toFixed(3)} ft.`;
+  document.getElementById('measure').textContent = measured;
+  const cx = (min.x + max.x) / 2, cz = (min.z + max.z) / 2;
+  controls.target.set(cx, 1, cz);
+  cam.position.set(cx + size.x * 0.9 + 4, 7.5, cz + size.z * 0.9 + 6);
+  controls.update();
+}
+
+document.getElementById('flag').textContent = stageProduct.note + '. Skirt is on (the recommended choice). Stairs use Wenger 2-step fixed 281A100.';
+const ul = document.getElementById('flags');
+for (const u of STAGE_UNCONFIRMED) {
+  const li = document.createElement('li');
+  li.textContent = u.key + ': ' + u.why;
+  ul.appendChild(li);
+}
+for (const id of ['one', 'pair', 'quad']) document.getElementById(id).onclick = () => show(id);
+const q = new URLSearchParams(location.search).get('layout');
+show(q === 'one' || q === 'quad' ? q : 'pair');
+
+function frame() {
+  const w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.floor(w * renderer.getPixelRatio()) || cv.height !== Math.floor(h * renderer.getPixelRatio())) {
+    renderer.setSize(w, h, false);
+    cam.aspect = w / Math.max(1, h);
+    cam.updateProjectionMatrix();
+  }
+  controls.update();
+  renderer.render(scene, cam);
+}
+frame();
+document.documentElement.dataset.ready = '1';
+if (!new URLSearchParams(location.search).has('still')) requestAnimationFrame(function loop() { frame(); requestAnimationFrame(loop); });
+</script>
+</body>
+</html>

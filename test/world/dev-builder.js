@@ -12,6 +12,8 @@
    tested the exact footprint. At town zoom a building is smaller than a
    finger, so the hold missed and the drag never started. Hits are screen
    pixels, with a larger pad when zoomed out. Move is the default tool.
+   Enter on a walk-in building opens the Interior Builder, the same event
+   planner tool used inside a room. The saved layout is that room.
    The corner latch ignores pointers while this panel is open. This panel
    sits over the game canvas and keeps the pointer. */
 'use strict';
@@ -621,6 +623,7 @@
       from: { x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1 }
     };
     status(gesture.name + '. Drag to move.');
+    syncEnter();
     draw();
   }
 
@@ -654,7 +657,7 @@
       draw();
       return;
     }
-    if (!b) { status('No building there.'); return; }
+    if (!b) { status('No building there.'); syncEnter(); return; }
     if (kind === 'group') {
       var at = groupIds.indexOf(b.id);
       if (at >= 0) groupIds.splice(at, 1); else groupIds.push(b.id);
@@ -707,6 +710,7 @@
       tryDoc(nextF);
       status((b.name || 'Building') + ' roof updated.');
     }
+    syncEnter();
   }
 
   function onPointerDown(ev) {
@@ -821,6 +825,7 @@
     } else if (gesture && gesture.kind === 'pan' && gesture.clearOnTap && !gesture.moved) {
       selected = [];
       status('No building there.');
+      syncEnter();
     }
     gesture = null;
     draw();
@@ -1035,6 +1040,32 @@
     ctx.fillStyle = '#ffffff';
     ctx.font = '700 13px Orbitron, sans-serif';
     ctx.fillText(view.mode === 'street' ? 'Street view' : 'North is up', 12, h - 12);
+    syncEnter();
+  }
+
+  function currentBuilding() {
+    var id = selected[0];
+    return (doc && doc.buildings || []).filter(function (q) { return q.id === id; })[0] || null;
+  }
+
+  function syncEnter() {
+    if (!ui || !ui.root) return;
+    var btn = ui.root.querySelector('#devEnter');
+    if (!btn) return;
+    var b = currentBuilding();
+    var api = window.INTERIOR_BUILDER;
+    var ok = b && api && api.canEnter && api.canEnter(b);
+    btn.textContent = 'Enter';
+    btn.classList.toggle('show', !!ok);
+    if (btn.setAttribute) btn.setAttribute('aria-label', ok ? ('Enter ' + (b.name || 'building')) : 'Enter');
+  }
+
+  function enterInterior() {
+    var b = currentBuilding();
+    var api = window.INTERIOR_BUILDER;
+    if (!b || !api || !api.canEnter || !api.canEnter(b)) { status('No room there.'); return; }
+    status((b.name || 'Building') + '. Opening the interior builder.');
+    api.openBuilding(b, 'dev');
   }
 
   function selectedName() {
@@ -1153,6 +1184,7 @@
       + '<button type="button" data-act="import">Import</button>'
       + '</div>'
       + '<div id="devStatus"></div>'
+      + '<button type="button" id="devEnter" data-act="enter">Enter</button>'
       + '</div>'
       + '<input id="devFile" type="file" accept="application/json" hidden>';
     var css = document.createElement('style');
@@ -1170,6 +1202,8 @@
       + '#devBuilder button:focus{outline:2px solid #fff;outline-offset:2px}'
       + '.phone-show{display:none}'
       + '@media (max-height:450px),(max-width:520px){#devBar,#devTools{flex-wrap:nowrap}.phone-hide{display:none !important}.phone-show{display:inline-flex}}'
+      + '#devEnter{display:none;position:absolute;left:50%;bottom:64px;transform:translateX(-50%);z-index:4;min-width:120px;background:#7dff6b;color:#04140c;border-color:#7dff6b}'
+      + '#devEnter.show{display:inline-flex}'
       + '#devHold{display:none;position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:70;padding:8px 14px;border-radius:12px;background:#12081c;color:#ffe14d;border:2px solid #ffb020;font:700 14px Orbitron,sans-serif;pointer-events:none}';
     document.head.appendChild(css);
     document.body.appendChild(root);
@@ -1218,6 +1252,7 @@
         if (act === 'zoom-in') zoomAt(canvas.width / 2, canvas.height / 2, 0.8);
         if (act === 'zoom-out') zoomAt(canvas.width / 2, canvas.height / 2, 1.25);
         if (act === 'more' && ui.more) ui.more.classList.toggle('open');
+        if (act === 'enter') enterInterior();
       });
     });
     root.querySelector('#devFile').addEventListener('change', function (ev) {

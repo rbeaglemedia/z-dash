@@ -1,0 +1,75 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="%BRAND_BG%"><title>%BRAND_APP% | %BRAND_NAME%</title>
+<meta name="description" content="%BRAND_DESC%"><meta name="application-name" content="%BRAND_APP%"><meta property="og:title" content="%BRAND_APP% | %BRAND_NAME%"><meta property="og:description" content="%BRAND_DESC%"><meta property="og:image" content="%BRAND_ICON512%"><meta property="og:site_name" content="%BRAND_NAME%">
+<link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="%BRAND_ICON%"><style>%BRAND_CSS%</style>
+<link rel="icon" href="%BRAND_FAVICON%"></head><body>
+<section id="start" class="screen on">
+  <div class="brand"><span class="logoplate"><img src="%BRAND_LOGO%" alt="%BRAND_NAME%" width="%BRAND_LOGO_W%" height="%BRAND_LOGO_H%"></span><span>%BRAND_APP%</span></div>
+  <h1>Plan your event space in 3D</h1>
+  <p class="lead">%BRAND_LEAD%</p>
+  <button id="btnNew" class="primary big">New layout</button>
+  <button id="btnOpen" class="ghost big">Open saved</button>
+  <p id="savedNote" class="muted small"></p>
+  <button id="btnCredits" class="linkbtn small">Credits</button>
+  <span class="ver">v3.39</span>
+</section>
+<section id="setup" class="screen">
+  <button class="back" data-go="start">‹ Back</button>
+  <h2>Where is your event?</h2>
+  <div class="choices">
+    <button class="choice on" data-env="indoor"><svg class="ic" viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="10" y="8" width="28" height="34" rx="2"/><path d="M16 15h4M28 15h4M16 23h4M28 23h4M16 31h4M28 31h4M22 42v-6h4v6"/></svg><b>Indoor</b><span>Conference room, ballroom, hall</span></button>
+    <button class="choice" data-env="outdoor"><svg class="ic" viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 40 24 10l20 30zM24 10v30M18 40l6-12 6 12M2 40h44"/></svg><b>Outdoor</b><span>Tent, lawn, parking lot</span></button>
+  </div>
+  <button id="btnBuild" class="primary big">Start building</button>
+  <span class="ver">v3.39</span>
+</section>
+<section id="build" class="screen">
+  <canvas id="cv"></canvas>
+  <header class="bar"><button id="btnHome" class="icon" aria-label="Home">‹</button><div class="size" id="sizeLbl">Drag to paint the floor</div>
+    <button id="btnReset" class="icon" aria-label="Reset view"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/></svg></button>
+    <button id="btnMute" class="icon" aria-label="Sound"><svg id="icoSnd" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M16 8a5 5 0 0 1 0 8M18.5 5.5a9 9 0 0 1 0 13"/><path class="x" d="M16 9l6 6M22 9l-6 6" style="display:none"/></svg></button></header>
+  <div class="modes" id="modes"><button data-phase="build" class="on">Builder</button><button data-phase="place">Place objects</button></div>
+  <div id="labels" class="labels"></div><button id="btnClear" class="clearbtn" title="Clear room" aria-label="Clear room" aria-haspopup="dialog">🧹 Clear</button><div id="clearPick" class="clearpick hidden" role="dialog" aria-label="Clear room"><b>Clear this floor</b><label class="copt"><input type="radio" name="clearK" value="items" checked><span><b>Clear items</b><small>Removes placed objects. Keeps walls and doors.</small></span></label><label class="copt danger"><input type="radio" name="clearK" value="build"><span><b>Clear build</b><small>Removes walls, doors, and all objects.</small></span></label><div class="crow"><button id="clearCancel">Cancel</button><button id="clearGo" class="primary">Clear items</button></div><p class="small muted">Active floor only · Undo brings it all back.</p></div><div class="hist" id="hist"><button class="hUndo" disabled title="Undo (Ctrl+Z)" aria-label="Undo">↶ Undo</button><button class="hRedo" disabled title="Redo (Ctrl+Y or Ctrl+Shift+Z)" aria-label="Redo">↷ Redo</button></div><div class="snaphint" id="snapHint">Snap: 1 ft</div><div id="lvlBar" class="lvlbar"><button id="lvlDown" aria-label="Floor down">▼</button><div class="lvlmid"><b id="lvlTxt">Level 1</b><small id="lvlSub"></small></div><button id="lvlUp" aria-label="Floor up">▲</button></div>
+  <div class="rail" id="rail"><button id="btnShare" title="Share my layout"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg><span>Share</span></button><button id="btnTop" title="Top view (T)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 12h16M12 4v16"/></svg><span>Top view</span></button><button id="btnPanMode" title="One-finger drag: turn or pan"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg><span>Drag: Turn</span></button><button id="btnWallsView" title="Walls: Low, Full or Hidden"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20h18M5 20V9h14v11M5 14h14"/></svg><span>Walls: Low</span></button></div>
+  <div class="confirm hidden" id="confirm"><button id="btnOk" class="ok" aria-label="Keep">✓ Keep</button><button id="btnCancel" class="no" aria-label="Cancel">✕ Cancel</button></div>
+  <div class="hint" id="hint">One finger paints · Two fingers rotate and zoom</div>
+  <div id="simBar" class="stampbar simbar hidden"><span id="simTxt"></span><button id="btnSimSpeed" title="Speed">1×</button><button id="btnSimPause">Pause</button><button id="btnSimEnd">End event</button><button id="btnSimStop" class="done">Stop</button></div>
+  <div id="stampBar" class="stampbar hidden"><span id="stampTxt"></span><button id="btnStampDone" class="done">Done</button></div>
+  <div id="selBar" class="selbar hidden"><div class="selname"><b id="selName"></b><span id="selInfo"></span></div>
+    <div class="selbtns"><button id="btnRot">Rotate</button><button id="btnCopy">Copy</button><button id="btnSplit" class="hidden">Separate</button><button id="btnDel">Delete</button><button id="btnDone" class="done">Done</button></div></div>
+  <div id="drawTools" class="drawtools"><button data-tool="view" class="on" title="Move / View">✋ Move</button><button data-tool="box">▭ Box</button><button data-tool="walls">⌐ Walls</button><button data-tool="door">▯ Door</button></div>
+  <div id="presets" class="presets"></div>
+  <footer class="tools" id="toolsBuild">
+        <button id="btnDelWall" class="tool" disabled>Delete wall</button>
+    <button id="btnCloseWalls" class="tool hidden">Close walls</button>
+    <button id="btnWallsDone" class="tool next">Done ›</button>
+  </footer>
+  <footer class="tools hidden" id="toolsPlace">
+    <button id="btnSame" class="tool"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px;margin-right:6px"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 4H6a2 2 0 0 0-2 2v10"/></svg>Same again</button>
+    <button id="btnEvents" class="tool">Presets</button>
+    <button id="btnAdd" class="tool add">+ Add item</button>
+  </footer>
+  <div id="sheet" class="sheet hidden"><div class="sheethd"><button id="shBack" class="icon hidden" aria-label="Back">‹</button><b id="shTitle">Add to your space</b><button id="shClose" class="icon" aria-label="Close">✕</button></div>
+    <label class="keep"><input type="checkbox" id="keepPlacing"> Keep placing: after you pick, tap the floor to add more</label><div id="shBody" class="shbody"></div><p class="muted small shnote">%BRAND_REPNOTE%</p></div>
+  <button id="presetTip" class="presettip hidden">✨ Try an event preset: one tap fills your room</button>
+  <button id="fillCard" class="fillcard hidden"></button>
+  <div id="toast" class="toast"></div>
+  <div id="crash" class="crash hidden"><div><b>Something went wrong</b><p>Your layout is saved. Tap to reload the view.</p><button id="btnRecover" class="primary big">Reload view</button></div></div>
+  <pre id="dbg" class="dbg hidden"></pre>
+  <span class="ver v-build" id="verBuild">v3.39</span>
+</section>
+<div id="credits" class="credits hidden" role="dialog" aria-label="Credits"><div class="credbox"><div class="sheethd"><b>Credits</b><button id="credClose" class="icon" aria-label="Close">✕</button></div>
+  <p><b>Built by %BRAND_NAME%</b></p>
+  <p class="small">3D rendering by three.js</p>
+  <pre class="lic">The MIT License
+
+Copyright © 2010-2024 three.js authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</pre>
+  <p class="small muted">Icons, 3D models, people and sounds are made in-house.</p></div></div>
+<script type="module" src="./src/main.js"></script></body></html>
