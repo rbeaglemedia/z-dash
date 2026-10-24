@@ -121,53 +121,53 @@
     }
   },
   "chest": {
-    "front": 81,
-    "threeQuarter": 102,
+    "front": 93,
+    "threeQuarter": 143,
     "side": 67,
-    "back": 162
+    "back": 160
   },
   "head": [
     {
       "view": "front",
-      "ratio": 0.339,
+      "ratio": 0.376,
       "neck": true,
       "centered": true
     },
     {
       "view": "three-quarter",
-      "ratio": 0.347,
+      "ratio": 0.358,
       "neck": true,
       "centered": true
     },
     {
       "view": "side",
-      "ratio": 0.363,
-      "neck": true,
+      "ratio": 0.237,
+      "neck": false,
       "centered": true
     },
     {
       "view": "back",
-      "ratio": 0.34,
+      "ratio": 0.361,
       "neck": true,
       "centered": true
     }
   ],
   "walk": {
     "front": {
-      "step": 48,
-      "swing": 48,
-      "oppose": 0.09,
-      "bob": 11,
+      "step": 60,
+      "swing": 49,
+      "oppose": 0.01,
+      "bob": 10,
       "lifts": 8,
-      "figureH": 525
+      "figureH": 535
     },
     "side": {
       "step": 182,
-      "swing": 68,
-      "oppose": 0.54,
-      "bob": 13,
+      "swing": 72,
+      "oppose": 0.48,
+      "bob": 15,
       "lifts": 2,
-      "figureH": 515
+      "figureH": 523
     }
   },
   "logs": []

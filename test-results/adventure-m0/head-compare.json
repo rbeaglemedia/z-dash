@@ -1,34 +1,15 @@
 {
-  "what": "Phone close-up of the pack head (left) and the new head (right).",
+  "what": "Phone bench viewport (844x390) of the pack head on the left and the new head on the right, after both were turned to the same side. Hair is on both. This viewport is short, so more of the body is in frame than on the zoomed sheet.",
+  "fairSheet": "head-fair-sheet.png",
   "front": {
     "file": "head-compare-front.png",
-    "bytes": 90902,
-    "md5": "8c91aadfff0c0c08a06080b05a40c65b",
-    "nearBlackPixels": {
-      "left": 0,
-      "right": 104
-    },
-    "sameBytesAsBefore": false
+    "bytes": 104048,
+    "md5": "3c033a8f42c9fb17d45e73cc46196b90"
   },
   "threeQuarter": {
     "file": "head-compare-three-quarter.png",
-    "bytes": 78673,
-    "md5": "b84cfb7e020b7d0aebdc26dc09a98374",
-    "nearBlackPixels": {
-      "left": 0,
-      "right": 170
-    },
-    "sameBytesAsBefore": false
+    "bytes": 103095,
+    "md5": "13b1066ba0c2d384ad68d13bd81f9e84"
   },
-  "beforePhoneHero": {
-    "file": "before/phone-hero.png",
-    "bytes": 37973,
-    "md5": "7ccd1caa87b22d0787a33726e36a66bd"
-  },
-  "phoneHeroFullBody": {
-    "file": "phone-hero.png",
-    "bytes": 34225,
-    "md5": "ce72689a07324e5e248f5f5c640d70c6"
-  },
-  "note": "Near-black pixels are the new head's pupils. They sit on the right half only. The left half is the pack head, Face and Hair still visible, no EllieHead kit. The files are not the before shot."
+  "note": "An earlier close-up in these filenames showed the new face against the back of the pack hair. Those bytes are replaced. The matched zoomed angles are head-fair-sheet.png."
 }

@@ -29275,7 +29275,7 @@ function hideOldFace(root) {
     for (const m of mats) {
       if (!m) continue;
       const name = (m.name || "").toLowerCase();
-      if (name.includes("hair") || name.includes("face")) m.visible = false;
+      if (name.includes("face")) m.visible = false;
     }
   });
 }
@@ -29302,7 +29302,7 @@ function dressHead(root) {
   addPart(kit, new SphereGeometry(0.048, 10, 8), skin, 0.175, 0.32, 0.02, 0.42, 0.78, 0.38);
   addPart(kit, new SphereGeometry(0.2, 16, 12), hair, 0, 0.46, 0.06, 1.08, 1.02, 1.05);
   addPart(kit, new SphereGeometry(0.14, 12, 10), hairDark, 0, 0.34, 0.14, 1.05, 1.15, 0.72);
-  addPart(kit, new SphereGeometry(0.09, 12, 8), hair, -0.03, 0.5, -0.15, 1.55, 0.32, 0.55);
+  addPart(kit, new SphereGeometry(0.09, 12, 8), hair, -0.03, 0.48, -0.2, 1.7, 0.42, 0.7);
   addPart(kit, new SphereGeometry(0.042, 8, 6), hairDark, -0.155, 0.2, -0.02, 0.85, 2.05, 0.8);
   addPart(kit, new SphereGeometry(0.036, 8, 6), hair, 0.15, 0.3, 0.02, 0.8, 1.25, 0.7);
   addPart(kit, new BoxGeometry(0.01, 0.18, 0.12), hairDark, 0.04, 0.52, 0.04);
@@ -29523,6 +29523,50 @@ function faceState(root) {
   });
   return { kit, face, hair };
 }
+function headViewName() {
+  const view = (params.get("view") || "front").toLowerCase();
+  if (view === "back") return "back";
+  if (view === "side") return "side";
+  if (view.startsWith("three") || view === "3q") return "3/4 front";
+  return "front";
+}
+function headOrbit() {
+  const name = headViewName();
+  if (name === "back") return Math.PI;
+  if (name === "side") return Math.PI / 2;
+  if (name === "3/4 front") return 0.62;
+  return 0;
+}
+function packFaceLocalZ(root) {
+  const head = findBone(root, "Head");
+  if (!head) return -1;
+  head.updateWorldMatrix(true, true);
+  const inv = new Matrix4().copy(head.matrixWorld).invert();
+  const acc = new Vector3();
+  let n = 0;
+  root.updateMatrixWorld(true);
+  root.traverse((o) => {
+    if (!o.isSkinnedMesh || !o.geometry || !o.geometry.attributes.position) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    const pos = o.geometry.attributes.position;
+    const index = o.geometry.index;
+    for (const group of o.geometry.groups || []) {
+      const m = mats[group.materialIndex];
+      if (!m || !(m.name || "").toLowerCase().includes("face")) continue;
+      const step = Math.max(1, Math.floor(group.count / 60));
+      for (let i = group.start; i < group.start + group.count; i += step) {
+        const vi = index ? index.getX(i) : i;
+        _v.fromBufferAttribute(pos, vi);
+        o.applyBoneTransform(vi, _v);
+        _v.applyMatrix4(o.matrixWorld);
+        acc.add(_v);
+        n++;
+      }
+    }
+  });
+  if (!n) return -1;
+  return acc.multiplyScalar(1 / n).applyMatrix4(inv).z;
+}
 function headPad(rig) {
   const box = new Box3();
   const head = findBone(rig, "Head");
@@ -29542,8 +29586,7 @@ function headPad(rig) {
   return box;
 }
 function frameHeads() {
-  const view = (params.get("view") || "front").toLowerCase();
-  const turn = view.startsWith("three") || view === "3q" ? 0.62 : 0;
+  const turn = headOrbit();
   const box = new Box3();
   box.union(headPad(oldRig));
   box.union(headPad(heroRig));
@@ -29561,7 +29604,8 @@ function frameHeads() {
   placeHeadChips();
 }
 function placeHeadChips() {
-  const rows = [[oldRig, "head-old", "Old head"], [heroRig, "head-new", "New head"]];
+  const angle = headViewName();
+  const rows = [[oldRig, "head-old", "OLD \xB7 " + angle], [heroRig, "head-new", "NEW \xB7 " + angle]];
   for (const [rig, id, text] of rows) {
     let el = document.getElementById(id);
     if (!el) {
@@ -29571,6 +29615,7 @@ function placeHeadChips() {
       el.style.cssText = "position:fixed;z-index:4;transform:translate(-50%,0);background:#fff;color:#142033;font:700 16px/1.2 ui-sans-serif,system-ui,sans-serif;padding:5px 10px;border-radius:8px;";
       document.body.appendChild(el);
     }
+    el.textContent = text;
     const head = findBone(rig, "Head");
     if (!head) continue;
     const p = bonePos(head, new Vector3());
@@ -29897,10 +29942,14 @@ async function boot() {
   if (compare) {
     petRig.visible = false;
     document.body.classList.add("shot");
-    oldRig.position.set(-0.38, 0, 0);
-    heroRig.position.set(0.38, 0, 0);
-    oldRig.rotation.y = Math.PI;
+    oldRig.position.set(-0.42, 0, 0);
+    heroRig.position.set(0.42, 0, 0);
+    oldRig.rotation.set(0, 0, 0);
+    oldRig.updateMatrixWorld(true);
+    const faceZ = packFaceLocalZ(oldRig);
+    oldRig.rotation.y = faceZ > 0 ? 0 : Math.PI;
     heroRig.rotation.y = Math.PI;
+    world.faceZ = faceZ;
     seek(oldHero, "idle", 0.15);
   } else if (SHOT === "pet") {
     heroRig.visible = false;
@@ -29946,9 +29995,7 @@ async function boot() {
       const title = kind === "ipad" ? "iPad" : kind === "pc" ? "PC" : "Phone";
       label.hidden = false;
       if (SHOT === "heads") {
-        const view = (params.get("view") || "front").toLowerCase();
-        const viewName = view.startsWith("three") || view === "3q" ? "three-quarter" : "front";
-        label.textContent = title + " " + w + "\xD7" + h + " \xB7 " + viewName + " \xB7 old pack head on the left, new head on the right";
+        label.textContent = title + " " + w + "\xD7" + h + " \xB7 " + headViewName() + " \xB7 OLD left, NEW right \xB7 hair on both";
       } else {
         const petLabel = spec ? spec.label : petId;
         const who = SHOT === "pet" ? petLabel : SHOT === "hero" ? "Ellie" : "Ellie and " + petLabel.toLowerCase();
@@ -29957,7 +30004,8 @@ async function boot() {
     }
   }
   world.headCompare = compare ? {
-    view: params.get("view") || "front",
+    view: headViewName(),
+    faceZ: world.faceZ,
     old: faceState(oldRig),
     fresh: faceState(heroRig),
     oldX: +oldRig.position.x.toFixed(3),

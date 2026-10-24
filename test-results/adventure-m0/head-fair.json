@@ -1,0 +1,13 @@
+{
+  "what": "Zoomed phone contact sheet. Old head on the left, new head on the right, hair on both, same orbit.",
+  "viewport": "960x540",
+  "faceZ": 0.4487563689642255,
+  "note": "faceZ is the pack Face centroid in head-bone space. Positive means the pack face looks along +Z, so the old rig stays at yaw 0 while the new rig (face along -Z) is turned by PI. Both faces point at the front camera. Back is orbit PI, so both show the pack hair Bob liked.",
+  "views": [
+    {"file": "head-fair-front.png", "view": "front", "bytes": 133881, "md5": "de790d682b9c8fb495eb90aa26bcdb68", "oldHair": true, "newHair": true, "oldPackFace": true, "newPackFace": false, "newKit": true},
+    {"file": "head-fair-three-quarter.png", "view": "3/4 front", "bytes": 140187, "md5": "73f0822b2056a492055f5619d61743fd", "oldHair": true, "newHair": true, "oldPackFace": true, "newPackFace": false, "newKit": true},
+    {"file": "head-fair-side.png", "view": "side", "bytes": 79912, "md5": "b475a74623d0b788eb7407a6a77f95b6", "oldHair": true, "newHair": true, "oldPackFace": true, "newPackFace": false, "newKit": true},
+    {"file": "head-fair-back.png", "view": "back", "bytes": 77686, "md5": "be829dce390ef9d50c791ba8d2cd798e", "oldHair": true, "newHair": true, "oldPackFace": true, "newPackFace": false, "newKit": true}
+  ],
+  "sheet": {"file": "head-fair-sheet.png", "bytes": 591813, "md5": "665dde18accba466e3810726a174f31b"}
+}
