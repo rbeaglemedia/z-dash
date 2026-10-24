@@ -38,6 +38,25 @@ A Galaxy-like DPR of 3 does not add a second multiply on the car. Both the city 
 - Dance stage and the walk-room canvas use the same view budget when `res.js` is loaded.
 - Flame sprites stay 64×64.
 
+## Ellie's page and the car buffer (speed plan)
+
+Live `a265d75` measured the player car at **960×960** on Ellie's base iPad (1024×768, device pixel ratio 2) and **480×480** on the phone (city 1688×780). The 1440×1080 cap does not shrink that iPad page: 1024×768 is 786,432 pixels. `capBinds` is false there. The cap is still the only budget. The car reads that same plan (`zSpriteBudget` = display size × the city DPR, rounded to 16). There is no second cap and no hardcoded 480.
+
+Headless Chrome, same held-frame probe, commit `fd74330`:
+
+| Viewport | devicePixelRatio | City backing | cap | Car GL | raw (old) | budget |
+| --- | --- | --- | --- | --- | --- | --- |
+| Ellie iPad 1024×768 | 2 | 1024×768, DPR 1 | off | **480×480 (`_d` 1) on frame 0** | 960 | 480 |
+| Ellie rotated 768×1024 | 2 | 768×1024 | off | 560×560 | 1120 | 560 |
+| Phone CSS 844×390 (the live 1688×780 buffer) | 3 | 1688×780, DPR 2 | off | **480×480** | 480 | 480 |
+| iPad 1180×820, Galaxy 412×915, phone-over, `/test` warm | same as the table above | unchanged from the first audit | | | | |
+
+Input did not change the sizes. Violations stayed empty. The phone car stays 480×480, which is the picture the Galaxy already had. The iPad car drops from the old 960 buffer to 480, matching the DPR-1 city.
+
+`origin/split-pc-fps` (`2a3b7a9`, PR 52) still copies the WebGL car onto the city canvas. When that branch connects `#zCar`, or connects the shared GL canvas, this budget skips that copy and CSS-places the element on the same rectangle as `drawImage` (center, `dispPx` square, same roll). The backing store is not assigned through `canvas.width`. Until that element is in the page, the 2D copy stays, so the car looks the same as this clamp. A portrait check after attaching the canvas: copy flag false, CSS 560×560, attribute size still 560, center at (384, 512) on the 768×1024 page, `pointer-events: none`. The layer sits at z-index 1, above `#c`. HUD strokes painted on `#c` after the car can fall under that square; that order is the speed plan's layer risk, and it only applies once their canvas is connected.
+
+Logs and shots: `test-results/car-clamp/`.
+
 ## What "full quality" means here
 
 The first frame is 1:1 with the capped city canvas. On the iPad that is DPR 1, so the car is not a 2× retina sprite sitting on a 1× city. Raising the city to device DPR 2 would put a 1180×820 screen at 2360×1640, which is past the 1440×1080 cap and is the cost the iPad cap exists to avoid.
