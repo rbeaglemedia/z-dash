@@ -702,6 +702,54 @@
     stats.perPropMs = (performance.now() - t0) / reps / n;
     return stats.perPropMs;
   }
+  function mapEdge() {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const desktop = !(navigator.maxTouchPoints > 0) && vw > 1024;
+    let W = vw, H = vh, sx = 1, sy = 1;
+    if (desktop) {
+      const cap = 1280 * 720;
+      const area = vw * vh || 1;
+      let sc = Math.min(1, Math.sqrt(cap / area));
+      W = Math.round(vw * sc);
+      H = Math.round(vh * sc);
+      if (W * H > cap) {
+        const fit = Math.sqrt(cap / (W * H));
+        W = Math.max(1, Math.floor(W * fit));
+        H = Math.max(1, Math.floor(H * fit));
+      }
+      sx = vw / W;
+      sy = vh / H;
+    }
+    const s = Math.min(1.35, Math.max(0.72, H / 378));
+    const mapW = Math.min(196, Math.max(96, (W / s) / 2 - 79));
+    return { r: (12 + mapW) * s * sx, b: 144 * s * sy };
+  }
+  function placeChrome(btn, panel) {
+    const inside = !!(window.WALK_MODE && WALK_MODE.insideBuilding);
+    if (inside) {
+      if (btn.style.left) { btn.style.left = ''; btn.style.top = ''; }
+      if (panel && panel.style.left) { panel.style.left = ''; panel.style.top = ''; }
+      return;
+    }
+    const map = mapEdge();
+    const bw = 72;
+    let x = Math.round(map.r + 10);
+    let y = 8;
+    const enter = document.getElementById('enterBldBtn');
+    if (enter && getComputedStyle(enter).display !== 'none') {
+      const er = enter.getBoundingClientRect();
+      if (er.width > 2 && er.height > 2 && x < er.right - 2 && x + bw > er.left + 2) y = Math.round(er.bottom + 10);
+    }
+    const left = x + 'px';
+    const top = y + 'px';
+    const pTop = (y + 54) + 'px';
+    if (btn.style.left !== left) btn.style.left = left;
+    if (btn.style.top !== top) btn.style.top = top;
+    if (panel) {
+      if (panel.style.left !== left) panel.style.left = left;
+      if (panel.style.top !== pTop) panel.style.top = pTop;
+    }
+  }
   function sync() {
     const now = performance.now();
     const show = menuAllowed();
@@ -721,6 +769,7 @@
     const panel = document.getElementById('walkItems');
     if (btn) btn.style.display = show ? 'flex' : 'none';
     if (panel) panel.style.display = (show && open) ? 'flex' : 'none';
+    if (show && btn) placeChrome(btn, panel);
     refreshCount();
     moveDyn();
   }
