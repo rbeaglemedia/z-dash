@@ -1,12 +1,14 @@
 # Neon World WebGL buildings (prototype)
 
-**Building designs do not wait on the city map.** A look can be drawn from the footprint alone. The City Layout agent (`bc-3ff1a27b`, branch `cursor/city-layout-plan-ef23`) owns placement and can keep using today's black buildings while that map is worked out. The designs below are the looks for those same buildings. They fit today's footprints. They do not move a shop.
+**Only the NOS station is built.** The other building looks stay drawings until the city layout is nailed. The City Layout agent (`bc-3ff1a27b`, branch `cursor/city-layout-plan-ef23`) owns placement and can keep using today's black buildings for those. The drawings below fit today's footprints. They do not move a shop.
 
 Once that layout is nailed with the placeholder buildings, more building ideas can follow. Some of those will depend on the lot. A shop beside a river is a different brief than the same shop on a street. Those location variants are not in this set.
 
 The free 3D model search keeps going as research. Nothing is downloaded. The shortlist is under "Style-reference shortlist" below.
 
-`index.html` stays untouched. The black-solid `?gl=1` fallback stays in the game until the FPS round lands (car-copy removal and the resolution clamp) and Bob says go. These designs are the proposal for that build. They are not in the game yet.
+`index.html` stays untouched. The black-solid `?gl=1` fallback stays for every building except the NOS station. The other looks stay proposals until the FPS round lands and Bob says go.
+
+The NOS & Fuel Depot is the one look that is in the game. It is a drive-up station: one canopy, two pump islands, and the claim happens at the pump. The same prefab fits the tall depot and the small station. It is drawn from the shop's own box and door face, so a later map can move it. See "NOS drive-up station" below.
 
 ## Footprints the designs fit
 
@@ -45,7 +47,7 @@ Each purpose has a shape, a color, and a sign so it reads at a glance. The shape
 | DANCE | Flat mural wall on the 64 m face, 18 m tall on one shop and 20 m tall on the other. Sign Z COMPANY ARTS. The City Layout agent sets which way that face points. |
 | PETS | Green front, paw mark, sign PETS. |
 | ARCADE | Marquee over the sidewalk, pixel lights, sign ARCADE. |
-| NOS | Gold, tanks on the roof, sign NOS. |
+| NOS | Drive-up station. One canopy, two pump islands, sign NOS. Built. |
 | SKY_DROP | Tall cyan shaft, a landing pad with an H on the roof, and the sign JUMP. The portrait is the 70×70×239 tower. The 64×164×62 deck wears the same pad and the same JUMP sign. |
 | BUILDER | Stepped blocks, sign PIXEL. |
 | SOCCER | Stands around a field, sign TURBO. |
@@ -54,6 +56,20 @@ Each purpose has a shape, a color, and a sign so it reads at a glance. The shape
 | GENERIC | Dark box, sparse windows, no purpose word. |
 
 Street-front, three-quarter, roof, and on-foot frames for each of these are in `test-results/arch-check/shots/purpose-{PURPOSE}-{front|threeq|roof|foot}-{phone|ipad|pc}.png`. The iPad street-front lineup is `test-results/gl-city/looks/purpose-front-sheet.png`.
+
+## NOS drive-up station (built)
+
+Bob approved this one building. The other purpose looks above still wait for the layout.
+
+The prefab is `world/nos-station.js`. `world.html` (the page the JR menu opens) and `world-split.html` both load it, in the same place, immediately before `world/city.js`. `world/gl-city.js` stays on `world-split.html` only. That is the `?gl=1` prototype and was never part of the kid page. The service-worker cache for these pages is `world-split-v` plus `ZD_WORLD` in `shared/version.js` (now 31), and the script tags use `?v=31`, so a phone drops the old page that had no pumps. Nothing here deploys.
+
+Both NOS shops use the prefab. The tall pad building is the depot. The 12 m shop is the small station a city can repeat. A canopy of flat boxes sits on the street face, with two pump islands and a lane between them. The car drives under the canopy (clearance 3.4 m, above the 1.4 m car probe) and claims there. The empty room does not open.
+
+The claim is the same overcharge as before: the tank fills and stays full for 30 seconds. The button reads CLAIM NOS. Pulling up to the kiosk door does not claim. The pumps stay on the parcel. Nothing in this prefab reads a world coordinate.
+
+Look A, one gold canopy with a cyan fascia, is the one that was built. Look B, two separate wings, is the other option and is not in the game. Sheets: `test-results/gl-city/looks/nos-options-sheet.png`.
+
+The station adds one canopy, one fascia, four posts, two islands, and one glass band. That is the same box painter the city already uses, with one fill and one stroke per piece. No blur. On the software bench a whole building pass was a few tenths of a millisecond of JS. These extra boxes are a slice of one shop, not a new pass. That is an estimate, not a Galaxy measurement. The frame budget is unchanged: whole frame under about 9 ms for steady 110+ on a Galaxy.
 
 ## Ideas for Bob
 

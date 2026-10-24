@@ -9,7 +9,7 @@ const WALK_DOOR={
   SHOWROOM:{purposeLabel:'Z-DASH GLASS SHOWROOM',actionLabel:'[E] 370Z SPOTLIGHT',color:'#3ee6ff'},
   NEON_PAINT:{purposeLabel:"ELLIE'S NEON PAINT STUDIO",actionLabel:"[E] ENTER ELLIE'S NEON PAINT STUDIO",color:'#ff4fd8'},
   GARAGE:{purposeLabel:'SPEED & TUNING GARAGE',actionLabel:'[E] GARAGE TUNE-UP',color:'#ffb020'},
-  NOS:{purposeLabel:'NOS & FUEL DEPOT',actionLabel:'TAP: NOS DEPOT (30s NOS)',color:'#3ee6ff'},
+  NOS:{purposeLabel:'NOS & FUEL DEPOT',actionLabel:'TAP: CLAIM NOS',color:'#ffe14d'},
   DANCE:{purposeLabel:'Z COMPANY ARTS — DANCE STUDIO',actionLabel:'ENTER Z COMPANY ARTS',color:'#ff4fd8'},
   PETS:{purposeLabel:'PET RESCUE & CRITTER LOUNGE',actionLabel:'[E] CRITTERS SAY HI',color:'#7dff6b'},
   CAFE:{purposeLabel:'NEON PIZZA & BOBA CAFE',actionLabel:'[E] BOBA & PIZZA',color:'#ff9a2e'},
@@ -22,7 +22,7 @@ const WALK_UG=['#ff4fd8','#3ee6ff','#7dff6b','#ffe14d','#9b5cff'];
 const WALK_PILL_M=6,WALK_AUTO_M=4.5;
 const WALK_V=3.6,RUN_V=7.6,WALK_ACCEL=14,WALK_BRAKE=32,WALK_STRIDE=2.4,DANCE_STRIDE=6;
 const WALK_PARK_M=9,WALK_PARK_PAD=1.5,WALK_BAY_M=1.35,WALK_BAY_STAND=1.7;
-const WALK_INDOOR={HOME:1,SHOWROOM:1,NEON_PAINT:1,GARAGE:1,DANCE:1,PETS:1,CAFE:1,ARCADE:1,BUILDER:1,NOS:1,SOCCER:1};
+const WALK_INDOOR={HOME:1,SHOWROOM:1,NEON_PAINT:1,GARAGE:1,DANCE:1,PETS:1,CAFE:1,ARCADE:1,BUILDER:1,SOCCER:1};
 const WALK_PAGE={NEON_PAINT:'neon-paint.html',DANCE:'dance-stage.html',GARAGE:'jr.html#garage',PETS:'crew.html'};
 const WALK_HOUSE_KEY='zdash.house.v1',WALK_KID_KEY='zdash.kid.v1';
 const WALK_THEMES=['#ff4fd8','#3ee6ff','#7dff6b','#ffb020','#9b5cff'];
@@ -800,8 +800,9 @@ function walkAct(door){
     if(window.GARAGEZ&&typeof window.GARAGEZ.open==='function')window.GARAGEZ.open({building:walkDanceBuilding(door)});
     walkToast('GARAGE TUNE-UP! 100% NOS',door.color);
   }else if(purpose==='NOS'){
+    if(!door.pump){walkToast('PULL UP TO A PUMP',door.color);return;}
     P.nosTank=1;P.hotDropNosT=30;
-    walkToast('NOS DEPOT! 30s OVERCHARGED NOS!',door.color);
+    walkToast('NOS AT THE PUMP! 30s OVERCHARGED NOS!',door.color);
   }else if(purpose==='DANCE'){
     const building=walkDanceBuilding(door);
     if(window.DANCE_STAGE&&typeof window.DANCE_STAGE.open==='function'){
@@ -875,6 +876,10 @@ function walkEntryTarget(){
   const x=onFoot?WALK_MODE.x:P.x,z=onFoot?WALK_MODE.z:P.z;
   if(!Number.isFinite(x)||!Number.isFinite(z))return null;
   const carOk=!!(P.ground&&!P.wreck);
+  if((onFoot||(carOk&&P.v<8))&&typeof NOS_STATION!=='undefined'&&NOS_STATION.nearest){
+    const pump=NOS_STATION.nearest(x,z);
+    if(pump)return {door:NOS_STATION.asDoor(pump),pump:true};
+  }
   if((onFoot||(carOk&&P.v<10))&&typeof WALK_MODE.activeParking==='function'){
     const garage=WALK_MODE.activeParking(x,z);
     if(garage&&garage.door)return {door:garage.door,garage};
@@ -943,6 +948,14 @@ function walkEnterDoor(){
   const target=walkEntryTarget();
   if(!target||!target.door)return false;
   const door=target.door;
+  if(door.purpose==='NOS'){
+    if(!door.pump){walkToast('PULL UP TO A PUMP',door.color||'#ffe14d');return false;}
+    try{walkAct(door);}catch(e){return false;}
+    self.door=door;self.insideBuilding=false;self.insideDoor=null;
+    if(typeof walkHideInterior==='function')walkHideInterior();
+    walkSyncPill();walkSyncGait();walkSyncDyn();walkSyncEnterBtn();
+    return false;
+  }
   P.v=0;P.ground=true;P.pitch=0;
   if(P.driveMode!=='street')P.driveMode='street';
   self.onFoot=true;self.y=P.y||0;self._roofY=null;

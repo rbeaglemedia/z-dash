@@ -72,7 +72,30 @@ function farSil(q){const P8=[];for(const y of[q.y0,q.y1])for(const[x,z]of[[q.x0,
   if(cam.x<q.x0)face([0,3,7,4]);else if(cam.x>q.x1)face([1,2,6,5]);if(cam.z<q.z0)face([0,1,5,4]);else if(cam.z>q.z1)face([3,2,6,7]);if(cam.y>q.y1)face([4,5,6,7]);else if(cam.y<q.y0)face([0,1,2,3]);}
 // Signs, doors, parking, and graffiti stay on the 2D context. ?gl=1 draws the solid
 // and the window dashes in WebGL, then this paints the same leftovers the 2D path does.
+// One batched fill and one stroke per piece. Flat boxes. No blur.
+const NOS_FILL={mass:'#1a1030',canopy:'#ffe14d',glow:'#3ee6ff',post:'#123040',pump:'#ff4fd8',glass:'#16324a'};
+const NOS_EDGE={mass:'#ffe14d',canopy:'#fff4b0',glow:'#e9ffff',post:'#3ee6ff',pump:'#ffe14d',glass:'#3ee6ff'};
+const NOS_ORDER=['mass','glass','post','pump','canopy','glow'];
+function drawNosStation(b,d,a){
+  const groups={};
+  for(const q of b.boxes){const k=q.nosPart||'mass';(groups[k]||(groups[k]=[])).push(q);}
+  for(const k of NOS_ORDER){const list=groups[k];if(!list)continue;
+    ctx.beginPath();for(const q of list)boxFaces(q);ctx.fillStyle=NOS_FILL[k]||'#1a1030';ctx.globalAlpha=1;ctx.fill();
+    ctx.globalAlpha=a;ctx.strokeStyle=NOS_EDGE[k]||b.c;ctx.lineWidth=k==='glow'?2.2:1.5;ctx.stroke();}
+  if(d<CDRAW.winDist){ctx.beginPath();for(const q of groups.mass||[])winRows(b,q,d);
+    if(!b.dashFixed)b.dashFixed=b.dash[0]>3?[6,5]:[4,4];ctx.setLineDash(b.dashFixed);ctx.lineDashOffset=0;
+    ctx.strokeStyle=b.wc;ctx.globalAlpha=a*.75;ctx.lineWidth=1.6;ctx.stroke();ctx.setLineDash([]);}
+  const lane=b.nosStation.lane;if(lane){const lx=lane.x1-lane.x0,lz=lane.z1-lane.z0;ctx.beginPath();
+    if(lz>=lx){pathSeg([lane.x0,.05,lane.z0],[lane.x0,.05,lane.z1]);pathSeg([lane.x1,.05,lane.z0],[lane.x1,.05,lane.z1]);}
+    else{pathSeg([lane.x0,.05,lane.z0],[lane.x1,.05,lane.z0]);pathSeg([lane.x0,.05,lane.z1],[lane.x1,.05,lane.z1]);}
+    ctx.strokeStyle='#3ee6ff';ctx.globalAlpha=a;ctx.lineWidth=1.4;ctx.stroke();}
+  if(d<140){let glow=null;for(const q of b.boxes)if(q.nosPart==='glow')glow=q;
+    if(glow){const nx=(b.nosStation.face&&b.nosStation.face.nx)||0,nz=(b.nosStation.face&&b.nosStation.face.nz)||0;
+      const x=nx<0?glow.x0:nx>0?glow.x1:(glow.x0+glow.x1)/2,z=nz<0?glow.z0:nz>0?glow.z1:(glow.z0+glow.z1)/2,y=(glow.y0+glow.y1)/2,p=proj(x,y,z);
+      if(p){const fs=Math.max(12,Math.min(42,520/Math.max(d,8)));ctx.globalAlpha=1;ctx.font='900 '+fs.toFixed(0)+'px system-ui,Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#140818';ctx.fillText('NOS',p[0],p[1]);}}}
+  ctx.globalAlpha=a;}
 function drawBldgGLDeco(b,d,ol){
+  if(b.nosStation&&!ol&&d<=CDRAW.far)drawNosStation(b,d,1);
   if(d>CDRAW.far||ol){
     if(!ol&&d<520)for(const k of b.deco)if(k[0]==='sign')drawSign(k[1],d);
     if(!ol&&d<180)drawParking(b,d);
@@ -88,8 +111,9 @@ function drawBldg(b,d){if(b.towCab&&TOW3.on(d))return;const ol=b.kind==='outline
     if(!ol&&d<180){farFlush();drawParking(b,d);}
     if(!ol&&typeof NEON_PAINT!=='undefined'&&NEON_PAINT&&typeof NEON_PAINT.drawBuildingGraffiti==='function'&&d<260)NEON_PAINT.drawBuildingGraffiti(ctx,b);
     return;}farFlush();const a=clamp(1.5-d/CDRAW.dist,0.25,1);
-  ctx.beginPath();for(const q of b.boxes)boxFaces(q);ctx.fillStyle=b.kind==='hill'?'#05100a':'#0a0612';ctx.fill();ctx.globalAlpha=a;ctx.strokeStyle=b.c;ctx.lineWidth=d<400?1.8:1.2;ctx.stroke();
-  if(d<CDRAW.winDist&&b.kind!=='pylon'&&b.kind!=='bill'){ctx.beginPath();for(const q of b.boxes)winRows(b,q,d);if(!b.dashFixed)b.dashFixed=b.dash[0]>3?[6,5]:[4,4];ctx.setLineDash(b.dashFixed);ctx.lineDashOffset=0;ctx.strokeStyle=b.wc;ctx.globalAlpha=a*.75;ctx.lineWidth=1.6;ctx.stroke();ctx.setLineDash([]);}
+  if(b.nosStation)drawNosStation(b,d,a);
+  else{ctx.beginPath();for(const q of b.boxes)boxFaces(q);ctx.fillStyle=b.kind==='hill'?'#05100a':'#0a0612';ctx.fill();ctx.globalAlpha=a;ctx.strokeStyle=b.c;ctx.lineWidth=d<400?1.8:1.2;ctx.stroke();
+  if(d<CDRAW.winDist&&b.kind!=='pylon'&&b.kind!=='bill'){ctx.beginPath();for(const q of b.boxes)winRows(b,q,d);if(!b.dashFixed)b.dashFixed=b.dash[0]>3?[6,5]:[4,4];ctx.setLineDash(b.dashFixed);ctx.lineDashOffset=0;ctx.strokeStyle=b.wc;ctx.globalAlpha=a*.75;ctx.lineWidth=1.6;ctx.stroke();ctx.setLineDash([]);}}
   ctx.globalAlpha=a;drawDoors(b,d);drawDeco(b,d);
   if(d<180)drawParking(b,d);
   if(typeof NEON_PAINT!=='undefined'&&NEON_PAINT&&typeof NEON_PAINT.drawBuildingGraffiti==='function'&&d<260)NEON_PAINT.drawBuildingGraffiti(ctx,b);

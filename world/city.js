@@ -226,6 +226,8 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
       if(nx){slab({x0:nx>0?x0-th:x1,x1:nx>0?x0:x1+th,z0,z1});slab({x0,x1,z0:z0-th,z1:z0});slab({x0,x1,z0:z1,z1:z1+th});}
       else{slab({z0:nz>0?z0-th:z1,z1:nz>0?z0:z1+th,x0,x1});slab({z0,z1,x0:x0-th,x1:x0});slab({z0,z1,x0:x1,x1:x1+th});}}}
   placeParking();
+  if(typeof NOS_STATION!=='undefined'&&NOS_STATION.fit){const pushBox=(b,o)=>{const q=Object.assign({y0:0},o,{b,oid:b.oid});b.boxes.push(q);BX.push(q);return q;};
+    for(const b of BL)if(b.purpose==='NOS')NOS_STATION.fit(b,pushBox);}
   function rehash(){HM.clear();for(const q of BX.concat(RAMPS)){for(let i=Math.floor((q.x0-2)/CS);i<=Math.floor((q.x1+2)/CS);i++)for(let j=Math.floor((q.z0-2)/CS);j<=Math.floor((q.z1+2)/CS);j++){const k=key(i,j);if(!HM.has(k))HM.set(k,[]);HM.get(k).push(q);}}}rehash();
   function add(o){if(o.prefab){o=placePrefab(o.prefab,o.x,o.z,o);rehash();ROADS.updateBlocked();return o.id;}o=Object.assign({id:NID++,rot:0,p:{}},o);if(o.id>=NID)NID=o.id+1;OBJS.push(o);build(o);rehash();ROADS.updateBlocked();return o.id;}
   function remove(id){const h=HND.get(id);if(!h)return false;const rm=(A,L)=>{for(const x of L){const i=A.indexOf(x);if(i>=0)A.splice(i,1);}};rm(BX,h.boxes);rm(BL,h.bl);rm(RAMPS,h.ramps);rm(PADS,h.pads);rm(LOOPS,h.loops);rm(PIPES,h.pipes);for(let i=HOOPS.length-1;i>=0;i--)if(HOOPS[i].oid===id)HOOPS.splice(i,1);
