@@ -2893,6 +2893,10 @@
     root.innerHTML = studioHTML();
     document.body.appendChild(root);
     studio = root;
+    if (studioFromWorld) {
+      const enter = document.getElementById('enterBldBtn');
+      if (enter) { enter.style.display = 'none'; enter.setAttribute('aria-hidden', 'true'); }
+    }
     const nameEl = root.querySelector('#vinylNameInp');
     if (nameEl) nameEl.value = ui.canvas === 'car' ? editorName : '';
     bind(root);

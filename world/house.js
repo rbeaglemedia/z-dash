@@ -963,11 +963,12 @@ function walkEnsureEnterBtn(){
   return btn;
 }
 function walkSyncEnterBtn(){
+  const live=typeof document!=='undefined'&&document.getElementById('enterBldBtn');
+  if(live&&document.getElementById('np-studio')){
+    live.style.display='none';live.setAttribute('aria-hidden','true');return;
+  }
   const btn=walkEnsureEnterBtn();
   if(!btn||btn.dataset.houseEnter!=='1')return;
-  if(typeof document!=='undefined'&&document.getElementById('np-studio')){
-    btn.style.display='none';btn.setAttribute('aria-hidden','true');return;
-  }
   const lead=btn.querySelector('[data-k="lead"]'),sm=btn.querySelector('small');
   if(WALK_MODE.insideBuilding){
     btn.style.display='flex';btn.classList.add('inside');
