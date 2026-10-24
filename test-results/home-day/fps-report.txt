@@ -1,0 +1,30 @@
+Walking item menu FPS
+Measured on commit 79e33812c3a8eb70c7e8ebb1f80f85df8cc89fb3
+Headless Chrome. iPad row is an 1180x820 viewport with CPU throttle 6x, an A10 stand-in, not a real A10.
+Sampler is WALK_ITEMS.measure (performance.now deltas). Indoor frames are the room only. Outdoor frames include the city.
+
+Menu open, indoors, bake scale 1
+phone 844x390     60.2 fps   16.6 ms   cap 12   scale 1   n=121
+ipad-a10 stand-in 42.4 fps   23.6 ms   cap 8    scale 1   n=128
+pc 1366x768       60.4 fps   16.6 ms   cap 12   scale 1   n=121
+
+Props saved up to the cap, outdoors, menu still open
+phone             7.2 fps    139 ms    cap 4    scale 0.5 placed 12 (4 drawn)
+ipad-a10 stand-in 3.2 fps    315 ms    cap 4    scale 0.5 placed 8 (4 drawn)
+pc                14.9 fps   67 ms     cap 4    scale 0.5 placed 12 (4 drawn)
+
+Icon blit bench (one baked image)
+phone 0.0014 ms   ipad stand-in 0.0089 ms   pc 0.0017 ms
+
+How many more items
+36 fps budget is 27.8 ms. Indoor spare is about 11 ms on phone and PC and about 4 ms on the A10 stand-in.
+A 0.05 ms floor (well above the measured blit) leaves room for about 80 more world sprites on the stand-in and about 200 on phone and PC.
+Room props are inside the one-shot bake, so they do not add that per-frame cost.
+Safe catalog step: 5 more rows, one per category, then measure again.
+Do not preload every category. The stand-in menu is in the 36-55 hold band (cap stays 8, scale stays 1).
+Outdoor frames on this VM are the city renderer. The cap drop to 4 is that cost. A phone already near 57 fps outdoors should keep cap 12 and scale 1.
+
+UI polish (same commit)
+world-drive, world-walk, world-interior, wz-l2h: 0 errors.
+Two warnings, both pre-existing: Exit or enter car and Pause sit 4px apart on phone-844x390.
+No underlined menu text. Button text is centered. ITEMS does not overlap the minimap.

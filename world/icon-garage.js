@@ -340,9 +340,10 @@
     { id: 'sofa', name: '🛋 SOFA' },
     { id: 'arcade', name: '🕹 ARCADE' },
     { id: 'petBed', name: '🛏 PET BED' },
-    { id: 'danceFloor', name: '💃 DANCE FLOOR' }
+    { id: 'danceFloor', name: '💃 DANCE FLOOR' },
+    { id: 'counter', name: '🍽 COUNTER' }
   ];
-  const DEFAULT_HOUSE = { v: 1, wall: 'neon-grid', sign: 'ellie', sofa: true, arcade: true, petBed: true, danceFloor: true };
+  const DEFAULT_HOUSE = { v: 1, wall: 'neon-grid', sign: 'ellie', sofa: true, arcade: true, petBed: true, danceFloor: true, counter: false };
   const PRESETS = [
     { id: 'dad', name: 'CLASSIC DAD', eq: { paint: 'gunmetal', wheels: 'w-gun', spoiler: 'none-s', windows: 'win-clear', underglow: 'ug-off', rims: 'gtx04', caliper: 'cal-red' } },
     { id: 'neon', name: 'NEON RACER', eq: { paint: 'pink', wheels: 'w-cyan', spoiler: 'duck', windows: 'win-ice', underglow: 'ug-cyan' } },
@@ -472,29 +473,60 @@
   function houseBool(value, fallback) {
     return typeof value === 'boolean' ? value : fallback;
   }
+  function unwrapHouse(o) {
+    if (!o || typeof o !== 'object' || Array.isArray(o)) return null;
+    const nested = o.house && typeof o.house === 'object' && !Array.isArray(o.house);
+    const flat = o.wall || o.wallTheme || o.sign || typeof o.sofa === 'boolean' || typeof o.theme === 'string' || typeof o.furniture === 'string';
+    if (nested && !flat) return o.house;
+    return o;
+  }
   function normalizeHouse(src) {
     const base = src && typeof src === 'object' && !Array.isArray(src) ? src : {};
     const items = base.items && typeof base.items === 'object' && !Array.isArray(base.items) ? base.items : {};
-    const wallId = base.wall || base.wallTheme || DEFAULT_HOUSE.wall;
-    const signId = base.sign || DEFAULT_HOUSE.sign;
+    const oldWall = { '#ff4fd8': 'bubblegum', '#3ee6ff': 'neon-grid', '#7dff6b': 'lime-loft', '#ffb020': 'neon-grid', '#9b5cff': 'midnight' };
+    const oldSign = { ELLIE: 'ellie', 'Z COMPANY': 'arts', '370Z': 'glow', HOME: 'home' };
+    let wallId = base.wall || base.wallTheme;
+    if (!houseKnown(HOUSE_WALLS, wallId)) wallId = oldWall[base.theme] || DEFAULT_HOUSE.wall;
+    let signId = base.sign;
+    if (!houseKnown(HOUSE_SIGNS, signId)) signId = oldSign[base.sign] || DEFAULT_HOUSE.sign;
+    const hub = typeof base.sofa === 'boolean' || typeof base.arcade === 'boolean' || typeof base.danceFloor === 'boolean' || typeof base.counter === 'boolean' || typeof items.sofa === 'boolean';
+    const legacy = !hub && (typeof base.theme === 'string' || typeof base.furniture === 'string' || typeof base.sign === 'string');
+    let sofa, arcade, petBed, danceFloor, counter;
+    if (legacy) {
+      const furniture = base.furniture || 'sofa';
+      sofa = furniture === 'sofa';
+      arcade = furniture === 'arcade';
+      counter = furniture === 'counter';
+      danceFloor = false;
+      petBed = base.petBed !== false;
+    } else {
+      sofa = houseBool(base.sofa, houseBool(items.sofa, DEFAULT_HOUSE.sofa));
+      arcade = houseBool(base.arcade, houseBool(items.arcade, DEFAULT_HOUSE.arcade));
+      petBed = houseBool(base.petBed, houseBool(items.petBed, DEFAULT_HOUSE.petBed));
+      danceFloor = houseBool(base.danceFloor, houseBool(items.danceFloor, DEFAULT_HOUSE.danceFloor));
+      counter = houseBool(base.counter, houseBool(items.counter, false));
+    }
     const next = Object.assign({}, base, {
       v: 1,
-      wall: houseKnown(HOUSE_WALLS, wallId) ? wallId : DEFAULT_HOUSE.wall,
-      sign: houseKnown(HOUSE_SIGNS, signId) ? signId : DEFAULT_HOUSE.sign,
-      sofa: houseBool(base.sofa, houseBool(items.sofa, DEFAULT_HOUSE.sofa)),
-      arcade: houseBool(base.arcade, houseBool(items.arcade, DEFAULT_HOUSE.arcade)),
-      petBed: houseBool(base.petBed, houseBool(items.petBed, DEFAULT_HOUSE.petBed)),
-      danceFloor: houseBool(base.danceFloor, houseBool(items.danceFloor, DEFAULT_HOUSE.danceFloor))
+      wall: wallId,
+      sign: signId,
+      sofa: sofa,
+      arcade: arcade,
+      petBed: petBed,
+      danceFloor: danceFloor,
+      counter: counter
     });
     next.wallTheme = next.wall;
     next.neonSign = signText(next.sign);
-    next.items = { sofa: !!next.sofa, arcade: !!next.arcade, petBed: !!next.petBed, danceFloor: !!next.danceFloor };
+    next.items = { sofa: !!next.sofa, arcade: !!next.arcade, petBed: !!next.petBed, danceFloor: !!next.danceFloor, counter: !!next.counter };
+    if (Array.isArray(base.placed)) next.placed = base.placed;
+    else delete next.placed;
     return next;
   }
   function readHouse() {
-    const file = readObj(HOUSE_KEY);
+    const file = unwrapHouse(readObj(HOUSE_KEY));
     const got = readKid();
-    const fromKid = got.sv && got.sv.house && typeof got.sv.house === 'object' && !Array.isArray(got.sv.house) ? got.sv.house : null;
+    const fromKid = unwrapHouse(got.sv && got.sv.house);
     return normalizeHouse(Object.assign({}, fromKid || {}, file || {}));
   }
   function publishHouse(next) {
@@ -1290,19 +1322,24 @@
     if (sub === 'danceapp') return gLink('dance-stage.html', '💃', 'DANCE STAGE', 'RECORD A CHARACTER OR PET DANCE');
     return '';
   }
+  function homeStillHtml() {
+    if (!wNav || wNav.root !== 'home' || wNav.lvl < 2) return '';
+    return '<canvas id="ghhHomeStill" class="ghh-still" width="640" height="180" aria-label="Home preview"></canvas>';
+  }
   function worldDrillHtml() {
     if (!wNav || wNav.lvl <= 1) {
       return '<div class="glevel">' + WDRILL.roots.map(function (r) {
         return '<button type="button" class="gbig" data-groot="' + r.id + '"><span class="gem">' + r.emoji + '</span><b>' + r.title + '</b><em>' + r.kicker + '</em><small>' + r.blurb + '</small></button>';
       }).join('') + '</div>';
     }
+    const still = homeStillHtml();
     if (wNav.lvl === 2) {
       const list = WDRILL.broad[wNav.root] || [];
-      return wCrumb() + '<div class="glevel">' + list.map(function (b) {
+      return still + wCrumb() + '<div class="glevel">' + list.map(function (b) {
         return '<button type="button" class="gbig" data-gbroad="' + b.id + '"><span class="gem">' + b.emoji + '</span><b>' + b.title + '</b><small>' + b.blurb + '</small></button>';
       }).join('') + '</div>';
     }
-    return wCrumb() + wPills() + '<div class="gitems" id="kVinylBody">' + worldItemsHtml() + '</div>';
+    return still + wCrumb() + wPills() + '<div class="gitems" id="kVinylBody">' + worldItemsHtml() + '</div>';
   }
   function wOpenBroad(root, id) {
     const b = wBroad(root, id);
@@ -1396,6 +1433,10 @@
     });
     const body = document.getElementById('kVinylBody');
     if (body && wNav.sub === 'vinyls') bindVinyls(body);
+    try {
+      const stillCv = document.getElementById('ghhHomeStill');
+      if (stillCv && window.WALK_ITEMS && typeof WALK_ITEMS.still === 'function') WALK_ITEMS.still(stillCv, readHouse());
+    } catch (e) {}
   }
   function refreshWorldVinyls() { refreshWorldGarage(); }
   function mountWorldGarage() {
@@ -1520,6 +1561,12 @@
   function renderHouse(body) {
     const house = readHouse();
     const block = el('section', 'ghh-block');
+    const stillCv = el('canvas', 'ghh-still');
+    stillCv.width = 640;
+    stillCv.height = 180;
+    stillCv.setAttribute('aria-label', 'Home preview');
+    block.appendChild(stillCv);
+    try { if (window.WALK_ITEMS && typeof WALK_ITEMS.still === 'function') WALK_ITEMS.still(stillCv, house); } catch (e) {}
     block.appendChild(el('h3', '', "🏠 ELLIE'S HOUSE"));
     block.appendChild(el('p', 'ghh-note', 'These choices are saved on this device. When Ellie walks into a HOME building, the wall, neon sign, and furniture show up in her room.'));
     block.appendChild(el('h3', '', 'WALL THEME'));
@@ -1979,9 +2026,9 @@
       '.ghh-head strong{display:block;font:900 14px Orbitron,sans-serif;letter-spacing:1px}',
       '.ghh-head small{display:block;font:600 11px Rajdhani,sans-serif;color:#c9b6e8}',
       '.ghh-head .ghh-svg{color:#3ee6ff}',
-      '.ghh-x{margin-left:auto;width:34px;height:34px;border-radius:10px;border:1.5px solid #3ee6ff;background:rgba(62,230,255,.1);color:#fff;font:900 16px sans-serif;cursor:pointer}',
+      '.ghh-x{margin-left:auto;width:34px;height:34px;border-radius:10px;border:1.5px solid #3ee6ff;background:rgba(62,230,255,.1);color:#fff;font:900 16px sans-serif;cursor:pointer;text-align:center;text-decoration:none}',
       '.ghh-tabs{display:flex;gap:4px;overflow:auto}',
-      '.ghh-tabs button{flex:1 1 0;min-width:0;border-radius:12px;border:1.5px solid rgba(62,230,255,.45);background:rgba(255,255,255,.04);color:#efe7ff;font:800 9px/1.15 Orbitron,sans-serif;padding:6px 4px;cursor:pointer}',
+      '.ghh-tabs button{flex:1 1 0;min-width:0;border-radius:12px;border:1.5px solid rgba(62,230,255,.45);background:rgba(255,255,255,.04);color:#efe7ff;font:800 9px/1.15 Orbitron,sans-serif;padding:6px 4px;cursor:pointer;text-align:center;text-decoration:none}',
       '.ghh-tabs button.on{border-color:#ff4fd8;background:rgba(255,79,216,.2);color:#fff;box-shadow:0 0 12px rgba(255,79,216,.45)}',
       '.ghh-body{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:8px;padding-bottom:12px}',
       '.ghh-hi{margin:0;font:900 16px Orbitron,sans-serif;letter-spacing:1px;text-shadow:0 0 12px #ff4fd8}',
@@ -1997,7 +2044,9 @@
       '.ghh-look{display:flex;gap:8px;align-items:center}',
       '.ghh-look small{display:block;font:600 12px Rajdhani,sans-serif;color:#efe7ff}',
       '.ghh-picks{display:flex;flex-wrap:wrap;gap:4px}',
-      '.ghh-pick{border-radius:999px;border:1.5px solid rgba(62,230,255,.5);background:rgba(8,4,20,.8);color:#fff;font:800 9px Orbitron,sans-serif;padding:5px 8px;cursor:pointer}',
+      '.ghh-pick{border-radius:999px;border:1.5px solid rgba(62,230,255,.5);background:rgba(8,4,20,.8);color:#fff;font:800 9px Orbitron,sans-serif;padding:5px 8px;cursor:pointer;text-align:center;text-decoration:none}',
+      '.ghh-pick span,.ghh-tabs button span,.ghh-x span{text-align:center;text-decoration:none}',
+      '.ghh-still{width:100%;height:64px;object-fit:contain;border-radius:12px;border:1.5px solid rgba(62,230,255,.45);background:#f4f7fb;display:block}',
       '.ghh-pick.on{border-color:#ffe14d;background:#ffe14d;color:#1a0633}',
       '.ghh-pick.lock{opacity:.55}',
       '.ghh-go{display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;border-radius:14px;border:2px solid #ff4fd8;background:rgba(255,79,216,.16);color:#fff;font:900 11px Orbitron,sans-serif;padding:8px;cursor:pointer}',
