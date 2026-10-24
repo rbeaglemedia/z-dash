@@ -2,11 +2,12 @@
 // Option 1, The Boulevards. Data only: no drawing, no physics.
 // Loaded before world/city.js on world.html and world-split.html.
 //
-// Last major layout for the current Neon World (those two pages).
-// A later world starts from a copy of this file. After boot,
-// CITY.editorDoc() is a JSON snapshot of the same map: places, roads,
-// districts, anchors, NOS pumps, and lane spawns. Builders, planner
-// objects, and new building designs do not land in these two pages.
+// These two pages stay the current Neon World. Builders, the drop-objects
+// tool, traffic, interiors, and features still edit them. Only a huge
+// aesthetic redesign goes to a separate world. This file and
+// CITY.editorDoc() stay editable so the DEV Builder can change the map
+// here. editorDoc() is a JSON snapshot: places, roads, districts,
+// anchors, NOS pumps, and lane spawns.
 //
 // Other agents should read window.CITY_LAYOUT (this file) and, after the
 // city boots, window.CITY.LAYOUT (the same records plus the curb spurs the
@@ -29,11 +30,11 @@
 //   After boot, CITY.LAYOUT and CITY.LAYOUT.minimap repeat roads (the
 //   driven centerlines, including curb spurs), river, bridges, districts,
 //   and every place with position and type. The minimap bakes from that.
-//   CITY.LAYOUT.editor is the one document a future City Editor, or a
-//   new world, reads. CITY.editorDoc() returns a fresh JSON copy:
-//   places (footprints), roads (centerlines), districts, anchors,
-//   nos (fitted stations and pump spots), spawns (lane points traffic
-//   uses). Writing it back is that later world's job.
+//   CITY.LAYOUT.editor is the document the DEV Builder reads and can
+//   write back into this Neon World. CITY.editorDoc() returns a fresh
+//   JSON copy: places (footprints), roads (centerlines), districts,
+//   anchors, nos (fitted stations and pump spots), spawns (lane points
+//   traffic uses). Only a huge new look belongs in a separate world.
 //   buildNetwork()  returns {roads, faces}
 //                 roads: centerlines with buildings cut out and a curb spur
 //                 added where a door was more than 16 m from a lane.
