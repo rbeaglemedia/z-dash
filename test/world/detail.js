@@ -1398,8 +1398,11 @@
   drawBldg = function (b, d) {
     _drawBldg(b, d);
     if (!active) return;
+    if (!anyWin && !anyTrim) return;
+    const t = window.perfAdd ? performance.now() : 0;
     if (anyWin) windowPass(b);
     if (anyTrim) roofPass(b);
+    if (t) window.perfAdd('windows', performance.now() - t);
   };
 
   // Street paint gaps. Built once from the same blocked spans traffic already skips.
@@ -1727,16 +1730,23 @@
 
   const _drawCityGround = drawCityGround;
   drawCityGround = function () {
+    const add = window.perfAdd;
+    let t = add ? performance.now() : 0;
     detailDraw();
+    if (t) add('detail', performance.now() - t);
+    t = add ? performance.now() : 0;
     _drawCityGround();
+    if (t) add('ground', performance.now() - t);
     // Storefronts and the eye-level pass are stroked once, after the building
     // fills, from the tunnel wrapper. A second copy here only doubled the cost.
     if (!active) return;
     if (on.lanes || on.crosswalks || on.sidewalks || on.grass || on.river) {
+      t = add ? performance.now() : 0;
       drawRoads();
       drawGrass();
       drawRiver();
       clean();
+      if (t) add('roads', performance.now() - t);
     }
   };
 
@@ -1745,8 +1755,13 @@
   if (typeof drawTunnelInside === 'function') {
     const _drawTunnelInside = drawTunnelInside;
     drawTunnelInside = function () {
+      const add = window.perfAdd;
+      let t = add ? performance.now() : 0;
       _drawTunnelInside();
+      if (t) add('tunnel', performance.now() - t);
+      t = add ? performance.now() : 0;
       pass(ctx);
+      if (t) add('windows', performance.now() - t);
     };
   }
 

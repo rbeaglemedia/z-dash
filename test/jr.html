@@ -8350,8 +8350,8 @@ var qrcode = function() {
   };
   ZD.Music = M;
   if (M.src === 'demo') M.loadDemo(0, true);
-  setInterval(() => { M.tick(); M.beatTick(); }, 20);
-  setInterval(() => M.poll(), 4000);
+  setInterval(() => { if (window.ZD_PARKED) return; M.tick(); M.beatTick(); }, 20);
+  setInterval(() => { if (window.ZD_PARKED) return; M.poll(); }, 4000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) M.poll(); });
   M.handleRedirect().then(() => M.poll());
   // a saved "Mic" choice re-arms on the first tap (browsers need a gesture to start audio)
@@ -8392,7 +8392,7 @@ var qrcode = function() {
     if (mq) { const T = el.querySelector('.npT'); requestAnimationFrame(() => { const over = mq.scrollWidth - T.clientWidth; T.classList.toggle('marq', over > 2); T.style.setProperty('--mq', `${-over - 16}px`); T.style.setProperty('--mqs', `${Math.max(6, (over + 16) / 18)}s`); }); }
     const mb = el.querySelector('.npMute'); if (mb) { mb.innerHTML = M.muted || M.vol === 0 ? ICON.mute : ICON.vol; mb.classList.toggle('on', M.muted); const r = el.querySelector('.npVolR'); if (document.activeElement !== r) r.value = M.muted ? 0 : M.vol; r.style.setProperty('--v', `${M.muted ? 0 : M.vol}%`); }
   }
-  function progress() { const t = M.track, p = M.position(); for (const el of widgets) { const bar = el.querySelector('.npBar > i'); bar.style.width = t && t.dur ? `${(100 * p) / t.dur}%` : '0%'; el.querySelector('.npTime').textContent = t && t.dur ? `${fmt(p)} / ${fmt(t.dur)}` : ''; el.style.setProperty('--np-pulse', M.pulse().toFixed(2)); } }
+  function progress() { if (window.ZD_PARKED) return; const t = M.track, p = M.position(); for (const el of widgets) { const bar = el.querySelector('.npBar > i'); bar.style.width = t && t.dur ? `${(100 * p) / t.dur}%` : '0%'; el.querySelector('.npTime').textContent = t && t.dur ? `${fmt(p)} / ${fmt(t.dur)}` : ''; el.style.setProperty('--np-pulse', M.pulse().toFixed(2)); } }
   M.on(() => { widgets.forEach(paint); renderSettings(); });
   setInterval(progress, 200);
 
@@ -8841,6 +8841,7 @@ var qrcode = function() {
       await new Promise((r) => setTimeout(r, 900)); // pretend handshake (lets the splash play)
       let last = performance.now(), acc = 0;
       this.timer = setInterval(() => {
+        if (window.ZD_PARKED) return;
         const now = performance.now();
         let dt = Math.min(0.25, (now - last) / 1000) * this.speedup; last = now;
         while (dt > 0) { const h = Math.min(0.005, dt); this.car.step(h); dt -= h; acc += h; }
@@ -10512,18 +10513,25 @@ var qrcode = function() {
   // ---------------- main loop ----------------
   let lastT = performance.now();
   const FPS = { n: 0, t0: performance.now(), el: $('#fps') };
+  let dadRaf = 0;
   function loop(now) {
+    if (window.ZD_PARKED) { dadRaf = 0; return; }
     const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now;
     if (ZD.perf.fps) { FPS.n++; if (now - FPS.t0 >= 500) { const fps = (FPS.n * 1000) / (now - FPS.t0); FPS.el.textContent = `${fps.toFixed(0)} FPS${ZD.perf.low ? ' · LOW' : ''} · ${Math.round(ZD.perf.dpr(3) * 100) / 100}×`; FPS.el.classList.toggle('slow', fps < 40); FPS.n = 0; FPS.t0 = now; } }
     if (S.src && S.src.label === 'OBD' && S.frameAt && now - S.frameAt > 5000 && S.trip.maxRpm >= 400 && $('#poweroff').classList.contains('hidden')) showPowerOff(); // no OBD data for 5 s after a real drive: end it once (newTrip after the tap can't end again)
     { const on = !!(S.seen && ["lam1", "lam2", "stft1", "ltft1", "stft2", "ltft2", "cat1", "cat2", "pedalD", "pedalE", "relThr", "cmdThr", "thrB", "maf", "baro", "absLoad", "cmdLam", "purge", "evapVp", "runTime", "distClr", "timeClr", "warmups", "distMil", "timeMil", "fuelType", "o2s"].some((k) => S.seen.has(k))), te = $('#tabEngine'); if (te.style.display !== (on ? '' : 'none')) te.style.display = on ? '' : 'none'; } if (S.screen === 'codes' && now - (S.ecuT || 0) > 500) { S.ecuT = now; renderEcuInfo(); } // ENGINE tab only with OBD+ data
-    if (document.body.classList.contains('kidon')) { requestAnimationFrame(loop); return; } // Passenger Mode is showing: keep data/state running, skip drawing Dad's screens
+    if (document.body.classList.contains('kidon')) { dadRaf = requestAnimationFrame(loop); return; } // Passenger Mode is showing: keep data/state running, skip drawing Dad's screens
     if (SP.on) drawSplash(now);
     if (!$('#poweroff').classList.contains('hidden')) drawPowerOff(now);
     const edge = $('#edge'); const eOn = !!S.edgeOn && S.screen === 'drive'; edge.classList.toggle('on', eOn); edge.classList.toggle('cruise', S.edgeMode === 'cruise');
     const fn = { runs: drawRuns, handling: drawHandling, drive: drawDrive, gauges: drawGauges, engine: drawEngine, car: () => drawCar(dt), dyno: drawDyno, trip: drawTrip }[S.screen]; if (fn) fn();
-    requestAnimationFrame(loop);
+    dadRaf = requestAnimationFrame(loop);
   }
+  function stopDad() { cancelAnimationFrame(dadRaf); dadRaf = 0; }
+  function startDad() { if (!dadRaf && !window.ZD_PARKED) dadRaf = requestAnimationFrame(loop); }
+  window.ZD_DASH = window.ZD_DASH || {};
+  ZD_DASH.stopDad = stopDad;
+  ZD_DASH.startDad = startDad;
 
   // boot. Start screen waits for START DEMO / CSV / live adapter.
   // URL options for demos/screenshots: ?demo (auto-start) &nosplash &screen=dyno &warm=300 &autodyno &speed=2 &poweroff
@@ -10547,7 +10555,7 @@ var qrcode = function() {
   if (params.has('demo') || params.has('nosplash') || params.has('warm')) startDemo();
   if (params.has('nosplash')) hideSplash();
   try { const m = localStorage.getItem('zdash.mode'); if (m && !params.has('demo')) setMode(m); } catch (e) {}
-  requestAnimationFrame(loop);
+  startDad();
   window.ZDAPP = S; // for debugging in the console
 })();
 
@@ -13725,9 +13733,10 @@ var qrcode = function() {
       r.querySelector('button').addEventListener('click', async () => { const RO = ZD.Roles; if (!FP.on && RO && RO.hasPass && RO.hasPass() && !(await RO.gate('Enter the parent passcode to show FPS'))) return; fpsSet(!FP.on); }); }
     r.querySelector('button').textContent = `SHOW FPS: ${FP.on ? 'ON' : 'OFF'}`; }
   // ---------------- loop ----------------
-  let lastT = performance.now(), hudT = 0;
+  let lastT = performance.now(), hudT = 0, kidRaf = 0;
   function loop(now) {
-    requestAnimationFrame(loop); if (!K.on) return;
+    if (window.ZD_PARKED) { kidRaf = 0; return; }
+    kidRaf = requestAnimationFrame(loop); if (!K.on) return;
     fpsFrame(now, now - lastT); const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now; const t = now / 1000; pcDriveTilt();
     const f = feed(); readTick(f, dt); { const nw = performance.now() / 1000; if (!(K.tab === 'boost' && SG.prac) && sgDetect(f, nw)) sgMoment(nw); sgTick(f, nw); }
     K.wheelAng += ((f.speed || 0) * 0.44704 / 0.33) * dt;
@@ -13738,6 +13747,33 @@ var qrcode = function() {
     if (now - hudT > 250) { hudT = now; $('#kStars').textContent = `★ ${P.stars}`; $('#kCoins').textContent = `● ${P.coins}`; $('#kSrc').textContent = K.srcLabel === 'PRACTICE' ? '' : K.srcLabel; $('#kBadge').textContent = K.real ? 'REAL DRIVE ×2' : 'PRACTICE'; $('#kBadge').classList.toggle('real', !!K.real); $('#kSrc').classList.toggle('live', K.srcLabel === 'LIVE'); if (ZD.Music) { const on = ZD.Music.sync === 'mic'; $('#kSync').textContent = `♪ MUSIC SYNC: ${on ? 'ON' : 'OFF'}`; $('#kSync').classList.toggle('hot', on); } }
     save(now);
   }
+  window.ZD_DASH = window.ZD_DASH || {};
+  ZD_DASH.stopKid = function () { cancelAnimationFrame(kidRaf); kidRaf = 0; };
+  ZD_DASH.startKid = function () { if (!kidRaf && !window.ZD_PARKED) kidRaf = requestAnimationFrame(loop); };
+  // Neon World is a different page. The dashboard stays in the back-forward cache,
+  // so park its loops, the mic analyser, and the wireframe GL context on the way out
+  // and bring the same screen back on return. Spotify playback is remote and stays.
+  function parkDash(on) {
+    window.ZD_PARKED = !!on;
+    const D = window.ZD_DASH;
+    if (on) {
+      if (D.stopDad) D.stopDad();
+      if (D.stopKid) D.stopKid();
+      const R = window.ZD && ZD.Xray && ZD.Xray.renderer;
+      if (R && R.forceContextLoss) { try { R.forceContextLoss(); } catch (e) {} }
+      const ac = window.ZD && ZD.Music && ZD.Music.mic && ZD.Music.mic.ac;
+      if (ac && ac.state === 'running') { ac.__zdHold = 1; try { ac.suspend(); } catch (e) {} }
+    } else {
+      const R = window.ZD && ZD.Xray && ZD.Xray.renderer;
+      if (R && R.forceContextRestore) { try { R.forceContextRestore(); } catch (e) {} }
+      const ac = window.ZD && ZD.Music && ZD.Music.mic && ZD.Music.mic.ac;
+      if (ac && ac.__zdHold) { ac.__zdHold = 0; try { ac.resume(); } catch (e) {} }
+      if (D.startDad) D.startDad();
+      if (D.startKid) D.startKid();
+    }
+  }
+  addEventListener('pagehide', () => parkDash(true));
+  addEventListener('pageshow', () => { if (window.ZD_PARKED) parkDash(false); });
 
   function kidHashTab() {
     const h = String(location.hash || '').replace(/^#/, '').split(/[?&]/)[0].toLowerCase();
@@ -13792,7 +13828,7 @@ var qrcode = function() {
       window.ZD_LOCKS = { open: lpOpen, games: () => LKG.map((g) => ({ k: g.k, locked: g.locked() })) };
       r.querySelector('#btnRelockZT').addEventListener('click', () => { w2Pin(lpOpen); }); } }
     if (Q.get('kplay') === '1') { hideOver(); restartRoad(); startBoost(); } // test hook: skip the intro card
-    requestAnimationFrame(loop);
+    ZD_DASH.startKid();
     ZD.Kid = { setOn, toast };
     window.ZDKID = { kStartShow: () => kStartShow(), W4, W4P, W4X, W4F, W4Q, w3Brake: () => w3Brake(), W4N, W4T, W4S, W4P2, wLvSel: (v) => wLvSel(v), wLvMax: (v) => wLvMax(v), wantedOpts: () => wantedOpts(), w4NosN: () => w4NosN(), w4NosReady: () => w4NosReady(), w4NosHold: (o) => w4NosHold(o), w4Unlock: (d) => w4Unlock(d), wChase: () => wChase(), w4LvUp: (y) => w4LvUp(y), w4Beat: (b) => w4Beat(b), onW2Takeoff: (F, d) => onW2Takeoff(F, d), COPCFG, kCopEq: (lv) => kCopEq(lv), kCopLook: (lv, t) => kCopLook(lv, t), kPause: () => kPause(), kResume: () => kResume(), get K() { return K; }, get R() { return R; }, get B() { return B; }, get D() { return D; }, wFinish: (w, y) => wFinish(w, y), WR2, WT2, w2Open: () => w2Open(), W3, W3B, WTB, wNos: () => wNos(), WT3, W3S, w3Start: (k) => w3Start(k), w3Pick: () => w3Pick(), w3Oil: () => w3Oil(), w3Brake: () => w3Brake(), w3Bounds: (d) => w3Bounds(d), w2Key: () => w2Key(), w2Earned: () => w2Earned(), w2Pin: (f) => w2Pin(f), w2Hash: (s) => w2Hash(s), wSelVer: () => wSelVer(), W3B, WTB, wNos: () => wNos(), wanted_on: WANTED_ON, wSteerPref, wSteerSet: (v) => wSteerSet(v), wSteer: (dt) => wSteer(dt), wSqueeze: (d, l) => wSqueeze(d, l), ECON, RANKS, starsEver, rank, STAT, dragOpen, wantedOpen, roadGateOk, gateRows, fps: FP, fpsSet: (on) => fpsSet(on), DYN, DCUT, XSLOTS, xEquip: (id) => xEquip(id), dragStep: (dt) => dragStep(dt), dragRival: (dt) => dragRival(dt), coinBurst, closeFact, HOT_N, hotQ: (id) => hotQ(id, hotPoints(), ZD.Xray), HOT, hotPoints, showroomTap: (e) => showroomTap(e), RLV, RBOOST, roadFinish, roadPace, LANDFX, groundTilt, landGain, trafficLite: () => tLite, dragTraffic: (m) => dragTraffic(m), TGUARD, PRESETS, MYP_MAX, renderGarage, drvShiftTap, simCar, gPick, gSection, GSECS, pairInfo, inRampZone, POS, XMAX, K, P, R, B, SG, RD, D, DR, DLEN, CAT, TL, RAMP, rampSpawn, rampGrade, tiltRead, tiltCenter, screenAngle, tiltIn, DRAG_LOOK, DRAG_HUD, OBST, ROAD_TUNE, roadLevel, look, dragStart, dragTap, dragNos, dragLane, dragReset, dragDown, snapPhoto, HOT, sgPractice, ridePractice, sgTap, sgMoment, sgTick, setOn, setTab, showIntro, showEnd, showDragEnd, showTut, hideOver, restartRoad, startBoost, roadPace, W, WT, wLevel, wStart, wReset, wLane, wNos, wStep, wGen, wHitPiece, wLand, wChase, wCalmGen, wDiff, wIsDad, wLook, showWantedEnd, fireworks: () => fireworks($('#kCv').clientWidth, $('#kCv').clientHeight, 6), shift: (r) => onShift({ rating: r || 'PERFECT', to: 3 }, !!K.own), LROW, lrow, obstacleRow, spawnTraffic, RTK, RTLEN, RTRAF, TLEN, roadBeat, jumpCars, CAR_H, TKIND, TCOL, roadV, PD, PDG, pdStep, pdReset, pdFrame, pdRpm, holdMsg, RIDE, boostEnd, boostHit, GZ, gzStep, WANTED_ON, sgLights, readTick, boostDone, drawPower: (...a) => drawPower(...a) };
   }

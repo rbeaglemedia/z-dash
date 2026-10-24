@@ -212,7 +212,7 @@ function drawHud(dt){const t=performance.now()/1000,w=W,h=H,ipad=zIpadOn(),s=ipa
   if(ipad)placeIpadDom(true,cssL);else placeIpadDom(false);
   vS+=(P.v*2.237-vS)*(1-Math.exp(-dt/.3));vT+=dt;if(vT>.14){vT=0;const r=Math.round(vS);if(Math.abs(vS-vShown)>.75||r===0)vShown=r;}
   // TOP LEFT: minimap in the slot the ALT/THR panel used on main (x 12, y 10, 196×134)
-  {const mapW=L?L.map.w:Math.min(196,Math.max(96,Wd/2-79));drawMini(L?L.map.x:12,L?L.map.y:10,mapW,L?L.map.h:134,dt);}
+  {const mapW=L?L.map.w:Math.min(196,Math.max(96,Wd/2-79));const tm=window.perfAdd?performance.now():0;drawMini(L?L.map.x:12,L?L.map.y:10,mapW,L?L.map.h:134,dt);if(tm)window.perfAdd('map',performance.now()-tm);}
   // TOP CENTRE: ROTATE speed cue (WANTED's level / ramp bar)
   {const gw=L?L.tilt.w:118,gh=L?L.tilt.h:58,gx=L?L.tilt.x:Wd/2-gw/2,gy=L?L.tilt.y:6,cm=window.TCMD||[0,0],ok=P.ground&&P.rotOK,cx=gx+gw/2,cy=gy+gh/2,on=(typeof tiltOk==='function'&&tiltOk())||document.documentElement.classList.contains('pc-mode');
     ctx.save();ctx.beginPath();ctx.roundRect(gx,gy,gw,gh,12);ctx.fillStyle='rgba(10,5,24,.82)';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=on?H_CYAN:'#55507a';ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=6;ctx.stroke();
