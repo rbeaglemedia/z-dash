@@ -1,12 +1,79 @@
 # Adventure world plan
 
-Planning only. This file does not change the game, and it does not deploy. Nothing here is built until Bob writes "plan approved, build it." Buy nothing from this list.
+Buy nothing from this list. Do not deploy from this branch. Do not edit `index.html`, `world.html`, `world-split.html`, or any Neon World file.
+
+Bob's note on 24 Oct 2026, 2:11 PM ET: Neon World dips to about 25 fps on his phone, and a WebGL buildings attempt was dropped. Adventure World therefore starts from the ground up, small, and grows one step at a time. Milestone 0 is built. Milestones 1 through 5 wait until the frame gate below passes on the current step. The town story under that (jobs, moves, the car key) is unchanged. Nothing past Milestone 0 is in the page.
 
 This is the one adventure plan. Pull request 90, section 7, commit `935611f`, drafted an on-foot chapter and handed it here. Where that section and this file both describe walking, jobs, foes, pet moves, or the car key, this file is the one to follow. NEXT still owns the Boulevards map, the driving caps, the 400 ft sky, and traffic.
 
-This is a new tile and its own page, `vale.html`, if you take the Glasswick name. The live Neon World stays on `world.html` and `world-split.html`. NEXT stays on `next.html`. This plan does not edit `index.html`, the current city, the Boulevards copy, the speed caps, the 400 ft sky, or traffic.
+The page is `adventure.html`. It is not linked from the kid menu. The live Neon World stays on `world.html` and `world-split.html`. NEXT stays on `next.html`. Glasswick is still the recommended town name. `vale.html` is not the page.
 
 Ellie is 10 and plays at about a 13-year-old level. The words stay plain and specific: Lamp Square, glow, Yard Gate. No baby talk.
+
+## Renderer
+
+One canvas. One WebGL2 scene. The page loads `adventure/app.js`, which is three.js r170 (MIT) bundled with its FBX loader. The courtyard, Ellie, and the pug are objects in that one scene.
+
+This is not Neon's renderer. Neon paints the city on a 2D canvas (`world/boot.js`, with `shadowBlur`) and keeps a separate three.js build inside `shared/car-model.js` for the car. A buildings pass that added another WebGL view was dropped after the phone dips. Adventure World does not import `world/`, `shared/car-model.js`, or `index.html`. There is no second canvas, no `shadowBlur`, no shadow map, no antialias, and the pixel ratio stays at 1.
+
+Why this scene, and not a hand-written GL core: the phone problem is extra passes and an uncapped city, not the lack of a tiny shader. A skinned character needs a skeleton, a clip, and a single draw. three.js r170 already does that, the bundle is about 1.0 MB, and the draw list for Milestone 0 is one ground, a ring, eight wall pieces, four lamps, and two skinned meshes. If a later step misses the frame gate, that step comes back out. A custom GL core would be smaller on disk and would still have to grow a skinning path before Ellie could walk.
+
+## Frame gate
+
+Every milestone records a frame-time histogram before the world is allowed to grow. The overlay is `adventure.html?fps=1`. The lab bench is `?bench=1&frames=360` and stops the loop when the sample fills. The ring keeps 600 frames. The first 30 frames are warmup (shader compile). The gate scores the frames after that. The worst warmup frame is reported beside the histogram as the boot hitch, and it has to stay under 80 ms.
+
+1% low is 1000 divided by the mean of the worst 1% of frame times.
+
+| Device | How the page tells | 1% low | p95 | Worst steady frame |
+| --- | --- | --- | --- | --- |
+| Phone | short side under 500 px, or `kind=phone` | at least 50 fps | at most 20 ms | at most 40 ms |
+| iPad | the middle sizes, or `kind=ipad` | at least 30 fps | at most 33 ms | at most 50 ms |
+| PC | long side at least 1280 px, or `kind=pc` | at least 60 fps | at most 16.7 ms | at most 33 ms |
+
+The iPad floor is 30 because that tablet is 60 Hz and already the strict machine, and a 1% low of 30 means the bad frames are still on the flat-30 floor. The phone asks for 50 because Bob saw 25 and the next step cannot start from there. The PC asks for a 60 fps 1% low because that machine has the headroom.
+
+Lab numbers are software GL on this agent (SwiftShader). They are not his phone and not the 2018 iPad. A lab pass means the scene is cheap enough to grow in the lab. His phone is still the column that matters before a later milestone is called done.
+
+Milestone 0, lab, 360 frames, first 30 dropped as warmup. Every steady frame was under 8 ms.
+
+| Viewport | p50 | p95 | 1% low | Worst steady | Boot hitch | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| Phone 844×390 | 0.5 ms | 2.6 ms | 256 fps | 4.1 ms | 53 ms | Pass |
+| iPad 1024×768 | 0.4 ms | 1.2 ms | 197 fps | 6.7 ms | 41 ms | Pass |
+| PC 1366×768 | 0.4 ms | 1.3 ms | 190 fps | 5.9 ms | 43 ms | Pass |
+
+The histogram is in `test-results/adventure-m0/bench.json`. The overlay that produced it is `?fps=1`.
+
+## Anatomy on Milestone 0
+
+The Neon checker (`tools/anatomy-check.mjs` on `cursor/anatomy-check-3de5`) scores the crew sprites. It cannot see these FBX meshes. `tools/adventure-anatomy.mjs` applies that same numeric bar to the adventure renders: head 16–45% of the figure, on a neck, centered; side, three-quarter, and back chest at least 36% of the front; a walk with a step, a swing, a plant, and a small bob; opposition scored from the side, because a 3D stride travels away from the camera; Ellie 1.15–2.05 m with feet on the ground; the pug at or under her hip, on the ground, knee to waist.
+
+Result: **PASS** (exit 0).
+
+| | Measured |
+| --- | --- |
+| Ellie | 1.50 m. Feet at 0.00 m. Hip bone 0.44 m. |
+| Head, front | 38% of the figure. On a neck. Centered. Three-quarter 36%, side 24%, back 36%. |
+| Chest width | Front 93 px, three-quarter 143, side 67 (72% of the front), back 160. |
+| Walk | Side step 182 px, arm swing 72 px, opposition 0.48, bob 15 px, feet trade a plant. |
+| Pug | 0.40 m tall. Top 0.40 m, under the 0.44 m hip. Feet at 0.00 m. |
+
+Ellie is the CC0 Casual Female, scaled to 1.50 m. The pug is the CC0 pug from the same pack, scaled to 0.40 m so the ears sit just under her hip. Both use the pack's Idle and Walk clips. The FBX materials arrived with opacity 0, so the page forces opacity 1 and flat colors by material name. Shots are in `test-results/adventure-m0/`.
+
+## Milestones
+
+Each step is one addition. The car is still absent. Sky, traffic, and the Boulevards map stay with NEXT.
+
+| Step | What is added | Not yet |
+| --- | --- | --- |
+| M0 | One round courtyard. Ellie on foot. One pug at her heel. The frame harness. | No house, no job, no foe, no car. This is the build. |
+| M1 | One glass house shell on the courtyard edge. No interior. | No room portrait, no second building. |
+| M2 | Nia, and job 1 (walk up and knock). | No other people. The iPad cap of 3 awake starts here and is not raised. |
+| M3 | Swing, and one crate crab that faints. | No second foe. Nearby cap still 3 / 4 / 6. |
+| M4 | Spark, Shot, and the pug's favorite move. | No extra pets. |
+| M5 | One gate into a second, tiny meadow chunk. The courtyard unloads detail while she is through the gate. | No ridge, no ruins, no car key. |
+
+M1 does not start until M0's gate passes. The same rule repeats. The later story phases in section 10 (jobs 6 and 7, the car key, the cape) sit after M5.
 
 The shape is borrowed from two games she might already know the feel of. A town, jobs, choices, a partner at her side, then a blade, a spark, and a bow: that is the Fable idea. A pet with a few elemental tricks that grow because of stories: that is the Pokémon idea. The names, the clothes, the creatures, the type list, and the models are ours. Nothing is copied from those games, from Brookhaven, or from a pack.
 
@@ -16,7 +83,7 @@ Read with `docs/NEXT-WORLD-PLAN.md` on `cursor/next-world-plan-039c`, through co
 
 | | NEXT (pull request 90) | VALE (this plan) |
 | --- | --- | --- |
-| Page | `next.html` | `vale.html` |
+| Page | `next.html` | `adventure.html` |
 | Map | A copy of Option 1, The Boulevards. World id `next`. | Glasswick. Its own file. Not a copy of `world/city-layout.js`. |
 | How she moves | She drives the Z. She cannot launch the sky on foot. | She walks. The Z is not in this world until the last chapter, and then only as a door. |
 | Speed | 25 / 35 / 45 mph on the street, only while she is driving. Sky 65 / 90 / 120 after NEXT's own unlock. | Walk 3–4 mph. Run 8–10 mph. Same on every device. No sky speed. |
@@ -340,8 +407,8 @@ Each phase is measured before the next one starts. The car key does not start ah
 
 | Phase | What she can do | Done when |
 | --- | --- | --- |
-| 0 | Read this. Pick a row or say "recommended". | You write "plan approved, build it". |
-| 1 | The tile, the page, box houses, unarmed Ellie, one pet. No car, no sky, no traffic. | Anatomy exit 0 on the unarmed body. Boot inside the table. Five frame pairs. |
+| 0 | Milestone 0. Courtyard, Ellie, pug, frame harness. Page `adventure.html`. No menu tile. | Anatomy exit 0. The frame gate above, on the lab viewports. |
+| 1 | Milestone 1. One glass house shell. Still unarmed. No interior. | The same frame gate, with the shell in the shot. |
 | 2 | One real Lamp-kit house, one room at 1.5 m, Nia, job 1, the tale book. | The room does not use the stretched portrait. |
 | 3 | Jobs 3–5. Swing, Spark, Shot. Crate crabs. WIND. | Props do not fail the walk. Hub streets stay friendly. Nearby cap holds at 3 / 4 / 6. |
 | 4 | Phone, iPad, and PC use the one control scheme. | A thumb can hit the three buttons. Aim assist works with the cone. |
@@ -373,7 +440,7 @@ Reply with a letter, or "recommended" to take the marked row.
 
 | # | Question | Recommended |
 | --- | --- | --- |
-| 1 | Name | A. Glasswick, tile VALE, `vale.html`. Homestead stays the driving home. B. Homestead. She starts on foot on NEXT's block. Read Homestead wherever this doc says Glasswick. |
+| 1 | Name | A. Glasswick, page `adventure.html`. No menu tile yet. Homestead stays the driving home. B. Homestead. She starts on foot on NEXT's block. Read Homestead wherever this doc says Glasswick. |
 | 2 | First minute | On foot. One pet. No car, no traffic, no sky. |
 | 3 | Walk and run | Walk 3–4 mph (default 3.5). Run 8–10 mph (default 9). Same on every device. |
 | 4 | Car key | A. 5 of 7 town jobs. Swing, Spark, and Shot are inside the five. Coins are 25 a job, not a price. B. One ladder of 14. The car is star 8. The sky is star 14. |
@@ -386,7 +453,7 @@ Reply with a letter, or "recommended" to take the marked row.
 | 11 | New animals | The four she has, then tin hare, brook frog, lamp moth. One mesh at a time. Vale save until a closet pass. |
 | 12 | Models | Restyle today's figure first. Free / CC0 only (Quaternius, Kenney, KayKit free). Do not buy KayKit Extra (about $7.95) or Synty Fantasy Kingdom (about $349.99). |
 | 13 | Load and frames | Boot under 10 s on her iPad, under 6 s on the phone, under 4 s on a PC. 60 fps aim, flat 30 floor. No `shadowBlur`. On foot the Z and the traffic cars are not drawn. |
-| 14 | First build | Phase 1 only: walk, pet, boxes, measure, anatomy on the unarmed body. |
+| 14 | First build | Milestone 0 is in `adventure.html`: one courtyard, Ellie, the pug, the frame gate. M1 through M5 wait on that gate. |
 
 Open, and fine to leave until you approve a phase:
 

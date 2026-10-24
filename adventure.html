@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Glasswick courtyard</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #c8f4ff; overflow: hidden; }
+    #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+    #boot, #hint, #fps, #label {
+      position: fixed; z-index: 2; font: 600 14px/1.35 ui-sans-serif, system-ui, sans-serif;
+      color: #142033;
+    }
+    #boot { left: 16px; top: 16px; background: #fff; padding: 8px 10px; border-radius: 8px; }
+    #hint { left: 16px; bottom: 16px; background: rgba(255,255,255,.9); padding: 8px 10px; border-radius: 8px; max-width: 280px; }
+    #fps {
+      right: 12px; top: 12px; white-space: pre; background: rgba(7,1,15,.88); color: #d8fff4;
+      padding: 8px 10px; border-radius: 8px; font: 12px/1.4 ui-monospace, monospace;
+    }
+    #label {
+      left: 50%; top: 12px; transform: translateX(-50%); background: #fff; color: #142033;
+      padding: 6px 10px; border-radius: 8px; letter-spacing: 0;
+    }
+    #stick {
+      position: fixed; left: 18px; bottom: 78px; width: 108px; height: 108px; border-radius: 54px;
+      border: 3px solid #3ee6ff; background: rgba(255,255,255,.35); touch-action: none; z-index: 3;
+    }
+    body.anatomy #hint, body.anatomy #stick, body.shot #stick, body.shot #hint { display: none; }
+  </style>
+</head>
+<body>
+  <canvas id="view"></canvas>
+  <div id="boot">Opening the courtyard…</div>
+  <div id="hint">WASD walks. Shift runs. The pug stays at your heel.</div>
+  <div id="stick" aria-label="Move"></div>
+  <div id="fps" hidden></div>
+  <div id="label" hidden></div>
+  <script type="module" src="adventure/app.js"></script>
+  <script>
+    const q = new URLSearchParams(location.search);
+    if (q.get('anatomy') === '1') document.body.classList.add('anatomy');
+    if (q.get('shot') === '1') {
+      document.body.classList.add('shot');
+      const label = document.getElementById('label');
+      const w = window.innerWidth, h = window.innerHeight;
+      const forced = (q.get('kind') || '').toLowerCase();
+      const short = Math.min(w, h), long = Math.max(w, h);
+      const kind = forced === 'phone' || forced === 'ipad' || forced === 'pc'
+        ? forced
+        : (short < 500 ? 'phone' : (long >= 1280 ? 'pc' : 'ipad'));
+      label.hidden = false;
+      const title = kind === 'ipad' ? 'iPad' : (kind === 'pc' ? 'PC' : 'Phone');
+      label.textContent = title + ' ' + w + '×' + h + ' · Ellie and pug · pink line is her hip, gold line is the ground';
+    }
+  </script>
+</body>
+</html>

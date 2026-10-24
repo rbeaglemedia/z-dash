@@ -1,0 +1,18 @@
+Casual_Female.fbx and Pug.fbx
+
+Source: Quaternius, Ultimate Animated Character Pack (November 2019).
+Downloaded from OpenGameArt, "Animated Characters Pack" by quaternius:
+https://opengameart.org/content/animated-characters-pack
+Author page: https://quaternius.com/packs/ultimatedanimatedcharacter.html
+
+License: Creative Commons Zero 1.0 Universal (CC0)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Free to use in this game, including commercially. No attribution required.
+These two files are the only models copied from that pack. Nothing was purchased.
+The courtyard meshes are original to this page.
+
+The FBX materials arrived with opacity 0 (a loader quirk) and very dark
+color factors. The page sets opacity to 1 and paints flat colors by
+material name (skin, hair, shirt, pants, fur) so the mesh reads in daylight.
+Those colors are not a second art pack. No texture was purchased.

@@ -1,0 +1,106 @@
+{
+  "ok": true,
+  "bar": "Same numeric bar as Anatomy Check (cursor/anatomy-check-3de5). That checker scores Neon crew sprites, so Milestone 0 runs it on these renders.",
+  "problems": [],
+  "measure": {
+    "hero": {
+      "height": 1.4995334220999121,
+      "minY": 0.0003067470300241251,
+      "maxY": 1.4998401691299363,
+      "headFrac": 0.2438274584669565,
+      "headY": 1.0158463013521162,
+      "neckY": 0.9527769830714432,
+      "hipY": 0.43854550788381025,
+      "footY": [
+        0.01961406975702337,
+        0.01961406975701966
+      ],
+      "bones": {
+        "head": true,
+        "neck": true,
+        "hips": true,
+        "upperArmL": true,
+        "lowerArmL": true,
+        "upperLegL": true,
+        "lowerLegL": true,
+        "footL": true,
+        "footR": true
+      }
+    },
+    "pet": {
+      "height": 0.39992645564082024,
+      "minY": 0.00006946155915551425,
+      "maxY": 0.39999591719997574,
+      "headFrac": 0.2766761723313889,
+      "headY": 0.3070639576792469,
+      "neckY": 0.28797723935218533,
+      "hipY": 0.13233090524984595,
+      "footY": [
+        0.005942356034573956,
+        0.005942356034572833
+      ],
+      "bones": {
+        "head": true,
+        "neck": true,
+        "hips": true,
+        "upperArmL": true,
+        "lowerArmL": true,
+        "upperLegL": true,
+        "lowerLegL": true,
+        "footL": true,
+        "footR": true
+      }
+    }
+  },
+  "chest": {
+    "front": 93,
+    "threeQuarter": 143,
+    "side": 67,
+    "back": 160
+  },
+  "head": [
+    {
+      "view": "front",
+      "ratio": 0.376,
+      "neck": true,
+      "centered": true
+    },
+    {
+      "view": "three-quarter",
+      "ratio": 0.358,
+      "neck": true,
+      "centered": true
+    },
+    {
+      "view": "side",
+      "ratio": 0.237,
+      "neck": false,
+      "centered": true
+    },
+    {
+      "view": "back",
+      "ratio": 0.361,
+      "neck": true,
+      "centered": true
+    }
+  ],
+  "walk": {
+    "front": {
+      "step": 60,
+      "swing": 49,
+      "oppose": 0.01,
+      "bob": 10,
+      "lifts": 8,
+      "figureH": 535
+    },
+    "side": {
+      "step": 182,
+      "swing": 72,
+      "oppose": 0.48,
+      "bob": 15,
+      "lifts": 2,
+      "figureH": 523
+    }
+  },
+  "logs": []
+}
