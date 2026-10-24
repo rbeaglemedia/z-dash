@@ -2,7 +2,7 @@
 
 The earlier pair (Option A and Option B) is withdrawn. Those two were too close to today's scattered map, and they kept the duplicate shops. This plan starts over from Bob's zones.
 
-Both options use the same places. They differ in the streets, the plazas, and which way you look when you arrive. Nothing here is built. Nothing deploys. No game file changes until Bob writes "plan approved, build it."
+Bob picked Option 1, The Boulevards. Option 2 stays on this page as the other drawing. Nothing on Option 1 moved after that pick. Nothing is built. Nothing deploys. No game file changes until Bob writes "plan approved, build it."
 
 North is up. +x is east, +z is north. One meter is one unit. Spawn stays at (0, 0) on the runway.
 
@@ -57,11 +57,45 @@ Empty grass does not add shops to that count. A bigger map is cheap as long as t
 
 ## Option 1 — The Boulevards
 
+Bob's pick.
+
 ![Option 1, The Boulevards](city-layout/option-boulevards.png)
 
 Each city is one straight street. The shops are stops along it, far enough apart that the next stop is out of the detail view. You can see the gate at the end of the street. Car Row faces the river. The dance mural faces east onto its street. The two ovals sit side by side, with a pit road along the south. The soccer approach comes up from the south. The jump roof stays on the west side of the runway. The tower sits on the riverbank, just east of the center bridge, and the short dashed line is a view, not a road. The hatched bands are weather for later: sand on the west shoulder, fog by the river and on the south lane, rain in the east gap.
 
 Worst view: 3 buildings, the homestead yard. Inside a city the worst is 2.
+
+### Place check
+
+Checked against today's 24 shops in `world/city.js`, the track, the soccer field, and the airport, plus the building modes in PR #69 and the city kit. Today's duplicates become one of each. Nothing was missing, so nothing was added and nothing was moved.
+
+| Place | In today's game? | On Option 1? | District |
+|---|---|---|---|
+| Home | Yes, twice | Once | Homestead, open ground |
+| Main garage | Yes, twice | Once, the big one | Homestead, with the house |
+| Pet lounge | Yes, twice | Once | Homestead |
+| Paint studio | Yes, twice | Once | Car Row |
+| Showroom spotlight | Yes, twice | Once | Car Row |
+| Big NOS drive-up | Yes, twice | Once | Car Row |
+| Dance building | Yes, twice | Once. The stage is the door. | The Stage |
+| Cafe | Yes, twice | Once | The Stage |
+| Arcade | Yes, twice | Once | Builder Bay |
+| Builder HQ | Yes, twice | Once | Builder Bay |
+| Soccer shop | Yes, twice | Once. No teleport to the field. | The Field |
+| Soccer field | Yes, the dome | Once | The Field |
+| Racetrack | Yes, one oval | Once, with grass for a second | The Track |
+| Jump roof | Yes | Once, west shoulder | Airport |
+| Sky tower | Yes | Once | Riverbank |
+| Airport, runway, ramps, half-pipe, loop | Yes | Unchanged | Middle |
+| Tunnel and river jumps | Yes | Unchanged | Highway and river |
+| Kit: arch, garage bay, small NOS, Sky pad, snack | No. New, and approved. | Every city. Car Row uses the big NOS. The Stage uses the cafe instead of a snack. | Each city |
+
+The walk-in rooms (house, arcade, cafe, pet lounge, soccer shop, Builder HQ) are the space behind those doors. They are not a second row of buildings, including in the southwest. The interiors plan does not add a shop to the map.
+
+Two ideas are not places in today's game, so they are not on the map. They stay suggestions. They do not move anything.
+
+- A Planner Port prop set, and an LED-trailer pad near the main garage, if Bob wants that later. The yard is not rearranged for it.
+- A visible southwest row of interior style samples, if he wants the rooms to show on the street. Today those styles live behind the doors above.
 
 ## Option 2 — The Town Squares
 
@@ -73,7 +107,7 @@ Worst view: 3 buildings, the homestead yard. Inside a city the worst is 2.
 
 ## What it takes to make one option playable
 
-Not built. Bob picks one. The first build is the full game that already runs at `/test/`, on `test/world/city.js`. The live pages stay on today's map. Adult `index.html` is not touched.
+Not built. The build, when approved, is Option 1. The first build is the full game that already runs at `/test/`, on `test/world/city.js`. The live pages stay on today's map. Adult `index.html` is not touched.
 
 ### Both options
 
@@ -217,6 +251,8 @@ These are not in either option.
 ## Architecture Check packet
 
 For the Architecture Check agent. This PR is a plan. It does not change `world/`. It is not a pass. Please reply on the PR with pass or fail per row.
+
+Bob picked Option 1. The place check above added nothing and moved nothing. Option 2 is the other drawing, not the build.
 
 Bob's later zoning replaces the older "keep both builder HQs and the tower where they are" note. The reason for that note was the north-bank jumps. Those jumps stay clear because the builder left the north bank.
 
