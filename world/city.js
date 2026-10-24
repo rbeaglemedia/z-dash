@@ -323,10 +323,18 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
     const yy=Number.isFinite(y)?y:0,top=Math.max(yy,0.4),bot=yy>3?yy-0.8:0;let pr=null;
     try{pr=probe(x,z,top,bot);}catch(e){return false;}if(pr&&pr.wl)return false;return true;}
   const placesOut=LAY?LAY.places.map(p=>{const o=Object.assign({},p);o.type=p.kind||p.type||'';o.cx=(p.x0+p.x1)/2;o.cz=(p.z0+p.z1)/2;return o;}):[];
-  const LAYOUT=LAY?{id:LAY.id,bounds:LAY.bounds,anchors:LAY.anchors,weather:LAY.weather,districts:DISTRICTS,places:placesOut,roads:ROAD_SEGS,river:LAY.anchors.river,bridges:LAY.anchors.bridges,highway:LAY.anchors.highway,tunnel:LAY.anchors.tunnel,runway:LAY.anchors.runway,track:LAY.anchors.track,field:LAY.anchors.field,trailerPad:LAY.trailerPad,faces:NET.faces,minimap:{bounds:LAY.bounds,roads:ROAD_SEGS,river:LAY.anchors.river,bridges:LAY.anchors.bridges,districts:DISTRICTS,places:placesOut}}:null;
+  function editorDoc(){
+    const nos=[];
+    for(const b of BL){if(!b||b.purpose!=='NOS'||!b.nosStation)continue;const q=b.boxes&&b.boxes[0];
+      nos.push({district:b.district||'',station:b.nosStation.kind,x0:q?q.x0:b.x0,x1:q?q.x1:b.x1,z0:q?q.z0:b.z0,z1:q?q.z1:b.z1,pumps:(b.nosStation.pumps||[]).map(p=>({x:p.x,z:p.z,nx:p.nx||0,nz:p.nz||0}))});}
+    const spawns=ROADS.spawns.map(s=>({x:s.x,z:s.z,yaw:s.yaw,edge:s.edge,lane:s.lane}));
+    return {v:1,id:LAY?LAY.id:'',places:placesOut.map(p=>Object.assign({},p)),roads:ROAD_SEGS.map(r=>Object.assign({},r)),nos,spawns};
+  }
+  const editor=editorDoc();
+  const LAYOUT=LAY?{id:LAY.id,bounds:LAY.bounds,anchors:LAY.anchors,weather:LAY.weather,districts:DISTRICTS,places:placesOut,roads:ROAD_SEGS,river:LAY.anchors.river,bridges:LAY.anchors.bridges,highway:LAY.anchors.highway,tunnel:LAY.anchors.tunnel,runway:LAY.anchors.runway,track:LAY.anchors.track,field:LAY.anchors.field,trailerPad:LAY.trailerPad,faces:NET.faces,minimap:{bounds:LAY.bounds,roads:ROAD_SEGS,river:LAY.anchors.river,bridges:LAY.anchors.bridges,districts:DISTRICTS,places:placesOut},editor}:null;
   function districts(){return DISTRICTS;}
   function nodes(){return ROADS.nodes;}
-  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,hit,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),ROADS,BL,buildings:BL,BX,roadsX,roadsZ,RAMPS,PADS,TREES,LOTS,HOOPS,RINGS:rings,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,BUILDER_ZONE,DISTRICTS,districts,nodes,XS0,XS1,ZS0,ZS1,LAYOUT,mapStamp,spotClear,
+  return{PREFABS,placePrefab,DYN,OBJS,TYPES,add,remove,live,hit,toJSON:()=>JSON.stringify({objs:OBJS,roads:ROADS.toJSON()}),editorDoc,ROADS,BL,buildings:BL,BX,roadsX,roadsZ,RAMPS,PADS,TREES,LOTS,HOOPS,RINGS:rings,LOOPS,PIPES,TOWS,RIV,HW,TUN,PARK,STAD,TAXI,DT,TRACK,BRIDGES,BUILDER_ZONE,DISTRICTS,districts,nodes,XS0,XS1,ZS0,ZS1,LAYOUT,mapStamp,spotClear,
     probe,gnd,riverY,pipeY,rampH,trackPts,trackDist,surfaceAt,padAt,inTunnel:(x,z)=>x>TUN.bx0&&x<TUN.bx1&&z>TUN.z0&&z<TUN.z1};})();
 const surfaceAt=CITY.surfaceAt;
 // walls: glancing scrapes along the tangent (keeps tangential speed, sparks), square hits bounce 2.5–4.5 m/s off the normal, airborne grazes deflect outward. Pushed out of q: no reset, no trap.

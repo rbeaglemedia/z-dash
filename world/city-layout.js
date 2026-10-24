@@ -23,6 +23,10 @@
 //   After boot, CITY.LAYOUT and CITY.LAYOUT.minimap repeat roads (the
 //   driven centerlines, including curb spurs), river, bridges, districts,
 //   and every place with position and type. The minimap bakes from that.
+//   CITY.LAYOUT.editor is the one document a future City Editor reads:
+//   places (footprints), roads (centerlines), nos (fitted stations and
+//   pump spots), spawns (lane points traffic uses). CITY.editorDoc()
+//   returns a fresh copy. Writing it back is the editor's job.
 //   buildNetwork()  returns {roads, faces}
 //                 roads: centerlines with buildings cut out and a curb spur
 //                 added where a door was more than 16 m from a lane.

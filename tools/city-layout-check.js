@@ -40,6 +40,12 @@ for (const name of ['HOME', 'PETS', 'SHOWROOM', 'NEON_PAINT', 'DANCE', 'CAFE', '
 }
 expect(M.places.filter(p => p.purpose === 'NOS').length >= 5, 'NOS in each district');
 expect(M.places.filter(p => p.type === 'arch').length === 5, 'five arches');
+const ed = L.editor;
+expect(ed && ed.places.length === M.places.length && ed.roads.length === M.roads.length, 'editor places and roads');
+expect(ed.nos && ed.nos.length >= 5 && ed.nos.every(n => n.pumps && n.pumps.length), 'editor NOS pumps');
+expect(ed.spawns && ed.spawns.length > 40 && ed.spawns.every(s => Number.isFinite(s.x) && Number.isFinite(s.z)), 'editor spawns');
+const again = C.editorDoc();
+expect(again.nos.length === ed.nos.length && again.spawns.length === ed.spawns.length, 'editorDoc copy');
 expect(typeof C.districts === 'function' && C.districts().length === M.districts.length, 'districts()');
 expect(typeof C.nodes === 'function' && C.nodes().length > 10, 'nodes()');
 expect(typeof C.mapStamp === 'function' && C.mapStamp(), 'mapStamp');
@@ -125,6 +131,7 @@ const out = {
   bridgeEdges: bridge,
   runwayLaneSamples: runway,
   cars: g.__TUNE.simCap + g.__TUNE.dotCap,
+  editor: { places: ed.places.length, roads: ed.roads.length, nos: ed.nos.length, spawns: ed.spawns.length },
   stamp,
   fail
 };
