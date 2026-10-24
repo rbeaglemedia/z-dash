@@ -287,7 +287,6 @@ async function loadPet(spec) {
   const gltf = await gltfLoader.loadAsync(spec.url);
   const obj = gltf.scene;
   obj.animations = gltf.animations || [];
-  // Nose ends up on local -Z, the same way Ellie faces.
   obj.rotation.y = spec.yaw;
   prepareModel(obj);
   const box = fitHeight(obj, spec.height);
@@ -308,7 +307,13 @@ async function loadPet(spec) {
 
 function setAction(actor, moving) {
   if (!actor.idle || !actor.walk) {
-    if (actor.walk && moving) actor.walk.play();
+    if (actor.walk && moving) {
+      actor.walk.enabled = true;
+      actor.walk.play();
+    } else if (actor.walk) {
+      actor.walk.setEffectiveWeight(0);
+      actor.walk.enabled = false;
+    }
     return;
   }
   if (moving) {
@@ -320,7 +325,9 @@ function setAction(actor, moving) {
     actor.idle.enabled = true;
     actor.idle.setEffectiveWeight(1);
     if (!actor.idle.isRunning()) actor.idle.play();
+    // Weight 0 still advances the clip. Disable it so a stopped pet does not walk in place.
     actor.walk.setEffectiveWeight(0);
+    actor.walk.enabled = false;
   }
 }
 
@@ -517,11 +524,16 @@ scene.add(heroRig, petRig);
 const tmp = new THREE.Vector3();
 const follow = new THREE.Vector3();
 const camTarget = new THREE.Vector3();
+const petVel = { x: 0, z: 0 };
+let petSpeed = 0;
+let petAnim = 'idle';
 let yaw = 0;
 let moving = false;
 let run = false;
 let stepPhase = 0;
 let holdPose = false;
+const HEEL_BACK = 1.15;
+const HEEL_SIDE = 0.45;
 
 function resize() {
   const w = canvas.clientWidth || window.innerWidth;
@@ -883,7 +895,49 @@ function publish(extra) {
     stats: st,
     gate: st ? gate(st, deviceKind()) : null,
     benchDone: BENCH && samples.length >= BENCH_FRAMES,
+    petSpeed,
+    petAnim,
+    petWalk: !!(world.pet && world.pet.walk && world.pet.walk.enabled && world.pet.walk.getEffectiveWeight() > 0.01),
+    petFollow() {
+      const dx = heroRig.position.x - petRig.position.x;
+      const dz = heroRig.position.z - petRig.position.z;
+      const dist = Math.hypot(dx, dz);
+      const bones = petAimBones();
+      let chest = null;
+      let tail = null;
+      let face = 1;
+      if (bones) {
+        petRig.updateMatrixWorld(true);
+        bones.hip.getWorldPosition(_hipWp);
+        bones.tail.getWorldPosition(_tailWp);
+        chest = _hipWp.distanceTo(heroRig.position);
+        tail = _tailWp.distanceTo(heroRig.position);
+        const fx = _hipWp.x - _tailWp.x;
+        const fz = _hipWp.z - _tailWp.z;
+        const flen = Math.hypot(fx, fz);
+        if (dist > 0.05 && flen > 0.01) face = (fx * dx + fz * dz) / (flen * dist);
+      }
+      return {
+        speed: petSpeed,
+        anim: petAnim,
+        dist,
+        face,
+        chest,
+        tail,
+        x: petRig.position.x,
+        z: petRig.position.z,
+        yaw: petRig.rotation.y,
+      };
+    },
   }, extra || {});
+}
+
+function notePet() {
+  const adv = window.__ADV;
+  if (!adv) return;
+  adv.petSpeed = petSpeed;
+  adv.petAnim = petAnim;
+  adv.petWalk = !!(world.pet && world.pet.walk && world.pet.walk.enabled && world.pet.walk.getEffectiveWeight() > 0.01);
 }
 
 const SLICE_NAMES = ['world', 'player', 'pet', 'swing', 'spark', 'bow', 'foes', 'meter', 'draw', 'spare'];
@@ -1258,9 +1312,17 @@ async function boot() {
     heroRig.position.set(0, 0, 0);
     heroRig.rotation.y = 0.35;
   } else {
-    petRig.position.set(1.05, 0, 0.35);
     heroRig.rotation.y = 0.4;
-    petRig.rotation.y = 0.4;
+    const face = heroRig.rotation.y;
+    const fx = Math.sin(face);
+    const fz = Math.cos(face);
+    petRig.position.set(
+      -fx * HEEL_BACK + fz * HEEL_SIDE,
+      0,
+      -fz * HEEL_BACK - fx * HEEL_SIDE,
+    );
+    // Point the fox head at Ellie. She is still at the origin.
+    petRig.rotation.y = Math.atan2(-petRig.position.x, -petRig.position.z);
   }
   resize();
   seek(hero, 'idle', 0.15);
@@ -1372,6 +1434,110 @@ function triCount(root) {
   return n;
 }
 
+const _hipWp = new THREE.Vector3();
+const _tailWp = new THREE.Vector3();
+
+function petAimBones() {
+  if (!world.pet) return null;
+  if (world.pet.aimBones) return world.pet.aimBones;
+  let hip = null;
+  let tail = null;
+  petRig.traverse((o) => {
+    if (o.name === 'b_Hip_01') hip = o;
+    else if (o.name === 'b_Tail01_012') tail = o;
+  });
+  world.pet.aimBones = hip && tail ? { hip, tail } : null;
+  return world.pet.aimBones;
+}
+
+// Turn so the chest (hip, ahead of the tail) points at the target. The survey clip
+// glances the head around, so the head bone is not a stable nose.
+function aimPet(targetX, targetZ, dt) {
+  const bones = petAimBones();
+  if (!bones) {
+    petRig.rotation.y = turnToward(petRig.rotation.y, Math.atan2(targetX - petRig.position.x, targetZ - petRig.position.z), dt, 12);
+    return;
+  }
+  petRig.updateMatrixWorld(true);
+  bones.hip.getWorldPosition(_hipWp);
+  bones.tail.getWorldPosition(_tailWp);
+  const fx = _hipWp.x - _tailWp.x;
+  const fz = _hipWp.z - _tailWp.z;
+  const tx = targetX - _hipWp.x;
+  const tz = targetZ - _hipWp.z;
+  if (fx * fx + fz * fz < 1e-6 || tx * tx + tz * tz < 1e-6) return;
+  const err = Math.atan2(Math.sin(Math.atan2(tx, tz) - Math.atan2(fx, fz)), Math.cos(Math.atan2(tx, tz) - Math.atan2(fx, fz)));
+  petRig.rotation.y += err * (1 - Math.exp(-dt * 14));
+}
+
+function turnToward(current, target, dt, rate) {
+  const d = Math.atan2(Math.sin(target - current), Math.cos(target - current));
+  return current + d * (1 - Math.exp(-dt * rate));
+}
+
+function updatePet(dt) {
+  const prevX = petRig.position.x;
+  const prevZ = petRig.position.z;
+  const face = moving ? yaw : heroRig.rotation.y;
+  const fx = Math.sin(face);
+  const fz = Math.cos(face);
+  follow.set(
+    heroRig.position.x - fx * HEEL_BACK + fz * HEEL_SIDE,
+    0,
+    heroRig.position.z - fz * HEEL_BACK - fx * HEEL_SIDE,
+  );
+  const ox = follow.x - prevX;
+  const oz = follow.z - prevZ;
+  const dist = Math.hypot(ox, oz);
+  const heroSpeed = moving ? (run ? 4.02 : 1.56) : 0;
+  let wantX = 0;
+  let wantZ = 0;
+  if (moving) {
+    wantX = fx * heroSpeed;
+    wantZ = fz * heroSpeed;
+    if (dist > 0.03) {
+      const catchup = dist > 1.5 ? 6 : Math.min(6, dist * 6);
+      wantX += (ox / dist) * catchup;
+      wantZ += (oz / dist) * catchup;
+      const sp = Math.hypot(wantX, wantZ);
+      const cap = dist > 1.5 ? 6 : Math.max(heroSpeed, 3.2);
+      if (sp > cap) {
+        wantX *= cap / sp;
+        wantZ *= cap / sp;
+      }
+    }
+  } else if (dist > 0.45) {
+    const approach = Math.min(2.4, dist * 3.2);
+    wantX = (ox / dist) * approach;
+    wantZ = (oz / dist) * approach;
+  }
+  const tau = moving ? 0.12 : 0.075;
+  const k = 1 - Math.exp(-dt / Math.max(tau, 1e-4));
+  petVel.x += (wantX - petVel.x) * k;
+  petVel.z += (wantZ - petVel.z) * k;
+  if (!moving && dist <= 0.45 && Math.hypot(petVel.x, petVel.z) < 0.05) {
+    petVel.x = 0;
+    petVel.z = 0;
+  }
+  petRig.position.x = prevX + petVel.x * dt;
+  petRig.position.z = prevZ + petVel.z * dt;
+  petRig.position.y = 0;
+  const moved = Math.hypot(petRig.position.x - prevX, petRig.position.z - prevZ);
+  petSpeed = dt > 0 ? moved / dt : 0;
+  if (petSpeed < 0.05) petSpeed = 0;
+  const nearSide = dist <= 0.5;
+  const walking = petSpeed > 0.12 && (moving || !nearSide);
+  if (walking) {
+    const sp = Math.hypot(petVel.x, petVel.z) || 1;
+    aimPet(petRig.position.x + petVel.x / sp, petRig.position.z + petVel.z / sp, dt);
+  } else {
+    aimPet(heroRig.position.x, heroRig.position.z, dt);
+  }
+  petAnim = walking ? 'walk' : 'idle';
+  setAction(world.pet, walking);
+  world.pet.mixer.update(dt);
+}
+
 function tick() {
   const t0 = performance.now();
   zeroSlices();
@@ -1407,22 +1573,7 @@ function tick() {
       setAction(world.hero, moving);
       world.hero.mixer.update(dt);
       takeSlice('pet');
-      if (world.pet) {
-        follow.set(
-          heroRig.position.x - Math.sin(yaw) * 1.15 + Math.cos(yaw) * 0.45,
-          0,
-          heroRig.position.z - Math.cos(yaw) * 1.15 - Math.sin(yaw) * 0.45,
-        );
-        petRig.position.lerp(follow, 1 - Math.exp(-dt * 5));
-        petRig.position.y = 0;
-        const dx = heroRig.position.x - petRig.position.x;
-        const dz = heroRig.position.z - petRig.position.z;
-        const gap = Math.hypot(dx, dz);
-        if (gap > 0.2) petRig.rotation.y = Math.atan2(dx, dz);
-        const petMoving = gap > 0.35 || moving;
-        setAction(world.pet, petMoving);
-        world.pet.mixer.update(dt);
-      }
+      if (world.pet) updatePet(dt);
       updatePlay(dt);
       frameCamera('play');
     } else {
@@ -1455,6 +1606,7 @@ function tick() {
     } else if (samples.length % 30 === 0) {
       publish();
     }
+    if (world.pet) notePet();
   }
   if (!(BENCH && samples.length >= BENCH_FRAMES)) requestAnimationFrame(tick);
 }
