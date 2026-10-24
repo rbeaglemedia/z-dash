@@ -29,7 +29,7 @@ NEXT is a slower city on purpose. Pretty homes cost frames. The cap is the speed
 
 Her base iPad on iPadOS 17 is the strict column (the 2018 iPad: A10, 2 GB, 60 Hz, landscape 1024×768). A Galaxy phone is the middle column. A PC is the loose column. The game already knows an iPad from a phone from a PC (`shared/ipad.js`). She does not pick the column. Any tablet uses the iPad column until we have measured that tablet.
 
-If a frame runs long, the game drops picture first: window grids, yard props, trees, signs, traffic dots, then the far ring. It does not change her speed cap in the middle of a drive. On the iPad, a flat 30 is allowed when 60 will not hold. A flat 30 is the floor from the speed plan. Drops down to 5 are not.
+If a frame runs long, the game drops picture first: far traffic dots, the plain traffic photo, window grids, yard props, trees, signs, then the far ring. The one close traffic car is last, and her own Z is not dropped to save it. It does not change her speed cap in the middle of a drive. On the iPad, a flat 30 is allowed when 60 will not hold. A flat 30 is the floor from the speed plan. Drops down to 5 are not.
 
 **A. Neighborhood. Recommended.**
 
@@ -133,7 +133,8 @@ The same 400 FT line is drawn across the view, one stroke, no glow. The speed nu
 | The Z, on its own layer, not copied back | 4 ms |
 | HUD, including the bar | 2 ms |
 | House detail | 3 ms |
-| Spare | 1.7 ms |
+| Traffic, after the photos are warm | 0.5 ms |
+| Spare | 1.2 ms |
 
 In the sky the city cards are about 2 ms, and about 4 ms is left for the preload.
 
@@ -147,7 +148,7 @@ Altitude decides what is loaded:
 | --- | --- | --- |
 | Street, on the ground | Full homes inside the pretty ring. Rooms only after a door opens, which the current house code already does. Furniture is never drawn from the street. | Ground cap |
 | Low air, under 400 ft | Boxes and roads. No windows, no yards. | Ground cap. She is not flying. |
-| Sky, above 400 ft, after unlock | Neon cards. No trees, no window grids, traffic as dots or off. The tower is one glowing needle, not a wall she can hit at sky speed. | Sky cap |
+| Sky, above 400 ft, after unlock | Neon cards. No trees, no window grids, no traffic. The tower is one glowing needle, not a wall she can hit at sky speed. | Sky cap |
 | Heading down, under 600 ft | The district under her loads. iPad and phone ease to the ground cap. | Easing |
 
 The map is already 8 districts in Option 1. Each district is one chunk: the district she is in, plus any neighbor inside the far ring. The rest is unloaded, collision included.
@@ -174,9 +175,65 @@ The first build uses today's boxes at the new cap and measures the frame. Pretty
 
 `next.html` gets its own cache name, the way `world-split.html` already does, so a bad cache there cannot replace the live world. The service worker change is part of the build, not this plan.
 
+## 6. Traffic
+
+Fewer cars, and slower ones, so each car she does meet can look like a Z. This follows the traffic physics work on the live Neon World ([PR 73](https://github.com/rbeaglemedia/z-dash/pull/73), [PR 78](https://github.com/rbeaglemedia/z-dash/pull/78), agent [bc-2af9e871](https://cursor.com/agents/bc-2af9e871-f1de-59fc-9680-264931312bdb)). That work keeps the live city at 30 cars and does not draw a second live 370Z, because one extra photo of the full model costs about as much as drawing hers. NEXT does not change that live tune. It uses the same lanes and the same `assets/370z.glb`. It only changes how many cars, how fast they roll, and how sharp the near ones are. How they yield and take a corner stays in that traffic plan.
+
+Today, `shared/traffic-tune.js` runs 12 simulated cars plus 18 light dots. The near picture is a 160 px photo out to 150 m. Cruise is 13–19 m/s (about 29–42 mph), and the highway adds 4 m/s. Those cars are faster than her NEXT iPad cap of 25 mph, so those numbers stay on the old world.
+
+![Rare is two cars far apart. Light is a short line.](next-world/traffic.svg)
+
+### How many
+
+**Rare. Recommended.** Two simulated cars in the districts that are actually loaded. No far dots. About 100 m between them, so meeting one is an event. Homestead can be empty. One car on Car Row or at The Stage is enough.
+
+**Light.** Four simulated cars, plus two dots past the pretty ring. About 45 m between the simulated ones. A short line, not a stream. Still well under today's 12 + 18.
+
+Today's 30 is not a NEXT option. It stays on `world.html`.
+
+### How fast
+
+Traffic stays under her ground cap on every device. No highway bonus. She can always catch and pass. They never enter the sky. On the way down, cars appear only after she is back in the street band, so the preload is not also drawing them.
+
+| | Her iPad | Galaxy phone | PC |
+| --- | --- | --- | --- |
+| Her ground cap | 25 mph | 35 mph | 45 mph |
+| Traffic cruise | 14 mph | 18 mph | 22 mph |
+| Traffic max | 18 mph | 24 mph | 30 mph |
+
+### How detailed each car is
+
+The file is `assets/370z.glb`: about 687 meshes and 26,549 triangles, the same body she drives. Real wheels means the tyre, rim, and brake meshes from that file stay in the picture. Wheel cards drawn on top of a photo fit the frame (about 0.5 ms for 12 cars) and do not read as wheels. A coarse shrink of the mesh already failed the shape check, so NEXT does not invent a blob and call it a Z.
+
+**Close bake. Recommended.** Still a photo, not a second live car. Taken at load, from the real GLB, with the wheels already turned in the photo.
+
+| How close she is | What that one car is |
+| --- | --- |
+| Inside 20 m | 320 px photo. Wheels, rims, and brakes are in the mesh. This is the close band. |
+| 20 m out to the pretty ring (40 m on her iPad, 55 on the phone, 70 on a PC) | The same photo at 160 px. The body reads. The wheels are small. |
+| Past the pretty ring | Rare: nothing. Light: a light dot, and only two of those. |
+
+The wheel angle is part of the load-time photo, for the few views those two or four cars use. It is not a new photo taken while she drives. In the traffic lab, a photo taken mid-drive was an 8–11 ms hitch.
+
+**One live car. Not in the first build.** The nearest Z, inside 18 m, drawn as a mesh every other frame, and only if a lighter mesh still passes the 370Z shape check. One full extra render of the 687-mesh GLB was about 9 ms in that lab. Her own Z already has 4 ms of the 16.7 ms street frame. A live traffic Z would spend the rest of the frame before the houses draw. Hold this until a real iPad trace of the close bake shows spare time.
+
+### What it costs
+
+The street frame is 16.7 ms. Traffic's 0.5 ms in the table above is the rare close bake after the loading card. The spare shrinks from 1.7 ms to 1.2 ms. Houses stay at 3 ms.
+
+| Choice | After the photos are warm | Fits 16.7 ms? |
+| --- | --- | --- |
+| Rare, two close bakes | about 0.3 ms to draw | Yes |
+| Light, four close bakes and two dots | about 0.6 ms | Yes, if the houses stay at 3 ms |
+| Wheel cards on the old 160 px photo | about 0.1 ms for two cars | Fits, and looks wrong. Not used. |
+| One live full GLB beside hers | about 9 ms in the lab, every frame | No on her iPad |
+| A shrunken live mesh | unknown until it passes the shape check | Later only |
+
+`shared/traffic-tune.js` stays the live world's 12 + 18. NEXT reads its own numbers, so a rare city cannot empty Neon World.
+
 ## What the first build is, after you approve it
 
-1. The page, the tile, the copied layout, one drive mode, the caps, and a ramp that only hops. Measure on the lab sizes and, when you can, on her iPad and the Galaxy. Boxes stay.
+1. The page, the tile, the copied layout, one drive mode, the caps, and a ramp that only hops. Measure on the lab sizes and, when you can, on her iPad and the Galaxy. Boxes stay. Rare traffic is in that measure as the photo the live world already uses, so the number includes cars. The sharper 320 px bake comes after that number exists.
 2. The bar, the star count, the sling, the bounce, and the portal.
 3. The Homestead sport house on paper, then in the game, then measure again.
 
@@ -192,6 +249,8 @@ Step 3 does not start ahead of the measurement in step 1.
 - Reusing the wings button would make a yard hop start a flight. The sky starts only at the ramp.
 - Lab frame times are software graphics. They are not her iPad and not the Galaxy. The speed plan's device notes are the ones to trust: iPad about 5–30 fps today, Galaxy about 70–90. NEXT is not "done" on a lab number alone.
 - Brookhaven is a feel to borrow (lots, doors, a hidden load on the way in). Copying its houses or its screens is out.
+- NEXT traffic must not write `shared/traffic-tune.js`. The live world stays at 30 cars. A shared tune would empty that city the moment NEXT goes rare.
+- A live second 370Z is the frame. The traffic lab already measured one extra full render at about 9 ms. Density does not make that render cheaper. It only means we can afford a sharper photo of fewer cars.
 
 ## Picks
 
@@ -207,6 +266,9 @@ Reply with a letter, or "recommended" to take the marked row.
 | 6 | Safe line | 400 ft |
 | 7 | First art | Measure with today's boxes, then the Homestead sport house |
 | 8 | Nitrous | Cannot break the ground cap. Sky boost on phone and PC only. |
+| 9 | Traffic density | Rare. Two cars, no dots. |
+| 10 | Traffic speed | Under her cap: 18 / 24 / 30 mph max. No highway bonus. Off in the sky. |
+| 11 | Traffic detail | 320 px close bake of `assets/370z.glb`, real wheels, inside 20 m. No live second Z. |
 
 Open, and fine to leave until the build:
 
