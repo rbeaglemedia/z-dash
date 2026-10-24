@@ -1,0 +1,1158 @@
+{
+  "commit": "a3f01640afe7e28d8c87a8d2ea9930c9eab66ad2",
+  "vps": {
+    "phone": {
+      "pets": {
+        "dog": {
+          "sig": {
+            "pet": "dog",
+            "phase": "sig",
+            "t": 0.667,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 322,
+              "y": 231.9,
+              "m": 56.58
+            },
+            "top": {
+              "x": 323.1,
+              "y": 195.4
+            },
+            "car": {
+              "x": 227.9,
+              "y": 206.7
+            },
+            "panelLeft": 455.8,
+            "canvas": {
+              "w": 1688,
+              "h": 780
+            }
+          },
+          "metres": {
+            "rig": "robo",
+            "topM": 0.623,
+            "lowM": 0,
+            "ratio": 0.427,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "dog",
+            "phase": "idle",
+            "t": 2.65,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 400395,
+          "crew": {
+            "v": 1,
+            "pet": "dog"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "cat": {
+          "sig": {
+            "pet": "cat",
+            "phase": "sig",
+            "t": 0.667,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 322,
+              "y": 231.9,
+              "m": 56.58
+            },
+            "top": {
+              "x": 323.1,
+              "y": 195.4
+            },
+            "car": {
+              "x": 227.9,
+              "y": 206.7
+            },
+            "panelLeft": 455.8,
+            "canvas": {
+              "w": 1688,
+              "h": 780
+            }
+          },
+          "metres": {
+            "rig": "cat",
+            "topM": 0.595,
+            "lowM": 0,
+            "ratio": 0.408,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "cat",
+            "phase": "idle",
+            "t": 2.65,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 400261,
+          "crew": {
+            "v": 1,
+            "pet": "cat"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "bunny": {
+          "sig": {
+            "pet": "bunny",
+            "phase": "sig",
+            "t": 0.683,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 322,
+              "y": 231.9,
+              "m": 56.58
+            },
+            "top": {
+              "x": 323.1,
+              "y": 195.4
+            },
+            "car": {
+              "x": 227.9,
+              "y": 206.7
+            },
+            "panelLeft": 455.8,
+            "canvas": {
+              "w": 1688,
+              "h": 780
+            }
+          },
+          "metres": {
+            "rig": "bunny",
+            "topM": 0.619,
+            "lowM": 0,
+            "ratio": 0.424,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "bunny",
+            "phase": "idle",
+            "t": 2.65,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 402239,
+          "crew": {
+            "v": 1,
+            "pet": "bunny"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "dragon": {
+          "sig": {
+            "pet": "dragon",
+            "phase": "sig",
+            "t": 0.667,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 322,
+              "y": 231.9,
+              "m": 56.58
+            },
+            "top": {
+              "x": 323.1,
+              "y": 195.4
+            },
+            "car": {
+              "x": 227.9,
+              "y": 206.7
+            },
+            "panelLeft": 455.8,
+            "canvas": {
+              "w": 1688,
+              "h": 780
+            }
+          },
+          "metres": {
+            "rig": "dragon",
+            "topM": 0.56,
+            "lowM": 0,
+            "ratio": 0.384,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "dragon",
+            "phase": "idle",
+            "t": 2.616,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 403868,
+          "crew": {
+            "v": 1,
+            "pet": "dragon"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "fox": {
+          "sig": {
+            "pet": "fox",
+            "phase": "sig",
+            "t": 0.667,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 322,
+              "y": 231.9,
+              "m": 56.58
+            },
+            "top": {
+              "x": 323.1,
+              "y": 195.4
+            },
+            "car": {
+              "x": 227.9,
+              "y": 206.7
+            },
+            "panelLeft": 455.8,
+            "canvas": {
+              "w": 1688,
+              "h": 780
+            }
+          },
+          "metres": {
+            "rig": "fox",
+            "topM": 0.632,
+            "lowM": 0,
+            "ratio": 0.433,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "fox",
+            "phase": "idle",
+            "t": 2.65,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 398479,
+          "crew": {
+            "v": 1,
+            "pet": "fox"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "none": {
+          "sig": {
+            "pet": "",
+            "phase": "none",
+            "t": 0,
+            "door": 0,
+            "side": 1.635,
+            "axis": "z",
+            "on": false,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 0.008,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 322,
+              "y": 231.9,
+              "m": 56.58
+            },
+            "top": {
+              "x": 323.1,
+              "y": 195.4
+            },
+            "car": {
+              "x": 227.9,
+              "y": 206.7
+            },
+            "panelLeft": 455.8,
+            "canvas": {
+              "w": 1688,
+              "h": 780
+            }
+          },
+          "metres": null,
+          "idle": null,
+          "bytes": 385616,
+          "crew": {
+            "v": 1,
+            "pet": "none"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        }
+      },
+      "boot": {
+        "door": {
+          "pet": "fox",
+          "phase": "sig",
+          "t": 0.07,
+          "door": 0.039,
+          "side": 1.635,
+          "axis": "z",
+          "on": true,
+          "hinge": true,
+          "hingeBad": false
+        },
+        "doorDelta": 0.009,
+        "hatchDelta": 0,
+        "eq": "{\"paint\":\"cyan\",\"windows\":\"win-clear\",\"rims\":\"gtx04\",\"size\":19,\"wheels\":\"w-gun\",\"tires\":\"street\",\"roof\":\"r-match\",\"bumper\":\"bp-stock\",\"bcan\":\"bc-off\",\"nos\":\"n-stock\",\"heads\":\"h-clear\",\"tails\":\"t-red\",\"spoiler\":\"none-s\",\"spcol\":\"sc-match\",\"underglow\":\"ug-off\",\"caliper\":\"cal-red\",\"stance\":\"st-stock\",\"camber\":\"cb-off\",\"lip\":\"lip-none\",\"skirts\":\"sk-none\",\"diffuser\":\"df-none\",\"kitmat\":\"km-black\",\"tips\":\"tip-stock\",\"wings\":\"none-w\",\"extra\":\"none-x\",\"tracks\":\"tr-match\",\"extras\":{}}",
+        "gz": null,
+        "crew": null
+      },
+      "hover": {
+        "before": "{\"v\":1,\"pet\":\"none\"}",
+        "after": "{\"crew\":\"{\\\"v\\\":1,\\\"pet\\\":\\\"none\\\"}\",\"st\":{\"pet\":\"dragon\",\"phase\":\"sig\",\"t\":0.25,\"door\":0.139,\"side\":1.635,\"axis\":\"z\",\"on\":true,\"hinge\":true,\"hingeBad\":false}}"
+      }
+    },
+    "ipad": {
+      "pets": {
+        "dog": {
+          "sig": {
+            "pet": "dog",
+            "phase": "sig",
+            "t": 0.683,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 450.7,
+              "y": 469.9,
+              "m": 79.05
+            },
+            "top": {
+              "x": 451.8,
+              "y": 418.8
+            },
+            "car": {
+              "x": 318.6,
+              "y": 434.6
+            },
+            "panelLeft": 637.2,
+            "canvas": {
+              "w": 2360,
+              "h": 1640
+            }
+          },
+          "metres": {
+            "rig": "robo",
+            "topM": 0.623,
+            "lowM": 0,
+            "ratio": 0.427,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "dog",
+            "phase": "idle",
+            "t": 2.616,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 621783,
+          "crew": {
+            "v": 1,
+            "pet": "dog"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "cat": {
+          "sig": {
+            "pet": "cat",
+            "phase": "sig",
+            "t": 0.683,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 450.7,
+              "y": 469.9,
+              "m": 79.05
+            },
+            "top": {
+              "x": 451.8,
+              "y": 418.8
+            },
+            "car": {
+              "x": 318.6,
+              "y": 434.6
+            },
+            "panelLeft": 637.2,
+            "canvas": {
+              "w": 2360,
+              "h": 1640
+            }
+          },
+          "metres": {
+            "rig": "cat",
+            "topM": 0.595,
+            "lowM": 0,
+            "ratio": 0.408,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "cat",
+            "phase": "idle",
+            "t": 2.7,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 625002,
+          "crew": {
+            "v": 1,
+            "pet": "cat"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "bunny": {
+          "sig": {
+            "pet": "bunny",
+            "phase": "sig",
+            "t": 0.667,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 450.7,
+              "y": 469.9,
+              "m": 79.05
+            },
+            "top": {
+              "x": 451.8,
+              "y": 418.8
+            },
+            "car": {
+              "x": 318.6,
+              "y": 434.6
+            },
+            "panelLeft": 637.2,
+            "canvas": {
+              "w": 2360,
+              "h": 1640
+            }
+          },
+          "metres": {
+            "rig": "bunny",
+            "topM": 0.619,
+            "lowM": 0,
+            "ratio": 0.424,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "bunny",
+            "phase": "idle",
+            "t": 2.633,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 620164,
+          "crew": {
+            "v": 1,
+            "pet": "bunny"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "dragon": {
+          "sig": {
+            "pet": "dragon",
+            "phase": "sig",
+            "t": 0.666,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 450.7,
+              "y": 469.9,
+              "m": 79.05
+            },
+            "top": {
+              "x": 451.8,
+              "y": 418.8
+            },
+            "car": {
+              "x": 318.6,
+              "y": 434.6
+            },
+            "panelLeft": 637.2,
+            "canvas": {
+              "w": 2360,
+              "h": 1640
+            }
+          },
+          "metres": {
+            "rig": "dragon",
+            "topM": 0.56,
+            "lowM": 0,
+            "ratio": 0.384,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "dragon",
+            "phase": "idle",
+            "t": 2.666,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 622685,
+          "crew": {
+            "v": 1,
+            "pet": "dragon"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "fox": {
+          "sig": {
+            "pet": "fox",
+            "phase": "sig",
+            "t": 0.75,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 450.7,
+              "y": 469.9,
+              "m": 79.05
+            },
+            "top": {
+              "x": 451.8,
+              "y": 418.8
+            },
+            "car": {
+              "x": 318.6,
+              "y": 434.6
+            },
+            "panelLeft": 637.2,
+            "canvas": {
+              "w": 2360,
+              "h": 1640
+            }
+          },
+          "metres": {
+            "rig": "fox",
+            "topM": 0.632,
+            "lowM": 0,
+            "ratio": 0.433,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "fox",
+            "phase": "idle",
+            "t": 2.65,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 627279,
+          "crew": {
+            "v": 1,
+            "pet": "fox"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "none": {
+          "sig": {
+            "pet": "",
+            "phase": "none",
+            "t": 0,
+            "door": 0,
+            "side": 1.635,
+            "axis": "z",
+            "on": false,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 0,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 450.7,
+              "y": 469.9,
+              "m": 79.05
+            },
+            "top": {
+              "x": 451.8,
+              "y": 418.8
+            },
+            "car": {
+              "x": 318.6,
+              "y": 434.6
+            },
+            "panelLeft": 637.2,
+            "canvas": {
+              "w": 2360,
+              "h": 1640
+            }
+          },
+          "metres": null,
+          "idle": null,
+          "bytes": 600153,
+          "crew": {
+            "v": 1,
+            "pet": "none"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        }
+      },
+      "boot": {
+        "door": {
+          "pet": "",
+          "phase": "none",
+          "t": 0,
+          "door": 0,
+          "side": 1.5,
+          "axis": "z",
+          "on": false,
+          "hinge": false,
+          "hingeBad": false
+        },
+        "doorDelta": null,
+        "hatchDelta": null,
+        "eq": "{\"paint\":\"cyan\",\"windows\":\"win-clear\",\"rims\":\"gtx04\",\"size\":19,\"wheels\":\"w-gun\",\"tires\":\"street\",\"roof\":\"r-match\",\"bumper\":\"bp-stock\",\"bcan\":\"bc-off\",\"nos\":\"n-stock\",\"heads\":\"h-clear\",\"tails\":\"t-red\",\"spoiler\":\"none-s\",\"spcol\":\"sc-match\",\"underglow\":\"ug-off\",\"caliper\":\"cal-red\",\"stance\":\"st-stock\",\"camber\":\"cb-off\",\"lip\":\"lip-none\",\"skirts\":\"sk-none\",\"diffuser\":\"df-none\",\"kitmat\":\"km-black\",\"tips\":\"tip-stock\",\"wings\":\"none-w\",\"extra\":\"none-x\",\"tracks\":\"tr-match\",\"extras\":{}}",
+        "gz": null,
+        "crew": {
+          "v": 1,
+          "pet": "none"
+        }
+      },
+      "hover": {
+        "before": "{\"v\":1,\"pet\":\"none\"}",
+        "after": "{\"crew\":\"{\\\"v\\\":1,\\\"pet\\\":\\\"none\\\"}\",\"st\":{\"pet\":\"dragon\",\"phase\":\"sig\",\"t\":0.283,\"door\":0.157,\"side\":1.635,\"axis\":\"z\",\"on\":true,\"hinge\":true,\"hingeBad\":false}}"
+      }
+    },
+    "pc": {
+      "pets": {
+        "dog": {
+          "sig": {
+            "pet": "dog",
+            "phase": "sig",
+            "t": 0.7,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 521.4,
+              "y": 447.9,
+              "m": 91.54
+            },
+            "top": {
+              "x": 522.9,
+              "y": 388.7
+            },
+            "car": {
+              "x": 368.8,
+              "y": 407
+            },
+            "panelLeft": 737.6,
+            "canvas": {
+              "w": 1366,
+              "h": 768
+            }
+          },
+          "metres": {
+            "rig": "robo",
+            "topM": 0.623,
+            "lowM": 0,
+            "ratio": 0.427,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "dog",
+            "phase": "idle",
+            "t": 2.633,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 262085,
+          "crew": {
+            "v": 1,
+            "pet": "dog"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "cat": {
+          "sig": {
+            "pet": "cat",
+            "phase": "sig",
+            "t": 0.683,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 521.4,
+              "y": 447.9,
+              "m": 91.54
+            },
+            "top": {
+              "x": 522.9,
+              "y": 388.7
+            },
+            "car": {
+              "x": 368.8,
+              "y": 407
+            },
+            "panelLeft": 737.6,
+            "canvas": {
+              "w": 1366,
+              "h": 768
+            }
+          },
+          "metres": {
+            "rig": "cat",
+            "topM": 0.595,
+            "lowM": 0,
+            "ratio": 0.408,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "cat",
+            "phase": "idle",
+            "t": 2.633,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 263735,
+          "crew": {
+            "v": 1,
+            "pet": "cat"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "bunny": {
+          "sig": {
+            "pet": "bunny",
+            "phase": "sig",
+            "t": 0.7,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 521.4,
+              "y": 447.9,
+              "m": 91.54
+            },
+            "top": {
+              "x": 522.9,
+              "y": 388.7
+            },
+            "car": {
+              "x": 368.8,
+              "y": 407
+            },
+            "panelLeft": 737.6,
+            "canvas": {
+              "w": 1366,
+              "h": 768
+            }
+          },
+          "metres": {
+            "rig": "bunny",
+            "topM": 0.619,
+            "lowM": 0,
+            "ratio": 0.424,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "bunny",
+            "phase": "idle",
+            "t": 2.616,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 261887,
+          "crew": {
+            "v": 1,
+            "pet": "bunny"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "dragon": {
+          "sig": {
+            "pet": "dragon",
+            "phase": "sig",
+            "t": 0.667,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 521.4,
+              "y": 447.9,
+              "m": 91.54
+            },
+            "top": {
+              "x": 522.9,
+              "y": 388.7
+            },
+            "car": {
+              "x": 368.8,
+              "y": 407
+            },
+            "panelLeft": 737.6,
+            "canvas": {
+              "w": 1366,
+              "h": 768
+            }
+          },
+          "metres": {
+            "rig": "dragon",
+            "topM": 0.56,
+            "lowM": 0,
+            "ratio": 0.384,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "dragon",
+            "phase": "idle",
+            "t": 2.65,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 262738,
+          "crew": {
+            "v": 1,
+            "pet": "dragon"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "fox": {
+          "sig": {
+            "pet": "fox",
+            "phase": "sig",
+            "t": 0.717,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 2.08,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 521.4,
+              "y": 447.9,
+              "m": 91.54
+            },
+            "top": {
+              "x": 522.9,
+              "y": 388.7
+            },
+            "car": {
+              "x": 368.8,
+              "y": 407
+            },
+            "panelLeft": 737.6,
+            "canvas": {
+              "w": 1366,
+              "h": 768
+            }
+          },
+          "metres": {
+            "rig": "fox",
+            "topM": 0.632,
+            "lowM": 0,
+            "ratio": 0.433,
+            "scale": 1.7
+          },
+          "idle": {
+            "pet": "fox",
+            "phase": "idle",
+            "t": 2.633,
+            "door": 0.38,
+            "side": 1.635,
+            "axis": "z",
+            "on": true,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "bytes": 263861,
+          "crew": {
+            "v": 1,
+            "pet": "fox"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        },
+        "none": {
+          "sig": {
+            "pet": "",
+            "phase": "none",
+            "t": 0,
+            "door": 0,
+            "side": 1.635,
+            "axis": "z",
+            "on": false,
+            "hinge": true,
+            "hingeBad": false
+          },
+          "doorDelta": 0.003,
+          "hatchDelta": 0,
+          "place": {
+            "foot": {
+              "x": 521.4,
+              "y": 447.9,
+              "m": 91.54
+            },
+            "top": {
+              "x": 522.9,
+              "y": 388.7
+            },
+            "car": {
+              "x": 368.8,
+              "y": 407
+            },
+            "panelLeft": 737.6,
+            "canvas": {
+              "w": 1366,
+              "h": 768
+            }
+          },
+          "metres": null,
+          "idle": null,
+          "bytes": 251799,
+          "crew": {
+            "v": 1,
+            "pet": "none"
+          },
+          "eqSame": true,
+          "gzSame": true,
+          "nButtons": 16,
+          "overlap": []
+        }
+      },
+      "boot": {
+        "door": {
+          "pet": "",
+          "phase": "none",
+          "t": 0,
+          "door": 0,
+          "side": 1.5,
+          "axis": "z",
+          "on": false,
+          "hinge": false,
+          "hingeBad": false
+        },
+        "doorDelta": null,
+        "hatchDelta": null,
+        "eq": "{\"paint\":\"cyan\",\"windows\":\"win-clear\",\"rims\":\"gtx04\",\"size\":19,\"wheels\":\"w-gun\",\"tires\":\"street\",\"roof\":\"r-match\",\"bumper\":\"bp-stock\",\"bcan\":\"bc-off\",\"nos\":\"n-stock\",\"heads\":\"h-clear\",\"tails\":\"t-red\",\"spoiler\":\"none-s\",\"spcol\":\"sc-match\",\"underglow\":\"ug-off\",\"caliper\":\"cal-red\",\"stance\":\"st-stock\",\"camber\":\"cb-off\",\"lip\":\"lip-none\",\"skirts\":\"sk-none\",\"diffuser\":\"df-none\",\"kitmat\":\"km-black\",\"tips\":\"tip-stock\",\"wings\":\"none-w\",\"extra\":\"none-x\",\"tracks\":\"tr-match\",\"extras\":{}}",
+        "gz": null,
+        "crew": {
+          "v": 1,
+          "pet": "none"
+        }
+      },
+      "hover": {
+        "before": "{\"v\":1,\"pet\":\"none\"}",
+        "after": "{\"crew\":\"{\\\"v\\\":1,\\\"pet\\\":\\\"none\\\"}\",\"st\":{\"pet\":\"dragon\",\"phase\":\"sig\",\"t\":0.217,\"door\":0.12,\"side\":1.635,\"axis\":\"z\",\"on\":true,\"hinge\":true,\"hingeBad\":false}}"
+      }
+    }
+  },
+  "errors": []
+}

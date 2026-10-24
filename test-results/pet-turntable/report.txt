@@ -1,0 +1,27 @@
+Companion pet turntable check
+Commit: a3f01640afe7e28d8c87a8d2ea9930c9eab66ad2
+Page: jr.html?gopen=pet#garage
+Viewports: phone 844x390, iPad 1180x820, PC 1366x768
+
+Each pet (dog, cat, bunny, dragon, fox) at signature time:
+- phase sig, t about 0.7s, doors at hinge g=0.38 (doorDelta 2.08), hatchDelta 0
+- then idle after 2.6s (phase idle) until another pet is picked
+None: no pet, door g=0, doorDelta about 0, hatchDelta 0
+
+Skeleton height / Ellie 1.46m (PET_DRAW_SCALE 1.7, room camera, not the crew close-up):
+- dog 0.427
+- cat 0.408
+- bunny 0.424
+- dragon 0.384
+- fox 0.433
+
+Pup ink on the turntable (lime #b6ff4a), absent when None is selected:
+- phone height 105 device px
+- iPad height 135 device px
+- PC height 81 px
+
+Side offset 1.635m on the car's width axis (half-width about 1.02m). Feet use the turntable projector at y=0.
+Hovering Dragon previews it and does not change zdash.crew.v1. A click writes only that crew pet id.
+P.eq stayed the cyan garage look. zdash.garagez.v1 stayed unset.
+Companion Pet screen: 16 hittable controls, 0 overlaps, on phone, iPad, and PC.
+Adult index.html was not edited. No deploy.
