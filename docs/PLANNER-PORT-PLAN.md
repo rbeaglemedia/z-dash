@@ -193,7 +193,7 @@ The venue section stays out. A following section will study the planner objects 
 
 ## City Editor
 
-Plan only. No editor code in this phase. Two builders sit on one editor core. The core is the same document, selection, drag, snap, and undo stack. A permission level decides which tools are on, where a drag is allowed to land, and which save key it writes.
+Plan only. No editor code in this phase. Two builders sit on one editor core. The core is the Event Space Planner's own editing tools, from the export. A permission level decides which of those tools are on, where a drag is allowed to land, and which save key it writes. New DEV tools are built on those, not beside a second editor.
 
 | | DEV Builder | Ellie's Builder |
 | --- | --- | --- |
@@ -211,9 +211,13 @@ North is up. +x is east, +z is north. Spawn stays (0, 0) unless DEV moves that s
 
 ```text
 editor
-  document, selection, drag, snap, undo (50 steps)
-  tools: move, turn, add, delete
+  planner tools: select, move, rotate, scale, snap, align,
+                 duplicate, group, undo, measure, layers,
+                 wall drawing, camera views, save and load
   permission: role, boundary, tools allowed, save target
+  DEV tools on top: roads, stamp, bulk move, scatter,
+                    NOS and spawns, traffic preview,
+                    minimap sync, FPS meter, color
 ```
 
 A gesture pushes one undo snapshot at pointer-down. Undo and Redo are labeled buttons. DEV also has Ctrl+Z and Ctrl+Shift+Z. Ellie gets the buttons. She does not need the keys.
@@ -308,6 +312,65 @@ Her save is a new key, `zdash.ellie.builder.v1`:
 
 `params` is the catalog size, color, glow, and proportions. The write path is this key only. It does not call `saveHouse` or `walkHouseSave`. It does not patch `house` inside `zdash.kid.v1`. Clearing the site data clears this list the same way it clears her other device saves. There is no account in the cloud. DEV publish does not read or write this key. Her list draws on top of the house after the city loads, and only inside the boundary.
 
+### Planner tools as the DEV base
+
+The export from agent `bc-04ef9a95` will include these editor tools. This map uses the names Bob listed. When the zip arrives, match the real functions and keep this job for each one. The object meshes still wait on that zip. The tool jobs below do not.
+
+DEV uses each tool on the Option 1 city and on interiors. Ellie gets the simple form only, and only inside her boundary. A tool marked off is absent from her screen.
+
+| Planner tool | DEV Builder use | Ellie, simple form |
+| --- | --- | --- |
+| Select | Click one footprint, marquee a block, shift-click to add. The locked skeleton is visible and not selectable until M3 | Tap one prop in her room. Tap the floor to clear. No marquee |
+| Move | Drag a building, a road endpoint, a prop, or a spawn pin. Spawn guards run when he lets go | Drag a prop. It stops on the 0.4 m inset |
+| Rotate | Buildings and props in 15° steps. A road endpoint stays free so a bend can meet the next node | Quarter turns. One Turn button |
+| Scale | Kit pieces and props use catalog proportions. A unique building scales only if the door still faces a street and the spawn guards pass. Road width is a number (street 20 m, highway 30 m), not a corner handle | Bigger and Smaller. Three catalog sizes. The prop must still sit inside the inset |
+| Snap | City grid from S1, S2, or S3. A road end within 4 m of another end snaps to that node so `ROADS.rebuild` makes one chain | 0.5 m on S1 and S2, 0.25 m on S3. Same picker, her step |
+| Align | Match edges or centers to the grid, to a road, or to another building. "Face the nearest street" writes `face` | Two buttons: Against the wall, and Line up with the last prop |
+| Duplicate | One copy of a prop, or the building stamp below. Unique purposes still refuse a second copy while M1 or M2 is on | One more of the selected prop, if it fits and the room is under 48 |
+| Group | Buildings on one station, or the props in one lot. Bulk move uses the group | Off in the recommended set. Pack C sticks up to 4 props and moves them together |
+| Undo | 50 steps. Buttons, plus Ctrl+Z and Ctrl+Shift+Z. One snapshot at pointer-down | Undo and Redo buttons. 20 steps. The labels are Undo and Redo |
+| Measure | Length and footprint in metres while a wall or a road is drawn. Lane width reads 3.4 m | A short readout on the selected prop, such as "2 m wide" |
+| Layers | Roads, buildings, kit, props, spawns, and the locked skeleton. Hide one to edit under it. The skeleton stays unselectable until M3 | Off. Her props are one list. No panel named Layers |
+| Wall drawing | Builder HQ walls, roofs, openings, and trim, baked to the NOS-style boxes. A door or window splits the wall | Off. The house shell stays the interiors room. She places objects in it |
+| Camera views | Top-down city, a read-only street preview on the chase camera (`FLYCAM` behind the car), and a walk inside the selected building. The street preview does not replace the driver HUD | Two views: Floor (top-down of her room) and Walk (the room she is already in) |
+| Save and load | Save writes `zdash.city.editor.v1`. Load reads it back. A file that fails the spawn guards is refused and the previous test key stays. Publish is the separate explicit go, not this button | Done writes `zdash.ellie.builder.v1`. No file picker. Start over clears that key only, after she confirms, and leaves the house checkboxes alone |
+
+Ellie packs, for Bob to pick:
+
+| Pack | Tools she gets | Left off |
+| --- | --- | --- |
+| A | Select, move, quarter-turn, snap, undo, Done | Align, scale, duplicate, measure, color, cameras beyond Walk |
+| B | A, plus duplicate, Against the wall, Line up, Bigger and Smaller, the width readout, Floor and Walk, and a short neon row | Group, wall drawing, layers, every city tool |
+| C | B, plus stick-together of up to 4 props | Wall drawing, layers, every city tool |
+
+This plan recommends **B**. The words stay Place, Turn, Done, and Undo. Bigger, Smaller, Line up, and Against the wall use those plain names. Pack C is there if he wants a group. Wall drawing and layers stay DEV either way.
+
+### DEV tools built on the planner tools
+
+Each one calls the planner tool under it, then writes the city document. They stay off Ellie's screen. The editor still redraws on pointer-up, with flat fills and strokes, and no `shadowBlur`.
+
+| Tool | Built on | What it writes | Guard |
+| --- | --- | --- | --- |
+| Road and lane drawing | Wall drawing | A road segment `{x0,z0,x1,z1,kind,w}`. Lanes, chains, and traffic spawns come from `ROADS.rebuild` on the test reload. A street is two lanes. Width 30 m or more is the highway case, three lanes per direction, matching today's chain rule | The new centerline is sampled every 4 m. A sample inside a building refuses the segment. The arch opening stays a gap. Ellie does not get this tool |
+| Building stamp | Duplicate | A copy of a kit piece (bay, small NOS, pad, snack, arch) or of a prop set on a lot. One click places the next copy on the snap grid | A second unique purpose is refused while M1 or M2 is on. The copy must clear spawn and lanes. Empty Builder Bay lots stay empty unless he stamps onto one on purpose |
+| Bulk move | Group, then move | Every building in the marquee, and the road segments he included, shift by the same dx, dz. One undo step | Spawn guards run on the whole block. A block that would cover spawn or a lane snaps back |
+| Prop scatter | Duplicate | A count of one catalog prop along a sidewalk or inside a lot. Spacing is at least 4 m. Cap 12 per scatter | The FPS meter shows the add before it commits. A scatter that pushes a street view over 4 detailed buildings inside 170 m, or a room over 48 instances, is refused |
+| NOS and spawn placement | Move on a pin | Big NOS and small NOS are buildings with purpose NOS. Player spawn and Sky Drop start are pins. Traffic spawns stay derived from lanes. He can see them. He does not hand-place each car | A pin inside a building, or off the paved surface, is refused. Car Row keeps one big NOS. Other cities keep the small canopy |
+| Traffic-path preview | Measure, plus the lane list | On the top-down canvas, lane centerlines in one flat color and `blockedBy` stretches in another. It is a picture of the graph. It is not a running traffic sim, and it does not edit `physics.js` | Preview updates when the pointer goes up, after `ROADS.rebuild` in the editor's copy of the graph. The test page still reloads to rebuild `world/traffic.js` |
+| Minimap auto-sync | Save | A road or building save marks the minimap bake dirty. Drive this reloads `/test/`, and `miniBake` redraws from `CITY.ROADS` and `CITY.BL` inside the layout bounds. The editor's corner map uses that same bake | Flat fills and strokes. No `shadowBlur` added to the bake. The live driver HUD stays as it is until the publish go. Her props are not on the minimap |
+| FPS cost meter | Measure | After each edit, a line: instances added, triangles, videos, and whether this street view is still at or under 4 detailed buildings inside 170 m. A room edit also shows the 48-instance cap and the one-video cap | The meter estimates from those counts and the ceilings already measured. It does not run the 40-draw stress on every drag. An edit that would add `shadowBlur`, a second video element, or a new shader is refused |
+| Lighting and neon color | Scale's params, the catalog `color` and `glow` | One flat body color and one brighter glow color per part. Glow is an unlit box, the same rule as the NOS prefab | The picker stores two hexes. It has no blur radius. Street screens stay baked colors. The one video element is unchanged |
+
+Packs of the new tools:
+
+| Pack | Included | Left for later |
+| --- | --- | --- |
+| N1 | Road and lane drawing, building stamp, NOS and spawn pins, minimap sync, FPS meter | Bulk move, traffic preview, color picker, scatter |
+| N2 | N1, plus bulk move, traffic-path preview, and the neon color picker | Prop scatter |
+| N3 | N2, plus prop scatter with the cap of 12 | Nothing from this list |
+
+This plan recommends **N2**. Scatter is the one most likely to fill a street view, so it waits for an explicit yes. Ellie does not get N1, N2, or N3. Her simple color row, if pack B is the pick, is four swatches on a screen or a strip: cyan `#3ee6ff`, magenta `#ff4fd8`, amber `#ffb020`, and white. That row writes the same `color` and `glow` fields. It is not the DEV picker.
+
 ### Layout file
 
 DEV's city document, version 1, option `boulevard`. Suggested path when the build is approved: `docs/city-layout/layout.json`. City Layout's `docs/city-layout/coords.json` is the building list for the pictures. Roads today live only in `roadsFor('boulevard')` inside `docs/city-layout/redesign-maps.mjs`. The game file is still the hardcoded `shop()` calls and the 100 m / 200 m grid in `world/city.js`. `CITY.toJSON` and `ROADS.fromJSON` already exist and nothing loads them as the map.
@@ -353,8 +416,8 @@ Both levels share the cheap path.
 
 - DEV's map is one 2D canvas. Redraw when the pointer goes up. No `shadowBlur`. No 3D city during the drag.
 - Ellie's room stays on the walk canvas, or a top-down of that floor only. Glow is a brighter flat color.
-- Her placed props share the one box mesh already in the FPS section. Cap 48 instances in the room, one 256×144 video.
-- The editor's three.js view, if the real planner UI is kept for DEV, is not the game frame. The game loads baked boxes.
+- Her placed props share the one box mesh already in the FPS section. Cap 48 instances in the room, one 256×144 video. The FPS meter reads that cap. It does not launch a stress frame.
+- The planner's three.js view stays in the editor. The game loads baked boxes. That view is not the drive frame.
 
 ### What City Layout changes so the map is data
 
@@ -377,8 +440,10 @@ Agent `bc-3ff1a27b` keeps ownership of Option 1. DEV consumes their file. Their 
 4. Publish: P1 (one go writes the live map) or **P2** (test go, then a second go).
 5. Her area: **L1** (inside the 24 × 18 m house), L2 (80 × 50 m of yard), or L3 (a Builder Bay lot).
 6. Her entry: **H1** (Build inside the house) or H2 (at the door).
+7. Her tools: pack A (move and turn only), **pack B** (plus duplicate, align, three sizes, measure, Floor view, four neon swatches), or pack C (B plus stick-together).
+8. New DEV tools: pack N1 (roads, stamp, NOS and spawns, minimap, FPS meter), **pack N2** (N1 plus bulk move, traffic preview, color picker), or pack N3 (N2 plus prop scatter).
 
-Bold items are the recommendation. Nothing here is built. The object swap and the review shots still wait on the planner zip.
+Bold items are the recommendation. Nothing here is built. The object swap and the review shots still wait on the planner zip. The tool names above are the ones Bob listed. The zip confirms the real functions.
 
 ## What this phase does not do
 
