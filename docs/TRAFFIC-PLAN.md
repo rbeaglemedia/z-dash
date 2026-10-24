@@ -13,83 +13,47 @@ The car these numbers are sized to is the player's 370Z (`assets/370z.glb`, load
 | track | 1.60 |
 | tyre radius | 0.33 |
 
-Boulevard lanes come from `CITY.ROADS` in `world/city.js`. Lane width is **3.4 m**. A Z in the middle of a lane has about **0.78 m** of paint-to-line on each side. Highway, bridge, and tunnel edges are the wide roads (`kind` `highway`, `bridge`, `tunnel`, road width 30 m, three lanes each way). Everything else in the lane graph is a street.
+Boulevard lanes come from `CITY.ROADS`. Lane width is **3.4 m** on the current page and on PR #85. A Z in the middle of a lane has about **0.78 m** of paint-to-line on each side. A road at least 30 m wide (the highway) has three lanes each way. `street`, `lane`, and the bridge have two. `water` is not a lane.
 
 Sources for any future build, and only these: `CITY.ROADS` for lanes and crossings, this plan for pace and gaps, `world/towdrive.js` for the tow trucks. No pursuit, no police, no ramming, and no copied roll from another game.
 
-What is in the tree today is a placeholder, not a choice from this list: city pace 10–15 m/s, +3 m/s on highway / bridge / tunnel, an 11 m centre-to-centre gap, and a bumper slowdown when Ellie overlaps a car. Bob picks the options below before that behavior is replaced.
+What is in the tree today is a placeholder, not a yes from the list below: city pace 10–15 m/s, +3 m/s on highway / bridge / tunnel, an 11 m centre-to-centre gap, and a bumper slowdown when the player Z overlaps a car. Bob marks the rows. Nothing in that list is built until he does.
+
+These rows are for one page: the 30-car Neon World (`world.html` and `world-split.html`, 12 simulated cars plus 18 light dots) on the Boulevards graph from PR #85. That graph is `CITY.ROADS` once the boulevard layout is the map: `street` and `lane` in town, `highway` and `bridge` as the fast roads, `water` is not a lane. NOS aprons on that map include Car Row and the kit pads. The same 30 cars follow those streets. They do not spawn on the runway. The next world's two-car page is section 9, not this list.
+
+One car length is 4.25 m, bumper to bumper. 10 m/s is about 22 mph. 15 m/s is about 34 mph. 20 m/s is about 45 mph.
+
+Frame cost, named so each row can be judged on its own:
+
+- **None.** No new picture, no `shadowBlur`, no per-frame GL read. The 12 near cars already step. This row only changes a speed or a gap.
+- **Spread.** Cars sit farther apart, so fewer of those 12 fall inside the 150 m photo.
+- **Bunch.** Cars stack at a stop. The cap is still 12 photos. On `ab94aaf`, twelve close photos added 5.1 ms inside a 27.7 ms spread on software GL. That probe is the ceiling for this list. It is not a phone time. The 18 dots stay lights.
+
+Say yes or no. No on a row leaves today's placeholder for that rule.
+
+| | Choice | Yes means | FPS |
+| --- | --- | --- | --- |
+| 1 | Lane centre | Hold within 0.3 m of the middle of a 3.4 m lane. The 1.85 m body keeps about 0.78 m of paint each side. | None |
+| 2 | Loose lane | Allow up to 0.6 m off centre, still inside the lane. No on this row keeps row 1. | None |
+| 3 | Town gap, two lengths | 8.5 m bumper to bumper on `street` and `lane`. Same direction only. An oncoming car is the other lane, not a lead. | Spread |
+| 4 | Fast-road gap, three lengths | 12.75 m bumper to bumper on `highway` and `bridge` (and `tunnel` if that edge is still in the graph). No on this row uses two lengths there too. | Spread |
+| 5 | Stop at crossings | From about 18 m out (about four lengths), brake to a full stop with the bumper short of the box. Wait until the box is empty. A car already in it finishes. | Bunch |
+| 6 | Stop at NOS aprons | The same stop at Car Row NOS and the kit NOS pads. Traffic does not use the pumps. It only leaves the apron clear. | Bunch |
+| 7 | Roll when the box is empty | Through a clear crossing at about 4 m/s. Stop only when another car or the player Z is in the box. No on this row keeps the full stop from row 5. | None |
+| 8 | Corner crawl | Wheelbase is 2.55 m. Do not cut a radius tighter than about 7 m. If the graph's corner is tighter, slow to a crawl instead of leaving the lane. | None |
+| 9 | Merge only at crossings | No mid-block lane change. A turn uses the lane graph. The next lane must be clear for the whole 1.85 m body. No gap, no move. | None |
+| 10 | Town speed 10–15 m/s | Cruise band on `street` and `lane`. Each car picks one speed in the band and holds it. | None |
+| 11 | Fast-road speed 16–20 m/s | Cruise band on `highway` and `bridge`. No on this row keeps 10–15 m/s there too. No boost. | None |
+| 12 | Yield to his Z | If the player Z is ahead in this lane inside the gap, match down to his speed, and stop if he stops. If he enters the lane, brake as for any other car. Beside him, hold the lane. Do not chase, ram, spin him, or leave the lane to meet him. | None |
+| 13 | Extra length behind his Z | Add one car length when he is the lead. No on this row keeps row 12's normal gap. | Spread |
+| 14 | Freeze when he is close | Inside one length, that car stops until he is two lengths away. No on this row keeps row 12 only. | Bunch |
+| 15 | Keep 30 cars | 12 simulated plus 18 dots, on the boulevard lanes, none on the runway. This is the count already on the page. | Standing twelve-photo cost above |
+
+Tow trucks stay on `world/towdrive.js`, slower than a Z on the same road, same lanes, no shove. They are not a row in this list.
+
+A near car leaves only past about 240 m, or once it is behind the camera and beyond 150 m, and it comes back outside the camera frame. Dots past the box range can come and go. That respawn rule is not a separate yes: it keeps row 15 from popping a body in front of him.
 
 Weather is a later check. Do not wire the weather API in the first build. The reads to use then are in section 8. They come from Weather PR #89. Nothing in `world/traffic.js` calls them.
-
-## 1. Lane keeping
-
-The car's job is to sit in the middle of one 3.4 m lane. Width 1.85 m leaves 0.775 m each side before the lane line.
-
-- **A. Centre the body.** Steer back to the lane centre. Hold the line within about 0.3 m. Recommended. A 1.85 m car in a 3.4 m lane looks parked in the lane, not weaving.
-- **B. Loose.** Allow up to 0.6 m off centre, still inside the lane. More motion, still no lane-line riding.
-- **C. Rail.** Snap to the centre every frame. Stiff, and it fights the corner arc.
-
-Do not use a path from any other game. The line is `CITY.ROADS`.
-
-## 2. Following distance
-
-Gaps are in car lengths. One length is 4.25 m. Measure bumper to bumper, not centre to centre. The old 11 m centre gap is about 1.6 lengths between bumpers. That is close at 15 m/s.
-
-- **A. Two lengths in town, three on the highway.** Town gap 8.5 m bumper to bumper (about 12.8 m centre to centre). Highway / bridge / tunnel gap 12.75 m bumper to bumper. Recommended. Readable from the chase camera, and a Z can still stop inside it.
-- **B. Three lengths everywhere.** 12.75 m bumper to bumper. Calmer, thinner traffic.
-- **C. One and a half in town, two on the highway.** 6.4 m and 8.5 m bumper to bumper. Denser. Only if the stop rule below is the firm one, or cars nose into each other at the lights.
-
-Same direction only. An oncoming car is a different lane, not a lead car.
-
-## 3. Stopping and yielding
-
-Crossings are where `CITY.ROADS` lanes meet. NOS stations are the two depots already on the map: `NOS & FUEL DEPOT` at Parkside West and at Spawn South. Traffic does not buy NOS. It only leaves the forecourt clear.
-
-- **A. Ease, then a full stop.** Start braking about 18 m before a crossing or a depot apron (about four car lengths). Stop with the bumper short of the crossing box, or short of the depot drive. Wait until the crossing is empty, then go. A car already in the crossing finishes. Recommended.
-- **B. Yield, no full stop when clear.** Same brake point. If nothing is in the crossing, roll through at a walking pace (about 4 m/s). Stop only when another car or Ellie is in the box.
-- **C. Stop line only at depots.** Crossings use B. Both NOS depots use a full stop, then a slow roll past the pumps so the apron stays empty.
-
-No car treats Ellie as a target. Stopping is the same rule it uses for another Z.
-
-## 4. Merging
-
-A merge is a lane change or a turn onto a new `CITY.ROADS` edge. The car is 1.85 m wide in a 3.4 m lane, so it needs the next lane empty for the whole body, not just the nose.
-
-- **A. Gap of two lengths, then a smooth slide.** Look ahead and back one car length extra (call it 2 lengths bumper to bumper in the target lane). Slide over in about 0.7 s. If the gap is not there, stay in lane and wait. Recommended.
-- **B. Longer merge.** Three lengths, about 1.1 s. Use this on highway / bridge / tunnel only. Town stays on A.
-- **C. No mid-block lane changes.** Merge only at a crossing, using the turn already in the lane graph. Simplest. Traffic cannot dodge a slow car except by waiting.
-
-Turns follow the lane graph. The corner is limited by the 2.55 m wheelbase: do not cut a radius tighter than about 7 m (a calm steer, not a lock). If the graph's corner is tighter than that, slow to a crawl rather than jumping the curb.
-
-## 5. Ellie
-
-Ellie is the player car. Traffic does not chase, ram, spin her, or leave its lane to hit her.
-
-- **A. Yield like any other Z.** If she is ahead in this lane inside the following gap, match down to her speed, then stop if she stops. If she pulls into this lane, treat it as a merge into the car and brake. If she is beside the car, hold the lane and do not close the gap. Recommended.
-- **B. Extra room.** Same as A, plus one more car length whenever she is the lead. Traffic hangs back. She can pull out without a nose-to-tail.
-- **C. Freeze when she is close.** Inside one car length, the nearby Z stops and waits until she is two lengths away. Very safe, and it will bunch up behind her.
-
-The bumper slowdown in `world/traffic.js` today is only the placeholder from removing the old ram. It is not option A. Replace it with the option Bob picks.
-
-## 6. Speeds
-
-Metres per second. 10 m/s is about 22 mph. 15 m/s is about 34 mph. 22 m/s is about 49 mph.
-
-- **A. Town 10–15, fast roads 16–20.** Town is every street lane. Fast roads are `highway`, `bridge`, and `tunnel`. Each car picks a cruise in that band and holds it. Recommended. Matches a calm city and a quicker river crossing without a race.
-- **B. One band.** 10–14 m/s on every road. The bridge does not feel faster.
-- **C. Town 8–12, fast roads 18–22.** A bigger jump off the boulevard. Cars on the bridge are clearly quicker. Still no boost and no chase.
-
-Tow trucks stay slower than a Z on the same road (half pace is what `world/towdrive.js` does now). They use these lanes. They do not shove.
-
-## 7. Despawn and respawn
-
-Ellie should not see a car pop in or vanish.
-
-- **A. Outside her view, and outside the close band.** Remove a near car only past about 240 m, or once it is behind the camera and beyond the close draw (150 m). Respawn it further out than that, off to the side or ahead, never inside the camera frame and never on the runway. Recommended.
-- **B. Further.** Despawn past 320 m. Respawn between 260 and 400 m, still outside the frame. Fewer pops, more empty road up close when she turns around.
-- **C. Only behind her.** Never despawn a car in front of the camera, however far. Respawn only in the rear arc. Safest against a pop. A car at the edge of the draw distance can linger as a dot.
-
-Far dots (past the box range) can come and go more freely. They are lights, not a body.
 
 ## 8. Weather, later
 
