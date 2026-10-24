@@ -867,8 +867,7 @@ window.addEventListener&&window.addEventListener('storage',e=>{
   if(!e.key||e.key===PKEY){pRaw=null;pObjRaw='';}
   if(!e.key||e.key===CKEY)modeRaw=null;
 });
-try{new BroadcastChannel('zdash-customdance').onmessage=()=>{hRaw=null;hObjRaw='';};}catch(e){}
-try{new BroadcastChannel('zdash-petdance').onmessage=()=>{pRaw=null;pObjRaw='';};}catch(e){}
+/* Dance clips refresh from the storage event above. No BroadcastChannel while Neon World is just driving. */
 if(typeof drawWaterline==='function'&&!drawWaterline.__crewHooked){
   const _dw=drawWaterline;
   drawWaterline=function(){
