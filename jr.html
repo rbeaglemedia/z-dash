@@ -12370,14 +12370,27 @@ var qrcode = function() {
     X.render = function (ctx, x, y, w, h, o) { try { const L = o && o.kid, it = L ? CAT.paint.find((p) => p.liv && p.paint === L.paint) : null, lv = it ? it.liv : 0;
       if (X._copLv !== lv) { X._copLv = lv; X.car.traverse((m) => { if (!m.isMesh) return; (Array.isArray(m.material) ? m.material : [m.material]).forEach((q) => { if (q && q.uniforms && q.uniforms.zLiv) { q.uniforms.zLiv.value = lv; if (it) q.uniforms.zLivC.value.set(it.livC); } }); }); }
       if (X.copR) { const tt = o && o.st && o.st.t != null ? o.st.t : performance.now() / 1000, ph = Math.floor(tt * 5) % 2; X.copR.color.set(ph ? '#ff1f35' : '#3a0a10'); X.copB.color.set(ph ? '#0a1030' : '#2a6bff'); } kCopFlash(X, o && o.st && o.st.t != null ? o.st.t : performance.now() / 1000); } catch (e) {} return R0(ctx, x, y, w, h, o); }; }
+  function gHomeRoomOn() { return !!(gNav && gNav.root === 'home' && gNav.lvl >= 2 && gNav.sub !== 'pet'); }
   function drawCar(ctx, w, h, f, dt, t, garage) { kCopHook();
     if (!garage) return drawShowroom(ctx, w, h, f, dt, t);
     gzTick(dt);
-    sky(ctx, w, h, t); const X = ZD.Xray; const cw = garage ? w * 0.54 : w;
-    if (performance.now() - K.lastDrag > 2500 && !K.drag) K.yaw += dt * 0.45;
+    sky(ctx, w, h, t); const X = ZD.Xray; const cw = w * 0.54;
+    const roomOn = gHomeRoomOn();
+    if (performance.now() - K.lastDrag > 2500 && !K.drag) K.yaw += dt * (roomOn ? 0.22 : 0.45);
+    const rx = 0, ry = h * 0.1, rw = cw, rh = h * 0.86;
+    if (roomOn && window.GROOM) {
+      const crew = gPreviewCrew();
+      const zoom = 1 / Math.max(GZ.min, Math.min(GZ.max, K.gzS ?? 1));
+      if (GROOM.paint(ctx, rx, ry, rw, rh, gHousePreview(), { yaw: K.yaw, zoom: zoom, who: crew.who, pet: crew.pet })) {
+        const titleY = Math.min(40, Math.max(22, ry - 8));
+        T(ctx, "ELLIE'S HOUSE", cw / 2, titleY, 22, '#ffffff', 'center', FONT, 900, 0);
+        return;
+      }
+    }
+    if (window.GROOM) GROOM.pause();
     // glowing turntable: rings are real ground circles around the car's centre (the model is centred on x/z and sits on y=0),
     // projected with the same camera, so the car always sits in the middle of them. Distance adapts so car + rings fit short screens.
-    const L = look(t), rx = 0, ry = h * 0.1, rw = cw, rh = h * 0.86, fov = 26, ringR = [2.5, 3.0, 3.5];
+    const L = look(t), fov = 26, ringR = [2.5, 3.0, 3.5];
     const vt = Math.tan((fov * Math.PI) / 360), need = Math.max(ringR[2] * 1.12 / (vt * (rw / rh)), 2.3 / vt); // width: outer ring; height: car + ring depth
     if (X && X.ready) {
       X.render(ctx, rx, ry, rw, rh, { xray: false, yaw: K.yaw, pitch: 0.24, dist: Math.max(garage ? 10.5 : 9.6, need) * (K.gzS ?? 1), ty: 0.45 + (1 - (K.gzS ?? 1)) * 0.12, fov, drl: 1, kid: L, noDraw: true, st: { t, throttle: 40 + 40 * Math.sin(t * 2) } });
@@ -13347,6 +13360,8 @@ var qrcode = function() {
   };
   let gNav = { lvl: 1, root: null, broad: null, sub: null };
   let gPetHover = null;
+  let gHouseHover = null;
+  let gCharHover = null;
   const GHOUSE_KEY = 'zdash.house.v1';
   const GCREW_KEY = 'zdash.crew.v1';
   const GHOUSE_WALLS = [['neon-grid', 'NEON GRID', '#3ee6ff'], ['bubblegum', 'BUBBLEGUM', '#ff4fd8'], ['midnight', 'MIDNIGHT', '#9b5cff'], ['lime-loft', 'LIME LOFT', '#7dff6b']];
@@ -13368,6 +13383,21 @@ var qrcode = function() {
     const sign = GHOUSE_SIGNS.some((w) => w[0] === file.sign) ? file.sign : 'ellie';
     const flag = (k, d) => typeof file[k] === 'boolean' ? file[k] : d;
     return { wall: wall, sign: sign, sofa: flag('sofa', true), arcade: flag('arcade', true), petBed: flag('petBed', true), danceFloor: flag('danceFloor', true) };
+  }
+  function gHousePreview() {
+    const h = gHouse();
+    const v = gHouseHover;
+    const out = { wall: h.wall, sign: h.sign, sofa: h.sofa, arcade: h.arcade, petBed: h.petBed, danceFloor: h.danceFloor };
+    if (v && v.wall) out.wall = v.wall;
+    if (v && v.sign) out.sign = v.sign;
+    if (v && (v.item === 'sofa' || v.item === 'arcade' || v.item === 'danceFloor' || v.item === 'petBed')) out[v.item] = true;
+    return out;
+  }
+  function gPreviewCrew() {
+    const c = gCrew();
+    const character = gCharHover || c.character || 'woman';
+    const pet = c.pet || 'fox';
+    return { who: character === 'man' ? 'boy' : character === 'none' ? '' : 'girl', pet: pet === 'none' ? '' : pet };
   }
   function gSaveHouse(patch) {
     const next = Object.assign({ v: 1 }, gHouse(), patch || {});
@@ -13493,10 +13523,21 @@ var qrcode = function() {
     if (sub === 'danceapp') return gLink('dance-stage.html', '💃', 'DANCE STAGE', 'RECORD A CHARACTER OR PET DANCE');
     return '';
   }
+  function gWatch(el, sel, on, off) {
+    el.querySelectorAll(sel).forEach((b) => {
+      b.addEventListener('pointerenter', () => on(b));
+      b.addEventListener('pointerleave', () => off(b));
+      b.addEventListener('focus', () => on(b));
+      b.addEventListener('blur', () => off(b));
+    });
+  }
   function bindHome(el) {
     el.querySelectorAll('[data-hwall]').forEach((b) => b.addEventListener('click', () => { gSaveHouse({ wall: b.dataset.hwall }); renderGarage(); }));
     el.querySelectorAll('[data-hsign]').forEach((b) => b.addEventListener('click', () => { gSaveHouse({ sign: b.dataset.hsign }); renderGarage(); }));
     el.querySelectorAll('[data-hitem]').forEach((b) => b.addEventListener('click', () => { const k = b.dataset.hitem; const h = gHouse(); const p = {}; p[k] = !h[k]; gSaveHouse(p); renderGarage(); }));
+    gWatch(el, '[data-hwall]', (b) => { gHouseHover = { wall: b.dataset.hwall }; }, (b) => { if (gHouseHover && gHouseHover.wall === b.dataset.hwall) gHouseHover = null; });
+    gWatch(el, '[data-hsign]', (b) => { gHouseHover = { sign: b.dataset.hsign }; }, (b) => { if (gHouseHover && gHouseHover.sign === b.dataset.hsign) gHouseHover = null; });
+    gWatch(el, '[data-hitem]', (b) => { gHouseHover = { item: b.dataset.hitem }; }, (b) => { if (gHouseHover && gHouseHover.item === b.dataset.hitem) gHouseHover = null; });
     el.querySelectorAll('[data-cpet]').forEach((b) => {
       b.addEventListener('click', () => { gSaveCrew({ pet: b.dataset.cpet }); gPetHover = null; renderGarage(); });
       const peek = () => { gPetHover = b.dataset.cpet; };
@@ -13506,7 +13547,8 @@ var qrcode = function() {
       b.addEventListener('focus', peek);
       b.addEventListener('blur', clear);
     });
-    el.querySelectorAll('[data-cchar]').forEach((b) => b.addEventListener('click', () => { gSaveCrew({ character: b.dataset.cchar }); renderGarage(); }));
+    el.querySelectorAll('[data-cchar]').forEach((b) => b.addEventListener('click', () => { gSaveCrew({ character: b.dataset.cchar }); gCharHover = null; renderGarage(); }));
+    gWatch(el, '[data-cchar]', (b) => { gCharHover = b.dataset.cchar; }, (b) => { if (gCharHover === b.dataset.cchar) gCharHover = null; });
   }
   function bindNav(el) {
     if (!el) return;
@@ -13567,6 +13609,8 @@ var qrcode = function() {
 
 
   function renderGarage() {
+    gHouseHover = null;
+    gCharHover = null;
     if (gNav.lvl < 3 || gNav.root === 'home') { renderGarageNav(); return; }
     const el = $('#kGarage'), oc = el.querySelector('.gcats'), oi = el.querySelector('.gitems'), keepL = oc ? oc.scrollLeft : 0, keepT = oi ? oi.scrollTop : 0, secChanged = gLastCat != null && secOf(gLastCat) !== secOf(gCat), catChanged = gLastCat !== gCat; gLastCat = gCat;
     el.innerHTML = `<div class="ghead"><span class="kcount kcoin">● ${P.coins}</span><span class="kcount kstar">★ ${P.stars}</span>
@@ -13743,6 +13787,7 @@ var qrcode = function() {
     K.wheelAng += ((f.speed || 0) * 0.44704 / 0.33) * dt;
     if (K.real && (f.speed || 0) > 3) { const before = Math.floor(P.ride / BOX_EVERY); P.ride += dt; if (Math.floor(P.ride / BOX_EVERY) > before) { P.boxes++; toast('PART BOX EARNED! Open it in the GARAGE', 3200); if (K.tab === 'garage') renderGarage(); } }
     const { ctx, w, h } = ZD.fit($('#kCv'));
+    if (window.GROOM && K.tab !== 'garage') GROOM.pause();
     if (window.GPET) GPET.pose(dt, K.tab === 'garage' && gNav.lvl >= 3 && gNav.root === 'home' && gNav.sub === 'pet', gPetHover || (gCrew().pet || 'fox'));
     if (K.tab === 'drive') drawDrive(ctx, w, h, f, dt, t); else if (K.tab === 'car') drawCar(ctx, w, h, f, dt, t, false); else if (K.tab === 'garage') drawCar(ctx, w, h, f, dt, t, true); else if (K.tab === 'road') drawRoad(ctx, w, h, f, dt, t); else if (K.tab === 'boost') drawBoost(ctx, w, h, f, dt, t); else if (K.tab === 'drag') drawDrag(ctx, w, h, f, K.dragFrozen ? 0 : dt, t); else if (K.tab === 'wanted') drawWanted(ctx, w, h, f, dt, t);
     drawParts(ctx, dt);
@@ -13845,6 +13890,8 @@ var qrcode = function() {
  window.ZD_CREDITS={open:()=>card().classList.remove('hidden'),close:()=>card().classList.add('hidden')};
  let n=0;(function t(){if(!(window.ZDKID&&add())&&n++<200)setTimeout(t,100);})();
 })();</script>
+<script src="world/room-preview.js?v=30"></script>
+<script src="world/walk-items.js?v=30"></script>
 <script src="world/neon-paint.js?v=28"></script>
 <script src="shared/car-hinge.js?v=30"></script>
 <script src="world/crew-data.js?v=30"></script>

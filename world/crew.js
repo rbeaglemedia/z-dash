@@ -941,6 +941,34 @@ function paintGaragePet(ctx,project,pose){
   if(!ctx||typeof project!=='function'||!pose||!pose.q||!D.PET_RIG[pose.rig])return false;
   return paintPet(ctx,pose.rig,pose.q,project,GARAGE_GLOW[pose.type]||'#ffb020');
 }
+/* Home-menu room. Same standing scale as Ellie's House (paintPetStanding).
+   Does not write the saved pet, D.pet, or the wings pose. */
+function paintRoomPeople(ctx,project,person,petPos,opts){
+  if(!ctx||typeof project!=='function')return false;
+  const o=opts||{};
+  const who=o.who==='boy'?'boy':o.who==='girl'?'girl':'';
+  let drew=false;
+  ctx.save();
+  ctx.shadowBlur=0;
+  try{
+    if(who&&person){
+      const look=LOOK[who]||LOOK.girl;
+      const spec=humanSpec('idle',.2,(typeof performance!=='undefined'?performance.now():0)/1000,false);
+      paintFigure(ctx,look,spec,project,person.yaw||0,{x:person.x,y:person.y||0,z:person.z});
+      drew=true;
+    }
+    let pet=o.pet&&o.pet!=='none'?String(o.pet):'';
+    if(pet==='dog')pet='robo';
+    if(pet==='bunny')ensureGarageRigs();
+    if(petPos&&pet&&D.PET_RIG[pet]){
+      const q=companionPetQ(pet,'idle',.2,(typeof performance!=='undefined'?performance.now():0)/1000,null);
+      q.yaw=((petPos.yaw||0)*180)/Math.PI;
+      paintPetStanding(ctx,pet,q,project,GARAGE_GLOW[o.pet]||GARAGE_GLOW[pet]||'#ffb020',petPos);
+      drew=true;
+    }
+  }finally{ctx.restore();}
+  return drew;
+}
 /* Put that same pose on the car with the in-car tubes, so the preview matches
    the wings sequence (occlusion included). Hides again when the preview is off. */
 function showWingsPet(pose,on){
@@ -968,6 +996,7 @@ window.CREW={
   preview,
   paintCompanion,
   paintGaragePet,
+  paintRoomPeople,
   wingsPose,
   showWingsPet,
   petScale:PET_DRAW_SCALE,

@@ -1,0 +1,14 @@
+pwa display
+  manifest.webmanifest  scope ./  start ./  display fullscreen  id ./
+  manifest-jr.webmanifest  scope ./  start ./jr.html  display fullscreen  id ./jr.html
+  index.html  manifest.webmanifest  apple yes  theme #000000
+  jr.html  manifest-jr.webmanifest  apple yes  theme #000000
+  world.html  manifest-jr.webmanifest  apple yes  theme #000000
+  world-split.html  manifest-jr.webmanifest  apple yes  theme #000000
+  neon-paint.html  manifest-jr.webmanifest  apple yes  theme #000000
+  crew.html  manifest-jr.webmanifest  apple yes  theme #000000
+  dance-stage.html  manifest-jr.webmanifest  apple yes  theme #000000
+  fly3.html  manifest-jr.webmanifest  apple yes  theme #000000
+  char.html  manifest-jr.webmanifest  apple yes  theme #000000
+  garage-hub.html  manifest-jr.webmanifest  apple yes  theme #000000
+pwa errors 0

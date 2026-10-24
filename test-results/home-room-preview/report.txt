@@ -1,0 +1,19 @@
+commit a67625d0e5f327b3923f1e3ab401eb70544edacf
+phone buf 912x671 dpr 2 who girl pet fox
+phone fps 61/60 60/60 60/60 60/60 60/60
+phone spin 1.115 dragYaw 0.662 hover bubblegum houseSame True
+phone clickWall bubblegum gz None zoom 1.425 garagePaused True petPhase takeoff roomOff False
+phone buttons 18 overlaps 0 garagez None ink {"lime": {"n": 170, "w": 36, "h": 74}, "pink": {"n": 1661, "w": 210, "h": 148}, "cw": 1688, "ch": 780}
+ipad buf 637x705 dpr 1 who girl pet fox
+ipad fps 57/30 56/30 54/30 51/30 52/30
+ipad spin 1.118 dragYaw 0.677 hover bubblegum houseSame True
+ipad clickWall bubblegum gz None zoom 1.425 garagePaused True petPhase takeoff roomOff False
+ipad buttons 18 overlaps 0 garagez None ink {"lime": {"n": 707, "w": 76, "h": 152}, "pink": {"n": 8123, "w": 458, "h": 324}, "cw": 2360, "ch": 1640}
+pc buf 738x660 dpr 1 who girl pet fox
+pc fps 61/60 60/60 60/60 60/60 60/60
+pc spin 1.107 dragYaw 0.651 hover bubblegum houseSame True
+pc clickWall bubblegum gz None zoom 1.425 garagePaused True petPhase takeoff roomOff False
+pc buttons 18 overlaps 0 garagez None ink {"lime": {"n": 166, "w": 36, "h": 72}, "pink": {"n": 1796, "w": 210, "h": 146}, "cw": 1366, "ch": 768}
+index.html and sw.js not edited. zdash.garagez.v1 stayed null. Hover did not write zdash.house.v1. Click did.
+
+UI polish: jr-l1, jr-l2g, jr-l2h — 0 errors, 0 warnings (21 viewports).
