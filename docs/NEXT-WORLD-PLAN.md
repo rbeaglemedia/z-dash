@@ -8,7 +8,7 @@ Ellie is 10 and plays at about a 13-year-old level. The words in this world stay
 
 ## What she keeps
 
-Same phone, same saves, same Z, same pets. NEXT reads and writes the keys the other kid pages already use:
+Same phone, same saves, same Z, same pets. On day one she is on foot in Homestead. The Z stays in the garage until the car key in section 7. NEXT reads and writes the keys the other kid pages already use:
 
 - `zdash.kid.v1` (her car, coins, Garage stars, name)
 - `zdash.house.v1`, `zdash.char.v1`, `zdash.pet.v1`, `zdash.crew.v1`
@@ -25,7 +25,7 @@ The car in the drawings is a Z34 370Z: long hood, cabin set back, fastback, shor
 
 Today, street mode is about 63 mph and nitrous about 87 mph (`world/phys-ground.js`, cap 28 m/s). Arcade is about 201 mph and nitrous about 322 mph (`shared/tune.js`, 90 m/s). Close-up detail already turns off above about 107 mph, and it turns off in the air (`shared/detail-tune.js`).
 
-NEXT is a slower city on purpose. Pretty homes cost frames. The cap is the speed where she still has a few seconds to see a house before she reaches it. A faster tier gets a slightly wider picture, not the same picture at a higher speed.
+NEXT is a slower city on purpose once she is driving. Pretty homes cost frames. The cap is the speed where she still has a few seconds to see a house before she reaches it. On foot she only walks and runs, inside the same pretty ring. Those speeds are in section 7. The numbers in this section apply to the car. A faster tier gets a slightly wider picture, not the same picture at a higher speed.
 
 Her base iPad on iPadOS 17 is the strict column (the 2018 iPad: A10, 2 GB, 60 Hz, landscape 1024×768). A Galaxy phone is the middle column. A PC is the loose column. The game already knows an iPad from a phone from a PC (`shared/ipad.js`). She does not pick the column. Any tablet uses the iPad column until we have measured that tablet.
 
@@ -51,9 +51,11 @@ Nitrous does not break the ground cap. In the sky, the phone and the PC get a sh
 
 The old world stays at its current caps. NEXT has its own numbers.
 
-## 2. One drive mode, then the sky
+## 2. Drive mode, then the sky
 
-She starts with one mode: DRIVE. No street/arcade switch. No wings button. The wild flying stays in the current Neon World.
+This section is the driving chapter. It starts after the car key in section 7. She does not start the world in a car.
+
+Once she is driving, she has one mode: DRIVE. No street/arcade switch. No wings button. The wild flying stays in the current Neon World.
 
 The second mode is earned. It is a high cruise, not a second car. She can enter it only from one spot. Up there the city is cheap cards, so the sky cap is allowed. She has to stay above the line. The line is 400 ft (120 m). That is above the jump roof (62 m) and below the sky tower (239 m), so the tower still sticks up as a beacon.
 
@@ -92,7 +94,7 @@ While she is in the sky and heading down, under about 600 ft, the game starts lo
 
 ## 4. How she earns the sky
 
-The NEXT tile is open on day one. The sky inside it is locked. She needs the streets in order to do the errands.
+The NEXT tile is open on day one. She is on foot. The sky inside it is locked until she has the car and then finishes the drive jobs below. She cannot do these jobs before the car key in section 7.
 
 **Recommended: 6 of 8 errands.** No coin price. Each errand pays 25 coins into the shared wallet. These are world stars on the ramp, not Garage stars. Garage stars still buy car parts.
 
@@ -229,7 +231,7 @@ How the lighter car is built:
 
 ### What it costs
 
-These are estimates from the traffic lab (software graphics, 4× CPU), not a new measurement and not her iPad. The first build measures five on/off pairs and replaces this table.
+The rows below are the estimates that led to the test. The test has now been run. Section 7 records the measured pair. These rows are not her iPad and not the Galaxy.
 
 | Choice | What is on screen | Estimate for 2 cars | Fits the 2.5 ms rare cap? |
 | --- | --- | --- | --- |
@@ -247,13 +249,196 @@ Rule 5 on the live world is twelve close copies under 3.5 ms. This LOD is not fo
 
 `shared/traffic-tune.js` stays the live world's 12 + 18. NEXT reads its own numbers, so a rare city cannot empty Neon World.
 
+## 7. On foot first
+
+Bob, Oct 24. She starts on foot. Cars unlock much later. This replaces the old "she starts in DRIVE" line. Sections 1 through 4 still describe the driving chapter and the sky. They start when she earns them. Nothing in this section is built until you write "plan approved, build it." No purchase happens from this list.
+
+The feel to borrow is a stylized adventure town: jobs, a home base, walks, choices, and a character who changes clothes and learns a few moves. The names, the pictures, and the move list stay ours. No Lionhead, Microsoft, or Nintendo names, towns, or pictures. No copied character, pet, or weapon.
+
+![On foot, then the car key, then the sky](next-world/unlock-path.svg)
+
+### How she unlocks the car, then the sky
+
+**A. Keys. Recommended.** Three chapters. She cannot skip ahead by walking to the ramp.
+
+1. **On foot.** Day one in Homestead. One pet follows. No driving. No traffic. No sky. The ramp is a small hop she can look at. It does not push.
+2. **Car key.** 5 of 7 town jobs. The Z leaves the garage. The two live traffic cars from the test turn on only while she is driving. Neighborhood caps apply only then (25 / 35 / 45 mph). She can park and get out. Getting out turns traffic off again and puts her back on foot.
+3. **Sky.** The 6 of 8 drive jobs in section 4. Same ramp, same 400 ft line, same one bounce then the neon portal. She cannot launch on foot.
+
+**B. One ladder.** Fourteen stars in one list. The car is star 8. The sky is star 14. Simpler to count. Harder to tell a town story from a drive story. Use this if the two lists feel like homework.
+
+**C. Parent switch only.** `?car=1` and `?sky=1` open a chapter for testing. She does not see the switch. This is not the design.
+
+Town jobs, if you take A. Plain words. She picks the order. Five done earns the key. The last two are optional and each has a fork. Both endings pay 25 coins. One ending changes the street.
+
+1. Walk the Homestead block and knock on three doors.
+2. Choose which pet walks with her today, at the lounge.
+3. Carry a parcel to the soccer shop. On foot.
+4. Light the yard lamps. If she is late they stay dim and she can try again. No fail screen.
+5. Clear the crate crabs off the yard lane. They poof. That lane is the road she will drive later.
+6. Optional fork. Talk the Stage gate open, or take the long path around. The gate stays as she left it.
+7. Optional fork. Pick the porch for one Homestead house: sport, or warm. The other look waits.
+
+### How the town plays
+
+**A. Hub and spokes. Recommended.** Homestead is home. Jobs send her out and back. Other districts open as she walks toward them. She has a reason to return: the board, the pet, the garage.
+
+**B. One road.** The seven jobs in a fixed line down the boulevards. Clear. Less reason to come home.
+
+**C. Everything open.** Every district walkable on day one. Heavier load. Not the iPad plan.
+
+Choices stay small. Two endings, a gate, a porch color. No good-and-evil meter. A meter is a later layer on A if you want the town to remember more than two forks.
+
+Homes stay the Brookhaven feel from section 5: a lot, a driveway, a front door, rooms only after the door opens. Furniture is never drawn from the street. People stand on the lot until she goes in. The three looks stay: sport house first, glass neon for Car Row, warm porch later. Those are our houses. Brookhaven is not a source of buildings, names, or screens.
+
+### How she looks
+
+Stylized and expressive. Big head, a face you can read, adventure clothes: a jacket, boots, a satchel. The body rules do not change. Every new person, and every new pet, still goes through Anatomy Check ([PR 61](https://github.com/rbeaglemedia/z-dash/pull/61), agent [bc-bfc8fc93](https://cursor.com/agents/bc-bfc8fc93-c2b4-5dbd-a098-1d29cd573de5)): head on the neck, arms from the shoulders, legs from the hips, feet on the ground, a real torso at every turn, a walk that reads, and pet ears at or below her hip unless that pet is marked tall. Clothes are notes unless they break the body.
+
+**A. Restyle the figure she already has. Recommended first.** Same rig, new clothes, a clearer face. The check already knows this body. A jacket that clips the arms fails even if it looks right.
+
+**B. A new mesh from a free pack, restyled.** After A is measured. The face, the clothes, and the colors change before it ships, so she does not look like a pack demo. It still has to pass the same check.
+
+**C. A paid pack.** Only if you say yes to that price. The prices are in the source list below. Buying is not part of approving this plan.
+
+### What she can do
+
+Three moves. Our names: **Swing**, **Spark**, **Shot**. Swing is a sword arc of light. Spark is a short spell. Shot is a bow: she aims, then lets go. The arrow is a bolt of light. It poofs. No blood.
+
+**A. One stick brain on every device. Recommended.** She learns one game.
+
+| | Move | Swing, Spark, Shot | The bow |
+| --- | --- | --- | --- |
+| Phone | Left thumb. A short push walks. A full push runs. | Three buttons under the right thumb. | Drag to aim, let go to loose. |
+| iPad | Same thumbs, bigger targets. A keyboard, if one is attached, also walks her. | Same three buttons. Not a phone row stretched wide. | Same drag, with more room. |
+| PC | WASD. Shift runs. | Keys 1, 2, and 3. | Mouse aims. Click lets go. |
+
+The pet move is one more button (Q on a keyboard). It does not replace her three.
+
+**B. A different PC camera.** Mouse look all the time, buttons only on the phone. She would learn two games. Not recommended.
+
+### Who she meets
+
+Kid-safe. No gore, no blood, no death screen. A hit on her is a spark and a stagger. Three staggers empty her wind and she sits for about 3 seconds, then stands. The meter is three pips, labeled WIND. Foes poof or faint. No dogs. No kids.
+
+Four kinds. Original. They are not animals she keeps as pets.
+
+| Foe | What it does | When it loses |
+| --- | --- | --- |
+| Glimmer moth | Small, flutters, a faint spark | Poof |
+| Crate crab | Slow. Blocks a path. | Poof into loose planks |
+| Lantern wisp | Hovers. A pulse you can see coming. | Poof. Soak puts it out faster. |
+| Gate brute | Slow and large. One per gate quest. | Faints. The gate opens. It is gone for that quest. |
+
+How they act:
+
+1. Wander inside a pen: a yard, or a piece of lane.
+2. Notice her inside about 12 m in front, or 8 m behind. They turn for about half a second. That is the tell.
+3. Chase at about 6 mph. Her run is about 9 mph, so she can leave. They stop at the pen edge.
+4. Swing or pulse with a second tell, a glow or a crouch, so she can step aside.
+5. After two misses, or if she leaves, they walk home.
+
+Quest foes are placed. They do not come back. Wild ones can be back next visit. The hub streets stay friendly. Wild pens start at the yard lane and in The Field.
+
+How many are nearby at once: 3 on her iPad, 4 on the phone, 6 on a PC. Townsfolk share that count. A long frame drops a far foe before it drops her.
+
+**A. Short tells, a little sharper each district. Recommended.** About half a second, not a glow that waits for a tap. She can miss. Words stay specific. She is 10 and plays ahead of that. No baby prompts.
+
+**B. A harder lane later.** A gate she opts into, or a parent switch. Shorter tells. Chase a bit closer to her run, still under it. Same cap. Not day one.
+
+**C. No fighting.** Jobs only. The fallback if the tone or the frame is wrong.
+
+### The pet
+
+The pet still follows, about a step and a half behind, and runs to catch up. It does not block a door. Indoors it comes in, small. Ears stay at or below her hip unless that pet is marked tall. She already has the fox, the cat, the dragon, and the robo. Those four stay.
+
+She presses the pet move. The pet does not pick fights on its own. Two fighters at once are harder to read and cost another draw.
+
+**A. Four elements, learned in order. Recommended.** Cooldowns are 4 to 8 seconds. Names are ours.
+
+| Move | Element | Cooldown | What it is |
+| --- | --- | --- | --- |
+| Spark | Light | 4 s | A short zap |
+| Gust | Air | 6 s | A push. Small foes slide back. |
+| Pebble | Stone | 5 s | A lob. Good on crate crabs. |
+| Soak | Water | 8 s | A splash. Puts a wisp out. |
+
+She starts with that pet's favorite. Level 3 opens the second move, level 6 the third, level 8 the fourth, and it stops. A level comes from finishing a quest with that pet out, about two quests a level. Not from fainting foes. Favorites: fox Gust, cat Spark, dragon Pebble, robo Spark.
+
+**B. A unique pair on every pet.** More to draw, more to balance. Later, on top of A, if four shared moves feel thin.
+
+**C. No pet moves until the car chapter.** Delays the part she would use on foot. Not recommended.
+
+### More pets, and finer models
+
+**A. The four she has, then three new ones she finds. Recommended.** New and original: a lamp moth, a brook frog, a tin hare. One new mesh at a time, each through the anatomy check. Not a shop full of models on day one.
+
+**B. A roster of 8 to 12 on the first boot.** Misses the load budget below.
+
+**C. Paid hero packs as the look.** Only with a yes on the price. Even then, restyle before it ships.
+
+Free or already-licensed sources. Prices were public on Oct 24, 2026, and they change. Check the pack page on the day of a download. Do not pay any of these unless you write yes for that price.
+
+| Source | What it is good for | Price | License to read first |
+| --- | --- | --- | --- |
+| Quaternius, Ultimate Animated Characters | A stylized person to restyle | $0 | CC0 |
+| Quaternius, Universal Base Characters, and Modular Character Outfits Fantasy | Body and clothes to restyle | $0 on the pages that say free | Listed CC0. Newer Quaternius kits may use their own license instead: free in a game, including a commercial one, no credit, and you may not resell the files. If a page shows a price, do not pay it. Patreon is optional, not required. |
+| KayKit Adventurers, free tier | Rigged people and weapons to restyle, including a sword and a bow | $0 | CC0. Enough to prototype. |
+| KayKit Adventurers, extra characters | Three more bodies and alt colors | about $7.95 and up | Do not buy without a yes. |
+| KayKit source files | The Blender files | about $11.95 and up | Do not buy without a yes. |
+| Kenney | Props, crates, simple blocks | $0 | CC0. Too blocky for her face. |
+| Poly Haven | Textures and sky light | $0 | CC0. Not characters. |
+| Sketchfab | A single prop, only after the license on that file is read | $0 if the file is CC0 or CC BY. Paid files are often about $5 to $40. | CC BY-NC is a poor fit for a public site. Do not buy. Do not download anything that looks like a copied hero, town, or pet. |
+| Mixamo | Walk and swing clips only | $0 with an Adobe account | Usable in a game. Do not redistribute the raw files. The people are realistic, so they are a motion source, not the look. |
+| Synty, POLYGON Fantasy Kingdom | A whole stylized town | Listed $349.99. A sale page has shown $174.99. A library plan has been advertised from about $30 a month. | A store seat license, not CC. Do not buy without a yes. If it were ever bought, it would still be restyled so NEXT does not look like that pack. |
+
+### Frames and the first 10 seconds
+
+60 fps is still 16.7 ms. Her iPad may sit on a flat 30 (33 ms). On foot the Z is not drawn, and the two traffic cars are not drawn. That is the 4 ms plus the 2.5 ms from section 5, free for her, the pet, and a few foes.
+
+| Piece, on foot | Time |
+| --- | --- |
+| Town and lots | 6 ms |
+| Ellie and the pet | 3 ms |
+| A few foes or townsfolk | 3 ms |
+| HUD | 2 ms |
+| Spare, including a poof | 2.7 ms |
+
+When she drives, section 5's split comes back. She is inside the Z. She is not a second full person during the drive. The pet can ride as it does today, small, and does not fight from the passenger seat.
+
+Walk is about 3 to 4 mph. Run is about 8 to 10 mph. At a run she still has many seconds of pretty houses ahead of her, so the ring does not grow. Sprint does not widen the world. Neighborhood caps and the sky caps stay in the car chapters.
+
+Up-front loading of about 10 seconds is allowed. The boot loads the Homestead block, Ellie, one pet, the buttons, and the quest list. The Z file is about 1.8 MB and loads when she nears the garage, not on the first step. Foe meshes load with the district that uses them. The next district streams in as she walks, the same hidden-wait idea as the sky drop. The sky chapter still preloads under 600 ft.
+
+These are targets to measure, not a claim that it is already that fast:
+
+| | Boot target | What the first screen is |
+| --- | --- | --- |
+| Her iPad | under 10 s | Homestead, Ellie, one pet |
+| Galaxy phone | under 6 s | Same, with smaller textures |
+| PC | under 4 s | Same, and it may prefetch the next block |
+
+### How the traffic test fits
+
+The live traffic car is already tested. It is the driving chapter, not day one. Pull request [93](https://github.com/rbeaglemedia/z-dash/pull/93), branch `cursor/next-traffic-lod-test-039c`, commit `feb4211`. The page is `next-traffic-lod.html`. It does not change `world.html`.
+
+The mesh is the real `assets/370z.glb`, wheels left whole, body simplified at 1 cm, 8,912 triangles a car. Two cars share that shape. Wheels spin. Front wheels steer. The pair was scored with the same overlap math as the 370Z Design Check. The bar is 0.55. Rear 0.99, front 0.965, side 0.935, three-quarter 0.952. The official checker only opens `world.html`, so this is that math on the test page, not an exit 0 from the tool.
+
+Frame time is five on/off pairs after a short warm-up, on the lab's software graphics, not her iPad and not the Galaxy. Cap 2.5 ms. Phone 844×390, median 0.40 ms. iPad 1024×768, median 0.20 ms. PC 1366×768, median 0.50 ms. Every pair was at or under 0.6 ms. The lab being under the cap is a good sign. It is not a device pass.
+
+On foot that 2.5 ms stays unspent, for her and the pet and a few foes. The photo fallback remains only if a later measurement on her iPad or the Galaxy misses the cap. The mesh stays off the live 12-car city.
+
+### Build order, after you approve it
+
+1. On-foot Homestead. Today's boxes, Ellie, one pet. Measure frames and the boot load. No car, no sky, no traffic.
+2. The town jobs and the car-key gate. Still no sky.
+3. The driving chapter. Caps, the ramp that only hops, the bar, the drive jobs, the sling, the bounce, and the portal. Traffic uses the mesh from pull request 93. It stays off until this step, and it stays off `world.html`.
+4. Clothes, the three new pets, foes, and pet moves. Each new body through the anatomy check.
+5. Finer models, from the $0 rows only, unless you say yes to a price. The Homestead sport house is still the first house drawing, and it waits until the box measurement in step 1 exists.
+
 ## What the first build is, after you approve it
 
-1. The page, the tile, the copied layout, one drive mode, the caps, and a ramp that only hops. Measure on the lab sizes and, when you can, on her iPad and the Galaxy. Boxes stay. The city number can be taken with traffic off. The live LOD is in only after the design check exits 0 and the two-car probe is inside 2.5 ms. Until then the photo is the fallback, not the look.
-2. The bar, the star count, the sling, the bounce, and the portal.
-3. The Homestead sport house on paper, then in the game, then measure again.
-
-Step 3 does not start ahead of the measurement in step 1.
+The order is the five steps at the end of section 7. The old "page, then sky, then a house" list is step 3 and step 5 of that order. The house drawing does not start ahead of the on-foot measurement.
 
 ## Risks
 
@@ -267,6 +452,12 @@ Step 3 does not start ahead of the measurement in step 1.
 - Brookhaven is a feel to borrow (lots, doors, a hidden load on the way in). Copying its houses or its screens is out.
 - NEXT traffic must not write `shared/traffic-tune.js`. The live world stays at 30 cars. A shared tune would empty that city the moment NEXT goes rare.
 - A full second 370Z is the frame. Two uncut clones are about 6–9 ms. The live option is a cut of the same file, two cars, about 2.5 ms, and it stays off `world.html`. A 2 cm weld already missed the 0.55 overlap bar. Do not ship that mesh.
+- The traffic test fit the lab cap. It is still not her iPad and not the Galaxy. Turning that mesh on while she is on foot spends the frame the people need.
+- Adventure names and pictures stay original. A stylized town is a feel. Their towns, heroes, pets, and move names stay out.
+- A paid pack is a purchase. The source table is not a yes. Nothing gets bought unless you write yes for that price.
+- A new person or a new pet that misses the anatomy check does not ship. An outfit that breaks the arms or the ears fails with it.
+- Fighting stays a spark, a poof, or a faint. No gore, no blood, no death screen. No dogs and no kids as foes.
+- Loading the whole map, every pet, and the Z on the first step will miss the 10 second boot. Homestead loads first.
 
 ## Picks
 
@@ -274,17 +465,26 @@ Reply with a letter, or "recommended" to take the marked row.
 
 | # | Question | Recommended |
 | --- | --- | --- |
-| 1 | Street speed | A. Neighborhood |
-| 2 | Launch | Ramp on the Homestead trailer pad |
+| 1 | Street speed, once she is driving | A. Neighborhood. 25 / 35 / 45 mph. |
+| 2 | Launch, after the sky is earned | Ramp on the Homestead trailer pad |
 | 3 | Drop under 400 ft | One bounce, then the neon portal. Mist only if the block is not ready. |
-| 4 | How she earns it | 6 of 8 errands. Coins are a reward, not a price. |
+| 4 | How she earns the sky | 6 of 8 drive jobs, after the car key. Coins are a reward, not a price. |
 | 5 | Tile name | NEXT |
 | 6 | Safe line | 400 ft |
-| 7 | First art | Measure with today's boxes, then the Homestead sport house |
+| 7 | First art | On-foot boxes and a frame measurement, then the Homestead sport house |
 | 8 | Nitrous | Cannot break the ground cap. Sky boost on phone and PC only. |
-| 9 | Traffic density | Rare. Two cars, no dots. |
+| 9 | Traffic density | Rare. Two cars, no dots. Off until she is driving. |
 | 10 | Traffic speed | Under her cap: 18 / 24 / 30 mph max. No highway bonus. Off in the sky. |
-| 11 | Traffic detail | Live LOD from `assets/370z.glb`, real wheels, two cars, about 2.5 ms. Photo only if that fails the design check. |
+| 11 | Traffic detail | The tested live mesh from pull request 93. Photo only if her iPad or the Galaxy misses 2.5 ms. |
+| 12 | How she starts | A. On foot in Homestead. The car is a later key. |
+| 13 | Unlock path | A. Keys. 5 of 7 town jobs, then the car, then 6 of 8 drive jobs for the sky. |
+| 14 | World shape | A. Hub and spokes. Homestead is home. |
+| 15 | Her look | A. Restyle today's figure first. Jacket, boots, satchel. Anatomy check still applies. |
+| 16 | Her moves | A. Swing, Spark, Shot. One control brain on phone, iPad, and PC. |
+| 17 | Foes | A. Four original kinds. They poof or faint. Nearby cap 3 / 4 / 6. |
+| 18 | Pet moves | A. Spark, Gust, Pebble, Soak. Cooldowns. Levels from quests. The pet still follows. |
+| 19 | More pets and models | A. Her four pets, then three new ones she finds. $0 sources only. |
+| 20 | Boot load | Hub, Ellie, one pet, quests. Aim under 10 s on her iPad. The Z loads at the garage. |
 
 Open, and fine to leave until the build:
 
