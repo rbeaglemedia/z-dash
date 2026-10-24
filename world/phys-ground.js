@@ -95,38 +95,53 @@ function trackMarkStyle(){const id=trackIdNow(),kid=trackKid(),glow=(kid&&kid.gl
   else if(/^#[0-9a-fA-F]{6}$/.test(id)){TR_STYLE.outer=id;TR_STYLE.core=trackCore(id);}
   else{TR_STYLE.outer=glow;TR_STYLE.core=trackCore(glow);}
   return TR_STYLE;}
-function makeRing(){const slots=new Array(MAX_SKID);for(let i=0;i<MAX_SKID;i++)slots[i]={x:0,y:0,z:0,t:0,air:0,brk:0};const ring={slots,head:0,n:0};
+function makeRing(){const slots=new Array(MAX_SKID);for(let i=0;i<MAX_SKID;i++)slots[i]={x:0,y:0,z:0,t:0,air:0,brk:0,kind:0};const ring={slots,head:0,n:0};
   ring.view=new Proxy(ring,{get(r,p){if(p==='length')return r.n;if(typeof p==='string'&&/^\d+$/.test(p)){const i=+p;if(i<0||i>=r.n)return undefined;return r.slots[(r.head-r.n+i+MAX_SKID)%MAX_SKID];}return r[p];},
     set(r,p,v){if(p==='length'){if(+v===0){r.n=0;r.head=0;}return true;}r[p]=v;return true;}});return ring;}
 const RING={L:makeRing(),R:makeRing()};
 const SKID={L:RING.L.view,R:RING.R.view};
 function trackClear(){RING.L.n=RING.L.head=0;RING.R.n=RING.R.head=0;}
-function skidPush(ring,x,y,z,t,air,brk){const s=ring.slots[ring.head];s.x=x;s.y=y;s.z=z;s.t=t;s.air=air?1:0;s.brk=brk?1:0;ring.head=(ring.head+1)%MAX_SKID;if(ring.n<MAX_SKID)ring.n++;}
-function trackWant(I){if((P.ebK||0)>=0.06)return P.v>0.8;if(!P.ground||!I)return false;if(P.nosBurn&&P.v>2)return true;if(I.brk&&P.v>4)return true;return Math.abs(I.lr||0)>0.65&&P.v>18;}
-function trackLay(dt,I){if(!trackWant(I))return;const now=P.simT||0,air=!P.ground,step=air?0.45:0.28,brk=I&&I.brk?1:0;
+const TR_DRIFT=0,TR_BRAKE=1,TR_NOS=2,TR_TURN=3,TR_BRAKE_LIFE=1.05;
+const DASH_OFF=[],DASH_TURN=[14,12],DASH_SCUFF=[4,12];
+const ST_STYLE=[[TR_BRAKE,'#8d6a78',0.5,DASH_SCUFF,0.72,1],[TR_NOS,'#ffe14d',0.36,DASH_OFF,0.92,0],[TR_TURN,'#7dff6b',0.55,DASH_TURN,0.9,1]];
+function skidPush(ring,x,y,z,t,air,brk,kind){const s=ring.slots[ring.head];s.x=x;s.y=y;s.z=z;s.t=t;s.air=air?1:0;s.brk=brk?1:0;s.kind=kind;ring.head=(ring.head+1)%MAX_SKID;if(ring.n<MAX_SKID)ring.n++;}
+function trackPick(I){if((P.ebK||0)>=0.06&&P.v>0.8)return TR_DRIFT;if(!P.ground||!I)return -1;if(I.brk&&P.v>4)return TR_BRAKE;if(P.nosBurn&&!I.tu&&P.v>2)return TR_NOS;if(Math.abs(I.lr||0)>0.65&&P.v>18)return TR_TURN;return -1;}
+function trackWant(I){return trackPick(I)>=0;}
+function trackLay(dt,I){const kind=trackPick(I);if(kind<0)return;const now=P.simT||0,air=!P.ground,step=air?0.45:0.28,brk=I&&I.brk?1:0;
   for(const side of[-1,1]){const ring=side<0?RING.L:RING.R,w=ebWheel(side),prev=ring.n?ring.slots[(ring.head-1+MAX_SKID)%MAX_SKID]:null;
-    if(prev&&Math.hypot(w[0]-prev.x,w[2]-prev.z)<=step)continue;skidPush(ring,w[0],w[1],w[2],now,air,brk);}}
+    if(prev&&Math.hypot(w[0]-prev.x,w[2]-prev.z)<=step)continue;skidPush(ring,w[0],w[1],w[2],now,air,brk,kind);}}
 function ebMarks(dt){trackLay(dt,null);}
 const SK_XY=[new Float32Array(MAX_SKID*4),new Float32Array(MAX_SKID*4),new Float32Array(MAX_SKID*4)];
 const SK_MV=[new Uint8Array(MAX_SKID*2),new Uint8Array(MAX_SKID*2),new Uint8Array(MAX_SKID*2)];
 const SK_N=[0,0,0],SK_Z=[1e9,1e9,1e9],SK_CS=[0,0,0],SK_SN=[0,0,0],SK_HN=[0,0,0],SK_AL=[0,0,0];
 const SK_AGE_A=[0.92,0.55,0.24];
+const ST_XY=[new Float32Array(MAX_SKID*4),new Float32Array(MAX_SKID*4),new Float32Array(MAX_SKID*4)];
+const ST_MV=[new Uint8Array(MAX_SKID*2),new Uint8Array(MAX_SKID*2),new Uint8Array(MAX_SKID*2)];
+const ST_N=[0,0,0],ST_Z=[1e9,1e9,1e9];
 function skidBucketPush(b,x,y,mv,z,hue,al){const n=SK_N[b];if(n>=MAX_SKID*2)return;const xy=SK_XY[b];xy[n*2]=x;xy[n*2+1]=y;SK_MV[b][n]=mv;SK_N[b]=n+1;if(z<SK_Z[b])SK_Z[b]=z;SK_CS[b]+=Math.cos(hue);SK_SN[b]+=Math.sin(hue);SK_HN[b]++;SK_AL[b]+=al;}
-function drawSkids(){const t0=typeof performance!=='undefined'?performance.now():0;const life=(TUNE.eBrakeSkidLife||4.5),now=P.simT||0;
+function stylePush(bi,x,y,mv,z){const n=ST_N[bi];if(n>=MAX_SKID*2)return;const xy=ST_XY[bi];xy[n*2]=x;xy[n*2+1]=y;ST_MV[bi][n]=mv;ST_N[bi]=n+1;if(z<ST_Z[bi])ST_Z[bi]=z;}
+function drawSkids(){const t0=typeof performance!=='undefined'?performance.now():0;const lifeAll=(TUNE.eBrakeSkidLife||4.5),now=P.simT||0;
   if(!RING.L.n&&!RING.R.n){if(window.TRACK_MARKS){TRACK_MARKS.lastMs=0;TRACK_MARKS.lastStrokes=0;}return;}
-  const style=trackMarkStyle();for(let b=0;b<3;b++){SK_N[b]=0;SK_Z[b]=1e9;SK_CS[b]=SK_SN[b]=SK_HN[b]=SK_AL[b]=0;}
+  const style=trackMarkStyle();for(let b=0;b<3;b++){SK_N[b]=0;SK_Z[b]=1e9;SK_CS[b]=SK_SN[b]=SK_HN[b]=SK_AL[b]=0;ST_N[b]=0;ST_Z[b]=1e9;}
   for(const ring of[RING.L,RING.R]){let prev=null,prevB=-1;const base=(ring.head-ring.n+MAX_SKID)%MAX_SKID;
-    for(let i=0;i<ring.n;i++){const s=ring.slots[(base+i)%MAX_SKID],age=(now-s.t)/life;if(age<0||age>=1){prev=null;prevB=-1;continue;}
+    for(let i=0;i<ring.n;i++){const s=ring.slots[(base+i)%MAX_SKID],kind=s.kind||0,life=kind===TR_BRAKE?TR_BRAKE_LIFE:lifeAll,age=(now-s.t)/life;if(age<0||age>=1){prev=null;prevB=-1;continue;}
       const p=proj(s.x,s.y,s.z);if(!p||p[2]<1.5){prev=null;prevB=-1;continue;}
-      const b=age<0.34?0:age<0.67?1:2,gap=!prev||prevB!==b||s.air!==prev.air||Math.hypot(s.x-prev.x,s.z-prev.z)>((s.air||prev.air)?8.5:2.8);
-      skidBucketPush(b,p[0],p[1],gap?1:0,p[2],s.t*1.7,Math.pow(1-age,0.45));prev=s;prevB=b;}}
-  let strokes=0;const Hh=typeof H==='number'?H:390;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowBlur=0;
+      const far=Math.hypot(s.x-(prev?prev.x:s.x),s.z-(prev?prev.z:s.z))>((s.air||(prev&&prev.air))?8.5:2.8);
+      if(kind===TR_DRIFT){const b=age<0.34?0:age<0.67?1:2,gap=!prev||prev.kind!==TR_DRIFT||prevB!==b||s.air!==prev.air||far;
+        skidBucketPush(b,p[0],p[1],gap?1:0,p[2],s.t*1.7,Math.pow(1-age,0.45));prevB=b;}
+      else{const gap=!prev||prev.kind!==kind||s.air!==prev.air||far;stylePush(kind-1,p[0],p[1],gap?1:0,p[2]);prevB=-1;}
+      prev=s;}}
+  let strokes=0;const Hh=typeof H==='number'?H:390;ctx.save();ctx.lineJoin='round';ctx.shadowBlur=0;ctx.setLineDash(DASH_OFF);ctx.lineCap='round';
   for(let b=0;b<3;b++){const n=SK_N[b];if(n<2)continue;ctx.beginPath();const xy=SK_XY[b],mv=SK_MV[b];
     for(let i=0;i<n;i++){const x=xy[i*2],y=xy[i*2+1];if(mv[i]||i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
     const z=SK_Z[b]<1e8?SK_Z[b]:8,w=Math.max(2.2,Math.min(14,(Hh*0.9/z)*0.28));
     let outer=style.outer,core=style.core,al=SK_AGE_A[b];
     if(style.rainbow&&SK_HN[b]>0){const hue=Math.atan2(SK_SN[b],SK_CS[b])*180/Math.PI;outer=`hsl(${(hue+360)%360},100%,62%)`;core=`hsl(${(hue+360)%360},100%,90%)`;al=Math.max(0.16,SK_AL[b]/SK_HN[b]);}
     ctx.globalAlpha=al;ctx.strokeStyle=outer;ctx.lineWidth=w*2.1;ctx.stroke();ctx.strokeStyle=core;ctx.lineWidth=Math.max(1.2,w*0.72);ctx.stroke();strokes+=2;}
+  for(let k=0;k<3;k++){const n=ST_N[k];if(n<2)continue;const spec=ST_STYLE[k];ctx.beginPath();const xy=ST_XY[k],mv=ST_MV[k];
+    for(let i=0;i<n;i++){const x=xy[i*2],y=xy[i*2+1];if(mv[i]||i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
+    const z=ST_Z[k]<1e8?ST_Z[k]:8,w=Math.max(2.2,Math.min(14,(Hh*0.9/z)*0.28));
+    ctx.setLineDash(spec[3]);ctx.lineCap=spec[5]?'butt':'round';ctx.globalAlpha=spec[4];ctx.strokeStyle=spec[1];ctx.lineWidth=Math.max(1.15,w*spec[2]);ctx.stroke();strokes++;}
   ctx.restore();
   if(window.TRACK_MARKS){TRACK_MARKS.lastStrokes=strokes;TRACK_MARKS.lastMs=(typeof performance!=='undefined'?performance.now():t0)-t0;}}
 window.TRACK_MARKS={getStyle:trackMarkStyle,clear:trackClear,MAX:MAX_SKID,count(){return RING.L.n+RING.R.n;},size(side){return(side==='R'?RING.R:RING.L).n;},lastStrokes:0,lastMs:0};
