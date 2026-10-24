@@ -1,14 +1,16 @@
 # Neon World WebGL buildings (prototype)
 
-**Order from Bob, 2026-10-24.** Building looks come after the City Layout agent (`bc-3ff1a27b`, branch `cursor/city-layout-plan-ef23`) finishes an FPS-minded layout with Bob. That layout can take several rounds. Until Bob approves it, the city keeps today's black buildings as placeholders. This branch does not start another building-design mockup before that approval.
+**Building designs do not wait on the city map.** A look can be drawn from the footprint alone. The City Layout agent (`bc-3ff1a27b`, branch `cursor/city-layout-plan-ef23`) owns placement and can keep using today's black buildings while that map is worked out. The designs below are the looks for those same buildings. They fit today's footprints. They do not move a shop.
 
-Until then, the only work that proceeds here is the free 3D model search. That search is research. Nothing is downloaded. The shortlist is under "Style-reference shortlist" below.
+Once that layout is nailed with the placeholder buildings, more building ideas can follow. Some of those will depend on the lot. A shop beside a river is a different brief than the same shop on a street. Those location variants are not in this set.
 
-The look notes further down, including purpose portraits, dance shape options, detail tiers, and the three idea pitches, are parked. They are not the next step. They were drawn before this order. `index.html` stays untouched. The black-solid `?gl=1` fallback stays. No model files are in the repo. Placement, districts, and the top-down map stay with the City Layout agent. The wider FPS round (car-copy removal and the resolution clamp) still has to land, and Bob still has to say go, before any look is built into the game.
+The free 3D model search keeps going as research. Nothing is downloaded. The shortlist is under "Style-reference shortlist" below.
 
-## Footprints the looks will fit (parked)
+`index.html` stays untouched. The black-solid `?gl=1` fallback stays in the game until the FPS round lands (car-copy removal and the resolution clamp) and Bob says go. These designs are the proposal for that build. They are not in the game yet.
 
-These sizes are the contract with the City Layout agent. They are recorded so a later look fits their boxes. No new portrait is being drawn from this table until Bob approves their layout.
+## Footprints the designs fit
+
+These sizes are the contract with the City Layout agent. The designs are drawn to these boxes. The layout agent sets the lot and which way the door faces.
 
 The City Layout agent keeps all 24 shops and may move them. Width, depth, height, and the five rooftop pads stay the sizes in `world/city.js` today. The looks are drawn to those boxes. A later mesh has to fit the same box. The layout agent sets `face` and the lot.
 
@@ -53,9 +55,11 @@ Each purpose has a shape, a color, and a sign so it reads at a glance. The shape
 
 Street-front, three-quarter, roof, and on-foot frames for each of these are in `test-results/arch-check/shots/purpose-{PURPOSE}-{front|threeq|roof|foot}-{phone|ipad|pc}.png`. The iPad street-front lineup is `test-results/gl-city/looks/purpose-front-sheet.png`.
 
-## Ideas for Bob (parked)
+## Ideas for Bob
 
-These three are parked look pitches. They are not in the 24, they are not built, and this branch does not place them and will not draw new frames for them until the layout is approved. If Bob later says yes, the City Layout agent owns the lot. Existing portraits: `test-results/gl-city/looks/idea-sheet.png`.
+These three are extra design pitches. They are not in the 24, they are not built, and this branch does not place them. They are general purposes, not designs that change because of a lot. If Bob says yes, the City Layout agent owns the lot. Portraits: `test-results/gl-city/looks/idea-sheet.png`.
+
+Location-specific designs wait. After the placeholder layout is nailed, Bob can ask for more ideas, including ones that change with the lot (a building by the river is the example). This set does not invent those yet. The dock below is a purpose pitch, not a placed pier.
 
 | Idea | Suggested purpose | Why it is worth a yes |
 |---|---|---|
@@ -63,7 +67,7 @@ These three are parked look pitches. They are not in the 24, they are not built,
 | RIVER DOCK | A pier. Sign DOCK. Box about 64×16×6 m. | A dock is a flying landmark and a place a boat could live later. No boat page exists yet. |
 | STORY NOOK | A quiet reading house. Sign READ. Box about 28×18×11 m, pitched roof. | Home is for her saved rooms. A small nook is a calm walk-in that is not a shop, a garage, or a cafe. No page exists yet. |
 
-## Detail tiers (parked until the layout is approved)
+## Detail tiers (the designs use these)
 
 Shapes, doors, and garages are the same at every tier. Only the surface changes.
 
@@ -120,11 +124,11 @@ When the look is built, `?perf=1` shows two fields on the existing perf line:
 
 The readout is off unless the query is present, so a normal session pays nothing for it. No `shadowBlur`. This branch does not add the readout. It lands with the building look, after the FPS round and after Bob says go.
 
-## Free 3D model search (the work that proceeds)
+## Free 3D model search (research, beside the designs)
 
-This is the only track that continues while the City Layout agent and Bob settle the map. It is research. No zip is downloaded. No new look frame is drawn from these packs. The Arcade and Street comparison drawings already in `test-results/gl-city/looks/` (`{a|b|c}-{arcade|street}-{phone|ipad|pc}.png` and `sheet.png`) are parked with the other mockups.
+This search keeps going beside the designs. It is research. No zip is downloaded. The Arcade and Street comparison drawings are in `test-results/gl-city/looks/` (`{a|b|c}-{arcade|street}-{phone|ipad|pc}.png` and `sheet.png`).
 
-Bob asked whether Neon World needs more free 3D building models or should build them in-game. The three options below are the research comparison. They are not a design Bob is being asked to pick before the layout is approved.
+Bob asked whether Neon World needs more free 3D building models or should build them in-game. The three options below are that comparison. The purpose designs above are the look, drawn in code to today's boxes.
 
 Millisecond figures are estimates for the building pass on a Galaxy-class GPU. They were not measured on a phone or an iPad. The basis is the black-solid spike: 4–27 buildings submitted in 0.1–0.5 ms of JS on SwiftShader, while the whole software frame was 14–24 ms. That software frame does not transfer to a device. The budget is the whole frame: under about 9 ms on the Galaxy (steady 110+), and 16.7 ms or 33 ms on iPad (steady 60 or 30). The car, ground, and HUD still share that frame. Glow is baked into the window atlas. No `shadowBlur`. On-foot detail is a further small add inside 38 m, and it is not the number the WINGS toggle is for.
 
@@ -157,7 +161,7 @@ Checked 2026-10-24 from the publishers' pages. Nothing was downloaded into the r
 | [Quaternius Buildings Pack](https://quaternius.com/packs/buildings.html) (Jan 2019) | The live page's license field says CC0, 9 models, commercial OK. Site-wide QAL v1.0 (2026-08-28) forbids redistributing the assets as assets and does not apply retroactively to copies already obtained under an earlier version. The zip's own license file is the one that counts, and it has not been read. | Page prints no poly count and no zip size. Do not assign the 2018 OpenGameArt 2.5 MB "LowPoly Buildings" zip to this pack. The two archives were not compared. Preview: https://quaternius.com/assets/images/fullres/buildings.jpg | Bright simple low-poly. Hold until the zip license file is read. |
 | [Quaternius Ultimate Buildings](https://quaternius.com/packs/ultimatetexturedbuildings.html) (Dec 2019) and [Simple Buildings](https://quaternius.com/packs/simplebuildings.html) (Aug 2017) | Pages state commercial use. The license field did not print CC0. A 2019 Patreon post called Ultimate CC0. Hold until each zip's license file is read. | Ultimate: 76 textured modular pieces, no size printed. Simple: 10 models (hospital, houses, shop), no size printed. Previews on those pages. | Textured and simple low-poly. Out of the pick until the license file is in hand. |
 
-**Research note, not a pick yet: (c), landmarks built in code, is the FPS-friendly reading of this shortlist.** The city is already boxes, so instanced glass and a window atlas is the path that fits the frame budget, and free models stay style references. Bob is not being asked to choose a look until the City Layout plan is approved. If a later approved look needs a silhouette this kit cannot make, the pack to open is a Kenney CC0 zip, and only after `License.txt` in that zip is read. Downloads wait for that. KayKit's paid add-ons stay out. Quaternius stays on hold until a zip license file is read, and those files would not be hosted from a public URL.
+**Reading of the shortlist: (c), landmarks built in code, is the FPS-friendly path.** The purpose designs above are that look. The city is already boxes, so instanced glass and a window atlas is the path that fits the frame budget, and free models stay style references. If a later look needs a silhouette this kit cannot make, the pack to open is a Kenney CC0 zip, and only after `License.txt` in that zip is read. Downloads wait for that. KayKit's paid add-ons stay out. Quaternius stays on hold until a zip license file is read, and those files would not be hosted from a public URL.
 
 The new target is not a match to today's black buildings. Move off the black fill while keeping Neon World: cyan and magenta neon, synthwave, glass and bright accents in the same family as the Brookhaven-inspired homes. The frame still has to fit the steady-FPS budget: Galaxy steady 110+ with the whole frame under about 9 ms, iPad steady 60 and 30. Use instancing or batching, LOD, and baked glow. No `shadowBlur`. The drawing that ships today stays as the fallback.
 
