@@ -1,0 +1,178 @@
+/* Kid menu tiles. Buttons and links stay centered, with no browser underline. */
+a.glink, a.glink:visited, a.glink:hover, a.glink:active,
+a.gitem, a.gitem:visited, a.gitem:hover, a.gitem:active,
+a.pill, a.pill:visited, a.pill:hover, a.pill:active,
+a.ghh-go, a.ghh-go:visited, a.ghh-go:hover,
+a.zd-top-pause-item, a.zd-top-pause-item:visited, a.zd-top-pause-item:hover,
+#kHome a, #kHome a:visited, #kHome a:hover,
+#kGarage a, #kGarage a:visited, #kGarage a:hover,
+#kGarageDrill a, #kGarageDrill a:visited, #kGarageDrill a:hover,
+#kTilesM a, #kTilesM a:visited,
+#kStartMode a, #kStartMode a:visited,
+#kOver a, #kOver a:visited,
+#bar a, #bar a:visited, #bar a:hover,
+.khome a, .khome a:visited, .khome a:hover,
+.kcard a, .kcard a:visited,
+.kcard2 a, .kcard2 a:visited,
+.np-studio a, .np-studio a:visited, .np-studio a:hover,
+.np-top a, .np-top a:visited,
+.np-modes a, .np-modes a:visited,
+.np-tools a, .np-tools a:visited,
+.np-pausec a, .np-pausec a:visited,
+.zd-ds a, .zd-ds a:visited, .zd-ds a:hover,
+.zd-top-pause-card a, .zd-top-pause-card a:visited,
+.vinyl-acts a, .vinyl-acts a:visited, .vinyl-acts a:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Destination tiles: icon, then a one-or-two-line title, then the subtext. */
+a.glink,
+#kGarage a.glink,
+#kGarageDrill a.glink,
+#kHome a.glink,
+#kGarage a.glink:visited,
+#kGarageDrill a.glink:visited,
+#kHome a.glink:visited {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  gap: 4px;
+  width: 100%;
+  min-height: 108px;
+  padding: 14px 18px;
+  box-sizing: border-box;
+  grid-column: 1 / -1;
+  grid-template-columns: none;
+}
+a.glink .gico,
+#kGarage a.glink .gico,
+#kGarageDrill a.glink .gico {
+  display: block;
+  font-size: 28px;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+}
+a.glink .vinyl-name,
+a.glink b,
+#kGarage a.glink .vinyl-name,
+#kGarage a.glink b,
+#kGarageDrill a.glink .vinyl-name,
+#kGarageDrill a.glink b {
+  display: block;
+  width: 100%;
+  max-width: 36ch;
+  margin: 0;
+  text-align: center;
+  text-decoration: none;
+  font: 900 16px/1.25 Orbitron, sans-serif;
+  letter-spacing: .3px;
+  color: #fff;
+  white-space: normal;
+}
+a.glink .vinyl-meta,
+#kGarage a.glink .vinyl-meta,
+#kGarageDrill a.glink .vinyl-meta {
+  display: block;
+  width: 100%;
+  max-width: 42ch;
+  margin: 0;
+  text-align: center;
+  text-decoration: none;
+  font: 700 13px/1.3 Rajdhani, sans-serif;
+  letter-spacing: .3px;
+  color: #c9b6e6;
+  white-space: normal;
+}
+
+#kGarage .gbig,
+#kGarageDrill .gbig,
+.kgarage .gbig,
+.glevel .gbig {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+#kGarage .gbig b,
+#kGarage .gbig em,
+#kGarage .gbig small,
+#kGarageDrill .gbig b,
+#kGarageDrill .gbig em,
+#kGarageDrill .gbig small,
+.kgarage .gbig b,
+.kgarage .gbig em,
+.kgarage .gbig small {
+  display: block;
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* Option tiles have no swatch, so they must not fall into the 30px swatch column. */
+#kGarage button.gitem:not(:has(.sw)),
+#kGarageDrill button.gitem:not(:has(.sw)),
+#kHome button.gitem:not(:has(.sw)) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  min-height: 72px;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  grid-column: auto;
+  grid-template-columns: none;
+}
+#kGarage button.gitem:not(:has(.sw)) > b,
+#kGarage button.gitem:not(:has(.sw)) > span,
+#kGarage button.gitem:not(:has(.sw)) > em,
+#kGarageDrill button.gitem:not(:has(.sw)) > b,
+#kGarageDrill button.gitem:not(:has(.sw)) > span,
+#kGarageDrill button.gitem:not(:has(.sw)) > em {
+  display: block;
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+  white-space: normal;
+}
+
+#kGarage .gitems:not(:has(.sw)):not(:has(> a.glink)) {
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+}
+.gitems:has(> a.glink) {
+  grid-template-columns: 1fr;
+}
+
+.ktile, .ktile .ktn, .ktile .kts,
+#kStartMode button, .kdiff button,
+.kpzrow button, .ktabs button, .gback, .gcats button,
+#bar button, #bar a.pill,
+.zd-ds button, .zd-ds a,
+.zd-top-pause-item,
+.np-modes button, .np-top button, .np-tools button, .np-pausec button, .np-pausec a,
+.gitem, .gitem b, .gitem span, .gitem em, .gitem small,
+.vinyl-acts button, .vinyl-acts a {
+  text-align: center;
+  text-decoration: none;
+}
+
+.vinyl-actions {
+  grid-template-columns: 1fr;
+}
+.vinyl-actions .gitem,
+.vinyl-card,
+.vinyl-empty a.gitem {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.vinyl-name, .vinyl-meta {
+  text-align: center;
+  text-decoration: none;
+}

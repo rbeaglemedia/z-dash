@@ -11,6 +11,7 @@
  *   5. PNG screenshots (and a contact sheet when Pillow is available)
  *   6. adult index.html never loads Kid App scripts or storage, and the
  *      Kid Z launcher stays clickable above the CONNECT LIVE landing screen
+ *   7. kid menu buttons and tiles: no underline, text-align center
  *
  * Usage:
  *   node tools/ui-polish-audit.js --out /opt/cursor/artifacts/ui-polish/before
@@ -184,6 +185,8 @@ function parseArgs(argv) {
     else if (a === '--port') out.port = Number(argv[++i]);
     else if (a === '--only') out.only = String(argv[++i] || '').split(',').map(s => s.trim()).filter(Boolean);
     else if (a === '--base') out.base = argv[++i];
+    else if (a === '--root') out.root = path.resolve(argv[++i]);
+    else if (a === '--menus-only') out.menusOnly = true;
     else if (a === '--help') out.help = true;
     else throw new Error('Unknown arg ' + a);
   }
@@ -415,7 +418,9 @@ const AUDIT_JS = String.raw`
     const mapW = Math.min(196, Math.max(96, Wd / 2 - 79));
     to(12, 10, mapW, 134, 'hud-minimap', 'minimap');
     to(Wd / 2 - 59, 6, 118, 86, 'hud-tilt', 'tilt gauge');
-    to(Wd - 200, 8, 200, 68, 'hud-speedometer', 'speedometer');
+    // hud.js drops the MPH stack 64px in pc-mode so it sits under the top bar.
+    const pcDrop = document.documentElement.classList.contains('pc-mode') ? 64 : 0;
+    to(Wd - 200, 8 + pcDrop, 200, 68, 'hud-speedometer', 'speedometer');
   }
 
   const visible = nodes.filter(n => n.hit || n.role === 'card');
@@ -424,6 +429,52 @@ const AUDIT_JS = String.raw`
   function add(severity, kind, msg, extra) {
     issues.push(Object.assign({ severity: severity, kind: kind, msg: msg }, extra || {}));
   }
+
+  // Kid menu buttons and tiles: no browser underline, title text centered.
+  const MENU_SEL = [
+    '#kTilesM .ktile', '#kStartMode button', '.kdiff button', '.kmain .ktabs button',
+    '#kGarage .gitem', '#kGarage .gbig', '#kGarage .gcats button', '#kGarage .gback',
+    '#kGarage .gcrumbs button', '#kGarage .kpill',
+    '#kGarageDrill .gitem', '#kGarageDrill .gbig', '#kGarageDrill .gcats button',
+    '#kGarageDrill .gback', '#kGarageDrill .gcrumbs button',
+    '#kHome .kpzrow button', '#kHome .ktabs button', '#kHome a.ghh-go', '#kPzX', '.kpzx',
+    '#bar button', '#bar a',
+    '.zd-top-pause-item', '.zd-ds-top button', '.zd-ds-top a', '.zd-ds-foot button',
+    '.np-modes button', '.np-top button', '.np-top a', '.np-tools button',
+    '.np-pausec button', '.np-pausec a', '.np-pauseb',
+    'a.glink', 'a.pill', 'a.gitem', '.vinyl-acts button', '.vinyl-acts a'
+  ].join(',');
+  function menuCentered(st) {
+    const align = (st.textAlign || '').toLowerCase();
+    return align === 'center' || align === '-webkit-center';
+  }
+  function menuUnderlined(st) {
+    const deco = ((st.textDecorationLine || '') + ' ' + (st.textDecoration || '')).toLowerCase();
+    return deco.indexOf('underline') >= 0;
+  }
+  const menuSeen = new Set();
+  document.querySelectorAll(MENU_SEL).forEach(function (el) {
+    if (menuSeen.has(el) || !cssVisible(el)) return;
+    if (el.closest('input, textarea, select')) return;
+    menuSeen.add(el);
+    const who = labelOf(el) || el.tagName.toLowerCase();
+    const parts = [el];
+    el.querySelectorAll('b, span, em, small').forEach(function (kid) {
+      if (kid.closest('.greq, .gdesc, .gpbtns, .gprog, .vinyl-dots, .sw, input, textarea')) return;
+      if (!cssVisible(kid)) return;
+      const kidText = (kid.innerText || '').replace(/\s+/g, ' ').trim();
+      if (!kidText) return;
+      parts.push(kid);
+    });
+    parts.forEach(function (node) {
+      const nodeText = (node.innerText || node.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim();
+      if (!nodeText) return;
+      const st = getComputedStyle(node);
+      const bit = node === el ? who : (nodeText.slice(0, 48) + ' in ' + who);
+      if (menuUnderlined(st)) add('error', 'menu-underline', bit + ' is underlined', { name: who });
+      if (!menuCentered(st)) add('error', 'menu-align', bit + ' text is ' + (st.textAlign || 'unset') + ', not centered', { name: who });
+    });
+  });
 
   function clippedBox(n) {
     let x = n.x, y = n.y, r = n.r, b = n.b;
@@ -647,26 +698,8 @@ const SCREENS = [
     budget: 28, wait: '#kid[data-tab="garage"] .gcats [data-c="vinyls"].on', settle: 800,
     after: '.vinyl-card'
   },
-  {
-    id: 'ix-l1', title: 'Index garage Level 1',
-    url: '/index.html#garage', viewports: ALL_VP,
-    budget: 12, wait: '#kid[data-tab="garage"] .gbig[data-groot="garage"]', settle: 700
-  },
-  {
-    id: 'ix-l2g', title: 'Index garage Level 2 categories',
-    url: '/index.html?gopen=garage#garage', viewports: ALL_VP,
-    budget: 16, wait: '#kid[data-tab="garage"] [data-gbroad="paintvinyl"]', settle: 700
-  },
-  {
-    id: 'ix-l2h', title: 'Index home Level 2 categories',
-    url: '/index.html?gopen=home#garage', viewports: ALL_VP,
-    budget: 16, wait: '#kid[data-tab="garage"] [data-gbroad="living"]', settle: 700
-  },
-  {
-    id: 'ix-l3v', title: 'Index garage Level 3 VINYLS',
-    url: '/index.html?gopen=vinyls#garage', viewports: ALL_VP,
-    budget: 28, wait: '#kid[data-tab="garage"] .gcats [data-c="vinyls"].on', settle: 800
-  },
+  // Adult index.html does not host the kid Garage/Home drill. adult-source and
+  // adult-landing check that. The legacy passenger garage stays as shipped.
   {
     id: 'neon-car', title: 'Neon paint — 3D car, vinyl name, saved vinyls',
     url: '/neon-paint.html', viewports: ALL_VP, seed: true,
@@ -961,11 +994,334 @@ print(out)
   });
 }
 
+function readRepo(root, rel) {
+  const file = path.join(root, rel);
+  if (!fs.existsSync(file)) return null;
+  return fs.readFileSync(file, 'utf8');
+}
+
+function pageOf(url) {
+  return String(url || '').split('?')[0].split('#')[0];
+}
+
+function auditMenuReachability(root) {
+  const issues = [];
+  const lines = [];
+  function err(kind, msg) { issues.push({ severity: 'error', kind: kind, msg: msg }); }
+  const jr = readRepo(root, 'jr.html');
+  const world = readRepo(root, 'world.html');
+  const icon = readRepo(root, 'world/icon-garage.js');
+  const boot = readRepo(root, 'world/boot.js') || '';
+  const hud = readRepo(root, 'world/hud.js') || '';
+  const crew = readRepo(root, 'crew.html') || '';
+  if (!jr || !world || !icon) {
+    err('menu', 'Kid App menu sources are missing under ' + root);
+    return { issues: issues, tree: lines.join('\n'), errors: issues.length };
+  }
+  function exists(url) {
+    const rel = pageOf(url);
+    if (!rel || /^(https?:|data:|javascript:)/.test(rel)) return rel ? !rel.startsWith('javascript:') : false;
+    return fs.existsSync(path.join(root, rel));
+  }
+
+  const tiles = [];
+  const tilesBlock = (jr.match(/const KTILES = \[([\s\S]*?)\n  \];/) || ['', ''])[1];
+  let m;
+  const tileRe = /\{\s*k:\s*'([^']+)',\s*name:\s*'([^']+)',\s*sub:\s*'([^']*)'/g;
+  while ((m = tileRe.exec(tilesBlock))) tiles.push({ id: m[1], name: m[2], sub: m[3] });
+  const nav = {};
+  const navBlock = (jr.match(/const navMap = \{([^}]*)\}/) || ['', ''])[1];
+  const navRe = /(\w+):\s*'([^']+)'/g;
+  while ((m = navRe.exec(navBlock))) nav[m[1]] = m[2];
+  const knownTabs = new Set(['drive', 'car', 'road', 'drag', 'wanted', 'boost', 'garage']);
+
+  const start = [];
+  const startRe = /<button[^>]*data-sm="([^"]+)"[^>]*>([^<]*)</g;
+  while ((m = startRe.exec(world))) start.push({ id: m[1], label: m[2].replace(/\s+/g, ' ').trim() });
+  const pause = [];
+  const pauseRe = /<button[^>]*data-m="([^"]+)"[^>]*>([^<]*)</g;
+  while ((m = pauseRe.exec(world))) pause.push({ id: m[1], label: m[2].replace(/\s+/g, ' ').trim() });
+  const pauseHandled = new Set();
+  const modeRe = /m==='([^']+)'/g;
+  while ((m = modeRe.exec(hud))) pauseHandled.add(m[1]);
+  if (/data-m="skydrop"|data-m='skydrop'/.test(boot)) pauseHandled.add('skydrop');
+
+  const games = [];
+  const gameRe = /registerGame\(\{([\s\S]*?)\n    \}\);/g;
+  while ((m = gameRe.exec(icon))) {
+    const block = m[1];
+    const id = (block.match(/id:\s*'([^']+)'/) || [])[1];
+    const title = (block.match(/title:\s*'([^']+)'/) || [])[1];
+    const onPlay = (block.match(/onPlay:\s*([\s\S]*)$/) || [])[1] || '';
+    if (id && title) games.push({ id: id, title: title, onPlay: onPlay });
+  }
+  const entries = [];
+  const entryRe = /entry === '([^']+)'\)\s*(\w+)\(/g;
+  while ((m = entryRe.exec(icon))) entries.push({ id: m[1], fn: m[2] });
+
+  function backToJr(game) {
+    return /goJr\(/.test(game.onPlay) || /jr\.html/.test(game.onPlay);
+  }
+  const submenuNeeds = games.filter(function (g) { return !backToJr(g) && g.id !== 'fly' && g.id !== 'world'; });
+  function offered(game) {
+    const title = game.title.toUpperCase();
+    return start.some(function (s) {
+      const label = s.label.toUpperCase();
+      return s.id.toLowerCase() === game.id.toLowerCase() || label.indexOf(title) >= 0;
+    });
+  }
+  // A start button is live when boot.js actually launches it. runway/skydrop call
+  // setStartMode. soccer/wall/paint assign their own page and return, so they do
+  // not fall through to the runway. Anything else still does.
+  function startLaunches(id) {
+    if ((id === 'runway' || id === 'skydrop') && /setStartMode\(/.test(boot)) return true;
+    if (id === 'soccer' && /location\.assign\([^)]*entry=soccer/.test(boot)) return true;
+    if (id === 'wall' && /location\.assign\(\s*'neon-paint\.html\?mode=wall'\s*\)/.test(boot)) return true;
+    if (id === 'paint' && /location\.assign\(\s*'neon-paint\.html'\s*\)/.test(boot)) return true;
+    return false;
+  }
+  function liveOnStart(game) {
+    const title = game.title.toUpperCase();
+    return start.some(function (s) {
+      const label = s.label.toUpperCase();
+      const match = s.id.toLowerCase() === game.id.toLowerCase() || label.indexOf(title) >= 0;
+      return match && startLaunches(s.id);
+    });
+  }
+  function liveOnMain(game) {
+    return tiles.some(function (t) {
+      if (t.id !== game.id && t.name.toUpperCase() !== game.title.toUpperCase()) return false;
+      if (nav[t.id]) return exists(nav[t.id]);
+      return knownTabs.has(t.id);
+    });
+  }
+  // Garage/Home is a real path for crew, dance, and the paint apps. It does not
+  // cover street/builder/stunt/takeover; those stay unreachable until Bob decides.
+  function menuHref(blob, page) {
+    const esc = page.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp('href=["\']' + esc).test(blob) || new RegExp('gLink\\(["\']' + esc).test(blob);
+  }
+  function liveInGarage(game) {
+    const blob = jr + '\n' + icon;
+    if (game.id === 'crew') return menuHref(blob, 'crew.html') && /PETS & CREW/.test(blob);
+    if (game.id === 'dance' || game.id === 'petdance') return menuHref(blob, 'dance-stage.html');
+    if (game.id === 'paint') return menuHref(blob, 'neon-paint.html');
+    if (game.id === 'wall') return menuHref(blob, 'neon-paint.html?mode=wall');
+    return false;
+  }
+
+  lines.push('MENU TREE');
+  lines.push('MAIN MENU  jr.html');
+  if (!tiles.length) err('menu', 'Could not read the Kid App main-menu tiles');
+  ['soccer', 'skydrop', 'paint', 'wall', 'crew'].forEach(function (id) {
+    const tile = tiles.filter(function (t) { return t.id === id; })[0];
+    if (tile) err('menu', 'Main menu still has ' + tile.name + '. It is reached from the Neon World submenu or Garage/Home.');
+  });
+  tiles.forEach(function (tile) {
+    const target = nav[tile.id];
+    lines.push('  ' + tile.name + '  [' + tile.id + ']  ' + (tile.sub || ''));
+    if (target) {
+      lines.push('    -> ' + target);
+      if (!exists(target)) err('dead', 'Menu tile ' + tile.name + ' opens a missing page: ' + target);
+      if (tile.id === 'dance' && target.indexOf('dance-stage.html?record=character') < 0) {
+        err('dead', 'RECORD DANCE must open dance-stage.html?record=character, not ' + target);
+      }
+      if (tile.id === 'petdance' && target.indexOf('dance-stage.html?record=dog') < 0) {
+        err('dead', 'RECORD PET must open dance-stage.html?record=dog, not ' + target);
+      }
+      const worldHome = pageOf(target) === 'world.html' && target.indexOf('entry=') < 0;
+      if (worldHome) {
+        lines.push('    NEON WORLD SUBMENU  (first screen of world.html)');
+        if (!start.length) err('dead', 'Neon World submenu has no mode buttons');
+        const startOrder = start.map(function (s) { return s.id; }).join(',');
+        if (startOrder !== 'skydrop,runway,soccer,wall,paint') {
+          err('menu', 'Neon World start card order is ' + (startOrder || 'empty') + '. Expected skydrop, runway, soccer, wall, paint.');
+        }
+        const split = readRepo(root, 'world-split.html') || '';
+        const splitIds = [];
+        const splitRe = /<button[^>]*data-sm="([^"]+)"/g;
+        let sm;
+        while ((sm = splitRe.exec(split))) splitIds.push(sm[1]);
+        if (split && splitIds.join(',') !== startOrder) {
+          err('menu', 'world-split.html start card (' + (splitIds.join(',') || 'empty') + ') does not match world.html.');
+        }
+        start.forEach(function (s) {
+          lines.push('      ' + s.label + '  [' + s.id + ']');
+          if (!startLaunches(s.id)) {
+            err('dead', 'Neon World start button ' + s.label + ' does not start that mode (unknown modes fall through to the runway)');
+          }
+        });
+        const elsewhere = submenuNeeds.filter(function (g) { return !offered(g) && (liveOnMain(g) || liveInGarage(g)); });
+        const missing = submenuNeeds.filter(function (g) { return !offered(g) && !liveOnMain(g) && !liveInGarage(g); });
+        if (elsewhere.length) {
+          lines.push('      -- not on this submenu; reached from the main menu or Garage/Home --');
+          elsewhere.forEach(function (g) { lines.push('      (elsewhere) ' + g.title + '  [' + g.id + ']'); });
+        }
+        if (missing.length) {
+          lines.push('      -- not on this submenu --');
+          missing.forEach(function (g) { lines.push('      (missing) ' + g.title + '  [' + g.id + ']'); });
+        }
+        lines.push('    PAUSE MENU');
+        pause.forEach(function (p) {
+          lines.push('      ' + p.label + '  [' + p.id + ']');
+          if (!pauseHandled.has(p.id)) err('dead', 'Pause button ' + p.label + ' has no handler');
+        });
+        lines.push('    PAUSE GAME GRID  (after START, then pause)');
+        games.forEach(function (g) { lines.push('      ' + g.title + '  [' + g.id + ']'); });
+        appendDrillTree(lines, icon, 'WDRILL');
+      }
+    } else if (knownTabs.has(tile.id)) {
+      lines.push('    -> in-app tab ' + tile.id);
+      if (tile.id === 'garage') appendDrillTree(lines, jr, 'GDRILL');
+    } else {
+      lines.push('    -> NO HANDLER');
+      err('dead', 'Menu tile ' + tile.name + ' [' + tile.id + '] has no handler');
+    }
+  });
+  if (!tiles.some(function (t) { return t.id === 'garage'; }) && /data-k="garage"/.test(jr)) {
+    lines.push('GARAGE TAB  jr.html  (not a main-menu tile)');
+    lines.push('  -> in-app tab garage');
+    appendDrillTree(lines, jr, 'GDRILL');
+  }
+
+  lines.push('CREW & PETS  crew.html');
+  const pets = [];
+  const petRe = /\['([^']+)',\s*'([^']+)'\]/g;
+  const petBlock = (icon.match(/const CREW_PETS = \[([\s\S]*?)\];/) || ['', ''])[1];
+  while ((m = petRe.exec(petBlock))) pets.push(m[2] + ' [' + m[1] + ']');
+  const chars = [];
+  const charBlock = (icon.match(/const CREW_CHARS = \[([\s\S]*?)\];/) || ['', ''])[1];
+  const charRe = /\['([^']+)',\s*'([^']+)'\]/g;
+  while ((m = charRe.exec(charBlock))) chars.push(m[2] + ' [' + m[1] + ']');
+  if (chars.length) lines.push('  characters: ' + chars.join(', '));
+  if (pets.length) lines.push('  pets: ' + pets.join(', '));
+  else lines.push('  (no pet list in the crew menu catalog)');
+  const linkRe = /<a[^>]*href="([^"]+)"[^>]*>([^<]*)</g;
+  while ((m = linkRe.exec(crew))) {
+    const href = m[1];
+    const label = m[2].replace(/\s+/g, ' ').trim();
+    if (!label) continue;
+    lines.push('  ' + label + ' -> ' + href);
+    if (!exists(href)) err('dead', 'Crew menu "' + label + '" opens a missing page: ' + href);
+    if (/RECORD/i.test(label) && /DANCE/i.test(label) && href.indexOf('dance-stage.html?record=character') < 0) {
+      err('dead', 'Crew menu "' + label + '" does not open the dance recorder (' + href + ')');
+    }
+  }
+
+  submenuNeeds.forEach(function (g) {
+    if (liveOnStart(g) || liveOnMain(g) || liveInGarage(g)) return;
+    const home = tiles.some(function (t) { return t.id === g.id || t.name.toUpperCase() === g.title.toUpperCase(); });
+    err('submenu', 'No live menu reaches ' + g.title + '. The Neon World start card only reaches ' + (start.map(function (s) { return s.label; }).join(', ') || 'nothing') + '.' + (home ? ' A separate main-menu tile also exists, which is why a layout pass missed this.' : ''));
+  });
+
+  // Bob decided on Oct 23, 2026 to leave these off every menu. Their code stays.
+  // The menu check does not flag them.
+  const HIDDEN_STUBS = {
+    street: 'STREET CRUISE',
+    builder: 'CITY BUILDER',
+    stunt: 'ROOFTOP STUNT RUN',
+    takeover: 'Z TAKEOVER'
+  };
+  lines.push('INTENTIONALLY HIDDEN  Bob, Oct 23, 2026');
+  Object.keys(HIDDEN_STUBS).forEach(function (id) {
+    lines.push('  ' + HIDDEN_STUBS[id] + '  [' + id + ']');
+  });
+
+  entries.forEach(function (e) {
+    if (e.id === 'hub' || HIDDEN_STUBS[e.id]) return;
+    const inNav = Object.keys(nav).some(function (k) { return String(nav[k]).indexOf('entry=' + e.id) >= 0; });
+    const inStart = start.some(function (s) { return s.id === e.id; });
+    const inGames = games.some(function (g) { return g.id === e.id; });
+    if (!inNav && !inStart && !inGames) {
+      err('unreachable', 'World mode "' + e.id + '" (' + e.fn + ', entry=' + e.id + ') is built and no menu tile reaches it.');
+    }
+  });
+  const takeoverCalls = (icon.match(/playTakeover\(/g) || []).length;
+  if (!HIDDEN_STUBS.takeover && icon.indexOf('function playTakeover') >= 0 && takeoverCalls < 2) {
+    err('unreachable', 'Z TAKEOVER inside Neon World (playTakeover) is built and no menu calls it.');
+  }
+
+  const holdRe = /\{[^{}]*\bhold:\s*true\b[^{}]*\}/g;
+  while ((m = holdRe.exec(jr))) {
+    const name = (m[0].match(/name:\s*(?:"([^"]*)"|'([^']*)')/) || []);
+    err('placeholder', 'Garage menu offers "' + (name[1] || name[2] || 'unnamed item') + '" but it is a coming-soon placeholder (on hold).');
+  }
+
+  const menuBlob = [jr, world, readRepo(root, 'world-split.html') || '', icon, boot, hud, crew].join('\n');
+  // char.html is the old recorder page. The Crew button opens dance-stage.html?record=character,
+  // so this file is not a menu destination. fly2.html stays a finding.
+  ['fly2.html', 'fly3.html', 'neon-paint.html', 'dance-stage.html', 'crew.html', 'world.html', 'world-split.html', 'garage-hub.html'].forEach(function (page) {
+    if (menuBlob.indexOf(page) >= 0) return;
+    const html = readRepo(root, page);
+    if (!html) return;
+    if (/location\.replace\(['"]jr\.html|url=jr\.html/.test(html)) return;
+    lines.push('ORPHAN PAGE  ' + page);
+    err('unreachable', 'Kid App page ' + page + ' ships in the repo and no menu tile opens it.');
+  });
+
+  lines.push('');
+  lines.push('FINDINGS');
+  if (!issues.length) lines.push('Every shipped kid game, mode, and app is reachable from a live menu tile.');
+  issues.forEach(function (issue) { lines.push(issue.severity.toUpperCase() + ' / ' + issue.kind + ': ' + issue.msg); });
+  return { issues: issues, tree: lines.join('\n'), errors: issues.filter(function (i) { return i.severity === 'error'; }).length };
+}
+
+function appendDrillTree(lines, source, name) {
+  const re = new RegExp('(?:const|var) ' + name + ' = \\{([\\s\\S]*?)\\n  \\};');
+  const block = (source.match(re) || ['', ''])[1];
+  if (!block) { lines.push('    (' + name + ' drill not found)'); return; }
+  lines.push('    ' + name + '  GARAGE / HOME DRILL');
+  const roots = block.match(/roots:\s*\[([\s\S]*?)\],\s*broad:/);
+  if (roots) {
+    const rootRe = /id: '([^']+)'[\s\S]*?title: '([^']+)'/g;
+    let rm;
+    while ((rm = rootRe.exec(roots[1]))) lines.push('      ' + rm[2] + '  [' + rm[1] + ']');
+  }
+  const broadAt = block.indexOf('broad:');
+  const broadBlock = broadAt >= 0 ? block.slice(broadAt) : '';
+  const broadRe = /\{ id: '([^']+)', emoji: '[^']*', title: '([^']+)'[\s\S]*?subs: \[([\s\S]*?)\] \}/g;
+  let m;
+  while ((m = broadRe.exec(broadBlock))) {
+    lines.push('      ' + m[2] + '  [' + m[1] + ']');
+    const subs = m[3].match(/\['([^']+)',\s*'([^']+)'\]/g) || [];
+    subs.forEach(function (row) {
+      const parts = row.match(/\['([^']+)',\s*'([^']+)'\]/);
+      if (!parts) return;
+      lines.push('        ' + parts[2] + '  [' + parts[1] + ']');
+      if (parts[1] === 'paintapp') lines.push('          -> neon-paint.html');
+      if (parts[1] === 'wallapp') lines.push('          -> neon-paint.html?mode=wall');
+      if (parts[1] === 'danceapp') lines.push('          -> dance-stage.html');
+      if (parts[1] === 'enter') lines.push('          -> crew.html, world.html');
+    });
+  }
+}
+
+function writeMenuReport(outDir, report) {
+  fs.mkdirSync(outDir, { recursive: true });
+  const body = report.tree + '\n';
+  fs.writeFileSync(path.join(outDir, 'menu-reach.txt'), body);
+  return body;
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   if (args.help) {
-    console.log('node tools/ui-polish-audit.js [--out dir] [--port n] [--only a,b] [--base url]');
+    console.log('node tools/ui-polish-audit.js [--out dir] [--port n] [--only a,b] [--base url] [--root dir] [--menus-only]');
     return;
+  }
+  const menuRoot = args.root || ROOT;
+  const wantMenus = args.menusOnly || !args.only || args.only.includes('menu-reach');
+  let menuReport = null;
+  if (wantMenus) {
+    fs.mkdirSync(args.out, { recursive: true });
+    menuReport = auditMenuReachability(menuRoot);
+    writeMenuReport(args.out, menuReport);
+    console.log(menuReport.tree);
+    console.log('menu-reach errors ' + menuReport.errors + '  root ' + menuRoot);
+    if (args.menusOnly) {
+      process.exitCode = menuReport.errors ? 1 : 0;
+      return;
+    }
   }
   fs.mkdirSync(args.out, { recursive: true });
   const server = await startServer(args.port || 0);
@@ -1022,8 +1378,9 @@ async function main() {
     const summary = writeReport(args.out, rows);
     await contactSheet(args.out);
     console.log('Wrote ' + path.join(args.out, 'audit.md'));
-    console.log('errors ' + summary.errors + ' warnings ' + summary.warns);
-    process.exitCode = summary.errors ? 1 : 0;
+    const menuErrors = menuReport ? menuReport.errors : 0;
+    console.log('errors ' + summary.errors + ' warnings ' + summary.warns + ' menu-reach ' + menuErrors);
+    process.exitCode = (summary.errors || menuErrors) ? 1 : 0;
   } finally {
     kill();
     server.close();

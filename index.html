@@ -52,7 +52,7 @@ html, body { margin: 0; height: 100%; background: #000; color: var(--txt); font-
 #splash { position: fixed; inset: 0; background: #000; z-index: 50; transition: opacity .6s; } .neonz { position: absolute; z-index: 3; top: calc(env(safe-area-inset-top, 0px) + 10px); right: calc(env(safe-area-inset-right, 0px) + 10px); width: 46px; height: 46px; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: rgba(0,0,0,.6); border: 1px solid #ff2a3d; border-radius: 6px; color: #ff2a8a; border-color: #ff2a8a; cursor: pointer; box-shadow: 0 0 10px rgba(255,42,138,.5), inset 0 0 8px rgba(255,42,138,.25); animation: neonzhue 9s linear infinite; will-change: filter; } @keyframes neonzhue { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } } @media (prefers-reduced-motion: reduce) { .neonz { animation: none; } } .neonz b { font: 900 26px/1 'Orbitron', sans-serif; text-shadow: 0 0 6px #ff2a8a, 0 0 14px #ff2a8a; }
 #hdr { padding-right: 92px; }
 #btnNeonZ.neonz { position: fixed; z-index: 200; top: 4px; right: 8px; width: 76px; height: 46px; pointer-events: auto; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-#btnNeonZ.neonz small { display: block; font: 800 8px/1 'Orbitron', sans-serif; letter-spacing: .6px; color: #fff; text-shadow: 0 0 6px #ff2a8a; }
+#btnNeonZ.neonz small { display: block; font: 800 9px/1 'Orbitron', sans-serif; letter-spacing: .6px; color: #fff; text-shadow: 0 0 6px #ff2a8a; }
 body.kidon #btnNeonZ { display: none !important; }
 #splash.gone { opacity: 0; pointer-events: none; }
 #splash canvas, .overlay canvas { width: 100%; height: 100%; display: block; }

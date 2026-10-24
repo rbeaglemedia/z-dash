@@ -615,7 +615,7 @@
     if (waveBox && !waveBox.hidden) {
       var wr = 8;
       if (panel && !portrait) waveBox.style.right = (W - stage.w + wr) + 'px';
-      else waveBox.style.right = wr + 'px';
+      else waveBox.style.right = (wr + 56) + 'px';
       waveBox.style.left = 'auto';
       waveBox.style.top = (head + 4) + 'px';
     }

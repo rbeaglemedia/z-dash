@@ -58,7 +58,7 @@ html,body{margin:0;height:100%;background:#000;color:var(--txt);font-family:'Orb
 #kid:not([data-tab='drive']) .kmenub{left: auto; bottom: auto; top: 2px; right: var(--pzr, 4px); width: 48px; height: 48px;}
 #kid:not([data-tab='drive']) .kmenub span{width: 38px; height: 38px; line-height: 35px; font-size: 17px; border-radius: 11px;}
 #kid[data-tab='road']{--pzr: calc(25.7vw + 2px);}
-#kid[data-tab='wanted']{--pzr: calc(21vw + 2px);}
+#kid[data-tab='wanted']{--pzr: max(212px, calc(21vw + 2px));}
 #kid[data-tab='drag']{--pzr: calc(8.8vw + 2px);}
 #kid[data-tab='boost']{--pzr: calc(37.3vw + 2px);}
 #kid[data-tab='car']{--pzr: calc(23.4vw + 4px);}
@@ -187,7 +187,7 @@ html.pc-mode .kcard2 .kstart{flex:none}
 html.pc-mode .kcard2 .kact h2{font-size:24px}
 html.pc-mode .kcard2 .kline{font-size:14px}
 html.pc-mode .khome{top:4vh;transform:translate(-50%,0);max-height:92vh;overflow-y:auto;width:min(1120px,calc(100vw - 24px))}
-</style></head><body>
+</style><link rel="stylesheet" href="shared/menu-tiles.css"></head><body>
 <div id="kid" class="kid" data-tab="wanted"><div class="kbody">
 <canvas id="c"></canvas>
 <button id="brk" class="kround kfbrk nfxa">BRAKE</button>
@@ -199,7 +199,7 @@ html.pc-mode .khome{top:4vh;transform:translate(-50%,0);max-height:92vh;overflow
 <div id="kPzBg" class="kpzbg hidden"></div><div id="kHome" class="khome hidden"><button id="kPzX" class="kpzx" aria-label="Close menu">✕</button><div id="kPzRow" class="kpzrow"><button data-m="resume">▶ RESUME</button><button data-m="home">⌂ HOME / EXIT</button></div><div id="kTabs" class="ktabs"><button data-m="recal">⊙ TILT CENTER</button><button data-m="full">⛶ FULLSCREEN</button><button data-m="runway">↺ BACK TO RUNWAY</button><button data-m="skydrop">🪂 SKY DROP</button><button data-m="xray">RUNWAY X-RAY ON</button></div></div><button id="kMenuB" class="kmenub hidden" aria-label="Pause"><span>⏸</span></button>
 <div id="kOver" class="kover"><div class="kcard kcard2"><div class="kact"><h2>NEON WORLD!</h2><div class="kopts">
 <div class="kdiff"><span>SETUP</span><button class="on">STARTER WINGS</button></div>
-<div class="kdiff" id="kStartMode"><span>START</span><button data-sm="runway" class="on">🛫 RUNWAY</button><button data-sm="skydrop">🪂 SKY DROP</button></div>
+<div class="kdiff" id="kStartMode"><span>START</span><button data-sm="skydrop">🪂 SKY DROP</button><button data-sm="runway" class="on">🛫 RUNWAY</button><button data-sm="soccer">⚽ CAR SOCCER</button><button data-sm="wall">🧱 GRAFFITI WALL</button><button data-sm="paint">🎨 NEON PAINT</button></div>
 <div class="kdiff"><span>TILT</span><button id="kCalHint" class="on">📱 HOLD IT COMFY</button></div>
 <div class="kready">Hold the phone however is comfy, then tap START. Let go of THROTTLE to coast and slow down. That's your level: all tilt is from there. Re-center any time in ⏸.</div>
 </div><div class="kstart"><button id="ready" class="kbig">START</button></div></div>
@@ -281,6 +281,6 @@ html.pc-mode .khome{top:4vh;transform:translate(-50%,0);max-height:92vh;overflow
 <script src="world/soccer.js?v=27"></script>
 <script src="world/dance-stage.js?v=27"></script>
 <script src="world/neon-paint.js?v=27"></script>
-<script src="world/boot.js?v=27"></script>
+<script src="world/boot.js?v=28"></script>
 <script src="shared/car-model.js?v=27"></script>
 </body></html>
