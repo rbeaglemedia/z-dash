@@ -222,6 +222,7 @@ function walkFurnLabel(id){
   if(id==='arcade')return 'RETRO ARCADE CABINET';
   if(id==='dj')return 'DJ BOOTH';
   if(id==='trophy')return 'TROPHY SHELF';
+  if(id==='counter')return 'COUNTER SET';
   return 'CYBER SOFA';
 }
 function walkHouseRead(key){
@@ -232,21 +233,46 @@ function walkHouseRead(key){
     return raw;
   }catch(e){return null;}
 }
+const HOUSE_WALL_HEX={'neon-grid':'#3ee6ff',bubblegum:'#ff4fd8',midnight:'#9b5cff','lime-loft':'#7dff6b'};
+const HOUSE_WALL_NAME={'neon-grid':'NEON GRID',bubblegum:'BUBBLEGUM',midnight:'MIDNIGHT','lime-loft':'LIME LOFT'};
+const HOUSE_SIGN_TEXT={ellie:"ELLIE'S Z",arts:'Z COMPANY ARTS',home:'WELCOME HOME',glow:'NEON DREAMS'};
+const HOUSE_SIGN_IDS=['ellie','arts','home','glow'];
+const HOUSE_WALL_IDS=['neon-grid','bubblegum','midnight','lime-loft'];
 function walkHouseLoad(){
   const a=walkHouseRead(WALK_HOUSE_KEY)||{},b=walkHouseRead(WALK_KID_KEY)||{};
   const src=Object.assign({},b,a);
-  const theme=WALK_THEMES.indexOf(src.theme)>=0?src.theme:WALK_THEMES[0];
-  const furniture=WALK_FURN.indexOf(src.furniture)>=0?src.furniture:'sofa';
-  const sign=WALK_SIGNS.indexOf(src.sign)>=0?src.sign:'ELLIE';
-  return {theme,furniture,petBed:src.petBed!==false,sign};
+  const oldWall={'#ff4fd8':'bubblegum','#3ee6ff':'neon-grid','#7dff6b':'lime-loft','#ffb020':'neon-grid','#9b5cff':'midnight'};
+  const oldSign={ELLIE:'ellie','Z COMPANY':'arts','370Z':'glow',HOME:'home'};
+  let wall=src.wall||src.wallTheme;
+  if(!HOUSE_WALL_HEX[wall])wall=oldWall[src.theme]||'neon-grid';
+  let sign=src.sign;
+  if(!HOUSE_SIGN_TEXT[sign])sign=oldSign[src.sign]||'ellie';
+  const furniture=WALK_FURN.indexOf(src.furniture)>=0?src.furniture:(src.furniture==='counter'?'counter':'sofa');
+  const hub=typeof src.sofa==='boolean'||typeof src.arcade==='boolean'||typeof src.danceFloor==='boolean'||typeof src.counter==='boolean';
+  const sofa=hub?(src.sofa!==false):(furniture==='sofa'||src.furniture==null);
+  const arcade=hub?(src.arcade!==false):(furniture==='arcade');
+  const danceFloor=hub?(src.danceFloor!==false):false;
+  const counter=hub?src.counter===true:furniture==='counter';
+  const hasPlaced=Array.isArray(src.placed);
+  return {theme:HOUSE_WALL_HEX[wall],wall,wallName:HOUSE_WALL_NAME[wall],furniture,petBed:src.petBed!==false,sign,signText:HOUSE_SIGN_TEXT[sign],accent:HOUSE_WALL_HEX[wall],sofa,arcade,danceFloor,counter,placed:hasPlaced?src.placed:[],hasPlaced};
 }
 function walkHouseSave(patch){
-  const next=Object.assign(walkHouseLoad(),patch||{});
-  try{localStorage.setItem(WALK_HOUSE_KEY,JSON.stringify({house:next}));}catch(e){}
+  const cur=walkHouseLoad();
+  const next=Object.assign({
+    v:1,wall:cur.wall,sign:cur.sign,sofa:!!cur.sofa,arcade:!!cur.arcade,petBed:cur.petBed!==false,
+    danceFloor:!!cur.danceFloor,counter:!!cur.counter,furniture:cur.furniture,theme:cur.accent
+  },patch||{});
+  if(cur.hasPlaced||(patch&&Array.isArray(patch.placed)))next.placed=Array.isArray(next.placed)?next.placed:(cur.placed||[]);
+  else delete next.placed;
+  next.wallTheme=next.wall;
+  next.neonSign=HOUSE_SIGN_TEXT[next.sign]||cur.signText;
+  next.items={sofa:!!next.sofa,arcade:!!next.arcade,petBed:next.petBed!==false,danceFloor:!!next.danceFloor,counter:!!next.counter};
+  try{localStorage.setItem(WALK_HOUSE_KEY,JSON.stringify(next));}catch(e){}
   try{
     const kid=JSON.parse(localStorage.getItem(WALK_KID_KEY)||'null');
     if(kid&&typeof kid==='object'&&!Array.isArray(kid)){kid.house=next;localStorage.setItem(WALK_KID_KEY,JSON.stringify(kid));}
   }catch(e){}
+  try{if(window.WALK_ITEMS&&WALK_ITEMS.invalidate)WALK_ITEMS.invalidate();}catch(e){}
   return next;
 }
 function walkPetKind(){
@@ -284,10 +310,10 @@ function walkUseStation(id){
   const door=WALK_MODE.insideDoor,purpose=door&&door.purpose;
   if(purpose==='HOME'){
     const s=walkHouseLoad();
-    if(id==='theme'){const i=WALK_THEMES.indexOf(s.theme);walkHouseSave({theme:WALK_THEMES[(i+1)%WALK_THEMES.length]});}
-    else if(id==='furniture'){const i=Math.max(0,WALK_FURN.indexOf(s.furniture));walkHouseSave({furniture:WALK_FURN[(i+1)%WALK_FURN.length]});}
+    if(id==='theme'){const i=Math.max(0,HOUSE_WALL_IDS.indexOf(s.wall));const wall=HOUSE_WALL_IDS[(i+1)%HOUSE_WALL_IDS.length];walkHouseSave({wall,theme:HOUSE_WALL_HEX[wall]});}
+    else if(id==='furniture'){const order=WALK_FURN.concat(['counter']);const i=Math.max(0,order.indexOf(s.furniture));const furniture=order[(i+1)%order.length];const patch={furniture};if(furniture==='sofa'||furniture==='arcade'||furniture==='counter')patch[furniture]=true;walkHouseSave(patch);}
     else if(id==='petBed')walkHouseSave({petBed:!s.petBed});
-    else if(id==='sign'){const i=Math.max(0,WALK_SIGNS.indexOf(s.sign));walkHouseSave({sign:WALK_SIGNS[(i+1)%WALK_SIGNS.length]});}
+    else if(id==='sign'){const i=Math.max(0,HOUSE_SIGN_IDS.indexOf(s.sign));walkHouseSave({sign:HOUSE_SIGN_IDS[(i+1)%HOUSE_SIGN_IDS.length]});}
     walkFillTools('HOME');
   }else{
     const open=document.getElementById('walk-open-page');
@@ -303,10 +329,10 @@ function walkFillTools(purpose){
   if(purpose!=='HOME')return;
   const s=walkHouseLoad();
   const specs=[
-    ['theme','NEON WALL · '+s.theme],
+    ['theme','NEON WALL · '+(s.wallName||s.wall)],
     ['furniture','FURNITURE · '+walkFurnLabel(s.furniture)],
     ['petBed',s.petBed?'GLOWING PET BED · ON':'GLOWING PET BED · OFF'],
-    ['sign','NEON SIGN · '+s.sign]
+    ['sign','NEON SIGN · '+(s.signText||s.sign)]
   ];
   for(const pair of specs){
     const b=document.createElement('button');
@@ -449,57 +475,68 @@ function walkPaintRoom(){
   const house=purpose==='HOME'?walkHouseLoad():null;
   const theme=walkRoomTheme(purpose,house);
   const cam=(x,y,z)=>walkCam(x,y,z,W,H);
-  g.fillStyle='#05010c';g.fillRect(0,0,W,H);
-  const ceil=g.createLinearGradient(0,0,0,H*0.45);
+  const drawStatic=function(bg){
+  bg.shadowBlur=0;
+  bg.fillStyle='#05010c';bg.fillRect(0,0,W,H);
+  const ceil=bg.createLinearGradient(0,0,0,H*0.45);
   ceil.addColorStop(0,theme.ceil);ceil.addColorStop(1,theme.wall);
-  g.fillStyle=ceil;g.fillRect(0,0,W,H*0.5);
-  walkQuad(g,[cam(-4.2,0,7.4),cam(4.2,0,7.4),cam(4.2,3.1,7.4),cam(-4.2,3.1,7.4)],theme.wall,theme.accent);
-  walkQuad(g,[cam(-4.2,0,1.1),cam(-4.2,0,7.4),cam(-4.2,3.1,7.4),cam(-4.2,3.1,1.1)],theme.wall,null);
-  walkQuad(g,[cam(4.2,0,1.1),cam(4.2,0,7.4),cam(4.2,3.1,7.4),cam(4.2,3.1,1.1)],theme.wall,null);
-  walkQuad(g,[cam(-4.2,0,1.1),cam(4.2,0,1.1),cam(4.2,0,7.4),cam(-4.2,0,7.4)],theme.floor,null);
-  g.strokeStyle=theme.accent;g.globalAlpha=0.45;g.lineWidth=1.5;
-  for(let i=-4;i<=4;i++){const a=cam(i,0.02,1.2),b=cam(i,0.02,7.2);g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();}
-  for(let z=2;z<=7;z++){const a=cam(-4,0.02,z),b=cam(4,0.02,z);g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();}
-  g.globalAlpha=1;
+  bg.fillStyle=ceil;bg.fillRect(0,0,W,H*0.5);
+  walkQuad(bg,[cam(-4.2,0,7.4),cam(4.2,0,7.4),cam(4.2,3.1,7.4),cam(-4.2,3.1,7.4)],theme.wall,theme.accent);
+  walkQuad(bg,[cam(-4.2,0,1.1),cam(-4.2,0,7.4),cam(-4.2,3.1,7.4),cam(-4.2,3.1,1.1)],theme.wall,null);
+  walkQuad(bg,[cam(4.2,0,1.1),cam(4.2,0,7.4),cam(4.2,3.1,7.4),cam(4.2,3.1,1.1)],theme.wall,null);
+  walkQuad(bg,[cam(-4.2,0,1.1),cam(4.2,0,1.1),cam(4.2,0,7.4),cam(-4.2,0,7.4)],theme.floor,null);
+  bg.strokeStyle=theme.accent;bg.globalAlpha=0.45;bg.lineWidth=1.5;bg.shadowBlur=0;
+  for(let i=-4;i<=4;i++){const a=cam(i,0.02,1.2),b=cam(i,0.02,7.2);bg.beginPath();bg.moveTo(a[0],a[1]);bg.lineTo(b[0],b[1]);bg.stroke();}
+  for(let z=2;z<=7;z++){const a=cam(-4,0.02,z),b=cam(4,0.02,z);bg.beginPath();bg.moveTo(a[0],a[1]);bg.lineTo(b[0],b[1]);bg.stroke();}
+  bg.globalAlpha=1;
   const lampL=cam(-1.4,3.0,4),lampR=cam(1.4,3.0,4);
-  g.fillStyle=theme.accent;g.fillRect(lampL[0],lampL[1],Math.max(18,lampL[2]*80),6);g.fillRect(lampR[0],lampR[1],Math.max(18,lampR[2]*80),6);
+  bg.fillStyle=theme.accent;bg.fillRect(lampL[0],lampL[1],Math.max(18,lampL[2]*80),6);bg.fillRect(lampR[0],lampR[1],Math.max(18,lampR[2]*80),6);
   if(purpose==='HOME'){
-    walkBox(g,-2.3,0,6.2,0.9,0.7,0.4,theme.accent,'#fff',W,H);
-    if(!house||house.petBed)walkBox(g,-2.6,0,3.2,0.7,0.22,0.45,'#7dff6b','#e9fff2',W,H);
-    walkBox(g,2.3,0,5.4,0.7,0.9,0.4,'#3ee6ff','#fff',W,H);
+    walkBox(bg,-2.3,0,6.2,0.9,0.7,0.4,theme.accent,'#fff',W,H);
+    if(!house||house.petBed)walkBox(bg,-2.6,0,3.2,0.7,0.22,0.45,'#7dff6b','#e9fff2',W,H);
+    walkBox(bg,2.3,0,5.4,0.7,0.9,0.4,'#3ee6ff','#fff',W,H);
     const sign=cam(0.1,2.35,7.2);
-    g.fillStyle=theme.accent;g.font='800 22px sans-serif';g.textAlign='center';g.fillText((house&&house.sign)||'ELLIE',sign[0],sign[1]);
+    bg.fillStyle=theme.accent;bg.font='800 22px sans-serif';bg.textAlign='center';bg.fillText((house&&(house.signText||house.sign))||'ELLIE',sign[0],sign[1]);
   }else if(purpose==='DANCE'){
-    walkBox(g,0,0,4.6,1.6,0.04,1.6,'#ff4fd8','#fff',W,H);
-    walkBox(g,0,1.2,7.2,2.2,1.3,0.08,'#1a0614','#ff4fd8',W,H);
+    walkBox(bg,0,0,4.6,1.6,0.04,1.6,'#ff4fd8','#fff',W,H);
+    walkBox(bg,0,1.2,7.2,2.2,1.3,0.08,'#1a0614','#ff4fd8',W,H);
   }else if(purpose==='GARAGE'){
-    walkBox(g,0,0.9,5.5,1.3,0.12,0.8,'#ffb020','#fff',W,H);
-    walkBox(g,-2.8,0,5.2,0.45,1.1,0.35,'#3a321c','#ffb020',W,H);
+    walkBox(bg,0,0.9,5.5,1.3,0.12,0.8,'#ffb020','#fff',W,H);
+    walkBox(bg,-2.8,0,5.2,0.45,1.1,0.35,'#3a321c','#ffb020',W,H);
   }else if(purpose==='NEON_PAINT'){
-    walkBox(g,-2.2,0,5,0.2,1.4,0.2,'#ff4fd8','#fff',W,H);
-    walkBox(g,-1.4,0,5,0.2,1.4,0.2,'#3ee6ff','#fff',W,H);
-    walkBox(g,-0.6,0,5,0.2,1.4,0.2,'#7dff6b','#fff',W,H);
+    walkBox(bg,-2.2,0,5,0.2,1.4,0.2,'#ff4fd8','#fff',W,H);
+    walkBox(bg,-1.4,0,5,0.2,1.4,0.2,'#3ee6ff','#fff',W,H);
+    walkBox(bg,-0.6,0,5,0.2,1.4,0.2,'#7dff6b','#fff',W,H);
   }else if(purpose==='ARCADE'){
-    walkBox(g,-2.2,0,5.2,0.45,1.5,0.35,'#ffe14d','#fff',W,H);
-    walkBox(g,2.2,0,5.2,0.45,1.5,0.35,'#ff4fd8','#fff',W,H);
+    walkBox(bg,-2.2,0,5.2,0.45,1.5,0.35,'#ffe14d','#fff',W,H);
+    walkBox(bg,2.2,0,5.2,0.45,1.5,0.35,'#ff4fd8','#fff',W,H);
   }else if(purpose==='SOCCER'){
-    walkBox(g,0,0,5.5,2.2,0.05,1.1,'#1c6b32','#fff',W,H);
-    walkBox(g,0,0.4,7.1,1.5,0.7,0.08,'#e9fff2','#7dfff2',W,H);
+    walkBox(bg,0,0,5.5,2.2,0.05,1.1,'#1c6b32','#fff',W,H);
+    walkBox(bg,0,0.4,7.1,1.5,0.7,0.08,'#e9fff2','#7dfff2',W,H);
   }else if(purpose==='SKY_DROP'){
-    walkBox(g,-2.4,0.8,6.4,0.9,1.2,0.08,'#071820','#3ee6ff',W,H);
-    walkBox(g,2.4,0.8,6.4,0.9,1.2,0.08,'#071820','#3ee6ff',W,H);
+    walkBox(bg,-2.4,0.8,6.4,0.9,1.2,0.08,'#071820','#3ee6ff',W,H);
+    walkBox(bg,2.4,0.8,6.4,0.9,1.2,0.08,'#071820','#3ee6ff',W,H);
   }else if(purpose==='PETS'){
-    walkBox(g,-2.2,0,5.4,0.5,0.35,0.4,'#7dff6b','#fff',W,H);
-    walkBox(g,2.1,0,5.6,0.55,0.7,0.4,'#ffb020','#fff',W,H);
+    walkBox(bg,-2.2,0,5.4,0.5,0.35,0.4,'#7dff6b','#fff',W,H);
+    walkBox(bg,2.1,0,5.6,0.55,0.7,0.4,'#ffb020','#fff',W,H);
   }else if(purpose==='SHOWROOM'){
-    walkBox(g,0,0.15,5.2,1.1,0.12,1.1,'#102030','#3ee6ff',W,H);
+    walkBox(bg,0,0.15,5.2,1.1,0.12,1.1,'#102030','#3ee6ff',W,H);
   }else if(purpose==='CAFE'){
-    walkBox(g,0,0,6.2,2.4,0.9,0.4,'#ff9a2e','#fff',W,H);
+    walkBox(bg,0,0,6.2,2.4,0.9,0.4,'#ff9a2e','#fff',W,H);
   }else if(purpose==='NOS'){
-    walkBox(g,-1.6,0,5.4,0.35,1.3,0.35,'#3ee6ff','#fff',W,H);
-    walkBox(g,1.6,0,5.4,0.35,1.3,0.35,'#ff4fd8','#fff',W,H);
+    walkBox(bg,-1.6,0,5.4,0.35,1.3,0.35,'#3ee6ff','#fff',W,H);
+    walkBox(bg,1.6,0,5.4,0.35,1.3,0.35,'#ff4fd8','#fff',W,H);
   }else{
-    walkBox(g,0,0,5.6,1.2,0.7,0.5,theme.accent,'#fff',W,H);
+    walkBox(bg,0,0,5.6,1.2,0.7,0.5,theme.accent,'#fff',W,H);
+  }
+  };
+  const kit=window.WALK_ITEMS&&typeof WALK_ITEMS.isKit==='function'&&WALK_ITEMS.isKit(purpose);
+  if(window.WALK_ITEMS&&typeof WALK_ITEMS.present==='function'){
+    WALK_ITEMS.present(g,W,H,purpose,function(bg){
+      if(!(kit&&WALK_ITEMS.drawKit(bg,W,H,purpose)))drawStatic(bg);
+    });
+  }else if(!(kit&&window.WALK_ITEMS&&WALK_ITEMS.drawKit(g,W,H,purpose))){
+    drawStatic(g);
   }
   const room=WALK_MODE.room||{x:0,z:1.2,petX:1.1,petZ:1.6};
   const rz=4.6-room.z*0.55,pz=4.6-(room.petZ==null?room.z+0.4:room.petZ)*0.55;
@@ -507,7 +544,7 @@ function walkPaintRoom(){
   g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.ellipse(foot[0],foot[1],28,10,0,0,7);g.fill();
   const crewOn=walkPaintCrew(g,foot,W,H);
   if(!crewOn){walkDrawPerson(g,room.x,rz,W,H);walkDrawPetBody(g,room.petX==null?room.x+0.9:room.petX,pz,W,H);}
-  g.fillStyle='#e9fff2';g.font='800 16px sans-serif';g.textAlign='left';g.fillText(theme.name,16,H-18);
+  g.shadowBlur=0;g.fillStyle=kit?'#243044':'#e9fff2';g.font='800 16px sans-serif';g.textAlign='left';g.fillText(theme.name,16,H-18);
   if(card)card.dataset.room=purpose;
 }
 function walkLaunchStudio(purpose,door){
@@ -1035,7 +1072,9 @@ window.WALK_MODE={
       this.onFoot=false;this.door=null;this._roofY=null;this._autoBld=null;this._parkLatch=null;this._parkStep=null;
       this.insideBuilding=false;this.insideDoor=null;this.dancing=false;this.runMode=false;
       this.vx=0;this.vz=0;this.speed=0;this.gait='idle';this.jumpY=0;this.jumpVy=0;
-      walkHideInterior();walkSyncPill();walkSyncGait();walkSyncDyn();return false;
+      walkHideInterior();walkSyncPill();walkSyncGait();walkSyncDyn();
+      try{if(window.WALK_ITEMS&&WALK_ITEMS.sync)WALK_ITEMS.sync();}catch(e){}
+      return false;
     }
     const park=this._holdParking();
     if(park)return this._stepIntoBay(park);
@@ -1132,7 +1171,7 @@ window.WALK_MODE={
   enterDoor(){return walkEnterDoor.call(this);},
   update(dt){
     const d=Math.max(0,Math.min(0.05,+dt||0));
-    try{this._update(d);}finally{walkSyncEnterBtn();}
+    try{this._update(d);}finally{walkSyncEnterBtn();try{if(window.WALK_ITEMS&&WALK_ITEMS.sync)WALK_ITEMS.sync();}catch(e){}}
   },
   _update(d){
     const jumpHeld=!!(typeof B!=='undefined'&&B&&(B.jump||B.brk))||!!(typeof K!=='undefined'&&K&&K.Space);
@@ -1155,7 +1194,9 @@ window.WALK_MODE={
       if(this.insideBuilding){this.insideBuilding=false;this.insideDoor=null;walkHideInterior();}
       this.vx=0;this.vz=0;this.speed=0;this.dancing=false;this.gait='idle';this.jumpY=0;this.jumpVy=0;
       this._holdParking();
-      walkSyncPill();walkSyncGait();walkSyncDyn();return;
+      walkSyncPill();walkSyncGait();walkSyncDyn();
+      try{if(window.WALK_ITEMS&&WALK_ITEMS.sync)WALK_ITEMS.sync();}catch(e){}
+      return;
     }
     if(this.insideBuilding){
       this.vx=0;this.vz=0;this.speed=0;this.dancing=false;this.gait='walk';
