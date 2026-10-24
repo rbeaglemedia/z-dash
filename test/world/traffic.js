@@ -2,8 +2,7 @@
 // Neon World road traffic: Z TAKEOVER level 4 (every car is the player's 370Z).
 // The GLB is the one already loaded on ZD.Xray.car. Traffic clones that graph once
 // (shared geometry, no second download) into its own scene and bakes view sprites
-// with its own renderer. It never calls X.render, never resizes the on-screen
-// player canvas, never touches X.car after the
+// with X.renderer only. It never calls X.render, never touches X.car after the
 // clone, and never opens the player's wings. Far cars are boxes or light dots.
 // physics.js / tune.js untouched. A hit wrecks the traffic car (WANTED wKnock / wFlip).
 const TRAFFIC = (() => {
@@ -25,7 +24,7 @@ const TRAFFIC = (() => {
   // not evict the sprites it just paid for.
   let warmCapOn = 0, warmKeys = null, warmAt = 0, warmFail = 0;
   const WARM_BYTE_CAP = 170 * 1024 * 1024;
-  let wingHinges = 0, crewN = 0, bakeR = null;
+  let wingHinges = 0, crewN = 0;
 
   function kidOf(p) {
     return {paint:p.paint, glow:p.glow, grid:p.grid, wheel:'#4a4f57', wheelGlow:false, spoiler:null, wings:null, extra:null, extras:[]};
@@ -716,8 +715,7 @@ const TRAFFIC = (() => {
     if (!TRAFFIC._clone || !TRAFFIC._scene || !TRAFFIC._cam) return false;
     const [pi, yb, eb] = key.split(':').map(Number);
     if (!T.paints[pi]) return false;
-    const R = trafficBakeR(X), px = T.spritePx;
-    if (!R) return false;
+    const R = X.renderer, px = T.spritePx;
     const box = {set(w, h){ this.w = w; this.h = h; return this; }, w:1, h:1};
     const dpr = R.getPixelRatio ? R.getPixelRatio() : 1;
     const rt = R.getRenderTarget ? R.getRenderTarget() : null;
@@ -772,13 +770,8 @@ const TRAFFIC = (() => {
         if (R.setScissorTest) R.setScissorTest(scissor);
         if (rt && R.setRenderTarget) R.setRenderTarget(rt);
       } catch (e2) {}
+      X._w = 0; X._h = 0;
     }
-  }
-  function trafficBakeR(X) {
-    if (bakeR) return bakeR;
-    const c = document.createElement('canvas');
-    bakeR = new X.renderer.constructor({canvas:c, antialias:true, alpha:true, preserveDrawingBuffer:true});
-    return bakeR;
   }
   function shadow(c) {
     const gy = c.gy || 0, hAir = Math.max(0, (c.y || 0) - gy);

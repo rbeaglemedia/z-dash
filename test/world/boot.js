@@ -40,7 +40,7 @@ function flickCanvas(cv,prevW,prevH,w,h){
   if(!Z_PERF.clears)Z_PERF.clears={city:0,gl:0,cache:0};
   Z_PERF.clears[kind]++;
   Z_PERF.clearLast=kind+' '+prevW+'x'+prevH+'→'+w+'x'+h;
-  if(kind==='gl'){Z_PERF.glResizeFrame=Z_PERF.opened||0;if(cv.isConnected)flickNote('car','gl-resize',Z_PERF.clearLast);}
+  if(kind==='gl')Z_PERF.glResizeFrame=Z_PERF.opened||0;
   if(kind==='cache')Z_PERF.cacheResizeFrame=Z_PERF.opened||0;
   // The city canvas is the picture. A width write clears the city and the HUD
   // together, and the browser can show that blank frame before the next draw.
@@ -169,14 +169,10 @@ function render(){const _vs=visApply();const tR=performance.now();
   if(PERF){const t=performance.now();drawSkids();perfAdd('trails',performance.now()-t);}else drawSkids();
   P.y+=P.sus||0;if(window.CREW){if(PERF){const t=performance.now();CREW.update();perfAdd('crew',performance.now()-t);}else CREW.update();}
   drawZ();P.y-=P.sus||0;
-  // Water, sparks, the hot drop, and the HUD paint above the WebGL car.
-  zBeginOver();
-  try{
   if(PERF){const t=performance.now();drawWaterline();perfAdd('water',performance.now()-t);const t2=performance.now();drawFX();perfAdd('fx',performance.now()-t2);}else{drawWaterline();drawFX();}
   if(window.HOTDROP){if(PERF){const t=performance.now();HOTDROP.draw();perfAdd('hotdrop',performance.now()-t);}else HOTDROP.draw();}
   visRestore(_vs);
   if(PERF){const t=performance.now(),m0=Z_PERF.pass.map||0,hd=Z_PERF.hudDrew||0;drawHud(hudDt);perfAdd('hud',Math.max(0,performance.now()-t-((Z_PERF.pass.map||0)-m0)));if((Z_PERF.hudDrew||0)===hd&&window.Z_WARM&&Z_WARM.phase==='done')flickNote('hud','not-drawn','');}else drawHud(hudDt);
-  }finally{zEndOver();}
   // Train the car rate on heavy frames only, and only once play has started.
   // A 70–90 blended average is not a signal: it is the cheap frame mixed with this one.
   if(window.Z_WARM&&Z_WARM.phase==='done'){
@@ -378,7 +374,7 @@ function perfPaint(){
     +'now '+(Z_PERF.top.length?line(Z_PERF.top):'—')+'\n'
     +(avg.length?('avg '+line(avg.slice(0,3).map(r=>({n:r.n,ms:r.ms})))+'\n'):'')
     +(stats?('med '+stats.med.toFixed(1)+'   1% '+stats.low.toFixed(1)+'   slow '+Z_PERF.slowN+'\n'):'')
-    +'sprite x'+every+(window.Z_NOCARSKIP?' nocarskip':'')+(typeof ZV!=='undefined'&&ZV.live?' live':'')+'  skip '+(Z_PERF.skipN||0)+(rung?'   rung '+rung.step+' / '+rung.boost:'')+'\n'
+    +'sprite x'+every+(window.Z_NOCARSKIP?' nocarskip':'')+'  skip '+(Z_PERF.skipN||0)+(rung?'   rung '+rung.step+' / '+rung.boost:'')+'\n'
     +flickLine()+'\n'
     +perfSw()+' · '+perfPdb()+' · bakes '+(Z_PERF.trafficBake||0)+' · glsize '+((Z_PERF.clears&&Z_PERF.clears.gl)||0)+' · rsz '+(Z_PERF.resizeN||0)+(Z_PERF.resizeSame?('/'+Z_PERF.resizeSame+' same'):'')+'\n'
     +perfBg()+' · '+Z_PERF.build;
