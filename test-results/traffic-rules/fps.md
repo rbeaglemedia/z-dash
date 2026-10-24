@@ -18,3 +18,9 @@ Phone shots, same street crossing, same camera:
 
 - `before-stop-phone.png` / `after-stop-phone.png` — gold car. Before it drives through (s 93.8, 12 m/s). After it stops short (s 75.2, 0 m/s). Crossing is at s 83.3.
 - `before-yield-phone.png` / `after-yield-phone.png` — pink car behind his white Z. Before it keeps 14 m/s. After it stops (0 m/s) and his Z stays put.
+
+Labeled phone frames for the go/no-go, 844×390 at device scale 2, his white Z in every frame:
+
+- `traffic_rules_before_crossing_phone.png` / `traffic_rules_after_crossing_phone.png` — gold car at the street crossing. Before 7.6 m/s in the crossing. After 0 m/s short of it.
+- `traffic_rules_before_yield_phone.png` / `traffic_rules_after_yield_phone.png` — pink car behind his Z. Before 14 m/s. After 0 m/s, and his Z stays put.
+- `traffic_rules_before_nos_apron_phone.png` / `traffic_rules_after_nos_apron_phone.png` — gold car at the FIELD NOS station. The boulevard lanes run beside the pump box, so this frame draws that station's apron marks out to the street it faces. Before the car is in the apron at 4.1 m/s. After it is stopped at the apron.
