@@ -1,0 +1,337 @@
+{
+  "id": "ipad",
+  "url": "http://127.0.0.1:8765/world.html?perf=1",
+  "readyMs": 1921,
+  "warm": null,
+  "beforeDraw": {
+    "dpr": 2,
+    "touch": 1,
+    "css": [
+      1180,
+      820
+    ],
+    "canvas": [
+      1180,
+      820
+    ],
+    "logical": [
+      1180,
+      820,
+      1
+    ],
+    "gl": [
+      300,
+      150
+    ],
+    "drawBuf": [
+      300,
+      150
+    ],
+    "xd": [
+      0,
+      0,
+      0
+    ],
+    "blit": null,
+    "lastPx": null,
+    "px": null,
+    "plan": null,
+    "zPhase": null,
+    "viol": null
+  },
+  "first": {
+    "dpr": 2,
+    "touch": 1,
+    "css": [
+      1180,
+      820
+    ],
+    "canvas": [
+      1180,
+      820
+    ],
+    "logical": [
+      1180,
+      820,
+      1
+    ],
+    "gl": [
+      1024,
+      1024
+    ],
+    "drawBuf": [
+      1024,
+      1024
+    ],
+    "xd": [
+      512,
+      512,
+      2
+    ],
+    "blit": null,
+    "lastPx": null,
+    "px": null,
+    "plan": null,
+    "zPhase": null,
+    "viol": null
+  },
+  "afterInput": {
+    "dpr": 2,
+    "touch": 1,
+    "css": [
+      1180,
+      820
+    ],
+    "canvas": [
+      1180,
+      820
+    ],
+    "logical": [
+      1180,
+      820,
+      1
+    ],
+    "gl": [
+      1024,
+      1024
+    ],
+    "drawBuf": [
+      1024,
+      1024
+    ],
+    "xd": [
+      512,
+      512,
+      2
+    ],
+    "blit": null,
+    "lastPx": null,
+    "px": null,
+    "plan": null,
+    "zPhase": null,
+    "viol": null
+  },
+  "afterResize": {
+    "dpr": 2,
+    "touch": 1,
+    "css": [
+      820,
+      1180
+    ],
+    "canvas": [
+      820,
+      1180
+    ],
+    "logical": [
+      820,
+      1180,
+      1
+    ],
+    "gl": [
+      1120,
+      1120
+    ],
+    "drawBuf": [
+      1120,
+      1120
+    ],
+    "xd": [
+      560,
+      560,
+      2
+    ],
+    "blit": null,
+    "lastPx": null,
+    "px": null,
+    "plan": null,
+    "zPhase": null,
+    "viol": null
+  },
+  "cvlog": [
+    {
+      "t": 8600,
+      "id": "",
+      "prop": "h",
+      "v": 150
+    },
+    {
+      "t": 8723,
+      "id": "",
+      "prop": "w",
+      "v": 512
+    },
+    {
+      "t": 8723,
+      "id": "",
+      "prop": "h",
+      "v": 118
+    },
+    {
+      "t": 8726,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 8726,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 8728,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 8754,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 8754,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 8757,
+      "id": "",
+      "prop": "w",
+      "v": 600
+    },
+    {
+      "t": 8923,
+      "id": "",
+      "prop": "h",
+      "v": 300
+    },
+    {
+      "t": 9072,
+      "id": "",
+      "prop": "w",
+      "v": 1024
+    },
+    {
+      "t": 9213,
+      "id": "",
+      "prop": "h",
+      "v": 1024
+    },
+    {
+      "t": 10063,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 10063,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 13035,
+      "id": "",
+      "prop": "w",
+      "v": 1024
+    },
+    {
+      "t": 13035,
+      "id": "",
+      "prop": "h",
+      "v": 1024
+    },
+    {
+      "t": 13036,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 13036,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 13036,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 13036,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 13041,
+      "id": "",
+      "prop": "w",
+      "v": 1156
+    },
+    {
+      "t": 13041,
+      "id": "",
+      "prop": "h",
+      "v": 1292
+    },
+    {
+      "t": 13042,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 13042,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 13046,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 13046,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 13046,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 13046,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 13048,
+      "id": "",
+      "prop": "h",
+      "v": 160
+    },
+    {
+      "t": 13048,
+      "id": "",
+      "prop": "w",
+      "v": 160
+    }
+  ],
+  "logs": [
+    "warn []Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content.",
+    "log ZREADY",
+    "error Failed to load resource: the server responded with a status of 404 (File not found)"
+  ]
+}

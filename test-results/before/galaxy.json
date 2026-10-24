@@ -1,0 +1,336 @@
+{
+  "id": "galaxy",
+  "url": "http://127.0.0.1:8765/world.html?perf=1",
+  "readyMs": 902,
+  "warm": null,
+  "beforeDraw": {
+    "dpr": 3,
+    "touch": 1,
+    "css": [
+      412,
+      915
+    ],
+    "canvas": [
+      824,
+      1830
+    ],
+    "logical": [
+      412,
+      915,
+      2
+    ],
+    "gl": [
+      300,
+      150
+    ],
+    "drawBuf": [
+      300,
+      150
+    ],
+    "xd": [
+      0,
+      0,
+      0
+    ],
+    "blit": null,
+    "lastPx": null,
+    "px": null,
+    "plan": null,
+    "zPhase": null,
+    "viol": null
+  },
+  "first": {
+    "dpr": 3,
+    "touch": 1,
+    "css": [
+      412,
+      915
+    ],
+    "canvas": [
+      824,
+      1830
+    ],
+    "logical": [
+      412,
+      915,
+      2
+    ],
+    "gl": [
+      1120,
+      1120
+    ],
+    "drawBuf": [
+      1120,
+      1120
+    ],
+    "xd": [
+      560,
+      560,
+      2
+    ],
+    "blit": null,
+    "lastPx": null,
+    "px": null,
+    "plan": null,
+    "zPhase": null,
+    "viol": null
+  },
+  "afterInput": {
+    "dpr": 3,
+    "touch": 1,
+    "css": [
+      412,
+      915
+    ],
+    "canvas": [
+      824,
+      1830
+    ],
+    "logical": [
+      412,
+      915,
+      2
+    ],
+    "gl": [
+      1120,
+      1120
+    ],
+    "drawBuf": [
+      1120,
+      1120
+    ],
+    "xd": [
+      560,
+      560,
+      2
+    ],
+    "blit": null,
+    "lastPx": null,
+    "px": null,
+    "plan": null,
+    "zPhase": null,
+    "viol": null
+  },
+  "afterResize": {
+    "dpr": 3,
+    "touch": 1,
+    "css": [
+      915,
+      412
+    ],
+    "canvas": [
+      1830,
+      824
+    ],
+    "logical": [
+      915,
+      412,
+      2
+    ],
+    "gl": [
+      512,
+      512
+    ],
+    "drawBuf": [
+      512,
+      512
+    ],
+    "xd": [
+      256,
+      256,
+      2
+    ],
+    "blit": null,
+    "lastPx": null,
+    "px": null,
+    "plan": null,
+    "zPhase": null,
+    "viol": null
+  },
+  "cvlog": [
+    {
+      "t": 4283,
+      "id": "",
+      "prop": "h",
+      "v": 150
+    },
+    {
+      "t": 4353,
+      "id": "",
+      "prop": "w",
+      "v": 512
+    },
+    {
+      "t": 4353,
+      "id": "",
+      "prop": "h",
+      "v": 118
+    },
+    {
+      "t": 4358,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 4358,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 4359,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 4382,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 4382,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 4385,
+      "id": "",
+      "prop": "w",
+      "v": 600
+    },
+    {
+      "t": 4467,
+      "id": "",
+      "prop": "h",
+      "v": 300
+    },
+    {
+      "t": 4560,
+      "id": "",
+      "prop": "w",
+      "v": 1120
+    },
+    {
+      "t": 4651,
+      "id": "",
+      "prop": "h",
+      "v": 1120
+    },
+    {
+      "t": 5099,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 5099,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 7261,
+      "id": "",
+      "prop": "w",
+      "v": 1120
+    },
+    {
+      "t": 7261,
+      "id": "",
+      "prop": "h",
+      "v": 1120
+    },
+    {
+      "t": 7261,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 7261,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 7261,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 7261,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 7261,
+      "id": "",
+      "prop": "w",
+      "v": 1156
+    },
+    {
+      "t": 7261,
+      "id": "",
+      "prop": "h",
+      "v": 1292
+    },
+    {
+      "t": 7262,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 7262,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 7264,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 7264,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 7264,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 7264,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 7265,
+      "id": "",
+      "prop": "h",
+      "v": 160
+    },
+    {
+      "t": 7265,
+      "id": "",
+      "prop": "w",
+      "v": 160
+    }
+  ],
+  "logs": [
+    "warn []Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content.",
+    "log ZREADY"
+  ]
+}

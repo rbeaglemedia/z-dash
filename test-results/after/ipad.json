@@ -1,0 +1,656 @@
+{
+  "id": "ipad",
+  "url": "http://127.0.0.1:8765/world.html?perf=1",
+  "readyMs": 2227,
+  "warm": null,
+  "beforeDraw": {
+    "dpr": 2,
+    "touch": 1,
+    "css": [
+      1180,
+      820
+    ],
+    "canvas": [
+      1180,
+      820
+    ],
+    "logical": [
+      1180,
+      820,
+      1
+    ],
+    "gl": [
+      300,
+      150
+    ],
+    "drawBuf": [
+      300,
+      150
+    ],
+    "xd": [
+      0,
+      0,
+      0
+    ],
+    "blit": null,
+    "lastPx": 0,
+    "dispPx": 0,
+    "px": null,
+    "plan": {
+      "mode": "ipad",
+      "dpr": 1,
+      "buf": [
+        1180,
+        820
+      ],
+      "cap": 1555200
+    },
+    "zPhase": "boot",
+    "samples": {
+      "parse": {
+        "t": 297,
+        "reason": "parse",
+        "mode": "ipad",
+        "device": 2,
+        "dpr": 1,
+        "cap": 1555200,
+        "css": "1180x820",
+        "logical": "1180x820",
+        "planBuf": "1180x820",
+        "canvas": "1180x820",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "0x0",
+        "drawBuf": "0x0",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      }
+    },
+    "viol": []
+  },
+  "first": {
+    "dpr": 2,
+    "touch": 1,
+    "css": [
+      1180,
+      820
+    ],
+    "canvas": [
+      1180,
+      820
+    ],
+    "logical": [
+      1180,
+      820,
+      1
+    ],
+    "gl": [
+      512,
+      512
+    ],
+    "drawBuf": [
+      512,
+      512
+    ],
+    "xd": [
+      512,
+      512,
+      1
+    ],
+    "blit": [
+      512,
+      512
+    ],
+    "lastPx": 512,
+    "dispPx": 507,
+    "px": null,
+    "plan": {
+      "mode": "ipad",
+      "dpr": 1,
+      "buf": [
+        1180,
+        820
+      ],
+      "cap": 1555200
+    },
+    "zPhase": "steady",
+    "samples": {
+      "parse": {
+        "t": 297,
+        "reason": "parse",
+        "mode": "ipad",
+        "device": 2,
+        "dpr": 1,
+        "cap": 1555200,
+        "css": "1180x820",
+        "logical": "1180x820",
+        "planBuf": "1180x820",
+        "canvas": "1180x820",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "0x0",
+        "drawBuf": "0x0",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "load": {
+        "t": 2539,
+        "reason": "load",
+        "mode": "ipad",
+        "device": 2,
+        "dpr": 1,
+        "cap": 1555200,
+        "css": "1180x820",
+        "logical": "1180x820",
+        "planBuf": "1180x820",
+        "canvas": "1180x820",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "300x150",
+        "drawBuf": "300x150",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "live": {
+        "t": 12531,
+        "reason": "live",
+        "mode": "ipad",
+        "device": 2,
+        "dpr": 1,
+        "cap": 1555200,
+        "css": "1180x820",
+        "logical": "1180x820",
+        "planBuf": "1180x820",
+        "canvas": "1180x820",
+        "carPx": 507,
+        "blit": "512x512",
+        "gl": "512x512",
+        "drawBuf": "512x512",
+        "raw": 1024,
+        "budget": 512,
+        "viol": 0
+      }
+    },
+    "viol": []
+  },
+  "afterInput": {
+    "dpr": 2,
+    "touch": 1,
+    "css": [
+      1180,
+      820
+    ],
+    "canvas": [
+      1180,
+      820
+    ],
+    "logical": [
+      1180,
+      820,
+      1
+    ],
+    "gl": [
+      512,
+      512
+    ],
+    "drawBuf": [
+      512,
+      512
+    ],
+    "xd": [
+      512,
+      512,
+      1
+    ],
+    "blit": [
+      512,
+      512
+    ],
+    "lastPx": 512,
+    "dispPx": 507,
+    "px": null,
+    "plan": {
+      "mode": "ipad",
+      "dpr": 1,
+      "buf": [
+        1180,
+        820
+      ],
+      "cap": 1555200
+    },
+    "zPhase": "input",
+    "samples": {
+      "parse": {
+        "t": 297,
+        "reason": "parse",
+        "mode": "ipad",
+        "device": 2,
+        "dpr": 1,
+        "cap": 1555200,
+        "css": "1180x820",
+        "logical": "1180x820",
+        "planBuf": "1180x820",
+        "canvas": "1180x820",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "0x0",
+        "drawBuf": "0x0",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "load": {
+        "t": 2539,
+        "reason": "load",
+        "mode": "ipad",
+        "device": 2,
+        "dpr": 1,
+        "cap": 1555200,
+        "css": "1180x820",
+        "logical": "1180x820",
+        "planBuf": "1180x820",
+        "canvas": "1180x820",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "300x150",
+        "drawBuf": "300x150",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "live": {
+        "t": 15287,
+        "reason": "live",
+        "mode": "ipad",
+        "device": 2,
+        "dpr": 1,
+        "cap": 1555200,
+        "css": "1180x820",
+        "logical": "1180x820",
+        "planBuf": "1180x820",
+        "canvas": "1180x820",
+        "carPx": 507,
+        "blit": "512x512",
+        "gl": "512x512",
+        "drawBuf": "512x512",
+        "raw": 1024,
+        "budget": 512,
+        "viol": 0
+      },
+      "input": {
+        "t": 14124,
+        "reason": "input",
+        "mode": "ipad",
+        "device": 2,
+        "dpr": 1,
+        "cap": 1555200,
+        "css": "1180x820",
+        "logical": "1180x820",
+        "planBuf": "1180x820",
+        "canvas": "1180x820",
+        "carPx": 507,
+        "blit": "512x512",
+        "gl": "512x512",
+        "drawBuf": "512x512",
+        "raw": 1024,
+        "budget": 512,
+        "viol": 0
+      }
+    },
+    "viol": []
+  },
+  "afterResize": {
+    "dpr": 2,
+    "touch": 1,
+    "css": [
+      820,
+      1180
+    ],
+    "canvas": [
+      820,
+      1180
+    ],
+    "logical": [
+      820,
+      1180,
+      1
+    ],
+    "gl": [
+      560,
+      560
+    ],
+    "drawBuf": [
+      560,
+      560
+    ],
+    "xd": [
+      560,
+      560,
+      1
+    ],
+    "blit": [
+      560,
+      560
+    ],
+    "lastPx": 560,
+    "dispPx": 560,
+    "px": null,
+    "plan": {
+      "mode": "ipad",
+      "dpr": 1,
+      "buf": [
+        820,
+        1180
+      ],
+      "cap": 1555200
+    },
+    "zPhase": "input",
+    "samples": {
+      "parse": {
+        "t": 297,
+        "reason": "parse",
+        "mode": "ipad",
+        "device": 2,
+        "dpr": 1,
+        "cap": 1555200,
+        "css": "1180x820",
+        "logical": "1180x820",
+        "planBuf": "1180x820",
+        "canvas": "1180x820",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "0x0",
+        "drawBuf": "0x0",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "load": {
+        "t": 2539,
+        "reason": "load",
+        "mode": "ipad",
+        "device": 2,
+        "dpr": 1,
+        "cap": 1555200,
+        "css": "1180x820",
+        "logical": "1180x820",
+        "planBuf": "1180x820",
+        "canvas": "1180x820",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "300x150",
+        "drawBuf": "300x150",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "live": {
+        "t": 16200,
+        "reason": "live",
+        "mode": "ipad",
+        "device": 2,
+        "dpr": 1,
+        "cap": 1555200,
+        "css": "820x1180",
+        "logical": "820x1180",
+        "planBuf": "820x1180",
+        "canvas": "820x1180",
+        "carPx": 560,
+        "blit": "560x560",
+        "gl": "560x560",
+        "drawBuf": "560x560",
+        "raw": 1120,
+        "budget": 560,
+        "viol": 0
+      },
+      "input": {
+        "t": 14124,
+        "reason": "input",
+        "mode": "ipad",
+        "device": 2,
+        "dpr": 1,
+        "cap": 1555200,
+        "css": "1180x820",
+        "logical": "1180x820",
+        "planBuf": "1180x820",
+        "canvas": "1180x820",
+        "carPx": 507,
+        "blit": "512x512",
+        "gl": "512x512",
+        "drawBuf": "512x512",
+        "raw": 1024,
+        "budget": 512,
+        "viol": 0
+      },
+      "resize": {
+        "t": 16175,
+        "reason": "resize",
+        "mode": "ipad",
+        "device": 2,
+        "dpr": 1,
+        "cap": 1555200,
+        "css": "820x1180",
+        "logical": "820x1180",
+        "planBuf": "820x1180",
+        "canvas": "820x1180",
+        "carPx": 507,
+        "blit": "512x512",
+        "gl": "512x512",
+        "drawBuf": "512x512",
+        "raw": 1024,
+        "budget": 512,
+        "viol": 0
+      },
+      "vv": {
+        "t": 15886,
+        "reason": "vv",
+        "mode": "ipad",
+        "device": 2,
+        "dpr": 1,
+        "cap": 1555200,
+        "css": "820x1180",
+        "logical": "820x1180",
+        "planBuf": "820x1180",
+        "canvas": "820x1180",
+        "carPx": 507,
+        "blit": "512x512",
+        "gl": "512x512",
+        "drawBuf": "512x512",
+        "raw": 1024,
+        "budget": 512,
+        "viol": 0
+      }
+    },
+    "viol": []
+  },
+  "cvlog": [
+    {
+      "t": 8692,
+      "id": "",
+      "prop": "h",
+      "v": 150
+    },
+    {
+      "t": 8817,
+      "id": "",
+      "prop": "w",
+      "v": 512
+    },
+    {
+      "t": 8817,
+      "id": "",
+      "prop": "h",
+      "v": 118
+    },
+    {
+      "t": 8825,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 8825,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 8827,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 8848,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 8848,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 8850,
+      "id": "",
+      "prop": "w",
+      "v": 300
+    },
+    {
+      "t": 8850,
+      "id": "",
+      "prop": "h",
+      "v": 150
+    },
+    {
+      "t": 8850,
+      "id": "",
+      "prop": "w",
+      "v": 512
+    },
+    {
+      "t": 9019,
+      "id": "",
+      "prop": "h",
+      "v": 512
+    },
+    {
+      "t": 9707,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 9707,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 12525,
+      "id": "",
+      "prop": "w",
+      "v": 512
+    },
+    {
+      "t": 12525,
+      "id": "",
+      "prop": "h",
+      "v": 512
+    },
+    {
+      "t": 12531,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 12531,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 12531,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 12531,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 12533,
+      "id": "",
+      "prop": "w",
+      "v": 1156
+    },
+    {
+      "t": 12533,
+      "id": "",
+      "prop": "h",
+      "v": 1292
+    },
+    {
+      "t": 12536,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 12536,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 12536,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 12536,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 12536,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 12536,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 12537,
+      "id": "",
+      "prop": "h",
+      "v": 160
+    },
+    {
+      "t": 12537,
+      "id": "",
+      "prop": "w",
+      "v": 160
+    }
+  ],
+  "logs": [
+    "warn []Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content.",
+    "log ZREADY",
+    "error Failed to load resource: the server responded with a status of 404 (File not found)"
+  ]
+}

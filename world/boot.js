@@ -31,7 +31,7 @@ function render(){const _vs=visApply();
   ctx.globalAlpha=1;farFlush();drawTunnelInside();
   // shadow on ground
   const sh=proj(P.x,(P.ground?P.y:P.gy||0)+0.35,P.z);if(sh){ctx.fillStyle='rgba(255,42,61,.25)';ctx.beginPath();ctx.ellipse(sh[0],sh[1],Math.max(2,900/sh[2]),Math.max(1,300/sh[2]),0,0,7);ctx.fill();}
-  if(RWXRAY.on)drawRunway();drawSkids();P.y+=P.sus||0;if(window.CREW)CREW.update();drawZ();P.y-=P.sus||0;drawWaterline();drawFX();
+  if(RWXRAY.on)drawRunway();drawSkids();P.y+=P.sus||0;if(window.CREW)CREW.update();if(!window._zWarmed&&typeof zWarmGpu==='function')window._zWarmed=!!zWarmGpu();drawZ();P.y-=P.sus||0;drawWaterline();drawFX();
   if(window.HOTDROP)HOTDROP.draw();
   visRestore(_vs);drawHud(hudDt);}
 let last=performance.now(),hudDt=1/60;

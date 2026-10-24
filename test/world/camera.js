@@ -13,7 +13,7 @@ const cv=document.getElementById('c'),ctx=cv.getContext('2d');let W=0,H=0,DPR=1;
 // Phones, desktops, and an iPad already near 60 never take a step down.
 let ipadSized=false,ipadBoost=1,ipadStepI=0,ipadEma=0.016,ipadWarm=0,ipadBad=0,ipadGood=0,ipadCool=0,ipadProbe=0,ipadProbeBase=0,ipadProbeUp=0,ipadLock=99,ipadClimbHold=0,ipadSettle=0,ipadProbeSum=0,ipadProbeN=0,ipadAnchor=0;
 const IPAD_LADDER=[1,0.84,0.70,0.58,0.48,0.38];
-function resize(){
+function resize(reason){
   const hasTouch=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
   const isDesktopPC=!hasTouch&&innerWidth>1024;
   const isIPadUA=/iPad/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -28,7 +28,13 @@ function resize(){
     cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';
     ipadSized=true;
   }else if(!isDesktopPC){
-    DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+    const plan=(typeof zResPlan==='function')?zResPlan():null;
+    if(plan&&plan.mode==='phone'){DPR=plan.dpr;W=plan.W;H=plan.H;}
+    else{
+      DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+      const area=W*H||1,cap=1440*1080;
+      if(area*DPR*DPR>cap)DPR=Math.sqrt(cap/area);
+    }
     if(ipadSized){cv.style.width='';cv.style.height='';ipadSized=false;}
   }else{
     DPR=1;
@@ -38,7 +44,11 @@ function resize(){
     if(W*H>cap){const fit=Math.sqrt(cap/(W*H));W=Math.max(1,Math.floor(W*fit));H=Math.max(1,Math.floor(H*fit));}
     if(ipadSized){cv.style.width='';cv.style.height='';ipadSized=false;}
   }
-  cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
+  let bw=Math.max(1,Math.round(W*DPR)),bh=Math.max(1,Math.round(H*DPR));
+  if(!isIPad&&!isDesktopPC&&typeof zResPlan==='function'){const plan=zResPlan();if(plan.mode==='phone'){bw=plan.bufW;bh=plan.bufH;DPR=plan.dpr;}}
+  if(cv.width!==bw||cv.height!==bh){cv.width=bw;cv.height=bh;}
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(typeof zResAfter==='function')zResAfter(typeof reason==='string'?reason:'resize');
 }
 function ipadScale(){return {boost:ipadBoost,step:ipadStepI,ema:+ipadEma.toFixed(4),lock:ipadLock};}
 function ipadPause(s){
@@ -105,7 +115,8 @@ function ipadFit(frame){
     ipadGood=Math.max(0,ipadGood-frame*0.25);
   }
 }
-addEventListener('resize',resize);resize();
+addEventListener('resize',()=>resize('resize'));resize('parse');
+if(typeof zResListen==='function')zResListen();
 const cam={x:0,y:0,z:0,yaw:0,pitch:0,roll:0};
 // Flight pull-up damping. boot.js aims the chase cam with the raw nose pitch, which
 // drops the camera under the car on a sharp climb and shoves the city off the bottom.

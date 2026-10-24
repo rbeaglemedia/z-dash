@@ -735,6 +735,7 @@ const TRAFFIC = (() => {
       if (!src || src.width < 8) return false;
       const cv = document.createElement('canvas');
       cv.width = px; cv.height = px;
+      if (typeof zResNoteCanvas === 'function') zResNoteCanvas('traffic', cv, px, px);
       cv.getContext('2d', {alpha:true}).drawImage(src, 0, 0, src.width, src.height, 0, 0, px, px);
       const cap = T.cacheMax || 140;
       while (cache.size >= cap) {

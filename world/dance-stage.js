@@ -555,16 +555,21 @@
 
   function resize() {
     if (!root || !state.open) return;
-    var dpr = window.Z_IS_IPAD ? 1 : Math.min(2, window.devicePixelRatio || 1);
     var w = root.clientWidth || window.innerWidth || 1;
     var h = root.clientHeight || window.innerHeight || 1;
+    var dpr = window.Z_IS_IPAD ? 1 : Math.min(2, window.devicePixelRatio || 1);
     var pw = Math.max(1, Math.round(w * dpr));
     var ph = Math.max(1, Math.round(h * dpr));
+    if (typeof zResView === 'function') {
+      var box = zResView(w, h);
+      pw = box.bufW; ph = box.bufH;
+      dpr = box.dpr;
+    }
     if (canvas.width !== pw || canvas.height !== ph) {
       canvas.width = pw;
       canvas.height = ph;
     }
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.setTransform(pw / w, 0, 0, ph / h, 0, 0);
     state.W = w;
     state.H = h;
   }

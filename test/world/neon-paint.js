@@ -1716,9 +1716,15 @@
     const X = window.ZD && window.ZD.Xray;
     if (canvas && X && X.ready && X.car) {
       const rect = canvas.getBoundingClientRect();
-      const dpr = window.Z_IS_IPAD ? 1 : Math.min(1.5, window.devicePixelRatio || 1);
-      const w = Math.max(2, Math.round(rect.width * dpr));
-      const h = Math.max(2, Math.round(rect.height * dpr));
+      let w, h;
+      if (typeof zResView === 'function') {
+        const box = zResView(Math.max(2, rect.width), Math.max(2, rect.height));
+        w = box.bufW; h = box.bufH;
+      } else {
+        const dpr = window.Z_IS_IPAD ? 1 : Math.min(1.5, window.devicePixelRatio || 1);
+        w = Math.max(2, Math.round(rect.width * dpr));
+        h = Math.max(2, Math.round(rect.height * dpr));
+      }
       if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
       try { if (window.ZGL && window.ZGL.ensure) window.ZGL.ensure(); } catch (e) {}
       if (window.ZGL && window.ZGL.set) window.ZGL.set(ui.wings ? 1 : 0);
@@ -1739,7 +1745,7 @@
       try {
         X.render(ctx, 0, 0, w, h, {
           xray: false, showroom: true, yaw: ui.yaw, pitch: ui.pitch, dist: dist,
-          ty: 0.5, fov: fov, drl: 1, kid: kid, noDraw: true, st: { t: performance.now() / 1000, throttle: 30 }
+          ty: 0.5, fov: fov, drl: 1, kid: kid, noDraw: true, pixelRatio: 1, maxBuf: Math.max(w, h), st: { t: performance.now() / 1000, throttle: 30 }
         });
         if (X.groundRing) {
           ctx.save();
@@ -2206,10 +2212,16 @@
     return null;
   }
   function drawWallCanvas(canvas) {
-    const dpr = window.Z_IS_IPAD ? 1 : Math.min(1.5, window.devicePixelRatio || 1);
     const rect = canvas.getBoundingClientRect();
-    const w = Math.max(2, Math.round(rect.width * dpr));
-    const h = Math.max(2, Math.round(rect.height * dpr));
+    let w, h;
+    if (typeof zResView === 'function') {
+      const box = zResView(Math.max(2, rect.width), Math.max(2, rect.height));
+      w = box.bufW; h = box.bufH;
+    } else {
+      const dpr = window.Z_IS_IPAD ? 1 : Math.min(1.5, window.devicePixelRatio || 1);
+      w = Math.max(2, Math.round(rect.width * dpr));
+      h = Math.max(2, Math.round(rect.height * dpr));
+    }
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
     const g = canvas.getContext('2d');
     g.setTransform(1, 0, 0, 1, 0, 0);

@@ -1,0 +1,769 @@
+{
+  "id": "phone-over",
+  "url": "http://127.0.0.1:8765/world.html?perf=1",
+  "readyMs": 815,
+  "warm": null,
+  "beforeDraw": {
+    "dpr": 3,
+    "touch": 1,
+    "css": [
+      480,
+      1040
+    ],
+    "canvas": [
+      847,
+      1835
+    ],
+    "logical": [
+      480,
+      1040,
+      1.764
+    ],
+    "gl": [
+      300,
+      150
+    ],
+    "drawBuf": [
+      300,
+      150
+    ],
+    "xd": [
+      0,
+      0,
+      0
+    ],
+    "blit": null,
+    "lastPx": 0,
+    "dispPx": 0,
+    "px": null,
+    "plan": {
+      "mode": "phone",
+      "dpr": 1.764,
+      "buf": [
+        847,
+        1835
+      ],
+      "cap": 1555200
+    },
+    "zPhase": "boot",
+    "samples": {
+      "parse": {
+        "t": 62,
+        "reason": "parse",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "0x0",
+        "drawBuf": "0x0",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "vv": {
+        "t": 63,
+        "reason": "vv",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "0x0",
+        "drawBuf": "0x0",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "resize": {
+        "t": 64,
+        "reason": "resize",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "0x0",
+        "drawBuf": "0x0",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      }
+    },
+    "viol": []
+  },
+  "first": {
+    "dpr": 3,
+    "touch": 1,
+    "css": [
+      480,
+      1040
+    ],
+    "canvas": [
+      847,
+      1835
+    ],
+    "logical": [
+      480,
+      1040,
+      1.764
+    ],
+    "gl": [
+      992,
+      992
+    ],
+    "drawBuf": [
+      992,
+      992
+    ],
+    "xd": [
+      992,
+      992,
+      1
+    ],
+    "blit": [
+      992,
+      992
+    ],
+    "lastPx": 992,
+    "dispPx": 560,
+    "px": null,
+    "plan": {
+      "mode": "phone",
+      "dpr": 1.764,
+      "buf": [
+        847,
+        1835
+      ],
+      "cap": 1555200
+    },
+    "zPhase": "boot",
+    "samples": {
+      "parse": {
+        "t": 62,
+        "reason": "parse",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "0x0",
+        "drawBuf": "0x0",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "vv": {
+        "t": 63,
+        "reason": "vv",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "0x0",
+        "drawBuf": "0x0",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "resize": {
+        "t": 64,
+        "reason": "resize",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "0x0",
+        "drawBuf": "0x0",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "load": {
+        "t": 834,
+        "reason": "load",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "300x150",
+        "drawBuf": "300x150",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "live": {
+        "t": 8261,
+        "reason": "live",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 560,
+        "blit": "992x992",
+        "gl": "992x992",
+        "drawBuf": "992x992",
+        "raw": 1120,
+        "budget": 992,
+        "viol": 0
+      }
+    },
+    "viol": []
+  },
+  "afterInput": {
+    "dpr": 3,
+    "touch": 1,
+    "css": [
+      480,
+      1040
+    ],
+    "canvas": [
+      847,
+      1835
+    ],
+    "logical": [
+      480,
+      1040,
+      1.764
+    ],
+    "gl": [
+      992,
+      992
+    ],
+    "drawBuf": [
+      992,
+      992
+    ],
+    "xd": [
+      992,
+      992,
+      1
+    ],
+    "blit": [
+      992,
+      992
+    ],
+    "lastPx": 992,
+    "dispPx": 560,
+    "px": null,
+    "plan": {
+      "mode": "phone",
+      "dpr": 1.764,
+      "buf": [
+        847,
+        1835
+      ],
+      "cap": 1555200
+    },
+    "zPhase": "input",
+    "samples": {
+      "parse": {
+        "t": 62,
+        "reason": "parse",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "0x0",
+        "drawBuf": "0x0",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "vv": {
+        "t": 63,
+        "reason": "vv",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "0x0",
+        "drawBuf": "0x0",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "resize": {
+        "t": 64,
+        "reason": "resize",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "0x0",
+        "drawBuf": "0x0",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "load": {
+        "t": 9840,
+        "reason": "load",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 560,
+        "blit": "992x992",
+        "gl": "992x992",
+        "drawBuf": "992x992",
+        "raw": 1120,
+        "budget": 992,
+        "viol": 0
+      },
+      "live": {
+        "t": 10572,
+        "reason": "live",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 560,
+        "blit": "992x992",
+        "gl": "992x992",
+        "drawBuf": "992x992",
+        "raw": 1120,
+        "budget": 992,
+        "viol": 0
+      },
+      "input": {
+        "t": 9477,
+        "reason": "input",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 560,
+        "blit": "992x992",
+        "gl": "992x992",
+        "drawBuf": "992x992",
+        "raw": 1120,
+        "budget": 992,
+        "viol": 0
+      }
+    },
+    "viol": []
+  },
+  "afterResize": {
+    "dpr": 3,
+    "touch": 1,
+    "css": [
+      1040,
+      480
+    ],
+    "canvas": [
+      1835,
+      847
+    ],
+    "logical": [
+      1040,
+      480,
+      1.764
+    ],
+    "gl": [
+      528,
+      528
+    ],
+    "drawBuf": [
+      528,
+      528
+    ],
+    "xd": [
+      528,
+      528,
+      1
+    ],
+    "blit": [
+      528,
+      528
+    ],
+    "lastPx": 528,
+    "dispPx": 297,
+    "px": null,
+    "plan": {
+      "mode": "phone",
+      "dpr": 1.764,
+      "buf": [
+        1835,
+        847
+      ],
+      "cap": 1555200
+    },
+    "zPhase": "input",
+    "samples": {
+      "parse": {
+        "t": 62,
+        "reason": "parse",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 0,
+        "blit": "0x0",
+        "gl": "0x0",
+        "drawBuf": "0x0",
+        "raw": 0,
+        "budget": 0,
+        "viol": 0
+      },
+      "vv": {
+        "t": 11258,
+        "reason": "vv",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "1040x480",
+        "logical": "1040x480",
+        "planBuf": "1835x847",
+        "canvas": "1835x847",
+        "carPx": 560,
+        "blit": "992x992",
+        "gl": "992x992",
+        "drawBuf": "992x992",
+        "raw": 1120,
+        "budget": 992,
+        "viol": 0
+      },
+      "resize": {
+        "t": 11557,
+        "reason": "resize",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "1040x480",
+        "logical": "1040x480",
+        "planBuf": "1835x847",
+        "canvas": "1835x847",
+        "carPx": 560,
+        "blit": "992x992",
+        "gl": "992x992",
+        "drawBuf": "992x992",
+        "raw": 1120,
+        "budget": 992,
+        "viol": 0
+      },
+      "load": {
+        "t": 9840,
+        "reason": "load",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 560,
+        "blit": "992x992",
+        "gl": "992x992",
+        "drawBuf": "992x992",
+        "raw": 1120,
+        "budget": 992,
+        "viol": 0
+      },
+      "live": {
+        "t": 11594,
+        "reason": "live",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "1040x480",
+        "logical": "1040x480",
+        "planBuf": "1835x847",
+        "canvas": "1835x847",
+        "carPx": 297,
+        "blit": "528x528",
+        "gl": "528x528",
+        "drawBuf": "528x528",
+        "raw": 608,
+        "budget": 528,
+        "viol": 0
+      },
+      "input": {
+        "t": 9477,
+        "reason": "input",
+        "mode": "phone",
+        "device": 3,
+        "dpr": 1.764,
+        "cap": 1555200,
+        "css": "480x1040",
+        "logical": "480x1040",
+        "planBuf": "847x1835",
+        "canvas": "847x1835",
+        "carPx": 560,
+        "blit": "992x992",
+        "gl": "992x992",
+        "drawBuf": "992x992",
+        "raw": 1120,
+        "budget": 992,
+        "viol": 0
+      }
+    },
+    "viol": []
+  },
+  "cvlog": [
+    {
+      "t": 4892,
+      "id": "",
+      "prop": "h",
+      "v": 150
+    },
+    {
+      "t": 5003,
+      "id": "",
+      "prop": "w",
+      "v": 512
+    },
+    {
+      "t": 5003,
+      "id": "",
+      "prop": "h",
+      "v": 118
+    },
+    {
+      "t": 5008,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 5008,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 5009,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 5030,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 5030,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 5033,
+      "id": "",
+      "prop": "w",
+      "v": 300
+    },
+    {
+      "t": 5033,
+      "id": "",
+      "prop": "h",
+      "v": 150
+    },
+    {
+      "t": 5033,
+      "id": "",
+      "prop": "w",
+      "v": 992
+    },
+    {
+      "t": 5103,
+      "id": "",
+      "prop": "h",
+      "v": 992
+    },
+    {
+      "t": 5628,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 5628,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 8254,
+      "id": "",
+      "prop": "w",
+      "v": 992
+    },
+    {
+      "t": 8254,
+      "id": "",
+      "prop": "h",
+      "v": 992
+    },
+    {
+      "t": 8261,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 8261,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 8261,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 8261,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 8261,
+      "id": "",
+      "prop": "w",
+      "v": 1156
+    },
+    {
+      "t": 8261,
+      "id": "",
+      "prop": "h",
+      "v": 1292
+    },
+    {
+      "t": 8262,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 8262,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 8262,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 8262,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 8262,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 8262,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 8263,
+      "id": "",
+      "prop": "h",
+      "v": 160
+    },
+    {
+      "t": 8263,
+      "id": "",
+      "prop": "w",
+      "v": 160
+    }
+  ],
+  "logs": [
+    "warn []Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content.",
+    "log ZREADY"
+  ]
+}

@@ -10,33 +10,47 @@ const cv=document.getElementById('c'),ctx=cv.getContext('2d');let W=0,H=0,DPR=1;
 // CSS viewport pixels, so a smaller buffer does not shift look-around or HUD hits.
 // The canvas CSS stays width/height 100% (iPad also sets that size in px).
 let ipadSized=false;
-function resize(){
-  const hasTouch=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
-  const isDesktopPC=!hasTouch&&innerWidth>1024;
-  const isIPadUA=/iPad/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  const shortSide=Math.min(innerWidth,innerHeight),longSide=Math.max(innerWidth,innerHeight);
-  const isIPad=hasTouch&&(isIPadUA||(shortSide>=680&&longSide>=900));
-  if(isIPad){
-    DPR=1;
-    const cap=1440*1080,area=innerWidth*innerHeight||1;
-    const scale=Math.min(1,Math.sqrt(cap/area));
-    W=Math.max(1,Math.round(innerWidth*scale));H=Math.max(1,Math.round(innerHeight*scale));
-    if(W*H>cap){const fit=Math.sqrt(cap/(W*H));W=Math.max(1,Math.floor(W*fit));H=Math.max(1,Math.floor(H*fit));}
-    cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';
-    ipadSized=true;
-  }else if(!isDesktopPC){
-    DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
-    if(ipadSized){cv.style.width='';cv.style.height='';ipadSized=false;}
+function resize(reason){
+  const plan=(typeof zResPlan==='function')?zResPlan():null;
+  if(plan){
+    DPR=plan.dpr;W=plan.W;H=plan.H;
+    if(plan.mode==='ipad'){cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';ipadSized=true;}
+    else if(ipadSized){cv.style.width='';cv.style.height='';ipadSized=false;}
   }else{
-    DPR=1;
-    const cap=1280*720,area=innerWidth*innerHeight||1;
-    const scale=Math.min(1,Math.sqrt(cap/area));
-    W=Math.round(innerWidth*scale);H=Math.round(innerHeight*scale);
-    if(W*H>cap){const fit=Math.sqrt(cap/(W*H));W=Math.max(1,Math.floor(W*fit));H=Math.max(1,Math.floor(H*fit));}
-    if(ipadSized){cv.style.width='';cv.style.height='';ipadSized=false;}
+    const hasTouch=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
+    const isDesktopPC=!hasTouch&&innerWidth>1024;
+    const isIPadUA=/iPad/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+    const shortSide=Math.min(innerWidth,innerHeight),longSide=Math.max(innerWidth,innerHeight);
+    const isIPad=hasTouch&&(isIPadUA||(shortSide>=680&&longSide>=900));
+    if(isIPad){
+      DPR=1;
+      const cap=1440*1080,area=innerWidth*innerHeight||1;
+      const scale=Math.min(1,Math.sqrt(cap/area));
+      W=Math.max(1,Math.round(innerWidth*scale));H=Math.max(1,Math.round(innerHeight*scale));
+      if(W*H>cap){const fit=Math.sqrt(cap/(W*H));W=Math.max(1,Math.floor(W*fit));H=Math.max(1,Math.floor(H*fit));}
+      cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';
+      ipadSized=true;
+    }else if(!isDesktopPC){
+      DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+      const area=W*H||1,cap=1440*1080;
+      if(area*DPR*DPR>cap)DPR=Math.sqrt(cap/area);
+      if(ipadSized){cv.style.width='';cv.style.height='';ipadSized=false;}
+    }else{
+      DPR=1;
+      const cap=1280*720,area=innerWidth*innerHeight||1;
+      const scale=Math.min(1,Math.sqrt(cap/area));
+      W=Math.round(innerWidth*scale);H=Math.round(innerHeight*scale);
+      if(W*H>cap){const fit=Math.sqrt(cap/(W*H));W=Math.max(1,Math.floor(W*fit));H=Math.max(1,Math.floor(H*fit));}
+      if(ipadSized){cv.style.width='';cv.style.height='';ipadSized=false;}
+    }
   }
-  cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
-}addEventListener('resize',resize);resize();
+  const bw=plan?plan.bufW:Math.max(1,Math.round(W*DPR)),bh=plan?plan.bufH:Math.max(1,Math.round(H*DPR));
+  if(cv.width!==bw||cv.height!==bh){cv.width=bw;cv.height=bh;}
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(typeof zResAfter==='function')zResAfter(typeof reason==='string'?reason:'resize');
+}
+addEventListener('resize',()=>resize('resize'));resize('parse');
+if(typeof zResListen==='function')zResListen();
 const cam={x:0,y:0,z:0,yaw:0,pitch:0,roll:0};
 // Flight pull-up damping. boot.js aims the chase cam with the raw nose pitch, which
 // drops the camera under the car on a sharp climb and shoves the city off the bottom.

@@ -441,8 +441,9 @@ function walkPaintRoom(){
   const door=WALK_MODE.insideDoor;
   const card=typeof document!=='undefined'&&document.getElementById('walk-interior');
   if(!cv||!door||!WALK_MODE.insideBuilding)return;
-  const W=Math.max(320,Math.floor((card&&card.clientWidth)||window.innerWidth||844));
-  const H=Math.max(180,Math.floor((card&&card.clientHeight)||window.innerHeight||390));
+  let W=Math.max(320,Math.floor((card&&card.clientWidth)||window.innerWidth||844));
+  let H=Math.max(180,Math.floor((card&&card.clientHeight)||window.innerHeight||390));
+  if(typeof zResView==='function'){const box=zResView(W,H);if(W>box.bufW||H>box.bufH){W=box.bufW;H=box.bufH;}}
   if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
   const g=cv.getContext('2d');if(!g)return;
   const purpose=door.purpose||'HOME';

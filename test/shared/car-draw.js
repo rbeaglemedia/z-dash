@@ -7,21 +7,21 @@ function drawZ(){ZV.drew=0;if(window.NOZ)return;const X=window.ZD&&ZD.Xray;if(!X
   ZGL.set(P.tf);if(window.GARAGEZ)GARAGEZ.apply(X);
   const c0=camS(P.x,P.y+ZV.ty,P.z);if(c0[2]<1)return;const sc=scr(c0);ZV.scr=[sc[0]/W,sc[1]/H];
   const d0=(typeof FLYCAM!=='undefined'&&FLYCAM.orbit)?FLYCAM.orbit.d:(ZV.camDist||Math.hypot(FLYCAM.back||10,FLYCAM.up||2));
-  const f=H*0.9,px=Math.round(clamp(f/d0*ZV.win,40,ZV.maxPx)),rp=Math.max(32,Math.round(px*ZV.res/16)*16);
+  const f=H*0.9,px=Math.round(clamp(f/d0*ZV.win,40,ZV.maxPx));ZV.dispPx=px;const rp=(typeof zSpriteBudget==='function')?zSpriteBudget(px*(ZV.res||1)):Math.max(32,Math.round(px*(ZV.res||1)/16)*16);
   const dx=cam.x-P.x,dz=cam.z-P.z,dy=cam.y-(P.y+ZV.ty),hd=Math.hypot(dx,dz),ca=Math.atan2(dx,dz);
   const relYaw=Math.atan2(Math.sin(ca-P.yaw),Math.cos(ca-P.yaw)),elev=Math.atan2(dy,hd)-P.pitch*Math.cos(relYaw);
   const dist=ZV.win/(2*Math.tan(13*Math.PI/180));
   ZV.frame++;
-  if(!ZV.cv){ZV.cv=document.createElement('canvas');ZV.cvg=ZV.cv.getContext('2d',{alpha:true});}
   // Traffic bakes share this GL buffer and zero _w/_h. That is not a player-size change.
   // The cached sprite is blitted every frame, so a skipped render never leaves a hole.
+  // pixelRatio 1 keeps the sprite at the city budget. A short buffer is not cached.
   ZV.drew=ZV.frame%ZV.every===0||ZV.lastPx!==rp;
-  if(ZV.drew){const tCar=performance.now();X.render(ctx,0,0,rp,rp,{xray:false,showroom:!(window.GARAGEZ&&GARAGEZ.on),yaw:ZV.yawOff+ZV.yawSign*relYaw,pitch:elev,dist,tx:0,ty:ZV.ty,fov:26,drl:1,noDraw:true,kid:KID,st:{t:performance.now()/1000,throttle:30+P.thr*70}});
-    const src=X.canvas;if(ZV.cv.width!==src.width||ZV.cv.height!==src.height){ZV.cv.width=src.width;ZV.cv.height=src.height;}
-    ZV.cvg.setTransform(1,0,0,1,0,0);ZV.cvg.clearRect(0,0,ZV.cv.width,ZV.cv.height);ZV.cvg.drawImage(src,0,0);
+  if(ZV.drew){const tCar=performance.now();const opts={xray:false,showroom:!(window.GARAGEZ&&GARAGEZ.on),yaw:ZV.yawOff+ZV.yawSign*relYaw,pitch:elev,dist,tx:0,ty:ZV.ty,fov:26,drl:1,kid:KID,st:{t:performance.now()/1000,throttle:30+P.thr*70}};
+    if(typeof zPaintCar==='function'&&zPaintCar(X,rp,opts))ZV.lastPx=rp;
     ZV.carMs=performance.now()-tCar;}
   else ZV.carMs=0;
-  ZV.lastPx=rp;const roll=(P.bank+(P.ebRoll||0)-cam.roll)*ZV.rollSign;ctx.save();ctx.translate(sc[0],sc[1]);ctx.rotate(roll);ctx.drawImage(ZV.cv,0,0,ZV.cv.width,ZV.cv.height,-px/2,-px/2,px,px);ctx.restore();
+  const roll=(P.bank+(P.ebRoll||0)-cam.roll)*ZV.rollSign;
+  if(ZV.cv&&ZV.cv.width>=rp-1&&ZV.cv.height>=rp-1){ctx.save();ctx.translate(sc[0],sc[1]);ctx.rotate(roll);ctx.drawImage(ZV.cv,0,0,ZV.cv.width,ZV.cv.height,-px/2,-px/2,px,px);ctx.restore();}
   zFlameCvs();const yaw=ZV.yawOff+ZV.yawSign*relYaw,pit=elev,cy=Math.cos(yaw),sy=Math.sin(yaw),cP=Math.cos(pit),sP=Math.sin(pit);
   const tx=0,ty=ZV.ty,ex=tx+cy*cP*dist,ey=ty+sP*dist,ez=sy*cP*dist;let zx=ex-tx,zy=ey-ty,zz=ez,zl=Math.hypot(zx,zy,zz)||1;zx/=zl;zy/=zl;zz/=zl;
   let xx=zz,xy=0,xz=-zx,xl=Math.hypot(xx,xz);if(xl<1e-6){zz+=1e-4;zl=Math.hypot(zx,zy,zz);zx/=zl;zy/=zl;zz/=zl;xx=zz;xz=-zx;xl=Math.hypot(xx,xz);}xx/=xl;xz/=xl;
@@ -54,12 +54,24 @@ function zRate(frameMs,drew){
 }
 // One tiny render so the car shaders and lights compile before the first flying frame.
 // noDraw keeps it off the city canvas. The sprite the player sees is unchanged.
+function zCarSide(){
+  const d0=(typeof ZV!=='undefined'&&ZV&&ZV.camDist)||Math.hypot(10,2);
+  const HH=(typeof H!=='undefined'&&H)||window.innerHeight||800;
+  const maxPx=(ZV&&ZV.maxPx)||560,win=(ZV&&ZV.win)||7;
+  const px=Math.round(Math.max(40,Math.min(maxPx,HH*0.9/d0*win)));
+  return (typeof zSpriteBudget==='function')?zSpriteBudget(px*(ZV.res||1)):Math.max(32,Math.round(px/16)*16);
+}
+// Warm at the real blit size. The old 64px pass left the shared GL canvas small,
+// and the next drawImage showed that bitmap stretched across the car.
 function zWarmGpu(){
   try{
     const X=window.ZD&&ZD.Xray;
     if(!X||!X.ready||typeof ZGL==='undefined'||!ZGL.ensure())return false;
     ZGL.set(typeof P!=='undefined'&&P?P.tf:0);
-    X.render(ctx,0,0,64,64,{xray:false,showroom:true,yaw:0.6,pitch:0.15,dist:12,tx:0,ty:0.6,fov:26,drl:1,noDraw:true,kid:(typeof KID!=='undefined'?KID:null),st:{t:0,throttle:40}});
+    const side=zCarSide();
+    const opts={xray:false,showroom:true,yaw:0.6,pitch:0.15,dist:12,tx:0,ty:(ZV&&ZV.ty)||0.6,fov:26,drl:1,kid:(typeof KID!=='undefined'?KID:null),st:{t:0,throttle:40}};
+    if(typeof zPaintCar!=='function'||!zPaintCar(X,side,opts))return false;
+    ZV.lastPx=side;
     return true;
   }catch(e){return false;}
 }

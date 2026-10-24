@@ -84,6 +84,7 @@ const TOW3={ok:false,fail:false,baked:false,sheets:null,dist:320,n:0,R:null,
       grp.position.set(0,0,0);grp.rotation.set(0,Math.PI/2,0);grp.updateMatrixWorld(true);
       const sheetHi=document.createElement('canvas'),sheetLo=document.createElement('canvas');
       sheetHi.width=sheetLo.width=YN*CW;sheetHi.height=sheetLo.height=PITCHES.length*CH;
+      if(typeof zResNoteCanvas==='function')zResNoteCanvas('tow-sheet',sheetHi,8192,4096);
       const gh=sheetHi.getContext('2d'),gl2=sheetLo.getContext('2d');
       const frameH=14,frameW=frameH*(CW/CH),look=1.35,dist=frameH*0.9;
       const M4=X.cam.matrix.constructor;

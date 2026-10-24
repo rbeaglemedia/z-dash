@@ -1,0 +1,336 @@
+{
+  "id": "phone-over",
+  "url": "http://127.0.0.1:8765/world.html?perf=1",
+  "readyMs": 733,
+  "warm": null,
+  "beforeDraw": {
+    "dpr": 3,
+    "touch": 1,
+    "css": [
+      480,
+      1040
+    ],
+    "canvas": [
+      960,
+      2080
+    ],
+    "logical": [
+      480,
+      1040,
+      2
+    ],
+    "gl": [
+      300,
+      150
+    ],
+    "drawBuf": [
+      300,
+      150
+    ],
+    "xd": [
+      0,
+      0,
+      0
+    ],
+    "blit": null,
+    "lastPx": null,
+    "px": null,
+    "plan": null,
+    "zPhase": null,
+    "viol": null
+  },
+  "first": {
+    "dpr": 3,
+    "touch": 1,
+    "css": [
+      480,
+      1040
+    ],
+    "canvas": [
+      960,
+      2080
+    ],
+    "logical": [
+      480,
+      1040,
+      2
+    ],
+    "gl": [
+      1120,
+      1120
+    ],
+    "drawBuf": [
+      1120,
+      1120
+    ],
+    "xd": [
+      560,
+      560,
+      2
+    ],
+    "blit": null,
+    "lastPx": null,
+    "px": null,
+    "plan": null,
+    "zPhase": null,
+    "viol": null
+  },
+  "afterInput": {
+    "dpr": 3,
+    "touch": 1,
+    "css": [
+      480,
+      1040
+    ],
+    "canvas": [
+      960,
+      2080
+    ],
+    "logical": [
+      480,
+      1040,
+      2
+    ],
+    "gl": [
+      1120,
+      1120
+    ],
+    "drawBuf": [
+      1120,
+      1120
+    ],
+    "xd": [
+      560,
+      560,
+      2
+    ],
+    "blit": null,
+    "lastPx": null,
+    "px": null,
+    "plan": null,
+    "zPhase": null,
+    "viol": null
+  },
+  "afterResize": {
+    "dpr": 3,
+    "touch": 1,
+    "css": [
+      1040,
+      480
+    ],
+    "canvas": [
+      2080,
+      960
+    ],
+    "logical": [
+      1040,
+      480,
+      2
+    ],
+    "gl": [
+      608,
+      608
+    ],
+    "drawBuf": [
+      608,
+      608
+    ],
+    "xd": [
+      304,
+      304,
+      2
+    ],
+    "blit": null,
+    "lastPx": null,
+    "px": null,
+    "plan": null,
+    "zPhase": null,
+    "viol": null
+  },
+  "cvlog": [
+    {
+      "t": 4724,
+      "id": "",
+      "prop": "h",
+      "v": 150
+    },
+    {
+      "t": 4857,
+      "id": "",
+      "prop": "w",
+      "v": 512
+    },
+    {
+      "t": 4857,
+      "id": "",
+      "prop": "h",
+      "v": 118
+    },
+    {
+      "t": 4860,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 4860,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 4862,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 4886,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 4886,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 4888,
+      "id": "",
+      "prop": "w",
+      "v": 600
+    },
+    {
+      "t": 4983,
+      "id": "",
+      "prop": "h",
+      "v": 300
+    },
+    {
+      "t": 5036,
+      "id": "",
+      "prop": "w",
+      "v": 1120
+    },
+    {
+      "t": 5116,
+      "id": "",
+      "prop": "h",
+      "v": 1120
+    },
+    {
+      "t": 5583,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 5583,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 8059,
+      "id": "",
+      "prop": "w",
+      "v": 1120
+    },
+    {
+      "t": 8059,
+      "id": "",
+      "prop": "h",
+      "v": 1120
+    },
+    {
+      "t": 8059,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 8059,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 8060,
+      "id": "",
+      "prop": "h",
+      "v": 64
+    },
+    {
+      "t": 8060,
+      "id": "",
+      "prop": "w",
+      "v": 64
+    },
+    {
+      "t": 8060,
+      "id": "",
+      "prop": "w",
+      "v": 1156
+    },
+    {
+      "t": 8060,
+      "id": "",
+      "prop": "h",
+      "v": 1292
+    },
+    {
+      "t": 8060,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 8060,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 8060,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 8060,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 8061,
+      "id": "",
+      "prop": "h",
+      "v": 128
+    },
+    {
+      "t": 8061,
+      "id": "",
+      "prop": "w",
+      "v": 128
+    },
+    {
+      "t": 8061,
+      "id": "",
+      "prop": "h",
+      "v": 160
+    },
+    {
+      "t": 8061,
+      "id": "",
+      "prop": "w",
+      "v": 160
+    }
+  ],
+  "logs": [
+    "warn []Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content.",
+    "log ZREADY"
+  ]
+}
