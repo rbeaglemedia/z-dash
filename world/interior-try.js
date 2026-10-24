@@ -1,8 +1,8 @@
 /* Test walk for the six rooms. Loaded only when world.html?interiorTry=1.
-   Houses keep one style per door. The four cafes are doors, one style
-   each. Arcade, pet lounge, soccer shop, and Builder HQ get buttons
-   1 2 3 4. This file does not write the kid saves, and it does not set
-   shadowBlur. */
+   Houses are one style per door. The four cafes are doors across the
+   lane, one style each. Arcade, pet lounge, soccer shop, and Builder HQ
+   get buttons 1 2 3 4. This file does not write the kid saves, and it
+   does not set shadowBlur. */
 'use strict';
 
 const TRY_SAVE = 'zdash.interior.try.v1';
@@ -194,6 +194,23 @@ function tryCafeStreet(hold) {
   if (hold && typeof FLYCAM !== 'undefined') FLYCAM.orbit = { az: Math.PI, el: 0.16, d: 18 };
 }
 
+function tryRowStreet(hold) {
+  window.INTERIOR_TRY_STREET = 1;
+  tryHideMenu();
+  if (hold && typeof WALK_MODE !== 'undefined') {
+    WALK_MODE.onFoot = false;
+    WALK_MODE.insideBuilding = false;
+    WALK_MODE.insideDoor = null;
+  }
+  if (hold && typeof walkHideInterior === 'function') walkHideInterior();
+  if (typeof P !== 'undefined' && P) {
+    P.x = -220; P.z = -548; P.y = 0.2; P.v = 0; P.ground = true;
+    P.pitch = 0; P.bank = 0; P.gam = 0; P.wreck = null;
+    P.yaw = 0; P.hd = 0; P.driveMode = 'street';
+  }
+  if (hold && typeof FLYCAM !== 'undefined') FLYCAM.orbit = { az: Math.PI, el: 0.18, d: 22 };
+}
+
 function tryHouseKey(pick) {
   if (!pick) return 'HOME';
   return pick.forced ? ('HOUSE ' + pick.style) : ('HOUSE ' + pick.house);
@@ -252,7 +269,7 @@ function tryEnsureUi() {
     document.head.appendChild(css);
     const menu = document.createElement('div');
     menu.id = 'interior-try-menu';
-    menu.innerHTML = '<h1>Try the rooms</h1><p>Houses are one style each. The four cafes are doors across that street, one style each, with the number on the sign. Arcade, pet lounge, soccer shop, and Builder HQ have buttons 1 2 3 4. Tap FAVORITE on the one you like.</p><div class="row" id="interior-try-houses"></div><div class="row" id="interior-try-rooms"></div><div id="interior-try-picks"></div>';
+    menu.innerHTML = '<h1>Try the rooms</h1><p>Four houses stand on the yard lane, one style each, with the number on the sign. Four cafes stand across that street, one style each. Arcade, pet lounge, soccer shop, and Builder HQ have buttons 1 2 3 4. Tap FAVORITE on the one you like.</p><div class="row" id="interior-try-houses"></div><div class="row" id="interior-try-rooms"></div><div id="interior-try-picks"></div>';
     document.body.appendChild(menu);
     const houses = menu.querySelector('#interior-try-houses');
     const names = ['Glass loft', 'Timber cabin', 'Sky penthouse', 'Block home'];
@@ -267,7 +284,7 @@ function tryEnsureUi() {
     const rooms = menu.querySelector('#interior-try-rooms');
     const street = document.createElement('button');
     street.type = 'button';
-    street.textContent = 'CAFE STREET';
+    street.textContent = 'THE ROW';
     street.addEventListener('click', function () { tryCafeStreet(false); });
     rooms.appendChild(street);
     for (let i = 0; i < TRY_SINGLE.length; i++) {
@@ -407,11 +424,12 @@ function tryTick() {
     return;
   }
   tryShotN++;
-  if (q.shot === 'cafes') {
-    tryCafeStreet(true);
+  if (q.shot === 'row' || q.shot === 'cafes') {
+    if (q.shot === 'row') tryRowStreet(true);
+    else tryCafeStreet(true);
     if (tryShotN > 36 && document.body.dataset.ready !== '1') {
       document.body.dataset.ready = '1';
-      document.body.dataset.shot = 'cafes';
+      document.body.dataset.shot = q.shot;
       if (typeof P !== 'undefined' && P) {
         document.body.dataset.px = P.x.toFixed(1);
         document.body.dataset.pz = P.z.toFixed(1);

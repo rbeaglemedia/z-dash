@@ -75,14 +75,21 @@ function houseHomes() {
   return list;
 }
 
-function houseForced() {
+function houseUrlStyle() {
   try {
     const n = parseInt(new URLSearchParams(location.search).get('homeStyle') || '', 10);
     if (n >= 1 && n <= 4) return n;
   } catch (e) {}
-  const held = typeof window !== 'undefined' ? window.INTERIOR_TRY_HOUSE : 0;
-  if (held >= 1 && held <= 4) return held;
   return 0;
+}
+
+function houseMarked(door) {
+  const b = door && door.building;
+  if (!b) return 0;
+  if (b.tryHouse >= 1 && b.tryHouse <= 4) return b.tryHouse;
+  const text = b.sign && (b.sign.t || b.sign.word || '');
+  const m = /HOME\s*([1-4])/.exec(String(text).toUpperCase());
+  return m ? Number(m[1]) : 0;
 }
 
 function housePick(door) {
@@ -93,10 +100,14 @@ function housePick(door) {
       if (homes[n] === door.building || homes[n].id === door.building.id) { i = n; break; }
     }
   }
-  const force = houseForced();
-  const style = force || ((i % 4) + 1);
+  const url = houseUrlStyle();
+  const marked = houseMarked(door);
+  const held = (!url && !marked && typeof window !== 'undefined' && window.INTERIOR_TRY_HOUSE >= 1 && window.INTERIOR_TRY_HOUSE <= 4)
+    ? window.INTERIOR_TRY_HOUSE : 0;
+  const style = url || marked || held || ((i % 4) + 1);
+  const house = marked || held || url || (i + 1);
   const look = HOUSE_LOOKS[style - 1];
-  return { house: i + 1, style: style, homes: homes.length, look: look, forced: !!force };
+  return { house: house, style: style, homes: homes.length, look: look, forced: !!(url || held) };
 }
 
 function houseBox(g, W, H, b) {
@@ -148,9 +159,7 @@ function housePaint(g, W, H, door) {
   g.font = '800 20px sans-serif';
   g.textAlign = 'left';
   g.textBaseline = 'alphabetic';
-  const where = pick.forced && pick.homes < pick.style
-    ? ('STYLE ' + pick.style + '  ' + look.name.toUpperCase() + '  FOR HOUSE ' + pick.style)
-    : ('HOUSE ' + pick.house + '  STYLE ' + pick.style + '  ' + look.name.toUpperCase());
+  const where = 'HOUSE ' + pick.house + '  STYLE ' + pick.style + '  ' + look.name.toUpperCase();
   const star = (typeof window !== 'undefined' && window.INTERIOR_TRY && INTERIOR_TRY.houseStar)
     ? INTERIOR_TRY.houseStar(pick) : '';
   g.fillText(where + star, 16, H - 38);

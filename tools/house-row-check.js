@@ -13,10 +13,10 @@ const world = fs.readFileSync(path.join(root, 'world.html'), 'utf8');
 const split = fs.readFileSync(path.join(root, 'world-split.html'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
-if (!/house-styles\.js\?v=39/.test(house)) fail('interior script is not loaded from the house painter');
+if (!/house-styles\.js\?v=40/.test(house)) fail('interior script is not loaded from the house painter');
 if (/\bshadowBlur\s*=/.test(styles)) fail('house looks assign shadowBlur');
 if (index.includes('house-styles')) fail('adult index loads the house looks');
-if (!world.includes('house.js?v=39') || !split.includes('house.js?v=39')) fail('kid pages are not on world39');
+if (!world.includes('house.js?v=40') || !split.includes('house.js?v=40')) fail('kid pages are not on world40');
 
 const sandbox = { window: {}, globalThis: {}, performance: { now: function () { return 0; } }, URLSearchParams: URLSearchParams, location: { search: '' }, CITY: { BL: [] } };
 sandbox.globalThis = sandbox;
@@ -66,6 +66,8 @@ if (stylesOut.join(',') !== '1,2,3,4,1,2') fail('style repeat got ' + stylesOut.
 
 const one = [{ id: 7, purpose: 'HOME', x0: home.x0, z0: home.z0, x1: home.x1, z1: home.z1 }];
 if (pickStyle(one, 7) !== 1) fail('the only door is not style 1');
+const marked = row.pick({ building: { id: 9, purpose: 'HOME', tryHouse: 3, sign: { t: 'HOME 3' } } });
+if (marked.style !== 3 || marked.house !== 3) fail('a labeled door did not keep its style');
 
 if (!/samplerPerson|walkDrawPerson/.test('')) {
   /* actors are boxes in house-styles.js */

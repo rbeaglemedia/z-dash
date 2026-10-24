@@ -52,12 +52,12 @@ Nothing here deploys. Live rooms for houses 2, 3, and 4 wait until those doors e
 
 ## Cafe street
 
-The four cafe looks are not buttons inside one cafe. On the try link they are four doors on the east sidewalk of the yard lane, across from the house. See `docs/CAFE-ROW.md`.
+On the try link the one house is labeled HOME 1, and homes 2, 3, and 4 stand north of the pet lounge on the same sidewalk. Four cafes stand across the lane, one style each. See `docs/CAFE-ROW.md`.
 
 ## Ellie test
 
 The try page is `test/interior-try.html`. It opens `world.html?interiorTry=1&notraffic=1`. That query is the only way the try script loads. A normal walk does not show the buttons. This is a test link, and it does not go live from here.
 
-Houses stay one style each. The lobby has four house buttons, and a house room has a FAVORITE button with no 1 2 3 4 row. The four cafes are doors across the yard lane, one style each, with the number on the sign. A cafe room has FAVORITE and no 1 2 3 4 row. Arcade, pet lounge, soccer shop, and Builder HQ have buttons 1 2 3 4 plus FAVORITE. The style number is painted on the picture. Picks stay in this tab under `zdash.interior.try.v1`. Neon Paint, the garage, and the dance studio stay the apps they already are.
+Houses stay one style each. The try link labels four house doors HOME 1 to HOME 4, and four cafe doors CAFE 1 to CAFE 4 across the lane. A house room and a cafe room have FAVORITE and no 1 2 3 4 row. Arcade, pet lounge, soccer shop, and Builder HQ have buttons 1 2 3 4 plus FAVORITE. The style number is painted on the picture. Picks stay in this tab under `zdash.interior.try.v1`. Neon Paint, the garage, and the dance studio stay the apps they already are.
 
 Paint time for those try rooms on this machine is 0.07 ms to 0.21 ms. That is under the 9.1 ms Galaxy frame, so the picture says about 110 fps. This host is not a phone.

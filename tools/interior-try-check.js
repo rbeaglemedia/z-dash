@@ -29,15 +29,15 @@ if (/\bshadowBlur\s*=/.test(src)) fail('try looks assign shadowBlur');
 if (!src.includes('zdash.interior.try.v1')) fail('save key missing');
 if (!/#243044/.test(src) || !/#2f7f96/.test(src) || !/#f0c8a8/.test(src) || !/#ffb020/.test(src)) fail('actor colors');
 if (!/0\.82/.test(src) || !/0\.74|0\.62/.test(src)) fail('actor heights');
-if (!/interior-try\.js\?v=39/.test(house)) fail('try script is not injected at world39');
+if (!/interior-try\.js\?v=40/.test(house)) fail('try script is not injected at world40');
 if (!/function interiorTryOn\(/.test(house)) fail('try flag helper missing');
 if (!/interiorTryOn\(\)&&purpose!=='HOME'/.test(house)) fail('single rooms are not gated on the try flag');
 if (!/INTERIOR_TRY_HOUSE=0/.test(house)) fail('a real door does not clear the house hold');
-if (!version.includes("ZD_WORLD = '39'")) fail('world cache is not 39');
+if (!version.includes("ZD_WORLD = '40'")) fail('world cache is not 40');
 if (!page.includes('world.html?interiorTry=1')) fail('test page does not open the try walk');
 if (!/noindex/.test(page)) fail('test page is indexable');
-if (!world.includes('interior-try-map.js?v=39')) fail('kid page does not load the cafe map');
-if (world.indexOf('interior-try-map.js') > world.indexOf('city.js?v=39')) fail('cafe map loads after the city');
+if (!world.includes('interior-try-map.js?v=40')) fail('kid page does not load the try map');
+if (world.indexOf('interior-try-map.js') > world.indexOf('city.js?v=40')) fail('try map loads after the city');
 if (/\bshadowBlur\s*=/.test(mapSrc)) fail('cafe map assigns shadowBlur');
 if (mapSrc.includes('zdash.house.v1') || mapSrc.includes('zdash.kid.v1')) fail('cafe map names a save');
 
@@ -86,37 +86,63 @@ if (layBox.CITY_LAYOUT.places.length !== before) fail('cafe map adds doors witho
 layBox.__INTERIOR_TRY_MAP = 1;
 vm.runInContext(mapSrc, layBox);
 const added = layBox.CITY_LAYOUT.places.filter(function (p) { return p.tryCafe; });
+const extraHomes = layBox.CITY_LAYOUT.places.filter(function (p) { return p.tryHouse && p.tryOnly; });
+const homes = layBox.CITY_LAYOUT.places.filter(function (p) { return p.purpose === 'HOME'; });
 if (added.length !== 4) fail('expected 4 test cafes, found ' + added.length);
+if (extraHomes.length !== 3) fail('expected 3 extra houses, found ' + extraHomes.length);
+if (homes.length !== 4) fail('expected 4 houses on the try link, found ' + homes.length);
+const district = layBox.CITY_LAYOUT.districts.filter(function (d) { return d.id === 'HOMESTEAD'; })[0];
+if (!district || district.z1 !== -370) fail('Homestead did not stretch to the new doors');
 const roadX0 = -226, roadX1 = -214;
+function clearOfRoad(p) {
+  if (p.x1 > roadX0 && p.x0 < roadX1) fail(p.name + ' covers the yard lane');
+  if (p.x1 > -170 && p.x0 < -150) fail(p.name + ' reaches the x=-160 corridor');
+  if (p.x0 < -230 && p.x1 > -230) fail(p.name + ' crosses the west curb line');
+}
 added.forEach(function (p, i) {
   if (p.tryCafe !== i + 1) fail('cafe order ' + p.tryCafe);
-  if (p.purpose !== 'CAFE') fail(p.name + ' purpose');
+  if (p.purpose !== 'CAFE' || !p.tryOnly) fail(p.name + ' is not a try-only cafe');
   if (p.x0 !== -210 || p.x1 !== -170) fail(p.name + ' is not on the east sidewalk');
-  if (p.x1 > roadX0 && p.x0 < roadX1) fail(p.name + ' covers the yard lane');
-  if (p.x1 > -170) fail(p.name + ' reaches the x=-160 corridor');
-  if (p.z1 - p.z0 !== 33 || p.h !== 12) fail(p.name + ' plan size');
-  if (p.cz > -560 || p.cz < -900) fail(p.name + ' center leaves Homestead');
+  if (p.h !== 7.5 || p.roof !== 'ant') fail(p.name + ' plan');
   if (p.sign !== 'CAFE ' + p.tryCafe) fail(p.name + ' sign');
-  if (p.z1 > -20) fail(p.name + ' reaches the cross street');
+  clearOfRoad(p);
 });
-if (!(added[1].z0 < -630 && added[1].z1 > -678)) fail('cafe 2 is not across from the house');
-for (let i = 1; i < added.length; i++) {
-  const gap = added[i].z0 - added[i - 1].z1;
-  if (gap !== 8) fail('cafe gap ' + gap);
-}
+extraHomes.forEach(function (p) {
+  if (p.purpose !== 'HOME' || p.tryHouse < 2) fail(p.name + ' is not an extra house');
+  if (p.x0 !== -274 || p.x1 !== -230) fail(p.name + ' is not on the west sidewalk');
+  if (p.h !== 7.5 || p.roof !== 'ant') fail(p.name + ' plan');
+  if (p.sign !== 'HOME ' + p.tryHouse) fail(p.name + ' sign');
+  clearOfRoad(p);
+});
+const live = homes.filter(function (p) { return !p.tryOnly; })[0];
+if (!live || live.sign !== 'HOME 1' || live.tryHouse !== 1) fail('the live house is not labeled HOME 1');
+if (!(added[0].z0 === live.z0 && added[0].z1 === live.z1)) fail('cafe 1 is not across from home 1');
+extraHomes.forEach(function (p) {
+  const cafe = added.filter(function (c) { return c.tryCafe === p.tryHouse; })[0];
+  if (!cafe || cafe.z0 !== p.z0 || cafe.z1 !== p.z1) fail(p.name + ' has no cafe across the lane');
+});
 const net = layBox.CITY_LAYOUT.buildNetwork();
 added.forEach(function (p) {
   const face = net.faces[p.station + ':' + p.name];
   if (face !== 'w') fail(p.name + ' faces ' + face);
 });
+extraHomes.forEach(function (p) {
+  const face = net.faces[p.station + ':' + p.name];
+  if (face !== 'e') fail(p.name + ' faces ' + face);
+});
+if (net.faces['yard:HOME'] !== 'e') fail('HOME 1 faces ' + net.faces['yard:HOME']);
 const places = layBox.CITY_LAYOUT.places;
-added.forEach(function (p) {
+places.forEach(function (p) {
+  if (!p.tryOnly) return;
   places.forEach(function (q) {
     if (q === p || q.kind === 'arch') return;
     const hit = p.x1 > q.x0 && p.x0 < q.x1 && p.z1 > q.z0 && p.z0 < q.z1;
     if (hit) fail(p.name + ' overlaps ' + q.name);
   });
 });
+const city = fs.readFileSync(path.join(root, 'world/city.js'), 'utf8');
+if (!/built\.tryOnly=1/.test(city)) fail('the city does not keep the try-only mark');
+if (!/b\.tryOnly/.test(city)) fail('try-only houses still cut a garage');
 
 const out = { ok: fails.length === 0, fails: fails, rooms: Object.keys(expect).length, looks: 20 };
 fs.mkdirSync(path.join(root, 'test-results/interior-try'), { recursive: true });
