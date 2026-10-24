@@ -216,23 +216,17 @@ flowchart TD
   weather --> traffic
 ```
 
-## Frozen Neon World
+## Current Neon World
 
-After the Option 1 Boulevards bundle (plan PR #68, build PR #85), `world.html` and `world-split.html` take bug fixes, FPS fixes, Ellie's interiors, the planner drop-objects placement tool, and traffic testing and changes. The minimap is part of that same bundle: PR #86 is folded into PR #85. The combined head is `d4deed1`. Rollback is `e279c9a`.
+`world.html` and `world-split.html` still take features, fixes, FPS work, traffic testing and changes, interiors, the drop-objects tool, and gameplay. The Option 1 map bundle (plan PR #68, build PR #85 at `d4deed1`, rollback `e279c9a`, minimap folded in from PR #86) is the current city.
 
-Allowed on the current pages:
+The only work that belongs on a new world page is a huge aesthetic redesign:
 
-- Interiors (`world/house.js`, `world/style-sampler.js`, `world/walk-items.js`, `docs/INTERIORS-PLAN.md`, `docs/interiors/`, `docs/STYLE-SAMPLER.md`)
-- The drop-objects placement tool (`world/planner-props.js`, `docs/planner/PROP-CATALOG.json`, `docs/ROOM-PLACE-HOOK.md`, `docs/room-place/`, `test/planner-port/catalog.js`)
-- Traffic testing and changes (`world/traffic.js`, `shared/traffic-tune.js`, `world/towdrive.js`, `docs/TRAFFIC-PLAN.md`)
+- A whole new look for the buildings
+- A whole new look for the city
+- A big art-style change
 
-These still belong on a new world page:
-
-- Builders (the Builder HQ design tool, the planner editor for walls and roofs)
-- Building redesigns (`world/gl-city.js`, `bakeBuilding` export of new shells)
-- City redesigns (`world/city-layout.js`, `docs/CITY-LAYOUT-PLAN.md`, `docs/city-layout/`) beyond the Option 1 bundle
-
-A plan that only has docs still counts. If the builder tool or a new city layout does not add the new page, the checker flags it before that work lands on the frozen pages. The drop-objects catalog in the same plan is not the part that has to move.
+A WebGL renderer, a builder or planner tool, `bakeBuilding` as a placement feature, a NOS station, and a road or traffic change stay on the current pages. The checker reads the lines a branch adds. It flags a branch when those lines are the new look itself (the purpose-design looks, a new art style, or a new city look) and that work is aimed at Neon World. A note that the other looks stay drawings, and a plan that sends the new look to the new world page, are not that redesign. The same look on a `world-*.html` page is the new world, so it is not flagged. That page still has to keep Ellie's shared saves.
 
 The new world page has to keep Ellie's shared saves. Same keys: `zdash.kid.v1`, `zdash.house.v1`, `zdash.char.v1`, `zdash.pet.v1`, `zdash.crew.v1`, `zdash.neonpaint.v1`, `zdash_vinyls_v1`, `zdash_neon_paint_v1`, `zdash_garage_v1`, `zdash_paint3d_v1`, `zdash.customdance.v1`, `zdash.petdance.v1`. A new `zdash.kid.v2` (or any sibling key) splits Garage, Home, paint, crew, and pets from the current world. The world spot key `zdash.world.resume.v1` and the door-return key `zdash.neonworld.session.v1` are per visit, not those shared profile saves.
 

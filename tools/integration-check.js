@@ -339,20 +339,19 @@ function isNewWorldPage(filePath) {
   return /^world-.+\.html$/i.test(base);
 }
 
-function redesignKinds(files, texts) {
+function aestheticKinds(texts) {
   const kinds = [];
   function add(kind) {
     if (kinds.indexOf(kind) === -1) kinds.push(kind);
   }
-  const blob = Object.keys(texts || {}).map((k) => texts[k] || '').join('\n');
-  files.forEach((f) => {
-    const p = f.path.replace(/\\/g, '/');
-    if (p === 'world/city-layout.js' || p === 'docs/CITY-LAYOUT-PLAN.md' || p.startsWith('docs/city-layout/')) add('city redesign');
-    if (p === 'world/gl-city.js' || p === 'world/gl-city-manifest.json') add('building redesign');
-    if (p === 'world/builder.js') add('builders');
+  Object.keys(texts || {}).forEach((file) => {
+    const text = texts[file] || '';
+    // A plan that only names the rule, and sends the new look to the new world, is not itself the redesign.
+    const routesAway = /lands on the new world|new world page|stays on the new world|is not this commit|does not land/i.test(text);
+    if (/\b(designs below are the looks|purpose designs above are the look|purpose designs)\b/i.test(text)) add('new building look');
+    if (!routesAway && /\b(new art style|art[- ]style)\b/i.test(text)) add('art-style change');
+    if (!routesAway && /\b(new look for the city|redesign the city|whole new city)\b/i.test(text)) add('new city look');
   });
-  if (/Builder HQ design tool|City Editor|design tool is the planner editor/i.test(blob)) add('builders');
-  if (/bakeBuilding/.test(blob)) add('building redesign');
   return kinds;
 }
 
@@ -580,21 +579,21 @@ function checkOne(ctx) {
     });
   }
 
-  const redesign = redesignKinds(files, ctx.fileTexts);
+  const aesthetic = aestheticKinds(ctx.fileTexts);
   const newWorldPages = files.filter((f) => isNewWorldPage(f.path)).map((f) => f.path);
-  const loadedByFrozen = ['world/gl-city.js', 'world/city-layout.js'].some((src) => worldScripts.indexOf(src) !== -1 || splitScripts.indexOf(src) !== -1);
-  const wiresFrozen = hasFile(files, (p) => p === 'world.html' || p === 'world-split.html') || loadedByFrozen;
-  if (redesign.length && !isBundleBranch(ctx.branch) && (wiresFrozen || !newWorldPages.length)) {
-    const where = wiresFrozen
-      ? ' This branch wires it into world.html and world-split.html. Take that part off the frozen pages.'
-      : ' This branch does not add the new page yet, so that part still points at the frozen Neon World.';
+  const editsCurrentPages = hasFile(files, (p) => p === 'world.html' || p === 'world-split.html');
+  const aimedAtCurrent = editsCurrentPages || !newWorldPages.length;
+  if (aesthetic.length && !isBundleBranch(ctx.branch) && aimedAtCurrent) {
+    const where = editsCurrentPages
+      ? ' It is wired into world.html and world-split.html.'
+      : ' This branch does not add the new world page, so the new look still points at Neon World.';
     gap(gaps, {
       id: 'frozen-world',
       system: 'pages',
-      summary: 'Builders, building redesigns, or a city redesign belong on a new world page',
+      summary: 'A huge aesthetic redesign belongs on a new world page',
       owner: selfText(ctx),
       ownerId: 'self',
-      detail: 'After the Option 1 Boulevards bundle, world.html and world-split.html take bug fixes, FPS fixes, Ellie\'s interiors, the planner drop-objects placement tool, and traffic testing and changes. This PR adds ' + redesign.join(' and ') + '.' + where + ' Build that part on a new world page, and keep Ellie\'s shared save keys (' + PROFILE_KEYS.join(', ') + ').'
+      detail: 'The current Neon World still takes features, fixes, FPS work, traffic, interiors, the drop-objects tool, and gameplay. This PR adds ' + aesthetic.join(' and ') + ', which is a huge aesthetic redesign.' + where + ' Build that look on a new world page, and keep Ellie\'s shared save keys (' + PROFILE_KEYS.join(', ') + ').'
     });
   }
   if (newWorldPages.length) {
@@ -1123,9 +1122,15 @@ function loadBranch(meta, base) {
   const fileTexts = {};
   files.forEach((f) => {
     const p = f.path.replace(/\\/g, '/');
-    if (p === 'docs/PLANNER-PORT-PLAN.md' || p === 'world/builder.js' || p.startsWith('world/planner/')) {
-      fileTexts[p] = gitShow(head + ':' + p) || '';
+    const interesting = p === 'world/GL-CITY.md' || p === 'world/gl-city.js' || p === 'world/builder.js' || p === 'docs/PLANNER-PORT-PLAN.md' || /^docs\/.+\.md$/.test(p) || /^world\/.+\.md$/.test(p) || /^world\/.+\.js$/.test(p);
+    if (!interesting || f.status === 'D') return;
+    let text = '';
+    if (f.status === 'A') text = gitShow(head + ':' + p) || '';
+    else {
+      const diff = gitQuiet(['diff', '-U0', base + '...' + head, '--', p]);
+      text = diff.split('\n').filter((line) => line.startsWith('+') && !line.startsWith('+++')).map((line) => line.slice(1)).join('\n');
     }
+    if (text) fileTexts[p] = text.slice(0, 80000);
   });
   let soccerMoved = false;
   if (files.some((f) => f.path === 'shared/soccer-tune.js' || f.path === 'world/soccer.js')) {
@@ -1706,7 +1711,7 @@ function runSelfTest() {
       'docs/PLANNER-PORT-PLAN.md': 'The design tool is the planner editor. Builder HQ design tool only.\nbakeBuilding(doc) exports a new shell.\n'
     }
   });
-  expect('builder tool must leave the frozen world', plannerPlan.gaps.some((g) => g.id === 'frozen-world' && /builders/.test(g.detail) && /building redesign/.test(g.detail)));
+  expect('builder tool stays on the current world', !plannerPlan.gaps.some((g) => g.id === 'frozen-world'));
 
   const catalogOnly = checkOne({
     pr: 82,
@@ -1733,7 +1738,56 @@ function runSelfTest() {
     versionHead: { world: '31', stamp: '2', sw: 'b' },
     versionBase: { world: '30', stamp: '1', sw: 'a' }
   });
-  expect('gl-city is a building redesign', glCity.gaps.some((g) => g.id === 'frozen-world' && /building redesign/.test(g.detail)));
+  expect('WebGL renderer of the current buildings stays', !glCity.gaps.some((g) => g.id === 'frozen-world'));
+
+  const buildingLook = checkOne({
+    pr: 59,
+    title: 'purpose designs',
+    branch: 'cursor/split-webgl-58d4',
+    files: [
+      { status: 'A', path: 'world/GL-CITY.md' },
+      { status: 'A', path: 'world/gl-city.js' },
+      { status: 'M', path: 'world-split.html' }
+    ],
+    fileTexts: {
+      'world/GL-CITY.md': 'The designs below are the looks for those same buildings. Each purpose has a shape, a color, and a sign.\n'
+    },
+    pages: {
+      world: '<script src="world/boot.js?v=30"></script>',
+      split: '<script src="world/gl-city.js?v=30"></script>'
+    },
+    versionHead: { world: '31', stamp: '2', sw: 'b' },
+    versionBase: { world: '30', stamp: '1', sw: 'a' }
+  });
+  expect('new building look leaves Neon World', buildingLook.gaps.some((g) => g.id === 'frozen-world' && /new building look/.test(g.detail)));
+
+  const artStyle = checkOne({
+    pr: 92,
+    title: 'art style',
+    files: [
+      { status: 'A', path: 'docs/ART-STYLE.md' },
+      { status: 'M', path: 'world.html' },
+      { status: 'M', path: 'world-split.html' }
+    ],
+    fileTexts: { 'docs/ART-STYLE.md': 'This is a new art style for the whole city.\n' },
+    pages: { world: '<script src="world/boot.js?v=31"></script>', split: '<script src="world/boot.js?v=31"></script>' },
+    versionHead: { world: '31', stamp: '2', sw: 'b' },
+    versionBase: { world: '30', stamp: '1', sw: 'a' }
+  });
+  expect('art-style change leaves Neon World', artStyle.gaps.some((g) => g.id === 'frozen-world' && /art-style change/.test(g.detail)));
+
+  const artOnNewPage = checkOne({
+    pr: 93,
+    title: 'art style on the new world',
+    files: [
+      { status: 'A', path: 'world-neon2.html' },
+      { status: 'A', path: 'docs/ART-STYLE.md' }
+    ],
+    fileTexts: { 'docs/ART-STYLE.md': 'This is a new art style for the whole city.\n' },
+    versionHead: { world: '31', stamp: '2', sw: 'b' },
+    versionBase: { world: '30', stamp: '1', sw: 'a' }
+  });
+  expect('art style on the new world page is allowed', !artOnNewPage.gaps.some((g) => g.id === 'frozen-world'));
 
   const fps = checkOne({
     pr: 56,
@@ -1795,7 +1849,7 @@ function runSelfTest() {
   Object.keys(OWNERS).forEach((id) => {
     expect('map mentions ' + OWNERS[id].title, mapDoc.indexOf(OWNERS[id].title) !== -1);
   });
-  ['world.html', 'world-split.html', 'PROP-CATALOG', 'ZD_WORLD', 'index.html', 'traffic testing and changes', 'd4deed1'].forEach((token) => {
+  ['world.html', 'world-split.html', 'PROP-CATALOG', 'ZD_WORLD', 'index.html', 'traffic testing and changes', 'd4deed1', 'huge aesthetic'].forEach((token) => {
     expect('map mentions ' + token, mapDoc.indexOf(token) !== -1);
   });
 
