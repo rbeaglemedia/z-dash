@@ -131,7 +131,10 @@
     '  float ndcX=2.0*aCam.x*uF/(Z*uWH.x);',
     '  float ndcY=2.0*aCam.y*uF/(Z*uWH.y);',
     '  float winZ=clamp((Z-uNear)/(uFar-uNear),0.0,1.0);',
-    '  gl_Position=vec4(ndcX*Z,ndcY*Z,(winZ*2.0-1.0)*Z,Z);',
+    '  // w = Z collapses a wall of constant camera-x to a zero-area clip triangle.',
+    '  // That wall still covers pixels after the divide, so the fill has to be',
+    '  // submitted in screen space. Depth stays the same window z as before.',
+    '  gl_Position=vec4(ndcX,ndcY,winZ*2.0-1.0,1.0);',
     '  vCol=aCol;',
     '}'
   ].join('\n');
@@ -483,6 +486,41 @@
     return o;
   }
 
+  // A corner just in front of the camera projects to a huge screen position.
+  // The 2D painter cuts that face to a pad outside the canvas. WebGL1 drops the
+  // uncut triangle, which leaves a wire box and the street line showing through.
+  function clipScreen(poly) {
+    if (!poly || poly.length < 3) return [];
+    const f = (H || 1) * 0.9;
+    const pad = 12;
+    const sx = ((W || 1) * 0.5 + pad) / f;
+    const sy = ((H || 1) * 0.5 + pad) / f;
+    const planes = [[1, 0, -sx], [-1, 0, -sx], [0, 1, -sy], [0, -1, -sy]];
+    let cur = poly;
+    for (let p = 0; p < planes.length; p++) {
+      const A = planes[p][0], B = planes[p][1], C = planes[p][2];
+      const next = [];
+      for (let i = 0; i < cur.length; i++) {
+        const a = cur[i], b = cur[(i + 1) % cur.length];
+        const da = A * a[0] + B * a[1] + C * a[2];
+        const db = A * b[0] + B * b[1] + C * b[2];
+        const ain = da <= 1e-6, bin = db <= 1e-6;
+        if (ain && bin) next.push(b);
+        else if (ain !== bin) {
+          const den = da - db;
+          if (den) {
+            const t = da / den;
+            next.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]);
+          }
+          if (bin) next.push(b);
+        }
+      }
+      cur = next;
+      if (cur.length < 3) return [];
+    }
+    return cur;
+  }
+
   function clipSeg(a, b) {
     const near = typeof NEAR === 'number' ? NEAR : 0.5;
     if (a[2] < near && b[2] < near) return null;
@@ -546,7 +584,7 @@
       const p = corners[ids[i]];
       poly.push(camS(p[0], p[1], p[2]));
     }
-    return clipNear(poly);
+    return clipScreen(clipNear(poly));
   }
 
   function edgePair(ids, corners, rgb, alpha, width) {
@@ -569,30 +607,22 @@
     const dist = typeof CDRAW !== 'undefined' ? CDRAW.dist : 950;
     const alpha = Math.max(0.25, Math.min(1, 1.5 - d / dist));
     const lw = d < 400 ? 1.8 : 1.2;
+    // Outlines use the same facing faces as the 2D far silhouette. farSil.o is
+    // cleared before that fill, so a cap-only box reads as a hole in the wall.
     const faces = [];
-    if (ol) {
-      faces.push([0, 1, 2, 3], [4, 5, 6, 7]);
-    } else {
-      if (cam.x < q.x0) faces.push([0, 3, 7, 4]);
-      else if (cam.x > q.x1) faces.push([1, 2, 6, 5]);
-      if (cam.z < q.z0) faces.push([0, 1, 5, 4]);
-      else if (cam.z > q.z1) faces.push([3, 2, 6, 7]);
-      if (cam.y > y1) faces.push([4, 5, 6, 7]);
-      else if (cam.y < y0) faces.push([0, 1, 2, 3]);
-    }
+    if (cam.x < q.x0) faces.push([0, 3, 7, 4]);
+    else if (cam.x > q.x1) faces.push([1, 2, 6, 5]);
+    if (cam.z < q.z0) faces.push([0, 1, 5, 4]);
+    else if (cam.z > q.z1) faces.push([3, 2, 6, 7]);
+    if (cam.y > y1) faces.push([4, 5, 6, 7]);
+    else if (cam.y < y0) faces.push([0, 1, 2, 3]);
     for (let i = 0; i < faces.length; i++) {
-      pushFill(worldFace(faces[i], corners), fillRgb, 1);
+      const poly = worldFace(faces[i], corners);
+      pushFill(poly, fillRgb, 1);
       edgePair(faces[i], corners, edgeRgb, alpha, lw);
       api.statsFrame.faces++;
     }
-    if (ol) {
-      const verts = [[0, 4], [1, 5], [2, 6], [3, 7]];
-      for (let i = 0; i < verts.length; i++) {
-        const a = corners[verts[i][0]], c = corners[verts[i][1]];
-        if (pushLine(camS(a[0], a[1], a[2]), camS(c[0], c[1], c[2]), edgeRgb, alpha, lw, 0, 0)) api.statsFrame.segs++;
-      }
-      return;
-    }
+    if (ol) return;
     const winDist = typeof CDRAW !== 'undefined' ? CDRAW.winDist : 70;
     if (!(d < winDist) || b.kind === 'pylon' || b.kind === 'bill') return;
     const st = d > 45 ? 11 : 5.5;
