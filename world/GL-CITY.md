@@ -1,6 +1,12 @@
 # Neon World WebGL buildings (prototype)
 
-Query gate: `world-split.html?gl=1`. Default play is unchanged. `?glow=1` adds a halo from `world/gl-city-manifest.json`. This is a prototype on its own branch. It does not deploy.
+**On hold.** Bob changed the goal on 2026-10-24. Do not build the new look until the current FPS round lands (car-copy removal and the resolution clamp) and Bob says go. Do not touch `index.html`.
+
+The next step, when resumed, is 2–3 building look directions as mockup screenshots at phone, iPad, and PC sizes, each with an estimated millisecond cost, for Bob to pick. No renderer work before that pick.
+
+The new target is not a match to today's black buildings. Move off the black fill while keeping Neon World: cyan and magenta neon, synthwave, glass and bright accents in the same family as the Brookhaven-inspired homes. The frame still has to fit the steady-FPS budget: Galaxy steady 110+ with the whole frame under about 9 ms, iPad steady 60 and 30. Use instancing or batching, LOD, and baked glow. No `shadowBlur`. The drawing that ships today stays as the fallback.
+
+Query gate: `world-split.html?gl=1`. Default play is unchanged. `?glow=1` adds a halo from `world/gl-city-manifest.json`. This is a prototype on its own branch. It does not deploy. The `?gl=1` path below still paints the current black solid. That match is the fallback, not the new art direction.
 
 ## What other agents keep
 
