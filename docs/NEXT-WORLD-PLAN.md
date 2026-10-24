@@ -133,7 +133,7 @@ The same 400 FT line is drawn across the view, one stroke, no glow. The speed nu
 | The Z, on its own layer, not copied back | 4 ms |
 | HUD, including the bar | 2 ms |
 | House detail | 3 ms |
-| Traffic, after the photos are warm | 0.5 ms |
+| Traffic | 0.5 ms if it is still a photo. Up to 2.5 ms for two live cars. |
 | Spare | 1.2 ms |
 
 In the sky the city cards are about 2 ms, and about 4 ms is left for the preload.
@@ -177,7 +177,9 @@ The first build uses today's boxes at the new cap and measures the frame. Pretty
 
 ## 6. Traffic
 
-Fewer cars, and slower ones, so each car she does meet can look like a Z. This follows the traffic physics work on the live Neon World ([PR 73](https://github.com/rbeaglemedia/z-dash/pull/73), [PR 78](https://github.com/rbeaglemedia/z-dash/pull/78), agent [bc-2af9e871](https://cursor.com/agents/bc-2af9e871-f1de-59fc-9680-264931312bdb)). That work keeps the live city at 30 cars and does not draw a second live 370Z, because one extra photo of the full model costs about as much as drawing hers. NEXT does not change that live tune. It uses the same lanes and the same `assets/370z.glb`. It only changes how many cars, how fast they roll, and how sharp the near ones are. How they yield and take a corner stays in that traffic plan.
+Fewer cars, and slower ones, so the one she meets can be a real 3D Z. Flat photos are the current complaint, so they are only the fallback here.
+
+This follows the traffic physics work on the live Neon World ([PR 73](https://github.com/rbeaglemedia/z-dash/pull/73), [PR 78](https://github.com/rbeaglemedia/z-dash/pull/78), agent [bc-2af9e871](https://cursor.com/agents/bc-2af9e871-f1de-59fc-9680-264931312bdb)) and the 370Z Design Check ([PR 84](https://github.com/rbeaglemedia/z-dash/pull/84), agent [bc-3a1ede89](https://cursor.com/agents/bc-3a1ede89-c85b-5ae6-b8d1-719a2ef6f3d2)). The live city stays at 30 cars and stays on photos. One extra photo of the full model is about 9 ms in their lab, and four full meshes in one pass are about 13 ms. That does not fit 12 cars. NEXT only has two, so a lighter live car can fit here and must not be copied back onto `world.html`. Lanes, yielding, and corners stay in the traffic plan. The car still has to pass the design check before it counts.
 
 Today, `shared/traffic-tune.js` runs 12 simulated cars plus 18 light dots. The near picture is a 160 px photo out to 150 m. Cruise is 13–19 m/s (about 29–42 mph), and the highway adds 4 m/s. Those cars are faster than her NEXT iPad cap of 25 mph, so those numbers stay on the old world.
 
@@ -187,7 +189,7 @@ Today, `shared/traffic-tune.js` runs 12 simulated cars plus 18 light dots. The n
 
 **Rare. Recommended.** Two simulated cars in the districts that are actually loaded. No far dots. About 100 m between them, so meeting one is an event. Homestead can be empty. One car on Car Row or at The Stage is enough.
 
-**Light.** Four simulated cars, plus two dots past the pretty ring. About 45 m between the simulated ones. A short line, not a stream. Still well under today's 12 + 18.
+**Light.** Four cars in the loaded area, about 45 m apart. Only the nearest two are the live mesh. The other two are dots. A short line, not a stream. Still well under today's 12 + 18.
 
 Today's 30 is not a NEXT option. It stays on `world.html`.
 
@@ -203,37 +205,51 @@ Traffic stays under her ground cap on every device. No highway bonus. She can al
 
 ### How detailed each car is
 
-The file is `assets/370z.glb`: about 687 meshes and 26,549 triangles, the same body she drives. Real wheels means the tyre, rim, and brake meshes from that file stay in the picture. Wheel cards drawn on top of a photo fit the frame (about 0.5 ms for 12 cars) and do not read as wheels. A coarse shrink of the mesh already failed the shape check, so NEXT does not invent a blob and call it a Z.
+The file is `assets/370z.glb`, loaded from `shared/assets/370z-glb.js`. About 687 meshes and 26,549 triangles. Her car and the garage already use those bytes. A traffic copy has to be cut from that same file. A second download, a Kenney body, or a hand-built stand-in fails the design check even if the silhouette is close.
 
-**Close bake. Recommended.** Still a photo, not a second live car. Taken at load, from the real GLB, with the wheels already turned in the photo.
+**Live LOD. Recommended.** Two lighter 3D cars, drawn as meshes, with real wheels. Not a photo. Not a wheel card. The pair has to stay inside about 2.5 ms. That is the rare budget: the old 0.5 ms photo line, the 1.2 ms spare, and up to 0.8 ms borrowed from house detail. Houses do not go below about 2 ms to pay for traffic. If the pair will not fit, one car stays live and the other is not drawn until she is closer.
 
-| How close she is | What that one car is |
+| How close she is | What that car is |
 | --- | --- |
-| Inside 20 m | 320 px photo. Wheels, rims, and brakes are in the mesh. This is the close band. |
-| 20 m out to the pretty ring (40 m on her iPad, 55 on the phone, 70 on a PC) | The same photo at 160 px. The body reads. The wheels are small. |
-| Past the pretty ring | Rare: nothing. Light: a light dot, and only two of those. |
+| Inside the pretty ring (40 m on her iPad, 55 on the phone, 70 on a PC) | The live LOD. Both rare cars use it. Wheels spin. Front wheels steer. |
+| Past the pretty ring | Rare: nothing. Light: the other two cars are dots, not a second live pair. |
 
-The wheel angle is part of the load-time photo, for the few views those two or four cars use. It is not a new photo taken while she drives. In the traffic lab, a photo taken mid-drive was an 8–11 ms hitch.
+Light density does not get four live cars. Four full meshes in one pass were already about 13 ms. The nearest two use this LOD. The other two are dots.
 
-**One live car. Not in the first build.** The nearest Z, inside 18 m, drawn as a mesh every other frame, and only if a lighter mesh still passes the 370Z shape check. One full extra render of the 687-mesh GLB was about 9 ms in that lab. Her own Z already has 4 ms of the 16.7 ms street frame. A live traffic Z would spend the rest of the frame before the houses draw. Hold this until a real iPad trace of the close bake shows spare time.
+How the lighter car is built:
+
+1. **Same bytes.** At load, read the GLB she already loaded. Do not ship `assets/370z-lod.glb` or any other file. The design check hashes `shared/assets/370z-glb.js` and fails a different path.
+2. **Wheels come out first.** Tyre, rim, and brake stay their own meshes so they can spin, and so the front axle can yaw. Welding them into the body is what flattens the arches. A 2 cm weld already failed the check: rear overlap 0.41, side 0.52, three-quarter 0.25. The bar is 0.55 on every close angle.
+3. **One mesh per material.** Merge the body by material: paint, glass, lamps. That is the draw-call cut. 687 meshes become a handful. Triangles stay put for this step.
+4. **Then shrink the body only, in steps.** Try about 1 cm of error, then 1.5 cm. Try 2 cm only if a new sheet passes. Stop at the coarsest step that still clears 0.55. The aim, if the shape holds, is a body near 5,000 triangles and round wheels of a few hundred each, spokes still there. A whole car near 8,000 triangles, down from 26,549. Two cars near 16,000, sharing that one geometry.
+5. **Shared materials.** Five materials for both cars: paint, glass, tyre, rim, lamps. Paint color is a per-car value, so the two cars can differ without a second material.
+6. **Instancing.** One body draw for both cars. Wheel spin and steer are matrices on the shared wheel geometry, not a clone of the 687-mesh graph. No second picture, no readback, no `shadowBlur`. The 9 ms lab number was a separate photo of the full mesh. This path does not take that photo.
+
+**Photo fallback.** Use this only if the LOD fails the design check, or the two-car probe is over 2.5 ms. A 320 px photo of the same GLB, inside 20 m, with the wheels already in that photo. Past 20 m, 160 px, and nothing past the pretty ring on rare. It is a fallback because a flat picture is the complaint, not the goal. Wheel cards stay unused. They fit the frame and do not read as wheels.
 
 ### What it costs
 
-The street frame is 16.7 ms. Traffic's 0.5 ms in the table above is the rare close bake after the loading card. The spare shrinks from 1.7 ms to 1.2 ms. Houses stay at 3 ms.
+These are estimates from the traffic lab (software graphics, 4× CPU), not a new measurement and not her iPad. The first build measures five on/off pairs and replaces this table.
 
-| Choice | After the photos are warm | Fits 16.7 ms? |
-| --- | --- | --- |
-| Rare, two close bakes | about 0.3 ms to draw | Yes |
-| Light, four close bakes and two dots | about 0.6 ms | Yes, if the houses stay at 3 ms |
-| Wheel cards on the old 160 px photo | about 0.1 ms for two cars | Fits, and looks wrong. Not used. |
-| One live full GLB beside hers | about 9 ms in the lab, every frame | No on her iPad |
-| A shrunken live mesh | unknown until it passes the shape check | Later only |
+| Choice | What is on screen | Estimate for 2 cars | Fits the 2.5 ms rare cap? |
+| --- | --- | --- | --- |
+| Full GLB, two clones | ~53,000 triangles, ~1,400 draws | about 6–9 ms | No |
+| Materials merged, triangles not cut, one pass | ~53,000 triangles, about 10 draws | about 3–6 ms | Tight. Draws were the expensive part. |
+| Body near 5,000 triangles, wheels kept, instanced | ~16,000 triangles, about 6 draws | about 1.5–2.5 ms | The target |
+| 320 px photo, two cars | two blits | about 0.3 ms | Fits, and looks flat. Fallback only. |
+| Wheel cards on the old photo | cards on a blit | about 0.1 ms | Fits, and looks wrong. Not used. |
+
+Her own Z stays at 4 ms. These two cars are extra. They draw in the same pass, so they do not pay the 9 ms photo again.
+
+The design check is the gate, from PR 84: `node tools/car-design-check.mjs --review`. Exit 0, or it is not done. Close shots are about 11–13 m, front, rear, side, and three-quarter. Overlap with her Z at least 0.55 on each. The front shot steers the copy's wheels by 0.45 rad. Real wheels yaw. A card that faces the camera fails. The loaded bytes have to match `shared/assets/370z-glb.js`.
+
+Rule 5 on the live world is twelve close copies under 3.5 ms. This LOD is not for those twelve. NEXT asks the checker for a two-copy probe with a 2.5 ms cap. Putting the same mesh on the live 12-car city would miss that 3.5 ms bar, so it stays on `next.html`.
 
 `shared/traffic-tune.js` stays the live world's 12 + 18. NEXT reads its own numbers, so a rare city cannot empty Neon World.
 
 ## What the first build is, after you approve it
 
-1. The page, the tile, the copied layout, one drive mode, the caps, and a ramp that only hops. Measure on the lab sizes and, when you can, on her iPad and the Galaxy. Boxes stay. Rare traffic is in that measure as the photo the live world already uses, so the number includes cars. The sharper 320 px bake comes after that number exists.
+1. The page, the tile, the copied layout, one drive mode, the caps, and a ramp that only hops. Measure on the lab sizes and, when you can, on her iPad and the Galaxy. Boxes stay. The city number can be taken with traffic off. The live LOD is in only after the design check exits 0 and the two-car probe is inside 2.5 ms. Until then the photo is the fallback, not the look.
 2. The bar, the star count, the sling, the bounce, and the portal.
 3. The Homestead sport house on paper, then in the game, then measure again.
 
@@ -250,7 +266,7 @@ Step 3 does not start ahead of the measurement in step 1.
 - Lab frame times are software graphics. They are not her iPad and not the Galaxy. The speed plan's device notes are the ones to trust: iPad about 5–30 fps today, Galaxy about 70–90. NEXT is not "done" on a lab number alone.
 - Brookhaven is a feel to borrow (lots, doors, a hidden load on the way in). Copying its houses or its screens is out.
 - NEXT traffic must not write `shared/traffic-tune.js`. The live world stays at 30 cars. A shared tune would empty that city the moment NEXT goes rare.
-- A live second 370Z is the frame. The traffic lab already measured one extra full render at about 9 ms. Density does not make that render cheaper. It only means we can afford a sharper photo of fewer cars.
+- A full second 370Z is the frame. Two uncut clones are about 6–9 ms. The live option is a cut of the same file, two cars, about 2.5 ms, and it stays off `world.html`. A 2 cm weld already missed the 0.55 overlap bar. Do not ship that mesh.
 
 ## Picks
 
@@ -268,7 +284,7 @@ Reply with a letter, or "recommended" to take the marked row.
 | 8 | Nitrous | Cannot break the ground cap. Sky boost on phone and PC only. |
 | 9 | Traffic density | Rare. Two cars, no dots. |
 | 10 | Traffic speed | Under her cap: 18 / 24 / 30 mph max. No highway bonus. Off in the sky. |
-| 11 | Traffic detail | 320 px close bake of `assets/370z.glb`, real wheels, inside 20 m. No live second Z. |
+| 11 | Traffic detail | Live LOD from `assets/370z.glb`, real wheels, two cars, about 2.5 ms. Photo only if that fails the design check. |
 
 Open, and fine to leave until the build:
 
