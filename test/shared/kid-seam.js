@@ -1,6 +1,7 @@
 /* Kid App seam.
    The menu does not load the adult driver (3D car, Spotify, OBD, dashboard shell).
-   ZD.kidLoad(group) fetches those files only when a tile or the settings gear opens them.
+   ZD.kidLoad(group) fetches those files only when a tile opens them.
+   The settings gear does not call kidLoad. Kid settings is shared/app-settings.js.
    Shared data stays in localStorage so a future real-drive sync does not need this page
    to load OBD or index.html. This file never writes those keys and never opens a socket. */
 (function () {

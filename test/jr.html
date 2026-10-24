@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head><meta name="robots" content="noindex"><link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="><script>(function(){function scrub(){if(!('caches' in window))return;caches.keys().then(function(keys){keys.forEach(function(k){caches.open(k).then(function(c){['/jr.html','/index.html','/world.html','/fly3.html'].forEach(function(logical){var req=new Request(location.origin+logical);c.match(req).then(function(hit){if(hit&&String(hit.url).indexOf('/test/')!==-1)c.delete(req);});});c.keys().then(function(reqs){reqs.forEach(function(req){try{if(new URL(req.url).pathname.indexOf('/test/')===0)c.delete(req);}catch(e){}});});});});});}scrub();var n=0,iv=setInterval(function(){scrub();if(++n>10)clearInterval(iv);},300);if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){navigator.serviceWorker.register('sw.js',{scope:'/test/',updateViaCache:'none'}).catch(function(){});}})();</script><script src="shared/kid-idle.js"></script><script src="shared/kid-seam.js"></script>
+<head><meta name="robots" content="noindex"><link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="><script>(function(){function scrub(){if(!('caches' in window))return;caches.keys().then(function(keys){keys.forEach(function(k){caches.open(k).then(function(c){['/jr.html','/index.html','/world.html','/fly3.html'].forEach(function(logical){var req=new Request(location.origin+logical);c.match(req).then(function(hit){if(hit&&String(hit.url).indexOf('/test/')!==-1)c.delete(req);});});c.keys().then(function(reqs){reqs.forEach(function(req){try{if(new URL(req.url).pathname.indexOf('/test/')===0)c.delete(req);}catch(e){}});});});});});}scrub();var n=0,iv=setInterval(function(){scrub();if(++n>10)clearInterval(iv);},300);if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){navigator.serviceWorker.register('sw.js',{scope:'/test/',updateViaCache:'none'}).catch(function(){});}})();</script><script src="shared/kid-idle.js"></script><script src="shared/kid-seam.js"></script><script src="shared/app-settings.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#000000">
@@ -234,7 +234,25 @@ html, body { margin: 0; height: 100%; background: #000; color: var(--txt); font-
 .kidrow .mute { font-size: 12px; line-height: 1.25; }
 .panel button.kidtgl { flex: none; font-family: 'Orbitron'; font-weight: 800; font-size: 13px; letter-spacing: 2px; padding: 10px 14px; color: #ffd0f4; border-color: #ff4fd8; }
 .panel button.kidtgl.on { color: #fff; background: rgba(255,79,216,.25); box-shadow: 0 0 14px rgba(255,79,216,.6); }
-body.kidon #splash, body.kidon #alert, body.kidon #toast, body.kidon #edge, body.kidon #poweroff, body.kidon #layoutEd { display: none !important; }
+body.kidon #splash, body.kidon #alert, body.kidon #toast, body.kidon #edge, body.kidon #poweroff, body.kidon #layoutEd, body.kidon #settings { display: none !important; }
+/* Kid settings. Adult #settings stays in the page for the driver shell and is not opened here. */
+#kSet { position: fixed; inset: 0; z-index: 55; background: rgba(5,2,12,.9); display: flex; align-items: center; justify-content: center; padding: 8px; }
+#kSet.hidden { display: none; }
+#kSet .kbox { position: relative; width: min(480px, 96vw); max-height: calc(100% - 8px); overflow: auto; padding: 12px 14px 14px; border: 1px solid #3ee6ff; border-radius: 12px; background: #12081e; color: #fff; font-family: 'Rajdhani', sans-serif; }
+#kSet h3 { margin: 2px 36px 4px; font: 800 16px 'Orbitron', sans-serif; letter-spacing: 3px; text-align: center; color: #3ee6ff; }
+#kSet .hi { margin: 0 0 8px; text-align: center; font: 700 14px 'Orbitron', sans-serif; letter-spacing: 1px; color: #ffd0f4; }
+#kSet .krow, #kSet .row, #kSet .kidrow { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 8px 0; }
+#kSet .krow > span, #kSet .lab { min-width: 72px; text-align: center; font: 800 12px 'Orbitron', sans-serif; letter-spacing: 1px; color: #b9a6d6; }
+#kSet button, #kSet .tgl { min-height: 40px; padding: 8px 12px; border-radius: 8px; border: 1px solid #3ee6ff; background: transparent; color: #fff; font: 800 12px 'Orbitron', sans-serif; letter-spacing: 1px; text-align: center; text-decoration: none; cursor: pointer; }
+#kSet button.on, #kSet .tgl.on { border-color: #ff4fd8; color: #fff; background: rgba(255,79,216,.2); }
+#kSet .kx { position: absolute; top: 8px; right: 8px; width: 40px; height: 40px; min-height: 40px; padding: 0; }
+#kSet .knameedit { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0 0 8px; }
+#kSet .knameedit[hidden] { display: none; }
+#kSet input[type="text"] { width: min(220px, 70vw); box-sizing: border-box; min-height: 40px; padding: 8px 10px; border-radius: 8px; border: 1px solid #3ee6ff; background: #0a0418; color: #fff; font: 800 16px 'Orbitron', sans-serif; letter-spacing: 1px; text-align: center; text-transform: uppercase; }
+#kSet input[type="range"] { width: min(180px, 46vw); accent-color: #3ee6ff; }
+#kSet .mute { flex: 1 1 180px; text-align: center; color: #b9a6d6; font-size: 13px; }
+#kSet .kdone { display: block; width: 100%; margin-top: 8px; position: sticky; bottom: 0; background: #3ee6ff; color: #12081e; border-color: #3ee6ff; }
+#kSet .units { font: 800 13px 'Orbitron', sans-serif; letter-spacing: 1px; color: #fff; }
 .kid { position: fixed; inset: 0; z-index: 46; display: flex; flex-direction: column; background: #08020f; padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); font-family: 'Rajdhani', sans-serif; }
 .kid.hidden { display: none; }
 .khdr { height: 38px; flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 10px; border-bottom: 2px solid #3a1550; background: linear-gradient(#1a0730, #0a0314); }
@@ -966,7 +984,27 @@ html.ipad-mode .kmain .ktilesm{grid-template-rows:repeat(2,minmax(0,1fr))}
     <button id="layoutDone" class="big">DONE</button>
   </div>
 </div>
-<!-- Adult driver scripts load from driver/ when a tile or the settings gear opens them. -->
+<!-- Adult driver scripts load from driver/ when a tile opens them. The gear opens #kSet and does not load them. -->
+<div id="kSet" class="kset hidden">
+  <div class="kbox">
+    <button type="button" class="kx" id="kSetX" aria-label="Close settings">✕</button>
+    <h3>SETTINGS</h3>
+    <p class="hi" id="kSetHi">HI, ELLIE</p>
+    <div class="krow"><span>NAME</span><button type="button" id="kSetName">MY Z</button></div>
+    <div class="knameedit" id="kSetNameBox" hidden>
+      <input id="kSetNameIn" type="text" maxlength="14" autocomplete="off" spellcheck="false" aria-label="Name">
+      <button type="button" id="kSetNameOk">SAVE</button>
+      <button type="button" id="kSetNameNo">CANCEL</button>
+    </div>
+    <div class="krow"><span>SOUND</span><button type="button" id="kSetMute">SOUND ON</button><input id="kSetVol" type="range" min="0" max="100" value="70" aria-label="Volume"></div>
+    <div class="krow"><span>SPEED</span><b class="units" id="kSetUnits">MPH</b></div>
+    <div class="krow"><button type="button" id="kSetLow">LOW DETAIL: OFF</button><button type="button" id="kSetWake">KEEP SCREEN ON: ON</button></div>
+    <div class="ksbody"></div>
+    <div class="krow"><button type="button" id="kSetPass">SET PARENT PASSCODE</button></div>
+    <div class="krow"><button type="button" id="kSetCredits">CREDITS</button></div>
+    <button type="button" class="kdone" id="kSetDone">DONE</button>
+  </div>
+</div>
 
 
 
@@ -2569,7 +2607,7 @@ html.ipad-mode .kmain .ktilesm{grid-template-rows:repeat(2,minmax(0,1fr))}
         <nav id="kTabs" class="ktabs">
           <button data-k="drive" class="on">DRIVE</button><button data-k="car">CAR</button><button data-k="road">ROAD</button><button data-k="drag">DRAG</button>${WANTED_ON ? '<button data-k="wanted">WANTED</button>' : ''}<button data-k="boost">RIDE ALONG</button><button data-k="garage">GARAGE</button>
         </nav>
-        <div class="kright"><span class="kcount kstar" id="kStars">★ 0</span><span class="kcount kcoin" id="kCoins">● 0</span><span class="kbadge" id="kBadge">PRACTICE</span><span class="ksrc" id="kSrc">DEMO</span><button id="kFs" class="kicon hidden" title="Tap for fullscreen">⛶</button><button id="kGear" class="kicon" title="Settings (turn Passenger Mode off here)">⚙</button></div>
+        <div class="kright"><span class="kcount kstar" id="kStars">★ 0</span><span class="kcount kcoin" id="kCoins">● 0</span><span class="kbadge" id="kBadge">PRACTICE</span><span class="ksrc" id="kSrc">DEMO</span><button id="kFs" class="kicon hidden" title="Tap for fullscreen">⛶</button><button id="kGear" class="kicon" title="Settings">⚙</button></div>
       </header>
       <div class="kbody">
         <canvas id="kCv"></canvas>
@@ -2594,7 +2632,36 @@ html.ipad-mode .kmain .ktilesm{grid-template-rows:repeat(2,minmax(0,1fr))}
       root.querySelector('#kMenuB').addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); if (K.menuOpen) kResume(); else kPause(); });
       root.querySelector('#kDashBack').addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); goMenu(); });
       root.querySelector('[data-m="resume"]').addEventListener('click', () => kResume()); root.querySelector('#kPzX').addEventListener('click', (e) => { e.stopPropagation(); kResume(); }); /* ✕ (inside the panel, top-left): RESUME in a game, just close on DRIVE */ root.querySelector('[data-m="home"]').addEventListener('click', () => { goMenu(); }); /* HOME = the full-screen main menu, dashboard stopped */ } // kid MENU / PAUSE
-    $('#kGear').addEventListener('click', () => { const open = () => { if (window.ZD_HOOK_SET) window.ZD_HOOK_SET(); if (ZD.Settings) ZD.Settings.toggle(); else $('#settings').classList.remove('hidden'); }; if (ZD.kidLoad) ZD.kidLoad('adult').then(open); else open(); });
+    function paintKidSet() {
+      const prefs = ZD.prefs, name = String((prefs && prefs.name()) || P.name || 'MY Z').toUpperCase();
+      const hi = $('#kSetHi'); if (hi) hi.textContent = 'HI, ELLIE · ' + name;
+      const nb = $('#kSetName'); if (nb) nb.textContent = name;
+      const vol = prefs ? prefs.vol() : 70, muted = prefs ? prefs.muted() : false;
+      const sl = $('#kSetVol'); if (sl && document.activeElement !== sl) sl.value = String(muted ? 0 : vol);
+      const mb = $('#kSetMute'); if (mb) { mb.textContent = muted ? 'MUTED' : ('VOLUME ' + vol); mb.classList.toggle('on', !muted); }
+      const ub = $('#kSetUnits'); if (ub) ub.textContent = String((prefs && prefs.units()) || 'mph').toUpperCase();
+      const low = prefs ? prefs.low() : false, lb = $('#kSetLow'); if (lb) { lb.textContent = 'LOW DETAIL: ' + (low ? 'ON' : 'OFF'); lb.classList.toggle('on', low); }
+      const wake = prefs ? prefs.wake() : true, wb = $('#kSetWake'); if (wb) { wb.textContent = 'KEEP SCREEN ON: ' + (wake ? 'ON' : 'OFF'); wb.classList.toggle('on', wake); }
+      const RO = ZD.Roles, pb = $('#kSetPass'); if (pb && RO && RO.hasPass) pb.textContent = RO.hasPass() ? 'CHANGE PASSCODE' : 'SET PARENT PASSCODE';
+      try { fpsRow(); } catch (e) {}
+    }
+    function openKidSet() { const box = $('#kSetNameBox'); if (box) box.hidden = true; paintKidSet(); const el = $('#kSet'); if (el) el.classList.remove('hidden'); }
+    function closeKidSet() { const el = $('#kSet'); if (el) el.classList.add('hidden'); const box = $('#kSetNameBox'); if (box) box.hidden = true; }
+    $('#kGear').addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); const el = $('#kSet'); if (el && !el.classList.contains('hidden')) closeKidSet(); else openKidSet(); });
+    $('#kSetX').addEventListener('click', closeKidSet); $('#kSetDone').addEventListener('click', closeKidSet);
+    $('#kSet').addEventListener('click', (e) => { if (e.target === $('#kSet')) closeKidSet(); });
+    $('#kSetName').addEventListener('click', () => { const box = $('#kSetNameBox'), inp = $('#kSetNameIn'); if (!box || !inp) return; inp.value = P.name || 'MY Z'; box.hidden = false; setTimeout(() => { try { inp.focus(); inp.select(); } catch (err) {} }, 30); });
+    const commitName = () => { const inp = $('#kSetNameIn'); const raw = inp ? inp.value : ''; const n = (ZD.prefs && ZD.prefs.setName(raw, P)) || String(raw || '').trim().toUpperCase().slice(0, 14); if (!n) { if (inp) inp.focus(); return; } P.name = n; save(); const box = $('#kSetNameBox'); if (box) box.hidden = true; paintKidSet(); };
+    $('#kSetNameOk').addEventListener('click', commitName);
+    $('#kSetNameIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') commitName(); if (e.key === 'Escape') { $('#kSetNameBox').hidden = true; e.stopPropagation(); } });
+    $('#kSetNameNo').addEventListener('click', () => { $('#kSetNameBox').hidden = true; });
+    $('#kSetVol').addEventListener('input', () => { if (ZD.prefs) ZD.prefs.setVol(+$('#kSetVol').value); paintKidSet(); });
+    $('#kSetMute').addEventListener('click', () => { if (ZD.prefs) ZD.prefs.setMuted(!ZD.prefs.muted()); paintKidSet(); });
+    $('#kSetLow').addEventListener('click', () => { if (ZD.prefs) ZD.prefs.setLow(!ZD.prefs.low()); paintKidSet(); });
+    $('#kSetWake').addEventListener('click', () => { if (ZD.prefs) ZD.prefs.setWake(!ZD.prefs.wake()); paintKidSet(); });
+    $('#kSetPass').addEventListener('click', async () => { const RO = ZD.Roles; if (RO && RO.setup) { await RO.setup(); paintKidSet(); } });
+    $('#kSetCredits').addEventListener('click', () => { if (window.ZD_CREDITS) ZD_CREDITS.open(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#kSet') && !$('#kSet').classList.contains('hidden') && !$('#pcPad') && !$('#kLocks') && $('#kSetNameBox').hidden) closeKidSet(); });
     $('#kFs').addEventListener('click', () => { try { if (matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches) return; const el = document.documentElement, p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : el.webkitRequestFullscreen && el.webkitRequestFullscreen(); if (p && p.then) p.then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {})).catch(() => {}); } catch (e) {} });
     const syncFs = () => { const can = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen), fs = !!(document.fullscreenElement || document.webkitFullscreenElement) || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches; $('#kFs').classList.toggle('hidden', !can || fs); };
     document.addEventListener('fullscreenchange', syncFs); syncFs();
@@ -4207,7 +4274,7 @@ html.ipad-mode .kmain .ktilesm{grid-template-rows:repeat(2,minmax(0,1fr))}
     const sp = FP.lastSpike, hot = sp && Date.now() - sp.wall < 3000, txt = `${FP.fps} FPS · 1s min ${FP.min1}${sp ? ` · ${hot ? '⚠ ' : ''}spike ${sp.ms}ms @ ${sp.at}` : ''}`;
     if (txt !== FP.lastTxt) { FP.el.textContent = txt; FP.lastTxt = txt; } FP.el.classList.toggle('hot', !!hot); }
   function fpsSet(on) { FP.on = on; try { localStorage.setItem(FPSK, on ? '1' : '0'); } catch (e) {} if (FP.el) FP.el.classList.toggle('hidden', !on); if (on && FP.el) FP.el.classList.remove('hidden'); fpsRow(); }
-  function fpsRow() { const panel = document.querySelector('#settings .panel'); if (!panel) return; let r = document.getElementById('kFpsRow');
+  function fpsRow() { const panel = document.querySelector('#kSet .ksbody') || document.querySelector('#settings .panel'); if (!panel) return; let r = document.getElementById('kFpsRow');
     if (!r) { r = document.createElement('div'); r.id = 'kFpsRow'; r.className = 'kidrow kidonly'; r.innerHTML = '<button id="tglKFps" class="tgl"></button><span class="mute">Parent / debug: tiny frame-rate readout at the top edge of Passenger Mode (FPS, 1-second min, last spike time). Off for Ellie.</span>'; panel.appendChild(r);
       r.querySelector('button').addEventListener('click', async () => { const RO = ZD.Roles; if (!FP.on && RO && RO.hasPass && RO.hasPass() && !(await RO.gate('Enter the parent passcode to show FPS'))) return; fpsSet(!FP.on); }); }
     r.querySelector('button').textContent = `SHOW FPS: ${FP.on ? 'ON' : 'OFF'}`; }
@@ -4339,7 +4406,7 @@ html.ipad-mode .kmain .ktilesm{grid-template-rows:repeat(2,minmax(0,1fr))}
     if (cold && !Q.has('stay') && !window.ZD_JR && kidDev) { location.replace(base + 'jr.html' + keep); return; } /* KID device: always her own start screen */
     try { sessionStorage.setItem('zd.sess', '1'); } catch (e) {} K.coldKid = cold && kidDev && !!window.ZD_JR;
     let on = false; try { on = localStorage.getItem(MODE) === '1'; } catch (e) {} if (cold && !kidDev) on = false; /* ADULT cold launch: never resume Passenger Mode (zdash.kidOn only holds within a session) */
-    { const pn = $('#settings .panel'); if (pn && !$('#zdDevRow')) { const r = document.createElement('div'); r.id = 'zdDevRow'; r.className = 'row zdDevRow'; r.innerHTML = '<button id="btnDrvMode" class="tgl">🚗 DRIVER MODE</button><button id="btnKidDev" class="tgl">MAKE THIS ELLIE\'S DEVICE</button><span class="mute">DRIVER MODE switches this device back to Dad\'s driver app (parent passcode).</span>'; pn.insertBefore(r, pn.firstChild);
+    { const pn = $('#kSet .ksbody') || $('#settings .panel'); if (pn && !$('#zdDevRow')) { const r = document.createElement('div'); r.id = 'zdDevRow'; r.className = 'row zdDevRow'; r.innerHTML = '<button id="btnDrvMode" class="tgl">DRIVER MODE</button><button id="btnKidDev" class="tgl">MAKE THIS ELLIE\'S DEVICE</button><span class="mute">DRIVER MODE switches this device back to Dad\'s driver app (parent passcode).</span>'; pn.insertBefore(r, pn.firstChild);
       r.querySelector('#btnDrvMode').addEventListener('click', async () => { const RO = ZD.Roles; if (RO && RO.gate && !(await RO.gate('Enter the parent passcode for DRIVER MODE'))) return; if (RO && RO.setDevMode) RO.setDevMode('adult'); try { localStorage.setItem(MODE, '0'); sessionStorage.removeItem('zd.sess'); } catch (e) {} location.replace(base + keep); });
       r.querySelector('#btnKidDev').addEventListener('click', () => { const RO = ZD.Roles; if (RO && RO.setDevMode) RO.setDevMode('kid'); toast("This is now Ellie's device: it opens on her start screen", 3200); }); } }
     if (Q.has('passenger')) on = Q.get('passenger') !== '0';
@@ -4347,9 +4414,9 @@ html.ipad-mode .kmain .ktilesm{grid-template-rows:repeat(2,minmax(0,1fr))}
     if (Q.get('ktab')) K.tab = Q.get('ktab') === 'ride' ? 'boost' : Q.get('ktab');
     if (Q.has('notut')) P.tut = 1; // test hook
     K.bootMenu = !!(jr && !kidHashTab() && !Q.get('ktab') && !Q.has('kstart'));
-    setOn(on, !Q.has('passenger') && !jr); applyKidRoute(); if (!K.bootMenu && !kidRouted() && (K.coldKid || Q.has('kstart')) && !Q.has('nokstart')) kStartShow(); K.bootMenu = false; syncDash(); /*reopen*/ /*neonstart*/ setTimeout(() => { const pn = $('#settings .panel'), d = $('#zdDevRow'); if (pn && d) pn.insertBefore(d, pn.firstChild); }, 0); /* DRIVER MODE stays the top row (above RE-LOCK) */
-    /*relock*/ { const pn = $('#settings .panel'); if (pn && !$('#kRelockRow')) { const r = document.createElement('div'); r.id = 'kRelockRow'; r.className = 'row'; r.innerHTML = '<button id="btnRelockZT" class="tgl">🔐 LOCKS</button><span class="mute">Pick which games are locked on this device (grown-up code). Coins, garage and progress stay.</span>'; pn.insertBefore(r, pn.firstChild);
-      const rlLocked = () => !!P.w2hide || !w2Key(), rlLbl = () => { const b = $('#btnRelockZT'); if (b) b.textContent = '🔐 LOCKS'; }; rlLbl(); window.ZD_RL_LBL = rlLbl; /*relockui*/ { const hookSet = () => { const S = ZD.Settings; if (!S || !S.open || S.__rl) return; const so = S.open; S.__rl = 1; S.open = function () { rlLbl(); return so.apply(this, arguments); }; }; hookSet(); window.ZD_HOOK_SET = hookSet; }
+    setOn(on, !Q.has('passenger') && !jr); applyKidRoute(); if (!K.bootMenu && !kidRouted() && (K.coldKid || Q.has('kstart')) && !Q.has('nokstart')) kStartShow(); K.bootMenu = false; syncDash(); /*reopen*/ /*neonstart*/ setTimeout(() => { const pn = $('#kSet .ksbody') || $('#settings .panel'), d = $('#zdDevRow'); if (pn && d) pn.insertBefore(d, pn.firstChild); }, 0); /* DRIVER MODE stays the top row (above RE-LOCK) */
+    /*relock*/ { const pn = $('#kSet .ksbody') || $('#settings .panel'); if (pn && !$('#kRelockRow')) { const r = document.createElement('div'); r.id = 'kRelockRow'; r.className = 'row'; r.innerHTML = '<button id="btnRelockZT" class="tgl">LOCKS</button><span class="mute">Pick which games are locked on this device (grown-up code). Coins, garage and progress stay.</span>'; pn.insertBefore(r, pn.firstChild);
+      const rlLocked = () => !!P.w2hide || !w2Key(), rlLbl = () => { const b = $('#btnRelockZT'); if (b) b.textContent = 'LOCKS'; }; rlLbl(); window.ZD_RL_LBL = rlLbl; /*relockui*/ { const hookSet = () => { const S = ZD.Settings; if (!S || !S.open || S.__rl) return; const so = S.open; S.__rl = 1; S.open = function () { rlLbl(); return so.apply(this, arguments); }; }; hookSet(); window.ZD_HOOK_SET = hookSet; }
       /*lockpick*/ const LKG = [{ k: 'zt', name: 'WANTED: Z TAKEOVER', locked: () => rlLocked() }, { k: 'fly', name: 'NEON FLYING', locked: () => !flyOpen() }, { k: 'world', name: 'NEON WORLD', locked: () => !worldOpen() }];
       const lpApply = (st) => { const zt = st.zt, fl = st.fly; if (zt !== LKG[0].locked()) { if (zt) { w2Lock(); P.w2hide = 1; } else { P.w2hide = 0; P.w2open = 1; try { localStorage.setItem(W2K, W2H); } catch (e) {} } }
         if (fl !== LKG[1].locked()) { try { fl ? localStorage.removeItem('zd_fly_unlocked') : localStorage.setItem('zd_fly_unlocked', '1'); } catch (e) {} }
@@ -4398,7 +4465,7 @@ html.ipad-mode .kmain .ktilesm{grid-template-rows:repeat(2,minmax(0,1fr))}
  +'<p class="sm">Rims, tires, city, signs and effects are made in code by Z-DASH.</p></div>';
  function card(){let el=document.getElementById('kCredits');if(!el){el=document.createElement('div');el.id='kCredits';el.className='hidden';el.innerHTML=H;document.body.appendChild(el);
   el.querySelector('#kCreditsX').addEventListener('click',()=>el.classList.add('hidden'));el.addEventListener('click',(e)=>{if(e.target===el)el.classList.add('hidden');});}return el;}
- function add(){const pn=document.querySelector('#settings .panel');if(!pn)return false;if(document.getElementById('kCreditsRow'))return true;
+ function add(){if(document.getElementById('kSetCredits'))return true;const pn=document.querySelector('#settings .panel');if(!pn)return false;if(document.getElementById('kCreditsRow'))return true;
   const r=document.createElement('div');r.id='kCreditsRow';r.className='row';r.innerHTML='<button id="btnCredits" class="tgl">ⓘ CREDITS</button><span class="mute">Who made the 3D car, fonts and other parts.</span>';
   pn.appendChild(r);r.querySelector('#btnCredits').addEventListener('click',()=>card().classList.remove('hidden'));return true;}
  window.ZD_CREDITS={open:()=>card().classList.remove('hidden'),close:()=>card().classList.add('hidden')};
