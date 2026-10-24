@@ -1,0 +1,1290 @@
+[
+  {
+    "id": "dev-builder",
+    "title": "DEV Builder overlay",
+    "url": "/test/dev-builder.html?demo=1&label=polish",
+    "viewport": "phone-844x390",
+    "size": [
+      844,
+      390
+    ],
+    "hasTouch": true,
+    "dpr": 3,
+    "ready": true,
+    "screenshot": "/workspace/test-results/dev-builder/ui-polish/screenshots/dev-builder__phone-844x390.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        844,
+        390
+      ],
+      "dpr": 3,
+      "touch": 5,
+      "controls": 14,
+      "cards": 0,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Undo",
+          "font": 13,
+          "x": 450.8,
+          "y": 8,
+          "w": 62.4,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Redo",
+          "font": 13,
+          "x": 521.3,
+          "y": 8,
+          "w": 61.7,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Save test",
+          "font": 13,
+          "x": 591,
+          "y": 8,
+          "w": 87.8,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Export",
+          "font": 13,
+          "x": 686.8,
+          "y": 8,
+          "w": 71,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Import",
+          "font": 13,
+          "x": 765.8,
+          "y": 8,
+          "w": 70.3,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Close",
+          "font": 13,
+          "x": 8,
+          "y": 60,
+          "w": 64.9,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "Move",
+          "font": 13,
+          "x": 8,
+          "y": 122,
+          "w": 62.4,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Road",
+          "font": 13,
+          "x": 78.4,
+          "y": 122,
+          "w": 61.7,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Measure",
+          "font": 13,
+          "x": 148.1,
+          "y": 122,
+          "w": 82.9,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Align",
+          "font": 13,
+          "x": 239,
+          "y": 122,
+          "w": 62,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Group",
+          "font": 13,
+          "x": 309,
+          "y": 122,
+          "w": 68.5,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Rotate 15",
+          "font": 13,
+          "x": 385.5,
+          "y": 122,
+          "w": 89.2,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Roof",
+          "font": 13,
+          "x": 482.7,
+          "y": 122,
+          "w": 58.8,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Pan",
+          "font": 13,
+          "x": 549.5,
+          "y": 122,
+          "w": 52.8,
+          "h": 44
+        }
+      ]
+    }
+  },
+  {
+    "id": "dev-builder",
+    "title": "DEV Builder overlay",
+    "url": "/test/dev-builder.html?demo=1&label=polish",
+    "viewport": "phone-667x375",
+    "size": [
+      667,
+      375
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/dev-builder/ui-polish/screenshots/dev-builder__phone-667x375.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        667,
+        375
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 14,
+      "cards": 0,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Undo",
+          "font": 13,
+          "x": 431.1,
+          "y": 8,
+          "w": 62.4,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Redo",
+          "font": 13,
+          "x": 501.5,
+          "y": 8,
+          "w": 61.7,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Save test",
+          "font": 13,
+          "x": 571.2,
+          "y": 8,
+          "w": 87.8,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Export",
+          "font": 13,
+          "x": 8,
+          "y": 60,
+          "w": 71,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Import",
+          "font": 13,
+          "x": 87,
+          "y": 60,
+          "w": 70.3,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Close",
+          "font": 13,
+          "x": 165.2,
+          "y": 60,
+          "w": 64.9,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "Move",
+          "font": 13,
+          "x": 8,
+          "y": 122,
+          "w": 62.4,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Road",
+          "font": 13,
+          "x": 78.4,
+          "y": 122,
+          "w": 61.7,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Measure",
+          "font": 13,
+          "x": 148.1,
+          "y": 122,
+          "w": 82.9,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Align",
+          "font": 13,
+          "x": 239,
+          "y": 122,
+          "w": 62,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Group",
+          "font": 13,
+          "x": 309,
+          "y": 122,
+          "w": 68.5,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Rotate 15",
+          "font": 13,
+          "x": 385.5,
+          "y": 122,
+          "w": 89.2,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Roof",
+          "font": 13,
+          "x": 482.7,
+          "y": 122,
+          "w": 58.8,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Pan",
+          "font": 13,
+          "x": 549.5,
+          "y": 122,
+          "w": 52.8,
+          "h": 44
+        }
+      ]
+    }
+  },
+  {
+    "id": "dev-builder",
+    "title": "DEV Builder overlay",
+    "url": "/test/dev-builder.html?demo=1&label=polish",
+    "viewport": "ipad-1180x820",
+    "size": [
+      1180,
+      820
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/dev-builder/ui-polish/screenshots/dev-builder__ipad-1180x820.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1180,
+        820
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 14,
+      "cards": 0,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Undo",
+          "font": 13,
+          "x": 713.9,
+          "y": 8,
+          "w": 62.4,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Redo",
+          "font": 13,
+          "x": 784.4,
+          "y": 8,
+          "w": 61.7,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Save test",
+          "font": 13,
+          "x": 854.1,
+          "y": 8,
+          "w": 87.8,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Export",
+          "font": 13,
+          "x": 949.9,
+          "y": 8,
+          "w": 71,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Import",
+          "font": 13,
+          "x": 1028.8,
+          "y": 8,
+          "w": 70.3,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Close",
+          "font": 13,
+          "x": 1107.1,
+          "y": 8,
+          "w": 64.9,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "Move",
+          "font": 13,
+          "x": 8,
+          "y": 70,
+          "w": 62.4,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Road",
+          "font": 13,
+          "x": 78.4,
+          "y": 70,
+          "w": 61.7,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Measure",
+          "font": 13,
+          "x": 148.1,
+          "y": 70,
+          "w": 82.9,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Align",
+          "font": 13,
+          "x": 239,
+          "y": 70,
+          "w": 62,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Group",
+          "font": 13,
+          "x": 309,
+          "y": 70,
+          "w": 68.5,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Rotate 15",
+          "font": 13,
+          "x": 385.5,
+          "y": 70,
+          "w": 89.2,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Roof",
+          "font": 13,
+          "x": 482.7,
+          "y": 70,
+          "w": 58.8,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Pan",
+          "font": 13,
+          "x": 549.5,
+          "y": 70,
+          "w": 52.8,
+          "h": 44
+        }
+      ]
+    }
+  },
+  {
+    "id": "dev-builder",
+    "title": "DEV Builder overlay",
+    "url": "/test/dev-builder.html?demo=1&label=polish",
+    "viewport": "ipad-1024x768",
+    "size": [
+      1024,
+      768
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/dev-builder/ui-polish/screenshots/dev-builder__ipad-1024x768.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1024,
+        768
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 14,
+      "cards": 0,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Undo",
+          "font": 13,
+          "x": 557.9,
+          "y": 8,
+          "w": 62.4,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Redo",
+          "font": 13,
+          "x": 628.4,
+          "y": 8,
+          "w": 61.7,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Save test",
+          "font": 13,
+          "x": 698.1,
+          "y": 8,
+          "w": 87.8,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Export",
+          "font": 13,
+          "x": 793.9,
+          "y": 8,
+          "w": 71,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Import",
+          "font": 13,
+          "x": 872.8,
+          "y": 8,
+          "w": 70.3,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Close",
+          "font": 13,
+          "x": 951.1,
+          "y": 8,
+          "w": 64.9,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "Move",
+          "font": 13,
+          "x": 8,
+          "y": 70,
+          "w": 62.4,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Road",
+          "font": 13,
+          "x": 78.4,
+          "y": 70,
+          "w": 61.7,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Measure",
+          "font": 13,
+          "x": 148.1,
+          "y": 70,
+          "w": 82.9,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Align",
+          "font": 13,
+          "x": 239,
+          "y": 70,
+          "w": 62,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Group",
+          "font": 13,
+          "x": 309,
+          "y": 70,
+          "w": 68.5,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Rotate 15",
+          "font": 13,
+          "x": 385.5,
+          "y": 70,
+          "w": 89.2,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Roof",
+          "font": 13,
+          "x": 482.7,
+          "y": 70,
+          "w": 58.8,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Pan",
+          "font": 13,
+          "x": 549.5,
+          "y": 70,
+          "w": 52.8,
+          "h": 44
+        }
+      ]
+    }
+  },
+  {
+    "id": "dev-builder",
+    "title": "DEV Builder overlay",
+    "url": "/test/dev-builder.html?demo=1&label=polish",
+    "viewport": "ipad-820x1180",
+    "size": [
+      820,
+      1180
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/dev-builder/ui-polish/screenshots/dev-builder__ipad-820x1180.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        820,
+        1180
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 14,
+      "cards": 0,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Undo",
+          "font": 13,
+          "x": 426.8,
+          "y": 8,
+          "w": 62.4,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Redo",
+          "font": 13,
+          "x": 497.3,
+          "y": 8,
+          "w": 61.7,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Save test",
+          "font": 13,
+          "x": 567,
+          "y": 8,
+          "w": 87.8,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Export",
+          "font": 13,
+          "x": 662.8,
+          "y": 8,
+          "w": 71,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Import",
+          "font": 13,
+          "x": 741.8,
+          "y": 8,
+          "w": 70.3,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Close",
+          "font": 13,
+          "x": 8,
+          "y": 60,
+          "w": 64.9,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "Move",
+          "font": 13,
+          "x": 8,
+          "y": 122,
+          "w": 62.4,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Road",
+          "font": 13,
+          "x": 78.4,
+          "y": 122,
+          "w": 61.7,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Measure",
+          "font": 13,
+          "x": 148.1,
+          "y": 122,
+          "w": 82.9,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Align",
+          "font": 13,
+          "x": 239,
+          "y": 122,
+          "w": 62,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Group",
+          "font": 13,
+          "x": 309,
+          "y": 122,
+          "w": 68.5,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Rotate 15",
+          "font": 13,
+          "x": 385.5,
+          "y": 122,
+          "w": 89.2,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Roof",
+          "font": 13,
+          "x": 482.7,
+          "y": 122,
+          "w": 58.8,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Pan",
+          "font": 13,
+          "x": 549.5,
+          "y": 122,
+          "w": 52.8,
+          "h": 44
+        }
+      ]
+    }
+  },
+  {
+    "id": "dev-builder",
+    "title": "DEV Builder overlay",
+    "url": "/test/dev-builder.html?demo=1&label=polish",
+    "viewport": "pc-1366x768",
+    "size": [
+      1366,
+      768
+    ],
+    "hasTouch": false,
+    "dpr": 1,
+    "ready": true,
+    "screenshot": "/workspace/test-results/dev-builder/ui-polish/screenshots/dev-builder__pc-1366x768.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1366,
+        768
+      ],
+      "dpr": 1,
+      "touch": 0,
+      "controls": 14,
+      "cards": 0,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Undo",
+          "font": 13,
+          "x": 899.9,
+          "y": 8,
+          "w": 62.4,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Redo",
+          "font": 13,
+          "x": 970.4,
+          "y": 8,
+          "w": 61.7,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Save test",
+          "font": 13,
+          "x": 1040.1,
+          "y": 8,
+          "w": 87.8,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Export",
+          "font": 13,
+          "x": 1135.9,
+          "y": 8,
+          "w": 71,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Import",
+          "font": 13,
+          "x": 1214.8,
+          "y": 8,
+          "w": 70.3,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Close",
+          "font": 13,
+          "x": 1293.1,
+          "y": 8,
+          "w": 64.9,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "Move",
+          "font": 13,
+          "x": 8,
+          "y": 70,
+          "w": 62.4,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Road",
+          "font": 13,
+          "x": 78.4,
+          "y": 70,
+          "w": 61.7,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Measure",
+          "font": 13,
+          "x": 148.1,
+          "y": 70,
+          "w": 82.9,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Align",
+          "font": 13,
+          "x": 239,
+          "y": 70,
+          "w": 62,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Group",
+          "font": 13,
+          "x": 309,
+          "y": 70,
+          "w": 68.5,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Rotate 15",
+          "font": 13,
+          "x": 385.5,
+          "y": 70,
+          "w": 89.2,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Roof",
+          "font": 13,
+          "x": 482.7,
+          "y": 70,
+          "w": 58.8,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Pan",
+          "font": 13,
+          "x": 549.5,
+          "y": 70,
+          "w": 52.8,
+          "h": 44
+        }
+      ]
+    }
+  },
+  {
+    "id": "dev-builder",
+    "title": "DEV Builder overlay",
+    "url": "/test/dev-builder.html?demo=1&label=polish",
+    "viewport": "pc-1920x1080",
+    "size": [
+      1920,
+      1080
+    ],
+    "hasTouch": false,
+    "dpr": 1,
+    "ready": true,
+    "screenshot": "/workspace/test-results/dev-builder/ui-polish/screenshots/dev-builder__pc-1920x1080.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "touch": 0,
+      "controls": 14,
+      "cards": 0,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Undo",
+          "font": 13,
+          "x": 1453.9,
+          "y": 8,
+          "w": 62.4,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Redo",
+          "font": 13,
+          "x": 1524.4,
+          "y": 8,
+          "w": 61.7,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Save test",
+          "font": 13,
+          "x": 1594.1,
+          "y": 8,
+          "w": 87.8,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Export",
+          "font": 13,
+          "x": 1689.9,
+          "y": 8,
+          "w": 71,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Import",
+          "font": 13,
+          "x": 1768.8,
+          "y": 8,
+          "w": 70.3,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Close",
+          "font": 13,
+          "x": 1847.1,
+          "y": 8,
+          "w": 64.9,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "Move",
+          "font": 13,
+          "x": 8,
+          "y": 70,
+          "w": 62.4,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Road",
+          "font": 13,
+          "x": 78.4,
+          "y": 70,
+          "w": 61.7,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Measure",
+          "font": 13,
+          "x": 148.1,
+          "y": 70,
+          "w": 82.9,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Align",
+          "font": 13,
+          "x": 239,
+          "y": 70,
+          "w": 62,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Group",
+          "font": 13,
+          "x": 309,
+          "y": 70,
+          "w": 68.5,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Rotate 15",
+          "font": 13,
+          "x": 385.5,
+          "y": 70,
+          "w": 89.2,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Roof",
+          "font": 13,
+          "x": 482.7,
+          "y": 70,
+          "w": 58.8,
+          "h": 44
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "Pan",
+          "font": 13,
+          "x": 549.5,
+          "y": 70,
+          "w": 52.8,
+          "h": 44
+        }
+      ]
+    }
+  }
+]

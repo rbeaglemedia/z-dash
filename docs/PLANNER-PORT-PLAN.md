@@ -4,6 +4,8 @@ Phase 1 only. Nothing here is in the live game. `world.html`, `world-split.html`
 
 Bob confirmed on Oct 24: DEV Builder map edits use **P2**. A map edit goes to a `/test/` link first. A second explicit go publishes that tested map to the live Neon World, and the previous live map is kept for rollback. This two-step path is only for those map edits. Ellie's Builder, the drop-objects tool, new tools, the new world page, and every other feature still deploy straight to live on his go.
 
+Bob picked overnight the same day: build **DEV Builder M2** and the **Q2** tool pack (roof, measure, align, group, 15° rotate). That build is in `world/planner-tools.js` and `world/dev-builder.js`. It is on the current Neon World, Bob only, and the first go is `/test/world.html` and `/test/world-split.html`. The other picks stay open. Nothing here is deployed.
+
 ## Access
 
 The private repo `rbeaglemedia/event-space-planner` was not readable from this agent. The export zip from agent `bc-04ef9a95` is the source this plan now follows. It has 123 files: the object catalog, the five presets, and `TOOLS.md`. The venue list is not in the zip. It stays out.
@@ -703,4 +705,4 @@ This plan recommends **D1** first. **D3** is the new-world look to draw when he 
 
 ## What this phase does not do
 
-It does not copy the planner into the repo. It does not copy the planner's `index.html` onto Z-DASH `index.html`. It does not edit the live world, the adult page, the driver screens, Ellie's saved home, or the Garage Z link. It does not place the trailer pad in `city.js`. It does not build `CITY.editorDoc`, either builder, the drop-objects tool, or the new world page. It does not add the JR tile. It does not post on the Interiors PRs. It does not deploy. P2 is noted and not built. The other picks are still open.
+It does not copy the planner into the repo. It does not copy the planner's `index.html` onto Z-DASH `index.html`. It does not edit the adult page, the driver screens, Ellie's saved home, or the Garage Z link. It does not place the trailer pad in `city.js`. DEV Builder M2 and the Q2 tools are built, and they do not publish the live map. Ellie's Builder, the drop-objects tool, and the new world page are not built. It does not add the JR tile. It does not post on the Interiors PRs. It does not deploy. The other picks are still open.

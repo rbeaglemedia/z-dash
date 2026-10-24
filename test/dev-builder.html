@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DEV Builder</title>
+<script>
+window.ZD_DEV_OPEN = 1;
+window.ZD_DEV_APPLY = 0;
+window.onerror = function (msg, src, line) {
+  var p = document.createElement('pre');
+  p.id = 'booterr';
+  p.style.cssText = 'position:fixed;inset:0;z-index:99;color:#fff;background:#300;font:16px sans-serif;white-space:pre-wrap;padding:16px';
+  p.textContent = 'DEV Builder did not start. ' + msg + ' at ' + src + ':' + line;
+  (document.body || document.documentElement).appendChild(p);
+};
+</script>
+</head>
+<body style="margin:0;background:#05060c;height:100vh">
+<script src="../shared/tune.js"></script>
+<script src="../world/towtruck.js"></script>
+<script src="../world/city.js"></script>
+<script src="../world/planner-tools.js"></script>
+<script src="../world/dev-builder.js"></script>
+</body>
+</html>
