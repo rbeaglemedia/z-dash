@@ -1,0 +1,1783 @@
+{
+  "ok": false,
+  "sha": "636d5837ad4e9011ca259ce5ab19d07194dc68dd",
+  "branch": "cursor/house-row-styles-52fc",
+  "findings": [
+    {
+      "check": "garage",
+      "severity": "fail",
+      "title": "Garage door is not car-sized",
+      "detail": "The mouth graphic sits on the center of the bay. It has to clear the 370Z (1.85 m wide, 1.32 m tall) with room to spare.",
+      "buildings": [
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 0,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 2,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 3,
+          "purpose": "SKY_DROP",
+          "label": "SKY TOWER"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 4,
+          "purpose": "SKY_DROP",
+          "label": "SKY-DROP HELIPAD DECK"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 5,
+          "purpose": "SHOWROOM",
+          "label": "Z-DASH GLASS SHOWROOM"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 6,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 7,
+          "purpose": "NEON_PAINT",
+          "label": "ELLIE NEON PAINT STUDIO"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 10,
+          "purpose": "SKY_DROP",
+          "label": "SKY-DROP HELIPAD DECK"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 17,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 20,
+          "purpose": "DANCE",
+          "label": "Z Company Arts"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 21,
+          "purpose": "SKY_DROP",
+          "label": "SKY-DROP HELIPAD DECK"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 22,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 24,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 26,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 28,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 34,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 36,
+          "purpose": "SKY_DROP",
+          "label": "SKY-DROP HELIPAD DECK"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 37,
+          "purpose": "SOCCER",
+          "label": "STADIUM PRO SHOP & ARENA CLUB"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 38,
+          "purpose": "SKY_DROP",
+          "label": "SKY-DROP HELIPAD DECK"
+        },
+        {
+          "note": "1.44×2.45 m door on a 10×9×4.4 m bay. narrower than the 370Z (1.44 m door, car is 1.85 m wide).",
+          "id": 43,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        }
+      ]
+    },
+    {
+      "check": "windows",
+      "severity": "fail",
+      "title": "Two window systems share the wall",
+      "detail": "The close view draws dashed floor lines every 5.5 m and 1.65×1.2 m panes on a different pitch. A floor line cuts through a pane.",
+      "buildings": [
+        {
+          "id": 0,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        },
+        {
+          "id": 1,
+          "purpose": "PETS",
+          "label": "PET RESCUE & CRITTER LOUNGE"
+        },
+        {
+          "id": 2,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "id": 3,
+          "purpose": "SKY_DROP",
+          "label": "SKY TOWER"
+        },
+        {
+          "id": 4,
+          "purpose": "SKY_DROP",
+          "label": "SKY-DROP HELIPAD DECK"
+        },
+        {
+          "id": 5,
+          "purpose": "SHOWROOM",
+          "label": "Z-DASH GLASS SHOWROOM"
+        },
+        {
+          "id": 6,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "id": 7,
+          "purpose": "NEON_PAINT",
+          "label": "ELLIE NEON PAINT STUDIO"
+        },
+        {
+          "id": 9,
+          "purpose": "NOS",
+          "label": "NOS & FUEL DEPOT"
+        },
+        {
+          "id": 17,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "id": 18,
+          "purpose": "CAFE",
+          "label": "NEON PIZZA & BOBA CAFE"
+        },
+        {
+          "id": 19,
+          "purpose": "NOS",
+          "label": "NOS & FUEL DEPOT"
+        },
+        {
+          "id": 20,
+          "purpose": "DANCE",
+          "label": "Z Company Arts"
+        },
+        {
+          "id": 21,
+          "purpose": "SKY_DROP",
+          "label": "SKY-DROP HELIPAD DECK"
+        },
+        {
+          "id": 22,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        },
+        {
+          "id": 24,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        },
+        {
+          "id": 25,
+          "purpose": "CAFE",
+          "label": "NEON PIZZA & BOBA CAFE"
+        },
+        {
+          "id": 26,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        },
+        {
+          "id": 27,
+          "purpose": "CAFE",
+          "label": "NEON PIZZA & BOBA CAFE"
+        },
+        {
+          "id": 28,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        },
+        {
+          "id": 29,
+          "purpose": "CAFE",
+          "label": "NEON PIZZA & BOBA CAFE"
+        },
+        {
+          "id": 34,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "id": 35,
+          "purpose": "NOS",
+          "label": "NOS & FUEL DEPOT"
+        },
+        {
+          "id": 36,
+          "purpose": "SKY_DROP",
+          "label": "SKY-DROP HELIPAD DECK"
+        },
+        {
+          "id": 37,
+          "purpose": "SOCCER",
+          "label": "STADIUM PRO SHOP & ARENA CLUB"
+        },
+        {
+          "id": 38,
+          "purpose": "SKY_DROP",
+          "label": "SKY-DROP HELIPAD DECK"
+        },
+        {
+          "id": 44,
+          "purpose": "NOS",
+          "label": "NOS & FUEL DEPOT"
+        }
+      ]
+    },
+    {
+      "check": "roofs",
+      "severity": "fail",
+      "title": "Roof is a blank slab from the air",
+      "detail": "The cap is closed and the neon edge draws. Nothing else is on the roof: no pad, tank, or antenna. A flying view cannot tell this roof from a lid.",
+      "buildings": [
+        {
+          "id": 0,
+          "purpose": "HOME",
+          "label": "PLAYER HOUSE & GARAGE"
+        },
+        {
+          "id": 1,
+          "purpose": "PETS",
+          "label": "PET RESCUE & CRITTER LOUNGE"
+        },
+        {
+          "id": 6,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "id": 7,
+          "purpose": "NEON_PAINT",
+          "label": "ELLIE NEON PAINT STUDIO"
+        },
+        {
+          "id": 8,
+          "purpose": "SNACK",
+          "label": "SNACK STAND"
+        },
+        {
+          "id": 17,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "id": 18,
+          "purpose": "CAFE",
+          "label": "NEON PIZZA & BOBA CAFE"
+        },
+        {
+          "id": 19,
+          "purpose": "NOS",
+          "label": "NOS & FUEL DEPOT"
+        },
+        {
+          "id": 33,
+          "purpose": "SNACK",
+          "label": "SNACK STAND"
+        },
+        {
+          "id": 34,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "id": 35,
+          "purpose": "NOS",
+          "label": "NOS & FUEL DEPOT"
+        },
+        {
+          "id": 37,
+          "purpose": "SOCCER",
+          "label": "STADIUM PRO SHOP & ARENA CLUB"
+        },
+        {
+          "id": 42,
+          "purpose": "SNACK",
+          "label": "SNACK STAND"
+        },
+        {
+          "id": 43,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "id": 44,
+          "purpose": "NOS",
+          "label": "NOS & FUEL DEPOT"
+        }
+      ]
+    },
+    {
+      "check": "signs",
+      "severity": "fail",
+      "title": "Sign is not readable from the street",
+      "detail": "At the front camera the word \"JUMP\" is 6.35 px.",
+      "buildings": [
+        {
+          "id": 3,
+          "purpose": "SKY_DROP",
+          "label": "SKY TOWER"
+        }
+      ]
+    },
+    {
+      "check": "scale",
+      "severity": "fail",
+      "title": "Building is short next to a person",
+      "detail": "The roof is under three person-heights (1.7 m).",
+      "buildings": [
+        {
+          "note": "5 m tall",
+          "id": 8,
+          "purpose": "SNACK",
+          "label": "SNACK STAND"
+        },
+        {
+          "note": "5 m tall",
+          "id": 33,
+          "purpose": "SNACK",
+          "label": "SNACK STAND"
+        },
+        {
+          "note": "5 m tall",
+          "id": 42,
+          "purpose": "SNACK",
+          "label": "SNACK STAND"
+        }
+      ]
+    },
+    {
+      "check": "style",
+      "severity": "fail",
+      "title": "Color is outside the neon set",
+      "detail": "Stroke #ff9a2e is not in the night palette.",
+      "buildings": [
+        {
+          "id": 8,
+          "purpose": "SNACK",
+          "label": "SNACK STAND"
+        },
+        {
+          "id": 33,
+          "purpose": "SNACK",
+          "label": "SNACK STAND"
+        },
+        {
+          "id": 42,
+          "purpose": "SNACK",
+          "label": "SNACK STAND"
+        }
+      ]
+    },
+    {
+      "check": "ramps",
+      "severity": "fail",
+      "title": "Not enough ramps",
+      "detail": "This layout has 39 ramps besides tow-truck beds. The original city has 70, including the river-edge launches. More than that is fine. Fewer is not.",
+      "buildings": []
+    },
+    {
+      "check": "purpose",
+      "severity": "fail",
+      "title": "Purpose is not readable from the air",
+      "detail": "A flying view has to show the purpose. A sky drop can use its helipad. A dance building can show the mural. Anything else needs its purpose word at least 10 px from the roof camera. Put that word on the roof in straight boxes and a glow strip.",
+      "buildings": [
+        {
+          "note": "sign \"GARAGE\" 9.7 px, roof is a helipad",
+          "id": 2,
+          "purpose": "GARAGE",
+          "label": "SPEED & TUNING GARAGE"
+        },
+        {
+          "note": "sign \"Z-DASH\" 7.97 px, roof is a helipad",
+          "id": 5,
+          "purpose": "SHOWROOM",
+          "label": "Z-DASH GLASS SHOWROOM"
+        },
+        {
+          "note": "sign \"NOS\" 7.94 px, roof is a helipad",
+          "id": 9,
+          "purpose": "NOS",
+          "label": "NOS & FUEL DEPOT"
+        },
+        {
+          "note": "sign \"TURBO\" 15.83 px, roof is a blank slab",
+          "id": 37,
+          "purpose": "SOCCER",
+          "label": "STADIUM PRO SHOP & ARENA CLUB"
+        }
+      ]
+    },
+    {
+      "check": "purpose",
+      "severity": "fail",
+      "title": "Purpose is not readable at street level",
+      "detail": "The street sign has to use a word from that purpose in docs/NEON-WORLD-STYLE.md and measure at least 10 px at the front camera.",
+      "buildings": [
+        {
+          "note": "sign \"JUMP\" 4.59 px; wants sky, jump, helipad",
+          "id": 3,
+          "purpose": "SKY_DROP",
+          "label": "SKY TOWER"
+        },
+        {
+          "note": "sign \"TURBO\" 25.67 px; wants soccer, pitch, goal, stadium, arena",
+          "id": 37,
+          "purpose": "SOCCER",
+          "label": "STADIUM PRO SHOP & ARENA CLUB"
+        }
+      ]
+    },
+    {
+      "check": "purpose",
+      "severity": "fail",
+      "title": "Purpose is not in the style guide",
+      "detail": "Add SNACK to the Purpose list in docs/NEON-WORLD-STYLE.md, with the words a player should read, or mark the building generic.",
+      "buildings": [
+        {
+          "id": 8,
+          "purpose": "SNACK",
+          "label": "SNACK STAND"
+        },
+        {
+          "id": 33,
+          "purpose": "SNACK",
+          "label": "SNACK STAND"
+        },
+        {
+          "id": 42,
+          "purpose": "SNACK",
+          "label": "SNACK STAND"
+        }
+      ]
+    },
+    {
+      "check": "count",
+      "severity": "fail",
+      "title": "Unapproved new building",
+      "detail": "The city has 33 solid buildings. Bob approved 24. A moved building is not a new one. An extra block that loads in the game is. A pitch under Ideas for Bob is not.",
+      "buildings": []
+    },
+    {
+      "check": "layout",
+      "severity": "fail",
+      "title": "Building blocks a road",
+      "detail": "The footprint covers a street, the highway, the runway, or the taxiway. Keep the pavement clear so a car can pass.",
+      "buildings": [
+        {
+          "note": "street",
+          "id": 3,
+          "purpose": "SKY_DROP",
+          "label": "SKY TOWER"
+        }
+      ]
+    },
+    {
+      "check": "shadow",
+      "severity": "fail",
+      "title": "Building pass set shadowBlur",
+      "detail": "A review draw assigned a non-zero shadowBlur 193 times. The probe forced the value back to 0 so the shot still shows the building. Glow belongs off this path. Source: world/neon-paint.js:2708 (10); world/neon-paint.js:2719 (8); world/neon-paint.js:2740 (8); world/neon-paint.js:2770 (lw * (s.brush === 'spray' ? 2.2 : 1.4)); world/neon-paint.js:2775 (Math.max(2, lw * 0.3)).",
+      "buildings": []
+    },
+    {
+      "check": "brand",
+      "severity": "warn",
+      "title": "Style guide was not loaded",
+      "detail": "docs/NEON-WORLD-STYLE.md could not be read, so this run did not judge brand or capability against Bob's latest edits.",
+      "buildings": []
+    }
+  ],
+  "passes": [
+    "Shape, doors, and garages match on Arcade, Street, and on foot.",
+    "Dance mural walls are flat, on the face, and at least as big as the recorded floor.",
+    "The tunnel keeps its length, bore, ceiling, and height, and both mouths stay clear.",
+    "Person doors sit on the street, wide enough and tall enough for a 1.7 m person.",
+    "No floating boxes, intersecting volumes, or z-fighting faces in the reviewed set.",
+    "One near building and the in-view building pass stay inside the FPS caps on phone, iPad, and PC."
+  ],
+  "shotNames": [],
+  "checkerError": "",
+  "scales": {
+    "person": 1.7,
+    "pet": 0.74,
+    "car": {
+      "len": 4.25,
+      "w": 1.85,
+      "h": 1.32,
+      "name": "370Z"
+    }
+  },
+  "calib": {
+    "ok": true,
+    "errors": []
+  },
+  "counts": {
+    "buildings": 33,
+    "live": 33,
+    "tryOnly": 0,
+    "fails": 13,
+    "warns": 1,
+    "shots": 0
+  },
+  "roadBlock": [
+    {
+      "id": 22,
+      "purpose": "HOME",
+      "sign": "HOME 1",
+      "tryOnly": 0,
+      "blocks": ""
+    },
+    {
+      "id": 23,
+      "purpose": "CAFE",
+      "sign": "CAFE 1",
+      "tryOnly": 0,
+      "blocks": ""
+    },
+    {
+      "id": 24,
+      "purpose": "HOME",
+      "sign": "HOME 2",
+      "tryOnly": 0,
+      "blocks": ""
+    },
+    {
+      "id": 25,
+      "purpose": "CAFE",
+      "sign": "CAFE 2",
+      "tryOnly": 0,
+      "blocks": ""
+    },
+    {
+      "id": 26,
+      "purpose": "HOME",
+      "sign": "HOME 3",
+      "tryOnly": 0,
+      "blocks": ""
+    },
+    {
+      "id": 27,
+      "purpose": "CAFE",
+      "sign": "CAFE 3",
+      "tryOnly": 0,
+      "blocks": ""
+    },
+    {
+      "id": 28,
+      "purpose": "HOME",
+      "sign": "HOME 4",
+      "tryOnly": 0,
+      "blocks": ""
+    },
+    {
+      "id": 29,
+      "purpose": "CAFE",
+      "sign": "CAFE 4",
+      "tryOnly": 0,
+      "blocks": ""
+    }
+  ],
+  "buildings": [
+    {
+      "id": 0,
+      "purpose": "HOME",
+      "label": "PLAYER HOUSE & GARAGE",
+      "district": "HOMESTEAD",
+      "w": 44,
+      "d": 48,
+      "h": 11,
+      "color": "#7dff6b",
+      "roof": "flat",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "HOME",
+      "signPx": 36.63
+    },
+    {
+      "id": 1,
+      "purpose": "PETS",
+      "label": "PET RESCUE & CRITTER LOUNGE",
+      "district": "HOMESTEAD",
+      "w": 44,
+      "d": 48,
+      "h": 13,
+      "color": "#7dff6b",
+      "roof": "flat",
+      "parking": "lot",
+      "doors": 2,
+      "sign": "PETS",
+      "signPx": 35.81
+    },
+    {
+      "id": 2,
+      "purpose": "GARAGE",
+      "label": "SPEED & TUNING GARAGE",
+      "district": "HOMESTEAD",
+      "w": 164,
+      "d": 64,
+      "h": 26,
+      "color": "#ffb020",
+      "roof": "pad",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "GARAGE",
+      "signPx": 17.4
+    },
+    {
+      "id": 3,
+      "purpose": "SKY_DROP",
+      "label": "SKY TOWER",
+      "district": "RIVERBANK",
+      "w": 70,
+      "d": 70,
+      "h": 239,
+      "color": "#3ee6ff",
+      "roof": "pad",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "JUMP",
+      "signPx": 6.35
+    },
+    {
+      "id": 4,
+      "purpose": "SKY_DROP",
+      "label": "SKY-DROP HELIPAD DECK",
+      "district": "DECK",
+      "w": 64,
+      "d": 164,
+      "h": 62,
+      "color": "#3ee6ff",
+      "roof": "pad",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "JUMP",
+      "signPx": 14.88
+    },
+    {
+      "id": 5,
+      "purpose": "SHOWROOM",
+      "label": "Z-DASH GLASS SHOWROOM",
+      "district": "CAR_ROW",
+      "w": 164,
+      "d": 64,
+      "h": 18,
+      "color": "#3ee6ff",
+      "roof": "pad",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "Z-DASH",
+      "signPx": 18.06
+    },
+    {
+      "id": 6,
+      "purpose": "GARAGE",
+      "label": "SPEED & TUNING GARAGE",
+      "district": "CAR_ROW",
+      "w": 20,
+      "d": 14,
+      "h": 8,
+      "color": "#ffb020",
+      "roof": "flat",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "GARAGE",
+      "signPx": 54.59
+    },
+    {
+      "id": 7,
+      "purpose": "NEON_PAINT",
+      "label": "ELLIE NEON PAINT STUDIO",
+      "district": "CAR_ROW",
+      "w": 44,
+      "d": 48,
+      "h": 14,
+      "color": "#ff4fd8",
+      "roof": "flat",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "NEON",
+      "signPx": 35.33
+    },
+    {
+      "id": 8,
+      "purpose": "SNACK",
+      "label": "SNACK STAND",
+      "district": "CAR_ROW",
+      "w": 12,
+      "d": 10,
+      "h": 5,
+      "color": "#ff9a2e",
+      "roof": "flat",
+      "parking": "",
+      "doors": 1,
+      "sign": "SNACK",
+      "signPx": 34.44
+    },
+    {
+      "id": 9,
+      "purpose": "NOS",
+      "label": "NOS & FUEL DEPOT",
+      "district": "CAR_ROW",
+      "w": 164,
+      "d": 64,
+      "h": 34,
+      "color": "#ffe14d",
+      "roof": "pad",
+      "parking": "",
+      "doors": 1,
+      "sign": "NOS",
+      "signPx": 16.79
+    },
+    {
+      "id": 10,
+      "purpose": "SKY_DROP",
+      "label": "SKY-DROP HELIPAD DECK",
+      "district": "CAR_ROW",
+      "w": 28,
+      "d": 28,
+      "h": 8,
+      "color": "#3ee6ff",
+      "roof": "pad",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "JUMP",
+      "signPx": 44.54
+    },
+    {
+      "id": 17,
+      "purpose": "GARAGE",
+      "label": "SPEED & TUNING GARAGE",
+      "district": "STAGE",
+      "w": 14,
+      "d": 20,
+      "h": 8,
+      "color": "#ffb020",
+      "roof": "flat",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "GARAGE",
+      "signPx": 54.59
+    },
+    {
+      "id": 18,
+      "purpose": "CAFE",
+      "label": "NEON PIZZA & BOBA CAFE",
+      "district": "STAGE",
+      "w": 44,
+      "d": 48,
+      "h": 12,
+      "color": "#ff2a3d",
+      "roof": "flat",
+      "parking": "lot",
+      "doors": 2,
+      "sign": "PIZZA",
+      "signPx": 36.24
+    },
+    {
+      "id": 19,
+      "purpose": "NOS",
+      "label": "NOS & FUEL DEPOT",
+      "district": "STAGE",
+      "w": 18,
+      "d": 24,
+      "h": 8,
+      "color": "#ffe14d",
+      "roof": "flat",
+      "parking": "",
+      "doors": 1,
+      "sign": "NOS",
+      "signPx": 51.09
+    },
+    {
+      "id": 20,
+      "purpose": "DANCE",
+      "label": "Z Company Arts",
+      "district": "STAGE",
+      "w": 60,
+      "d": 64,
+      "h": 18,
+      "color": "#ff4fd8",
+      "roof": "ant",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "Z COMPANY ARTS",
+      "signPx": 26.27
+    },
+    {
+      "id": 21,
+      "purpose": "SKY_DROP",
+      "label": "SKY-DROP HELIPAD DECK",
+      "district": "STAGE",
+      "w": 28,
+      "d": 28,
+      "h": 8,
+      "color": "#3ee6ff",
+      "roof": "pad",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "JUMP",
+      "signPx": 44.54
+    },
+    {
+      "id": 22,
+      "purpose": "HOME",
+      "label": "PLAYER HOUSE & GARAGE",
+      "district": "BUILDER_BAY",
+      "w": 40,
+      "d": 33,
+      "h": 11,
+      "color": "#7dff6b",
+      "roof": "ant",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "HOME 1",
+      "signPx": 43.34
+    },
+    {
+      "id": 23,
+      "purpose": "CAFE",
+      "label": "NEON PIZZA & BOBA CAFE",
+      "district": "BUILDER_BAY",
+      "w": 40,
+      "d": 33,
+      "h": 12,
+      "color": "#ff2a3d",
+      "roof": "ant",
+      "parking": "lot",
+      "doors": 2,
+      "sign": "CAFE 1",
+      "signPx": 42.69
+    },
+    {
+      "id": 24,
+      "purpose": "HOME",
+      "label": "PLAYER HOUSE & GARAGE",
+      "district": "BUILDER_BAY",
+      "w": 40,
+      "d": 33,
+      "h": 11,
+      "color": "#ffb020",
+      "roof": "ant",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "HOME 2",
+      "signPx": 43.34
+    },
+    {
+      "id": 25,
+      "purpose": "CAFE",
+      "label": "NEON PIZZA & BOBA CAFE",
+      "district": "BUILDER_BAY",
+      "w": 40,
+      "d": 33,
+      "h": 12,
+      "color": "#ffb020",
+      "roof": "ant",
+      "parking": "lot",
+      "doors": 2,
+      "sign": "CAFE 2",
+      "signPx": 42.69
+    },
+    {
+      "id": 26,
+      "purpose": "HOME",
+      "label": "PLAYER HOUSE & GARAGE",
+      "district": "BUILDER_BAY",
+      "w": 40,
+      "d": 33,
+      "h": 11,
+      "color": "#3ee6ff",
+      "roof": "ant",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "HOME 3",
+      "signPx": 43.34
+    },
+    {
+      "id": 27,
+      "purpose": "CAFE",
+      "label": "NEON PIZZA & BOBA CAFE",
+      "district": "BUILDER_BAY",
+      "w": 40,
+      "d": 33,
+      "h": 12,
+      "color": "#ff4fd8",
+      "roof": "ant",
+      "parking": "lot",
+      "doors": 2,
+      "sign": "CAFE 3",
+      "signPx": 42.69
+    },
+    {
+      "id": 28,
+      "purpose": "HOME",
+      "label": "PLAYER HOUSE & GARAGE",
+      "district": "BUILDER_BAY",
+      "w": 40,
+      "d": 33,
+      "h": 11,
+      "color": "#ff4fd8",
+      "roof": "ant",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "HOME 4",
+      "signPx": 43.34
+    },
+    {
+      "id": 29,
+      "purpose": "CAFE",
+      "label": "NEON PIZZA & BOBA CAFE",
+      "district": "BUILDER_BAY",
+      "w": 40,
+      "d": 33,
+      "h": 12,
+      "color": "#3ee6ff",
+      "roof": "ant",
+      "parking": "lot",
+      "doors": 2,
+      "sign": "CAFE 4",
+      "signPx": 42.69
+    },
+    {
+      "id": 33,
+      "purpose": "SNACK",
+      "label": "SNACK STAND",
+      "district": "TRACK",
+      "w": 12,
+      "d": 10,
+      "h": 5,
+      "color": "#ff9a2e",
+      "roof": "flat",
+      "parking": "",
+      "doors": 1,
+      "sign": "SNACK",
+      "signPx": 34.44
+    },
+    {
+      "id": 34,
+      "purpose": "GARAGE",
+      "label": "SPEED & TUNING GARAGE",
+      "district": "TRACK",
+      "w": 20,
+      "d": 14,
+      "h": 8,
+      "color": "#ffb020",
+      "roof": "flat",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "GARAGE",
+      "signPx": 54.59
+    },
+    {
+      "id": 35,
+      "purpose": "NOS",
+      "label": "NOS & FUEL DEPOT",
+      "district": "TRACK",
+      "w": 24,
+      "d": 18,
+      "h": 8,
+      "color": "#ffe14d",
+      "roof": "flat",
+      "parking": "",
+      "doors": 1,
+      "sign": "NOS",
+      "signPx": 51.09
+    },
+    {
+      "id": 36,
+      "purpose": "SKY_DROP",
+      "label": "SKY-DROP HELIPAD DECK",
+      "district": "TRACK",
+      "w": 28,
+      "d": 28,
+      "h": 8,
+      "color": "#3ee6ff",
+      "roof": "pad",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "JUMP",
+      "signPx": 44.54
+    },
+    {
+      "id": 37,
+      "purpose": "SOCCER",
+      "label": "STADIUM PRO SHOP & ARENA CLUB",
+      "district": "FIELD",
+      "w": 56,
+      "d": 88,
+      "h": 16,
+      "color": "#ffb020",
+      "roof": "flat",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "TURBO",
+      "signPx": 20.03
+    },
+    {
+      "id": 38,
+      "purpose": "SKY_DROP",
+      "label": "SKY-DROP HELIPAD DECK",
+      "district": "FIELD",
+      "w": 28,
+      "d": 28,
+      "h": 8,
+      "color": "#3ee6ff",
+      "roof": "pad",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "JUMP",
+      "signPx": 44.54
+    },
+    {
+      "id": 42,
+      "purpose": "SNACK",
+      "label": "SNACK STAND",
+      "district": "FIELD",
+      "w": 12,
+      "d": 10,
+      "h": 5,
+      "color": "#ff9a2e",
+      "roof": "flat",
+      "parking": "",
+      "doors": 1,
+      "sign": "SNACK",
+      "signPx": 34.44
+    },
+    {
+      "id": 43,
+      "purpose": "GARAGE",
+      "label": "SPEED & TUNING GARAGE",
+      "district": "FIELD",
+      "w": 20,
+      "d": 14,
+      "h": 8,
+      "color": "#ffb020",
+      "roof": "flat",
+      "parking": "garage",
+      "doors": 2,
+      "sign": "GARAGE",
+      "signPx": 54.59
+    },
+    {
+      "id": 44,
+      "purpose": "NOS",
+      "label": "NOS & FUEL DEPOT",
+      "district": "FIELD",
+      "w": 18,
+      "d": 24,
+      "h": 8,
+      "color": "#ffe14d",
+      "roof": "flat",
+      "parking": "",
+      "doors": 1,
+      "sign": "NOS",
+      "signPx": 51.09
+    }
+  ],
+  "murals": [
+    {
+      "id": 20,
+      "purpose": "DANCE",
+      "label": "Z Company Arts",
+      "width": 58.88,
+      "height": 9.9,
+      "area": 582.91,
+      "y0": 3.2,
+      "cx": -1004,
+      "cz": 457,
+      "flat": true,
+      "intact": true
+    }
+  ],
+  "ramps": {
+    "count": 39,
+    "lot": 70,
+    "floor": 70,
+    "riverEdge": [
+      {
+        "cx": -40,
+        "cz": 1767,
+        "h": 1.6,
+        "len": 10,
+        "wid": 8,
+        "dir": 0,
+        "sz": "small",
+        "nm": "river",
+        "bank": "south",
+        "lipToWater": 8
+      },
+      {
+        "cx": 60,
+        "cz": 1853,
+        "h": 1.6,
+        "len": 10,
+        "wid": 8,
+        "dir": 2,
+        "sz": "small",
+        "nm": "river",
+        "bank": "north",
+        "lipToWater": 8
+      },
+      {
+        "cx": -250,
+        "cz": 1767,
+        "h": 1.6,
+        "len": 10,
+        "wid": 8,
+        "dir": 0,
+        "sz": "small",
+        "nm": "river",
+        "bank": "south",
+        "lipToWater": 8
+      }
+    ],
+    "locked": 3,
+    "run": 16,
+    "land": 16,
+    "blocked": 0
+  },
+  "tunnel": {
+    "ok": true,
+    "count": 1,
+    "record": {
+      "length": 200,
+      "width": 160,
+      "bore": 30,
+      "ceil": 10,
+      "top": 34,
+      "along": "z",
+      "approach": 40
+    },
+    "live": {
+      "length": 200,
+      "width": 160,
+      "bore": 30,
+      "ceil": 10,
+      "top": 34,
+      "along": "z",
+      "cx": -450,
+      "cz": 600
+    }
+  },
+  "roster": [
+    {
+      "id": 0,
+      "purpose": "HOME",
+      "label": "PLAYER HOUSE & GARAGE",
+      "sign": "HOME",
+      "tryOnly": 0,
+      "x0": -274,
+      "x1": -230,
+      "z0": -678,
+      "z1": -630,
+      "h": 11,
+      "cx": -252,
+      "cz": -654
+    },
+    {
+      "id": 1,
+      "purpose": "PETS",
+      "label": "PET RESCUE & CRITTER LOUNGE",
+      "sign": "PETS",
+      "tryOnly": 0,
+      "x0": -274,
+      "x1": -230,
+      "z0": -624,
+      "z1": -576,
+      "h": 13,
+      "cx": -252,
+      "cz": -600
+    },
+    {
+      "id": 2,
+      "purpose": "GARAGE",
+      "label": "SPEED & TUNING GARAGE",
+      "sign": "GARAGE",
+      "tryOnly": 0,
+      "x0": -394,
+      "x1": -230,
+      "z0": -748,
+      "z1": -684,
+      "h": 26,
+      "cx": -312,
+      "cz": -716
+    },
+    {
+      "id": 3,
+      "purpose": "SKY_DROP",
+      "label": "SKY TOWER",
+      "sign": "JUMP",
+      "tryOnly": 0,
+      "x0": 365,
+      "x1": 435,
+      "z0": 1685,
+      "z1": 1755,
+      "h": 239,
+      "cx": 400,
+      "cz": 1720
+    },
+    {
+      "id": 4,
+      "purpose": "SKY_DROP",
+      "label": "SKY-DROP HELIPAD DECK",
+      "sign": "JUMP",
+      "tryOnly": 0,
+      "x0": -294,
+      "x1": -230,
+      "z0": 1094,
+      "z1": 1258,
+      "h": 62,
+      "cx": -262,
+      "cz": 1176
+    },
+    {
+      "id": 5,
+      "purpose": "SHOWROOM",
+      "label": "Z-DASH GLASS SHOWROOM",
+      "sign": "Z-DASH",
+      "tryOnly": 0,
+      "x0": -633,
+      "x1": -469,
+      "z0": 2274,
+      "z1": 2338,
+      "h": 18,
+      "cx": -551,
+      "cz": 2306
+    },
+    {
+      "id": 6,
+      "purpose": "GARAGE",
+      "label": "SPEED & TUNING GARAGE",
+      "sign": "GARAGE",
+      "tryOnly": 0,
+      "x0": -530,
+      "x1": -510,
+      "z0": 2380,
+      "z1": 2394,
+      "h": 8,
+      "cx": -520,
+      "cz": 2387
+    },
+    {
+      "id": 7,
+      "purpose": "NEON_PAINT",
+      "label": "ELLIE NEON PAINT STUDIO",
+      "sign": "NEON",
+      "tryOnly": 0,
+      "x0": 164,
+      "x1": 208,
+      "z0": 2274,
+      "z1": 2322,
+      "h": 14,
+      "cx": 186,
+      "cz": 2298
+    },
+    {
+      "id": 8,
+      "purpose": "SNACK",
+      "label": "SNACK STAND",
+      "sign": "SNACK",
+      "tryOnly": 0,
+      "x0": 164,
+      "x1": 176,
+      "z0": 2380,
+      "z1": 2390,
+      "h": 5,
+      "cx": 170,
+      "cz": 2385
+    },
+    {
+      "id": 9,
+      "purpose": "NOS",
+      "label": "NOS & FUEL DEPOT",
+      "sign": "NOS",
+      "tryOnly": 0,
+      "x0": 458,
+      "x1": 622,
+      "z0": 2274,
+      "z1": 2338,
+      "h": 34,
+      "cx": 540,
+      "cz": 2306
+    },
+    {
+      "id": 10,
+      "purpose": "SKY_DROP",
+      "label": "SKY-DROP HELIPAD DECK",
+      "sign": "JUMP",
+      "tryOnly": 0,
+      "x0": 526,
+      "x1": 554,
+      "z0": 2380,
+      "z1": 2408,
+      "h": 8,
+      "cx": 540,
+      "cz": 2394
+    },
+    {
+      "id": 17,
+      "purpose": "GARAGE",
+      "label": "SPEED & TUNING GARAGE",
+      "sign": "GARAGE",
+      "tryOnly": 0,
+      "x0": -976,
+      "x1": -962,
+      "z0": -670,
+      "z1": -650,
+      "h": 8,
+      "cx": -969,
+      "cz": -660
+    },
+    {
+      "id": 18,
+      "purpose": "CAFE",
+      "label": "NEON PIZZA & BOBA CAFE",
+      "sign": "PIZZA",
+      "tryOnly": 0,
+      "x0": -1048,
+      "x1": -1004,
+      "z0": -200,
+      "z1": -152,
+      "h": 12,
+      "cx": -1026,
+      "cz": -176
+    },
+    {
+      "id": 19,
+      "purpose": "NOS",
+      "label": "NOS & FUEL DEPOT",
+      "sign": "NOS",
+      "tryOnly": 0,
+      "x0": -976,
+      "x1": -958,
+      "z0": -50,
+      "z1": -26,
+      "h": 8,
+      "cx": -967,
+      "cz": -38
+    },
+    {
+      "id": 20,
+      "purpose": "DANCE",
+      "label": "Z Company Arts",
+      "sign": "Z COMPANY ARTS",
+      "tryOnly": 0,
+      "x0": -1064,
+      "x1": -1004,
+      "z0": 425,
+      "z1": 489,
+      "h": 18,
+      "cx": -1034,
+      "cz": 457
+    },
+    {
+      "id": 21,
+      "purpose": "SKY_DROP",
+      "label": "SKY-DROP HELIPAD DECK",
+      "sign": "JUMP",
+      "tryOnly": 0,
+      "x0": -976,
+      "x1": -948,
+      "z0": 430,
+      "z1": 458,
+      "h": 8,
+      "cx": -962,
+      "cz": 444
+    },
+    {
+      "id": 22,
+      "purpose": "HOME",
+      "label": "PLAYER HOUSE & GARAGE",
+      "sign": "HOME 1",
+      "tryOnly": 0,
+      "x0": 786,
+      "x1": 826,
+      "z0": -740,
+      "z1": -707,
+      "h": 11,
+      "cx": 806,
+      "cz": -723.5
+    },
+    {
+      "id": 23,
+      "purpose": "CAFE",
+      "label": "NEON PIZZA & BOBA CAFE",
+      "sign": "CAFE 1",
+      "tryOnly": 0,
+      "x0": 854,
+      "x1": 894,
+      "z0": -740,
+      "z1": -707,
+      "h": 12,
+      "cx": 874,
+      "cz": -723.5
+    },
+    {
+      "id": 24,
+      "purpose": "HOME",
+      "label": "PLAYER HOUSE & GARAGE",
+      "sign": "HOME 2",
+      "tryOnly": 0,
+      "x0": 786,
+      "x1": 826,
+      "z0": -699,
+      "z1": -666,
+      "h": 11,
+      "cx": 806,
+      "cz": -682.5
+    },
+    {
+      "id": 25,
+      "purpose": "CAFE",
+      "label": "NEON PIZZA & BOBA CAFE",
+      "sign": "CAFE 2",
+      "tryOnly": 0,
+      "x0": 854,
+      "x1": 894,
+      "z0": -699,
+      "z1": -666,
+      "h": 12,
+      "cx": 874,
+      "cz": -682.5
+    },
+    {
+      "id": 26,
+      "purpose": "HOME",
+      "label": "PLAYER HOUSE & GARAGE",
+      "sign": "HOME 3",
+      "tryOnly": 0,
+      "x0": 786,
+      "x1": 826,
+      "z0": -658,
+      "z1": -625,
+      "h": 11,
+      "cx": 806,
+      "cz": -641.5
+    },
+    {
+      "id": 27,
+      "purpose": "CAFE",
+      "label": "NEON PIZZA & BOBA CAFE",
+      "sign": "CAFE 3",
+      "tryOnly": 0,
+      "x0": 854,
+      "x1": 894,
+      "z0": -658,
+      "z1": -625,
+      "h": 12,
+      "cx": 874,
+      "cz": -641.5
+    },
+    {
+      "id": 28,
+      "purpose": "HOME",
+      "label": "PLAYER HOUSE & GARAGE",
+      "sign": "HOME 4",
+      "tryOnly": 0,
+      "x0": 786,
+      "x1": 826,
+      "z0": -617,
+      "z1": -584,
+      "h": 11,
+      "cx": 806,
+      "cz": -600.5
+    },
+    {
+      "id": 29,
+      "purpose": "CAFE",
+      "label": "NEON PIZZA & BOBA CAFE",
+      "sign": "CAFE 4",
+      "tryOnly": 0,
+      "x0": 854,
+      "x1": 894,
+      "z0": -617,
+      "z1": -584,
+      "h": 12,
+      "cx": 874,
+      "cz": -600.5
+    },
+    {
+      "id": 33,
+      "purpose": "SNACK",
+      "label": "SNACK STAND",
+      "sign": "SNACK",
+      "tryOnly": 0,
+      "x0": -590,
+      "x1": -578,
+      "z0": 836,
+      "z1": 846,
+      "h": 5,
+      "cx": -584,
+      "cz": 841
+    },
+    {
+      "id": 34,
+      "purpose": "GARAGE",
+      "label": "SPEED & TUNING GARAGE",
+      "sign": "GARAGE",
+      "tryOnly": 0,
+      "x0": -1520,
+      "x1": -1500,
+      "z0": 832,
+      "z1": 846,
+      "h": 8,
+      "cx": -1510,
+      "cz": 839
+    },
+    {
+      "id": 35,
+      "purpose": "NOS",
+      "label": "NOS & FUEL DEPOT",
+      "sign": "NOS",
+      "tryOnly": 0,
+      "x0": -1460,
+      "x1": -1436,
+      "z0": 828,
+      "z1": 846,
+      "h": 8,
+      "cx": -1448,
+      "cz": 837
+    },
+    {
+      "id": 36,
+      "purpose": "SKY_DROP",
+      "label": "SKY-DROP HELIPAD DECK",
+      "sign": "JUMP",
+      "tryOnly": 0,
+      "x0": -1080,
+      "x1": -1052,
+      "z0": 818,
+      "z1": 846,
+      "h": 8,
+      "cx": -1066,
+      "cz": 832
+    },
+    {
+      "id": 37,
+      "purpose": "SOCCER",
+      "label": "STADIUM PRO SHOP & ARENA CLUB",
+      "sign": "TURBO",
+      "tryOnly": 0,
+      "x0": 1054,
+      "x1": 1110,
+      "z0": 1384,
+      "z1": 1472,
+      "h": 16,
+      "cx": 1082,
+      "cz": 1428
+    },
+    {
+      "id": 38,
+      "purpose": "SKY_DROP",
+      "label": "SKY-DROP HELIPAD DECK",
+      "sign": "JUMP",
+      "tryOnly": 0,
+      "x0": 700,
+      "x1": 728,
+      "z0": 1238,
+      "z1": 1266,
+      "h": 8,
+      "cx": 714,
+      "cz": 1252
+    },
+    {
+      "id": 42,
+      "purpose": "SNACK",
+      "label": "SNACK STAND",
+      "sign": "SNACK",
+      "tryOnly": 0,
+      "x0": 930,
+      "x1": 942,
+      "z0": 836,
+      "z1": 846,
+      "h": 5,
+      "cx": 936,
+      "cz": 841
+    },
+    {
+      "id": 43,
+      "purpose": "GARAGE",
+      "label": "SPEED & TUNING GARAGE",
+      "sign": "GARAGE",
+      "tryOnly": 0,
+      "x0": 1054,
+      "x1": 1074,
+      "z0": 1480,
+      "z1": 1494,
+      "h": 8,
+      "cx": 1064,
+      "cz": 1487
+    },
+    {
+      "id": 44,
+      "purpose": "NOS",
+      "label": "NOS & FUEL DEPOT",
+      "sign": "NOS",
+      "tryOnly": 0,
+      "x0": 1054,
+      "x1": 1072,
+      "z0": 1504,
+      "z1": 1528,
+      "h": 8,
+      "cx": 1063,
+      "cz": 1516
+    }
+  ],
+  "tier": {
+    "arcade": {
+      "sig": "-274,0,-678,-230,11,-630#-230,-654,1,0,|-265,-654,-1,0,garage#garage,-274,-265,-659,-649,-265,-654,4.4,-1,0#11||-274,0,-624,-230,13,-576#-230,-600,1,0,|-274,-600,-1,0,lot#lot,-282,-274,-605,-595,-274,-600,0,-1,0#13||-394,0,-748,-230,26,-684#-230,-716,1,0,|-385,-716,-1,0,garage#garage,-394,-385,-721,-711,-385,-716,4.4,-1,0#26||365,0,1685,435,138.62,1755|375.5,138.62,1695.5,424.5,200.76,1744.5|382.85,200.76,1702.85,417.15,239,1737.15#400,1685,0,-1,|400,1746,0,1,garage#garage,395,405,1746,1755,400,1746,4.4,0,1#239||-294,0,1094,-230,62,1258#-230,1176,1,0,|-285,1176,-1,0,garage#garage,-294,-285,1171,1181,-285,1176,4.4,-1,0#62||-633,0,2274,-469,18,2338#-551,2274,0,-1,|-551,2329,0,1,garage#garage,-556,-546,2329,2338,-551,2329,4.4,0,1#18||-530,0,2380,-510,8,2394#-520,2380,0,-1,|-520,2385,0,1,garage#garage,-525,-515,2385,2394,-520,2385,4.4,0,1#8||164,0,2274,208,14,2322#186,2274,0,-1,|186,2313,0,1,garage#garage,181,191,2313,2322,186,2313,4.4,0,1#14||164,0,2380,176,5,2390#170,2380,0,-1,##5||458,0,2274,622,34,2338#540,2274,0,-1,##34||526,0,2380,554,8,2408#540,2380,0,-1,|540,2399,0,1,garage#garage,535,545,2399,2408,540,2399,4.4,0,1#8||-976,0,-670,-962,8,-650#-976,-660,-1,0,|-971,-660,1,0,garage#garage,-971,-962,-665,-655,-971,-660,4.4,1,0#8||-1048,0,-200,-1004,12,-152#-1004,-176,1,0,|-1048,-176,-1,0,lot#lot,-1056,-1048,-181,-171,-1048,-176,0,-1,0#12||-976,0,-50,-958,8,-26#-976,-38,-1,0,##8||-1064,0,425,-1004,18,489#-1004,457,1,0,|-1055,457,-1,0,garage#garage,-1064,-1055,452,462,-1055,457,4.4,-1,0#18||-976,0,430,-948,8,458#-976,444,-1,0,|-957,444,1,0,garage#garage,-957,-948,439,449,-957,444,4.4,1,0#8||786,0,-740,826,11,-707#826,-723.5,1,0,|795,-723.5,-1,0,garage#garage,786,795,-728.5,-718.5,795,-723.5,4.4,-1,0#11||854,0,-740,894,12,-707#854,-723.5,-1,0,|894,-723.5,1,0,lot#lot,894,902,-728.5,-718.5,894,-723.5,0,1,0#12||786,0,-699,826,11,-666#826,-682.5,1,0,|795,-682.5,-1,0,garage#garage,786,795,-687.5,-677.5,795,-682.5,4.4,-1,0#11||854,0,-699,894,12,-666#854,-682.5,-1,0,|894,-682.5,1,0,lot#lot,894,902,-687.5,-677.5,894,-682.5,0,1,0#12||786,0,-658,826,11,-625#826,-641.5,1,0,|795,-641.5,-1,0,garage#garage,786,795,-646.5,-636.5,795,-641.5,4.4,-1,0#11||854,0,-658,894,12,-625#854,-641.5,-1,0,|894,-641.5,1,0,lot#lot,894,902,-646.5,-636.5,894,-641.5,0,1,0#12||786,0,-617,826,11,-584#826,-600.5,1,0,|795,-600.5,-1,0,garage#garage,786,795,-605.5,-595.5,795,-600.5,4.4,-1,0#11||854,0,-617,894,12,-584#854,-600.5,-1,0,|894,-600.5,1,0,lot#lot,894,902,-605.5,-595.5,894,-600.5,0,1,0#12||-590,0,836,-578,5,846#-584,846,0,1,##5||-1520,0,832,-1500,8,846#-1510,846,0,1,|-1510,841,0,-1,garage#garage,-1515,-1505,832,841,-1510,841,4.4,0,-1#8||-1460,0,828,-1436,8,846#-1448,846,0,1,##8||-1080,0,818,-1052,8,846#-1066,846,0,1,|-1066,827,0,-1,garage#garage,-1071,-1061,818,827,-1066,827,4.4,0,-1#8||1054,0,1384,1110,16,1472#1054,1428,-1,0,|1101,1428,1,0,garage#garage,1101,1110,1423,1433,1101,1428,4.4,1,0#16||700,0,1238,728,8,1266#714,1266,0,1,|714,1247,0,-1,garage#garage,709,719,1238,1247,714,1247,4.4,0,-1#8||930,0,836,942,5,846#936,846,0,1,##5||1054,0,1480,1074,8,1494#1054,1487,-1,0,|1065,1487,1,0,garage#garage,1065,1074,1482,1492,1065,1487,4.4,1,0#8||1054,0,1504,1072,8,1528#1054,1516,-1,0,##8",
+      "store": 0,
+      "foot": 0,
+      "band": "off"
+    },
+    "street": {
+      "sig": "-274,0,-678,-230,11,-630#-230,-654,1,0,|-265,-654,-1,0,garage#garage,-274,-265,-659,-649,-265,-654,4.4,-1,0#11||-274,0,-624,-230,13,-576#-230,-600,1,0,|-274,-600,-1,0,lot#lot,-282,-274,-605,-595,-274,-600,0,-1,0#13||-394,0,-748,-230,26,-684#-230,-716,1,0,|-385,-716,-1,0,garage#garage,-394,-385,-721,-711,-385,-716,4.4,-1,0#26||365,0,1685,435,138.62,1755|375.5,138.62,1695.5,424.5,200.76,1744.5|382.85,200.76,1702.85,417.15,239,1737.15#400,1685,0,-1,|400,1746,0,1,garage#garage,395,405,1746,1755,400,1746,4.4,0,1#239||-294,0,1094,-230,62,1258#-230,1176,1,0,|-285,1176,-1,0,garage#garage,-294,-285,1171,1181,-285,1176,4.4,-1,0#62||-633,0,2274,-469,18,2338#-551,2274,0,-1,|-551,2329,0,1,garage#garage,-556,-546,2329,2338,-551,2329,4.4,0,1#18||-530,0,2380,-510,8,2394#-520,2380,0,-1,|-520,2385,0,1,garage#garage,-525,-515,2385,2394,-520,2385,4.4,0,1#8||164,0,2274,208,14,2322#186,2274,0,-1,|186,2313,0,1,garage#garage,181,191,2313,2322,186,2313,4.4,0,1#14||164,0,2380,176,5,2390#170,2380,0,-1,##5||458,0,2274,622,34,2338#540,2274,0,-1,##34||526,0,2380,554,8,2408#540,2380,0,-1,|540,2399,0,1,garage#garage,535,545,2399,2408,540,2399,4.4,0,1#8||-976,0,-670,-962,8,-650#-976,-660,-1,0,|-971,-660,1,0,garage#garage,-971,-962,-665,-655,-971,-660,4.4,1,0#8||-1048,0,-200,-1004,12,-152#-1004,-176,1,0,|-1048,-176,-1,0,lot#lot,-1056,-1048,-181,-171,-1048,-176,0,-1,0#12||-976,0,-50,-958,8,-26#-976,-38,-1,0,##8||-1064,0,425,-1004,18,489#-1004,457,1,0,|-1055,457,-1,0,garage#garage,-1064,-1055,452,462,-1055,457,4.4,-1,0#18||-976,0,430,-948,8,458#-976,444,-1,0,|-957,444,1,0,garage#garage,-957,-948,439,449,-957,444,4.4,1,0#8||786,0,-740,826,11,-707#826,-723.5,1,0,|795,-723.5,-1,0,garage#garage,786,795,-728.5,-718.5,795,-723.5,4.4,-1,0#11||854,0,-740,894,12,-707#854,-723.5,-1,0,|894,-723.5,1,0,lot#lot,894,902,-728.5,-718.5,894,-723.5,0,1,0#12||786,0,-699,826,11,-666#826,-682.5,1,0,|795,-682.5,-1,0,garage#garage,786,795,-687.5,-677.5,795,-682.5,4.4,-1,0#11||854,0,-699,894,12,-666#854,-682.5,-1,0,|894,-682.5,1,0,lot#lot,894,902,-687.5,-677.5,894,-682.5,0,1,0#12||786,0,-658,826,11,-625#826,-641.5,1,0,|795,-641.5,-1,0,garage#garage,786,795,-646.5,-636.5,795,-641.5,4.4,-1,0#11||854,0,-658,894,12,-625#854,-641.5,-1,0,|894,-641.5,1,0,lot#lot,894,902,-646.5,-636.5,894,-641.5,0,1,0#12||786,0,-617,826,11,-584#826,-600.5,1,0,|795,-600.5,-1,0,garage#garage,786,795,-605.5,-595.5,795,-600.5,4.4,-1,0#11||854,0,-617,894,12,-584#854,-600.5,-1,0,|894,-600.5,1,0,lot#lot,894,902,-605.5,-595.5,894,-600.5,0,1,0#12||-590,0,836,-578,5,846#-584,846,0,1,##5||-1520,0,832,-1500,8,846#-1510,846,0,1,|-1510,841,0,-1,garage#garage,-1515,-1505,832,841,-1510,841,4.4,0,-1#8||-1460,0,828,-1436,8,846#-1448,846,0,1,##8||-1080,0,818,-1052,8,846#-1066,846,0,1,|-1066,827,0,-1,garage#garage,-1071,-1061,818,827,-1066,827,4.4,0,-1#8||1054,0,1384,1110,16,1472#1054,1428,-1,0,|1101,1428,1,0,garage#garage,1101,1110,1423,1433,1101,1428,4.4,1,0#16||700,0,1238,728,8,1266#714,1266,0,1,|714,1247,0,-1,garage#garage,709,719,1238,1247,714,1247,4.4,0,-1#8||930,0,836,942,5,846#936,846,0,1,##5||1054,0,1480,1074,8,1494#1054,1487,-1,0,|1065,1487,1,0,garage#garage,1065,1074,1482,1492,1065,1487,4.4,1,0#8||1054,0,1504,1072,8,1528#1054,1516,-1,0,##8",
+      "store": 3,
+      "foot": 0,
+      "band": "crawl"
+    },
+    "foot": {
+      "sig": "-274,0,-678,-230,11,-630#-230,-654,1,0,|-265,-654,-1,0,garage#garage,-274,-265,-659,-649,-265,-654,4.4,-1,0#11||-274,0,-624,-230,13,-576#-230,-600,1,0,|-274,-600,-1,0,lot#lot,-282,-274,-605,-595,-274,-600,0,-1,0#13||-394,0,-748,-230,26,-684#-230,-716,1,0,|-385,-716,-1,0,garage#garage,-394,-385,-721,-711,-385,-716,4.4,-1,0#26||365,0,1685,435,138.62,1755|375.5,138.62,1695.5,424.5,200.76,1744.5|382.85,200.76,1702.85,417.15,239,1737.15#400,1685,0,-1,|400,1746,0,1,garage#garage,395,405,1746,1755,400,1746,4.4,0,1#239||-294,0,1094,-230,62,1258#-230,1176,1,0,|-285,1176,-1,0,garage#garage,-294,-285,1171,1181,-285,1176,4.4,-1,0#62||-633,0,2274,-469,18,2338#-551,2274,0,-1,|-551,2329,0,1,garage#garage,-556,-546,2329,2338,-551,2329,4.4,0,1#18||-530,0,2380,-510,8,2394#-520,2380,0,-1,|-520,2385,0,1,garage#garage,-525,-515,2385,2394,-520,2385,4.4,0,1#8||164,0,2274,208,14,2322#186,2274,0,-1,|186,2313,0,1,garage#garage,181,191,2313,2322,186,2313,4.4,0,1#14||164,0,2380,176,5,2390#170,2380,0,-1,##5||458,0,2274,622,34,2338#540,2274,0,-1,##34||526,0,2380,554,8,2408#540,2380,0,-1,|540,2399,0,1,garage#garage,535,545,2399,2408,540,2399,4.4,0,1#8||-976,0,-670,-962,8,-650#-976,-660,-1,0,|-971,-660,1,0,garage#garage,-971,-962,-665,-655,-971,-660,4.4,1,0#8||-1048,0,-200,-1004,12,-152#-1004,-176,1,0,|-1048,-176,-1,0,lot#lot,-1056,-1048,-181,-171,-1048,-176,0,-1,0#12||-976,0,-50,-958,8,-26#-976,-38,-1,0,##8||-1064,0,425,-1004,18,489#-1004,457,1,0,|-1055,457,-1,0,garage#garage,-1064,-1055,452,462,-1055,457,4.4,-1,0#18||-976,0,430,-948,8,458#-976,444,-1,0,|-957,444,1,0,garage#garage,-957,-948,439,449,-957,444,4.4,1,0#8||786,0,-740,826,11,-707#826,-723.5,1,0,|795,-723.5,-1,0,garage#garage,786,795,-728.5,-718.5,795,-723.5,4.4,-1,0#11||854,0,-740,894,12,-707#854,-723.5,-1,0,|894,-723.5,1,0,lot#lot,894,902,-728.5,-718.5,894,-723.5,0,1,0#12||786,0,-699,826,11,-666#826,-682.5,1,0,|795,-682.5,-1,0,garage#garage,786,795,-687.5,-677.5,795,-682.5,4.4,-1,0#11||854,0,-699,894,12,-666#854,-682.5,-1,0,|894,-682.5,1,0,lot#lot,894,902,-687.5,-677.5,894,-682.5,0,1,0#12||786,0,-658,826,11,-625#826,-641.5,1,0,|795,-641.5,-1,0,garage#garage,786,795,-646.5,-636.5,795,-641.5,4.4,-1,0#11||854,0,-658,894,12,-625#854,-641.5,-1,0,|894,-641.5,1,0,lot#lot,894,902,-646.5,-636.5,894,-641.5,0,1,0#12||786,0,-617,826,11,-584#826,-600.5,1,0,|795,-600.5,-1,0,garage#garage,786,795,-605.5,-595.5,795,-600.5,4.4,-1,0#11||854,0,-617,894,12,-584#854,-600.5,-1,0,|894,-600.5,1,0,lot#lot,894,902,-605.5,-595.5,894,-600.5,0,1,0#12||-590,0,836,-578,5,846#-584,846,0,1,##5||-1520,0,832,-1500,8,846#-1510,846,0,1,|-1510,841,0,-1,garage#garage,-1515,-1505,832,841,-1510,841,4.4,0,-1#8||-1460,0,828,-1436,8,846#-1448,846,0,1,##8||-1080,0,818,-1052,8,846#-1066,846,0,1,|-1066,827,0,-1,garage#garage,-1071,-1061,818,827,-1066,827,4.4,0,-1#8||1054,0,1384,1110,16,1472#1054,1428,-1,0,|1101,1428,1,0,garage#garage,1101,1110,1423,1433,1101,1428,4.4,1,0#16||700,0,1238,728,8,1266#714,1266,0,1,|714,1247,0,-1,garage#garage,709,719,1238,1247,714,1247,4.4,0,-1#8||930,0,836,942,5,846#936,846,0,1,##5||1054,0,1480,1074,8,1494#1054,1487,-1,0,|1065,1487,1,0,garage#garage,1065,1074,1482,1492,1065,1487,4.4,1,0#8||1054,0,1504,1072,8,1528#1054,1516,-1,0,##8",
+      "store": 3,
+      "foot": 222,
+      "band": "crawl"
+    }
+  },
+  "blurHits": 193,
+  "fps": [
+    {
+      "viewport": "phone",
+      "buffer": "1688x780",
+      "subject": {
+        "id": 0,
+        "purpose": "HOME",
+        "label": "PLAYER HOUSE & GARAGE"
+      },
+      "neighbors": 20,
+      "one": {
+        "median": 0.2,
+        "max": 0.4,
+        "n": 11
+      },
+      "pass": {
+        "median": 0.4,
+        "max": 0.6,
+        "n": 9
+      },
+      "blurHits": 0
+    },
+    {
+      "viewport": "ipad",
+      "buffer": "1024x768",
+      "subject": {
+        "id": 0,
+        "purpose": "HOME",
+        "label": "PLAYER HOUSE & GARAGE"
+      },
+      "neighbors": 20,
+      "one": {
+        "median": 0.4,
+        "max": 1.2,
+        "n": 11
+      },
+      "pass": {
+        "median": 1.2,
+        "max": 2.5,
+        "n": 9
+      },
+      "blurHits": 0
+    },
+    {
+      "viewport": "pc",
+      "buffer": "1280x720",
+      "subject": {
+        "id": 0,
+        "purpose": "HOME",
+        "label": "PLAYER HOUSE & GARAGE"
+      },
+      "neighbors": 20,
+      "one": {
+        "median": 0.1,
+        "max": 0.2,
+        "n": 11
+      },
+      "pass": {
+        "median": 0.3,
+        "max": 0.4,
+        "n": 9
+      },
+      "blurHits": 0
+    }
+  ],
+  "fpsCaps": {
+    "building": {
+      "phone": 8,
+      "ipad": 16,
+      "pc": 8
+    },
+    "pass": {
+      "phone": 40,
+      "ipad": 90,
+      "pc": 40
+    },
+    "face": {
+      "phone": 68.9,
+      "ipad": 170.1,
+      "pc": 65.2
+    },
+    "share": 0.7,
+    "source": "pr62-published"
+  },
+  "styleGuide": "/workspace/docs/NEON-WORLD-STYLE.md",
+  "plansOnly": false
+}

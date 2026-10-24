@@ -1,0 +1,25 @@
+{
+  "camera": "Southeast street, x=840 z=-662, looking north. Traffic off. Same pose before and after.",
+  "note": "Median of the first 21 render() calls at each viewport. A tight loop of later rounds stalls the browser on both layouts and is not the district cost.",
+  "before": {
+    "liveSolids": 31,
+    "southeastSolids": 6,
+    "neighbors": 4,
+    "phoneMs": 4.5,
+    "ipadMs": 7.7,
+    "pcMs": 6.0
+  },
+  "after": {
+    "liveSolids": 33,
+    "southeastSolids": 8,
+    "neighbors": 8,
+    "phoneMs": 6.0,
+    "ipadMs": 6.5,
+    "pcMs": 6.6
+  },
+  "buildingPassMs": {
+    "before": 0.1,
+    "after": 0.5,
+    "note": "drawBldg of buildings within 220 m of that camera"
+  }
+}

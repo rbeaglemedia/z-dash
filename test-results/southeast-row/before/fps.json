@@ -1,0 +1,80 @@
+{
+  "mode": "before",
+  "views": [
+    {
+      "id": "phone",
+      "css": "844x390",
+      "file": "/tmp/se-shot/before/se-before-phone.png",
+      "renderMs": 5.2,
+      "fps": 192,
+      "passMs": 0.1,
+      "neighbors": 4,
+      "baySolids": 6,
+      "liveSolids": 31,
+      "buffer": "844x390",
+      "cam": {
+        "x": 840,
+        "z": -717,
+        "y": 20.3
+      },
+      "signs": [
+        "GARAGE",
+        "ARCADE",
+        "SNACK",
+        "PIXEL",
+        "JUMP",
+        "NOS"
+      ]
+    },
+    {
+      "id": "ipad",
+      "css": "1024x768",
+      "file": "/tmp/se-shot/before/se-before-ipad.png",
+      "renderMs": 7.9,
+      "fps": 127,
+      "passMs": 0.1,
+      "neighbors": 4,
+      "baySolids": 6,
+      "liveSolids": 31,
+      "buffer": "1024x768",
+      "cam": {
+        "x": 840,
+        "z": -717,
+        "y": 20.3
+      },
+      "signs": [
+        "GARAGE",
+        "ARCADE",
+        "SNACK",
+        "PIXEL",
+        "JUMP",
+        "NOS"
+      ]
+    },
+    {
+      "id": "pc",
+      "css": "1280x720",
+      "file": "/tmp/se-shot/before/se-before-pc.png",
+      "renderMs": 7.4,
+      "fps": 135,
+      "passMs": 0.1,
+      "neighbors": 4,
+      "baySolids": 6,
+      "liveSolids": 31,
+      "buffer": "1280x720",
+      "cam": {
+        "x": 840,
+        "z": -717,
+        "y": 20.3
+      },
+      "signs": [
+        "GARAGE",
+        "ARCADE",
+        "SNACK",
+        "PIXEL",
+        "JUMP",
+        "NOS"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "fails": [],
+  "home": {
+    "name": "HOME",
+    "x0": -274,
+    "x1": -230,
+    "z0": -678,
+    "z1": -630,
+    "district": "HOMESTEAD"
+  },
+  "homes": 5,
+  "styles": [
+    1,
+    2,
+    3,
+    4,
+    1,
+    2
+  ]
+}

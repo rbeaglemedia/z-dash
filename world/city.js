@@ -156,7 +156,10 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
     const built=BL[BL.length-1];
     if(built&&built.purpose&&built.boxes&&built.boxes[0]){const q=built.boxes[0];
       const door=face==='n'?[(q.x0+q.x1)/2,q.z1,0,1]:face==='w'?[q.x0,(q.z0+q.z1)/2,-1,0]:face==='e'?[q.x1,(q.z0+q.z1)/2,1,0]:[(q.x0+q.x1)/2,q.z0,0,-1];
-      built.doors=[door];}}}
+      built.doors=[door];
+      if(p.tryOnly)built.tryOnly=1;
+      if(p.tryHouse)built.tryHouse=p.tryHouse;
+      if(p.tryCafe)built.tryCafe=p.tryCafe;}}}
   placePrefab('tunnel_seg',(TUN.x0+TUN.x1)/2,(TUN.z0+TUN.z1)/2,{w:TUN.x1-TUN.x0,d:TUN.z1-TUN.z0,h:TUN.top,p:{bore:TUN.bx1-TUN.bx0,ceil:TUN.ceil}});
   placePrefab('bridge_seg',0,1810);
   for(const[a,b]of[[1,1],[1,-1],[-1,1],[-1,-1]])placePrefab('lamp',STAD.x+a*110,STAD.z+b*120);
@@ -198,7 +201,7 @@ lamp(o){const b=bldg({x0:o.x-1.5,x1:o.x+1.5,z0:o.z-1.5,z1:o.z+1.5,cx:o.x,cz:o.z,
   // Side or rear car access. Garages are recessed into the ground floor; cafes and pet shops get a short apron instead.
   function parkBlocked(x,z,self){if(Math.abs(x-STAD.x)<120&&Math.abs(z-STAD.z)<100)return true;if(Math.abs(x)<22&&z>-70&&z<1520)return true;for(const r of RAMPS)if(x>r.x0&&x<r.x1&&z>r.z0&&z<r.z1)return true;for(const o of BL){if(o===self||!o.boxes)continue;const q=o.boxes[0];if(q&&x>q.x0&&x<q.x1&&z>q.z0&&z<q.z1&&q.y1>2)return true;}return false;}
   function placeParking(){const BW=10,BD=9,LD=8;
-    for(const b of BL){if((b.kind!=='b'&&b.kind!=='landmark')||!b.purpose||!b.boxes||!b.boxes[0])continue;if(b.purpose==='NOS'||b.purpose==='SNACK')continue;const q=b.boxes[0],sn=b.sign||{nx:0,nz:-1},lot=b.purpose==='CAFE'||b.purpose==='PETS';
+    for(const b of BL){if((b.kind!=='b'&&b.kind!=='landmark')||!b.purpose||!b.boxes||!b.boxes[0])continue;if(b.purpose==='NOS'||b.purpose==='SNACK')continue;const q=b.boxes[0],sn=b.sign||{nx:0,nz:-1},lot=b.purpose==='CAFE'||b.purpose==='PETS'||b.tryOnly;
       let back=[-sn.nx||0,-sn.nz||0];if(!back[0]&&!back[1])back=[0,1];
       const faces=[back,[back[1],-back[0]],[-back[1],back[0]]];
       const dep=([nx,nz])=>nx?q.x1-q.x0:q.z1-q.z0,wid=([nx,nz])=>nx?q.z1-q.z0:q.x1-q.x0;

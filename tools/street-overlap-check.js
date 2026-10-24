@@ -46,11 +46,11 @@ function rampBox(name, x, z, rot, ov) {
   return { x0: x - ww / 2, x1: x + ww / 2, z0: z - dd / 2, z1: z + dd / 2, kind: name };
 }
 
-if (places.length !== 36) fails.push('place count ' + places.length + ' (want 36)');
+if (places.length !== 37) fails.push('place count ' + places.length + ' (want 37)');
 const solids = places.filter(p => p.kind !== 'arch');
 const arches = places.filter(p => p.kind === 'arch');
-if (solids.length !== 31) fails.push('solid count ' + solids.length + ' (want 31)');
-if (arches.length !== 5) fails.push('arch count ' + arches.length + ' (want 5)');
+if (solids.length !== 33) fails.push('solid count ' + solids.length + ' (want 33)');
+if (arches.length !== 4) fails.push('arch count ' + arches.length + ' (want 4)');
 
 const dance = places.find(p => p.purpose === 'DANCE');
 if (!dance || dance.x1 - dance.x0 !== 60 || dance.z1 - dance.z0 !== 64 || dance.h !== 18) fails.push('dance wall size changed');
@@ -64,7 +64,7 @@ for (const p of places) {
   if (p.kind === 'nos' && p.h !== 34) fails.push('NOS depot height');
 }
 const kits = places.filter(p => p.kind === 'kitnos');
-if (kits.length !== 4) fails.push('kit NOS count ' + kits.length);
+if (kits.length !== 3) fails.push('kit NOS count ' + kits.length);
 for (const p of kits) {
   const span = Math.max(p.x1 - p.x0, p.z1 - p.z0);
   const depth = Math.min(p.x1 - p.x0, p.z1 - p.z0);
@@ -171,6 +171,9 @@ for (const s of net.roads) {
   for (const p of solids) if (hit(p, b)) spurHits.push(p.name);
 }
 if (spurHits.length) fails.push('driveway spur runs through ' + spurHits.join(', '));
+const spine = net.roads.filter(r => Math.abs(r.x0 - 840) < 0.1 && Math.abs(r.x1 - 840) < 0.1);
+const rowOpen = spine.some(r => Math.min(r.z0, r.z1) <= -740 && Math.max(r.z0, r.z1) >= -584);
+if (!rowOpen) fails.push('builder bay street does not run the house row');
 notes.push('spurs ' + net.roads.filter(r => r.spur).length);
 notes.push('faces ' + Object.keys(net.faces).length);
 
