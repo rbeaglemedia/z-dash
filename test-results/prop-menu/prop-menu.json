@@ -1,0 +1,371 @@
+{
+  "commit": "9f2db83cb24c9c52928770e0870917c669ae280f",
+  "devices": [
+    {
+      "id": "phone",
+      "open": true,
+      "ui": {
+        "cats": [
+          "FURNITURE",
+          "KITCHEN",
+          "PETS",
+          "DECOR",
+          "LIGHTS",
+          "SIGNS"
+        ],
+        "tiles": [
+          "CHAIR",
+          "SOFA",
+          "ARCADE"
+        ],
+        "loaded": [
+          "furniture"
+        ],
+        "count": "0/8 props",
+        "plus": "+",
+        "hint": "TAP AN ITEM",
+        "align": "center",
+        "deco": "none",
+        "catAlign": "center",
+        "catDeco": "none",
+        "panel": {
+          "d": "flex",
+          "x": 140,
+          "y": 59,
+          "w": 227,
+          "h": 222,
+          "r": 367,
+          "b": 281
+        },
+        "obstacles": [
+          {
+            "id": "enterBldBtn",
+            "hit": 0
+          },
+          {
+            "id": "walk-step-out",
+            "hit": 0
+          },
+          {
+            "id": "walk-room-tools",
+            "hit": 0
+          },
+          {
+            "id": "walk-open-page",
+            "hit": 0
+          },
+          {
+            "id": "brk",
+            "hit": 0
+          },
+          {
+            "id": "tup",
+            "hit": 0
+          },
+          {
+            "id": "wng",
+            "hit": 0
+          },
+          {
+            "id": "walkItemsBtn",
+            "hit": 0
+          }
+        ],
+        "coins": 77
+      },
+      "afterLights": [
+        "furniture",
+        "lights"
+      ],
+      "lightTiles": [
+        "LAMP"
+      ],
+      "armed": true,
+      "placed": {
+        "n": 3,
+        "last": {
+          "id": "chair",
+          "space": "room",
+          "purpose": "HOME",
+          "x": 3.0297435897435863,
+          "z": 6.8,
+          "rot": 0
+        },
+        "coins": 77
+      },
+      "rotated": 1,
+      "moved": {
+        "x": -2.02,
+        "z": 6.8,
+        "beforeX": null
+      },
+      "removed": {
+        "before": 3,
+        "after": 2
+      },
+      "migrated": {
+        "ok": true,
+        "ids": [
+          "sofa",
+          "arcade",
+          "petBed",
+          "danceFloor",
+          "lamp"
+        ],
+        "lamp": {
+          "id": "lamp",
+          "space": "room",
+          "purpose": "HOME",
+          "x": 1.24,
+          "z": 3.2524999999999995,
+          "rot": 0
+        }
+      },
+      "hidden": "none"
+    },
+    {
+      "id": "ipad",
+      "open": true,
+      "ui": {
+        "cats": [
+          "FURNITURE",
+          "KITCHEN",
+          "PETS",
+          "DECOR",
+          "LIGHTS",
+          "SIGNS"
+        ],
+        "tiles": [
+          "CHAIR",
+          "SOFA",
+          "ARCADE"
+        ],
+        "loaded": [
+          "furniture"
+        ],
+        "count": "0/8 props",
+        "plus": "+",
+        "hint": "TAP AN ITEM",
+        "align": "center",
+        "deco": "none",
+        "catAlign": "center",
+        "catDeco": "none",
+        "panel": {
+          "d": "flex",
+          "x": 135,
+          "y": 78,
+          "w": 420,
+          "h": 300,
+          "r": 555,
+          "b": 378
+        },
+        "obstacles": [
+          {
+            "id": "enterBldBtn",
+            "hit": 0
+          },
+          {
+            "id": "walk-step-out",
+            "hit": 0
+          },
+          {
+            "id": "walk-room-tools",
+            "hit": 0
+          },
+          {
+            "id": "walk-open-page",
+            "hit": 0
+          },
+          {
+            "id": "brk",
+            "hit": 0
+          },
+          {
+            "id": "tup",
+            "hit": 0
+          },
+          {
+            "id": "wng",
+            "hit": 0
+          },
+          {
+            "id": "walkItemsBtn",
+            "hit": 0
+          }
+        ],
+        "coins": 77
+      },
+      "afterLights": [
+        "furniture",
+        "lights"
+      ],
+      "lightTiles": [
+        "LAMP"
+      ],
+      "armed": true,
+      "placed": {
+        "n": 3,
+        "last": {
+          "id": "chair",
+          "space": "room",
+          "purpose": "HOME",
+          "x": 2.0146341463414634,
+          "z": 6.8,
+          "rot": 0
+        },
+        "coins": 77
+      },
+      "rotated": 1,
+      "moved": {
+        "x": -1.34,
+        "z": 6.8,
+        "beforeX": null
+      },
+      "removed": {
+        "before": 3,
+        "after": 2
+      },
+      "migrated": {
+        "ok": true,
+        "ids": [
+          "sofa",
+          "arcade",
+          "petBed",
+          "danceFloor",
+          "lamp"
+        ],
+        "lamp": {
+          "id": "lamp",
+          "space": "room",
+          "purpose": "HOME",
+          "x": 1.24,
+          "z": 3.2524999999999995,
+          "rot": 0
+        }
+      },
+      "hidden": "none"
+    },
+    {
+      "id": "pc",
+      "open": true,
+      "ui": {
+        "cats": [
+          "FURNITURE",
+          "KITCHEN",
+          "PETS",
+          "DECOR",
+          "LIGHTS",
+          "SIGNS"
+        ],
+        "tiles": [
+          "CHAIR",
+          "SOFA",
+          "ARCADE"
+        ],
+        "loaded": [
+          "furniture"
+        ],
+        "count": "0/8 props",
+        "plus": "+",
+        "hint": "TAP AN ITEM",
+        "align": "center",
+        "deco": "none",
+        "catAlign": "center",
+        "catDeco": "none",
+        "panel": {
+          "d": "flex",
+          "x": 138,
+          "y": 70,
+          "w": 420,
+          "h": 300,
+          "r": 558,
+          "b": 370
+        },
+        "obstacles": [
+          {
+            "id": "enterBldBtn",
+            "hit": 0
+          },
+          {
+            "id": "walk-step-out",
+            "hit": 0
+          },
+          {
+            "id": "walk-room-tools",
+            "hit": 0
+          },
+          {
+            "id": "walk-open-page",
+            "hit": 0
+          },
+          {
+            "id": "brk",
+            "hit": 0
+          },
+          {
+            "id": "tup",
+            "hit": 0
+          },
+          {
+            "id": "wng",
+            "hit": 0
+          },
+          {
+            "id": "walkItemsBtn",
+            "hit": 0
+          }
+        ],
+        "coins": 77
+      },
+      "afterLights": [
+        "furniture",
+        "lights"
+      ],
+      "lightTiles": [
+        "LAMP"
+      ],
+      "armed": true,
+      "placed": {
+        "n": 3,
+        "last": {
+          "id": "chair",
+          "space": "room",
+          "purpose": "HOME",
+          "x": 2.4901041666666637,
+          "z": 6.8,
+          "rot": 0
+        },
+        "coins": 77
+      },
+      "rotated": 1,
+      "moved": {
+        "x": -1.66,
+        "z": 6.8,
+        "beforeX": null
+      },
+      "removed": {
+        "before": 3,
+        "after": 2
+      },
+      "migrated": {
+        "ok": true,
+        "ids": [
+          "sofa",
+          "arcade",
+          "petBed",
+          "danceFloor",
+          "lamp"
+        ],
+        "lamp": {
+          "id": "lamp",
+          "space": "room",
+          "purpose": "HOME",
+          "x": 1.24,
+          "z": 3.2524999999999995,
+          "rot": 0
+        }
+      },
+      "hidden": "none"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+Room prop sheet
+Measured on commit 9f2db83cb24c9c52928770e0870917c669ae280f
+Headless Chrome. Phone 844x390, iPad 1180x820, PC 1366x768.
+
+Menu
+Six categories: FURNITURE, KITCHEN, PETS, DECOR, LIGHTS, SIGNS.
+Opening the sheet loads furniture only. Opening LIGHTS then loads lights. Icons are baked in the page.
+Counter reads 0/8 props. The + button raises the cap by 4 only while fps stays above 55, and it stops at 12.
+Button text is centered. No underlines.
+Panel overlap with enter, step-out, room tools, jump, throttle, wings, and the ITEMS button: 0 on phone, iPad, and PC.
+
+Place, move, rotate, remove
+Tap CHAIR, then tap the floor: a chair is saved in the room with rot 0.
+ROTATE sets rot to 1. Dragging the chair changes its x. REMOVE drops the count by one.
+A save with sofa, arcade, pet bed, and dance floor and no placed list migrates those four, then the new lamp, into placed. Kid coins stayed 77.
+The ITEMS button hides when she is back in the car.
+
+UI polish
+world-drive, world-walk, world-interior (sheet open), wz-l2h: 0 errors.
+Warnings: the existing phone Exit/Pause pair is 4px apart. With the sheet open the interior is 13 controls on phone and 16 on PC, over the audit budget of 12.
