@@ -1,0 +1,3173 @@
+[
+  {
+    "id": "jr-l1",
+    "title": "JR garage Level 1",
+    "url": "/jr.html#garage",
+    "viewport": "phone-844x390",
+    "size": [
+      844,
+      390
+    ],
+    "hasTouch": true,
+    "dpr": 3,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l1__phone-844x390.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        844,
+        390
+      ],
+      "dpr": 3,
+      "touch": 5,
+      "controls": 7,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME 🏎️ GARAGE CAR CUSTOMIZER Customize your 37",
+          "font": 16,
+          "x": 455.8,
+          "y": 0,
+          "w": 388.2,
+          "h": 390
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 608.1,
+          "y": 8,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 467.8,
+          "y": 44,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🏎️ GARAGE CAR CUSTOMIZER Customize your 370Z — Paint, Vinyls, Wheels, Aero, Lig",
+          "font": 13.3,
+          "x": 467.8,
+          "y": 80,
+          "w": 366.2,
+          "h": 142.7
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🏠 HOME HOUSE & CREW Customize your Home interior — Wall Neon, Furniture, Pet Be",
+          "font": 13.3,
+          "x": 467.8,
+          "y": 230.7,
+          "w": 366.2,
+          "h": 142.7
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 28,
+          "x": 12,
+          "y": 226,
+          "w": 50,
+          "h": 50
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 28,
+          "x": 12,
+          "y": 284,
+          "w": 50,
+          "h": 50
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 403.8,
+          "y": 2,
+          "w": 48,
+          "h": 48
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l1",
+    "title": "JR garage Level 1",
+    "url": "/jr.html#garage",
+    "viewport": "phone-667x375",
+    "size": [
+      667,
+      375
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l1__phone-667x375.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        667,
+        375
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 7,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME 🏎️ GARAGE CAR CUSTOMIZER Customize your 37",
+          "font": 16,
+          "x": 360.2,
+          "y": 0,
+          "w": 306.8,
+          "h": 375
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 372.2,
+          "y": 35,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 555.3,
+          "y": 35,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🏎️ GARAGE CAR CUSTOMIZER Customize your 370Z — Paint, Vinyls, Wheels, Aero, Lig",
+          "font": 13.3,
+          "x": 372.2,
+          "y": 71,
+          "w": 284.8,
+          "h": 142.7
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🏠 HOME HOUSE & CREW Customize your Home interior — Wall Neon, Furniture, Pet Be",
+          "font": 13.3,
+          "x": 372.2,
+          "y": 221.7,
+          "w": 284.8,
+          "h": 160.2
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 28,
+          "x": 12,
+          "y": 211,
+          "w": 50,
+          "h": 50
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 28,
+          "x": 12,
+          "y": 269,
+          "w": 50,
+          "h": 50
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 308.2,
+          "y": 2,
+          "w": 48,
+          "h": 48
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l1",
+    "title": "JR garage Level 1",
+    "url": "/jr.html#garage",
+    "viewport": "ipad-1180x820",
+    "size": [
+      1180,
+      820
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l1__ipad-1180x820.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1180,
+        820
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 7,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME 🏎️ GARAGE CAR CUSTOMIZER Customize your 37",
+          "font": 16,
+          "x": 760,
+          "y": 0,
+          "w": 420,
+          "h": 820
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 916.3,
+          "y": 14,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 776,
+          "y": 50,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🏎️ GARAGE CAR CUSTOMIZER Customize your 370Z — Paint, Vinyls, Wheels, Aero, Lig",
+          "font": 13.3,
+          "x": 776,
+          "y": 88,
+          "w": 390,
+          "h": 142.7
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🏠 HOME HOUSE & CREW Customize your Home interior — Wall Neon, Furniture, Pet Be",
+          "font": 13.3,
+          "x": 776,
+          "y": 238.7,
+          "w": 390,
+          "h": 142.7
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 632,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 700,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 692,
+          "y": 12,
+          "w": 56,
+          "h": 56
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l1",
+    "title": "JR garage Level 1",
+    "url": "/jr.html#garage",
+    "viewport": "ipad-1024x768",
+    "size": [
+      1024,
+      768
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l1__ipad-1024x768.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1024,
+        768
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 7,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME 🏎️ GARAGE CAR CUSTOMIZER Customize your 37",
+          "font": 16,
+          "x": 604,
+          "y": 0,
+          "w": 420,
+          "h": 768
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 760.3,
+          "y": 14,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 620,
+          "y": 50,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🏎️ GARAGE CAR CUSTOMIZER Customize your 370Z — Paint, Vinyls, Wheels, Aero, Lig",
+          "font": 13.3,
+          "x": 620,
+          "y": 88,
+          "w": 390,
+          "h": 142.7
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🏠 HOME HOUSE & CREW Customize your Home interior — Wall Neon, Furniture, Pet Be",
+          "font": 13.3,
+          "x": 620,
+          "y": 238.7,
+          "w": 390,
+          "h": 142.7
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 580,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 648,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 536,
+          "y": 12,
+          "w": 56,
+          "h": 56
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l1",
+    "title": "JR garage Level 1",
+    "url": "/jr.html#garage",
+    "viewport": "ipad-820x1180",
+    "size": [
+      820,
+      1180
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l1__ipad-820x1180.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        820,
+        1180
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 7,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME 🏎️ GARAGE CAR CUSTOMIZER Customize your 37",
+          "font": 16,
+          "x": 0,
+          "y": 566.4,
+          "w": 820,
+          "h": 613.6
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 154.3,
+          "y": 582.4,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 337.4,
+          "y": 582.4,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🏎️ GARAGE CAR CUSTOMIZER Customize your 370Z — Paint, Vinyls, Wheels, Aero, Lig",
+          "font": 13.3,
+          "x": 14,
+          "y": 620.4,
+          "w": 792,
+          "h": 125.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🏠 HOME HOUSE & CREW Customize your Home interior — Wall Neon, Furniture, Pet Be",
+          "font": 13.3,
+          "x": 14,
+          "y": 753.6,
+          "w": 792,
+          "h": 125.2
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 12,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 80,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 752,
+          "y": 12,
+          "w": 56,
+          "h": 56
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l1",
+    "title": "JR garage Level 1",
+    "url": "/jr.html#garage",
+    "viewport": "pc-1366x768",
+    "size": [
+      1366,
+      768
+    ],
+    "hasTouch": false,
+    "dpr": 1,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l1__pc-1366x768.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1366,
+        768
+      ],
+      "dpr": 1,
+      "touch": 0,
+      "controls": 7,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME 🏎️ GARAGE CAR CUSTOMIZER Customize your 37",
+          "font": 16,
+          "x": 737.6,
+          "y": 0,
+          "w": 628.4,
+          "h": 768
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 889.9,
+          "y": 8,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 1073,
+          "y": 8,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🏎️ GARAGE CAR CUSTOMIZER Customize your 370Z — Paint, Vinyls, Wheels, Aero, Lig",
+          "font": 13.3,
+          "x": 749.6,
+          "y": 44,
+          "w": 606.4,
+          "h": 125.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🏠 HOME HOUSE & CREW Customize your Home interior — Wall Neon, Furniture, Pet Be",
+          "font": 13.3,
+          "x": 749.6,
+          "y": 177.2,
+          "w": 606.4,
+          "h": 142.7
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 580,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 648,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 685.6,
+          "y": 2,
+          "w": 48,
+          "h": 48
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l1",
+    "title": "JR garage Level 1",
+    "url": "/jr.html#garage",
+    "viewport": "pc-1920x1080",
+    "size": [
+      1920,
+      1080
+    ],
+    "hasTouch": false,
+    "dpr": 1,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l1__pc-1920x1080.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "touch": 0,
+      "controls": 7,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME 🏎️ GARAGE CAR CUSTOMIZER Customize your 37",
+          "font": 16,
+          "x": 1036.8,
+          "y": 0,
+          "w": 883.2,
+          "h": 1080
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 1189.1,
+          "y": 8,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 1372.2,
+          "y": 8,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🏎️ GARAGE CAR CUSTOMIZER Customize your 370Z — Paint, Vinyls, Wheels, Aero, Lig",
+          "font": 13.3,
+          "x": 1048.8,
+          "y": 44,
+          "w": 861.2,
+          "h": 125.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🏠 HOME HOUSE & CREW Customize your Home interior — Wall Neon, Furniture, Pet Be",
+          "font": 13.3,
+          "x": 1048.8,
+          "y": 177.2,
+          "w": 861.2,
+          "h": 125.2
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 892,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 960,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 984.8,
+          "y": 2,
+          "w": 48,
+          "h": 48
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l2g",
+    "title": "JR garage Level 2 categories",
+    "url": "/jr.html?gopen=garage#garage",
+    "viewport": "phone-844x390",
+    "size": [
+      844,
+      390
+    ],
+    "hasTouch": true,
+    "dpr": 3,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l2g__phone-844x390.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        844,
+        390
+      ],
+      "dpr": 3,
+      "touch": 5,
+      "controls": 11,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME ← BACK 🏠 HOME & GARAGE › 🏎️ GARAGE 🎨 PAI",
+          "font": 16,
+          "x": 455.8,
+          "y": 0,
+          "w": 388.2,
+          "h": 390
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 608.1,
+          "y": 8,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 467.8,
+          "y": 44,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gback",
+          "role": "control",
+          "label": "← BACK",
+          "font": 16,
+          "x": 467.8,
+          "y": 80,
+          "w": 107.8,
+          "h": 41
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "🏠 HOME & GARAGE",
+          "font": 11,
+          "x": 583.5,
+          "y": 89.5,
+          "w": 129.7,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "🏎️ GARAGE",
+          "font": 11,
+          "x": 728.9,
+          "y": 89.5,
+          "w": 75.3,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🎨 PAINT & VINYLS Body Paint, Roof & Hood, Custom Car Vinyls, Presets",
+          "font": 13.3,
+          "x": 467.8,
+          "y": 127,
+          "w": 366.2,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🛞 WHEELS & STANCE Rims, Tire Lettering, Brake Calipers, Stance / Lowered",
+          "font": 13.3,
+          "x": 467.8,
+          "y": 243.2,
+          "w": 366.2,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🪽 AERO & WINGS Spoiler, Flight Wings, Front Splitter, Louvers, Scissor Doors",
+          "font": 13.3,
+          "x": 467.8,
+          "y": 359.4,
+          "w": 366.2,
+          "h": 125.7
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 28,
+          "x": 12,
+          "y": 226,
+          "w": 50,
+          "h": 50
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 28,
+          "x": 12,
+          "y": 284,
+          "w": 50,
+          "h": 50
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 403.8,
+          "y": 2,
+          "w": 48,
+          "h": 48
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l2g",
+    "title": "JR garage Level 2 categories",
+    "url": "/jr.html?gopen=garage#garage",
+    "viewport": "phone-667x375",
+    "size": [
+      667,
+      375
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l2g__phone-667x375.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        667,
+        375
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 10,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME ← BACK 🏠 HOME & GARAGE › 🏎️ GARAGE 🎨 PAI",
+          "font": 16,
+          "x": 360.2,
+          "y": 0,
+          "w": 306.8,
+          "h": 375
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 372.2,
+          "y": 35,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 555.3,
+          "y": 35,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gback",
+          "role": "control",
+          "label": "← BACK",
+          "font": 16,
+          "x": 372.2,
+          "y": 71,
+          "w": 107.8,
+          "h": 41
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "🏠 HOME & GARAGE",
+          "font": 11,
+          "x": 372.2,
+          "y": 120,
+          "w": 129.7,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "🏎️ GARAGE",
+          "font": 11,
+          "x": 517.6,
+          "y": 120,
+          "w": 75.3,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🎨 PAINT & VINYLS Body Paint, Roof & Hood, Custom Car Vinyls, Presets",
+          "font": 13.3,
+          "x": 372.2,
+          "y": 148,
+          "w": 284.8,
+          "h": 125.7
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🛞 WHEELS & STANCE Rims, Tire Lettering, Brake Calipers, Stance / Lowered",
+          "font": 13.3,
+          "x": 372.2,
+          "y": 281.7,
+          "w": 284.8,
+          "h": 125.7
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 28,
+          "x": 12,
+          "y": 211,
+          "w": 50,
+          "h": 50
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 28,
+          "x": 12,
+          "y": 269,
+          "w": 50,
+          "h": 50
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 308.2,
+          "y": 2,
+          "w": 48,
+          "h": 48
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l2g",
+    "title": "JR garage Level 2 categories",
+    "url": "/jr.html?gopen=garage#garage",
+    "viewport": "ipad-1180x820",
+    "size": [
+      1180,
+      820
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l2g__ipad-1180x820.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1180,
+        820
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 13,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME ← BACK 🏠 HOME & GARAGE › 🏎️ GARAGE 🎨 PAI",
+          "font": 16,
+          "x": 760,
+          "y": 0,
+          "w": 420,
+          "h": 820
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 916.3,
+          "y": 14,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 776,
+          "y": 50,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gback",
+          "role": "control",
+          "label": "← BACK",
+          "font": 16,
+          "x": 776,
+          "y": 88,
+          "w": 107.8,
+          "h": 41
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "🏠 HOME & GARAGE",
+          "font": 11,
+          "x": 891.8,
+          "y": 97.5,
+          "w": 129.7,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "🏎️ GARAGE",
+          "font": 11,
+          "x": 1037.1,
+          "y": 97.5,
+          "w": 75.3,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🎨 PAINT & VINYLS Body Paint, Roof & Hood, Custom Car Vinyls, Presets",
+          "font": 13.3,
+          "x": 776,
+          "y": 137,
+          "w": 390,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🛞 WHEELS & STANCE Rims, Tire Lettering, Brake Calipers, Stance / Lowered",
+          "font": 13.3,
+          "x": 776,
+          "y": 253.2,
+          "w": 390,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🪽 AERO & WINGS Spoiler, Flight Wings, Front Splitter, Louvers, Scissor Doors",
+          "font": 13.3,
+          "x": 776,
+          "y": 369.4,
+          "w": 390,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "💡 LIGHTS & FX Headlights, Underglow, Window Tint, Track Marks, Horn",
+          "font": 13.3,
+          "x": 776,
+          "y": 485.6,
+          "w": 390,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🔥 PERFORMANCE & NOS NOS Flame Color, Boost / Upgrade",
+          "font": 13.3,
+          "x": 776,
+          "y": 601.8,
+          "w": 390,
+          "h": 108.2
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 632,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 700,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 692,
+          "y": 12,
+          "w": 56,
+          "h": 56
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l2g",
+    "title": "JR garage Level 2 categories",
+    "url": "/jr.html?gopen=garage#garage",
+    "viewport": "ipad-1024x768",
+    "size": [
+      1024,
+      768
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l2g__ipad-1024x768.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1024,
+        768
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 13,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME ← BACK 🏠 HOME & GARAGE › 🏎️ GARAGE 🎨 PAI",
+          "font": 16,
+          "x": 604,
+          "y": 0,
+          "w": 420,
+          "h": 768
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 760.3,
+          "y": 14,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 620,
+          "y": 50,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gback",
+          "role": "control",
+          "label": "← BACK",
+          "font": 16,
+          "x": 620,
+          "y": 88,
+          "w": 107.8,
+          "h": 41
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "🏠 HOME & GARAGE",
+          "font": 11,
+          "x": 735.8,
+          "y": 97.5,
+          "w": 129.7,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "🏎️ GARAGE",
+          "font": 11,
+          "x": 881.1,
+          "y": 97.5,
+          "w": 75.3,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🎨 PAINT & VINYLS Body Paint, Roof & Hood, Custom Car Vinyls, Presets",
+          "font": 13.3,
+          "x": 620,
+          "y": 137,
+          "w": 390,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🛞 WHEELS & STANCE Rims, Tire Lettering, Brake Calipers, Stance / Lowered",
+          "font": 13.3,
+          "x": 620,
+          "y": 253.2,
+          "w": 390,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🪽 AERO & WINGS Spoiler, Flight Wings, Front Splitter, Louvers, Scissor Doors",
+          "font": 13.3,
+          "x": 620,
+          "y": 369.4,
+          "w": 390,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "💡 LIGHTS & FX Headlights, Underglow, Window Tint, Track Marks, Horn",
+          "font": 13.3,
+          "x": 620,
+          "y": 485.6,
+          "w": 390,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🔥 PERFORMANCE & NOS NOS Flame Color, Boost / Upgrade",
+          "font": 13.3,
+          "x": 620,
+          "y": 601.8,
+          "w": 390,
+          "h": 108.2
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 580,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 648,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 536,
+          "y": 12,
+          "w": 56,
+          "h": 56
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l2g",
+    "title": "JR garage Level 2 categories",
+    "url": "/jr.html?gopen=garage#garage",
+    "viewport": "ipad-820x1180",
+    "size": [
+      820,
+      1180
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l2g__ipad-820x1180.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        820,
+        1180
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 13,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME ← BACK 🏠 HOME & GARAGE › 🏎️ GARAGE 🎨 PAI",
+          "font": 16,
+          "x": 0,
+          "y": 566.4,
+          "w": 820,
+          "h": 613.6
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 154.3,
+          "y": 582.4,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 337.4,
+          "y": 582.4,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gback",
+          "role": "control",
+          "label": "← BACK",
+          "font": 16,
+          "x": 14,
+          "y": 620.4,
+          "w": 107.8,
+          "h": 41
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "🏠 HOME & GARAGE",
+          "font": 11,
+          "x": 129.8,
+          "y": 629.9,
+          "w": 129.7,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "🏎️ GARAGE",
+          "font": 11,
+          "x": 275.1,
+          "y": 629.9,
+          "w": 75.3,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🎨 PAINT & VINYLS Body Paint, Roof & Hood, Custom Car Vinyls, Presets",
+          "font": 13.3,
+          "x": 14,
+          "y": 669.4,
+          "w": 792,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🛞 WHEELS & STANCE Rims, Tire Lettering, Brake Calipers, Stance / Lowered",
+          "font": 13.3,
+          "x": 14,
+          "y": 785.6,
+          "w": 792,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🪽 AERO & WINGS Spoiler, Flight Wings, Front Splitter, Louvers, Scissor Doors",
+          "font": 13.3,
+          "x": 14,
+          "y": 901.8,
+          "w": 792,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "💡 LIGHTS & FX Headlights, Underglow, Window Tint, Track Marks, Horn",
+          "font": 13.3,
+          "x": 14,
+          "y": 1018,
+          "w": 792,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🔥 PERFORMANCE & NOS NOS Flame Color, Boost / Upgrade",
+          "font": 13.3,
+          "x": 14,
+          "y": 1134.1,
+          "w": 792,
+          "h": 108.2
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 12,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 80,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 752,
+          "y": 12,
+          "w": 56,
+          "h": 56
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l2g",
+    "title": "JR garage Level 2 categories",
+    "url": "/jr.html?gopen=garage#garage",
+    "viewport": "pc-1366x768",
+    "size": [
+      1366,
+      768
+    ],
+    "hasTouch": false,
+    "dpr": 1,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l2g__pc-1366x768.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1366,
+        768
+      ],
+      "dpr": 1,
+      "touch": 0,
+      "controls": 13,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME ← BACK 🏠 HOME & GARAGE › 🏎️ GARAGE 🎨 PAI",
+          "font": 16,
+          "x": 737.6,
+          "y": 0,
+          "w": 628.4,
+          "h": 768
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 889.9,
+          "y": 8,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 1073,
+          "y": 8,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gback",
+          "role": "control",
+          "label": "← BACK",
+          "font": 16,
+          "x": 749.6,
+          "y": 44,
+          "w": 107.8,
+          "h": 40
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "🏠 HOME & GARAGE",
+          "font": 11,
+          "x": 865.4,
+          "y": 53,
+          "w": 129.7,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "🏎️ GARAGE",
+          "font": 11,
+          "x": 1010.8,
+          "y": 53,
+          "w": 75.3,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🎨 PAINT & VINYLS Body Paint, Roof & Hood, Custom Car Vinyls, Presets",
+          "font": 13.3,
+          "x": 749.6,
+          "y": 90,
+          "w": 606.4,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🛞 WHEELS & STANCE Rims, Tire Lettering, Brake Calipers, Stance / Lowered",
+          "font": 13.3,
+          "x": 749.6,
+          "y": 206.2,
+          "w": 606.4,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🪽 AERO & WINGS Spoiler, Flight Wings, Front Splitter, Louvers, Scissor Doors",
+          "font": 13.3,
+          "x": 749.6,
+          "y": 322.4,
+          "w": 606.4,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "💡 LIGHTS & FX Headlights, Underglow, Window Tint, Track Marks, Horn",
+          "font": 13.3,
+          "x": 749.6,
+          "y": 438.6,
+          "w": 606.4,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🔥 PERFORMANCE & NOS NOS Flame Color, Boost / Upgrade",
+          "font": 13.3,
+          "x": 749.6,
+          "y": 554.8,
+          "w": 606.4,
+          "h": 108.2
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 580,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 648,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 685.6,
+          "y": 2,
+          "w": 48,
+          "h": 48
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l2g",
+    "title": "JR garage Level 2 categories",
+    "url": "/jr.html?gopen=garage#garage",
+    "viewport": "pc-1920x1080",
+    "size": [
+      1920,
+      1080
+    ],
+    "hasTouch": false,
+    "dpr": 1,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l2g__pc-1920x1080.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "touch": 0,
+      "controls": 13,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME ← BACK 🏠 HOME & GARAGE › 🏎️ GARAGE 🎨 PAI",
+          "font": 16,
+          "x": 1036.8,
+          "y": 0,
+          "w": 883.2,
+          "h": 1080
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 1189.1,
+          "y": 8,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 1372.2,
+          "y": 8,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gback",
+          "role": "control",
+          "label": "← BACK",
+          "font": 16,
+          "x": 1048.8,
+          "y": 44,
+          "w": 107.8,
+          "h": 40
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "🏠 HOME & GARAGE",
+          "font": 11,
+          "x": 1164.6,
+          "y": 53,
+          "w": 129.7,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "🏎️ GARAGE",
+          "font": 11,
+          "x": 1309.9,
+          "y": 53,
+          "w": 75.3,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🎨 PAINT & VINYLS Body Paint, Roof & Hood, Custom Car Vinyls, Presets",
+          "font": 13.3,
+          "x": 1048.8,
+          "y": 90,
+          "w": 861.2,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🛞 WHEELS & STANCE Rims, Tire Lettering, Brake Calipers, Stance / Lowered",
+          "font": 13.3,
+          "x": 1048.8,
+          "y": 206.2,
+          "w": 861.2,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🪽 AERO & WINGS Spoiler, Flight Wings, Front Splitter, Louvers, Scissor Doors",
+          "font": 13.3,
+          "x": 1048.8,
+          "y": 322.4,
+          "w": 861.2,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "💡 LIGHTS & FX Headlights, Underglow, Window Tint, Track Marks, Horn",
+          "font": 13.3,
+          "x": 1048.8,
+          "y": 438.6,
+          "w": 861.2,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🔥 PERFORMANCE & NOS NOS Flame Color, Boost / Upgrade",
+          "font": 13.3,
+          "x": 1048.8,
+          "y": 554.8,
+          "w": 861.2,
+          "h": 108.2
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 892,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 960,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 984.8,
+          "y": 2,
+          "w": 48,
+          "h": 48
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l2h",
+    "title": "JR home Level 2 categories",
+    "url": "/jr.html?gopen=home#garage",
+    "viewport": "phone-844x390",
+    "size": [
+      844,
+      390
+    ],
+    "hasTouch": true,
+    "dpr": 3,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l2h__phone-844x390.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        844,
+        390
+      ],
+      "dpr": 3,
+      "touch": 5,
+      "controls": 10,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME ← BACK 🏠 HOME & GARAGE › 🏠 HOME 🛋️ LIVIN",
+          "font": 16,
+          "x": 455.8,
+          "y": 0,
+          "w": 388.2,
+          "h": 390
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 608.1,
+          "y": 8,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 467.8,
+          "y": 44,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gback",
+          "role": "control",
+          "label": "← BACK",
+          "font": 16,
+          "x": 467.8,
+          "y": 80,
+          "w": 107.8,
+          "h": 41
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "🏠 HOME & GARAGE",
+          "font": 11,
+          "x": 583.5,
+          "y": 89.5,
+          "w": 129.7,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "🏠 HOME",
+          "font": 11,
+          "x": 728.9,
+          "y": 89.5,
+          "w": 58.3,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🛋️ LIVING ROOM & DECOR Wall Neon Color, Cyber Furniture, Glowing Pet Bed, Custo",
+          "font": 13.3,
+          "x": 467.8,
+          "y": 127,
+          "w": 366.2,
+          "h": 125.7
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🐾 PETS & CREW Companion Pet, Character Outfit, Enter Home / Crew Studio",
+          "font": 13.3,
+          "x": 467.8,
+          "y": 260.7,
+          "w": 366.2,
+          "h": 125.7
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 28,
+          "x": 12,
+          "y": 226,
+          "w": 50,
+          "h": 50
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 28,
+          "x": 12,
+          "y": 284,
+          "w": 50,
+          "h": 50
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 403.8,
+          "y": 2,
+          "w": 48,
+          "h": 48
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l2h",
+    "title": "JR home Level 2 categories",
+    "url": "/jr.html?gopen=home#garage",
+    "viewport": "phone-667x375",
+    "size": [
+      667,
+      375
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l2h__phone-667x375.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        667,
+        375
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 10,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME ← BACK 🏠 HOME & GARAGE › 🏠 HOME 🛋️ LIVIN",
+          "font": 16,
+          "x": 360.2,
+          "y": 0,
+          "w": 306.8,
+          "h": 375
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 372.2,
+          "y": 35,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 555.3,
+          "y": 35,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gback",
+          "role": "control",
+          "label": "← BACK",
+          "font": 16,
+          "x": 372.2,
+          "y": 71,
+          "w": 107.8,
+          "h": 41
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "🏠 HOME & GARAGE",
+          "font": 11,
+          "x": 372.2,
+          "y": 120,
+          "w": 129.7,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "🏠 HOME",
+          "font": 11,
+          "x": 517.6,
+          "y": 120,
+          "w": 58.3,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🛋️ LIVING ROOM & DECOR Wall Neon Color, Cyber Furniture, Glowing Pet Bed, Custo",
+          "font": 13.3,
+          "x": 372.2,
+          "y": 148,
+          "w": 284.8,
+          "h": 125.7
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🐾 PETS & CREW Companion Pet, Character Outfit, Enter Home / Crew Studio",
+          "font": 13.3,
+          "x": 372.2,
+          "y": 281.7,
+          "w": 284.8,
+          "h": 125.7
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 28,
+          "x": 12,
+          "y": 211,
+          "w": 50,
+          "h": 50
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 28,
+          "x": 12,
+          "y": 269,
+          "w": 50,
+          "h": 50
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 308.2,
+          "y": 2,
+          "w": 48,
+          "h": 48
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l2h",
+    "title": "JR home Level 2 categories",
+    "url": "/jr.html?gopen=home#garage",
+    "viewport": "ipad-1180x820",
+    "size": [
+      1180,
+      820
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l2h__ipad-1180x820.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1180,
+        820
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 11,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME ← BACK 🏠 HOME & GARAGE › 🏠 HOME 🛋️ LIVIN",
+          "font": 16,
+          "x": 760,
+          "y": 0,
+          "w": 420,
+          "h": 820
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 916.3,
+          "y": 14,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 776,
+          "y": 50,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gback",
+          "role": "control",
+          "label": "← BACK",
+          "font": 16,
+          "x": 776,
+          "y": 88,
+          "w": 107.8,
+          "h": 41
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "🏠 HOME & GARAGE",
+          "font": 11,
+          "x": 891.8,
+          "y": 97.5,
+          "w": 129.7,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "🏠 HOME",
+          "font": 11,
+          "x": 1037.1,
+          "y": 97.5,
+          "w": 58.3,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🛋️ LIVING ROOM & DECOR Wall Neon Color, Cyber Furniture, Glowing Pet Bed, Custo",
+          "font": 13.3,
+          "x": 776,
+          "y": 137,
+          "w": 390,
+          "h": 125.7
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🐾 PETS & CREW Companion Pet, Character Outfit, Enter Home / Crew Studio",
+          "font": 13.3,
+          "x": 776,
+          "y": 270.7,
+          "w": 390,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🎨 STUDIO & PAINT APPS 3D Car Paint, Z Company Arts Graffiti Wall, Dance Stage",
+          "font": 13.3,
+          "x": 776,
+          "y": 386.9,
+          "w": 390,
+          "h": 108.2
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 632,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 700,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 692,
+          "y": 12,
+          "w": 56,
+          "h": 56
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l2h",
+    "title": "JR home Level 2 categories",
+    "url": "/jr.html?gopen=home#garage",
+    "viewport": "ipad-1024x768",
+    "size": [
+      1024,
+      768
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l2h__ipad-1024x768.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1024,
+        768
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 11,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME ← BACK 🏠 HOME & GARAGE › 🏠 HOME 🛋️ LIVIN",
+          "font": 16,
+          "x": 604,
+          "y": 0,
+          "w": 420,
+          "h": 768
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 760.3,
+          "y": 14,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 620,
+          "y": 50,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gback",
+          "role": "control",
+          "label": "← BACK",
+          "font": 16,
+          "x": 620,
+          "y": 88,
+          "w": 107.8,
+          "h": 41
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "🏠 HOME & GARAGE",
+          "font": 11,
+          "x": 735.8,
+          "y": 97.5,
+          "w": 129.7,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "🏠 HOME",
+          "font": 11,
+          "x": 881.1,
+          "y": 97.5,
+          "w": 58.3,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🛋️ LIVING ROOM & DECOR Wall Neon Color, Cyber Furniture, Glowing Pet Bed, Custo",
+          "font": 13.3,
+          "x": 620,
+          "y": 137,
+          "w": 390,
+          "h": 125.7
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🐾 PETS & CREW Companion Pet, Character Outfit, Enter Home / Crew Studio",
+          "font": 13.3,
+          "x": 620,
+          "y": 270.7,
+          "w": 390,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🎨 STUDIO & PAINT APPS 3D Car Paint, Z Company Arts Graffiti Wall, Dance Stage",
+          "font": 13.3,
+          "x": 620,
+          "y": 386.9,
+          "w": 390,
+          "h": 108.2
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 580,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 648,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 536,
+          "y": 12,
+          "w": 56,
+          "h": 56
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l2h",
+    "title": "JR home Level 2 categories",
+    "url": "/jr.html?gopen=home#garage",
+    "viewport": "ipad-820x1180",
+    "size": [
+      820,
+      1180
+    ],
+    "hasTouch": true,
+    "dpr": 2,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l2h__ipad-820x1180.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        820,
+        1180
+      ],
+      "dpr": 2,
+      "touch": 5,
+      "controls": 11,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME ← BACK 🏠 HOME & GARAGE › 🏠 HOME 🛋️ LIVIN",
+          "font": 16,
+          "x": 0,
+          "y": 566.4,
+          "w": 820,
+          "h": 613.6
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 154.3,
+          "y": 582.4,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 337.4,
+          "y": 582.4,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gback",
+          "role": "control",
+          "label": "← BACK",
+          "font": 16,
+          "x": 14,
+          "y": 620.4,
+          "w": 107.8,
+          "h": 41
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "🏠 HOME & GARAGE",
+          "font": 11,
+          "x": 129.8,
+          "y": 629.9,
+          "w": 129.7,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "🏠 HOME",
+          "font": 11,
+          "x": 275.1,
+          "y": 629.9,
+          "w": 58.3,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🛋️ LIVING ROOM & DECOR Wall Neon Color, Cyber Furniture, Glowing Pet Bed, Custo",
+          "font": 13.3,
+          "x": 14,
+          "y": 669.4,
+          "w": 792,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🐾 PETS & CREW Companion Pet, Character Outfit, Enter Home / Crew Studio",
+          "font": 13.3,
+          "x": 14,
+          "y": 785.6,
+          "w": 792,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🎨 STUDIO & PAINT APPS 3D Car Paint, Z Company Arts Graffiti Wall, Dance Stage",
+          "font": 13.3,
+          "x": 14,
+          "y": 901.8,
+          "w": 792,
+          "h": 108.2
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 12,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 80,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 752,
+          "y": 12,
+          "w": 56,
+          "h": 56
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l2h",
+    "title": "JR home Level 2 categories",
+    "url": "/jr.html?gopen=home#garage",
+    "viewport": "pc-1366x768",
+    "size": [
+      1366,
+      768
+    ],
+    "hasTouch": false,
+    "dpr": 1,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l2h__pc-1366x768.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1366,
+        768
+      ],
+      "dpr": 1,
+      "touch": 0,
+      "controls": 11,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME ← BACK 🏠 HOME & GARAGE › 🏠 HOME 🛋️ LIVIN",
+          "font": 16,
+          "x": 737.6,
+          "y": 0,
+          "w": 628.4,
+          "h": 768
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 889.9,
+          "y": 8,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 1073,
+          "y": 8,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gback",
+          "role": "control",
+          "label": "← BACK",
+          "font": 16,
+          "x": 749.6,
+          "y": 44,
+          "w": 107.8,
+          "h": 40
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "🏠 HOME & GARAGE",
+          "font": 11,
+          "x": 865.4,
+          "y": 53,
+          "w": 129.7,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "🏠 HOME",
+          "font": 11,
+          "x": 1010.8,
+          "y": 53,
+          "w": 58.3,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🛋️ LIVING ROOM & DECOR Wall Neon Color, Cyber Furniture, Glowing Pet Bed, Custo",
+          "font": 13.3,
+          "x": 749.6,
+          "y": 90,
+          "w": 606.4,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🐾 PETS & CREW Companion Pet, Character Outfit, Enter Home / Crew Studio",
+          "font": 13.3,
+          "x": 749.6,
+          "y": 206.2,
+          "w": 606.4,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🎨 STUDIO & PAINT APPS 3D Car Paint, Z Company Arts Graffiti Wall, Dance Stage",
+          "font": 13.3,
+          "x": 749.6,
+          "y": 322.4,
+          "w": 606.4,
+          "h": 108.2
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 580,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 648,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 685.6,
+          "y": 2,
+          "w": 48,
+          "h": 48
+        }
+      ]
+    }
+  },
+  {
+    "id": "jr-l2h",
+    "title": "JR home Level 2 categories",
+    "url": "/jr.html?gopen=home#garage",
+    "viewport": "pc-1920x1080",
+    "size": [
+      1920,
+      1080
+    ],
+    "hasTouch": false,
+    "dpr": 1,
+    "ready": true,
+    "screenshot": "/workspace/test-results/home-room-preview/ui-polish/screenshots/jr-l2h__pc-1920x1080.png",
+    "errors": 0,
+    "warns": 0,
+    "audit": {
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "touch": 0,
+      "controls": 11,
+      "cards": 1,
+      "hud": 0,
+      "issues": [],
+      "nodes": [
+        {
+          "id": "kGarage",
+          "name": "kGarage",
+          "role": "card",
+          "label": "● 9999 ★ 99 OPEN PART BOX (0) RENAME ← BACK 🏠 HOME & GARAGE › 🏠 HOME 🛋️ LIVIN",
+          "font": 16,
+          "x": 1036.8,
+          "y": 0,
+          "w": 883.2,
+          "h": 1080
+        },
+        {
+          "id": "gBox",
+          "name": "gBox",
+          "role": "control",
+          "label": "OPEN PART BOX (0)",
+          "font": 11,
+          "x": 1189.1,
+          "y": 8,
+          "w": 177.1,
+          "h": 30
+        },
+        {
+          "id": "gName",
+          "name": "gName",
+          "role": "control",
+          "label": "RENAME",
+          "font": 11,
+          "x": 1372.2,
+          "y": 8,
+          "w": 91.5,
+          "h": 30
+        },
+        {
+          "id": "",
+          "name": "gback",
+          "role": "control",
+          "label": "← BACK",
+          "font": 16,
+          "x": 1048.8,
+          "y": 44,
+          "w": 107.8,
+          "h": 40
+        },
+        {
+          "id": "",
+          "name": "BUTTON",
+          "role": "control",
+          "label": "🏠 HOME & GARAGE",
+          "font": 11,
+          "x": 1164.6,
+          "y": 53,
+          "w": 129.7,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "on",
+          "role": "control",
+          "label": "🏠 HOME",
+          "font": 11,
+          "x": 1309.9,
+          "y": 53,
+          "w": 58.3,
+          "h": 22
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🛋️ LIVING ROOM & DECOR Wall Neon Color, Cyber Furniture, Glowing Pet Bed, Custo",
+          "font": 13.3,
+          "x": 1048.8,
+          "y": 90,
+          "w": 861.2,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🐾 PETS & CREW Companion Pet, Character Outfit, Enter Home / Crew Studio",
+          "font": 13.3,
+          "x": 1048.8,
+          "y": 206.2,
+          "w": 861.2,
+          "h": 108.2
+        },
+        {
+          "id": "",
+          "name": "gbig",
+          "role": "control",
+          "label": "🎨 STUDIO & PAINT APPS 3D Car Paint, Z Company Arts Graffiti Wall, Dance Stage",
+          "font": 13.3,
+          "x": 1048.8,
+          "y": 322.4,
+          "w": 861.2,
+          "h": 108.2
+        },
+        {
+          "id": "kGzIn",
+          "name": "kGzIn",
+          "role": "control",
+          "label": "Zoom in",
+          "font": 32,
+          "x": 12,
+          "y": 892,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kGzOut",
+          "name": "kGzOut",
+          "role": "control",
+          "label": "Zoom out",
+          "font": 32,
+          "x": 12,
+          "y": 960,
+          "w": 58,
+          "h": 58
+        },
+        {
+          "id": "kMenuB",
+          "name": "kMenuB",
+          "role": "control",
+          "label": "Menu",
+          "font": 13.3,
+          "x": 984.8,
+          "y": 2,
+          "w": 48,
+          "h": 48
+        }
+      ]
+    }
+  }
+]

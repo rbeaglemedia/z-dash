@@ -1,0 +1,750 @@
+{
+  "commit": "a67625d0e5f327b3923f1e3ab401eb70544edacf",
+  "errors": [],
+  "vps": {
+    "phone": {
+      "boot": {
+        "on": true,
+        "paints": 15,
+        "bw": 912,
+        "bh": 671,
+        "dpr": 2,
+        "yaw": 0.7,
+        "zoom": 1,
+        "wall": "neon-grid",
+        "who": "girl",
+        "pet": "fox"
+      },
+      "houseBefore": null,
+      "gzBefore": null,
+      "fps": [
+        {
+          "fps": 61,
+          "min": 60,
+          "worst": 17
+        },
+        {
+          "fps": 60,
+          "min": 60,
+          "worst": 17
+        },
+        {
+          "fps": 60,
+          "min": 60,
+          "worst": 17
+        },
+        {
+          "fps": 60,
+          "min": 60,
+          "worst": 17
+        },
+        {
+          "fps": 60,
+          "min": 60,
+          "worst": 17
+        }
+      ],
+      "spin": {
+        "from": 0.747652,
+        "to": 1.862282,
+        "delta": 1.115
+      },
+      "dragYaw": 0.662,
+      "wall": {
+        "on": true,
+        "paints": 449,
+        "bw": 912,
+        "bh": 671,
+        "dpr": 2,
+        "yaw": 0,
+        "zoom": 1,
+        "wall": "neon-grid",
+        "who": "girl",
+        "pet": "fox"
+      },
+      "wallBytes": 202763,
+      "hover": {
+        "wall": "bubblegum",
+        "house": null,
+        "gz": null,
+        "houseSame": true
+      },
+      "hoverBytes": 202175,
+      "click": {
+        "wall": "bubblegum",
+        "house": "{\"v\":1,\"wall\":\"bubblegum\",\"sign\":\"ellie\",\"sofa\":true,\"arcade\":true,\"petBed\":true,\"danceFloor\":true,\"items\":{\"sofa\":true,\"arcade\":true,\"petBed\":true,\"danceFloor\":true}}",
+        "gz": null
+      },
+      "zoomBefore": 1,
+      "zoom": {
+        "gz": 0.68,
+        "zoom": 1.425,
+        "on": true
+      },
+      "zoomBytes": 210685,
+      "furniture": {
+        "on": true,
+        "paints": 626,
+        "bw": 912,
+        "bh": 671,
+        "dpr": 2,
+        "yaw": 0,
+        "zoom": 1.004,
+        "wall": "neon-grid",
+        "who": "girl",
+        "pet": "fox"
+      },
+      "furnBytes": 220559,
+      "crew": {
+        "fox-man": {
+          "state": {
+            "on": true,
+            "paints": 661,
+            "bw": 912,
+            "bh": 671,
+            "dpr": 2,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "boy",
+            "pet": "fox"
+          },
+          "bytes": 212043
+        },
+        "fox-none": {
+          "state": {
+            "on": true,
+            "paints": 693,
+            "bw": 912,
+            "bh": 671,
+            "dpr": 2,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "",
+            "pet": "fox"
+          },
+          "bytes": 201438
+        },
+        "dog-woman": {
+          "state": {
+            "on": true,
+            "paints": 727,
+            "bw": 912,
+            "bh": 671,
+            "dpr": 2,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": "dog"
+          },
+          "bytes": 209977
+        },
+        "cat-woman": {
+          "state": {
+            "on": true,
+            "paints": 762,
+            "bw": 912,
+            "bh": 671,
+            "dpr": 2,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": "cat"
+          },
+          "bytes": 209812
+        },
+        "bunny-woman": {
+          "state": {
+            "on": true,
+            "paints": 826,
+            "bw": 912,
+            "bh": 671,
+            "dpr": 2,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": "bunny"
+          },
+          "bytes": 209427
+        },
+        "dragon-woman": {
+          "state": {
+            "on": true,
+            "paints": 863,
+            "bw": 912,
+            "bh": 671,
+            "dpr": 2,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": "dragon"
+          },
+          "bytes": 210839
+        },
+        "none-woman": {
+          "state": {
+            "on": true,
+            "paints": 893,
+            "bw": 912,
+            "bh": 671,
+            "dpr": 2,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": ""
+          },
+          "bytes": 206370
+        }
+      },
+      "ink": {
+        "lime": {
+          "n": 170,
+          "w": 36,
+          "h": 74
+        },
+        "pink": {
+          "n": 1661,
+          "w": 210,
+          "h": 148
+        },
+        "cw": 1688,
+        "ch": 780
+      },
+      "garage": {
+        "on": false,
+        "paints": 922,
+        "held": 922,
+        "paused": true
+      },
+      "garageBytes": 379136,
+      "pet": {
+        "room": false,
+        "g": {
+          "pet": "dog",
+          "phase": "takeoff",
+          "t": 0.067,
+          "door": 0.037,
+          "hatch": 0,
+          "on": true,
+          "clip": {
+            "x": -0.02,
+            "y": 0.782,
+            "z": -1.12
+          },
+          "mesh": true,
+          "hinge": true,
+          "hingeBad": false
+        }
+      },
+      "petBytes": 387317,
+      "controls": {
+        "n": 18,
+        "hits": []
+      },
+      "logs": [],
+      "gzAfter": null
+    },
+    "ipad": {
+      "boot": {
+        "on": true,
+        "paints": 11,
+        "bw": 637,
+        "bh": 705,
+        "dpr": 1,
+        "yaw": 0.7,
+        "zoom": 1,
+        "wall": "neon-grid",
+        "who": "girl",
+        "pet": "fox"
+      },
+      "houseBefore": null,
+      "gzBefore": null,
+      "fps": [
+        {
+          "fps": 57,
+          "min": 30,
+          "worst": 33
+        },
+        {
+          "fps": 56,
+          "min": 30,
+          "worst": 33
+        },
+        {
+          "fps": 54,
+          "min": 30,
+          "worst": 33
+        },
+        {
+          "fps": 51,
+          "min": 30,
+          "worst": 33
+        },
+        {
+          "fps": 52,
+          "min": 30,
+          "worst": 33
+        }
+      ],
+      "spin": {
+        "from": 0.7513259999999999,
+        "to": 1.869607999999998,
+        "delta": 1.118
+      },
+      "dragYaw": 0.677,
+      "wall": {
+        "on": true,
+        "paints": 410,
+        "bw": 637,
+        "bh": 705,
+        "dpr": 1,
+        "yaw": 0,
+        "zoom": 1,
+        "wall": "neon-grid",
+        "who": "girl",
+        "pet": "fox"
+      },
+      "wallBytes": 380076,
+      "hover": {
+        "wall": "bubblegum",
+        "house": null,
+        "gz": null,
+        "houseSame": true
+      },
+      "hoverBytes": 377203,
+      "click": {
+        "wall": "bubblegum",
+        "house": "{\"v\":1,\"wall\":\"bubblegum\",\"sign\":\"ellie\",\"sofa\":true,\"arcade\":true,\"petBed\":true,\"danceFloor\":true,\"items\":{\"sofa\":true,\"arcade\":true,\"petBed\":true,\"danceFloor\":true}}",
+        "gz": null
+      },
+      "zoomBefore": 1,
+      "zoom": {
+        "gz": 0.68,
+        "zoom": 1.425,
+        "on": true
+      },
+      "zoomBytes": 396411,
+      "furniture": {
+        "on": true,
+        "paints": 600,
+        "bw": 637,
+        "bh": 705,
+        "dpr": 1,
+        "yaw": 0,
+        "zoom": 1.003,
+        "wall": "neon-grid",
+        "who": "girl",
+        "pet": "fox"
+      },
+      "furnBytes": 395343,
+      "crew": {
+        "fox-man": {
+          "state": {
+            "on": true,
+            "paints": 654,
+            "bw": 637,
+            "bh": 705,
+            "dpr": 1,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "boy",
+            "pet": "fox"
+          },
+          "bytes": 392837
+        },
+        "fox-none": {
+          "state": {
+            "on": true,
+            "paints": 696,
+            "bw": 637,
+            "bh": 705,
+            "dpr": 1,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "",
+            "pet": "fox"
+          },
+          "bytes": 354037
+        },
+        "dog-woman": {
+          "state": {
+            "on": true,
+            "paints": 739,
+            "bw": 637,
+            "bh": 705,
+            "dpr": 1,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": "dog"
+          },
+          "bytes": 388690
+        },
+        "cat-woman": {
+          "state": {
+            "on": true,
+            "paints": 798,
+            "bw": 637,
+            "bh": 705,
+            "dpr": 1,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": "cat"
+          },
+          "bytes": 388775
+        },
+        "bunny-woman": {
+          "state": {
+            "on": true,
+            "paints": 849,
+            "bw": 637,
+            "bh": 705,
+            "dpr": 1,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": "bunny"
+          },
+          "bytes": 386942
+        },
+        "dragon-woman": {
+          "state": {
+            "on": true,
+            "paints": 892,
+            "bw": 637,
+            "bh": 705,
+            "dpr": 1,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": "dragon"
+          },
+          "bytes": 392024
+        },
+        "none-woman": {
+          "state": {
+            "on": true,
+            "paints": 936,
+            "bw": 637,
+            "bh": 705,
+            "dpr": 1,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": ""
+          },
+          "bytes": 376008
+        }
+      },
+      "ink": {
+        "lime": {
+          "n": 707,
+          "w": 76,
+          "h": 152
+        },
+        "pink": {
+          "n": 8123,
+          "w": 458,
+          "h": 324
+        },
+        "cw": 2360,
+        "ch": 1640
+      },
+      "garage": {
+        "on": false,
+        "paints": 993,
+        "held": 993,
+        "paused": true
+      },
+      "garageBytes": 657384,
+      "pet": {
+        "room": false,
+        "g": {
+          "pet": "dog",
+          "phase": "takeoff",
+          "t": 0.1,
+          "door": 0.056,
+          "hatch": 0,
+          "on": true,
+          "clip": {
+            "x": -0.02,
+            "y": 0.782,
+            "z": -1.12
+          },
+          "mesh": true,
+          "hinge": true,
+          "hingeBad": false
+        }
+      },
+      "petBytes": 587820,
+      "controls": {
+        "n": 18,
+        "hits": []
+      },
+      "logs": [],
+      "gzAfter": null
+    },
+    "pc": {
+      "boot": {
+        "on": true,
+        "paints": 13,
+        "bw": 738,
+        "bh": 660,
+        "dpr": 1,
+        "yaw": 0.7,
+        "zoom": 1,
+        "wall": "neon-grid",
+        "who": "girl",
+        "pet": "fox"
+      },
+      "houseBefore": null,
+      "gzBefore": null,
+      "fps": [
+        {
+          "fps": 61,
+          "min": 60,
+          "worst": 17
+        },
+        {
+          "fps": 60,
+          "min": 60,
+          "worst": 17
+        },
+        {
+          "fps": 60,
+          "min": 60,
+          "worst": 17
+        },
+        {
+          "fps": 60,
+          "min": 60,
+          "worst": 17
+        },
+        {
+          "fps": 60,
+          "min": 60,
+          "worst": 17
+        }
+      ],
+      "spin": {
+        "from": 0.744,
+        "to": 1.8513040000000014,
+        "delta": 1.107
+      },
+      "dragYaw": 0.651,
+      "wall": {
+        "on": true,
+        "paints": 450,
+        "bw": 738,
+        "bh": 660,
+        "dpr": 1,
+        "yaw": 0,
+        "zoom": 1,
+        "wall": "neon-grid",
+        "who": "girl",
+        "pet": "fox"
+      },
+      "wallBytes": 142328,
+      "hover": {
+        "wall": "bubblegum",
+        "house": null,
+        "gz": null,
+        "houseSame": true
+      },
+      "hoverBytes": 141588,
+      "click": {
+        "wall": "bubblegum",
+        "house": "{\"v\":1,\"wall\":\"bubblegum\",\"sign\":\"ellie\",\"sofa\":true,\"arcade\":true,\"petBed\":true,\"danceFloor\":true,\"items\":{\"sofa\":true,\"arcade\":true,\"petBed\":true,\"danceFloor\":true}}",
+        "gz": null
+      },
+      "zoomBefore": 1,
+      "zoom": {
+        "gz": 0.68,
+        "zoom": 1.425,
+        "on": true
+      },
+      "zoomBytes": 145044,
+      "furniture": {
+        "on": true,
+        "paints": 645,
+        "bw": 738,
+        "bh": 660,
+        "dpr": 1,
+        "yaw": 0,
+        "zoom": 1.004,
+        "wall": "neon-grid",
+        "who": "girl",
+        "pet": "fox"
+      },
+      "furnBytes": 147068,
+      "crew": {
+        "fox-man": {
+          "state": {
+            "on": true,
+            "paints": 682,
+            "bw": 738,
+            "bh": 660,
+            "dpr": 1,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "boy",
+            "pet": "fox"
+          },
+          "bytes": 146659
+        },
+        "fox-none": {
+          "state": {
+            "on": true,
+            "paints": 718,
+            "bw": 738,
+            "bh": 660,
+            "dpr": 1,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "",
+            "pet": "fox"
+          },
+          "bytes": 134232
+        },
+        "dog-woman": {
+          "state": {
+            "on": true,
+            "paints": 755,
+            "bw": 738,
+            "bh": 660,
+            "dpr": 1,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": "dog"
+          },
+          "bytes": 144568
+        },
+        "cat-woman": {
+          "state": {
+            "on": true,
+            "paints": 792,
+            "bw": 738,
+            "bh": 660,
+            "dpr": 1,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": "cat"
+          },
+          "bytes": 144490
+        },
+        "bunny-woman": {
+          "state": {
+            "on": true,
+            "paints": 844,
+            "bw": 738,
+            "bh": 660,
+            "dpr": 1,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": "bunny"
+          },
+          "bytes": 144068
+        },
+        "dragon-woman": {
+          "state": {
+            "on": true,
+            "paints": 886,
+            "bw": 738,
+            "bh": 660,
+            "dpr": 1,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": "dragon"
+          },
+          "bytes": 145502
+        },
+        "none-woman": {
+          "state": {
+            "on": true,
+            "paints": 928,
+            "bw": 738,
+            "bh": 660,
+            "dpr": 1,
+            "yaw": 0,
+            "zoom": 1,
+            "wall": "neon-grid",
+            "who": "girl",
+            "pet": ""
+          },
+          "bytes": 141066
+        }
+      },
+      "ink": {
+        "lime": {
+          "n": 166,
+          "w": 36,
+          "h": 72
+        },
+        "pink": {
+          "n": 1796,
+          "w": 210,
+          "h": 146
+        },
+        "cw": 1366,
+        "ch": 768
+      },
+      "garage": {
+        "on": false,
+        "paints": 962,
+        "held": 962,
+        "paused": true
+      },
+      "garageBytes": 277218,
+      "pet": {
+        "room": false,
+        "g": {
+          "pet": "dog",
+          "phase": "takeoff",
+          "t": 0.05,
+          "door": 0.028,
+          "hatch": 0,
+          "on": true,
+          "clip": {
+            "x": -0.02,
+            "y": 0.782,
+            "z": -1.12
+          },
+          "mesh": true,
+          "hinge": true,
+          "hingeBad": false
+        }
+      },
+      "petBytes": 245645,
+      "controls": {
+        "n": 18,
+        "hits": []
+      },
+      "logs": [],
+      "gzAfter": null
+    }
+  }
+}
