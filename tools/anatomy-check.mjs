@@ -73,7 +73,8 @@ function exportCrew(code) {
     'companionPetQ:typeof companionPetQ==="function"?companionPetQ:null,',
     'worldProject:typeof worldProject==="function"?worldProject:null,',
     'lookGirl:typeof LOOK!=="undefined"&&LOOK.girl?LOOK.girl:null,',
-    'petScale:typeof PET_DRAW_SCALE==="number"?PET_DRAW_SCALE:null',
+    'petScale:typeof PET_DRAW_SCALE==="number"?PET_DRAW_SCALE:null,',
+    'paintGaragePet:typeof paintGaragePet==="function"?paintGaragePet:null',
     '};}catch(err){window.__ANATOMY={error:String(err&&err.stack||err)};}',
     ''
   ].join('');
@@ -363,7 +364,8 @@ function harnessHtml(root) {
     '<script src="/world/crew.js?anatomy=1"></script>',
     has('world/house.js') ? '<script src="/world/house.js"></script>' : '',
     has('world/walk-items.js') ? '<script src="/world/walk-items.js"></script>' : '',
-    has('world/camera.js') ? '<script src="/world/camera.js"></script>' : ''
+    has('world/camera.js') ? '<script src="/world/camera.js"></script>' : '',
+    has('world/garage-pet.js') ? '<script src="/world/garage-pet.js"></script>' : ''
   ].filter(Boolean).join('\n');
   return `<!doctype html><meta charset="utf-8"><title>anatomy</title>
 <canvas id="c" width="1100" height="800"></canvas>
@@ -1348,6 +1350,7 @@ var ANATOMY = (function () {
       'walk-angle': 'A walk pose bends a joint the wrong way',
       'missing': 'The figure is missing',
       'pet-scale': 'The pet is taller than the character\'s hip',
+      'pet-clip': 'The pet clips the car',
       'pet-floor': 'The pet is not standing on the floor',
       'char-scale': 'The character is the wrong size for the room',
       'char-floor': 'The character is not standing on the floor',
@@ -1866,6 +1869,94 @@ var ANATOMY = (function () {
     return out;
   }
 
+  function runGarage() {
+    var out = { problems: [], shots: [], stats: [], note: '', ready: false };
+    var api = window.__ANATOMY;
+    if (!api || typeof api.paintGaragePet !== 'function') {
+      out.note = 'This tree has no garage turntable pet, so that scale check was not run here.';
+      return out;
+    }
+    out.ready = true;
+    var hip = hipMetres();
+    var rw = 844, rh = 390, z = 3.3;
+    var project = roomProject(rw, rh);
+    var person = { x: -0.9, y: 0, z: z, yaw: 0.4 };
+    var petAt = { x: 0.85, y: 0, z: z };
+    var ellie = actorCanvas('person', project, person, rw, rh);
+    var charSpan = bodySpan(ellie, person.z, project);
+    var local = [];
+    judgeCharacter(charSpan, 'Garage turntable', local);
+    local.forEach(function (p) { out.problems.push(p); });
+    var types = ['dog', 'cat', 'bunny', 'dragon', 'fox'];
+    var poses = [['sig', 0.7], ['idle', 3.1]];
+    types.forEach(function (type) {
+      poses.forEach(function (pose) {
+        var c = canvas(rw, rh);
+        var ctx = c.getContext('2d');
+        ctx.fillStyle = '#dfe7ef';
+        ctx.fillRect(0, 0, rw, rh);
+        var drew = false;
+        try { drew = api.paintGaragePet(ctx, project, type, pose[1], petAt, 20) !== false; } catch (e) { drew = false; }
+        var both = canvas(rw, rh);
+        both.getContext('2d').drawImage(ellie, 0, 0);
+        both.getContext('2d').drawImage(c, 0, 0);
+        var span = bodySpan(c, petAt.z, project);
+        var probs = [];
+        if (!drew || !span) probs.push({ id: 'scale-missing', priority: 4, msg: 'Garage ' + type + ' ' + pose[0] + ' did not draw' });
+        else judgeBody(span, 'Garage ' + type + ' ' + pose[0], hip, probs, null);
+        var rig = window.CREWDATA && CREWDATA.PET_RIG && (CREWDATA.PET_RIG[type] || (type === 'dog' ? CREWDATA.PET_RIG.robo : null));
+        if (rig && rig.tall) probs = probs.filter(function (p) { return p.id !== 'pet-scale'; });
+        probs.forEach(function (p) { out.problems.push(p); });
+        var guide = markScale(both, z, rw, rh, hip);
+        var name = 'garage-' + type + '-' + pose[0] + '.png';
+        store(name, both, guide, 'Garage ' + type + ' ' + pose[0] + '. Pink dashes are her hip.');
+        out.shots.push(name);
+        out.stats.push({
+          type: type,
+          pose: pose[0],
+          petTop: span ? +span.top.toFixed(2) : null,
+          petBot: span ? +span.bot.toFixed(2) : null,
+          charTop: charSpan ? +charSpan.top.toFixed(2) : null,
+          hip: +hip.toFixed(2),
+          ratio: span && charSpan && charSpan.top ? +(span.top / charSpan.top).toFixed(3) : null
+        });
+      });
+    });
+    var blank = canvas(rw, rh);
+    var bg = blank.getContext('2d');
+    bg.fillStyle = '#dfe7ef';
+    bg.fillRect(0, 0, rw, rh);
+    var noneDrew = false;
+    try { noneDrew = api.paintGaragePet(bg, project, 'none', 0.7, petAt, 0) !== false; } catch (e) { noneDrew = false; }
+    if (noneDrew || inkBox(blank, [223, 231, 239])) out.problems.push({ id: 'scale-missing', priority: 4, msg: 'Garage None still drew a pet' });
+    if (window.GPET && window.GPET.pose) {
+      function Box() {}
+      Box.prototype.setFromObject = function () {
+        this.min = { x: -1.02, y: 0, z: -2.2 };
+        this.max = { x: 1.02, y: 1.3, z: 2.2 };
+        return this;
+      };
+      window.ZD = window.ZD || {};
+      ZD.Xray = {
+        ready: true,
+        car: {},
+        THREE_Box3: Box,
+        project: function () { return { x: 200, y: 200, m: 80 }; }
+      };
+      try { GPET.pose(0.01, true, 'fox'); } catch (e) {}
+      try {
+        var scratch = canvas(rw, rh).getContext('2d');
+        GPET.draw(scratch, ZD.Xray, 0.4);
+      } catch (e) {}
+      var st = GPET.state || {};
+      var side = +st.side || 0;
+      var gap = side - 1.02;
+      out.stats.push({ type: 'clearance', pose: st.axis || '', petTop: +side.toFixed(3), petBot: +gap.toFixed(3), charTop: charSpan ? charSpan.top : null, hip: hip, ratio: null });
+      if (!(gap > 0.4)) out.problems.push({ id: 'pet-clip', priority: 4, msg: 'Garage pet stands ' + gap.toFixed(2) + 'm outside a 1.02m car half-width, so the body overlaps the car' });
+    }
+    return out;
+  }
+
   function passesFrom(cases, findings) {
     var ids = {};
     findings.forEach(function (f) { if (f.severity === 'fail') ids[f.id] = 1; });
@@ -2051,9 +2142,14 @@ var ANATOMY = (function () {
     });
 
     var scale = runScale();
+    var garage = runGarage();
+    if (window.CREWDATA && CREWDATA.PET_RIG && CREWDATA.PET_RIG.bunny) {
+      petIssues('bunny').forEach(function (msg) { petFindings.push(msg); });
+    }
     (scale.shots || []).forEach(keep);
-    var scaleShot = (scale.shots || []).filter(function (s) { return s.indexOf('scale-home-') === 0; })[0] || (scale.shots || [])[0] || '';
-    (scale.problems || []).forEach(function (p) {
+    (garage.shots || []).forEach(keep);
+    var scaleShot = (garage.shots || []).filter(function (s) { return s.indexOf('garage-fox-sig') === 0; })[0] || (scale.shots || []).filter(function (s) { return s.indexOf('scale-home-') === 0; })[0] || (scale.shots || [])[0] || '';
+    (scale.problems || []).concat(garage.problems || []).forEach(function (p) {
       cases.push({ name: p.msg.slice(0, 48), problems: [p], shot: scaleShot });
     });
 
@@ -2096,9 +2192,14 @@ var ANATOMY = (function () {
       views: [],
       msgs: []
     });
-    if (scale.ready && !(scale.problems || []).length) {
+    var garageFails = (garage.problems || []).length;
+    if ((scale.ready || garage.ready) && !(scale.problems || []).length && !garageFails) {
       var bits = (scale.stats || []).filter(function (s) { return s.where !== 'prop'; }).map(function (s) {
         return s.where + ' ' + s.type + ' top ' + s.petTop + 'm, feet ' + s.petBot + 'm, character ' + s.charTop + 'm, hip ' + s.hip + 'm';
+      });
+      (garage.stats || []).forEach(function (s) {
+        if (s.type === 'clearance') bits.push('garage clearance side ' + s.petTop + 'm, gap ' + s.petBot + 'm on axis ' + s.pose);
+        else bits.push('garage ' + s.type + ' ' + s.pose + ' top ' + s.petTop + 'm (' + s.ratio + ' of her), feet ' + s.petBot + 'm');
       });
       findings.push({
         id: 'scale-held',
@@ -2106,14 +2207,24 @@ var ANATOMY = (function () {
         priority: 9,
         title: 'Pets stay at or below her hip, and everyone stands on the floor',
         detail: bits.join('. ') + '.',
-        shots: scale.shots || [],
+        shots: (scale.shots || []).concat(garage.shots || []),
         views: [],
         msgs: []
       });
     }
+    if (garage.note) findings.push({
+      id: 'garage-skip',
+      severity: 'note',
+      priority: 9,
+      title: 'Garage turntable check was not run on this tree',
+      detail: garage.note,
+      shots: [],
+      views: [],
+      msgs: []
+    });
 
     var blocking = findings.filter(function (f) { return f.severity === 'fail' && f.priority <= 3; });
-    var scaleFails = (scale.problems || []).length;
+    var scaleFails = (scale.problems || []).length + garageFails;
     var coverage = closetOn ? [
       'Closet preview, idle front, idle side, idle back, on-foot idle',
       'Body and clothes that can change the silhouette: short body, bob, long hair, hoodie, jacket, shorts, skirt, boots, gloves',
@@ -2125,12 +2236,14 @@ var ANATOMY = (function () {
       'Pets: ' + (window.CREWDATA && CREWDATA.PET_RIG ? Object.keys(CREWDATA.PET_RIG).join(', ') : 'none') + ' joint check',
       'Scale: pet beside the character in the house, the showroom shop, and outdoors, plus room props on the floor'
     ];
+    if (garage.ready) coverage.push('Garage turntable: dog, cat, bunny, dragon, and fox in the signature pose and at idle, standing outside the car');
     return {
       ok: calib.ok && blocking.length === 0 && petFindings.length === 0 && scaleFails === 0,
       calib: calib,
       findings: findings,
       pets: { ok: petFindings.length === 0, findings: petFindings },
-      scale: { ok: scaleFails === 0, ready: !!scale.ready, stats: scale.stats || [], note: scale.note || '' },
+      scale: { ok: scaleFails === 0, ready: !!(scale.ready || garage.ready), stats: (scale.stats || []).concat(garage.stats || []), note: scale.note || '' },
+      garage: { ok: garageFails === 0, ready: !!garage.ready, stats: garage.stats || [], note: garage.note || '' },
       passes: closetOn ? passesFrom(cases, findings) : [],
       coverage: coverage,
       shotNames: shotNames,

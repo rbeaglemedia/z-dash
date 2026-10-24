@@ -1,0 +1,573 @@
+{
+  "ok": true,
+  "calib": {
+    "ok": true,
+    "errors": [],
+    "good": {
+      "missing": false,
+      "figureH": 436,
+      "head": {
+        "gap": 0,
+        "ratio": 0.19036697247706422,
+        "centered": true,
+        "dx": 0,
+        "headH": 83,
+        "neck": true,
+        "top": 66,
+        "bottom": 148,
+        "cx": 209.5
+      },
+      "torso": {
+        "left": 160,
+        "right": 259,
+        "cx": 209.5,
+        "top": 148,
+        "hip": 273,
+        "shoulderY": 164,
+        "depth": 100,
+        "neckJoin": 0,
+        "hipJoin": 0,
+        "win0": 214,
+        "win1": 292
+      },
+      "arms": {
+        "L": {
+          "present": true,
+          "attachGap": 2,
+          "handGap": 0,
+          "angle": 19.6,
+          "up": false,
+          "n": 2259
+        },
+        "R": {
+          "present": true,
+          "attachGap": 2,
+          "handGap": 0,
+          "angle": 13.4,
+          "up": false,
+          "n": 2259
+        }
+      },
+      "legs": {
+        "L": {
+          "present": true,
+          "hipGap": 0,
+          "footGap": 0,
+          "angle": 5
+        },
+        "R": {
+          "present": true,
+          "hipGap": 0,
+          "footGap": 0,
+          "angle": 2.2
+        }
+      },
+      "lr": {
+        "ok": true,
+        "msg": ""
+      },
+      "ground": {
+        "floatPx": 0,
+        "clipPx": 1,
+        "slop": 17.44,
+        "groundY": 500,
+        "footY": 501
+      },
+      "buried": false,
+      "clip": "",
+      "components": [
+        {
+          "area": 29969,
+          "x0": 107,
+          "y0": 66,
+          "x1": 312,
+          "y1": 501
+        }
+      ]
+    },
+    "badProblems": [
+      {
+        "id": "head-neck",
+        "priority": 1,
+        "msg": "The head floats 52px above the body. No neck joins them"
+      },
+      {
+        "id": "torso-neck",
+        "priority": 2,
+        "msg": "The neck does not connect to the torso. Gap 52px"
+      },
+      {
+        "id": "arm-shoulder",
+        "priority": 2,
+        "msg": "Left arm does not leave the shoulder. Closest gap is 32px"
+      },
+      {
+        "id": "hand-arm",
+        "priority": 2,
+        "msg": "Left hand does not sit on the end of the arm. Gap 27px"
+      },
+      {
+        "id": "arm-shoulder",
+        "priority": 2,
+        "msg": "Right arm does not leave the shoulder. Closest gap is 32px"
+      },
+      {
+        "id": "hand-arm",
+        "priority": 2,
+        "msg": "Right hand does not sit on the end of the arm. Gap 27px"
+      },
+      {
+        "id": "feet-ground",
+        "priority": 2,
+        "msg": "Feet float 57px above the ground"
+      }
+    ],
+    "sideDeep": {
+      "left": 184,
+      "right": 255,
+      "cx": 219.5,
+      "top": 148,
+      "hip": 345,
+      "shoulderY": 166,
+      "depth": 72,
+      "neckJoin": 0,
+      "hipJoin": 0,
+      "win0": 214,
+      "win1": 292
+    },
+    "sideFlat": [
+      "head-neck",
+      "torso-depth",
+      "torso-hip"
+    ],
+    "walkGood": {
+      "step": 54,
+      "swing": 56,
+      "oppose": -0.929,
+      "together": -1,
+      "lifts": 4,
+      "swapL": 2,
+      "swapR": 2,
+      "floatMax": 0,
+      "bob": 9,
+      "figureH": 382
+    },
+    "walkBad": {
+      "step": 0,
+      "swing": 0,
+      "oppose": 0,
+      "together": 0,
+      "lifts": 0,
+      "swapL": 0,
+      "swapR": 0,
+      "floatMax": 40,
+      "bob": 0,
+      "figureH": 333
+    }
+  },
+  "findings": [
+    {
+      "id": "scale-held",
+      "severity": "note",
+      "priority": 9,
+      "title": "Pets stay at or below her hip, and everyone stands on the floor",
+      "detail": "home fox top 0.64m, feet -0.08m, character 1.48m, hip 0.78m. home cat top 0.68m, feet -0.07m, character 1.48m, hip 0.78m. home dragon top 0.57m, feet -0.08m, character 1.48m, hip 0.78m. home robo top 0.62m, feet -0.08m, character 1.48m, hip 0.78m. outdoors fox top 0.74m, feet -0.12m, character 1.5m, hip 0.78m. shop fox top 0.64m, feet -0.08m, character 1.48m, hip 0.78m. garage dog sig top 0.68m (0.463 of her), feet -0.09m. garage dog idle top 0.68m (0.463 of her), feet -0.09m. garage cat sig top 0.68m (0.463 of her), feet -0.06m. garage cat idle top 0.62m (0.422 of her), feet -0.08m. garage bunny sig top 0.68m (0.463 of her), feet -0.05m. garage bunny idle top 0.68m (0.463 of her), feet -0.06m. garage dragon sig top 0.7m (0.473 of her), feet -0.06m. garage dragon idle top 0.62m (0.422 of her), feet -0.08m. garage fox sig top 0.73m (0.494 of her), feet -0.06m. garage fox idle top 0.7m (0.473 of her), feet -0.09m. garage clearance side 1.64m, gap 0.62m on axis x.",
+      "shots": [
+        "scale-home.png",
+        "scale-shop.png",
+        "scale-home-fox.png",
+        "scale-home-cat.png",
+        "scale-home-dragon.png",
+        "scale-home-robo.png",
+        "scale-outdoors.png",
+        "scale-prop-chair.png",
+        "scale-prop-sofa.png",
+        "scale-prop-counter.png",
+        "scale-prop-plant.png",
+        "scale-prop-petBed.png",
+        "scale-prop-arcade.png",
+        "scale-prop-lamp.png",
+        "scale-prop-plaque.png",
+        "garage-dog-sig.png",
+        "garage-dog-idle.png",
+        "garage-cat-sig.png",
+        "garage-cat-idle.png",
+        "garage-bunny-sig.png",
+        "garage-bunny-idle.png",
+        "garage-dragon-sig.png",
+        "garage-dragon-idle.png",
+        "garage-fox-sig.png",
+        "garage-fox-idle.png"
+      ],
+      "views": [],
+      "msgs": []
+    }
+  ],
+  "pets": {
+    "ok": true,
+    "findings": []
+  },
+  "scale": {
+    "ok": true,
+    "ready": true,
+    "stats": [
+      {
+        "where": "home",
+        "type": "fox",
+        "petTop": 0.64,
+        "petBot": -0.08,
+        "charTop": 1.48,
+        "charBot": -0.11,
+        "hip": 0.78
+      },
+      {
+        "where": "home",
+        "type": "cat",
+        "petTop": 0.68,
+        "petBot": -0.07,
+        "charTop": 1.48,
+        "charBot": -0.11,
+        "hip": 0.78
+      },
+      {
+        "where": "home",
+        "type": "dragon",
+        "petTop": 0.57,
+        "petBot": -0.08,
+        "charTop": 1.48,
+        "charBot": -0.11,
+        "hip": 0.78
+      },
+      {
+        "where": "home",
+        "type": "robo",
+        "petTop": 0.62,
+        "petBot": -0.08,
+        "charTop": 1.48,
+        "charBot": -0.11,
+        "hip": 0.78
+      },
+      {
+        "where": "outdoors",
+        "type": "fox",
+        "petTop": 0.74,
+        "petBot": -0.12,
+        "charTop": 1.5,
+        "charBot": -0.1,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "chair",
+        "petTop": 0.78,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "sofa",
+        "petTop": 0.74,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "counter",
+        "petTop": 0.7,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "plant",
+        "petTop": 0.76,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "petBed",
+        "petTop": 0.14,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "arcade",
+        "petTop": 1.05,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "lamp",
+        "petTop": 1.01,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "prop",
+        "type": "plaque",
+        "petTop": 1,
+        "petBot": 0,
+        "hip": 0.78
+      },
+      {
+        "where": "shop",
+        "type": "fox",
+        "petTop": 0.64,
+        "petBot": -0.08,
+        "charTop": 1.48,
+        "charBot": -0.11,
+        "hip": 0.78
+      },
+      {
+        "type": "dog",
+        "pose": "sig",
+        "petTop": 0.68,
+        "petBot": -0.09,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.463
+      },
+      {
+        "type": "dog",
+        "pose": "idle",
+        "petTop": 0.68,
+        "petBot": -0.09,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.463
+      },
+      {
+        "type": "cat",
+        "pose": "sig",
+        "petTop": 0.68,
+        "petBot": -0.06,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.463
+      },
+      {
+        "type": "cat",
+        "pose": "idle",
+        "petTop": 0.62,
+        "petBot": -0.08,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.422
+      },
+      {
+        "type": "bunny",
+        "pose": "sig",
+        "petTop": 0.68,
+        "petBot": -0.05,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.463
+      },
+      {
+        "type": "bunny",
+        "pose": "idle",
+        "petTop": 0.68,
+        "petBot": -0.06,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.463
+      },
+      {
+        "type": "dragon",
+        "pose": "sig",
+        "petTop": 0.7,
+        "petBot": -0.06,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.473
+      },
+      {
+        "type": "dragon",
+        "pose": "idle",
+        "petTop": 0.62,
+        "petBot": -0.08,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.422
+      },
+      {
+        "type": "fox",
+        "pose": "sig",
+        "petTop": 0.73,
+        "petBot": -0.06,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.494
+      },
+      {
+        "type": "fox",
+        "pose": "idle",
+        "petTop": 0.7,
+        "petBot": -0.09,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.473
+      },
+      {
+        "type": "clearance",
+        "pose": "x",
+        "petTop": 1.64,
+        "petBot": 0.62,
+        "charTop": 1.476221836031586,
+        "hip": 0.78,
+        "ratio": null
+      }
+    ],
+    "note": ""
+  },
+  "garage": {
+    "ok": true,
+    "ready": true,
+    "stats": [
+      {
+        "type": "dog",
+        "pose": "sig",
+        "petTop": 0.68,
+        "petBot": -0.09,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.463
+      },
+      {
+        "type": "dog",
+        "pose": "idle",
+        "petTop": 0.68,
+        "petBot": -0.09,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.463
+      },
+      {
+        "type": "cat",
+        "pose": "sig",
+        "petTop": 0.68,
+        "petBot": -0.06,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.463
+      },
+      {
+        "type": "cat",
+        "pose": "idle",
+        "petTop": 0.62,
+        "petBot": -0.08,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.422
+      },
+      {
+        "type": "bunny",
+        "pose": "sig",
+        "petTop": 0.68,
+        "petBot": -0.05,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.463
+      },
+      {
+        "type": "bunny",
+        "pose": "idle",
+        "petTop": 0.68,
+        "petBot": -0.06,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.463
+      },
+      {
+        "type": "dragon",
+        "pose": "sig",
+        "petTop": 0.7,
+        "petBot": -0.06,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.473
+      },
+      {
+        "type": "dragon",
+        "pose": "idle",
+        "petTop": 0.62,
+        "petBot": -0.08,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.422
+      },
+      {
+        "type": "fox",
+        "pose": "sig",
+        "petTop": 0.73,
+        "petBot": -0.06,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.494
+      },
+      {
+        "type": "fox",
+        "pose": "idle",
+        "petTop": 0.7,
+        "petBot": -0.09,
+        "charTop": 1.48,
+        "hip": 0.78,
+        "ratio": 0.473
+      },
+      {
+        "type": "clearance",
+        "pose": "x",
+        "petTop": 1.64,
+        "petBot": 0.62,
+        "charTop": 1.476221836031586,
+        "hip": 0.78,
+        "ratio": null
+      }
+    ],
+    "note": ""
+  },
+  "passes": [],
+  "coverage": [
+    "No jointed closet in this tree, so the head, limb, and walk pixel suite was not scored here",
+    "Pets: fox, cat, dragon, robo, bunny joint check",
+    "Scale: pet beside the character in the house, the showroom shop, and outdoors, plus room props on the floor",
+    "Garage turntable: dog, cat, bunny, dragon, and fox in the signature pose and at idle, standing outside the car"
+  ],
+  "shotNames": [
+    "pets.png",
+    "scale-home.png",
+    "scale-shop.png",
+    "scale-home-fox.png",
+    "scale-home-cat.png",
+    "scale-home-dragon.png",
+    "scale-home-robo.png",
+    "scale-outdoors.png",
+    "scale-prop-chair.png",
+    "scale-prop-sofa.png",
+    "scale-prop-counter.png",
+    "scale-prop-plant.png",
+    "scale-prop-petBed.png",
+    "scale-prop-arcade.png",
+    "scale-prop-lamp.png",
+    "scale-prop-plaque.png",
+    "garage-dog-sig.png",
+    "garage-dog-idle.png",
+    "garage-cat-sig.png",
+    "garage-cat-idle.png",
+    "garage-bunny-sig.png",
+    "garage-bunny-idle.png",
+    "garage-dragon-sig.png",
+    "garage-dragon-idle.png",
+    "garage-fox-sig.png",
+    "garage-fox-idle.png"
+  ],
+  "closet": false,
+  "walkStats": null,
+  "sample": [],
+  "checkerError": "",
+  "sha": "ce5f89b6cb14a1bf31ca99a23fe5aab09600231b",
+  "branch": "HEAD"
+}
