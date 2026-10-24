@@ -725,7 +725,8 @@ body:not(.kidon) #kFpsRow { display: none; }
 <meta name="apple-mobile-web-app-title" content="Z-DASH JR">
 <meta name="application-name" content="Z-DASH JR">
 <script>window.ZD_JR = true; /* Z-DASH JR: always opens in Passenger Mode */</script>
-<script>window.ZD_BUILD = '1792803540-world28';
+<script src="shared/version.js"></script>
+<script>
 /* offline: the service worker caches the app so it runs with no internet after one online visit. Pages load network-first,
    so a new deploy shows straight away. If a newer build takes over while this page is open: reload once by itself when
    nothing is in progress, otherwise show a small "Update ready" button. */
@@ -766,6 +767,8 @@ html.ipad-mode .kmain .ktilesm{grid-template-rows:repeat(2,minmax(0,1fr))}
 @media (orientation:portrait){
   html.ipad-mode .kmain .ktilesm{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr))}
 }
+.kver{display:none}
+.kmain .kver{display:block;position:absolute;top:max(6px,env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));z-index:6;margin:0;padding:0;font:700 11px/1.2 Orbitron,sans-serif;letter-spacing:.4px;color:#d5d0dc;background:transparent;text-decoration:none;pointer-events:none;text-shadow:0 1px 2px #000}
 </style>
 <link rel="stylesheet" href="shared/menu-tiles.css">
 </head>
@@ -12118,7 +12121,7 @@ var qrcode = function() {
       </div>`;
     document.body.appendChild(root);
     root.querySelectorAll('#kTabs button').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.k)));
-    { const hm = root.querySelector('#kHome'); hm.appendChild(root.querySelector('.khdr .kright')); hm.appendChild(root.querySelector('#kTabs')); { const tm = document.createElement('div'); tm.id = 'kTilesM'; tm.className = 'ktilesm'; tm.addEventListener('click', (e) => { const b = e.target.closest('[data-tile]'); if (!b) return; const tk = b.dataset.tile; try { save(); } catch (err) {} const navMap = { fly: 'fly3.html', world: 'world.html', paint: 'neon-paint.html', wall: 'neon-paint.html?mode=wall', dance: 'dance-stage.html?record=character', petdance: 'dance-stage.html?record=dog', crew: 'crew.html', soccer: 'world.html?entry=soccer', skydrop: 'world.html?entry=skydrop' }; if (tk === 'fly' && window.ZD_FLY_NAV) return window.ZD_FLY_NAV(); if (tk === 'world' && window.ZD_WORLD_NAV) return window.ZD_WORLD_NAV(); if (navMap[tk]) { location.assign(navMap[tk]); return; } setTab(tk); }); hm.appendChild(tm); } { const gb = root.querySelector('#kTabs [data-k=garage]'); if (gb) gb.insertAdjacentHTML('afterbegin', kGarageSvg().replace('<svg ', '<svg class=kpgi ')); } /* pause row: small static garage door */
+    { const hm = root.querySelector('#kHome'); const kv = document.createElement('div'); kv.className = 'kver'; kv.id = 'kVer'; const wm = /world(\d+)/.exec(String(window.ZD_BUILD || '')); kv.textContent = window.ZD_WORLD ? ('v' + window.ZD_WORLD) : (wm ? ('v' + wm[1]) : ''); hm.appendChild(kv); hm.appendChild(root.querySelector('.khdr .kright')); hm.appendChild(root.querySelector('#kTabs')); { const tm = document.createElement('div'); tm.id = 'kTilesM'; tm.className = 'ktilesm'; tm.addEventListener('click', (e) => { const b = e.target.closest('[data-tile]'); if (!b) return; const tk = b.dataset.tile; try { save(); } catch (err) {} const navMap = { fly: 'fly3.html', world: 'world.html', paint: 'neon-paint.html', wall: 'neon-paint.html?mode=wall', dance: 'dance-stage.html?record=character', petdance: 'dance-stage.html?record=dog', crew: 'crew.html', soccer: 'world.html?entry=soccer', skydrop: 'world.html?entry=skydrop' }; if (tk === 'fly' && window.ZD_FLY_NAV) return window.ZD_FLY_NAV(); if (tk === 'world' && window.ZD_WORLD_NAV) return window.ZD_WORLD_NAV(); if (navMap[tk]) { location.assign(navMap[tk]); return; } setTab(tk); }); hm.appendChild(tm); } { const gb = root.querySelector('#kTabs [data-k=garage]'); if (gb) gb.insertAdjacentHTML('afterbegin', kGarageSvg().replace('<svg ', '<svg class=kpgi ')); } /* pause row: small static garage door */
       root.querySelector('#kMenuB').addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); if (K.menuOpen) kResume(); else kPause(); });
       root.querySelector('[data-m="resume"]').addEventListener('click', () => kResume()); root.querySelector('#kPzX').addEventListener('click', (e) => { e.stopPropagation(); kResume(); }); /* ✕ (inside the panel, top-left): RESUME in a game, just close on DRIVE */ root.querySelector('[data-m="home"]').addEventListener('click', () => { setTab('drive'); kMenuShow(true); }); /* HOME = the full-screen main menu */ } // kid MENU / PAUSE
     $('#kGear').addEventListener('click', () => { if (ZD.Settings) ZD.Settings.toggle(); else $('#settings').classList.remove('hidden'); });
