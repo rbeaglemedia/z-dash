@@ -18,7 +18,7 @@
     if (!box) return;
     if (!msg) { box.hidden = true; box.textContent = ''; return; }
     box.hidden = false;
-    box.textContent = msg.indexOf('game is still running') >= 0 || msg.indexOf("didn't start") >= 0
+    box.textContent = msg.indexOf('game is still running') >= 0 || msg.indexOf("didn't start") >= 0 || msg.indexOf('saved kill switch') >= 0
       ? msg
       : 'A dev tool hit an error: ' + msg + '. The game is still running.';
   }
@@ -58,7 +58,23 @@
     }
     writeUi({ tab: id });
     var dock = $('dock');
-    return g.ZD_PANELS.mount(id, dock, c).then(function (destroy) {
+    function ready() {
+      if (!c.hookExpected) return Promise.resolve();
+      return new Promise(function (resolve) {
+        var t0 = Date.now();
+        (function poll() {
+          if (mine !== seq) { resolve(); return; }
+          var w = c.game();
+          if (w && w.ZD_DEV && w.ZD_DEV.ready) { resolve(); return; }
+          if (Date.now() - t0 > 15000) { resolve(); return; }
+          g.setTimeout(poll, 200);
+        })();
+      });
+    }
+    return ready().then(function () {
+      if (mine !== seq) return;
+      return g.ZD_PANELS.mount(id, dock, c);
+    }).then(function (destroy) {
       if (mine !== seq) { if (destroy) destroy(); return; }
       current = destroy;
       if (g.ZD_FPS_COUNTER && g.ZD_FPS_COUNTER.place) g.ZD_FPS_COUNTER.place();

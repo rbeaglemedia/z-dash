@@ -379,8 +379,7 @@ async function main() {
     const bare = await ev(cdp, '({kill:!(window.ZD_KILL&&ZD_KILL.traffic),match:ZD_OVR.matchesDefaults(),max:TUNE.maxSpeed})');
     record('saved kill does not leak into a normal Neon World visit', bare.kill && bare.match && bare.max === 90, JSON.stringify(bare));
     await go(cdp, base + '/test/index.html');
-    await waitUntil(cdp, '!!document.querySelector("[data-tab=fps][aria-selected=true], [data-tab=fps]")', 8000);
-    await sleep(600);
+    await waitUntil(cdp, '!!document.querySelector("[data-kill=traffic]")', 20000);
     const re = await ev(cdp, '(function(){var w=document.getElementById("zd-game-frame").contentWindow;var err=document.getElementById("zd-error");return{on:!!(w.ZD_KILLS&&w.ZD_KILLS.get("traffic")),msg:err&&err.textContent||""};})()');
     record('hub FPS tab reapplies the saved kill and says so', re.on && /saved kill switch/i.test(re.msg), JSON.stringify(re));
     await waitUntil(cdp, '!!document.querySelector("[data-kill=traffic]")', 5000);
