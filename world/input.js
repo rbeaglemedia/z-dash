@@ -16,7 +16,7 @@ function installPcCss(){if(document.getElementById('pcModeCss'))return;const css
   +'html.pc-mode #kMenuB.hidden,html.pc-mode #kMenuB.kopen{display:none !important}'
   +'html.pc-mode #exitCarBtn{position:fixed !important;top:8px !important;right:86px !important;left:auto !important;height:52px;min-width:96px;z-index:40}'
   +'html.pc-mode #enterBldBtn{position:fixed !important;top:8px !important;left:max(300px,23vw) !important;right:auto !important;height:52px;z-index:95}'
-  +'html.pc-mode #pcFps{position:fixed;top:10px;left:calc(50% + 150px);z-index:40;min-width:92px;height:42px;display:flex;align-items:center;justify-content:center;padding:0 12px;border-radius:12px;border:2px solid #3ee6ff;background:rgba(8,4,20,.9);color:#fff;font:900 18px/1 Orbitron,sans-serif;letter-spacing:1px;box-shadow:0 0 16px rgba(62,230,255,.6);pointer-events:none;text-shadow:0 0 8px #3ee6ff}'
+  +'html.pc-mode #pcFps{position:fixed;top:10px;right:86px;left:auto;z-index:41;min-width:92px;height:42px;display:flex;align-items:center;justify-content:center;padding:0 12px;border-radius:12px;border:2px solid #3ee6ff;background:rgba(8,4,20,.9);color:#fff;font:900 18px/1 Orbitron,sans-serif;letter-spacing:1px;box-shadow:0 0 16px rgba(62,230,255,.6);pointer-events:none;text-shadow:0 0 8px #3ee6ff}'
   +'html.pc-mode .pc-key{display:block;font:800 10px/1.1 Rajdhani,sans-serif !important;letter-spacing:.3px;margin-top:3px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);pointer-events:none;white-space:nowrap}'
   +'html.pc-mode #exitCarBtn .pc-key,html.pc-mode #enterBldBtn .pc-key{color:#140018;text-shadow:none;font-size:9px !important}'
   +'html.pc-mode #kMenuB .pc-key{color:#bff6ff;text-shadow:0 0 6px #3ee6ff;font-size:9px !important;margin-top:0}'
