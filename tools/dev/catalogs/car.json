@@ -1,0 +1,172 @@
+{
+  "version": 2,
+  "source": "shared/assets/370z-glb.js",
+  "cfgFile": "assets/370z.glb",
+  "facts": {
+    "car": "2010 Nissan 370Z",
+    "paint": "Gun Metallic #5c6068",
+    "wheels": "SSR GTX04, 19 in",
+    "tips": "Invidia, blue",
+    "bumper": "Stock ships. Stillen fascia is on hold until a GLB-quality version is approved.",
+    "l": 4.25,
+    "w": 1.845,
+    "h": 1.315,
+    "wb": 2.55,
+    "track": 1.55,
+    "rF": 0.33,
+    "rR": 0.345
+  },
+  "defaults": {
+    "model": "370z",
+    "paint": "game",
+    "vinyl": "none",
+    "wheels": "game",
+    "spoiler": "none",
+    "caliper": "game",
+    "underglow": "none",
+    "kit": "stock",
+    "bumper": "stock"
+  },
+  "sections": [
+    { "id": "model", "name": "MODEL", "slots": ["model"] },
+    { "id": "paint", "name": "PAINT", "slots": ["paint", "vinyl"] },
+    { "id": "wheels", "name": "WHEELS", "slots": ["wheels", "caliper"] },
+    { "id": "aero", "name": "KIT", "slots": ["kit", "bumper", "spoiler", "underglow"] },
+    { "id": "looks", "name": "LOOKS", "slots": ["favorites"] }
+  ],
+  "models": [
+    { "id": "370z", "name": "370Z", "kind": "xray", "file": "shared/assets/370z-glb.js" },
+    { "id": "tow", "name": "TOW JUMP", "kind": "tow", "file": "world/towtruck.js", "l": 14, "w": 3.6, "h": 2.6, "bed": 8.68, "cabL": 2.7324, "cabH": 2.69675 },
+    { "id": "sedan", "name": "SEDAN", "kind": "kenney", "file": "shared/assets/traffic/sedan.js", "asset": "sedan" },
+    { "id": "hatchback", "name": "HATCH", "kind": "kenney", "file": "shared/assets/traffic/hatchback.js", "asset": "hatchback" },
+    { "id": "van", "name": "VAN", "kind": "kenney", "file": "shared/assets/traffic/van.js", "asset": "van" },
+    { "id": "pickup", "name": "PICKUP", "kind": "kenney", "file": "shared/assets/traffic/pickup.js", "asset": "pickup" },
+    { "id": "suv", "name": "SUV", "kind": "kenney", "file": "shared/assets/traffic/suv.js", "asset": "suv" },
+    { "id": "police", "name": "POLICE", "kind": "kenney", "file": "shared/assets/traffic/police.js", "asset": "police" },
+    { "id": "k-sedan", "name": "K SEDAN", "kind": "kenney", "file": "shared/assets/traffic/k-sedan.js", "asset": "k-sedan" },
+    { "id": "k-sedan-sports", "name": "K SPORTS", "kind": "kenney", "file": "shared/assets/traffic/k-sedan-sports.js", "asset": "k-sedan-sports" },
+    { "id": "k-hatchback-sports", "name": "K HATCH", "kind": "kenney", "file": "shared/assets/traffic/k-hatchback-sports.js", "asset": "k-hatchback-sports" },
+    { "id": "k-suv", "name": "K SUV", "kind": "kenney", "file": "shared/assets/traffic/k-suv.js", "asset": "k-suv" },
+    { "id": "k-suv-luxury", "name": "K LUX", "kind": "kenney", "file": "shared/assets/traffic/k-suv-luxury.js", "asset": "k-suv-luxury" },
+    { "id": "k-van", "name": "K VAN", "kind": "kenney", "file": "shared/assets/traffic/k-van.js", "asset": "k-van" },
+    { "id": "k-taxi", "name": "K TAXI", "kind": "kenney", "file": "shared/assets/traffic/k-taxi.js", "asset": "k-taxi" },
+    { "id": "k-truck", "name": "K TRUCK", "kind": "kenney", "file": "shared/assets/traffic/k-truck.js", "asset": "k-truck" },
+    { "id": "k-truck-flat", "name": "K FLATBED", "kind": "kenney", "file": "shared/assets/traffic/k-truck-flat.js", "asset": "k-truck-flat" },
+    { "id": "k-ambulance", "name": "AMBULANCE", "kind": "kenney", "file": "shared/assets/traffic/k-ambulance.js", "asset": "k-ambulance" },
+    { "id": "k-delivery", "name": "DELIVERY", "kind": "kenney", "file": "shared/assets/traffic/k-delivery.js", "asset": "k-delivery" },
+    { "id": "k-delivery-flat", "name": "BOX TRUCK", "kind": "kenney", "file": "shared/assets/traffic/k-delivery-flat.js", "asset": "k-delivery-flat" },
+    { "id": "k-firetruck", "name": "FIRE", "kind": "kenney", "file": "shared/assets/traffic/k-firetruck.js", "asset": "k-firetruck" },
+    { "id": "k-garbage-truck", "name": "GARBAGE", "kind": "kenney", "file": "shared/assets/traffic/k-garbage-truck.js", "asset": "k-garbage-truck" },
+    { "id": "k-race", "name": "RACE", "kind": "kenney", "file": "shared/assets/traffic/k-race.js", "asset": "k-race" },
+    { "id": "k-race-future", "name": "FUTURE", "kind": "kenney", "file": "shared/assets/traffic/k-race-future.js", "asset": "k-race-future" }
+  ],
+  "slots": {
+    "model": {
+      "name": "BODY",
+      "options": []
+    },
+    "paint": {
+      "name": "BODY",
+      "options": [
+        { "id": "game", "name": "GAME", "kind": "game" },
+        { "id": "cyan", "name": "CYAN", "paint": "#1aa6c8", "glow": "#3ee6ff", "grid": "#9b5cff" },
+        { "id": "pink", "name": "PINK", "paint": "#e0359f", "glow": "#ff4fd8", "grid": "#3ee6ff" },
+        { "id": "gun", "name": "GUNMETAL", "paint": "#5c6068", "glow": "#ff2a3d", "grid": "#ff2a3d" },
+        { "id": "lime", "name": "LIME", "paint": "#3cc24a", "glow": "#7dff6b", "grid": "#ff4fd8" },
+        { "id": "purple", "name": "PURPLE", "paint": "#6a33d6", "glow": "#c08bff", "grid": "#3ee6ff" },
+        { "id": "gold", "name": "GOLD", "paint": "#d9a514", "glow": "#ffe14d", "grid": "#ff4fd8" },
+        { "id": "blackout", "name": "BLACKOUT", "paint": "#121318", "glow": "#3a7bff", "grid": "#3a7bff" },
+        { "id": "orange", "name": "ORANGE", "paint": "#ff7a1a", "glow": "#ffe14d", "grid": "#ff9a3d" }
+      ]
+    },
+    "vinyl": {
+      "name": "VINYL GRID",
+      "options": [
+        { "id": "none", "name": "NONE", "kind": "game" },
+        { "id": "cyan", "name": "CYAN LINE", "grid": "#3ee6ff" },
+        { "id": "pink", "name": "PINK SLASH", "grid": "#ff4fd8" },
+        { "id": "gold", "name": "GOLD", "grid": "#ffe14d" },
+        { "id": "white", "name": "WHITE", "grid": "#f4f7fb" }
+      ]
+    },
+    "wheels": {
+      "name": "RIM COLOR",
+      "options": [
+        { "id": "game", "name": "GAME", "kind": "game" },
+        { "id": "gun", "name": "GUN", "wheel": "#4a4f57", "wheelGlow": false },
+        { "id": "black", "name": "BLACK", "wheel": "#15161a", "wheelGlow": false },
+        { "id": "chrome", "name": "CHROME", "wheel": "#d8dde4", "wheelGlow": false },
+        { "id": "gold", "name": "GOLD", "wheel": "#e0b020", "wheelGlow": false },
+        { "id": "cyan", "name": "CYAN", "wheel": "#3ee6ff", "wheelGlow": true },
+        { "id": "pink", "name": "PINK", "wheel": "#ff4fd8", "wheelGlow": true }
+      ]
+    },
+    "spoiler": {
+      "name": "SPOILER",
+      "options": [
+        { "id": "none", "name": "NONE", "spoiler": null },
+        { "id": "duck", "name": "DUCK", "spoiler": "duck" },
+        { "id": "gtwing", "name": "GT WING", "spoiler": "gtwing" },
+        { "id": "twin", "name": "TWIN", "spoiler": "twin" },
+        { "id": "bolt", "name": "BOLT", "spoiler": "bolt" }
+      ]
+    },
+    "kit": {
+      "name": "BODY KIT",
+      "options": [
+        { "id": "stock", "name": "STOCK", "kind": "stock" },
+        { "id": "street", "name": "STREET", "lip": "lip-street", "skirts": "sk-street", "diffuser": "df-street" },
+        { "id": "race", "name": "RACE", "lip": "lip-race", "skirts": "sk-race", "diffuser": "df-race", "spoiler": "gtwing" },
+        { "id": "dad", "name": "CLASSIC DAD", "kind": "stock", "tips": "tip-invidia" }
+      ]
+    },
+    "bumper": {
+      "name": "BUMPER",
+      "options": [
+        { "id": "stock", "name": "STOCK", "bumper": null },
+        { "id": "stillen", "name": "STILLEN HOLD", "bumper": "stillen" },
+        { "id": "stillen-c", "name": "STILLEN FINS", "bumper": "stillen-c" }
+      ]
+    },
+    "caliper": {
+      "name": "CALIPERS",
+      "options": [
+        { "id": "game", "name": "GAME", "kind": "game" },
+        { "id": "red", "name": "RED", "caliper": "#d1121f" },
+        { "id": "gold", "name": "GOLD", "caliper": "#e0b020" },
+        { "id": "cyan", "name": "CYAN", "caliper": "#3ee6ff" }
+      ]
+    },
+    "underglow": {
+      "name": "UNDERGLOW",
+      "options": [
+        { "id": "none", "name": "NONE", "underglow": null },
+        { "id": "cyan", "name": "CYAN", "underglow": "#3ee6ff" },
+        { "id": "pink", "name": "PINK", "underglow": "#ff4fd8" },
+        { "id": "lime", "name": "LIME", "underglow": "#7dff6b" }
+      ]
+    }
+  },
+  "design": {
+    "checker": "tools/car-design-check.mjs",
+    "agent": "bc-3a1ede89-c85b-5ae6-b8d1-719a2ef6f3d2",
+    "branch": "cursor/car-design-check-f3d2",
+    "report": "PR 78 ffac55c",
+    "rules": [
+      "Close copies match the 3D Z",
+      "Wheels are real wheels",
+      "Resolution stays readable",
+      "Far cars may be simpler",
+      "The frame stays cheap",
+      "Same GLB file and path"
+    ],
+    "findings": [
+      "Rule 3 fail: close traffic bake is 160 px (needs 256)",
+      "Rule 2 fail: traffic wheels are 16 px cards that face the camera",
+      "Rule 1 fail: close copy silhouette does not match his Z",
+      "Rule 3 fail: close picture is coarse on screen",
+      "Kenney bodies are not assets/370z.glb. Rule 6 fails a second GLB.",
+      "Stillen fascia is held. The game look forces bumper null."
+    ]
+  }
+}
