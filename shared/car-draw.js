@@ -3,9 +3,20 @@ const ZV={yawOff:0,yawSign:1,rollSign:1,win:7,ty:0.6,maxPx:560,res:1,every:1,low
 // 370Z SUPERCHARGER exits in the sprite model (+X nose, +Y up). Each row is the nozzle, then a point up the pipe, so the flame runs out the tip.
 const ZTIP=[[-2.0648,0.2984,0.3958,-1.8477,0.2992,0.3317],[-2.0643,0.2972,-0.3945,-1.8477,0.2992,-0.3316]];
 function zFlameCvs(){if(ZV.flameCv)return;const bake=(nos)=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d'),r=g.createRadialGradient(32,32,0,32,32,32);r.addColorStop(0,nos?'rgba(255,255,255,.95)':'rgba(160,245,255,.85)');r.addColorStop(.4,nos?'rgba(62,230,255,.8)':'rgba(62,230,255,.45)');r.addColorStop(1,'rgba(62,230,255,0)');g.fillStyle=r;g.fillRect(0,0,64,64);return c;};ZV.flameCv=bake(0);ZV.nosFlameCv=bake(1);}
-function drawZ(){if(window.NOZ)return;const X=window.ZD&&ZD.Xray;if(!X||!X.ready||!ZGL.ensure())return;
+let zSeq=0;
+function zOpaque(img){
+  if(!img)return false;
+  if(!ZV.probe){ZV.probe=document.createElement('canvas');ZV.probe.width=ZV.probe.height=8;ZV.probeg=ZV.probe.getContext('2d',{willReadFrequently:true});}
+  try{ZV.probeg.clearRect(0,0,8,8);ZV.probeg.drawImage(img,0,0,8,8);const d=ZV.probeg.getImageData(0,0,8,8).data;for(let i=3;i<d.length;i+=4)if(d[i]>16)return true;}catch(e){return true;}
+  return false;
+}
+// Car GL runs before #c is cleared, while the previous frame is still showing.
+// A blank bitmap is dropped so the last good sprite stays up.
+function zPrep(){
+  zSeq++;ZV._seq=zSeq;
+  if(window.NOZ)return;
+  const X=window.ZD&&ZD.Xray;if(!X||!X.ready||!ZGL.ensure())return;
   ZGL.set(P.tf);if(window.GARAGEZ)GARAGEZ.apply(X);
-  const c0=camS(P.x,P.y+ZV.ty,P.z);if(c0[2]<1)return;const sc=scr(c0);ZV.scr=[sc[0]/W,sc[1]/H];
   const d0=(typeof FLYCAM!=='undefined'&&FLYCAM.orbit)?FLYCAM.orbit.d:(ZV.camDist||Math.hypot(FLYCAM.back||10,FLYCAM.up||2));
   const f=H*0.9,px=Math.round(clamp(f/d0*ZV.win,40,ZV.maxPx)),rp=Math.max(32,Math.round(px*ZV.res/16)*16);
   const dx=cam.x-P.x,dz=cam.z-P.z,dy=cam.y-(P.y+ZV.ty),hd=Math.hypot(dx,dz),ca=Math.atan2(dx,dz);
@@ -19,15 +30,18 @@ function drawZ(){if(window.NOZ)return;const X=window.ZD&&ZD.Xray;if(!X||!X.ready
   else if(fps>115){ZV.highT+=1/Math.max(fps,1);if(ZV.highT>0.5){ZV.lowT=0;ZV.every=1;}}
   else ZV.highT=0;
   if(!ZV.cv){ZV.cv=document.createElement('canvas');ZV.cvg=ZV.cv.getContext('2d',{alpha:true});}
-  // Traffic bakes share this GL buffer and zero _w/_h. That is not a player-size change.
+  ZV._pose={d0,px,rp,relYaw,elev,dist};
   if(ZV.frame%ZV.every===0||ZV.lastPx!==rp){X.render(ctx,0,0,rp,rp,{xray:false,showroom:!(window.GARAGEZ&&GARAGEZ.on),yaw:ZV.yawOff+ZV.yawSign*relYaw,pitch:elev,dist,tx:0,ty:ZV.ty,fov:26,drl:1,noDraw:true,kid:KID,st:{t:performance.now()/1000,throttle:30+P.thr*70}});
-    // A synchronous drawImage of this preserved WebGL buffer stalls the next
-    // car render (hundreds of ms) once the GPU readback backs up. Snapshot
-    // asynchronously and keep the previous sprite until that snapshot lands.
     const src=X.canvas,w=src.width,h=src.height,seq=ZV._bmpSeq=(ZV._bmpSeq||0)+1;
-    const blit=bmp=>{if(seq!==ZV._bmpSeq){if(bmp&&bmp.close)bmp.close();return;}if(ZV.cv.width!==w||ZV.cv.height!==h){ZV.cv.width=w;ZV.cv.height=h;}ZV.cvg.setTransform(1,0,0,1,0,0);ZV.cvg.clearRect(0,0,ZV.cv.width,ZV.cv.height);ZV.cvg.drawImage(bmp||src,0,0);if(bmp&&bmp.close)bmp.close();};
+    const blit=bmp=>{if(seq!==ZV._bmpSeq){if(bmp&&bmp.close)bmp.close();return;}const img=bmp||src;if(!zOpaque(img)){if(bmp&&bmp.close)bmp.close();return;}if(ZV.cv.width!==w||ZV.cv.height!==h){ZV.cv.width=w;ZV.cv.height=h;}ZV.cvg.setTransform(1,0,0,1,0,0);ZV.cvg.clearRect(0,0,ZV.cv.width,ZV.cv.height);ZV.cvg.drawImage(img,0,0);ZV.got=1;if(bmp&&bmp.close)bmp.close();};
     if(typeof createImageBitmap==='function'){createImageBitmap(src).then(blit).catch(()=>blit(null));}else blit(null);}
-  ZV.lastPx=rp;const roll=(P.bank+(P.ebRoll||0)-cam.roll)*ZV.rollSign;ctx.save();ctx.translate(sc[0],sc[1]);ctx.rotate(roll);ctx.drawImage(ZV.cv,0,0,ZV.cv.width,ZV.cv.height,-px/2,-px/2,px,px);ctx.restore();
+  ZV.lastPx=rp;
+}
+function drawZ(){if(ZV._seq!==zSeq)zPrep();if(window.NOZ)return;const X=window.ZD&&ZD.Xray;if(!X||!X.ready||!ZV.cv)return;
+  const pose=ZV._pose;if(!pose)return;
+  const c0=camS(P.x,P.y+ZV.ty,P.z);if(!c0||c0[2]<1)return;const sc=scr(c0);ZV.scr=[sc[0]/W,sc[1]/H];
+  const d0=pose.d0,px=pose.px,relYaw=pose.relYaw,elev=pose.elev,dist=pose.dist,f=H*0.9;
+  if(!ZV.got)return;const roll=(P.bank+(P.ebRoll||0)-cam.roll)*ZV.rollSign;ctx.save();ctx.translate(sc[0],sc[1]);ctx.rotate(roll);ctx.drawImage(ZV.cv,0,0,ZV.cv.width,ZV.cv.height,-px/2,-px/2,px,px);ctx.restore();
   zFlameCvs();const yaw=ZV.yawOff+ZV.yawSign*relYaw,pit=elev,cy=Math.cos(yaw),sy=Math.sin(yaw),cP=Math.cos(pit),sP=Math.sin(pit);
   const tx=0,ty=ZV.ty,ex=tx+cy*cP*dist,ey=ty+sP*dist,ez=sy*cP*dist;let zx=ex-tx,zy=ey-ty,zz=ez,zl=Math.hypot(zx,zy,zz)||1;zx/=zl;zy/=zl;zz/=zl;
   let xx=zz,xy=0,xz=-zx,xl=Math.hypot(xx,xz);if(xl<1e-6){zz+=1e-4;zl=Math.hypot(zx,zy,zz);zx/=zl;zy/=zl;zz/=zl;xx=zz;xz=-zx;xl=Math.hypot(xx,xz);}xx/=xl;xz/=xl;
