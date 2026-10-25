@@ -9,10 +9,15 @@ import { autoDoor } from '../autodoor.js';
 
 
 // ---------- v3.9 event presets: one tap fills the room (one undo step, asks before replacing items) ----------
-ESP.showEventPresets = function showEventPresets() { ESP.$('#sheet').classList.remove('hidden'); ESP.$('#sheet').classList.add('presetsheet'); ESP.$('#shBack').classList.add('hidden'); ESP.$('#shTitle').textContent = 'Event presets';
-  ESP.$('#shBody').innerHTML = ESP.techRowHTML() + '<div class="catgrid">' + EVENT_PRESETS.map((p) => `<button class="cat evp" data-ev="${p.id}">${ESP.EV_ICONS[p.id]}<span>${p.name}</span><small>${p.note}</small></button>`).join('') + '</div>'; ESP.bindTechRow(); ESP.$$('.evp').forEach((b) => (b.onclick = () => ESP.useEventPreset(b.dataset.ev))); }
+const PRESET_MEM = 'zdash.interior.presetNames.v1';
+ESP.presetMemory = function presetMemory() { try { const o = JSON.parse(localStorage.getItem(PRESET_MEM) || '{}'); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } };
+ESP.rememberPreset = function rememberPreset(id, name) { const mem = ESP.presetMemory(); mem[id] = name; try { localStorage.setItem(PRESET_MEM, JSON.stringify(mem)); } catch (e) {} };
+ESP.showEventPresets = function showEventPresets() { ESP.$('#sheet').classList.remove('hidden'); ESP.$('#sheet').classList.add('presetsheet'); ESP.$('#shBack').classList.add('hidden'); ESP.$('#shTitle').textContent = ESP.W && ESP.W.home ? 'Room presets' : 'Event presets';
+  ESP.$('#shBody').innerHTML = ESP.techRowHTML() + '<div class="catgrid">' + EVENT_PRESETS.map((p) => `<button class="cat evp" data-ev="${p.id}">${ESP.EV_ICONS[p.id]}<span class="evname" data-ev="${p.id}">${ESP.presetName(p.id)}</span><small>${p.note}</small></button>`).join('') + '</div>'; ESP.bindTechRow(); ESP.$$('.evp').forEach((b) => (b.onclick = () => ESP.useEventPreset(b.dataset.ev))); ESP.$$('.evname').forEach((s) => (s.onclick = (e) => { e.preventDefault(); e.stopPropagation(); ESP.renamePreset(s.dataset.ev, s); })); }
+ESP.renamePreset = function renamePreset(id, el) { const cur = ESP.presetName(id), input = document.createElement('input'); input.className = 'evrename'; input.value = cur; input.maxLength = 40; input.setAttribute('aria-label', 'Preset name'); el.replaceWith(input); input.focus(); input.select(); let done = false; const commit = (keep) => { if (done) return; done = true; const name = keep ? ((input.value || '').trim().slice(0, 40) || cur) : cur; if (keep) { ESP.S.presetNames = Object.assign({}, ESP.S.presetNames, { [id]: name }); ESP.rememberPreset(id, name); ESP.save(); } ESP.showEventPresets(); }; input.onclick = (e) => e.stopPropagation(); input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); commit(true); } else if (e.key === 'Escape') { e.preventDefault(); commit(false); } }; input.onblur = () => commit(true); };
 // v3.30 tech level: how much tech a preset adds. Essentials = furniture + minimal tech, Standard = about half, Showcase = the full list.
 ESP.techRowHTML = () => `<div class="techrow" role="radiogroup" aria-label="Tech level"><b>Tech level</b><div class="seg">${TECH_LEVELS.map((l) => `<button class="tlv${l.id === ESP.S.tech ? ' on' : ''}" role="radio" aria-checked="${l.id === ESP.S.tech}" data-tech="${l.id}">${l.name}</button>`).join('')}</div><small id="techNote">${(TECH_LEVELS.find((l) => l.id === ESP.S.tech) || {}).note || ''}</small></div>`;
+ESP.techName = () => (TECH_LEVELS.find((l) => l.id === ESP.S.tech) || {}).name || 'Essentials';
 ESP.setTech = function setTech(id) { if (!TECH_LEVELS.some((l) => l.id === id)) return; ESP.S.tech = id; ESP.$$('.tlv').forEach((b) => { const on = b.dataset.tech === id; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); }); const n = ESP.$('#techNote'); if (n) n.textContent = TECH_LEVELS.find((l) => l.id === id).note || ''; clearTimeout(ESP.saveT); ESP.saveT = setTimeout(ESP.saveNow, 300); }
 ESP.bindTechRow = function bindTechRow() { ESP.$$('.tlv').forEach((b) => (b.onclick = () => ESP.setTech(b.dataset.tech))); }
 // ---------- v3.27 region restored from the v3.27 build on 2026-10-21 (names re-derived; original comments were lost) ----------
@@ -21,7 +26,7 @@ ESP.bindTechRow = function bindTechRow() { ESP.$$('.tlv').forEach((b) => (b.oncl
 // Manual items always stay. Each apply is one save, so one undo step.
 ESP.hasPreset = () => !!ESP.S.fill || ESP.S.items.some((i) => i.preset);
 ESP.isFillKind = (kind) => !!ESP.S.venue && kind !== 'registration'; // v3.30: theater is a real layout outside venues
-ESP.presetName = (kind) => ({ theater: 'Theater' }[kind] || (EVENT_PRESETS.find((p) => p.id === kind) || {}).name || kind);
+ESP.presetName = (kind) => { const room = ESP.S.presetNames && ESP.S.presetNames[kind]; if (room) return room; const mem = ESP.presetMemory ? ESP.presetMemory() : {}; if (mem && mem[kind]) return mem[kind]; return (EVENT_PRESETS.find((p) => p.id === kind) || {}).name || kind; };
 ESP.useEventPreset = function useEventPreset(kind, mode) {
   if (!mode && ESP.hasPreset()) { ESP.presetAsk(kind); return 'ask'; }
   return ESP.isFillKind(kind) ? ESP.useVenueFill(kind, mode || 'add') : ESP.applyLayout(kind, mode || 'add');

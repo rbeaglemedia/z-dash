@@ -829,11 +829,12 @@
     try { return iframe && iframe.contentWindow && iframe.contentWindow.ESP; } catch (e) { return null; }
   }
 
-  function setWalkPointer() {
+  function setWalkPointer(on) {
     if (!frame || !frame.style) return;
+    var allow = on !== false;
     frame.style.pointerEvents = 'auto';
     var iframe = frame.querySelector ? frame.querySelector('iframe') : null;
-    if (iframe && iframe.style) iframe.style.pointerEvents = 'auto';
+    if (iframe && iframe.style) iframe.style.pointerEvents = allow ? 'auto' : 'none';
   }
 
   function hideCrew() {}
@@ -1371,7 +1372,7 @@
       pc.style.zIndex = inside ? '97' : '';
       pc.style.visibility = inRoom ? 'hidden' : '';
     }
-    if (inWalk || editing) {
+    if (editing) {
       try {
         var frFit = document.getElementById('zdInteriorFrame');
         var espFit = frFit && frFit.contentWindow && frFit.contentWindow.ESP;
@@ -1507,7 +1508,33 @@
     wm.stepBackOutside._ib = 1;
   }
 
+  function hookIdle() {
+    try {
+      var cityRender = typeof window !== 'undefined' ? window.render : null;
+      if (typeof cityRender === 'function' && !cityRender._ibIdle) {
+        window.render = function renderIdle() {
+          var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
+          if (wm && wm._ibWorld) return;
+          return cityRender.apply(this, arguments);
+        };
+        window.render._ibIdle = 1;
+      }
+    } catch (e) {}
+    try {
+      if (window.TRAFFIC && typeof window.TRAFFIC.update === 'function' && !window.TRAFFIC.update._ibIdle) {
+        var upd = window.TRAFFIC.update;
+        window.TRAFFIC.update = function (dt) {
+          var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
+          if (wm && wm._ibWorld) return;
+          return upd.apply(window.TRAFFIC, arguments);
+        };
+        window.TRAFFIC.update._ibIdle = 1;
+      }
+    } catch (e2) {}
+  }
+
   function hook() {
+    hookIdle();
     hookWalk();
     hookIntegrate();
     hookPaint();

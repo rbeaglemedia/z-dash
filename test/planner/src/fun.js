@@ -31,7 +31,142 @@ const cropB = (b0) => { if (!b0) return b0; const b = { ...b0 }; for (const [lo,
 export const TECH_LEVELS = [{ id: 'essentials', name: 'Essentials', note: 'Furniture + minimal tech' }, { id: 'standard', name: 'Standard', note: 'About half the tech' }, { id: 'showcase', name: 'Showcase', note: 'Every screen, kiosk and charger' }];
 export const TECH_DEFAULT = 'showcase';
 export const techRank = (lvl) => Math.max(0, TECH_LEVELS.findIndex((l) => l.id === lvl)) || (lvl === 'essentials' ? 0 : 2);
-export function eventLayout(kind, world, level = TECH_DEFAULT) { const hooked = presetById(kind); if (hooked && hooked.build) return hooked.build(world, level); const b = cropB(roomRect(world.walls)); if (!b) return []; const W = { env: world.env, walls: world.walls, items: [] }, m = WALL_T / 2 + 2;
+// Walk-in rooms keep a home-sized preset: a short cluster, wide aisles, and most of the floor free.
+export const HOME_AISLE = 5;
+export const HOME_OPEN = 0.4;
+export const HOME_CAPS = { essentials: 16, standard: 24, showcase: 36 };
+export const homeCap = (level) => HOME_CAPS[level] || HOME_CAPS.essentials;
+function itemBox(it) {
+  const { w, d } = dims(it), c = Math.abs(Math.cos(it.a || 0)), s = Math.abs(Math.sin(it.a || 0));
+  const hw = (w * c + d * s) / 2, hd = (w * s + d * c) / 2;
+  return { x0: it.x - hw, x1: it.x + hw, z0: it.z - hd, z1: it.z + hd };
+}
+// 1 ft grid. reach: a 1 ft walker gets from the door to every standable cell.
+// aisle: a 2.5 ft walker (5 ft of clear width) reaches every cell that wide, so seat gaps are not required paths.
+export function walkReach(world, items) {
+  const b = roomRect(world && world.walls);
+  if (!b || b.w < 4 || b.l < 4) return { ok: false, open: 0, reach: false, aisle: false, count: 0, cells: 0 };
+  const face = WALL_T / 2, x0 = b.minX + face, x1 = b.maxX - face, z0 = b.minZ + face, z1 = b.maxZ - face;
+  const span = Math.max(x1 - x0, z1 - z0, 1), step = span > 160 ? span / 160 : 1;
+  const cols = Math.max(1, Math.round((x1 - x0) / step)), rows = Math.max(1, Math.round((z1 - z0) / step));
+  const cw = (x1 - x0) / cols, ch = (z1 - z0) / rows;
+  const cx = (i) => x0 + (i + 0.5) * cw, cz = (j) => z0 + (j + 0.5) * ch;
+  const boxes = (items || []).filter((it) => it && it.mode !== 'top' && it.mode !== 'wall').map(itemBox);
+  const grid = (inflate) => {
+    const g = new Uint8Array(cols * rows);
+    for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+      const x = cx(i), z = cz(j);
+      for (let k = 0; k < boxes.length; k++) {
+        const e = boxes[k];
+        if (x > e.x0 - inflate && x < e.x1 + inflate && z > e.z0 - inflate && z < e.z1 + inflate) { g[j * cols + i] = 1; break; }
+      }
+    }
+    return g;
+  };
+  const doors = doorList((world && world.walls) || []);
+  let sx = (x0 + x1) / 2, sz = z0 + Math.min(2, (z1 - z0) / 4);
+  if (doors.length) {
+    sx = doors[0].x;
+    sz = doors[0].z <= z0 + 1 ? doors[0].z + 1.2 : doors[0].z >= z1 - 1 ? doors[0].z - 1.2 : doors[0].z;
+  }
+  const nearest = (g) => {
+    let pick = -1, best = Infinity;
+    for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+      if (g[j * cols + i]) continue;
+      const d = (cx(i) - sx) ** 2 + (cz(j) - sz) ** 2;
+      if (d < best) { best = d; pick = j * cols + i; }
+    }
+    return pick;
+  };
+  const flood = (g) => {
+    const seen = new Uint8Array(cols * rows), start = nearest(g);
+    if (start < 0) return seen;
+    const q = [start];
+    seen[start] = 1;
+    for (let k = 0; k < q.length; k++) {
+      const p = q[k], i = p % cols, j = (p / cols) | 0;
+      for (let n = 0; n < 4; n++) {
+        const ni = i + [1, -1, 0, 0][n], nj = j + [0, 0, 1, -1][n];
+        if (ni < 0 || nj < 0 || ni >= cols || nj >= rows) continue;
+        const np = nj * cols + ni;
+        if (seen[np] || g[np]) continue;
+        seen[np] = 1;
+        q.push(np);
+      }
+    }
+    return seen;
+  };
+  const raw = grid(0), agent = grid(1), wide = grid(2.5);
+  let occ = 0;
+  for (let i = 0; i < raw.length; i++) occ += raw[i];
+  const open = 1 - occ / Math.max(1, raw.length);
+  const reached = flood(agent), wideReach = flood(wide);
+  let walkN = 0, walkGot = 0, wideN = 0, wideGot = 0;
+  for (let i = 0; i < agent.length; i++) {
+    if (!agent[i]) { walkN++; if (reached[i]) walkGot++; }
+    if (!wide[i]) { wideN++; if (wideReach[i]) wideGot++; }
+  }
+  const reach = walkN > 0 && walkGot === walkN, aisle = wideN > 0 && wideGot === wideN;
+  return { ok: open + 1e-9 >= HOME_OPEN && reach && aisle, open, reach, aisle, count: boxes.length, cells: raw.length };
+}
+function homePut(W, type, x, z, a, snap) {
+  const it = newItem(type, x, z, a || 0);
+  W.items.push(it);
+  if (snap) { const p = snapPose(W, it, x, z); applyPose(W, it, p); if (it.mode === 'free') it.a = a || 0; }
+  else applyPose(W, it, freePose(it, x, z, a || 0));
+  if (!isValid(W, it)) { W.items.pop(); return null; }
+  return it;
+}
+export function homeLayout(kind, world, level = 'essentials') {
+  const b = roomRect(world.walls);
+  if (!b) return [];
+  const cap = homeCap(level), rank = techRank(level);
+  const W = { env: world.env || 'indoor', walls: world.walls, items: [] };
+  const face = WALL_T / 2, x0 = b.minX + face, x1 = b.maxX - face, z0 = b.minZ + face, z1 = b.maxZ - face, cx = (x0 + x1) / 2;
+  const doors = doorList(world.walls);
+  const doorOk = (x, z, r) => !doors.some((d) => Math.hypot(d.x - x, d.z - z) < DOOR_W / 2 + HOME_AISLE + r);
+  const put = (type, x, z, a, snap) => (W.items.length >= cap || !doorOk(x, z, 1) ? null : homePut(W, type, x, z, a, snap));
+  const area = Math.max(0, (x1 - x0) * (z1 - z0));
+  const tables = Math.max(1, Math.min(rank >= 2 ? 3 : 2, Math.floor(area / 1800) || 1));
+  const zBack = z1 - HOME_AISLE - 2;
+  if (kind === 'banquet') {
+    const tz = Math.min(zBack, z0 + (z1 - z0) * 0.72), t = put('round60', cx, tz, 0, false);
+    if (t) for (const [dx, dz] of [[0, -3.4], [3.4, 0], [0, 3.4], [-3.4, 0]].concat(rank >= 1 ? [[2.4, 2.4], [-2.4, 2.4]] : [])) put('chair', t.x + dx, t.z + dz, Math.atan2(dx, dz), true);
+    if (rank >= 2) put('screen', cx, Math.min(z1 - 3, (t ? t.z : tz) + 10), Math.PI, false);
+  } else if (kind === 'theater') {
+    const sz = z1 - HOME_AISLE - 1.2;
+    put('screen', cx, sz, Math.PI, false);
+    const rowZ = sz - HOME_AISLE - 2, seats = rank >= 2 ? 8 : rank >= 1 ? 6 : 4, gap = 1.8, aisle = HOME_AISLE + 1;
+    for (let i = 0; i < seats; i++) {
+      const side = i < seats / 2 ? -1 : 1, k = i < seats / 2 ? seats / 2 - 1 - i : i - seats / 2;
+      put('chair', cx + side * (aisle / 2 + 0.9 + k * gap), rowZ, Math.PI, false);
+    }
+  } else if (kind === 'registration') {
+    const tx = Math.min(x1 - HOME_AISLE, cx + 12), tz = z0 + HOME_AISLE + 6, t = put('table6', tx, tz, 0, false);
+    if (t) put('chair', t.x, t.z + 2.4, 0, true);
+    if (rank >= 1 && t) put('laptop', t.x, t.z, 0, true);
+  } else if (kind === 'booth') {
+    const tz = zBack - 4, spread = Math.max(8, Math.min(14, (x1 - x0) / 2 - 8));
+    const a = put('table6', cx - spread, tz, 0, false), c = put('table6', cx + spread, tz, 0, false);
+    if (a) put('chair', a.x, a.z - 2.4, Math.PI, true);
+    if (c) put('chair', c.x, c.z - 2.4, Math.PI, true);
+    if (rank >= 1) { if (a) put('laptop', a.x, a.z, 0, true); if (c) put('laptop', c.x, c.z, 0, true); }
+  } else {
+    const n = Math.min(tables, rank >= 2 ? 3 : 2), span = 6 + HOME_AISLE + 2, ox = cx - ((n - 1) * span) / 2, tz = zBack - 6;
+    for (let i = 0; i < n; i++) {
+      const t = put('table6', ox + i * span, tz, 0, false);
+      if (!t) continue;
+      put('chair', t.x - 1.5, t.z - 2.3, Math.PI, true);
+      put('chair', t.x + 1.5, t.z - 2.3, Math.PI, true);
+      if (rank >= 1) put('laptop', t.x, t.z, 0, true);
+    }
+    if (rank >= 2) put('screen', cx, z1 - HOME_AISLE - 1.2, Math.PI, false);
+  }
+  return W.items;
+}
+export function eventLayout(kind, world, level = TECH_DEFAULT) {
+  if (world && world.home) return homeLayout(kind, world, level);
+  const hooked = presetById(kind); if (hooked && hooked.build) return hooked.build(world, level); const b = cropB(roomRect(world.walls)); if (!b) return []; const W = { env: world.env, walls: world.walls, items: [] }, m = WALL_T / 2 + 2;
   const x0 = b.minX + m, x1 = b.maxX - m, z0 = b.minZ + m, z1 = b.maxZ - m, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2; void x0; void x1; void z0; void z1; void cz;
   const R = techRank(level), at = (min) => R >= { e: 0, s: 1, x: 2 }[min]; // at('s'): placed at Standard and Showcase
   const put = (type, x, z, a = 0, snap = false) => { const it = newItem(type, x, z, a); W.items.push(it); applyPose(W, it, snap ? snapPose(W, it, x, z) : freePose(it, x, z, a)); if (snap && it.mode === 'free') it.a = a; if (!isValid(W, it)) { W.items.pop(); return null; } return it; };

@@ -3,8 +3,8 @@
 <meta name="robots" content="noindex">
 <title>Neon World room</title>
 <template id="dev-builder-scripts">
-<script src="world/planner-tools.js?v=dev50"></script>
-<script src="world/dev-builder.js?v=dev50"></script>
+<script src="world/planner-tools.js?v=dev51"></script>
+<script src="world/dev-builder.js?v=dev51"></script>
 <script src="../shared/fps-counter.js"></script>
 </template>
 <script>
@@ -41,19 +41,19 @@
   var keep = '<script>(function(){var LIVE=["/jr.html","/index.html","/world.html","/world-split.html","/fly3.html"];function scrub(){if(!("caches" in window))return;caches.keys().then(function(keys){keys.forEach(function(k){caches.open(k).then(function(c){LIVE.forEach(function(logical){var req=new Request(location.origin+logical);c.match(req).then(function(hit){if(hit&&String(hit.url).indexOf("/test/")!==-1)c.delete(req);});});c.keys().then(function(reqs){reqs.forEach(function(req){try{if(new URL(req.url).pathname.indexOf("/test/")===0)c.delete(req);}catch(e){}});});});});});}scrub();var n=0,iv=setInterval(function(){scrub();if(++n>10)clearInterval(iv);},300);if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0){navigator.serviceWorker.register("sw.js",{scope:"/test/",updateViaCache:"none"}).catch(function(){});}})();<\/script>';
   fetch('../world.html', { cache: 'reload' }).then(function (r) { return r.text(); }).then(function (html) {
     html = html.replace(/(\s(?:src|href)=")(?!https?:|\/|\.\.\/|#|data:)([^"]+)/g, '$1../$2');
-    html = html.replace(/<script src="\.\.\/shared\/car-draw\.js[^"]*"><\/script>/, '<script src="shared/car-draw.js?v=dev50"><\/script>');
-    html = html.replace(/<script src="\.\.\/world\/traffic\.js[^"]*"><\/script>/, '<script src="world/traffic.js?v=dev50"><\/script>');
-    html = html.replace(/<script src="\.\.\/world\/boot\.js[^"]*"><\/script>/, '<script src="world/boot.js?v=dev50"><\/script>');
+    html = html.replace(/<script src="\.\.\/shared\/car-draw\.js[^"]*"><\/script>/, '<script src="shared/car-draw.js?v=dev51"><\/script>');
+    html = html.replace(/<script src="\.\.\/world\/traffic\.js[^"]*"><\/script>/, '<script src="world/traffic.js?v=dev51"><\/script>');
+    html = html.replace(/<script src="\.\.\/world\/boot\.js[^"]*"><\/script>/, '<script src="world/boot.js?v=dev51"><\/script>');
     html = html.replace(/navigator\.serviceWorker\.register\s*\([^;]*\)/g, 'void 0');
     html = html.replace(/<script src="\.\.\/world\/planner-tools\.js[^"]*"><\/script>/g, '');
     html = html.replace(/<script src="\.\.\/world\/dev-builder\.js[^"]*"><\/script>/g, '');
     html = html.replace(/<script src="\.\.\/world\/interior-builder\.js[^"]*"><\/script>/g, '');
     var inject = '<script>try{var q=new URLSearchParams(location.search);window.ZD_ROOM_DIRECT=1;if(q.get("dev")==="1")window.ZD_DEV_OPEN=1;if(q.get("apply")==="0")window.ZD_DEV_APPLY=0;}catch(e){}<\/script>'
-      + '<script src="world/planner-tools.js?v=dev50"><\/script>'
-      + '<script src="world/dev-builder.js?v=dev50"><\/script>';
+      + '<script src="world/planner-tools.js?v=dev51"><\/script>'
+      + '<script src="world/dev-builder.js?v=dev51"><\/script>';
     if (html.indexOf('world/city.js') < 0) throw new Error('city');
     html = html.replace(/(<script src="\.\.\/world\/city\.js[^"]*"><\/script>)/, '$1' + inject);
-    var tail = '<script src="world/drive-shot.js?v=dev50"><\/script><script src="world/interior-builder.js?v=dev50"><\/script><script src="../shared/fps-counter.js"><\/script>';
+    var tail = '<script src="world/drive-shot.js?v=dev51"><\/script><script src="world/interior-builder.js?v=dev51"><\/script><script src="../shared/fps-counter.js"><\/script>';
     html = html.replace('</body>', tail + '</body>');
     var early = '<style>html.room-direct #kOver,html.room-direct .kover{display:none!important}html.room-direct #kid{background:#03192f!important}html.room-direct #c{visibility:hidden!important}</style><script>document.documentElement.classList.add("room-direct");<\/script>';
     if (html.indexOf('<head>') >= 0) html = html.replace('<head>', '<head>' + early + keep);
