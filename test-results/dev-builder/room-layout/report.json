@@ -14,22 +14,20 @@
       "phase": "walk",
       "room": "ROOM",
       "world": "1",
-      "rail": [
-        "Add item",
-        "Same again",
-        "Presets",
-        "Top view",
-        "Drag: Turn",
-        "Walls: Low"
-      ],
+      "rail": [],
+      "grid": false,
+      "bake": true,
+      "itemsOn": false,
       "share": false,
       "meshes": 31,
-      "fps": "23 FPS",
+      "fps": "30 FPS",
       "fpsRight": true,
       "hits": [],
       "clip": [],
       "onFoot": true,
       "car": true,
+      "clearOn": false,
+      "noWallsOn": false,
       "exitOn": false,
       "flying": true,
       "err": ""
@@ -54,14 +52,19 @@
         "Drag: Turn",
         "Walls: Low"
       ],
+      "grid": true,
+      "bake": false,
+      "itemsOn": true,
       "share": false,
       "meshes": 31,
-      "fps": "17 FPS",
+      "fps": "28 FPS",
       "fpsRight": true,
       "hits": [],
       "clip": [],
       "onFoot": true,
       "car": true,
+      "clearOn": true,
+      "noWallsOn": true,
       "exitOn": false,
       "flying": true,
       "err": ""
@@ -102,22 +105,20 @@
       "phase": "walk",
       "room": "ROOM",
       "world": "1",
-      "rail": [
-        "Add item",
-        "Same again",
-        "Presets",
-        "Top view",
-        "Drag: Turn",
-        "Walls: Low"
-      ],
+      "rail": [],
+      "grid": false,
+      "bake": true,
+      "itemsOn": false,
       "share": false,
       "meshes": 31,
-      "fps": "23 FPS",
+      "fps": "30 FPS",
       "fpsRight": true,
       "hits": [],
       "clip": [],
       "onFoot": true,
       "car": true,
+      "clearOn": false,
+      "noWallsOn": false,
       "exitOn": false,
       "flying": true,
       "err": ""
@@ -142,14 +143,19 @@
         "Drag: Turn",
         "Walls: Low"
       ],
+      "grid": true,
+      "bake": false,
+      "itemsOn": true,
       "share": false,
       "meshes": 31,
-      "fps": "17 FPS",
+      "fps": "29 FPS",
       "fpsRight": true,
       "hits": [],
       "clip": [],
       "onFoot": true,
       "car": true,
+      "clearOn": true,
+      "noWallsOn": true,
       "exitOn": false,
       "flying": true,
       "err": ""
@@ -173,6 +179,83 @@
       "exitOn": true,
       "car": true,
       "world": "1"
+    },
+    "rooms": {
+      "pass": true,
+      "empty": {
+        "median": 30,
+        "samples": [
+          30,
+          30,
+          30,
+          30,
+          30
+        ]
+      },
+      "typical": {
+        "ok": true,
+        "n": 6,
+        "title": "Room presets",
+        "name": "Study",
+        "editing": true,
+        "renamed": "Homework"
+      },
+      "rename": {
+        "name": "Homework",
+        "room": "Homework",
+        "sheet": "Room presets"
+      },
+      "clear": {
+        "before": 6,
+        "mid": 0,
+        "after": 6,
+        "walls": 1,
+        "gone": 0,
+        "back": 1,
+        "items": 6
+      },
+      "typicalFps": {
+        "median": 30,
+        "samples": [
+          30,
+          30,
+          30,
+          30,
+          30
+        ]
+      },
+      "typicalWalk": {
+        "phase": "walk",
+        "rail": [],
+        "cam": "chase",
+        "fps": "30 FPS"
+      },
+      "max": {
+        "ok": true,
+        "n": 9,
+        "tech": "showcase"
+      },
+      "maxFps": {
+        "median": 30,
+        "samples": [
+          30,
+          30,
+          30,
+          30,
+          30
+        ]
+      },
+      "maxWalk": {
+        "phase": "walk",
+        "rail": [],
+        "fps": "30 FPS"
+      },
+      "bake": {
+        "bake": true,
+        "grid": false,
+        "items": false,
+        "walk": true
+      }
     }
   },
   {
@@ -190,22 +273,20 @@
       "phase": "walk",
       "room": "ROOM",
       "world": "1",
-      "rail": [
-        "Add item",
-        "Same again",
-        "Presets",
-        "Top view",
-        "Drag: Turn",
-        "Walls: Low"
-      ],
+      "rail": [],
+      "grid": false,
+      "bake": true,
+      "itemsOn": false,
       "share": false,
       "meshes": 31,
-      "fps": "23 FPS",
+      "fps": "30 FPS",
       "fpsRight": true,
       "hits": [],
       "clip": [],
       "onFoot": true,
       "car": true,
+      "clearOn": false,
+      "noWallsOn": false,
       "exitOn": false,
       "flying": true,
       "err": ""
@@ -230,14 +311,19 @@
         "Drag: Turn",
         "Walls: Low"
       ],
+      "grid": true,
+      "bake": false,
+      "itemsOn": true,
       "share": false,
       "meshes": 31,
-      "fps": "20 FPS",
+      "fps": "30 FPS",
       "fpsRight": true,
       "hits": [],
       "clip": [],
       "onFoot": true,
       "car": true,
+      "clearOn": true,
+      "noWallsOn": true,
       "exitOn": false,
       "flying": true,
       "err": ""
@@ -278,22 +364,20 @@
       "phase": "walk",
       "room": "ROOM",
       "world": "1",
-      "rail": [
-        "Add item",
-        "Same again",
-        "Presets",
-        "Top view",
-        "Drag: Turn",
-        "Walls: Low"
-      ],
+      "rail": [],
+      "grid": false,
+      "bake": true,
+      "itemsOn": false,
       "share": false,
       "meshes": 31,
-      "fps": "17 FPS",
+      "fps": "26 FPS",
       "fpsRight": true,
       "hits": [],
       "clip": [],
       "onFoot": true,
       "car": true,
+      "clearOn": false,
+      "noWallsOn": false,
       "exitOn": false,
       "flying": true,
       "err": ""
@@ -318,14 +402,19 @@
         "Drag: Turn",
         "Walls: Low"
       ],
+      "grid": true,
+      "bake": false,
+      "itemsOn": true,
       "share": false,
       "meshes": 31,
-      "fps": "12 FPS",
+      "fps": "30 FPS",
       "fpsRight": true,
       "hits": [],
       "clip": [],
       "onFoot": true,
       "car": true,
+      "clearOn": true,
+      "noWallsOn": true,
       "exitOn": false,
       "flying": true,
       "err": ""
@@ -366,14 +455,10 @@
       "phase": "walk",
       "room": "ROOM",
       "world": "1",
-      "rail": [
-        "Add item",
-        "Same again",
-        "Presets",
-        "Top view",
-        "Drag: Turn",
-        "Walls: Low"
-      ],
+      "rail": [],
+      "grid": false,
+      "bake": true,
+      "itemsOn": false,
       "share": false,
       "meshes": 31,
       "fps": "30 FPS",
@@ -382,6 +467,8 @@
       "clip": [],
       "onFoot": true,
       "car": true,
+      "clearOn": false,
+      "noWallsOn": false,
       "exitOn": false,
       "flying": true,
       "err": ""
@@ -406,14 +493,19 @@
         "Drag: Turn",
         "Walls: Low"
       ],
+      "grid": true,
+      "bake": false,
+      "itemsOn": true,
       "share": false,
       "meshes": 31,
-      "fps": "23 FPS",
+      "fps": "28 FPS",
       "fpsRight": true,
       "hits": [],
       "clip": [],
       "onFoot": true,
       "car": true,
+      "clearOn": true,
+      "noWallsOn": true,
       "exitOn": false,
       "flying": true,
       "err": ""

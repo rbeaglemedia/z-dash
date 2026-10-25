@@ -242,6 +242,7 @@ ESP.twoNow = () => {
   };
 ESP.cv.addEventListener("contextmenu", e => e.preventDefault());
 ESP.cv.addEventListener("pointerdown", ESP.guard(e => {
+  if (ESP.walkOn && ESP.phase !== "build") return;
   try {
     ESP.cv.setPointerCapture(e.pointerId);
   } catch {}
@@ -276,6 +277,7 @@ ESP.cv.addEventListener("pointerdown", ESP.guard(e => {
   });
 }));
 ESP.cv.addEventListener("pointermove", ESP.guard(e => {
+  if (ESP.walkOn && ESP.phase !== "build") return;
   if (!ESP.ptrs.has(e.pointerId)) {
     if (e.pointerType === "mouse" && ESP.phase === "build" && ESP.tool === "door") {
       ESP.hoverDoor(e.clientX, e.clientY);
@@ -423,6 +425,7 @@ ESP.cv.addEventListener("pointermove", ESP.guard(e => {
   }
 }));
 ESP.onUp = ESP.guard(e => {
+  if (ESP.walkOn && ESP.phase !== "build") { ESP.ptrs.delete(e.pointerId); return; }
   ESP.ptrs.delete(e.pointerId), ESP.ptrs.size < 2 && (ESP.twoPrev = null);
   const t = e.pointerType !== "mouse";
   if (!ESP.ptrs.size) {
@@ -444,12 +447,15 @@ ESP.onUp = ESP.guard(e => {
 });
 ESP.cv.addEventListener("pointerup", ESP.onUp);
 ESP.cv.addEventListener("pointercancel", ESP.guard(e => {
+  if (ESP.walkOn && ESP.phase !== "build") { ESP.ptrs.delete(e.pointerId); return; }
   ESP.ptrs.delete(e.pointerId), ESP.ptrs.size < 2 && (ESP.twoPrev = null), ESP.ptrs.size || (ESP.endDrag(true), (ESP.corner || ESP.push) && ESP.editBefore && ESP.putBack(ESP.editBefore), ESP.editBefore = null, ESP.editPi = null, ESP.editGood = true, ESP.orbitPtr = ESP.panPtr = ESP.tapInfo = ESP.down = ESP.corner = ESP.push = ESP.draw = ESP.rub = null, ESP.boxA && (ESP.S.walls.splice(ESP.boxIdx, 1), ESP.boxA = ESP.boxIdx = null), ESP.rebuildSoon(), ESP.needSave && (ESP.needSave = false, ESP.save()));
 }));
 ESP.cv.addEventListener("pointerleave", e => {
+  if (ESP.walkOn && ESP.phase !== "build") return;
   e.pointerType === "mouse" && !ESP.ptrs.size && (ESP.cursorDot.visible = false, ESP.doorGhost.visible = false, ESP.frame());
 });
 ESP.cv.addEventListener("wheel", e => {
+  if (ESP.walkOn && ESP.phase !== "build") { e.preventDefault(); return; }
   e.preventDefault(), zoomBy(ESP.V, e.deltaY > 0 ? 1.1 : 0.9), ESP.frame();
 }, {
   passive: false

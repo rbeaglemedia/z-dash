@@ -185,6 +185,11 @@ assert(src.includes('#zdWalkExit'), 'one EXIT button is the way out');
 assert(embed.includes('setWalkCam'), 'explore mode can lock the chase camera');
 assert(embed.includes('chasePose'), 'the chase camera sits behind the player');
 assert(!embed.includes('frameRoom'), 'the walk camera is not reset every frame');
+assert(embed.includes('body.zd-walk #rail'), 'the explore view hides the builder rail');
+assert(embed.includes('zdBake'), 'explore draws a baked room');
+assert(embed.includes('btnNoWalls'), 'No walls is in the builder');
+assert(src.includes('renderIdle'), 'the city canvas pauses inside a room');
+assert(fs.readFileSync(path.join(root, 'test/planner/src/fun.js'), 'utf8').includes('HOME_CAPS'), 'home presets have a count cap');
 
 live.P = { x: 1, z: 1, y: 0.2, yaw: 0.3, v: 2 };
 const shoved = IB.parkSpot({

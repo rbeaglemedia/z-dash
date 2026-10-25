@@ -1,2 +1,2 @@
 import { registerPreset } from '../register.js';
-registerPreset({ id: 'classroom', name: 'Classroom', note: 'Rows of tables facing a podium', order: 1 });
+registerPreset({ id: 'classroom', name: 'Study', note: 'A few desks and chairs', order: 1 });

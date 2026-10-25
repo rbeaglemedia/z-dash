@@ -5,6 +5,8 @@ import { ESP } from './app/runtime.js';
 import { deserialize, serialize } from './grid.js';
 import { rectPoly, wallRects, floorOf, floorBounds, placeDoor } from './walls.js';
 import { dims, def } from './logic.js';
+import { autoDoor } from './autodoor.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import * as THREE from 'three';
 
 const FT = 0.3048;
@@ -130,9 +132,13 @@ function installWalkCam() {
   if (typeof ESP.overlays === 'function' && !ESP.overlays._walk) {
     const overlays = ESP.overlays;
     const wrappedOverlays = function overlaysWalk() {
+      if (ESP.walkOn && ESP.phase !== 'build') {
+        hideEditor(true);
+        return;
+      }
       overlays();
       if (!ESP.walkOn) return;
-      if (ESP.grid1) ESP.grid1.visible = true;
+      if (ESP.grid1) ESP.grid1.visible = false;
       if (ESP.grid10) ESP.grid10.visible = false;
       if (ESP.grid100) ESP.grid100.visible = false;
       if (ESP.cursorDot) ESP.cursorDot.visible = false;
@@ -186,10 +192,15 @@ function walkStyle() {
   css.id = 'zdWalkCss';
   css.textContent = ''
     + 'body.zd-walk header.bar,body.zd-walk #modes,body.zd-walk #toolsBuild,body.zd-walk #toolsPlace,body.zd-walk #drawTools,body.zd-walk #presets,body.zd-walk #hist,body.zd-walk #snapHint,body.zd-walk #lvlBar,body.zd-walk #hint,body.zd-walk #btnClear,body.zd-walk .ver,body.zd-walk #simBar,body.zd-walk #labels,body.zd-walk #presetTip,body.zd-walk #stampBar,body.zd-walk #selBar{display:none!important}'
-    + 'body.zd-embed #btnShare,body.zd-embed #btnRun,body.zd-embed #btnQuote,body.zd-embed #btnExitStreet,body.zd-embed #sizeLbl,body.zd-embed #snapHint,body.zd-embed #btnClear,body.zd-embed #lvlBar{display:none!important}'
+    + 'body.zd-embed #btnShare,body.zd-embed #btnRun,body.zd-embed #btnQuote,body.zd-embed #btnExitStreet,body.zd-embed #sizeLbl,body.zd-embed #snapHint,body.zd-embed #lvlBar{display:none!important}'
+    + 'body.zd-walk #rail,body.zd-walk #btnClear,body.zd-walk #btnNoWalls,body.zd-walk #presets{display:none!important}'
     + 'body.zd-embed header.bar{padding-right:112px;box-sizing:border-box}'
-    + 'body.zd-embed #rail{display:grid!important;grid-auto-flow:column;align-content:start;justify-items:stretch;top:8px;overflow:hidden;z-index:6}'
-    + 'body.zd-embed.zd-build #hint{left:12px;right:96px;transform:none;max-width:none;width:auto;text-align:left;pointer-events:none;z-index:4}'
+    + 'body.zd-embed.zd-build #rail{display:grid!important;grid-auto-flow:column;align-content:start;justify-items:stretch;top:8px;overflow:hidden;z-index:6}'
+    + 'body.zd-embed.zd-build #btnClear,body.zd-embed.zd-build #btnNoWalls{display:inline-flex!important;align-items:center;justify-content:center;top:158px;bottom:auto;height:28px;padding:2px 8px;font-size:12px;z-index:8;max-width:none;white-space:nowrap}'
+    + 'body.zd-embed.zd-build #btnClear{left:10px}'
+    + 'body.zd-embed.zd-build #btnNoWalls{left:98px}'
+    + '.evrename{width:100%;box-sizing:border-box;font:600 13px sans-serif;padding:2px 4px;border-radius:6px;border:1px solid var(--accent);background:#0c2038;color:#fff}'
+    + 'body.zd-embed.zd-build #hint{left:210px;right:96px;transform:none;max-width:none;width:auto;text-align:left;pointer-events:none;z-index:4}'
     + 'body.zd-embed #rail button.hidden,body.zd-embed #btnShare,body.zd-embed #btnRun,body.zd-embed #btnQuote{display:none!important}'
     + 'body.zd-embed #rail button:not(.hidden){display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:12px;border:1px solid #ffffff40;background:color-mix(in srgb,var(--surface) 91%,transparent);color:var(--fg);padding:2px 1px;font-weight:600;font-size:9px;line-height:1.05;overflow:hidden;box-sizing:border-box;min-height:0!important}'
     + 'body.zd-embed #rail button svg{display:block!important;width:14px;height:14px;flex:0 0 auto;margin:0!important}'
@@ -202,6 +213,141 @@ function walkStyle() {
 }
 
 const actor = { group: null, mats: [], meshes: [], geo: null, head: null };
+const actorUp = new THREE.Vector3(0, 1, 0);
+const actorDir = new THREE.Vector3();
+const bake = { group: null };
+
+function hideEditor(on) {
+  const keys = ['floorG', 'wallsG', 'doorsG', 'itemsG', 'fpG', 'handlesG', 'ghostG', 'venueG', 'fillG', 'grid1', 'grid10', 'grid100', 'cursorDot', 'rubber', 'ground', 'doorGhost'];
+  for (let i = 0; i < keys.length; i++) if (ESP[keys[i]]) ESP[keys[i]].visible = !on;
+  if (on) {
+    if (ESP.closeGhosts) ESP.closeGhosts.forEach(function (m) { m.visible = false; });
+    if (ESP.guides) ESP.guides.forEach(function (m) { m.visible = false; });
+  }
+}
+
+function disposeBake() {
+  if (!bake.group) return;
+  if (ESP.scene) ESP.scene.remove(bake.group);
+  bake.group.traverse(function (m) {
+    if (m.geometry) m.geometry.dispose();
+    if (m.material) m.material.dispose();
+  });
+  bake.group = null;
+}
+
+function posOnly(geo, matrix) {
+  const src = geo.index ? geo.toNonIndexed() : geo;
+  const pos = src.getAttribute('position');
+  if (!pos) { if (src !== geo) src.dispose(); return null; }
+  const arr = new Float32Array(pos.count * 3);
+  const v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i).applyMatrix4(matrix);
+    arr[i * 3] = v.x;
+    arr[i * 3 + 1] = v.y;
+    arr[i * 3 + 2] = v.z;
+  }
+  if (src !== geo) src.dispose();
+  const out = new THREE.BufferGeometry();
+  out.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+  return out;
+}
+
+function rebuildBake() {
+  disposeBake();
+  if (!ESP.scene) return;
+  const group = new THREE.Group();
+  group.name = 'zdBake';
+  const buckets = new Map();
+  const sources = [ESP.floorG, ESP.wallsG, ESP.doorsG, ESP.itemsG];
+  for (let s = 0; s < sources.length; s++) {
+    const src = sources[s];
+    if (!src) continue;
+    src.updateMatrixWorld(true);
+    src.traverse(function (obj) {
+      if (!obj.isMesh || !obj.geometry) return;
+      if (obj.userData && (obj.userData.ghost || obj.userData.noHit)) return;
+      const g = posOnly(obj.geometry, obj.matrixWorld);
+      if (!g) return;
+      const col = obj.material && obj.material.color ? obj.material.color.getHex() : 0x88aacc;
+      if (!buckets.has(col)) buckets.set(col, []);
+      buckets.get(col).push(g);
+    });
+  }
+  buckets.forEach(function (geos, col) {
+    let merged = null;
+    try { merged = mergeGeometries(geos, false); } catch (e) { merged = null; }
+    geos.forEach(function (g) { if (g !== merged) g.dispose(); });
+    if (!merged) return;
+    const mesh = new THREE.Mesh(merged, new THREE.MeshBasicMaterial({ color: col }));
+    mesh.frustumCulled = false;
+    mesh.userData.noHit = 1;
+    group.add(mesh);
+  });
+  ESP.scene.add(group);
+  bake.group = group;
+}
+
+function enterExplore() {
+  if (typeof ESP.rebuildNow === 'function') ESP.rebuildNow();
+  rebuildBake();
+  hideEditor(true);
+  if (!bake.group || !bake.group.children.length) {
+    if (ESP.floorG) ESP.floorG.visible = true;
+    if (ESP.wallsG) ESP.wallsG.visible = true;
+    if (ESP.doorsG) ESP.doorsG.visible = true;
+    if (ESP.itemsG) ESP.itemsG.visible = true;
+  }
+}
+
+function leaveExplore() {
+  disposeBake();
+  hideEditor(false);
+}
+
+function installExploreFrame() {
+  if (!ESP.frame || ESP.frame._exploreWrapped) return;
+  const editor = ESP.frame;
+  const wrapped = function frameWalk() {
+    if (ESP.walkOn && ESP.phase !== 'build') {
+      if (ESP.raf || ESP.crashed || ESP.ctxLost) return;
+      ESP.raf = requestAnimationFrame(function () {
+        ESP.raf = 0;
+        try {
+          if (ESP.placeCam) ESP.placeCam();
+          if (ESP.R && ESP.scene && ESP.camera) ESP.R.render(ESP.scene, ESP.camera);
+        } catch (err) {
+          if (typeof ESP.crash === 'function') ESP.crash(err);
+        }
+      });
+      return;
+    }
+    return editor.call(ESP);
+  };
+  wrapped._exploreWrapped = 1;
+  ESP.frame = wrapped;
+}
+
+function mountNoWalls() {
+  if (document.getElementById('btnNoWalls')) return;
+  const b = document.createElement('button');
+  b.id = 'btnNoWalls';
+  b.type = 'button';
+  b.className = 'clearbtn';
+  b.textContent = 'No walls';
+  b.title = 'Clear walls';
+  b.onclick = function () {
+    if (typeof ESP.usePreset !== 'function') return;
+    ESP.usePreset('none');
+    try { autoDoor(ESP.W); } catch (e) {}
+    if (typeof ESP.resetView === 'function') ESP.resetView();
+    ESP.save();
+    if (typeof ESP.rebuild === 'function') ESP.rebuild();
+    if (typeof ESP.toast === 'function') ESP.toast('No walls · Undo to bring them back');
+  };
+  document.body.appendChild(b);
+}
 
 function ensureActor() {
   if (actor.group || !ESP.scene) return;
@@ -227,8 +373,6 @@ function drawActor(segs) {
   if (!actor.group) return;
   const list = segs || [];
   while (actor.meshes.length < list.length) boneMesh(!!(list[actor.meshes.length] && list[actor.meshes.length].head));
-  const up = new THREE.Vector3(0, 1, 0);
-  const dir = new THREE.Vector3();
   for (let i = 0; i < actor.meshes.length; i++) {
     const mesh = actor.meshes[i];
     const seg = list[i];
@@ -247,8 +391,8 @@ function drawActor(segs) {
     }
     mesh.position.set((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2);
     mesh.scale.set(r * 2, len, r * 2);
-    dir.set(bx - ax, by - ay, bz - az).multiplyScalar(1 / len);
-    mesh.quaternion.setFromUnitVectors(up, dir);
+    actorDir.set(bx - ax, by - ay, bz - az).multiplyScalar(1 / len);
+    mesh.quaternion.setFromUnitVectors(actorUp, actorDir);
   }
 }
 
@@ -301,7 +445,6 @@ function mountWalkRail() {
     const b = ESP.$('#' + id);
     if (b) b.classList.add('hidden');
   });
-  fitWalkRail();
 }
 
 function restoreWalkRail() {
@@ -466,6 +609,7 @@ export function bootEmbed() {
   const embed = query();
   if (!embed.on || !embed.room) return;
   ESP.EMBED = embed;
+  ESP.W.home = true;
   const key = roomKey(embed);
   ESP.loadSaved = function loadRoom() {
     try { return deserialize(localStorage.getItem(key)); } catch (e) { return null; }
@@ -487,7 +631,8 @@ export function bootEmbed() {
     ESP.S.fill = saved.fill || null;
     ESP.S.lvl = saved.lvl || 1;
     ESP.S.levels = saved.levels || {};
-    ESP.S.tech = saved.tech || ESP.S.tech;
+    ESP.S.tech = saved.tech || 'essentials';
+    ESP.S.presetNames = saved.presetNames || {};
     ESP.S.preset = null;
     ESP.setPhase('place');
   } else {
@@ -495,6 +640,8 @@ export function bootEmbed() {
     ESP.S.walls = [rectPoly(embed.fw, embed.fd)];
     ESP.S.items = [];
     ESP.S.preset = null;
+    ESP.S.presetNames = {};
+    ESP.S.tech = 'essentials';
     ESP.S.venue = null;
     ESP.S.fill = null;
     placeDoor(ESP.S.walls, 0, 0, embed.fw / 2);
@@ -509,7 +656,9 @@ export function bootEmbed() {
   ESP.histReset();
   ESP.showScreen('build');
   installWalkCam();
+  installExploreFrame();
   walkStyle();
+  mountNoWalls();
   if (document.body) document.body.classList.add('zd-embed');
   const home = ESP.$('#btnHome');
   if (home) home.onclick = function () {
@@ -557,9 +706,12 @@ export function bootEmbed() {
       ESP.select(null);
       if (typeof ESP.endStamp === 'function') ESP.endStamp();
       if (typeof ESP.closeSheet === 'function') ESP.closeSheet();
+      hideEditor(true);
       if (ESP.phase !== 'place' && typeof ESP.setPhase === 'function') ESP.setPhase('place');
       ensureActor();
+      enterExplore();
     } else {
+      leaveExplore();
       setFov(PLAN_FOV);
       ESP.walkHeld = false;
       if (typeof ESP.setPhase === 'function') ESP.setPhase('build');
@@ -567,11 +719,11 @@ export function bootEmbed() {
     mountWalkRail();
     if (typeof ESP.resize === 'function') ESP.resize();
     if (ESP.frame) ESP.frame();
-    fitWalkRail();
+    if (!on) fitWalkRail();
   };
   ESP.fitWalkRail = fitWalkRail;
   addEventListener('resize', function () {
-    if (document.body && (document.body.classList.contains('zd-walk') || document.body.classList.contains('zd-build'))) fitWalkRail();
+    if (document.body && document.body.classList.contains('zd-build')) fitWalkRail();
   });
   if (embed.walk) ESP.setWalk(true);
   if (document.body) document.body.dataset.ready = '1';
