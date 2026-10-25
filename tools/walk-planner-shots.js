@@ -131,7 +131,7 @@ function labelExpr(text) {
     if (!el) {
       el = document.createElement('div');
       el.id = 'zdShotLabel';
-      el.style.cssText = 'position:fixed;top:36px;left:50%;transform:translateX(-50%);z-index:230;max-width:94vw;text-align:center;background:#12081c;color:#ffe14d;border:2px solid #3ee6ff;border-radius:12px;padding:6px 12px;font:700 14px Orbitron,sans-serif;letter-spacing:.3px;pointer-events:none';
+      el.style.cssText = 'position:fixed;top:36px;left:50%;transform:translateX(-50%);z-index:300;max-width:94vw;text-align:center;background:#12081c;color:#ffe14d;border:2px solid #3ee6ff;border-radius:12px;padding:6px 12px;font:700 14px Orbitron,sans-serif;letter-spacing:.3px;pointer-events:none';
       document.body.appendChild(el);
     }
     el.textContent = ${JSON.stringify(text)};
@@ -221,7 +221,34 @@ const STATE = `(function () {
     dev: devShown,
     enterTop: enterShown,
     fps: (document.getElementById('zdWalkFps') && document.getElementById('zdWalkFps').textContent) || (typeof fps === 'number' ? Math.round(fps) + ' FPS' : ''),
-    planner: !!(document.getElementById('zdInterior') && document.getElementById('zdInterior').style.display === 'block')
+    planner: !!(document.getElementById('zdInterior') && document.getElementById('zdInterior').style.display === 'block'),
+    walk: (function () {
+      var f = document.getElementById('zdInteriorFrame');
+      var doc = f && f.contentDocument;
+      return !!(doc && doc.body && doc.body.classList.contains('zd-walk') && doc.body.dataset.ready === '1');
+    })(),
+    edit: (function () {
+      var f = document.getElementById('zdInteriorFrame');
+      var doc = f && f.contentDocument;
+      return !!(doc && doc.body && doc.body.dataset.ready === '1' && !doc.body.classList.contains('zd-walk'));
+    })(),
+    hold: WALK_MODE ? (WALK_MODE.cityHoldFrames || 0) : 0,
+    crew: (function () {
+      var c = document.getElementById('zdWalkCrew');
+      if (!c || c.width < 8 || c.style.display === 'none') return 0;
+      try {
+        var g = c.getContext('2d');
+        var rw = Math.max(8, Math.round(c.width * 0.28));
+        var rh = Math.max(8, Math.round(c.height * 0.42));
+        var x0 = Math.round((c.width - rw) / 2);
+        var y0 = Math.round(c.height * 0.22);
+        var d = g.getImageData(x0, y0, rw, rh).data;
+        var n = 0;
+        for (var i = 3; i < d.length; i += 64) if (d[i] > 24) n++;
+        return n;
+      } catch (e) { return 0; }
+    })(),
+    crewErr: window.IB_CREW || ''
   });
 })()`;
 
@@ -247,7 +274,8 @@ const PLANNER = `(function () {
     door: txt('[data-tool="door"]'),
     place: txt('[data-phase="place"]'),
     build: txt('[data-phase="build"]'),
-    size: txt('#sizeLbl')
+    size: txt('#sizeLbl'),
+    editing: !doc.body.classList.contains('zd-walk')
   });
 })()`;
 
@@ -380,7 +408,7 @@ async function waitReady(cdp) {
 
 async function waitState(cdp, pred, label) {
   let last = null;
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 60; i++) {
     await sleep(200);
     last = JSON.parse(await evalJson(cdp, STATE));
     if (pred(last)) return last;
@@ -409,7 +437,22 @@ async function runViewport(vp) {
 
     const clicked = await evalJson(chrome.cdp, CLICK_ACT);
     if (clicked !== 'clicked') throw new Error('enter click ' + clicked);
-    const inside = await waitState(chrome.cdp, (s) => s.world && s.onFoot && !s.inside && !s.legacy && s.act.indexOf('show:build') === 0 && s.x > 8000, 'walk-in room');
+    const inside = await waitState(chrome.cdp, (s) => s.world && s.onFoot && s.inside && s.walk && s.planner && !s.legacy && s.act.indexOf('show:build') === 0 && s.x > 8000 && s.crew > 8 && s.hold > 2, 'walk-in room');
+    await sleep(900);
+    inside.render = JSON.parse(await evalJson(chrome.cdp, `(function(){
+      var t=document.getElementById('zdWalkFps');
+      var f=document.getElementById('zdInteriorFrame');
+      var esp=f&&f.contentWindow&&f.contentWindow.ESP;
+      var info=esp&&esp.R&&esp.R.info&&esp.R.info.render;
+      return JSON.stringify({
+        fps:t?t.textContent:'',
+        ratio:esp&&esp.R?esp.R.getPixelRatio():0,
+        buf:esp&&esp.R?[esp.R.domElement.width,esp.R.domElement.height]:[],
+        calls:info?info.calls:0,
+        tris:info?info.triangles:0
+      });
+    })()`));
+    inside.fps = inside.render.fps;
     if (/WELCOME HOME|STEP BACK|GLOWING PET|PLAYER HOUSE|DJ BOOTH/i.test(inside.legacyText || '')) {
       throw new Error('legacy room ' + inside.legacyText);
     }
@@ -423,7 +466,7 @@ async function runViewport(vp) {
     for (let i = 0; i < 40; i++) {
       await sleep(250);
       planner = JSON.parse(await evalJson(chrome.cdp, PLANNER));
-      if (planner.ready && /Box/.test(planner.box) && /Walls/.test(planner.walls) && /Door/.test(planner.door) && /Place/.test(planner.place)) break;
+      if (planner.ready && planner.editing && /Box/.test(planner.box) && /Walls/.test(planner.walls) && /Door/.test(planner.door) && /Place/.test(planner.place)) break;
     }
     log.steps.push({ step: 'planner', planner: planner });
     if (!planner || !planner.ready) throw new Error('planner not ready ' + JSON.stringify(planner));
@@ -433,7 +476,22 @@ async function runViewport(vp) {
 
     const placed = await evalJson(chrome.cdp, PLACE);
     log.placed = placed;
-    const back = await waitState(chrome.cdp, (s) => s.world && !s.planner && s.act.indexOf('show:build') === 0, 'back in room');
+    const back = await waitState(chrome.cdp, (s) => s.world && s.walk && s.planner && s.act.indexOf('show:build') === 0 && s.crew > 8, 'back in room');
+    await sleep(900);
+    back.render = JSON.parse(await evalJson(chrome.cdp, `(function(){
+      var t=document.getElementById('zdWalkFps');
+      var f=document.getElementById('zdInteriorFrame');
+      var esp=f&&f.contentWindow&&f.contentWindow.ESP;
+      var info=esp&&esp.R&&esp.R.info&&esp.R.info.render;
+      return JSON.stringify({
+        fps:t?t.textContent:'',
+        ratio:esp&&esp.R?esp.R.getPixelRatio():0,
+        buf:esp&&esp.R?[esp.R.domElement.width,esp.R.domElement.height]:[],
+        calls:info?info.calls:0,
+        tris:info?info.triangles:0
+      });
+    })()`));
+    back.fps = back.render.fps;
     const item = JSON.parse(await evalJson(chrome.cdp, ITEM));
     log.steps.push({ step: 'saved', state: back, item: item });
     if (!item.items || !item.items.length) throw new Error('no saved item ' + JSON.stringify(item) + ' place=' + placed);
@@ -443,7 +501,7 @@ async function runViewport(vp) {
 
     const doors = JSON.parse(await evalJson(chrome.cdp, ALL_DOORS));
     log.doors = doors;
-    const bad = doors.filter((d) => !d.world || d.inside || !d.onFoot || !d.far || d.legacy || d.fw < 59 || d.fd < 79);
+    const bad = doors.filter((d) => !d.world || !d.inside || !d.onFoot || !d.far || d.legacy || d.fw < 59 || d.fd < 79);
     if (bad.length) throw new Error('a door still opens the old room ' + JSON.stringify(bad));
     if (doors.length < 8) throw new Error('expected 8 explore doors, got ' + doors.length);
     log.ok = true;

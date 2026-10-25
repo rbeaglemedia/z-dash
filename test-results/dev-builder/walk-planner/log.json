@@ -1,6 +1,6 @@
 [
   {
-    "id": "galaxy-780",
+    "id": "phone-844",
     "steps": [
       {
         "step": "door",
@@ -17,14 +17,19 @@
           "dev": true,
           "enterTop": false,
           "fps": "-- FPS",
-          "planner": false
+          "planner": false,
+          "walk": false,
+          "edit": false,
+          "hold": 0,
+          "crew": 0,
+          "crewErr": ""
         }
       },
       {
         "step": "room",
         "state": {
           "world": true,
-          "inside": false,
+          "inside": true,
           "onFoot": true,
           "x": 9009.144,
           "z": 9001.4,
@@ -34,8 +39,23 @@
           "act": "show:build:BUILDROOM",
           "dev": true,
           "enterTop": false,
-          "fps": "47 FPS",
-          "planner": false
+          "fps": "30 FPS",
+          "planner": true,
+          "walk": true,
+          "edit": false,
+          "hold": 14,
+          "crew": 1230,
+          "crewErr": "",
+          "render": {
+            "fps": "30 FPS",
+            "ratio": 1,
+            "buf": [
+              844,
+              390
+            ],
+            "calls": 8,
+            "tris": 76
+          }
         }
       },
       {
@@ -47,14 +67,15 @@
           "door": "▯ Door",
           "place": "Place objects",
           "build": "Builder",
-          "size": "60 x 80 ft · 4800 sq ft"
+          "size": "60 x 80 ft · 4800 sq ft",
+          "editing": true
         }
       },
       {
         "step": "saved",
         "state": {
           "world": true,
-          "inside": false,
+          "inside": true,
           "onFoot": true,
           "x": 9009.144,
           "z": 9001.4,
@@ -64,8 +85,23 @@
           "act": "show:build:BUILDROOM",
           "dev": true,
           "enterTop": false,
-          "fps": "50 FPS",
-          "planner": false
+          "fps": "31 FPS",
+          "planner": true,
+          "walk": true,
+          "edit": false,
+          "hold": 322,
+          "crew": 1226,
+          "crewErr": "",
+          "render": {
+            "fps": "31 FPS",
+            "ratio": 1,
+            "buf": [
+              844,
+              390
+            ],
+            "calls": 21,
+            "tris": 474
+          }
         },
         "item": {
           "id": "HOME:1",
@@ -94,7 +130,7 @@
       {
         "name": "HOME 1",
         "world": true,
-        "inside": false,
+        "inside": true,
         "onFoot": true,
         "far": true,
         "legacy": false,
@@ -104,7 +140,7 @@
       {
         "name": "CAFE 1",
         "world": true,
-        "inside": false,
+        "inside": true,
         "onFoot": true,
         "far": true,
         "legacy": false,
@@ -114,7 +150,7 @@
       {
         "name": "HOME 1",
         "world": true,
-        "inside": false,
+        "inside": true,
         "onFoot": true,
         "far": true,
         "legacy": false,
@@ -124,7 +160,7 @@
       {
         "name": "CAFE 1",
         "world": true,
-        "inside": false,
+        "inside": true,
         "onFoot": true,
         "far": true,
         "legacy": false,
@@ -134,7 +170,7 @@
       {
         "name": "HOME 2",
         "world": true,
-        "inside": false,
+        "inside": true,
         "onFoot": true,
         "far": true,
         "legacy": false,
@@ -144,7 +180,7 @@
       {
         "name": "CAFE 2",
         "world": true,
-        "inside": false,
+        "inside": true,
         "onFoot": true,
         "far": true,
         "legacy": false,
@@ -154,7 +190,7 @@
       {
         "name": "HOME 3",
         "world": true,
-        "inside": false,
+        "inside": true,
         "onFoot": true,
         "far": true,
         "legacy": false,
@@ -164,7 +200,7 @@
       {
         "name": "CAFE 3",
         "world": true,
-        "inside": false,
+        "inside": true,
         "onFoot": true,
         "far": true,
         "legacy": false,
@@ -174,7 +210,7 @@
       {
         "name": "HOME 4",
         "world": true,
-        "inside": false,
+        "inside": true,
         "onFoot": true,
         "far": true,
         "legacy": false,
@@ -184,7 +220,238 @@
       {
         "name": "CAFE 4",
         "world": true,
-        "inside": false,
+        "inside": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      }
+    ],
+    "ok": true
+  },
+  {
+    "id": "galaxy-780",
+    "steps": [
+      {
+        "step": "door",
+        "state": {
+          "world": false,
+          "inside": false,
+          "onFoot": false,
+          "x": -224,
+          "z": -654,
+          "room": "",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:enter:ENTERHOME 1",
+          "dev": true,
+          "enterTop": false,
+          "fps": "-- FPS",
+          "planner": false,
+          "walk": false,
+          "edit": false,
+          "hold": 0,
+          "crew": 0,
+          "crewErr": ""
+        }
+      },
+      {
+        "step": "room",
+        "state": {
+          "world": true,
+          "inside": true,
+          "onFoot": true,
+          "x": 9009.144,
+          "z": 9001.4,
+          "room": "HOME 1",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:build:BUILDROOM",
+          "dev": true,
+          "enterTop": false,
+          "fps": "30 FPS",
+          "planner": true,
+          "walk": true,
+          "edit": false,
+          "hold": 18,
+          "crew": 1044,
+          "crewErr": "",
+          "render": {
+            "fps": "30 FPS",
+            "ratio": 1,
+            "buf": [
+              780,
+              360
+            ],
+            "calls": 8,
+            "tris": 76
+          }
+        }
+      },
+      {
+        "step": "planner",
+        "planner": {
+          "ready": true,
+          "box": "▭ Box",
+          "walls": "⌐ Walls",
+          "door": "▯ Door",
+          "place": "Place objects",
+          "build": "Builder",
+          "size": "60 x 80 ft · 4800 sq ft",
+          "editing": true
+        }
+      },
+      {
+        "step": "saved",
+        "state": {
+          "world": true,
+          "inside": true,
+          "onFoot": true,
+          "x": 9009.144,
+          "z": 9001.4,
+          "room": "HOME 1",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:build:BUILDROOM",
+          "dev": true,
+          "enterTop": false,
+          "fps": "30 FPS",
+          "planner": true,
+          "walk": true,
+          "edit": false,
+          "hold": 446,
+          "crew": 1036,
+          "crewErr": "",
+          "render": {
+            "fps": "30 FPS",
+            "ratio": 1,
+            "buf": [
+              780,
+              360
+            ],
+            "calls": 21,
+            "tris": 474
+          }
+        },
+        "item": {
+          "id": "HOME:1",
+          "items": [
+            "6 ft banquet table"
+          ],
+          "world": true,
+          "legacy": false
+        }
+      }
+    ],
+    "homes": [
+      "CAFE 1 oid 15",
+      "CAFE 1 oid 20",
+      "CAFE 2 oid 22",
+      "CAFE 3 oid 24",
+      "CAFE 4 oid 26",
+      "HOME 1 oid 1",
+      "HOME 1 oid 19",
+      "HOME 2 oid 21",
+      "HOME 3 oid 23",
+      "HOME 4 oid 25"
+    ],
+    "placed": "6 ft banquet table",
+    "doors": [
+      {
+        "name": "HOME 1",
+        "world": true,
+        "inside": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 1",
+        "world": true,
+        "inside": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 1",
+        "world": true,
+        "inside": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 1",
+        "world": true,
+        "inside": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 2",
+        "world": true,
+        "inside": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 2",
+        "world": true,
+        "inside": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 3",
+        "world": true,
+        "inside": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 3",
+        "world": true,
+        "inside": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 4",
+        "world": true,
+        "inside": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 4",
+        "world": true,
+        "inside": true,
         "onFoot": true,
         "far": true,
         "legacy": false,

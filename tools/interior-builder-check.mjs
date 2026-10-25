@@ -47,6 +47,12 @@ assert(embed.includes('Exit to street'), 'the planner shows Exit to street');
 assert(embed.includes("setPhase('build')"), 'a new room opens in build mode');
 assert(embed.includes("setPhase('place')"), 'a saved room opens ready to place objects');
 assert(embed.includes('zd-interior-save'), 'a save tells the world');
+assert(embed.includes('walkOn'), 'the walk-in uses the planner camera');
+assert(embed.includes('zd-interior-back'), 'save returns to the walk-in');
+assert(embed.includes('ESP.sim = null'), 'the walk-in does not start preset characters');
+assert(!fs.existsSync(path.join(root, 'test/planner/src/sim.js')), 'people simulation was not ported');
+assert(src.includes('zdWalkCrew'), 'the real walker is drawn on the planner room');
+assert(src.includes('insideBuilding = true'), 'the city loop pauses inside the room');
 assert(fs.readFileSync(path.join(root, 'test/planner/src/main.js'), 'utf8').includes('bootEmbed'), 'the planner boots the room embed');
 
 const live = boot(memStore());

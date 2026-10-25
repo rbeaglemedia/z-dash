@@ -1,9 +1,10 @@
-/* Interior Builder. The event planner (build mode and place objects) is the tool.
-   HOME 1-4 and CAFE 1-4 walk in at the same scale as the street: the outdoor
-   on-foot move, camera, and controls. A saved layout is that room. Until one
-   is saved, the room is 60 by 80 ft, and BUILD can resize it.
-   The old flat house screen (wall chips, DJ booth, pet bed, neon sign) stays
-   off these doors. This file does not write zdash.house.v1. */
+/* Interior Builder. HOME 1-4 and CAFE 1-4 open the event planner's 3D room
+   (its meshes, its camera, one foot per unit). The outdoor on-foot move drives
+   Neon World's real player and pet. Preset NPC actions stay out: that people
+   simulation was not ported. The city loop pauses so only the room renders.
+   Until a layout is saved the room is 60 by 80 ft, and BUILD can resize it.
+   The old flat house screen stays off these doors. This file does not write
+   zdash.house.v1. */
 'use strict';
 (function () {
   if (window.INTERIOR_BUILDER) return;
@@ -247,9 +248,12 @@
     var src = plannerPage() + '?embed=1&room=' + encodeURIComponent(opts.room)
       + '&fw=' + encodeURIComponent(opts.fw) + '&fd=' + encodeURIComponent(opts.fd)
       + '&title=' + encodeURIComponent(opts.title || 'Room')
-      + '&from=' + encodeURIComponent(opts.from || 'dev');
+      + '&from=' + encodeURIComponent(opts.from || 'dev')
+      + (opts.mode === 'walk' ? '&walk=1' : '');
+    if (!opts.mode) opts.mode = 'edit';
     if (iframe) iframe.src = src;
     frame.style.display = 'block';
+    setWalkPointer(opts.mode !== 'walk');
   }
 
   function closeFrame() {
@@ -257,6 +261,7 @@
     var iframe = frame && frame.querySelector ? frame.querySelector('iframe') : null;
     if (iframe) iframe.src = 'about:blank';
     openOpts = null;
+    hideCrew();
   }
 
   function openBuilding(b, from) {
@@ -294,18 +299,27 @@
 
   function onMessage(ev) {
     var data = ev && ev.data;
-    if (!data || (data.type !== 'zd-interior-save' && data.type !== 'zd-interior-exit')) return;
-    if (data.room && data.solids) remember(data.room, data.layout, data.solids);
-    if (data.type === 'zd-interior-exit') {
-      closeFrame();
-      var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
-      if (wm && wm._ibWorld && wm.insideDoor && exploreOf(wm.insideDoor)) {
-        wm.insideBuilding = false;
+    if (!data) return;
+    var kind = data.type;
+    if (kind !== 'zd-interior-save' && kind !== 'zd-interior-exit' && kind !== 'zd-interior-back' && kind !== 'zd-interior-ready') return;
+    if (data.room && data.solids && (!openOpts || openOpts.room === data.room)) remember(data.room, data.layout, data.solids);
+    if (kind === 'zd-interior-save' || kind === 'zd-interior-ready') return;
+    var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
+    if (kind === 'zd-interior-back') {
+      if (openOpts) openOpts.mode = 'walk';
+      var esp = frameEsp();
+      if (esp && typeof esp.setWalk === 'function') esp.setWalk(true);
+      setWalkPointer(false);
+      if (wm && wm._ibWorld) {
+        wm.insideBuilding = true;
         wm.onFoot = true;
         hideLegacyCard();
         settle(wm);
       }
+      return;
     }
+    closeFrame();
+    if (wm && wm._ibWorld && wm.insideDoor && exploreOf(wm.insideDoor)) leaveToCar(wm);
   }
 
   function showBuildBtn(door) {
@@ -344,7 +358,7 @@
           hideLegacyCard();
           var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
           if (wm && !wm._ibWorld) enterExplore(wm, door, null);
-          else if (wm) { wm.insideBuilding = false; wm.onFoot = true; }
+          else if (wm) { wm.insideBuilding = true; wm.onFoot = true; }
           return;
         }
         var out = orig.apply(this, arguments);
@@ -378,7 +392,7 @@
     var wrapped = function (w, d) {
       if (w && exploreOf(w.insideDoor)) {
         if (!w._ibWorld) enterExplore(w, w.insideDoor, null);
-        else { w.insideBuilding = false; hideLegacyCard(); }
+        else { w.insideBuilding = true; w.onFoot = true; hideLegacyCard(); }
         return;
       }
       return orig(w, d);
@@ -655,6 +669,8 @@
     self._ibCar = null;
     self._ibWorld = 0;
     self._ibOrigin = null;
+    closeFrame();
+    if (typeof document !== 'undefined' && document.body && document.body.dataset) delete document.body.dataset.ibRoom;
     if (self.room) self.room._ib = 0;
     if (typeof walkSyncPill === 'function') walkSyncPill();
     if (typeof walkSyncGait === 'function') walkSyncGait();
@@ -665,7 +681,7 @@
 
   function defaultPack(door) {
     var rank = exploreOf(door) || { purpose: (door && door.purpose) || 'HOME', n: 1 };
-    var W = ROOM_FW * FT, D = ROOM_FD * FT, t = 0.15, gap = 1.4, cx = W / 2;
+    var W = ROOM_FW * FT, D = ROOM_FD * FT, t = 0.15, gap = 3 * FT, cx = W / 2;
     var walls = [];
     function seg(x, z, a, w, d) {
       walls.push({ kind: 'wall', name: 'Wall', x: x, z: z, a: a, w: w, d: d });
@@ -804,12 +820,218 @@
     CITY.DYN.push(roomDyn);
   }
 
+  var crewCv = null;
+  var crewCtx = null;
+
+  function frameEsp() {
+    var iframe = frame && frame.querySelector ? frame.querySelector('iframe') : null;
+    try { return iframe && iframe.contentWindow && iframe.contentWindow.ESP; } catch (e) { return null; }
+  }
+
+  function setWalkPointer(editing) {
+    if (!frame || !frame.style) return;
+    frame.style.pointerEvents = editing ? 'auto' : 'none';
+    var iframe = frame.querySelector ? frame.querySelector('iframe') : null;
+    if (iframe && iframe.style) iframe.style.pointerEvents = editing ? 'auto' : 'none';
+  }
+
+  function hideCrew() {
+    if (crewCv && crewCv.style) crewCv.style.display = 'none';
+  }
+
+  function ensureCrew() {
+    if (crewCv || typeof document === 'undefined' || !document.body) return;
+    crewCv = document.createElement('canvas');
+    crewCv.id = 'zdWalkCrew';
+    crewCv.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:221;pointer-events:none;background:transparent';
+    document.body.appendChild(crewCv);
+    crewCtx = crewCv.getContext('2d');
+  }
+
+  function sizeCrew() {
+    var city = typeof document !== 'undefined' && document.getElementById && document.getElementById('c');
+    if (!city || !crewCv) return;
+    if (crewCv.width !== city.width) crewCv.width = city.width;
+    if (crewCv.height !== city.height) crewCv.height = city.height;
+  }
+
+  function roomCam(w) {
+    var o = w._ibOrigin || { x: 0, z: 0 };
+    var yaw = w.yaw || 0;
+    var px = (w.x - o.x) / FT;
+    var pz = (w.z - o.z) / FT;
+    var py = (w.y || 0) / FT;
+    var back = 4.5 / FT;
+    return {
+      px: px, py: py, pz: pz,
+      cx: px - Math.sin(yaw) * back,
+      cy: py + 1.85 / FT,
+      cz: pz - Math.cos(yaw) * back,
+      lx: px, ly: py + 1.10 / FT, lz: pz
+    };
+  }
+
+  function roomProj(x, y, z) {
+    var w = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
+    if (!w || !w._ibOrigin || !(typeof W === 'number' && W > 2) || !(typeof H === 'number' && H > 2)) return null;
+    var cam = roomCam(w);
+    var fx = (x - w._ibOrigin.x) / FT;
+    var fy = y / FT;
+    var fz = (z - w._ibOrigin.z) / FT;
+    var zx = cam.cx - cam.lx, zy = cam.cy - cam.ly, zz = cam.cz - cam.lz;
+    var zl = Math.hypot(zx, zy, zz) || 1;
+    zx /= zl; zy /= zl; zz /= zl;
+    var xx = zz, xy = 0, xz = -zx;
+    var xl = Math.hypot(xx, xy, xz) || 1;
+    xx /= xl; xy /= xl; xz /= xl;
+    var yx = zy * xz - zz * xy;
+    var yy = zz * xx - zx * xz;
+    var yz = zx * xy - zy * xx;
+    var vx = fx - cam.cx, vy = fy - cam.cy, vz = fz - cam.cz;
+    var cx = vx * xx + vy * xy + vz * xz;
+    var cyv = vx * yx + vy * yy + vz * yz;
+    var cz = vx * zx + vy * zy + vz * zz;
+    var depth = -cz;
+    if (!(depth > 0.25)) return null;
+    var focal = (H * 0.5) / Math.tan(20 * Math.PI / 180);
+    var sx = W / 2 + (cx / depth) * focal;
+    var sy = H / 2 - (cyv / depth) * focal;
+    var fakeZ = depth * FT * (H * 0.9) / focal;
+    return [sx, sy, fakeZ];
+  }
+
+  function paintCrew(w) {
+    if (!w || !openOpts || openOpts.mode !== 'walk') { hideCrew(); return; }
+    if (typeof CREW === 'undefined' || !CREW || typeof CREW.update !== 'function') return;
+    if (typeof proj !== 'function' || typeof ctx === 'undefined' || !ctx) return;
+    ensureCrew();
+    sizeCrew();
+    if (!crewCtx) return;
+    if (crewCv && crewCv.style) crewCv.style.display = 'block';
+    var savedCtx = ctx;
+    var savedProj = proj;
+    var savedDw = typeof drawWaterline === 'function' ? drawWaterline : null;
+    var savedInside = w.insideBuilding;
+    try {
+      var dpr = typeof DPR === 'number' && DPR > 0 ? DPR : 1;
+      crewCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      crewCtx.clearRect(0, 0, W, H);
+      ctx = crewCtx;
+      proj = roomProj;
+      drawWaterline = undefined;
+      w.insideBuilding = false;
+      CREW.update();
+    } catch (err) {
+      try { window.IB_CREW = String(err && err.stack || err); } catch (e) {}
+    } finally {
+      ctx = savedCtx;
+      proj = savedProj;
+      if (savedDw) drawWaterline = savedDw;
+      w.insideBuilding = savedInside;
+    }
+  }
+
+  function pushPose(w) {
+    if (!w || !openOpts || openOpts.mode !== 'walk') return;
+    var esp = frameEsp();
+    if (!esp || typeof esp.walkPose !== 'function') return;
+    var o = w._ibOrigin || { x: 0, z: 0 };
+    esp.walkPose({
+      x: (w.x - o.x) / FT,
+      z: (w.z - o.z) / FT,
+      y: (w.y || 0) / FT,
+      yaw: w.yaw || 0
+    });
+  }
+
+  function roomFps() {
+    var esp = frameEsp();
+    if (esp && typeof esp.walkFps === 'number' && esp.walkFps > 0) return esp.walkFps;
+    return typeof fps === 'number' ? fps : 0;
+  }
+
+  function openWalk(door) {
+    var id = roomOf(door);
+    var rec = rooms[id];
+    var size = feetFor(door, (door && door.purpose) || 'Room');
+    var esp = frameEsp();
+    if (esp && typeof esp.setWalk === 'function' && openOpts && openOpts.room === id && plannerOpen()) {
+      openOpts.mode = 'walk';
+      openOpts.from = 'walk';
+      esp.setWalk(true);
+      setWalkPointer(false);
+      return;
+    }
+    openFrame({
+      room: id,
+      fw: size.fw,
+      fd: size.fd,
+      title: size.title,
+      from: 'walk',
+      mode: 'walk',
+      layout: rec && rec.layout
+    });
+  }
+
+  function showTools(door) {
+    if (!door) return;
+    var id = roomOf(door);
+    var esp = frameEsp();
+    if (esp && typeof esp.setWalk === 'function' && openOpts && openOpts.room === id && plannerOpen()) {
+      openOpts.mode = 'edit';
+      esp.setWalk(false);
+      setWalkPointer(true);
+      hideCrew();
+      return;
+    }
+    var rec = rooms[id];
+    var size = feetFor(door, (door && door.purpose) || 'Room');
+    openFrame({
+      room: id,
+      fw: size.fw,
+      fd: size.fd,
+      title: size.title,
+      from: 'walk',
+      mode: 'edit',
+      layout: rec && rec.layout
+    });
+  }
+
+  function hookMotion() {
+    var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
+    if (!wm || typeof wm._update !== 'function' || wm._update._ib) return false;
+    var orig = wm._update;
+    var wrapped = function (d) {
+      if (this._ibWorld && exploreOf(this.insideDoor)) {
+        this.insideBuilding = false;
+        this.onFoot = true;
+        hideLegacyCard();
+        try { orig.call(this, d); }
+        finally {
+          if (this._ibWorld && exploreOf(this.insideDoor)) {
+            this.insideBuilding = true;
+            if (openOpts && openOpts.mode === 'walk') {
+              paintCrew(this);
+              pushPose(this);
+            } else hideCrew();
+          }
+        }
+        return;
+      }
+      return orig.call(this, d);
+    };
+    wrapped._ib = 1;
+    wm._update = wrapped;
+    return true;
+  }
+
   function enterExplore(self, door, orig) {
     if (!self || !door) return false;
     if (self._ibWorld && self.insideDoor === door) {
-      self.insideBuilding = false;
+      self.insideBuilding = true;
       self.onFoot = true;
       hideLegacyCard();
+      openWalk(door);
       return true;
     }
     var spot = parkSpot(door);
@@ -818,7 +1040,7 @@
     var origin = originFor(rank);
     var spawn = spawnOf(pack);
     self.onFoot = true;
-    self.insideBuilding = false;
+    self.insideBuilding = true;
     self.insideDoor = door;
     self.door = null;
     self.parking = null;
@@ -842,8 +1064,7 @@
     }
     holdCar();
     hideLegacyCard();
-    ensureDyn();
-    if (roomDyn) { roomDyn.x = self.x; roomDyn.z = self.z; }
+    openWalk(door);
     if (typeof document !== 'undefined' && document.body && document.body.dataset) {
       document.body.dataset.ibRoom = rank.purpose + ' ' + rank.n;
     }
@@ -916,12 +1137,13 @@
     if (actBtn || typeof document === 'undefined' || !document.body || !document.createElement) return;
     var css = document.createElement('style');
     css.id = 'zdWalkActCss';
-    css.textContent = '#zdWalkAct{position:fixed;left:50%;bottom:calc(20px + min(92px, 23vh) + 10px);transform:translateX(-50%);z-index:96;display:none;min-width:180px;height:56px;padding:0 18px;border-radius:16px;border:3px solid #fff;margin:0;background:#7dff6b;color:#04140c;font:900 18px/1 Orbitron,sans-serif;letter-spacing:.6px;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;cursor:pointer;box-shadow:0 0 18px #7dff6b}'
+    css.textContent = '#zdWalkAct{position:fixed;left:50%;bottom:calc(20px + min(92px, 23vh) + 10px);transform:translateX(-50%);z-index:234;display:none;min-width:180px;height:56px;padding:0 18px;border-radius:16px;border:3px solid #fff;margin:0;background:#7dff6b;color:#04140c;font:900 18px/1 Orbitron,sans-serif;letter-spacing:.6px;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;cursor:pointer;box-shadow:0 0 18px #7dff6b}'
       + '#zdWalkAct small{font:800 13px Rajdhani,sans-serif;letter-spacing:.4px}'
       + '#zdWalkAct.show{display:inline-flex}'
       + '#zdWalkAct[data-mode="exit"]{background:#ff4fd8;color:#240014;box-shadow:0 0 18px #ff4fd8}'
-      + '#zdWalkFps{position:fixed;top:calc(env(safe-area-inset-top, 0px) + 6px);right:calc(env(safe-area-inset-right, 0px) + 8px);z-index:97;display:none;pointer-events:none;margin:0;padding:2px 7px;border-radius:8px;border:1px solid rgba(232,255,244,.55);font:700 13px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#e8fff4;background:rgba(7,4,16,.86)}'
-      + '#zdWalkFps.show{display:block}';
+      + '#zdWalkFps{position:fixed;top:calc(env(safe-area-inset-top, 0px) + 6px);right:calc(env(safe-area-inset-right, 0px) + 8px);z-index:233;display:none;pointer-events:none;margin:0;padding:2px 7px;border-radius:8px;border:1px solid rgba(232,255,244,.55);font:700 13px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#e8fff4;background:rgba(7,4,16,.86)}'
+      + '#zdWalkFps.show{display:block}'
+      + 'body[data-ib-room] #enterBldBtn{display:none!important}';
     if (document.head) document.head.appendChild(css);
     actBtn = document.createElement('button');
     actBtn.id = 'zdWalkAct';
@@ -933,12 +1155,7 @@
       var wm = window.WALK_MODE;
       if (mode === 'build') {
         var door = wm && wm.insideDoor;
-        if (!door) return;
-        openBuilding({
-          purpose: door.purpose,
-          objId: door.building && (door.building.oid != null ? door.building.oid : door.building.id),
-          name: (exploreOf(door) ? exploreOf(door).purpose + ' ' + exploreOf(door).n : door.purpose)
-        }, 'walk');
+        if (door) showTools(door);
         return;
       }
       if (mode === 'exit') { leaveToCar(wm); return; }
@@ -980,11 +1197,15 @@
     if (wm && wm._ibCar) holdCar();
     if (wm && wm._ibWorld) {
       hideLegacyCard();
-      wm.insideBuilding = false;
-      if (roomDyn && fin(wm.x)) { roomDyn.x = wm.x; roomDyn.z = wm.z; }
+      wm.insideBuilding = true;
+      wm.onFoot = true;
     }
-    if (plannerOpen()) {
+    var editing = plannerOpen() && openOpts && openOpts.mode === 'edit';
+    var dev = typeof document !== 'undefined' && document.getElementById && document.getElementById('devOpen');
+    if (dev && dev.style) dev.style.zIndex = (wm && wm._ibWorld) ? '236' : '65';
+    if (editing) {
       hideAct();
+      hideCrew();
     } else if (wm && wm._ibWorld && exploreOf(wm.insideDoor)) {
       rank = exploreOf(wm.insideDoor);
       mode = atInsideDoor(wm) ? 'exit' : 'build';
@@ -1009,7 +1230,7 @@
       var useDom = inRoom || (inside && !(pc && pc.getBoundingClientRect && pc.getBoundingClientRect().width > 8));
       walkFps.classList.toggle('show', !!useDom);
       if (useDom) {
-        var v = typeof fps === 'number' ? fps : 0;
+        var v = roomFps();
         walkFps.textContent = Math.round(v) + ' FPS';
       }
     }
@@ -1052,7 +1273,7 @@
     hookShow();
     hookEnter();
     hookLeave();
-    ensureDyn();
+    hookMotion();
   }
 
   function bootUi() {
@@ -1075,7 +1296,7 @@
     }
     if (typeof requestAnimationFrame === 'function') {
       var loop = function () {
-        try { syncContext(); } catch (e) {}
+        try { syncContext(); hookMotion(); } catch (e) {}
         requestAnimationFrame(loop);
       };
       requestAnimationFrame(loop);
