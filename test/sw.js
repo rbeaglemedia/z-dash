@@ -1,7 +1,7 @@
 /* Hidden preview worker. Its scope is /test/ only. It does not cache, and it
    does not write the live app caches. If the live worker stored a /test/ page
    under a live page key, this worker deletes that entry.
-   dev49: every same-origin read reloads, so a phone cannot keep an old world. */
+   dev50: every same-origin read reloads, so a phone cannot keep an old world. */
 self.addEventListener('install', function () { self.skipWaiting(); });
 self.addEventListener('activate', function (e) {
   e.waitUntil(scrub().then(function () { return self.clients.claim(); }));
