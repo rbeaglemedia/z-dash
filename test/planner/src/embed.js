@@ -63,22 +63,70 @@ export function embedSolids() {
   };
 }
 
-function frameRoom() {
+const OUT_FOV = 2 * Math.atan(0.5 / 0.9) * 180 / Math.PI;
+const PLAN_FOV = 40;
+const CHASE_BACK = 4.5 / FT;
+const CHASE_LOOK = 1.10 / FT;
+const CHASE_CAM = 1.85 / FT;
+
+function setFov(fov) {
+  if (!ESP.camera || Math.abs(ESP.camera.fov - fov) < 0.05) return;
+  ESP.camera.fov = fov;
+  ESP.camera.updateProjectionMatrix();
+}
+
+function frameAngled() {
   const p = ESP.walkPoseData;
   const b = floorBounds(floorOf(ESP.S.walls));
-  const x = p && Number.isFinite(p.x) ? p.x : (b.minX + b.maxX) / 2;
-  const z = p && Number.isFinite(p.z) ? p.z : b.minZ + Math.min(8, (b.maxZ - b.minZ) * 0.2);
-  ESP.V.tx = x;
-  ESP.V.tz = z;
+  const cx = (b.minX + b.maxX) / 2;
+  const cz = (b.minZ + b.maxZ) / 2;
+  const px = p && Number.isFinite(p.x) ? p.x : cx;
+  const pz = p && Number.isFinite(p.z) ? p.z : cz;
+  ESP.V.tx = cx * 0.35 + px * 0.65;
+  ESP.V.tz = cz * 0.35 + pz * 0.65;
   ESP.V.yaw = Math.PI / 4;
-  ESP.V.pitch = 0.95;
-  ESP.V.dist = 38;
-  if (typeof ESP.placeCam === 'function') ESP.placeCam();
+  ESP.V.pitch = 0.62;
+  const span = Math.max(b.maxX - b.minX, b.maxZ - b.minZ, 24);
+  ESP.V.dist = Math.max(72, span * 1.25);
+}
+
+function chasePose() {
+  const p = ESP.walkPoseData || { x: 0, z: 0, y: 0, yaw: 0 };
+  const yaw = p.yaw || 0;
+  const x = p.x || 0;
+  const z = p.z || 0;
+  const y = p.y || 0;
+  setFov(OUT_FOV);
+  ESP.camera.position.set(x - Math.sin(yaw) * CHASE_BACK, Math.max(0.8 / FT, y + CHASE_CAM), z - Math.cos(yaw) * CHASE_BACK);
+  ESP.camera.lookAt(x, y + CHASE_LOOK, z);
+  ESP.camera.updateMatrixWorld();
 }
 
 function installWalkCam() {
-  if (ESP.placeCam && ESP.placeCam._walk) return;
-  if (ESP.placeCam) ESP.placeCam._walk = 1;
+  if (ESP.placeCam && !ESP.placeCam._walkWrapped) {
+    const orig = ESP.placeCam;
+    const wrapped = function placeCamWalk() {
+      const build = !ESP.walkOn || ESP.phase === 'build';
+      if (build) {
+        setFov(PLAN_FOV);
+        return orig();
+      }
+      if (ESP.topDown) {
+        setFov(PLAN_FOV);
+        return orig();
+      }
+      if (ESP.walkCam === 'room') {
+        setFov(PLAN_FOV);
+        if (ESP.orbitPtr || ESP.panPtr) ESP.walkHeld = true;
+        else if (!ESP.walkHeld) frameAngled();
+        return orig();
+      }
+      chasePose();
+    };
+    wrapped._walkWrapped = 1;
+    wrapped._walk = 1;
+    ESP.placeCam = wrapped;
+  }
   if (typeof ESP.overlays === 'function' && !ESP.overlays._walk) {
     const overlays = ESP.overlays;
     const wrappedOverlays = function overlaysWalk() {
@@ -112,10 +160,20 @@ function installWalkCam() {
     const resize = ESP.resize;
     const wrappedResize = function resizeWalk() {
       resize();
-      if (!(ESP.walkOn && ESP.R)) return;
+      if (!(ESP.walkOn && ESP.R && ESP.camera)) return;
       const w = Math.round(innerWidth), h = Math.round(innerHeight);
+      if (!(w > 0 && h > 0)) return;
+      const cap = 844 * 390;
+      let bw = w, bh = h;
+      if (bw * bh > cap) {
+        const s = Math.sqrt(cap / (bw * bh));
+        bw = Math.max(1, Math.round(w * s));
+        bh = Math.max(1, Math.round(h * s));
+      }
       ESP.R.setPixelRatio(1);
-      if (w > 0 && h > 0) ESP.R.setSize(w, h, false);
+      ESP.R.setSize(bw, bh, false);
+      ESP.camera.aspect = w / Math.max(1, h);
+      ESP.camera.updateProjectionMatrix();
     };
     wrappedResize._walk = 1;
     ESP.resize = wrappedResize;
@@ -129,8 +187,12 @@ function walkStyle() {
   css.textContent = ''
     + 'body.zd-walk header.bar,body.zd-walk #modes,body.zd-walk #toolsBuild,body.zd-walk #toolsPlace,body.zd-walk #drawTools,body.zd-walk #presets,body.zd-walk #hist,body.zd-walk #snapHint,body.zd-walk #lvlBar,body.zd-walk #hint,body.zd-walk #btnClear,body.zd-walk .ver,body.zd-walk #simBar,body.zd-walk #labels,body.zd-walk #presetTip,body.zd-walk #stampBar,body.zd-walk #selBar,body.zd-walk #btnShare,body.zd-walk #btnRun,body.zd-walk #btnQuote{display:none!important}'
     + 'body.zd-walk #rail{display:grid!important;grid-auto-flow:column;align-content:start;justify-items:stretch}'
-    + 'body.zd-walk #rail svg{display:none!important}'
-    + 'body.zd-walk #rail button{justify-content:center;line-height:1.15;overflow:hidden}'
+    + 'body.zd-walk #rail button.hidden,body.zd-walk #btnShare,body.zd-walk #btnRun,body.zd-walk #btnQuote{display:none!important}'
+    + 'body.zd-walk #rail button:not(.hidden){display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:12px;border:1px solid #ffffff40;background:color-mix(in srgb,var(--surface) 91%,transparent);color:var(--fg);padding:2px 1px;font-weight:600;font-size:9px;line-height:1.05;overflow:hidden;box-sizing:border-box;min-height:0!important}'
+    + 'body.zd-walk #rail button svg{display:block!important;width:14px;height:14px;flex:0 0 auto;margin:0!important}'
+    + 'body.zd-walk #rail button span{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.05}'
+    + 'body.zd-walk #rail button.on{background:var(--accent);color:var(--on-action);border-color:var(--accent)}'
+    + 'body.zd-walk #rail #btnAdd{background:var(--action);color:var(--on-action);border-color:var(--action)}'
     + 'body.zd-walk #sheet{z-index:12}';
   document.head.appendChild(css);
 }
@@ -201,6 +263,23 @@ function walkFloor(on) {
   }
 }
 
+const PLUS_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>';
+const PRESET_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5M16 4v5"/></svg>';
+
+function dressRailButton(b, label, iconHtml) {
+  if (!b || b.dataset.dressed === '1') return;
+  b.dataset.plain = b.innerHTML;
+  let svg = iconHtml || '';
+  if (!svg) {
+    const old = b.querySelector('svg');
+    svg = old ? old.outerHTML : '';
+  }
+  b.innerHTML = svg + '<span>' + label + '</span>';
+  const el = b.querySelector('svg');
+  if (el) el.removeAttribute('style');
+  b.dataset.dressed = '1';
+}
+
 function mountWalkRail() {
   const rail = ESP.$('#rail');
   if (!rail) return;
@@ -211,6 +290,9 @@ function mountWalkRail() {
     if (!b.dataset.railHome && b.parentElement) b.dataset.railHome = b.parentElement.id || '';
     rail.insertBefore(b, anchor);
   });
+  dressRailButton(ESP.$('#btnAdd'), 'Add item', PLUS_ICON);
+  dressRailButton(ESP.$('#btnSame'), 'Same again', '');
+  dressRailButton(ESP.$('#btnEvents'), 'Presets', PRESET_ICON);
   ['btnShare', 'btnRun', 'btnQuote'].forEach(function (id) {
     const b = ESP.$('#' + id);
     if (b) b.classList.add('hidden');
@@ -223,6 +305,11 @@ function restoreWalkRail() {
   ['btnSame', 'btnEvents', 'btnAdd'].forEach(function (id) {
     const b = ESP.$('#' + id);
     if (!b) return;
+    if (b.dataset.plain) {
+      b.innerHTML = b.dataset.plain;
+      delete b.dataset.plain;
+      delete b.dataset.dressed;
+    }
     b.style.height = '';
     b.style.minHeight = '';
     b.style.width = '';
@@ -292,7 +379,7 @@ function fitWalkRail() {
   const gap = 4;
   const btnW = 72;
   const minH = 18;
-  const obs = ['kMenuB', 'exitCarBtn', 'tup', 'nos', 'brk', 'wng', 'emoteBtn', 'zdWalkAct', 'zdWalkExit', 'devOpen', 'enterBldBtn'].map(parentHudBox).filter(Boolean);
+  const obs = ['kMenuB', 'exitCarBtn', 'tup', 'nos', 'brk', 'wng', 'emoteBtn', 'zdWalkAct', 'zdWalkExit', 'zdWalkCam', 'devOpen', 'enterBldBtn'].map(parentHudBox).filter(Boolean);
   const rightJoy = obs.filter(function (o) { return o.x > w * 0.45 && o.b > h * 0.4; });
   const floor = (rightJoy.length ? Math.min.apply(null, rightJoy.map(function (o) { return o.y; })) : h) - 8;
   function planFor(cols) {
@@ -329,10 +416,10 @@ function fitWalkRail() {
     b.style.height = plan.btnH + 'px';
     b.style.minHeight = '0px';
     b.style.width = btnW + 'px';
-    b.style.fontSize = '10px';
-    b.style.padding = '1px 2px';
+    b.style.fontSize = '';
+    b.style.padding = '';
     b.style.overflow = 'hidden';
-    b.style.whiteSpace = 'nowrap';
+    b.style.whiteSpace = '';
   });
 }
 
@@ -421,29 +508,40 @@ export function bootEmbed() {
   ESP.walkPose = function walkPose(p) {
     ESP.walkPoseData = p || null;
     drawActor(p && p.segs);
-    if (ESP.walkOn) frameRoom();
     if (ESP.frame) ESP.frame();
+  };
+  ESP.setWalkCam = function setWalkCam(mode) {
+    ESP.walkCam = mode === 'room' ? 'room' : 'chase';
+    ESP.walkHeld = false;
+    if (ESP.frame) ESP.frame();
+    return ESP.walkCam;
   };
   ESP.sheetOpen = function sheetOpen() {
     const sheet = ESP.$('#sheet');
     return !!(sheet && !sheet.classList.contains('hidden'));
   };
   ESP.setWalk = function setWalk(on) {
+    const was = !!ESP.walkOn;
     ESP.walkOn = !!on;
     ESP.sim = null;
     if (typeof ESP.simStop === 'function') ESP.simStop();
     if (document.body) document.body.classList.toggle('zd-walk', !!on);
-    if (typeof ESP.setWallsView === 'function') ESP.setWallsView('low');
     walkFloor(!!on);
     if (on) {
+      if (!was) {
+        if (typeof ESP.setWallsView === 'function') ESP.setWallsView('low');
+        ESP.walkCam = 'chase';
+        ESP.walkHeld = false;
+      }
       ESP.select(null);
       if (typeof ESP.endStamp === 'function') ESP.endStamp();
       if (typeof ESP.closeSheet === 'function') ESP.closeSheet();
       if (ESP.phase !== 'place' && typeof ESP.setPhase === 'function') ESP.setPhase('place');
       mountWalkRail();
-      frameRoom();
       ensureActor();
     } else {
+      setFov(PLAN_FOV);
+      ESP.walkHeld = false;
       restoreWalkRail();
       if (typeof ESP.setPhase === 'function') ESP.setPhase('build');
     }

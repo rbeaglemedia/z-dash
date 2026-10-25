@@ -174,6 +174,11 @@ const sky = IB.exploreOf({ purpose: 'SKY_DROP', building: { oid: 9, purpose: 'SK
 assert.strictEqual(sky.purpose, 'SKY_DROP', 'a jump-roof door opens a floor-level room');
 assert.strictEqual(IB.exploreOf({ purpose: 'SNACK', building: { oid: 5, purpose: 'SNACK' } }), null, 'a snack stand is not an indoor room');
 assert(fs.readFileSync(path.join(root, 'test/world/interior-builder.js'), 'utf8').includes("door.purpose === 'SKY_DROP'"), 'door ENTER does not run the rooftop teleport');
+assert(src.includes('ZD_ROOM_NOCAR'), 'the car is not drawn inside the room');
+assert(src.includes('#zdWalkExit'), 'one EXIT button is the way out');
+assert(embed.includes('setWalkCam'), 'explore mode can lock the chase camera');
+assert(embed.includes('chasePose'), 'the chase camera sits behind the player');
+assert(!embed.includes('frameRoom'), 'the walk camera is not reset every frame');
 
 live.P = { x: 1, z: 1, y: 0.2, yaw: 0.3, v: 2 };
 const shoved = IB.parkSpot({

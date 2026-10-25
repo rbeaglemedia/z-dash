@@ -404,12 +404,17 @@
     if (typeof walkIntegrate !== 'function' || walkIntegrate._ib) return false;
     var orig = walkIntegrate;
     var wrapped = function (w, d) {
-      if (!w || !w._ibWorld || !exploreOf(w.insideDoor)) return orig.apply(this, arguments);
-      holdCar();
+      if (!w || !w._ibWorld || !exploreOf(w.insideDoor)) {
+        if (typeof window !== 'undefined') window.ZD_ROOM_NOCAR = 0;
+        return orig.apply(this, arguments);
+      }
+      if (typeof window !== 'undefined') window.ZD_ROOM_NOCAR = 1;
+      holdCar(w);
       w.insideBuilding = false;
       var o = w._ibOrigin || { x: 0, z: 0 };
       var x0 = w.x, z0 = w.z;
       orig.call(this, w, d);
+      holdCar(w);
       w.y = 0;
       w._roofY = null;
       var pack = activePack(w.insideDoor);
@@ -622,8 +627,9 @@
     return spot;
   }
 
-  function holdCar() {
-    var car = typeof WALK_MODE !== 'undefined' && WALK_MODE && WALK_MODE._ibCar;
+  function holdCar(w) {
+    var wm = (w && w._ibCar) ? w : (typeof WALK_MODE !== 'undefined' ? WALK_MODE : null);
+    var car = wm && wm._ibCar;
     if (!car || typeof P === 'undefined' || !P) return;
     P.x = car.x; P.z = car.z; P.y = car.y || 0; P.v = 0; P.ground = true; P.pitch = 0;
     P.yaw = car.yaw || 0;
@@ -655,8 +661,12 @@
     self._ibCar = null;
     self._ibWorld = 0;
     self._ibOrigin = null;
+    if (typeof window !== 'undefined') window.ZD_ROOM_NOCAR = 0;
     closeFrame();
-    if (typeof document !== 'undefined' && document.body && document.body.dataset) delete document.body.dataset.ibRoom;
+    if (typeof document !== 'undefined' && document.body && document.body.dataset) {
+      delete document.body.dataset.ibRoom;
+      delete document.body.dataset.ibWorld;
+    }
     if (self.room) self.room._ib = 0;
     if (typeof walkSyncPill === 'function') walkSyncPill();
     if (typeof walkSyncGait === 'function') walkSyncGait();
@@ -1096,7 +1106,8 @@
       P.wreck = null;
       if (P.driveMode !== 'street') P.driveMode = 'street';
     }
-    holdCar();
+    if (typeof window !== 'undefined') window.ZD_ROOM_NOCAR = 1;
+    holdCar(self);
     hideLegacyCard();
     holdCity(true);
     openWalk(door);
@@ -1188,9 +1199,13 @@
       + 'body[data-ib-room] #kid{z-index:230!important;background:transparent!important;pointer-events:none!important}'
       + 'body[data-ib-room] #kid .kbody{background:transparent!important;pointer-events:none!important}'
       + 'body[data-ib-room] #c{visibility:hidden!important}'
-      + 'body[data-ib-room] #tup,body[data-ib-room] #nos,body[data-ib-room] #brk,body[data-ib-room] #wng,body[data-ib-room] #emoteBtn,body[data-ib-room] #exitCarBtn,body[data-ib-room] #kMenuB,body[data-ib-room] #zdWalkAct,body[data-ib-room] #devOpen{pointer-events:auto!important}'
-      + 'body[data-ib-sheet] #tup,body[data-ib-sheet] #nos,body[data-ib-sheet] #brk,body[data-ib-sheet] #wng,body[data-ib-sheet] #emoteBtn,body[data-ib-sheet] #exitCarBtn{visibility:hidden!important}'
-      + 'body[data-ib-room] #enterBldBtn{display:none!important}';
+      + '#zdWalkCam{position:fixed;top:calc(env(safe-area-inset-top, 0px) + 108px);left:calc(env(safe-area-inset-left, 0px) + 8px);z-index:232;display:none;min-width:64px;height:28px;padding:0 8px;border-radius:12px;border:2px solid #fff;margin:0;background:#0b2e55;color:#f4f8fc;font:800 10px/1 Orbitron,sans-serif;align-items:center;justify-content:center;touch-action:manipulation;cursor:pointer}'
+      + 'body[data-ib-room] #zdWalkCam.show{display:inline-flex}'
+      + 'body[data-ib-sheet] #zdWalkCam{display:none!important}'
+      + 'body[data-ib-room] #tup,body[data-ib-room] #nos,body[data-ib-room] #brk,body[data-ib-room] #emoteBtn,body[data-ib-room] #kMenuB,body[data-ib-room] #zdWalkAct,body[data-ib-room] #zdWalkCam,body[data-ib-room] #devOpen{pointer-events:auto!important}'
+      + 'body[data-ib-sheet] #tup,body[data-ib-sheet] #nos,body[data-ib-sheet] #brk,body[data-ib-sheet] #emoteBtn{visibility:hidden!important}'
+      + 'body[data-ib-world] #wng,body[data-ib-world] #exitCarBtn,body[data-ib-world] #enterBldBtn{display:none!important;visibility:hidden!important}'
+      + 'body[data-ib-world] #c,body[data-ib-world] #cgl,body[data-ib-world] #cback{visibility:hidden!important}';
     if (document.head) document.head.appendChild(css);
     actBtn = document.createElement('button');
     actBtn.id = 'zdWalkAct';
@@ -1226,6 +1241,21 @@
     walkFps.setAttribute('aria-label', 'Frames per second');
     walkFps.textContent = '-- FPS';
     document.body.appendChild(walkFps);
+    var camBtn = document.createElement('button');
+    camBtn.id = 'zdWalkCam';
+    camBtn.type = 'button';
+    camBtn.textContent = 'CHASE';
+    camBtn.setAttribute('aria-label', 'Chase camera');
+    camBtn.addEventListener('click', function (ev) {
+      if (ev.preventDefault) ev.preventDefault();
+      var esp = frameEsp();
+      if (!esp || typeof esp.setWalkCam !== 'function') return;
+      var next = esp.walkCam === 'room' ? 'chase' : 'room';
+      esp.setWalkCam(next);
+      camBtn.textContent = next === 'room' ? 'ROOM' : 'CHASE';
+      camBtn.setAttribute('aria-label', next === 'room' ? 'Room camera' : 'Chase camera');
+    });
+    document.body.appendChild(camBtn);
   }
 
   function paintAct(mode, rank) {
@@ -1261,11 +1291,14 @@
       holdCity(inWalk);
     } else holdCity(false);
     if (document.body && document.body.dataset) {
-      if (inWalk) document.body.dataset.ibRoom = (exploreOf(wm.insideDoor) || {}).title || 'room';
+      if (wm && wm._ibWorld) document.body.dataset.ibWorld = '1';
+      else delete document.body.dataset.ibWorld;
+      if (inWalk) document.body.dataset.ibRoom = (wm.insideDoor && wm.insideDoor.direct) ? 'ROOM' : ((exploreOf(wm.insideDoor) || {}).title || 'room');
       else delete document.body.dataset.ibRoom;
       if (inWalk && sheetOpen()) document.body.dataset.ibSheet = '1';
       else delete document.body.dataset.ibSheet;
     }
+    if (typeof window !== 'undefined') window.ZD_ROOM_NOCAR = (wm && wm._ibWorld) ? 1 : 0;
     var dev = typeof document !== 'undefined' && document.getElementById && document.getElementById('devOpen');
     if (dev && dev.style) dev.style.zIndex = (wm && wm._ibWorld) ? '236' : '65';
     if (editing) {
@@ -1288,6 +1321,20 @@
     else hideAct();
     var exitBtn = typeof document !== 'undefined' && document.getElementById && document.getElementById('zdWalkExit');
     if (exitBtn && exitBtn.classList) exitBtn.classList.toggle('show', !!(inWalk && wm && atInsideDoor(wm)));
+    var camBtn = typeof document !== 'undefined' && document.getElementById && document.getElementById('zdWalkCam');
+    if (camBtn && camBtn.classList) {
+      camBtn.classList.toggle('show', !!inWalk);
+      if (inWalk) {
+        var camMode = 'chase';
+        try {
+          var camEsp = frameEsp();
+          if (camEsp && camEsp.walkCam) camMode = camEsp.walkCam;
+        } catch (eCam) {}
+        var camLabel = camMode === 'room' ? 'ROOM' : 'CHASE';
+        if (camBtn.textContent !== camLabel) camBtn.textContent = camLabel;
+        camBtn.setAttribute('aria-label', camMode === 'room' ? 'Room camera' : 'Chase camera');
+      }
+    }
     var card = typeof document !== 'undefined' && document.getElementById && document.getElementById('walk-interior');
     var inRoom = !!(wm && wm._ibWorld);
     var inside = inRoom || !!(card && card.classList && card.classList.contains('show') && wm && wm.insideBuilding);
@@ -1326,7 +1373,7 @@
   function placeWalkFps() {
     if (!walkFps) return;
     var obs = [];
-    ['kMenuB', 'exitCarBtn', 'tup', 'nos', 'brk', 'wng', 'emoteBtn', 'zdWalkAct', 'zdWalkExit', 'devOpen', 'enterBldBtn'].forEach(function (id) {
+    ['kMenuB', 'exitCarBtn', 'tup', 'nos', 'brk', 'wng', 'emoteBtn', 'zdWalkAct', 'zdWalkExit', 'zdWalkCam', 'devOpen', 'enterBldBtn'].forEach(function (id) {
       var b = hudBox(document.getElementById(id));
       if (b) obs.push(b);
     });
@@ -1443,11 +1490,46 @@
     hookMotion();
   }
 
+  function enterDirect() {
+    if (typeof window !== 'undefined' && window.__zdRoomEntered) return true;
+    var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
+    if (!wm || typeof P === 'undefined' || !P) return false;
+    var door = {
+      direct: 1,
+      purpose: 'HOME',
+      purposeLabel: 'ROOM',
+      x: 0, z: 0, nx: 0, nz: 1, top: 0,
+      building: {
+        purpose: 'HOME', id: 'direct-room', oid: 'direct', name: 'ROOM',
+        doors: [[0, 0, 0, 1]], x0: -2, x1: 2, z0: -2, z1: 2, cx: 0, cz: 0
+      }
+    };
+    wm.onFoot = true;
+    P.v = 0;
+    P.ground = true;
+    try {
+      enterExplore(wm, door, null);
+      if (typeof window !== 'undefined') window.__zdRoomEntered = 1;
+      return true;
+    } catch (err) {
+      try { window.IB_ERR = String(err && err.stack || err); } catch (e) {}
+      return false;
+    }
+  }
+
   function bootUi() {
     try {
     ensureBtn();
     ensureContext();
     hook();
+    if (typeof window !== 'undefined' && window.ZD_ROOM_DIRECT) {
+      var tries = 0;
+      var kick = function () {
+        if (enterDirect() || ++tries > 80) return;
+        setTimeout(kick, 50);
+      };
+      kick();
+    }
     } catch (err) {
       try { window.IB_ERR = String(err && err.stack || err); } catch (e) {}
     }

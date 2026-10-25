@@ -220,6 +220,17 @@ const SNAP = `(function () {
     walk: !!(doc && doc.body && doc.body.classList.contains('zd-walk')),
     legacy: !!(document.getElementById('walk-interior') && !document.getElementById('walk-interior').hidden && document.getElementById('walk-interior').classList.contains('show')),
     enter: enter && es && es.display !== 'none' ? (enter.innerText || '').replace(/\\s+/g, ' ').trim() : '',
+    carGone: (function () {
+      function gone(id) {
+        var el = document.getElementById(id);
+        if (!el) return true;
+        var s = getComputedStyle(el);
+        var r = el.getBoundingClientRect();
+        return s.display === 'none' || s.visibility === 'hidden' || r.width < 2 || r.height < 2;
+      }
+      return gone('wng') && gone('exitCarBtn') && gone('enterBldBtn') && gone('c');
+    })(),
+    carX: P.x,
     dev: dev, jump: jump, devHitsJump: overlap,
     err: window.IB_ERR || ''
   });
@@ -365,6 +376,8 @@ async function main() {
     if (room.roof != null) throw new Error('roof lock still set ' + JSON.stringify(room));
     if (Math.abs(room.wy) > 0.2) throw new Error('walker is not on the room floor ' + JSON.stringify(room));
     if (room.y > 8) throw new Error('car was sent to a roof ' + JSON.stringify(room) + ' from ' + py);
+    if (!room.carGone) throw new Error('car HUD still inside the room ' + JSON.stringify(room));
+    if (room.carX > 8000) throw new Error('car entered the room ' + JSON.stringify(room));
     await evalJson(chrome.cdp, labelExpr('galaxy  HOME 1 walk-in room  floor level'));
     await sleep(600);
     await shot(chrome.cdp, 'galaxy-4-room.png');
@@ -386,10 +399,26 @@ async function main() {
     if (!jumped.world || !jumped.walk || jumped.legacy) throw new Error('jump roof did not open a room ' + JSON.stringify(jumped));
     if (jumped.roof != null) throw new Error('jump roof locked the rooftop ' + JSON.stringify(jumped));
     if (Math.abs(jumped.y - before.y) > 3) throw new Error('jump roof moved the car ' + JSON.stringify({ before: before.y, after: jumped.y }));
+    if (!jumped.carGone || jumped.carX > 8000) throw new Error('jump roof brought the car inside ' + JSON.stringify(jumped));
     if (jumped.y > 8) throw new Error('jump roof still at altitude ' + jumped.y);
     await evalJson(chrome.cdp, labelExpr('galaxy  JUMP roof ENTER opens the room  not ALT 62'));
     await sleep(500);
     await shot(chrome.cdp, 'galaxy-5-jump-roof-room.png');
+
+    await chrome.cdp.send('Page.navigate', { url: 'http://127.0.0.1:' + PORT + '/test/room.html' });
+    await waitReady(chrome.cdp);
+    let direct = null;
+    for (let i = 0; i < 40; i++) {
+      await sleep(250);
+      direct = await snap(chrome.cdp);
+      if (direct.world && direct.walk && direct.x > 8000 && direct.room === 'ROOM' && direct.carGone && direct.carX < 8000) break;
+    }
+    log.steps.push({ step: 'room-html', state: direct });
+    if (!direct || !direct.world || !direct.walk || direct.legacy || direct.room !== 'ROOM') throw new Error('room.html did not open the blank room ' + JSON.stringify(direct));
+    if (!direct.carGone || direct.carX > 8000 || direct.y > 8) throw new Error('room.html still has the car ' + JSON.stringify(direct));
+    await evalJson(chrome.cdp, labelExpr('galaxy  /test/room.html  blank walk-in  no car'));
+    await sleep(700);
+    await shot(chrome.cdp, 'galaxy-6-room-html.png');
     log.ok = true;
     fs.mkdirSync(OUT, { recursive: true });
     fs.writeFileSync(path.join(OUT, 'log.json'), JSON.stringify(log, null, 2));

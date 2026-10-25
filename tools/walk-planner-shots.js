@@ -277,7 +277,7 @@ const OVERLAP = `(function () {
     }
     return { name: el.id || (el.textContent || '').slice(0, 24), x: x, y: y, r: right, b: bottom, w: r.width, h: r.height };
   }
-  var nodes = ['tup','nos','brk','wng','emoteBtn','exitCarBtn','kMenuB','zdWalkAct','zdWalkExit','zdWalkFps','devOpen'].map(function (id) { return box(document.getElementById(id)); }).filter(Boolean);
+  var nodes = ['tup','nos','brk','wng','emoteBtn','exitCarBtn','kMenuB','zdWalkAct','zdWalkExit','zdWalkCam','zdWalkFps','devOpen'].map(function (id) { return box(document.getElementById(id)); }).filter(Boolean);
   var frame = document.getElementById('zdInteriorFrame');
   var doc = frame && frame.contentDocument;
   if (doc) {
@@ -384,6 +384,208 @@ const ALL_DOORS = `(function () {
   P.x = saved.x; P.z = saved.z; P.yaw = saved.yaw; P.hd = saved.yaw; P.v = 0; P.ground = true;
   return JSON.stringify(out);
 })()`;
+
+const ROOM_CHECK = `(function () {
+  function gone(id) {
+    var el = document.getElementById(id);
+    if (!el) return true;
+    var s = getComputedStyle(el);
+    var r = el.getBoundingClientRect();
+    return s.display === 'none' || s.visibility === 'hidden' || r.width < 2 || r.height < 2;
+  }
+  var f = document.getElementById('zdInteriorFrame');
+  var doc = f && f.contentDocument;
+  var esp = f && f.contentWindow && f.contentWindow.ESP;
+  var add = doc && doc.querySelector('#btnAdd');
+  var svg = add && add.querySelector('svg');
+  var ss = svg ? getComputedStyle(svg) : null;
+  var bs = add ? getComputedStyle(add) : null;
+  var exit = document.getElementById('zdWalkExit');
+  var scripts = [].map.call(document.scripts, function (s) { return s.src || ''; });
+  return JSON.stringify({
+    car: gone('wng') && gone('exitCarBtn') && gone('enterBldBtn'),
+    city: gone('c') && gone('cgl') && gone('cback'),
+    px: P.x, py: P.y, wx: WALK_MODE.x,
+    exitOn: !!(exit && exit.classList.contains('show')),
+    cam: esp && esp.walkCam,
+    fov: esp && esp.camera ? Math.round(esp.camera.fov) : 0,
+    svg: !!(svg && ss && ss.display !== 'none'),
+    col: bs ? bs.flexDirection : '',
+    bw: add ? Math.round(add.getBoundingClientRect().width) : 0,
+    label: add ? (add.innerText || '').replace(/\\s+/g, ' ').trim() : '',
+    traffic: scripts.some(function (s) { return s.indexOf('traffic.js?v=dev49') >= 0; }),
+    cardraw: scripts.some(function (s) { return s.indexOf('car-draw.js?v=dev49') >= 0; }),
+    boot: scripts.some(function (s) { return s.indexOf('boot.js?v=dev49') >= 0; })
+  });
+})()`;
+
+function espEval(body) {
+  return `(function () {
+    var f = document.getElementById('zdInteriorFrame');
+    var doc = f.contentDocument;
+    var esp = f.contentWindow.ESP;
+    ${body}
+  })()`;
+}
+
+const ADD_ITEM = espEval(`
+  var n0 = esp.S.items.length;
+  doc.querySelector('#btnAdd').click();
+  var sheet = doc.querySelector('#sheet');
+  var open = !!(sheet && !sheet.classList.contains('hidden'));
+  var title = (doc.querySelector('#shTitle') && doc.querySelector('#shTitle').textContent) || '';
+  var cat = doc.querySelector('.cat');
+  if (cat) cat.click();
+  var prod = doc.querySelector('.prod');
+  var name = prod ? ((prod.querySelector('b') && prod.querySelector('b').textContent) || prod.getAttribute('data-id')) : '';
+  if (prod) prod.click();
+  var n1 = esp.S.items.length;
+  var closed = doc.querySelector('#sheet').classList.contains('hidden');
+  var sel = typeof esp.selItem === 'function' && !!esp.selItem();
+  return JSON.stringify({ name: '+ Add item', pass: !!(open && /Add to your space/.test(title) && cat && prod && n1 === n0 + 1 && closed && sel), detail: 'open=' + open + ' ' + title + ' +' + (n1 - n0) + ' ' + name + ' sel=' + sel });
+`);
+
+const SAME_ITEM = espEval(`
+  var n0 = esp.S.items.length;
+  var sel = typeof esp.selItem === 'function' ? esp.selItem() : null;
+  var type = sel && sel.type;
+  doc.querySelector('#btnSame').click();
+  var on = doc.querySelector('#btnSame').classList.contains('on');
+  var stamped = !!(esp.stamp && type && esp.stamp.type === type);
+  if (esp.stamp && typeof esp.stampAt === 'function') {
+    var pts = [[innerWidth * 0.5, innerHeight * 0.45], [innerWidth * 0.42, innerHeight * 0.55], [innerWidth * 0.58, innerHeight * 0.5], [innerWidth * 0.35, innerHeight * 0.4]];
+    for (var i = 0; i < pts.length; i++) {
+      esp.stampAt(pts[i][0], pts[i][1]);
+      if (esp.S.items.length > n0) break;
+    }
+  }
+  var n1 = esp.S.items.length;
+  var copy = n1 > n0 && esp.S.items[n1 - 1] && esp.S.items[n1 - 1].type === type;
+  if (typeof esp.endStamp === 'function') esp.endStamp();
+  return JSON.stringify({ name: 'Same again', pass: !!(on && stamped && copy), detail: 'on=' + on + ' stamp=' + stamped + ' +' + (n1 - n0) + ' ' + type });
+`);
+
+const PRESET_ITEM = espEval(`
+  doc.querySelector('#btnEvents').click();
+  var sheet = doc.querySelector('#sheet');
+  var open = !!(sheet && sheet.classList.contains('presetsheet') && !sheet.classList.contains('hidden'));
+  var title = (doc.querySelector('#shTitle') && doc.querySelector('#shTitle').textContent) || '';
+  var chip = doc.querySelector('.evp');
+  var id = chip ? chip.getAttribute('data-ev') : '';
+  if (chip) chip.click();
+  var ask = doc.querySelector('#presetAsk');
+  if (ask) {
+    var ok = doc.querySelector('#paskOk');
+    if (ok) ok.click();
+  }
+  var tagged = (esp.S.items || []).some(function (it) { return !!it.preset; });
+  return JSON.stringify({ name: 'Presets', pass: !!(open && /Event presets/.test(title) && chip && tagged), detail: 'open=' + open + ' ' + title + ' ' + id + ' tagged=' + tagged });
+`);
+
+const TOP_ON = espEval(`
+  if (esp.topDown && typeof esp.setTop === 'function') esp.setTop(false);
+  doc.querySelector('#btnTop').click();
+  var span = doc.querySelector('#btnTop span').textContent;
+  return JSON.stringify({ name: 'Top view', pass: !!esp.topDown && span === '3D view', detail: 'top=' + !!esp.topDown + ' ' + span });
+`);
+
+const TOP_OFF = espEval(`
+  if (esp.topDown) doc.querySelector('#btnTop').click();
+  return JSON.stringify({ off: !esp.topDown, span: doc.querySelector('#btnTop span').textContent });
+`);
+
+const DRAG_READ = espEval(`
+  return JSON.stringify({ label: doc.querySelector('#btnPanMode span').textContent, pan: !!esp.panMode });
+`);
+
+const DRAG_CLICK = espEval(`
+  doc.querySelector('#btnPanMode').click();
+  return JSON.stringify({ label: doc.querySelector('#btnPanMode span').textContent, pan: !!esp.panMode });
+`);
+
+const WALL_CLICK = espEval(`
+  doc.querySelector('#btnWallsView').click();
+  var label = doc.querySelector('#btnWallsView span').textContent;
+  var ht = typeof esp.wallHt === 'function' ? esp.wallHt() : -1;
+  var want = label === 'Walls: Full' ? 9 : label === 'Walls: Hidden' ? 0.08 : label === 'Walls: Low' ? esp.WALL_H : null;
+  return JSON.stringify({ label: label, ht: ht, htOk: want != null && Math.abs(ht - want) < 0.02, view: esp.wallsView });
+`);
+
+const RESET_WALK = espEval(`
+  if (esp.topDown && typeof esp.setTop === 'function') esp.setTop(false);
+  if (esp.panMode && typeof esp.setPanMode === 'function') esp.setPanMode(false);
+  if (typeof esp.endStamp === 'function') esp.endStamp();
+  if (typeof esp.closeSheet === 'function') esp.closeSheet();
+  if (typeof esp.setWallsView === 'function') esp.setWallsView('low');
+  if (typeof esp.setWalkCam === 'function') esp.setWalkCam('chase');
+  return JSON.stringify({ cam: esp.walkCam, walls: esp.wallsView, top: !!esp.topDown, pan: !!esp.panMode });
+`);
+
+function setCam(mode) {
+  return espEval(`
+    if (typeof esp.setWalkCam === 'function') esp.setWalkCam('${mode}');
+    if (esp.frame) esp.frame();
+    return JSON.stringify({ cam: esp.walkCam, fov: esp.camera ? Math.round(esp.camera.fov) : 0, pitch: Math.round(esp.V.pitch * 100) / 100, dist: Math.round(esp.V.dist) });
+  `);
+}
+
+async function railCheck(cdp, vp, log) {
+  const phone = vp.id === 'phone-844';
+  const rows = [];
+  const roomCam = JSON.parse(await evalJson(cdp, setCam('room')));
+  await sleep(300);
+  rows.push(JSON.parse(await evalJson(cdp, ADD_ITEM)));
+  rows.push(JSON.parse(await evalJson(cdp, SAME_ITEM)));
+  rows.push(JSON.parse(await evalJson(cdp, PRESET_ITEM)));
+  const top = JSON.parse(await evalJson(cdp, TOP_ON));
+  rows.push(top);
+  if (phone) {
+    await evalJson(cdp, labelExpr('phone-844  Top view'));
+    await sleep(250);
+    await shot(cdp, 'phone-844-7-top.png');
+  }
+  await evalJson(cdp, TOP_OFF);
+  await evalJson(cdp, setCam('room'));
+  await evalJson(cdp, espEval(`if (esp.panMode) esp.setPanMode(false); return JSON.stringify({ok:1});`));
+  const dragTurn = JSON.parse(await evalJson(cdp, DRAG_READ));
+  if (phone) {
+    await evalJson(cdp, labelExpr('phone-844  Drag: Turn'));
+    await sleep(200);
+    await shot(cdp, 'phone-844-8-drag-turn.png');
+  }
+  const dragPan = JSON.parse(await evalJson(cdp, DRAG_CLICK));
+  if (phone) {
+    await evalJson(cdp, labelExpr('phone-844  Drag: Pan'));
+    await sleep(200);
+    await shot(cdp, 'phone-844-9-drag-pan.png');
+  }
+  const dragBack = JSON.parse(await evalJson(cdp, DRAG_CLICK));
+  rows.push({
+    name: 'Drag: Turn',
+    pass: dragTurn.label === 'Drag: Turn' && dragTurn.pan === false && dragPan.label === 'Drag: Pan' && dragPan.pan === true && dragBack.label === 'Drag: Turn' && dragBack.pan === false,
+    detail: dragTurn.label + ' -> ' + dragPan.label + ' -> ' + dragBack.label
+  });
+  const walls = [];
+  for (let i = 0; i < 3; i++) {
+    const w = JSON.parse(await evalJson(cdp, WALL_CLICK));
+    walls.push(w);
+    if (phone) {
+      await evalJson(cdp, labelExpr('phone-844  ' + (w.label || 'Walls')));
+      await sleep(250);
+      await shot(cdp, 'phone-844-wall-' + String(w.label || 'x').split(': ').pop().toLowerCase() + '.png');
+    }
+  }
+  rows.push({
+    name: 'Walls: Low',
+    pass: walls.map((w) => w.label).join(',') === 'Walls: Full,Walls: Hidden,Walls: Low' && walls.every((w) => w.htOk),
+    detail: walls.map((w) => w.label + ' ht=' + w.ht).join(' ')
+  });
+  await evalJson(cdp, RESET_WALK);
+  log.buttons = rows;
+  log.roomCam = roomCam;
+  const bad = rows.filter((r) => !r.pass);
+  if (bad.length) throw new Error('rail buttons ' + JSON.stringify(rows));
+}
 
 async function shot(cdp, name) {
   const pic = await cdp.send('Page.captureScreenshot', { format: 'png', fromSurface: true });
@@ -503,6 +705,29 @@ async function runViewport(vp) {
     const overlap = JSON.parse(await evalJson(chrome.cdp, OVERLAP));
     inside.overlap = overlap;
     if (overlap.bad) throw new Error('overlap ' + JSON.stringify({ hits: overlap.hits, clip: overlap.clip, boxes: overlap.boxes }));
+    const roomCheck = JSON.parse(await evalJson(chrome.cdp, ROOM_CHECK));
+    inside.roomCheck = roomCheck;
+    const buf = (inside.render.buf[0] || 0) * (inside.render.buf[1] || 0);
+    inside.bufPx = buf;
+    if (!roomCheck.car) throw new Error('ENTER CAR still inside the room ' + JSON.stringify(roomCheck));
+    if (!roomCheck.city) throw new Error('city canvas still visible in the room ' + JSON.stringify(roomCheck));
+    if (roomCheck.px > 8000) throw new Error('car moved into the room ' + JSON.stringify(roomCheck));
+    if (roomCheck.exitOn) throw new Error('EXIT is showing away from the door ' + JSON.stringify(roomCheck));
+    if (roomCheck.cam !== 'chase' || roomCheck.fov < 50) throw new Error('chase cam is not locked ' + JSON.stringify(roomCheck));
+    if (!roomCheck.svg || roomCheck.col !== 'column' || roomCheck.bw < 70 || roomCheck.bw > 74) throw new Error('rail tiles moved or lost their icons ' + JSON.stringify(roomCheck));
+    if (!roomCheck.traffic || !roomCheck.cardraw || !roomCheck.boot) throw new Error('traffic scripts were not the dev49 copies ' + JSON.stringify(roomCheck));
+    if (buf > 844 * 390 * 1.08) throw new Error('walk buffer is larger than a phone frame ' + JSON.stringify(inside.render));
+    if (vp.id === 'phone-844') {
+      await evalJson(chrome.cdp, labelExpr('phone-844  chase cam behind the player'));
+      await sleep(300);
+      await shot(chrome.cdp, 'phone-844-5-chase.png');
+      await evalJson(chrome.cdp, setCam('room'));
+      await sleep(400);
+      await evalJson(chrome.cdp, labelExpr('phone-844  angled room camera'));
+      await shot(chrome.cdp, 'phone-844-6-room-cam.png');
+      await evalJson(chrome.cdp, setCam('chase'));
+    }
+    if (vp.id === 'phone-844') await railCheck(chrome.cdp, vp, log);
     log.steps.push({ step: 'room', state: inside });
     await evalJson(chrome.cdp, labelExpr(vp.id + '  HOME 1 walk-in  BUILD ROOM  ' + inside.fps));
     await sleep(400);
