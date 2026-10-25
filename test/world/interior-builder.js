@@ -287,7 +287,7 @@
         room: id,
         fw: size.fw,
         fd: size.fd,
-        title: size.title,
+        title: interiorLabel(door),
         from: from || 'dev',
         layout: rec && rec.layout
       });
@@ -584,6 +584,16 @@
     var named = rowMatch(signText(live) + ' ' + signText(b) + ' ' + (b.name || '') + ' ' + (live.purposeLabel || '') + ' ' + ((door && door.purposeLabel) || ''));
     var title = (named && named.purpose === purpose) ? (named.purpose + ' ' + named.n) : (signText(live) || signText(b) || (door && door.purposeLabel) || purpose);
     return { purpose: purpose, n: named && named.purpose === purpose ? named.n : 1, title: title || purpose };
+  }
+
+  function interiorLabel(door) {
+    var rank = exploreOf(door);
+    var base = 'Room';
+    if (door && door.direct) base = 'HOME';
+    else if (rank && rank.title) base = rank.title;
+    else if (rank) base = rank.purpose + ' ' + rank.n;
+    if (!/interior\s*$/i.test(base)) base += ' Interior';
+    return base;
   }
 
   function nearDoor(pack, x, z) {
@@ -978,6 +988,7 @@
     var id = roomOf(door);
     var rec = rooms[id];
     var size = feetFor(door, (door && door.purpose) || 'Room');
+    size.title = interiorLabel(door);
     var esp = frameEsp();
     if (esp && typeof esp.setWalk === 'function' && openOpts && openOpts.room === id && plannerOpen()) {
       openOpts.mode = 'walk';
@@ -1009,6 +1020,7 @@
     }
     var rec = rooms[id];
     var size = feetFor(door, (door && door.purpose) || 'Room');
+    size.title = interiorLabel(door);
     openFrame({
       room: id,
       fw: size.fw,
@@ -1194,7 +1206,12 @@
       + '#zdWalkExit.show{display:inline-flex}'
       + 'body[data-ib-room] #zdWalkExit{pointer-events:auto!important}'
       + '#zdWalkFps{position:fixed;top:calc(env(safe-area-inset-top, 0px) + 8px);right:calc(env(safe-area-inset-right, 0px) + 88px);z-index:232;display:none;pointer-events:none;margin:0;padding:2px 7px;border-radius:8px;border:1px solid rgba(232,255,244,.55);font:700 13px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#e8fff4;background:rgba(7,4,16,.86)}'
-      + 'body[data-ib-room] #devOpen{top:60px!important;left:8px!important}'
+      + 'body[data-ib-world] #devOpen{top:60px!important;left:8px!important;z-index:236!important}'
+      + 'body[data-ib-world] #kOver{display:none!important}'
+      + 'html.room-direct #kOver{display:none!important}'
+      + '#zdWalkTitle{position:fixed;top:calc(env(safe-area-inset-top, 0px) + 12px);left:172px;right:96px;transform:none;z-index:234;display:none;margin:0;padding:4px 8px;border-radius:10px;border:2px solid #3ee6ff;background:rgba(8,4,20,.9);color:#fff;font:800 12px/1.2 Orbitron,sans-serif;text-align:center;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+      + 'body[data-ib-world] #zdWalkTitle.show{display:block}'
+      + 'body[data-ib-world] #zdWalkFps{right:calc(env(safe-area-inset-right, 0px) + 8px)!important;top:calc(env(safe-area-inset-top, 0px) + 8px)!important}'
       + '#zdWalkFps.show{display:block}'
       + 'body[data-ib-room] #kid{z-index:230!important;background:transparent!important;pointer-events:none!important}'
       + 'body[data-ib-room] #kid .kbody{background:transparent!important;pointer-events:none!important}'
@@ -1205,6 +1222,7 @@
       + 'body[data-ib-room] #tup,body[data-ib-room] #nos,body[data-ib-room] #brk,body[data-ib-room] #emoteBtn,body[data-ib-room] #kMenuB,body[data-ib-room] #zdWalkAct,body[data-ib-room] #zdWalkCam,body[data-ib-room] #devOpen{pointer-events:auto!important}'
       + 'body[data-ib-sheet] #tup,body[data-ib-sheet] #nos,body[data-ib-sheet] #brk,body[data-ib-sheet] #emoteBtn{visibility:hidden!important}'
       + 'body[data-ib-world] #wng,body[data-ib-world] #exitCarBtn,body[data-ib-world] #enterBldBtn{display:none!important;visibility:hidden!important}'
+      + 'body[data-ib-world]:not([data-ib-room]) #tup,body[data-ib-world]:not([data-ib-room]) #nos,body[data-ib-world]:not([data-ib-room]) #brk,body[data-ib-world]:not([data-ib-room]) #emoteBtn,body[data-ib-world]:not([data-ib-room]) #emoteWheel,body[data-ib-world]:not([data-ib-room]) #kMenuB{visibility:hidden!important;pointer-events:none!important}'
       + 'body[data-ib-world] #c,body[data-ib-world] #cgl,body[data-ib-world] #cback{visibility:hidden!important}';
     if (document.head) document.head.appendChild(css);
     actBtn = document.createElement('button');
@@ -1256,6 +1274,10 @@
       camBtn.setAttribute('aria-label', next === 'room' ? 'Room camera' : 'Chase camera');
     });
     document.body.appendChild(camBtn);
+    var title = document.createElement('div');
+    title.id = 'zdWalkTitle';
+    title.textContent = 'Room Interior';
+    document.body.appendChild(title);
   }
 
   function paintAct(mode, rank) {
@@ -1321,6 +1343,12 @@
     else hideAct();
     var exitBtn = typeof document !== 'undefined' && document.getElementById && document.getElementById('zdWalkExit');
     if (exitBtn && exitBtn.classList) exitBtn.classList.toggle('show', !!(inWalk && wm && atInsideDoor(wm)));
+    var titleEl = typeof document !== 'undefined' && document.getElementById && document.getElementById('zdWalkTitle');
+    if (titleEl && titleEl.classList) {
+      var named = wm && wm._ibWorld ? interiorLabel(wm.insideDoor) : '';
+      titleEl.textContent = named;
+      titleEl.classList.toggle('show', !!named);
+    }
     var camBtn = typeof document !== 'undefined' && document.getElementById && document.getElementById('zdWalkCam');
     if (camBtn && camBtn.classList) {
       camBtn.classList.toggle('show', !!inWalk);
@@ -1343,7 +1371,7 @@
       pc.style.zIndex = inside ? '97' : '';
       pc.style.visibility = inRoom ? 'hidden' : '';
     }
-    if (inWalk) {
+    if (inWalk || editing) {
       try {
         var frFit = document.getElementById('zdInteriorFrame');
         var espFit = frFit && frFit.contentWindow && frFit.contentWindow.ESP;
@@ -1508,6 +1536,10 @@
     P.v = 0;
     P.ground = true;
     try {
+      try { flying = true; paused = false; } catch (eFly) {}
+      var menu = typeof document !== 'undefined' && document.getElementById && document.getElementById('kOver');
+      if (menu && menu.classList) menu.classList.add('hidden');
+      if (document.documentElement && document.documentElement.classList) document.documentElement.classList.add('room-direct');
       enterExplore(wm, door, null);
       if (typeof window !== 'undefined') window.__zdRoomEntered = 1;
       return true;
@@ -1585,6 +1617,7 @@
     pack: packFor,
     FT: FT,
     exploreOf: exploreOf,
+    interiorLabel: interiorLabel,
     parkSpot: parkSpot,
     doorsOf: doorsFromLayout,
     nearDoor: nearDoor,

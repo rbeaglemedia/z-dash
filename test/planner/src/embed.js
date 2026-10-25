@@ -185,15 +185,19 @@ function walkStyle() {
   const css = document.createElement('style');
   css.id = 'zdWalkCss';
   css.textContent = ''
-    + 'body.zd-walk header.bar,body.zd-walk #modes,body.zd-walk #toolsBuild,body.zd-walk #toolsPlace,body.zd-walk #drawTools,body.zd-walk #presets,body.zd-walk #hist,body.zd-walk #snapHint,body.zd-walk #lvlBar,body.zd-walk #hint,body.zd-walk #btnClear,body.zd-walk .ver,body.zd-walk #simBar,body.zd-walk #labels,body.zd-walk #presetTip,body.zd-walk #stampBar,body.zd-walk #selBar,body.zd-walk #btnShare,body.zd-walk #btnRun,body.zd-walk #btnQuote{display:none!important}'
-    + 'body.zd-walk #rail{display:grid!important;grid-auto-flow:column;align-content:start;justify-items:stretch}'
-    + 'body.zd-walk #rail button.hidden,body.zd-walk #btnShare,body.zd-walk #btnRun,body.zd-walk #btnQuote{display:none!important}'
-    + 'body.zd-walk #rail button:not(.hidden){display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:12px;border:1px solid #ffffff40;background:color-mix(in srgb,var(--surface) 91%,transparent);color:var(--fg);padding:2px 1px;font-weight:600;font-size:9px;line-height:1.05;overflow:hidden;box-sizing:border-box;min-height:0!important}'
-    + 'body.zd-walk #rail button svg{display:block!important;width:14px;height:14px;flex:0 0 auto;margin:0!important}'
-    + 'body.zd-walk #rail button span{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.05}'
-    + 'body.zd-walk #rail button.on{background:var(--accent);color:var(--on-action);border-color:var(--accent)}'
-    + 'body.zd-walk #rail #btnAdd{background:var(--action);color:var(--on-action);border-color:var(--action)}'
-    + 'body.zd-walk #sheet{z-index:12}';
+    + 'body.zd-walk header.bar,body.zd-walk #modes,body.zd-walk #toolsBuild,body.zd-walk #toolsPlace,body.zd-walk #drawTools,body.zd-walk #presets,body.zd-walk #hist,body.zd-walk #snapHint,body.zd-walk #lvlBar,body.zd-walk #hint,body.zd-walk #btnClear,body.zd-walk .ver,body.zd-walk #simBar,body.zd-walk #labels,body.zd-walk #presetTip,body.zd-walk #stampBar,body.zd-walk #selBar{display:none!important}'
+    + 'body.zd-embed #btnShare,body.zd-embed #btnRun,body.zd-embed #btnQuote,body.zd-embed #btnExitStreet,body.zd-embed #sizeLbl,body.zd-embed #snapHint,body.zd-embed #btnClear,body.zd-embed #lvlBar{display:none!important}'
+    + 'body.zd-embed header.bar{padding-right:112px;box-sizing:border-box}'
+    + 'body.zd-embed #rail{display:grid!important;grid-auto-flow:column;align-content:start;justify-items:stretch;top:8px;overflow:hidden;z-index:6}'
+    + 'body.zd-embed.zd-build #hint{left:12px;right:96px;transform:none;max-width:none;width:auto;text-align:left;pointer-events:none;z-index:4}'
+    + 'body.zd-embed #rail button.hidden,body.zd-embed #btnShare,body.zd-embed #btnRun,body.zd-embed #btnQuote{display:none!important}'
+    + 'body.zd-embed #rail button:not(.hidden){display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:12px;border:1px solid #ffffff40;background:color-mix(in srgb,var(--surface) 91%,transparent);color:var(--fg);padding:2px 1px;font-weight:600;font-size:9px;line-height:1.05;overflow:hidden;box-sizing:border-box;min-height:0!important}'
+    + 'body.zd-embed #rail button svg{display:block!important;width:14px;height:14px;flex:0 0 auto;margin:0!important}'
+    + 'body.zd-embed #rail button span{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.05}'
+    + 'body.zd-embed #rail button.on{background:var(--accent);color:var(--on-action);border-color:var(--accent)}'
+    + 'body.zd-embed #rail #btnAdd{background:var(--action);color:var(--on-action);border-color:var(--action)}'
+    + 'body.zd-embed #sheet{z-index:12}'
+    + '@media (max-height:450px){body.zd-embed.zd-build #hint{display:none!important}}';
   document.head.appendChild(css);
 }
 
@@ -367,6 +371,16 @@ function parentHudBox(id) {
   return { x: x, y: y, r: right, b: bottom };
 }
 
+function localBox(sel) {
+  const el = ESP.$(sel);
+  if (!el || !el.getBoundingClientRect) return null;
+  const s = getComputedStyle(el);
+  if (s.display === 'none' || s.visibility === 'hidden' || s.opacity === '0') return null;
+  const r = el.getBoundingClientRect();
+  if (r.width < 2 || r.height < 2) return null;
+  return { x: r.left, y: r.top, r: r.right, b: r.bottom };
+}
+
 function fitWalkRail() {
   const rail = ESP.$('#rail');
   if (!rail) return;
@@ -379,9 +393,15 @@ function fitWalkRail() {
   const gap = 4;
   const btnW = 72;
   const minH = 18;
-  const obs = ['kMenuB', 'exitCarBtn', 'tup', 'nos', 'brk', 'wng', 'emoteBtn', 'zdWalkAct', 'zdWalkExit', 'zdWalkCam', 'devOpen', 'enterBldBtn'].map(parentHudBox).filter(Boolean);
+  const obs = ['kMenuB', 'exitCarBtn', 'tup', 'nos', 'brk', 'wng', 'emoteBtn', 'zdWalkAct', 'zdWalkExit', 'zdWalkCam', 'zdWalkTitle', 'zdWalkFps', 'devOpen', 'enterBldBtn'].map(parentHudBox).filter(Boolean);
+  ['header.bar', '#modes', '#drawTools', '#hint'].forEach(function (sel) {
+    const box = localBox(sel);
+    if (box) obs.push(box);
+  });
   const rightJoy = obs.filter(function (o) { return o.x > w * 0.45 && o.b > h * 0.4; });
-  const floor = (rightJoy.length ? Math.min.apply(null, rightJoy.map(function (o) { return o.y; })) : h) - 8;
+  let floor = (rightJoy.length ? Math.min.apply(null, rightJoy.map(function (o) { return o.y; })) : h) - 8;
+  const foot = localBox('#toolsBuild') || localBox('#toolsPlace');
+  if (foot && foot.y > 48) floor = Math.min(floor, foot.y - 8);
   function planFor(cols) {
     const rows = Math.ceil(n / cols);
     const railW = cols * btnW + (cols - 1) * gap;
@@ -490,21 +510,18 @@ export function bootEmbed() {
   ESP.showScreen('build');
   installWalkCam();
   walkStyle();
+  if (document.body) document.body.classList.add('zd-embed');
   const home = ESP.$('#btnHome');
   if (home) home.onclick = function () {
     ESP.saveNow();
     post(embed.from === 'walk' ? 'zd-interior-back' : 'zd-interior-exit');
   };
-  const bar = ESP.$('header.bar');
-  if (bar && !ESP.$('#btnExitStreet')) {
-    const exit = document.createElement('button');
-    exit.id = 'btnExitStreet';
-    exit.type = 'button';
-    exit.textContent = 'Exit to street';
-    exit.setAttribute('aria-label', 'Exit to street');
-    exit.onclick = function () { ESP.saveNow(); post('zd-interior-exit'); };
-    bar.appendChild(exit);
-  }
+  const done = ESP.$('#btnWallsDone');
+  if (done && embed.from === 'walk') done.onclick = function () {
+    if (typeof ESP.commitEdit === 'function') ESP.commitEdit();
+    ESP.saveNow();
+    post('zd-interior-back');
+  };
   ESP.walkPose = function walkPose(p) {
     ESP.walkPoseData = p || null;
     drawActor(p && p.segs);
@@ -525,7 +542,11 @@ export function bootEmbed() {
     ESP.walkOn = !!on;
     ESP.sim = null;
     if (typeof ESP.simStop === 'function') ESP.simStop();
-    if (document.body) document.body.classList.toggle('zd-walk', !!on);
+    if (document.body) {
+      document.body.classList.add('zd-embed');
+      document.body.classList.toggle('zd-walk', !!on);
+      document.body.classList.toggle('zd-build', !on);
+    }
     walkFloor(!!on);
     if (on) {
       if (!was) {
@@ -537,19 +558,21 @@ export function bootEmbed() {
       if (typeof ESP.endStamp === 'function') ESP.endStamp();
       if (typeof ESP.closeSheet === 'function') ESP.closeSheet();
       if (ESP.phase !== 'place' && typeof ESP.setPhase === 'function') ESP.setPhase('place');
-      mountWalkRail();
       ensureActor();
     } else {
       setFov(PLAN_FOV);
       ESP.walkHeld = false;
-      restoreWalkRail();
       if (typeof ESP.setPhase === 'function') ESP.setPhase('build');
     }
+    mountWalkRail();
     if (typeof ESP.resize === 'function') ESP.resize();
     if (ESP.frame) ESP.frame();
+    fitWalkRail();
   };
   ESP.fitWalkRail = fitWalkRail;
-  addEventListener('resize', function () { if (ESP.walkOn) fitWalkRail(); });
+  addEventListener('resize', function () {
+    if (document.body && (document.body.classList.contains('zd-walk') || document.body.classList.contains('zd-build'))) fitWalkRail();
+  });
   if (embed.walk) ESP.setWalk(true);
   if (document.body) document.body.dataset.ready = '1';
   try { window.ESP = ESP; } catch (e) {}

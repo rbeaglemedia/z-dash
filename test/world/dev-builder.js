@@ -1503,6 +1503,7 @@
 
   function placeOpenBtn() {
     if (!devBtn || !devBtn.style) return;
+    if (document.body && document.body.dataset && document.body.dataset.ibWorld) return;
     var top = 156, left = 56;
     var cv = document.getElementById && document.getElementById('c');
     if (miniHit && cv && cv.getBoundingClientRect && cv.width) {

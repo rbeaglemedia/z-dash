@@ -42,8 +42,12 @@ function boot(store) {
 const src = fs.readFileSync(path.join(root, 'test/world/interior-builder.js'), 'utf8');
 const embed = fs.readFileSync(path.join(root, 'test/planner/src/embed.js'), 'utf8');
 assert(!/\.shadowBlur/.test(src), 'interior builder does not set shadowBlur');
-assert(src.includes('Exit to street') === false, 'exit label stays in the planner');
-assert(embed.includes('Exit to street'), 'the planner shows Exit to street');
+assert(src.includes('Exit to street') === false, 'exit label stays off the world page');
+assert(embed.includes('Exit to street') === false, 'Done returns to the room instead of Exit to street');
+assert(embed.includes("post('zd-interior-back')"), 'Done and back return to explore');
+assert(src.includes('interiorLabel'), 'the building name is labeled');
+assert(src.includes('html.room-direct #kOver'), 'the direct room hides the world menu');
+assert(src.includes('body[data-ib-world] #devOpen{top:60px'), 'DEV stays off the builder tool row');
 assert(embed.includes("setPhase('build')"), 'a new room opens in build mode');
 assert(embed.includes("setPhase('place')"), 'a saved room opens ready to place objects');
 assert(embed.includes('zd-interior-save'), 'a save tells the world');
@@ -164,6 +168,8 @@ again.INTERIOR_BUILDER.hook();
 again.walkRoomStep(plain, 0.16);
 assert.strictEqual(usedDefault, 0, 'an enterable building does not use the old room step');
 
+assert.strictEqual(IB.interiorLabel({ direct: 1, purpose: 'HOME', building: { purpose: 'HOME', oid: 'direct', name: 'ROOM' } }), 'HOME Interior');
+assert.strictEqual(IB.interiorLabel({ purpose: 'HOME', building: { oid: 99, purpose: 'HOME', sign: { t: 'HOME 2', word: 'HOME 2' } } }), 'HOME 2 Interior');
 const ranked = IB.exploreOf({ purpose: 'HOME', building: { oid: 19, purpose: 'HOME', sign: { t: 'HOME 1' } } });
 assert.strictEqual(ranked.purpose, 'HOME');
 assert.strictEqual(ranked.n, 1, 'HOME 1 is an explore door');
