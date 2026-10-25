@@ -1,0 +1,1259 @@
+[
+  {
+    "id": "phone-844",
+    "steps": [
+      {
+        "step": "door",
+        "state": {
+          "world": false,
+          "inside": false,
+          "onFoot": false,
+          "x": -224,
+          "z": -654,
+          "room": "",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:enter:ENTERHOME 1",
+          "dev": true,
+          "enterTop": false,
+          "fps": "-- FPS",
+          "planner": false,
+          "walk": false,
+          "edit": false,
+          "hold": 0,
+          "paused": false,
+          "actor": 0,
+          "rail": "",
+          "hud": "THROTTLEHOLD 109x109",
+          "crewErr": ""
+        }
+      },
+      {
+        "step": "room",
+        "state": {
+          "world": true,
+          "inside": false,
+          "onFoot": true,
+          "x": 9009.144,
+          "z": 9001.4,
+          "room": "HOME",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:build:BUILDROOM",
+          "dev": true,
+          "enterTop": false,
+          "fps": "20 FPS",
+          "planner": true,
+          "walk": true,
+          "edit": false,
+          "hold": 6,
+          "paused": true,
+          "actor": 31,
+          "rail": "Add item Same again Presets Top view Drag: Turn Walls: Low",
+          "hud": "WALKHOLD 109x109",
+          "crewErr": "",
+          "render": {
+            "fps": "20 FPS",
+            "ratio": 1,
+            "buf": [
+              844,
+              390
+            ],
+            "calls": 40,
+            "tris": 932
+          },
+          "overlap": {
+            "bad": false,
+            "hits": [],
+            "clip": [],
+            "n": 15,
+            "boxes": [
+              "tup 715,261 109x109",
+              "nos 17,258 115x115",
+              "brk 20,157 90x90",
+              "emoteBtn 377,280 90x90",
+              "kMenuB 584,2 48x48",
+              "zdWalkAct 8,8 97x44",
+              "zdWalkCam 8,108 64x28",
+              "zdWalkFps 693,8 63x22",
+              "devOpen 8,60 51x44",
+              "btnAdd 764,8 72x37",
+              "btnSame 764,49 72x37",
+              "btnEvents 764,90 72x37",
+              "btnTop 764,131 72x37",
+              "btnPanMode 764,172 72x37",
+              "btnWallsView 764,213 72x37"
+            ]
+          },
+          "roomCheck": {
+            "car": true,
+            "city": true,
+            "px": -224,
+            "py": 0.2,
+            "wx": 9009.144,
+            "exitOn": false,
+            "cam": "chase",
+            "fov": 58,
+            "svg": true,
+            "col": "column",
+            "bw": 72,
+            "label": "Add item",
+            "traffic": true,
+            "cardraw": true,
+            "boot": true
+          },
+          "bufPx": 329160
+        }
+      },
+      {
+        "step": "planner",
+        "planner": {
+          "ready": true,
+          "box": "\u25ad Box",
+          "walls": "\u2310 Walls",
+          "door": "\u25af Door",
+          "place": "Place objects",
+          "build": "Builder",
+          "size": "60 x 80 ft \u00b7 4800 sq ft",
+          "editing": true
+        }
+      },
+      {
+        "step": "saved",
+        "state": {
+          "world": true,
+          "inside": false,
+          "onFoot": true,
+          "x": 9009.144,
+          "z": 9001.4,
+          "room": "HOME",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:build:BUILDROOM",
+          "dev": true,
+          "enterTop": false,
+          "fps": "15 FPS",
+          "planner": true,
+          "walk": true,
+          "edit": false,
+          "hold": 816,
+          "paused": true,
+          "actor": 31,
+          "rail": "Add item Same again Presets Top view Drag: Turn Walls: Low",
+          "hud": "WALKHOLD 109x109",
+          "crewErr": "",
+          "render": {
+            "fps": "15 FPS",
+            "ratio": 1,
+            "buf": [
+              844,
+              390
+            ],
+            "calls": 608,
+            "tris": 21368
+          }
+        },
+        "item": {
+          "id": "HOME:1",
+          "items": [
+            "6 ft banquet table",
+            "6 ft banquet table",
+            "10 \u00d7 10 booth (back and side walls)",
+            "6 ft banquet table",
+            "55 in TV",
+            "Laptop",
+            "iPad on a stand",
+            "LED poster display",
+            "10 \u00d7 10 booth (back and side walls)",
+            "6 ft banquet table",
+            "55 in TV",
+            "iPad on a stand",
+            "LED poster display",
+            "10 \u00d7 10 booth (back and side walls)",
+            "6 ft banquet table",
+            "55 in TV",
+            "Laptop",
+            "iPad on a stand",
+            "LED poster display",
+            "10 \u00d7 10 booth (back and side walls)",
+            "6 ft banquet table",
+            "55 in TV",
+            "iPad on a stand",
+            "LED poster display",
+            "10 \u00d7 10 booth (back and side walls)",
+            "6 ft banquet table",
+            "55 in TV",
+            "Laptop",
+            "iPad on a stand",
+            "LED poster display",
+            "10 \u00d7 10 booth (back and side walls)",
+            "6 ft banquet table",
+            "55 in TV",
+            "iPad on a stand",
+            "LED poster display",
+            "10 \u00d7 10 booth (back and side walls)",
+            "6 ft banquet table",
+            "55 in TV",
+            "Laptop",
+            "iPad on a stand",
+            "LED poster display",
+            "10 \u00d7 10 booth (back and side walls)",
+            "6 ft banquet table",
+            "55 in TV",
+            "iPad on a stand",
+            "LED poster display",
+            "10 \u00d7 10 booth (back and side walls)",
+            "6 ft banquet table",
+            "55 in TV",
+            "Laptop",
+            "iPad on a stand",
+            "LED poster display",
+            "Charging tower",
+            "Charging tower",
+            "LED video wall (6 \u00d7 4 panels)",
+            "6 ft banquet table"
+          ],
+          "world": true,
+          "legacy": false
+        }
+      }
+    ],
+    "homes": [
+      "CAFE 1 oid 15",
+      "CAFE 1 oid 20",
+      "CAFE 2 oid 22",
+      "CAFE 3 oid 24",
+      "CAFE 4 oid 26",
+      "HOME 1 oid 1",
+      "HOME 1 oid 19",
+      "HOME 2 oid 21",
+      "HOME 3 oid 23",
+      "HOME 4 oid 25"
+    ],
+    "buttons": [
+      {
+        "name": "+ Add item",
+        "pass": true,
+        "detail": "open=true Add to your space +1 6 ft banquet table sel=true"
+      },
+      {
+        "name": "Same again",
+        "pass": true,
+        "detail": "on=true stamp=true +1 table6"
+      },
+      {
+        "name": "Presets",
+        "pass": true,
+        "detail": "open=true Event presets booth tagged=true"
+      },
+      {
+        "name": "Top view",
+        "pass": true,
+        "detail": "top=true 3D view"
+      },
+      {
+        "name": "Drag: Turn",
+        "pass": true,
+        "detail": "Drag: Turn -> Drag: Pan -> Drag: Turn"
+      },
+      {
+        "name": "Walls: Low",
+        "pass": true,
+        "detail": "Walls: Full ht=9 Walls: Hidden ht=0.08 Walls: Low ht=1.5"
+      }
+    ],
+    "roomCam": {
+      "cam": "room",
+      "fov": 40,
+      "pitch": 0.62,
+      "dist": 100
+    },
+    "placed": "6 ft banquet table",
+    "doors": [
+      {
+        "name": "HOME 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 2",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 2",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 3",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 3",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 4",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 4",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      }
+    ],
+    "ok": true
+  },
+  {
+    "id": "galaxy-780",
+    "steps": [
+      {
+        "step": "door",
+        "state": {
+          "world": false,
+          "inside": false,
+          "onFoot": false,
+          "x": -224,
+          "z": -654,
+          "room": "",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:enter:ENTERHOME 1",
+          "dev": true,
+          "enterTop": false,
+          "fps": "-- FPS",
+          "planner": false,
+          "walk": false,
+          "edit": false,
+          "hold": 0,
+          "paused": false,
+          "actor": 0,
+          "rail": "",
+          "hud": "THROTTLEHOLD 101x101",
+          "crewErr": ""
+        }
+      },
+      {
+        "step": "room",
+        "state": {
+          "world": true,
+          "inside": false,
+          "onFoot": true,
+          "x": 9009.144,
+          "z": 9001.4,
+          "room": "HOME",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:build:BUILDROOM",
+          "dev": true,
+          "enterTop": false,
+          "fps": "25 FPS",
+          "planner": true,
+          "walk": true,
+          "edit": false,
+          "hold": 6,
+          "paused": true,
+          "actor": 31,
+          "rail": "Add item Same again Presets Top view Drag: Turn Walls: Low",
+          "hud": "WALKHOLD 101x101",
+          "crewErr": "",
+          "render": {
+            "fps": "25 FPS",
+            "ratio": 1,
+            "buf": [
+              780,
+              360
+            ],
+            "calls": 40,
+            "tris": 932
+          },
+          "overlap": {
+            "bad": false,
+            "hits": [],
+            "clip": [],
+            "n": 15,
+            "boxes": [
+              "tup 659,239 101x101",
+              "nos 19,238 103x103",
+              "brk 20,142 83x83",
+              "emoteBtn 349,257 83x83",
+              "kMenuB 520,2 48x48",
+              "zdWalkAct 8,8 97x44",
+              "zdWalkCam 8,108 64x28",
+              "zdWalkFps 629,8 63x22",
+              "devOpen 8,60 51x44",
+              "btnAdd 700,8 72x33",
+              "btnSame 700,45 72x33",
+              "btnEvents 700,82 72x33",
+              "btnTop 700,119 72x33",
+              "btnPanMode 700,156 72x33",
+              "btnWallsView 700,193 72x33"
+            ]
+          },
+          "roomCheck": {
+            "car": true,
+            "city": true,
+            "px": -224,
+            "py": 0.2,
+            "wx": 9009.144,
+            "exitOn": false,
+            "cam": "chase",
+            "fov": 58,
+            "svg": true,
+            "col": "column",
+            "bw": 72,
+            "label": "Add item",
+            "traffic": true,
+            "cardraw": true,
+            "boot": true
+          },
+          "bufPx": 280800
+        }
+      },
+      {
+        "step": "planner",
+        "planner": {
+          "ready": true,
+          "box": "\u25ad Box",
+          "walls": "\u2310 Walls",
+          "door": "\u25af Door",
+          "place": "Place objects",
+          "build": "Builder",
+          "size": "60 x 80 ft \u00b7 4800 sq ft",
+          "editing": true
+        }
+      },
+      {
+        "step": "saved",
+        "state": {
+          "world": true,
+          "inside": false,
+          "onFoot": true,
+          "x": 9009.144,
+          "z": 9001.4,
+          "room": "HOME",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:build:BUILDROOM",
+          "dev": true,
+          "enterTop": false,
+          "fps": "25 FPS",
+          "planner": true,
+          "walk": true,
+          "edit": false,
+          "hold": 280,
+          "paused": true,
+          "actor": 31,
+          "rail": "Add item Same again Presets Top view Drag: Turn Walls: Low",
+          "hud": "WALKHOLD 101x101",
+          "crewErr": "",
+          "render": {
+            "fps": "25 FPS",
+            "ratio": 1,
+            "buf": [
+              780,
+              360
+            ],
+            "calls": 53,
+            "tris": 1330
+          }
+        },
+        "item": {
+          "id": "HOME:1",
+          "items": [
+            "6 ft banquet table"
+          ],
+          "world": true,
+          "legacy": false
+        }
+      }
+    ],
+    "homes": [
+      "CAFE 1 oid 15",
+      "CAFE 1 oid 20",
+      "CAFE 2 oid 22",
+      "CAFE 3 oid 24",
+      "CAFE 4 oid 26",
+      "HOME 1 oid 1",
+      "HOME 1 oid 19",
+      "HOME 2 oid 21",
+      "HOME 3 oid 23",
+      "HOME 4 oid 25"
+    ],
+    "placed": "6 ft banquet table",
+    "doors": [
+      {
+        "name": "HOME 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 2",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 2",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 3",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 3",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 4",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 4",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      }
+    ],
+    "ok": true
+  },
+  {
+    "id": "ipad-1024",
+    "steps": [
+      {
+        "step": "door",
+        "state": {
+          "world": false,
+          "inside": false,
+          "onFoot": false,
+          "x": -224,
+          "z": -654,
+          "room": "",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:enter:ENTERHOME 1",
+          "dev": true,
+          "enterTop": false,
+          "fps": "-- FPS",
+          "planner": false,
+          "walk": false,
+          "edit": false,
+          "hold": 0,
+          "paused": false,
+          "actor": 0,
+          "rail": "",
+          "hud": "THROTTLEHOLD 108x108",
+          "crewErr": ""
+        }
+      },
+      {
+        "step": "room",
+        "state": {
+          "world": true,
+          "inside": false,
+          "onFoot": true,
+          "x": 9009.144,
+          "z": 9001.4,
+          "room": "HOME",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:build:BUILDROOM",
+          "dev": true,
+          "enterTop": false,
+          "fps": "23 FPS",
+          "planner": true,
+          "walk": true,
+          "edit": false,
+          "hold": 6,
+          "paused": true,
+          "actor": 31,
+          "rail": "Add item Same again Presets Top view Drag: Turn Walls: Low",
+          "hud": "WALKHOLD 108x108",
+          "crewErr": "",
+          "render": {
+            "fps": "23 FPS",
+            "ratio": 1,
+            "buf": [
+              662,
+              497
+            ],
+            "calls": 40,
+            "tris": 932
+          },
+          "overlap": {
+            "bad": false,
+            "hits": [],
+            "clip": [],
+            "n": 15,
+            "boxes": [
+              "tup 898,638 108x108",
+              "nos 15,639 111x111",
+              "brk 18,528 100x100",
+              "emoteBtn 910,414 96x96",
+              "kMenuB 944,12 64x56",
+              "zdWalkAct 8,8 97x44",
+              "zdWalkCam 8,108 64x28",
+              "zdWalkFps 873,8 63x22",
+              "devOpen 8,60 51x44",
+              "btnAdd 944,74 72x44",
+              "btnSame 944,122 72x44",
+              "btnEvents 944,170 72x44",
+              "btnTop 944,218 72x44",
+              "btnPanMode 944,266 72x44",
+              "btnWallsView 944,314 72x44"
+            ]
+          },
+          "roomCheck": {
+            "car": true,
+            "city": true,
+            "px": -224,
+            "py": 0.2,
+            "wx": 9009.144,
+            "exitOn": false,
+            "cam": "chase",
+            "fov": 58,
+            "svg": true,
+            "col": "column",
+            "bw": 72,
+            "label": "Add item",
+            "traffic": true,
+            "cardraw": true,
+            "boot": true
+          },
+          "bufPx": 329014
+        }
+      },
+      {
+        "step": "planner",
+        "planner": {
+          "ready": true,
+          "box": "\u25ad Box",
+          "walls": "\u2310 Walls",
+          "door": "\u25af Door",
+          "place": "Place objects",
+          "build": "Builder",
+          "size": "60 x 80 ft \u00b7 4800 sq ft",
+          "editing": true
+        }
+      },
+      {
+        "step": "saved",
+        "state": {
+          "world": true,
+          "inside": false,
+          "onFoot": true,
+          "x": 9009.144,
+          "z": 9001.4,
+          "room": "HOME",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:build:BUILDROOM",
+          "dev": true,
+          "enterTop": false,
+          "fps": "23 FPS",
+          "planner": true,
+          "walk": true,
+          "edit": false,
+          "hold": 264,
+          "paused": true,
+          "actor": 31,
+          "rail": "Add item Same again Presets Top view Drag: Turn Walls: Low",
+          "hud": "WALKHOLD 108x108",
+          "crewErr": "",
+          "render": {
+            "fps": "23 FPS",
+            "ratio": 1,
+            "buf": [
+              662,
+              497
+            ],
+            "calls": 53,
+            "tris": 1330
+          }
+        },
+        "item": {
+          "id": "HOME:1",
+          "items": [
+            "6 ft banquet table"
+          ],
+          "world": true,
+          "legacy": false
+        }
+      }
+    ],
+    "homes": [
+      "CAFE 1 oid 15",
+      "CAFE 1 oid 20",
+      "CAFE 2 oid 22",
+      "CAFE 3 oid 24",
+      "CAFE 4 oid 26",
+      "HOME 1 oid 1",
+      "HOME 1 oid 19",
+      "HOME 2 oid 21",
+      "HOME 3 oid 23",
+      "HOME 4 oid 25"
+    ],
+    "placed": "6 ft banquet table",
+    "doors": [
+      {
+        "name": "HOME 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 2",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 2",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 3",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 3",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 4",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 4",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      }
+    ],
+    "ok": true
+  },
+  {
+    "id": "pc-1366",
+    "steps": [
+      {
+        "step": "door",
+        "state": {
+          "world": false,
+          "inside": false,
+          "onFoot": false,
+          "x": -224,
+          "z": -654,
+          "room": "",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:enter:ENTERHOME 1",
+          "dev": true,
+          "enterTop": false,
+          "fps": "-- FPS",
+          "planner": false,
+          "walk": false,
+          "edit": false,
+          "hold": 0,
+          "paused": false,
+          "actor": 0,
+          "rail": "",
+          "hud": "THROTTLEHOLD[W / \u2191] 120x120",
+          "crewErr": ""
+        }
+      },
+      {
+        "step": "room",
+        "state": {
+          "world": true,
+          "inside": false,
+          "onFoot": true,
+          "x": 9009.144,
+          "z": 9001.4,
+          "room": "HOME",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:build:BUILDROOM",
+          "dev": true,
+          "enterTop": false,
+          "fps": "19 FPS",
+          "planner": true,
+          "walk": true,
+          "edit": false,
+          "hold": 4,
+          "paused": true,
+          "actor": 31,
+          "rail": "Add item Same again Presets Top view Drag: Turn Walls: Low",
+          "hud": "WALKHOLD[W / \u2191] 120x120",
+          "crewErr": "",
+          "render": {
+            "fps": "19 FPS",
+            "ratio": 1,
+            "buf": [
+              765,
+              430
+            ],
+            "calls": 40,
+            "tris": 932
+          },
+          "overlap": {
+            "bad": false,
+            "hits": [],
+            "clip": [],
+            "n": 15,
+            "boxes": [
+              "tup 1228,632 120x120",
+              "nos 14,640 116x116",
+              "brk 18,532 104x100",
+              "emoteBtn 637,656 92x92",
+              "kMenuB 1288,8 68x52",
+              "zdWalkAct 8,8 97x44",
+              "zdWalkCam 8,108 64x28",
+              "zdWalkFps 1215,8 63x22",
+              "devOpen 8,60 51x44",
+              "btnAdd 1286,66 72x44",
+              "btnSame 1286,114 72x44",
+              "btnEvents 1286,162 72x44",
+              "btnTop 1286,210 72x44",
+              "btnPanMode 1286,258 72x44",
+              "btnWallsView 1286,306 72x44"
+            ]
+          },
+          "roomCheck": {
+            "car": true,
+            "city": true,
+            "px": -224,
+            "py": 0.2,
+            "wx": 9009.144,
+            "exitOn": false,
+            "cam": "chase",
+            "fov": 58,
+            "svg": true,
+            "col": "column",
+            "bw": 72,
+            "label": "Add item",
+            "traffic": true,
+            "cardraw": true,
+            "boot": true
+          },
+          "bufPx": 328950
+        }
+      },
+      {
+        "step": "planner",
+        "planner": {
+          "ready": true,
+          "box": "\u25ad Box",
+          "walls": "\u2310 Walls",
+          "door": "\u25af Door",
+          "place": "Place objects",
+          "build": "Builder",
+          "size": "60 x 80 ft \u00b7 4800 sq ft",
+          "editing": true
+        }
+      },
+      {
+        "step": "saved",
+        "state": {
+          "world": true,
+          "inside": false,
+          "onFoot": true,
+          "x": 9009.144,
+          "z": 9001.4,
+          "room": "HOME",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:build:BUILDROOM",
+          "dev": true,
+          "enterTop": false,
+          "fps": "19 FPS",
+          "planner": true,
+          "walk": true,
+          "edit": false,
+          "hold": 256,
+          "paused": true,
+          "actor": 31,
+          "rail": "Add item Same again Presets Top view Drag: Turn Walls: Low",
+          "hud": "WALKHOLD[W / \u2191] 120x120",
+          "crewErr": "",
+          "render": {
+            "fps": "19 FPS",
+            "ratio": 1,
+            "buf": [
+              765,
+              430
+            ],
+            "calls": 53,
+            "tris": 1330
+          }
+        },
+        "item": {
+          "id": "HOME:1",
+          "items": [
+            "6 ft banquet table"
+          ],
+          "world": true,
+          "legacy": false
+        }
+      }
+    ],
+    "homes": [
+      "CAFE 1 oid 15",
+      "CAFE 1 oid 20",
+      "CAFE 2 oid 22",
+      "CAFE 3 oid 24",
+      "CAFE 4 oid 26",
+      "HOME 1 oid 1",
+      "HOME 1 oid 19",
+      "HOME 2 oid 21",
+      "HOME 3 oid 23",
+      "HOME 4 oid 25"
+    ],
+    "placed": "6 ft banquet table",
+    "doors": [
+      {
+        "name": "HOME 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 1",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 2",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 2",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 3",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 3",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 4",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 4",
+        "world": true,
+        "inside": false,
+        "paused": true,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      }
+    ],
+    "ok": true
+  }
+]
