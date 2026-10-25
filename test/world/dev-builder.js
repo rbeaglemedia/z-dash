@@ -1052,12 +1052,10 @@
     if (!ui || !ui.root) return;
     var btn = ui.root.querySelector('#devEnter');
     if (!btn) return;
-    var b = currentBuilding();
-    var api = window.INTERIOR_BUILDER;
-    var ok = b && api && api.canEnter && api.canEnter(b);
     btn.textContent = 'Enter';
-    btn.classList.toggle('show', !!ok);
-    if (btn.setAttribute) btn.setAttribute('aria-label', ok ? ('Enter ' + (b.name || 'building')) : 'Enter');
+    btn.classList.remove('show');
+    if (btn.style) btn.style.display = 'none';
+    if (btn.setAttribute) btn.setAttribute('hidden', '');
   }
 
   function enterInterior() {
@@ -1202,8 +1200,7 @@
       + '#devBuilder button:focus{outline:2px solid #fff;outline-offset:2px}'
       + '.phone-show{display:none}'
       + '@media (max-height:450px),(max-width:520px){#devBar,#devTools{flex-wrap:nowrap}.phone-hide{display:none !important}.phone-show{display:inline-flex}}'
-      + '#devEnter{display:none;position:absolute;left:50%;bottom:64px;transform:translateX(-50%);z-index:4;min-width:120px;background:#7dff6b;color:#04140c;border-color:#7dff6b}'
-      + '#devEnter.show{display:inline-flex}'
+      + '#devEnter,#devEnter.show{display:none !important}'
       + '#devHold{display:none;position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:70;padding:8px 14px;border-radius:12px;background:#12081c;color:#ffe14d;border:2px solid #ffb020;font:700 14px Orbitron,sans-serif;pointer-events:none}';
     document.head.appendChild(css);
     document.body.appendChild(root);
@@ -1463,6 +1460,27 @@
       z: view.z,
       n: (doc.buildings || []).length
     };
+  }
+
+  function pick(id) {
+    var b = (doc && doc.buildings || []).filter(function (q) { return q.id === id; })[0];
+    if (!b) return null;
+    if (!open) show();
+    view.mode = 'top';
+    view.x = b.x;
+    view.z = b.z;
+    view.yaw = 0;
+    var bw = Math.max(8, b.w || Math.abs((b.x1 || 0) - (b.x0 || 0)) || 16);
+    view.mpp = Math.max(0.05, CAM.openMpp(bw));
+    applyView(readView());
+    selected = [b.id];
+    tool = 'move';
+    looking = false;
+    paintTools();
+    resize();
+    draw();
+    var btn = ui && ui.root && ui.root.querySelector('#devEnter');
+    return { id: b.id, name: b.name, enter: !!(btn && btn.classList && btn.classList.contains('show')) };
   }
 
   function screenOf(id) {
@@ -1754,6 +1772,7 @@
     applies: applies,
     cam: CAM,
     frame: frame,
+    pick: pick,
     screenOf: screenOf,
     worldMarks: worldMarks,
     selfCheck: function () {

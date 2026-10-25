@@ -3,8 +3,8 @@
 <meta name="robots" content="noindex">
 <title>Neon World test</title>
 <template id="dev-builder-scripts">
-<script src="world/planner-tools.js?v=dev41"></script>
-<script src="world/dev-builder.js?v=dev41"></script>
+<script src="world/planner-tools.js?v=dev43"></script>
+<script src="world/dev-builder.js?v=dev43"></script>
 <script src="../shared/fps-counter.js"></script>
 </template>
 <script>
@@ -42,16 +42,15 @@
   fetch('../world.html', { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (html) {
     html = html.replace(/(\s(?:src|href)=")(?!https?:|\/|\.\.\/|#|data:)([^"]+)/g, '$1../$2');
     html = html.replace(/navigator\.serviceWorker\.register\s*\([^;]*\)/g, 'void 0');
+    html = html.replace(/<script src="\.\.\/world\/planner-tools\.js[^"]*"><\/script>/g, '');
+    html = html.replace(/<script src="\.\.\/world\/dev-builder\.js[^"]*"><\/script>/g, '');
+    html = html.replace(/<script src="\.\.\/world\/interior-builder\.js[^"]*"><\/script>/g, '');
     var inject = '<script>try{var q=new URLSearchParams(location.search);if(q.get("dev")==="1")window.ZD_DEV_OPEN=1;if(q.get("apply")==="0")window.ZD_DEV_APPLY=0;}catch(e){}<\/script>'
-      + '<script src="world/planner-tools.js?v=dev41"><\/script>'
-      + '<script src="world/dev-builder.js?v=dev41"><\/script>';
+      + '<script src="world/planner-tools.js?v=dev43"><\/script>'
+      + '<script src="world/dev-builder.js?v=dev43"><\/script>';
     if (html.indexOf('world/city.js') < 0) throw new Error('city');
-    if (html.indexOf('planner-tools.js') < 0) {
-      html = html.replace(/(<script src="\.\.\/world\/city\.js[^"]*"><\/script>)/, '$1' + inject);
-    }
-    var tail = '<script src="world/drive-shot.js?v=dev41"><\/script>';
-    if (html.indexOf('interior-builder.js') < 0) tail += '<script src="world/interior-builder.js?v=dev41"><\/script>';
-    tail += '<script src="../shared/fps-counter.js"><\/script>';
+    html = html.replace(/(<script src="\.\.\/world\/city\.js[^"]*"><\/script>)/, '$1' + inject);
+    var tail = '<script src="world/drive-shot.js?v=dev43"><\/script><script src="world/interior-builder.js?v=dev43"><\/script><script src="../shared/fps-counter.js"><\/script>';
     html = html.replace('</body>', tail + '</body>');
     if (html.indexOf('<head>') >= 0) html = html.replace('<head>', '<head>' + keep);
     else html = keep + html;

@@ -94,8 +94,38 @@
     return rec && rec.solids && rec.solids.floor ? rec.solids : null;
   }
 
+  function doorsFromLayout(layout) {
+    var data;
+    try { data = JSON.parse(layout || ''); } catch (e) { return []; }
+    var walls = data && data.walls || [];
+    var doors = [];
+    walls.forEach(function (p) {
+      var pts = p && p.pts || [];
+      var n = pts.length;
+      (p.doors || []).forEach(function (d) {
+        if (!d || d.i == null || !pts[d.i]) return;
+        var a = pts[d.i], b = pts[(d.i + 1) % n];
+        if (!a || !b) return;
+        var L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        if (!L) return;
+        var ux = (b[0] - a[0]) / L, uz = (b[1] - a[1]) / L;
+        var w = d.w > 3 ? d.w : 3;
+        doors.push({
+          x: (a[0] + ux * d.t) * FT,
+          z: (a[1] + uz * d.t) * FT,
+          ux: ux, uz: uz,
+          nx: -uz, nz: ux,
+          w: w * FT
+        });
+      });
+    });
+    return doors;
+  }
+
   function remember(id, layout, solids) {
-    rooms[id] = { layout: layout || '', solids: solids || null, saved: Date.now() };
+    var pack = solids || null;
+    if (pack && layout) pack.doors = doorsFromLayout(layout);
+    rooms[id] = { layout: layout || '', solids: pack, saved: Date.now() };
     writeStore();
     try {
       if (layout) localStorage.setItem(STORE + ':' + id, layout);
@@ -126,14 +156,22 @@
 
   function liveOf(b) {
     var id = b && (b.objId != null ? b.objId : b.oid);
-    var lists = [];
-    if (typeof CITY !== 'undefined') { if (CITY.BL) lists.push(CITY.BL); if (CITY.OBJS) lists.push(CITY.OBJS); }
-    for (var L = 0; L < lists.length; L++) {
-      var list = lists[L];
-      for (var i = 0; i < list.length; i++) {
-        var o = list[i];
-        if (o && (o.oid === id || o.id === id)) return o;
-      }
+    if (id == null || typeof CITY === 'undefined') return null;
+    var list = CITY.BL || [];
+    var hit = null;
+    for (var i = 0; i < list.length; i++) {
+      var o = list[i];
+      /* BL.id is the list slot. The placed object id is oid. Matching id
+         selects a different building, so HOME 1 was read as the NOS depot. */
+      if (!o || o.oid !== id) continue;
+      if (o.kind === 'b' || o.kind === 'landmark') return o;
+      if (!hit) hit = o;
+    }
+    if (hit) return hit;
+    var objs = CITY.OBJS || [];
+    for (var j = 0; j < objs.length; j++) {
+      var q = objs[j];
+      if (q && q.id === id) return q;
     }
     return null;
   }
@@ -166,7 +204,7 @@
   function canEnter(b) {
     if (!b) return false;
     var live = liveOf(b) || b;
-    var purpose = live.purpose || b.purpose || '';
+    var purpose = live.purpose || (live.p && live.p.purpose) || b.purpose || '';
     return !!WALK[purpose];
   }
 
@@ -247,26 +285,19 @@
     if (data.room && data.solids) remember(data.room, data.layout, data.solids);
     if (data.type === 'zd-interior-exit') {
       closeFrame();
-      if (data.from === 'walk' && typeof walkHideInterior === 'function') {
-        try {
-          if (typeof WALK_MODE !== 'undefined') {
-            WALK_MODE.insideBuilding = false;
-            WALK_MODE.insideDoor = null;
-          }
-          walkHideInterior();
-        } catch (e) {}
+      var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
+      if (wm && wm.insideBuilding && wm.insideDoor && exploreOf(wm.insideDoor)) {
+        if (wm.room) wm.room._ib = 0;
+        wm.onFoot = true;
+        if (typeof walkShowInterior === 'function') walkShowInterior(wm.insideDoor);
+        if (typeof walkPaintRoom === 'function') walkPaintRoom();
       }
     }
   }
 
   function showBuildBtn(door) {
-    if (!btn || !btn.style) return;
-    if (!door || !WALK[door.purpose || (door.building && door.building.purpose)]) {
-      btn.style.display = 'none';
-      return;
-    }
-    btn.style.display = 'block';
-    btn._door = door;
+    if (btn && btn.style) btn.style.display = 'none';
+    if (btn) btn._door = door || null;
   }
 
   function hideBuildBtn() {
@@ -335,11 +366,17 @@
   function placeWalker(room, pack) {
     if (room._ib) return;
     var f = pack.floor;
-    room.x = (f.minX + f.maxX) / 2;
-    room.z = (f.minZ + f.maxZ) / 2;
+    var door = (pack.doors || [])[0];
+    if (door) {
+      room.x = door.x + door.nx * 1.15;
+      room.z = door.z + door.nz * 1.15;
+    } else {
+      room.x = (f.minX + f.maxX) / 2;
+      room.z = (f.minZ + f.maxZ) / 2;
+    }
     if (blocked(pack, room.x, room.z) || !inFloor(f, room.x, room.z)) {
-      room.x = f.minX + 0.8;
-      room.z = f.minZ + 0.8;
+      room.x = (f.minX + f.maxX) / 2;
+      room.z = (f.minZ + f.maxZ) / 2;
     }
     room.petX = room.x + 0.8;
     room.petZ = room.z + 0.4;
@@ -366,8 +403,13 @@
     var orig = walkRoomStep;
     var wrapped = function (w, d) {
       var door = w && w.insideDoor;
-      var pack = door && packFor(roomOf(door));
-      if (!pack) return orig(w, d);
+      if (w && w._ibCar) holdCar();
+      var pack = door && exploreOf(door) && packFor(roomOf(door));
+      if (!pack) {
+        var plain = orig(w, d);
+        if (w && w.room && w.room.z < -2.7 && exploreOf(door) && w._ibCar) leaveToCar(w);
+        return plain;
+      }
       var room = w.room || (w.room = { x: 0, z: 0, yaw: 0, petX: 0, petZ: 0, tx: null, tz: null });
       placeWalker(room, pack);
       var stick = readInput(w);
@@ -376,11 +418,14 @@
         var step = 2.4 * (d || 0.016);
         var nx = room.x + (stick.ix / len) * step;
         var nz = room.z + (stick.iz / len) * step;
+        if (leftThroughDoor(pack, room.x, room.z, nx, nz)) { leaveToCar(w); return; }
         if (pathOk(pack, room.x, room.z, nx, nz)) { room.x = nx; room.z = nz; }
         else if (nx !== room.x && pathOk(pack, room.x, room.z, nx, room.z)) room.x = nx;
         else if (nz !== room.z && pathOk(pack, room.x, room.z, room.x, nz)) room.z = nz;
+        else if (leftThroughDoor(pack, room.x, room.z, nx, nz)) { leaveToCar(w); return; }
         room.yaw = Math.atan2(stick.ix, -stick.iz);
       }
+      if (leftThroughDoor(pack, room.x, room.z, room.x, room.z)) { leaveToCar(w); return; }
       var k = Math.min(1, (d || 0.016) * 3.2);
       var hx = room.x + 0.85, hz = room.z + 0.35;
       if (room.petX == null) room.petX = hx;
@@ -454,6 +499,14 @@
     g.stroke();
     g.fillStyle = '#062a50';
     (pack.walls || []).forEach(function (wall) { poly(g, corners(wall), map); g.fill(); });
+    g.fillStyle = '#7dff6b';
+    (pack.doors || []).forEach(function (d) {
+      var gap = {
+        x: d.x, z: d.z, a: Math.atan2(-d.uz, d.ux), w: d.w, d: 0.35
+      };
+      poly(g, corners(gap), map);
+      g.fill();
+    });
     var labels = [];
     (pack.items || []).forEach(function (it) {
       poly(g, corners(it), map);
@@ -512,17 +565,363 @@
     return true;
   }
 
+  function signText(b) {
+    if (!b) return '';
+    var s = b.sign;
+    var word = '';
+    if (s && typeof s === 'object') word = s.word || s.t || '';
+    else if (typeof s === 'string') word = s;
+    return String(word || b.name || b.purposeLabel || b.label || '');
+  }
+
+  function rowMatch(text) {
+    var m = String(text || '').toUpperCase().match(/\b(HOME|CAFE)\s+([1-4])\b/);
+    if (!m) return null;
+    return { purpose: m[1], n: +m[2] };
+  }
+
+  function exploreOf(door) {
+    var b = (door && door.building) || door || {};
+    var live = liveOf(b) || b;
+    var purpose = (door && door.purpose) || live.purpose || b.purpose || '';
+    if (purpose !== 'HOME' && purpose !== 'CAFE') return null;
+    var named = rowMatch(signText(live) + ' ' + signText(b) + ' ' + (b.name || '') + ' ' + (live.purposeLabel || '') + ' ' + (door.purposeLabel || ''));
+    if (named && named.purpose === purpose) return named;
+    if (typeof CITY === 'undefined' || !CITY.BL) return { purpose: purpose, n: 1 };
+    var list = [];
+    for (var i = 0; i < CITY.BL.length; i++) {
+      var o = CITY.BL[i];
+      if (!o || o.purpose !== purpose || rowMatch(signText(o))) continue;
+      list.push(o);
+    }
+    list.sort(function (a, c) { return (a.oid || 0) - (c.oid || 0); });
+    if (list.length > 4) return null;
+    var id = live.oid != null ? live.oid : (live.id != null ? live.id : b.id);
+    for (var j = 0; j < list.length && j < 4; j++) {
+      var oid = list[j].oid != null ? list[j].oid : list[j].id;
+      if (oid === id) return { purpose: purpose, n: j + 1 };
+    }
+    return null;
+  }
+
+  function nearDoor(pack, x, z) {
+    var doors = pack && pack.doors || [];
+    for (var i = 0; i < doors.length; i++) {
+      var d = doors[i];
+      var along = (x - d.x) * d.ux + (z - d.z) * d.uz;
+      var perp = (x - d.x) * d.nx + (z - d.z) * d.nz;
+      if (Math.abs(along) <= d.w / 2 + 0.15 && perp > -0.45 && perp < 0.85) return d;
+    }
+    return null;
+  }
+
+  function leftThroughDoor(pack, x0, z0, x1, z1) {
+    if (!pack || !pack.floor || inFloor(pack.floor, x1, z1) || blocked(pack, x1, z1)) return false;
+    return !!(nearDoor(pack, x0, z0) || nearDoor(pack, x1, z1));
+  }
+
+  function parkSpot(door) {
+    var b = (door && door.building) || {};
+    var nx = door && door.nx || 0, nz = door && door.nz || 0;
+    var len = Math.hypot(nx, nz) || 1;
+    nx /= len; nz /= len;
+    var dx = door && door.x != null ? door.x : (typeof P !== 'undefined' ? P.x : 0);
+    var dz = door && door.z != null ? door.z : (typeof P !== 'undefined' ? P.z : 0);
+    var px = typeof P !== 'undefined' ? P.x : dx;
+    var pz = typeof P !== 'undefined' ? P.z : dz;
+    var inside = b.x0 != null && px > b.x0 - 0.3 && px < b.x1 + 0.3 && pz > b.z0 - 0.3 && pz < b.z1 + 0.3;
+    var close = Math.hypot(px - dx, pz - dz) < 2.4;
+    var spot = {
+      x: px, z: pz,
+      y: typeof P !== 'undefined' ? (P.y || 0) : 0,
+      yaw: typeof P !== 'undefined' ? (P.yaw || 0) : 0
+    };
+    if (inside || close) {
+      spot.x = dx + nx * 5.2 - nz * 2.4;
+      spot.z = dz + nz * 5.2 + nx * 2.4;
+      spot.y = 0;
+      spot.yaw = Math.atan2(nx, nz);
+    }
+    return spot;
+  }
+
+  function holdCar() {
+    var car = typeof WALK_MODE !== 'undefined' && WALK_MODE && WALK_MODE._ibCar;
+    if (!car || typeof P === 'undefined' || !P) return;
+    P.x = car.x; P.z = car.z; P.y = car.y || 0; P.v = 0; P.ground = true; P.pitch = 0;
+    P.yaw = car.yaw || 0;
+    if (P.hd != null) P.hd = P.yaw;
+    if (P.bank != null) P.bank = 0;
+  }
+
+  function leaveToCar(w) {
+    var self = w || (typeof WALK_MODE !== 'undefined' ? WALK_MODE : null);
+    var car = self && self._ibCar;
+    if (typeof walkHideInterior === 'function') {
+      try { walkHideInterior(); } catch (e) {}
+    }
+    if (!self) return false;
+    self.insideBuilding = false;
+    self.insideDoor = null;
+    self.dancing = false;
+    self.vx = 0; self.vz = 0; self.speed = 0; self.gait = 'idle';
+    if (car && typeof P !== 'undefined' && P) {
+      P.x = car.x; P.z = car.z; P.y = car.y || 0; P.yaw = car.yaw || 0;
+      if (P.hd != null) P.hd = P.yaw;
+      P.v = 0; P.ground = true; P.pitch = 0;
+      if (P.bank != null) P.bank = 0;
+      self.onFoot = false;
+      self.x = car.x; self.z = car.z; self.y = car.y || 0; self.yaw = car.yaw || 0;
+      self.door = null;
+      self.parking = null;
+    }
+    self._ibCar = null;
+    if (self.room) self.room._ib = 0;
+    if (typeof walkSyncPill === 'function') walkSyncPill();
+    if (typeof walkSyncGait === 'function') walkSyncGait();
+    if (typeof walkSyncDyn === 'function') walkSyncDyn();
+    if (typeof walkSyncEnterBtn === 'function') walkSyncEnterBtn();
+    return true;
+  }
+
+  function enterExplore(self, door, orig) {
+    var spot = parkSpot(door);
+    if (orig) {
+      try { orig.call(self); } catch (e) {}
+    }
+    self.onFoot = true;
+    self.insideBuilding = true;
+    self.insideDoor = door;
+    self.door = door;
+    self.parking = null;
+    self._ibCar = spot;
+    self.y = 0;
+    if (self.room) self.room._ib = 0;
+    if (typeof P !== 'undefined' && P) { P.v = 0; P.ground = true; P.pitch = 0; }
+    holdCar();
+    if (typeof walkShowInterior === 'function') walkShowInterior(door);
+    if (typeof walkSyncEnterBtn === 'function') walkSyncEnterBtn();
+    return true;
+  }
+
+  function withBuilding(door) {
+    if (!door || door.building || door.buildingId == null) return door;
+    if (typeof CITY === 'undefined' || !CITY.BL) return door;
+    for (var i = 0; i < CITY.BL.length; i++) {
+      if (CITY.BL[i] && CITY.BL[i].id === door.buildingId) {
+        door.building = CITY.BL[i];
+        break;
+      }
+    }
+    return door;
+  }
+
+  function closestDoor(maxDist) {
+    if (typeof CITY === 'undefined' || !CITY.BL || typeof P === 'undefined' || !P) return null;
+    var onFoot = !!(typeof WALK_MODE !== 'undefined' && WALK_MODE && WALK_MODE.onFoot);
+    var x = onFoot ? WALK_MODE.x : P.x;
+    var z = onFoot ? WALK_MODE.z : P.z;
+    if (!fin(x) || !fin(z)) return null;
+    var best = null;
+    for (var i = 0; i < CITY.BL.length; i++) {
+      var b = CITY.BL[i];
+      if (!b || !b.doors) continue;
+      for (var d = 0; d < b.doors.length; d++) {
+        var door = b.doors[d];
+        var dx = door[0] - x, dz = door[1] - z, dist = Math.hypot(dx, dz);
+        if (!(dist <= maxDist) || (best && dist >= best.dist)) continue;
+        var nx = door[2] || 0, nz = door[3] || 0;
+        if ((x - door[0]) * nx + (z - door[1]) * nz < -2) continue;
+        best = {
+          x: door[0], z: door[1], nx: nx, nz: nz, dist: dist, y: 0,
+          buildingId: b.id, building: b,
+          purpose: b.purpose, purposeLabel: b.purposeLabel, color: b.c
+        };
+      }
+    }
+    return best;
+  }
+
+  function outsideDoor() {
+    if (typeof WALK_MODE === 'undefined' || !WALK_MODE || WALK_MODE.insideBuilding) return null;
+    if (typeof P !== 'undefined' && P && (P.wreck || !P.ground || (!WALK_MODE.onFoot && !(P.v < 8)))) return null;
+    var door = closestDoor(WALK_MODE.onFoot ? 10 : 12);
+    if (!door || !exploreOf(door)) return null;
+    return door;
+  }
+
+  function atInsideDoor(w) {
+    if (!w || !w.insideBuilding || !exploreOf(w.insideDoor)) return false;
+    var pack = packFor(roomOf(w.insideDoor));
+    var room = w.room;
+    if (pack && room && pack.doors && pack.doors.length) return !!nearDoor(pack, room.x, room.z);
+    return !!(room && room.z != null && room.z < -1.6);
+  }
+
+  var actBtn = null;
+  var walkFps = null;
+
+  function ensureContext() {
+    if (actBtn || typeof document === 'undefined' || !document.body || !document.createElement) return;
+    var css = document.createElement('style');
+    css.id = 'zdWalkActCss';
+    css.textContent = '#zdWalkAct{position:fixed;left:50%;bottom:calc(20px + min(92px, 23vh) + 10px);transform:translateX(-50%);z-index:96;display:none;min-width:132px;height:48px;padding:0 14px;border-radius:14px;border:2.5px solid #fff;margin:0;background:#7dff6b;color:#04140c;font:900 14px/1 Orbitron,sans-serif;letter-spacing:.4px;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;cursor:pointer}'
+      + '#zdWalkAct small{font:800 11px Rajdhani,sans-serif;letter-spacing:.4px}'
+      + '#zdWalkAct.show{display:inline-flex}'
+      + '#zdWalkAct[data-mode="exit"]{background:#ff4fd8;color:#240014}'
+      + '#zdWalkFps{position:fixed;top:calc(env(safe-area-inset-top, 0px) + 6px);right:calc(env(safe-area-inset-right, 0px) + 8px);z-index:97;display:none;pointer-events:none;margin:0;padding:2px 7px;border-radius:8px;border:1px solid rgba(232,255,244,.55);font:700 13px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#e8fff4;background:rgba(7,4,16,.86)}'
+      + '#zdWalkFps.show{display:block}';
+    if (document.head) document.head.appendChild(css);
+    actBtn = document.createElement('button');
+    actBtn.id = 'zdWalkAct';
+    actBtn.type = 'button';
+    actBtn.innerHTML = 'ENTER<small></small>';
+    actBtn.addEventListener('click', function (ev) {
+      if (ev.preventDefault) ev.preventDefault();
+      var mode = actBtn.getAttribute('data-mode');
+      var wm = window.WALK_MODE;
+      if (mode === 'build') {
+        var door = wm && wm.insideDoor;
+        if (!door) return;
+        openBuilding({
+          purpose: door.purpose,
+          objId: door.building && (door.building.oid != null ? door.building.oid : door.building.id),
+          name: (exploreOf(door) ? exploreOf(door).purpose + ' ' + exploreOf(door).n : door.purpose)
+        }, 'walk');
+        return;
+      }
+      if (mode === 'exit') { leaveToCar(wm); return; }
+      var near = outsideDoor();
+      if (near && wm) enterExplore(wm, near, window.walkEnterDoor && window.walkEnterDoor._ibOrig);
+    });
+    document.body.appendChild(actBtn);
+    walkFps = document.createElement('div');
+    walkFps.id = 'zdWalkFps';
+    walkFps.setAttribute('aria-label', 'Frames per second');
+    walkFps.textContent = '-- FPS';
+    document.body.appendChild(walkFps);
+  }
+
+  function paintAct(mode, rank) {
+    if (!actBtn) return;
+    actBtn.setAttribute('data-mode', mode);
+    var lead = mode === 'build' ? 'BUILD' : (mode === 'exit' ? 'EXIT' : 'ENTER');
+    var sub = mode === 'build' ? 'ROOM' : (mode === 'exit' ? 'STREET' : (rank ? rank.purpose + ' ' + rank.n : ''));
+    var small = actBtn.querySelector('small');
+    if (actBtn.firstChild && actBtn.firstChild.nodeType === 3) actBtn.firstChild.nodeValue = lead;
+    else actBtn.insertBefore(document.createTextNode(lead), actBtn.firstChild);
+    if (small) small.textContent = sub;
+    actBtn.setAttribute('aria-label', sub ? (lead + ' ' + sub) : lead);
+    actBtn.classList.add('show');
+  }
+
+  function hideAct() {
+    if (!actBtn) return;
+    actBtn.classList.remove('show');
+    actBtn.setAttribute('data-mode', '');
+  }
+
+  function syncContext() {
+    ensureContext();
+    var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
+    var mode = '';
+    var rank = null;
+    if (wm && wm._ibCar) holdCar();
+    if (wm && wm.insideBuilding && exploreOf(wm.insideDoor)) {
+      rank = exploreOf(wm.insideDoor);
+      mode = atInsideDoor(wm) ? 'exit' : 'build';
+    } else {
+      var door = outsideDoor();
+      if (door) { rank = exploreOf(door); mode = 'enter'; }
+    }
+    var other = typeof document !== 'undefined' && document.getElementById && document.getElementById('enterBldBtn');
+    if (other && other.style) {
+      if (mode) other.style.display = 'none';
+    }
+    var step = typeof document !== 'undefined' && document.getElementById && document.getElementById('walk-step-out');
+    if (step && step.style) step.style.visibility = mode ? 'hidden' : '';
+    if (mode) paintAct(mode, rank);
+    else hideAct();
+    var card = typeof document !== 'undefined' && document.getElementById && document.getElementById('walk-interior');
+    var inside = !!(card && card.classList && card.classList.contains('show') && wm && wm.insideBuilding);
+    var pc = typeof document !== 'undefined' && document.getElementById && document.getElementById('pcFps');
+    if (pc && pc.style) pc.style.zIndex = inside ? '97' : '';
+    if (walkFps && walkFps.classList) {
+      var useDom = inside && !(pc && pc.getBoundingClientRect && pc.getBoundingClientRect().width > 8);
+      walkFps.classList.toggle('show', !!useDom);
+      if (useDom) {
+        var v = typeof fps === 'number' ? fps : 0;
+        walkFps.textContent = Math.round(v) + ' FPS';
+      }
+    }
+  }
+
+  function hookEnter() {
+    var fn = typeof walkEnterDoor === 'function' ? walkEnterDoor : null;
+    if (!fn || fn._ibPark) return;
+    var orig = fn._ibOrig || fn;
+    var wrapped = function () {
+      var self = (this && typeof this.nearestDoor === 'function') ? this : (typeof WALK_MODE !== 'undefined' ? WALK_MODE : null);
+      var explore = outsideDoor();
+      if (explore && self && !self.insideBuilding) return enterExplore(self, explore, orig);
+      var target = typeof walkEntryTarget === 'function' ? walkEntryTarget() : null;
+      var door = withBuilding(target && target.door);
+      if (door && self && exploreOf(door) && !self.insideBuilding) return enterExplore(self, door, orig);
+      return orig.apply(this, arguments);
+    };
+    wrapped._ibPark = 1;
+    wrapped._ibOrig = orig;
+    try { walkEnterDoor = wrapped; } catch (e) {}
+    window.walkEnterDoor = wrapped;
+  }
+
+  function hookLeave() {
+    var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
+    if (!wm || typeof wm.stepBackOutside !== 'function' || wm.stepBackOutside._ib) return;
+    var orig = wm.stepBackOutside;
+    wm.stepBackOutside = function () {
+      if (this && this._ibCar && this.insideDoor && exploreOf(this.insideDoor)) return leaveToCar(this);
+      return orig.apply(this, arguments);
+    };
+    wm.stepBackOutside._ib = 1;
+  }
+
   function hook() {
     hookWalk();
     hookPaint();
     hookShow();
+    hookEnter();
+    hookLeave();
+  }
+
+  function bootUi() {
+    ensureBtn();
+    ensureContext();
+    hook();
+    if (typeof window !== 'undefined' && window.syncEnterBldBtn && !window.syncEnterBldBtn._ib) {
+      var origSync = window.syncEnterBldBtn;
+      var wrappedSync = function () {
+        var out = origSync.apply(this, arguments);
+        try { syncContext(); } catch (e) {}
+        return out;
+      };
+      wrappedSync._ib = 1;
+      window.syncEnterBldBtn = wrappedSync;
+    }
+    if (typeof requestAnimationFrame === 'function') {
+      var loop = function () {
+        try { syncContext(); } catch (e) {}
+        requestAnimationFrame(loop);
+      };
+      requestAnimationFrame(loop);
+    }
   }
 
   loadStore();
   if (typeof window !== 'undefined') window.addEventListener('message', onMessage);
   if (typeof document !== 'undefined') {
-    if (document.body) { ensureBtn(); hook(); }
-    else document.addEventListener('DOMContentLoaded', function () { ensureBtn(); hook(); });
+    if (document.body) bootUi();
+    else document.addEventListener('DOMContentLoaded', function () { bootUi(); });
   }
 
   /* Later enter flow can call enter(door). It opens this same planner. */
@@ -549,6 +948,14 @@
     roomOf: roomOf,
     hook: hook,
     pack: packFor,
-    FT: FT
+    FT: FT,
+    exploreOf: exploreOf,
+    parkSpot: parkSpot,
+    doorsOf: doorsFromLayout,
+    nearDoor: nearDoor,
+    leftThroughDoor: leftThroughDoor,
+    holdCar: holdCar,
+    leaveToCar: leaveToCar,
+    enterExplore: enterExplore
   };
 })();
