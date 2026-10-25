@@ -1,0 +1,197 @@
+[
+  {
+    "id": "galaxy-780",
+    "steps": [
+      {
+        "step": "door",
+        "state": {
+          "world": false,
+          "inside": false,
+          "onFoot": false,
+          "x": -224,
+          "z": -654,
+          "room": "",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:enter:ENTERHOME 1",
+          "dev": true,
+          "enterTop": false,
+          "fps": "-- FPS",
+          "planner": false
+        }
+      },
+      {
+        "step": "room",
+        "state": {
+          "world": true,
+          "inside": false,
+          "onFoot": true,
+          "x": 9009.144,
+          "z": 9001.4,
+          "room": "HOME 1",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:build:BUILDROOM",
+          "dev": true,
+          "enterTop": false,
+          "fps": "47 FPS",
+          "planner": false
+        }
+      },
+      {
+        "step": "planner",
+        "planner": {
+          "ready": true,
+          "box": "▭ Box",
+          "walls": "⌐ Walls",
+          "door": "▯ Door",
+          "place": "Place objects",
+          "build": "Builder",
+          "size": "60 x 80 ft · 4800 sq ft"
+        }
+      },
+      {
+        "step": "saved",
+        "state": {
+          "world": true,
+          "inside": false,
+          "onFoot": true,
+          "x": 9009.144,
+          "z": 9001.4,
+          "room": "HOME 1",
+          "legacy": false,
+          "legacyText": "",
+          "act": "show:build:BUILDROOM",
+          "dev": true,
+          "enterTop": false,
+          "fps": "50 FPS",
+          "planner": false
+        },
+        "item": {
+          "id": "HOME:1",
+          "items": [
+            "6 ft banquet table"
+          ],
+          "world": true,
+          "legacy": false
+        }
+      }
+    ],
+    "homes": [
+      "CAFE 1 oid 15",
+      "CAFE 1 oid 20",
+      "CAFE 2 oid 22",
+      "CAFE 3 oid 24",
+      "CAFE 4 oid 26",
+      "HOME 1 oid 1",
+      "HOME 1 oid 19",
+      "HOME 2 oid 21",
+      "HOME 3 oid 23",
+      "HOME 4 oid 25"
+    ],
+    "placed": "6 ft banquet table",
+    "doors": [
+      {
+        "name": "HOME 1",
+        "world": true,
+        "inside": false,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 1",
+        "world": true,
+        "inside": false,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 1",
+        "world": true,
+        "inside": false,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 1",
+        "world": true,
+        "inside": false,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 2",
+        "world": true,
+        "inside": false,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 2",
+        "world": true,
+        "inside": false,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 3",
+        "world": true,
+        "inside": false,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 3",
+        "world": true,
+        "inside": false,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "HOME 4",
+        "world": true,
+        "inside": false,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      },
+      {
+        "name": "CAFE 4",
+        "world": true,
+        "inside": false,
+        "onFoot": true,
+        "far": true,
+        "legacy": false,
+        "fw": 60,
+        "fd": 80
+      }
+    ],
+    "ok": true
+  }
+]

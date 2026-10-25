@@ -1,13 +1,16 @@
 /* Interior Builder. The event planner (build mode and place objects) is the tool.
-   A saved layout is that building's walk-in room. Its size is its own,
-   in feet, and it may be larger than the building outside.
-   Until a layout is saved, the current Interiors room stays the walk default.
-   This file does not write zdash.house.v1. */
+   HOME 1-4 and CAFE 1-4 walk in at the same scale as the street: the outdoor
+   on-foot move, camera, and controls. A saved layout is that room. Until one
+   is saved, the room is 60 by 80 ft, and BUILD can resize it.
+   The old flat house screen (wall chips, DJ booth, pet bed, neon sign) stays
+   off these doors. This file does not write zdash.house.v1. */
 'use strict';
 (function () {
   if (window.INTERIOR_BUILDER) return;
   var STORE = 'zdash.interior.layout.v1';
   var FT = 0.3048;
+  var ROOM_FW = 60;
+  var ROOM_FD = 80;
   var RAD = 0.35;
   var WALK = { HOME: 1, SHOWROOM: 1, NEON_PAINT: 1, GARAGE: 1, DANCE: 1, PETS: 1, CAFE: 1, ARCADE: 1, BUILDER: 1, SOCCER: 1 };
   var rooms = {};
@@ -194,11 +197,21 @@
   }
 
   function feetFor(door, fallbackName) {
+    var saved = packFor(roomOf(door));
+    if (saved && saved.floor && saved.floor.maxX > saved.floor.minX && saved.floor.maxZ > saved.floor.minZ) {
+      return {
+        fw: +((saved.floor.maxX - saved.floor.minX) / FT).toFixed(2),
+        fd: +((saved.floor.maxZ - saved.floor.minZ) / FT).toFixed(2),
+        title: saved.title || fallbackName || 'Room'
+      };
+    }
+    var rank = exploreOf(door);
+    if (rank) return { fw: ROOM_FW, fd: ROOM_FD, title: rank.purpose + ' ' + rank.n };
     var look = lookFor(door);
     if (look && look.w && look.d) {
       return { fw: +(look.w / FT).toFixed(2), fd: +(look.d / FT).toFixed(2), title: look.name || fallbackName || 'Room' };
     }
-    return { fw: 30, fd: 40, title: fallbackName || 'Room' };
+    return { fw: ROOM_FW, fd: ROOM_FD, title: fallbackName || 'Room' };
   }
 
   function canEnter(b) {
@@ -222,7 +235,7 @@
     if (!frame) {
       frame = document.createElement('div');
       frame.id = 'zdInterior';
-      frame.style.cssText = 'display:none;position:fixed;inset:0;z-index:90;background:#03192f';
+      frame.style.cssText = 'display:none;position:fixed;inset:0;z-index:220;background:#03192f';
       var cv = document.createElement('iframe');
       cv.id = 'zdInteriorFrame';
       cv.setAttribute('title', 'Interior Builder');
@@ -286,11 +299,11 @@
     if (data.type === 'zd-interior-exit') {
       closeFrame();
       var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
-      if (wm && wm.insideBuilding && wm.insideDoor && exploreOf(wm.insideDoor)) {
-        if (wm.room) wm.room._ib = 0;
+      if (wm && wm._ibWorld && wm.insideDoor && exploreOf(wm.insideDoor)) {
+        wm.insideBuilding = false;
         wm.onFoot = true;
-        if (typeof walkShowInterior === 'function') walkShowInterior(wm.insideDoor);
-        if (typeof walkPaintRoom === 'function') walkPaintRoom();
+        hideLegacyCard();
+        settle(wm);
       }
     }
   }
@@ -327,6 +340,13 @@
     if (typeof walkShowInterior === 'function' && !walkShowInterior._ib) {
       var orig = walkShowInterior;
       var wrapped = function (door) {
+        if (exploreOf(door)) {
+          hideLegacyCard();
+          var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
+          if (wm && !wm._ibWorld) enterExplore(wm, door, null);
+          else if (wm) { wm.insideBuilding = false; wm.onFoot = true; }
+          return;
+        }
         var out = orig.apply(this, arguments);
         showBuildBtn(door);
         return out;
@@ -345,44 +365,6 @@
     }
   }
 
-  function readInput(w) {
-    var ix = 0, iz = 0;
-    if (typeof K !== 'undefined' && K) {
-      ix = (K.ArrowRight || K.KeyD ? 1 : 0) - (K.ArrowLeft || K.KeyA ? 1 : 0);
-      iz = (K.ArrowDown || K.KeyS ? 1 : 0) - (K.ArrowUp || K.KeyW ? 1 : 0);
-    }
-    var n = w.nudge;
-    if (n && (Math.abs(n.x) > 0.01 || Math.abs(n.z) > 0.01)) { ix = n.x; iz = n.z; }
-    if (!ix && !iz && typeof B !== 'undefined' && B && (B.walk || B.tup)) iz = -1;
-    var room = w.room;
-    if (!ix && !iz && room && room.tx != null) {
-      var dx = room.tx - room.x, dz = room.tz - room.z;
-      if (Math.hypot(dx, dz) < 0.08) { room.tx = null; room.tz = null; }
-      else { ix = dx; iz = dz; }
-    }
-    return { ix: ix, iz: iz };
-  }
-
-  function placeWalker(room, pack) {
-    if (room._ib) return;
-    var f = pack.floor;
-    var door = (pack.doors || [])[0];
-    if (door) {
-      room.x = door.x + door.nx * 1.15;
-      room.z = door.z + door.nz * 1.15;
-    } else {
-      room.x = (f.minX + f.maxX) / 2;
-      room.z = (f.minZ + f.maxZ) / 2;
-    }
-    if (blocked(pack, room.x, room.z) || !inFloor(f, room.x, room.z)) {
-      room.x = (f.minX + f.maxX) / 2;
-      room.z = (f.minZ + f.maxZ) / 2;
-    }
-    room.petX = room.x + 0.8;
-    room.petZ = room.z + 0.4;
-    room._ib = 1;
-  }
-
   function stepOk(pack, x, z) {
     var f = pack.floor;
     if (x < f.minX - 0.05 || x > f.maxX + 0.05 || z < f.minZ - 0.05 || z > f.maxZ + 0.05) return false;
@@ -390,51 +372,46 @@
     return true;
   }
 
-  function pathOk(pack, x0, z0, x1, z1) {
-    for (var i = 1; i <= 4; i++) {
-      var t = i / 4;
-      if (!stepOk(pack, x0 + (x1 - x0) * t, z0 + (z1 - z0) * t)) return false;
-    }
-    return true;
-  }
-
   function hookWalk() {
     if (typeof walkRoomStep !== 'function' || walkRoomStep._ib) return false;
     var orig = walkRoomStep;
     var wrapped = function (w, d) {
-      var door = w && w.insideDoor;
-      if (w && w._ibCar) holdCar();
-      var pack = door && exploreOf(door) && packFor(roomOf(door));
-      if (!pack) {
-        var plain = orig(w, d);
-        if (w && w.room && w.room.z < -2.7 && exploreOf(door) && w._ibCar) leaveToCar(w);
-        return plain;
+      if (w && exploreOf(w.insideDoor)) {
+        if (!w._ibWorld) enterExplore(w, w.insideDoor, null);
+        else { w.insideBuilding = false; hideLegacyCard(); }
+        return;
       }
-      var room = w.room || (w.room = { x: 0, z: 0, yaw: 0, petX: 0, petZ: 0, tx: null, tz: null });
-      placeWalker(room, pack);
-      var stick = readInput(w);
-      var len = Math.hypot(stick.ix, stick.iz);
-      if (len > 0.01) {
-        var step = 2.4 * (d || 0.016);
-        var nx = room.x + (stick.ix / len) * step;
-        var nz = room.z + (stick.iz / len) * step;
-        if (leftThroughDoor(pack, room.x, room.z, nx, nz)) { leaveToCar(w); return; }
-        if (pathOk(pack, room.x, room.z, nx, nz)) { room.x = nx; room.z = nz; }
-        else if (nx !== room.x && pathOk(pack, room.x, room.z, nx, room.z)) room.x = nx;
-        else if (nz !== room.z && pathOk(pack, room.x, room.z, room.x, nz)) room.z = nz;
-        else if (leftThroughDoor(pack, room.x, room.z, nx, nz)) { leaveToCar(w); return; }
-        room.yaw = Math.atan2(stick.ix, -stick.iz);
-      }
-      if (leftThroughDoor(pack, room.x, room.z, room.x, room.z)) { leaveToCar(w); return; }
-      var k = Math.min(1, (d || 0.016) * 3.2);
-      var hx = room.x + 0.85, hz = room.z + 0.35;
-      if (room.petX == null) room.petX = hx;
-      if (room.petZ == null) room.petZ = hz;
-      room.petX += (hx - room.petX) * k;
-      room.petZ += (hz - room.petZ) * k;
+      return orig(w, d);
     };
     wrapped._ib = 1;
     walkRoomStep = wrapped;
+    return true;
+  }
+
+  function hookIntegrate() {
+    if (typeof walkIntegrate !== 'function' || walkIntegrate._ib) return false;
+    var orig = walkIntegrate;
+    var wrapped = function (w, d) {
+      if (!w || !w._ibWorld || !exploreOf(w.insideDoor)) return orig.apply(this, arguments);
+      holdCar();
+      w.insideBuilding = false;
+      var o = w._ibOrigin || { x: 0, z: 0 };
+      var x0 = w.x, z0 = w.z;
+      orig.call(this, w, d);
+      var pack = activePack(w.insideDoor);
+      if (!pack) return;
+      var lx0 = x0 - o.x, lz0 = z0 - o.z, lx = w.x - o.x, lz = w.z - o.z;
+      if (leftThroughDoor(pack, lx0, lz0, lx, lz)) { leaveToCar(w); return; }
+      if (!stepOk(pack, lx, lz)) {
+        if (stepOk(pack, lx, lz0)) w.z = z0;
+        else if (stepOk(pack, lx0, lz)) w.x = x0;
+        else { w.x = x0; w.z = z0; }
+      }
+      if (roomDyn) { roomDyn.x = w.x; roomDyn.z = w.z; }
+    };
+    wrapped._ib = 1;
+    wrapped._ibOrig = orig;
+    walkIntegrate = wrapped;
     return true;
   }
 
@@ -676,6 +653,8 @@
       self.parking = null;
     }
     self._ibCar = null;
+    self._ibWorld = 0;
+    self._ibOrigin = null;
     if (self.room) self.room._ib = 0;
     if (typeof walkSyncPill === 'function') walkSyncPill();
     if (typeof walkSyncGait === 'function') walkSyncGait();
@@ -684,22 +663,190 @@
     return true;
   }
 
-  function enterExplore(self, door, orig) {
-    var spot = parkSpot(door);
-    if (orig) {
-      try { orig.call(self); } catch (e) {}
+  function defaultPack(door) {
+    var rank = exploreOf(door) || { purpose: (door && door.purpose) || 'HOME', n: 1 };
+    var W = ROOM_FW * FT, D = ROOM_FD * FT, t = 0.15, gap = 1.4, cx = W / 2;
+    var walls = [];
+    function seg(x, z, a, w, d) {
+      walls.push({ kind: 'wall', name: 'Wall', x: x, z: z, a: a, w: w, d: d });
     }
+    var left = cx - gap / 2, right = W - (cx + gap / 2);
+    if (left > 0.3) seg(left / 2, 0, 0, left, t);
+    if (right > 0.3) seg(cx + gap / 2 + right / 2, 0, 0, right, t);
+    seg(W / 2, D, 0, W, t);
+    seg(0, D / 2, Math.PI / 2, D, t);
+    seg(W, D / 2, Math.PI / 2, D, t);
+    return {
+      title: rank.purpose + ' ' + rank.n,
+      floor: {
+        minX: 0, maxX: W, minZ: 0, maxZ: D,
+        polys: [[[0, 0], [W, 0], [W, D], [0, D]]],
+        rects: [{ x0: 0, z0: 0, x1: W, z1: D }]
+      },
+      walls: walls,
+      items: [],
+      doors: [{ x: cx, z: 0, ux: 1, uz: 0, nx: 0, nz: 1, w: gap }],
+      _default: 1
+    };
+  }
+
+  function activePack(door) {
+    if (!door) return null;
+    var saved = packFor(roomOf(door));
+    if (saved) return saved;
+    return exploreOf(door) ? defaultPack(door) : null;
+  }
+
+  function originFor(rank) {
+    var n = rank && rank.n || 1;
+    var lane = rank && rank.purpose === 'CAFE' ? 4 : 0;
+    return { x: 9000, z: 9000 + (lane + n - 1) * 160 };
+  }
+
+  function spawnOf(pack) {
+    var door = pack && pack.doors && pack.doors[0];
+    var f = pack && pack.floor;
+    if (door) return { x: door.x + (door.nx || 0) * 1.4, z: door.z + (door.nz || 0) * 1.4, yaw: Math.atan2(door.nx || 0, door.nz || 1) };
+    if (!f) return { x: 0, z: 0, yaw: 0 };
+    return { x: (f.minX + f.maxX) / 2, z: (f.minZ + f.maxZ) / 2, yaw: 0 };
+  }
+
+  function hideLegacyCard() {
+    var card = typeof document !== 'undefined' && document.getElementById && document.getElementById('walk-interior');
+    if (!card) return;
+    card.hidden = true;
+    if (card.classList) card.classList.remove('show');
+  }
+
+  function settle(w) {
+    var pack = activePack(w.insideDoor);
+    var o = w._ibOrigin;
+    if (!pack || !o) return;
+    var lx = w.x - o.x, lz = w.z - o.z;
+    if (stepOk(pack, lx, lz)) return;
+    var s = spawnOf(pack);
+    w.x = o.x + s.x;
+    w.z = o.z + s.z;
+    w.yaw = s.yaw;
+  }
+
+  var roomDyn = null;
+
+  function drawBox(x, y, z, w, d, h, a, col) {
+    if (typeof line !== 'function') return;
+    var c = Math.cos(a || 0), s = Math.sin(a || 0), hw = w / 2, hd = d / 2;
+    var corners = [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd]].map(function (p) {
+      return [x + p[0] * c + p[1] * s, z - p[0] * s + p[1] * c];
+    });
+    for (var i = 0; i < 4; i++) {
+      var a0 = corners[i], b0 = corners[(i + 1) % 4];
+      line([a0[0], y, a0[1]], [b0[0], y, b0[1]], col, 2);
+      line([a0[0], y + h, a0[1]], [b0[0], y + h, b0[1]], col, 2);
+      line([a0[0], y, a0[1]], [a0[0], y + h, a0[1]], col, 2);
+    }
+  }
+
+  function fillFloor(pack, ox, oz) {
+    if (typeof proj !== 'function' || typeof ctx === 'undefined' || !ctx || !pack.floor) return;
+    var f = pack.floor;
+    var pts = [[f.minX, f.minZ], [f.maxX, f.minZ], [f.maxX, f.maxZ], [f.minX, f.maxZ]];
+    var s = [];
+    for (var i = 0; i < pts.length; i++) {
+      var p = proj(ox + pts[i][0], 0.04, oz + pts[i][1]);
+      if (!p) return;
+      s.push(p);
+    }
+    ctx.beginPath();
+    ctx.moveTo(s[0][0], s[0][1]);
+    for (var j = 1; j < s.length; j++) ctx.lineTo(s[j][0], s[j][1]);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(6,42,80,0.94)';
+    ctx.fill();
+  }
+
+  function drawWorldRoom() {
+    var w = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
+    if (!w || !w._ibWorld || typeof line !== 'function') return;
+    var pack = activePack(w.insideDoor);
+    var o = w._ibOrigin;
+    if (!pack || !o || !pack.floor) return;
+    fillFloor(pack, o.x, o.z);
+    var f = pack.floor, step = 5 * FT, n = 0, x, z;
+    for (x = Math.ceil(f.minX / step) * step; x <= f.maxX && n < 40; x += step) {
+      n++;
+      line([o.x + x, 0.05, o.z + f.minZ], [o.x + x, 0.05, o.z + f.maxZ], 'rgba(95,212,255,0.35)', 1);
+    }
+    for (z = Math.ceil(f.minZ / step) * step; z <= f.maxZ && n < 80; z += step) {
+      n++;
+      line([o.x + f.minX, 0.05, o.z + z], [o.x + f.maxX, 0.05, o.z + z], 'rgba(95,212,255,0.35)', 1);
+    }
+    (pack.walls || []).forEach(function (wall) {
+      drawBox(o.x + wall.x, 0, o.z + wall.z, wall.w, wall.d, 2.8, wall.a, '#7dff6b');
+    });
+    (pack.doors || []).forEach(function (d) {
+      line([o.x + d.x, 0.06, o.z + d.z], [o.x + d.x, 2.2, o.z + d.z], '#7dff6b', 3);
+    });
+    (pack.items || []).forEach(function (it) {
+      drawBox(o.x + it.x, 0, o.z + it.z, it.w, it.d, 1.05, it.a, '#3ee6ff');
+      if (typeof proj !== 'function' || typeof ctx === 'undefined' || !ctx || !it.name) return;
+      var p = proj(o.x + it.x, 1.35, o.z + it.z);
+      if (!p) return;
+      ctx.fillStyle = '#e9fff2';
+      ctx.font = '700 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(it.name, p[0], p[1]);
+    });
+  }
+
+  function ensureDyn() {
+    if (roomDyn || typeof CITY === 'undefined' || !CITY || !CITY.DYN) return;
+    roomDyn = { x: 9000, z: 9000, y: 1, rad: 40, draw: drawWorldRoom };
+    CITY.DYN.push(roomDyn);
+  }
+
+  function enterExplore(self, door, orig) {
+    if (!self || !door) return false;
+    if (self._ibWorld && self.insideDoor === door) {
+      self.insideBuilding = false;
+      self.onFoot = true;
+      hideLegacyCard();
+      return true;
+    }
+    var spot = parkSpot(door);
+    var rank = exploreOf(door) || { purpose: door.purpose || 'HOME', n: 1 };
+    var pack = activePack(door);
+    var origin = originFor(rank);
+    var spawn = spawnOf(pack);
     self.onFoot = true;
-    self.insideBuilding = true;
+    self.insideBuilding = false;
     self.insideDoor = door;
-    self.door = door;
+    self.door = null;
     self.parking = null;
     self._ibCar = spot;
+    self._ibWorld = 1;
+    self._ibOrigin = origin;
     self.y = 0;
-    if (self.room) self.room._ib = 0;
-    if (typeof P !== 'undefined' && P) { P.v = 0; P.ground = true; P.pitch = 0; }
+    self._roofY = null;
+    self.vx = 0;
+    self.vz = 0;
+    self.speed = 0;
+    self.x = origin.x + spawn.x;
+    self.z = origin.z + spawn.z;
+    self.yaw = spawn.yaw;
+    if (typeof P !== 'undefined' && P) {
+      P.v = 0;
+      P.ground = true;
+      P.pitch = 0;
+      P.wreck = null;
+      if (P.driveMode !== 'street') P.driveMode = 'street';
+    }
     holdCar();
-    if (typeof walkShowInterior === 'function') walkShowInterior(door);
+    hideLegacyCard();
+    ensureDyn();
+    if (roomDyn) { roomDyn.x = self.x; roomDyn.z = self.z; }
+    if (typeof document !== 'undefined' && document.body && document.body.dataset) {
+      document.body.dataset.ibRoom = rank.purpose + ' ' + rank.n;
+    }
     if (typeof walkSyncEnterBtn === 'function') walkSyncEnterBtn();
     return true;
   }
@@ -751,11 +898,15 @@
   }
 
   function atInsideDoor(w) {
-    if (!w || !w.insideBuilding || !exploreOf(w.insideDoor)) return false;
-    var pack = packFor(roomOf(w.insideDoor));
-    var room = w.room;
-    if (pack && room && pack.doors && pack.doors.length) return !!nearDoor(pack, room.x, room.z);
-    return !!(room && room.z != null && room.z < -1.6);
+    if (!w || !w._ibWorld || !exploreOf(w.insideDoor)) return false;
+    var pack = activePack(w.insideDoor);
+    var o = w._ibOrigin || { x: 0, z: 0 };
+    if (pack && pack.doors && pack.doors.length) return !!nearDoor(pack, w.x - o.x, w.z - o.z);
+    return false;
+  }
+
+  function plannerOpen() {
+    return !!(frame && frame.style && frame.style.display === 'block');
   }
 
   var actBtn = null;
@@ -765,10 +916,10 @@
     if (actBtn || typeof document === 'undefined' || !document.body || !document.createElement) return;
     var css = document.createElement('style');
     css.id = 'zdWalkActCss';
-    css.textContent = '#zdWalkAct{position:fixed;left:50%;bottom:calc(20px + min(92px, 23vh) + 10px);transform:translateX(-50%);z-index:96;display:none;min-width:132px;height:48px;padding:0 14px;border-radius:14px;border:2.5px solid #fff;margin:0;background:#7dff6b;color:#04140c;font:900 14px/1 Orbitron,sans-serif;letter-spacing:.4px;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;cursor:pointer}'
-      + '#zdWalkAct small{font:800 11px Rajdhani,sans-serif;letter-spacing:.4px}'
+    css.textContent = '#zdWalkAct{position:fixed;left:50%;bottom:calc(20px + min(92px, 23vh) + 10px);transform:translateX(-50%);z-index:96;display:none;min-width:180px;height:56px;padding:0 18px;border-radius:16px;border:3px solid #fff;margin:0;background:#7dff6b;color:#04140c;font:900 18px/1 Orbitron,sans-serif;letter-spacing:.6px;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;cursor:pointer;box-shadow:0 0 18px #7dff6b}'
+      + '#zdWalkAct small{font:800 13px Rajdhani,sans-serif;letter-spacing:.4px}'
       + '#zdWalkAct.show{display:inline-flex}'
-      + '#zdWalkAct[data-mode="exit"]{background:#ff4fd8;color:#240014}'
+      + '#zdWalkAct[data-mode="exit"]{background:#ff4fd8;color:#240014;box-shadow:0 0 18px #ff4fd8}'
       + '#zdWalkFps{position:fixed;top:calc(env(safe-area-inset-top, 0px) + 6px);right:calc(env(safe-area-inset-right, 0px) + 8px);z-index:97;display:none;pointer-events:none;margin:0;padding:2px 7px;border-radius:8px;border:1px solid rgba(232,255,244,.55);font:700 13px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#e8fff4;background:rgba(7,4,16,.86)}'
       + '#zdWalkFps.show{display:block}';
     if (document.head) document.head.appendChild(css);
@@ -827,7 +978,14 @@
     var mode = '';
     var rank = null;
     if (wm && wm._ibCar) holdCar();
-    if (wm && wm.insideBuilding && exploreOf(wm.insideDoor)) {
+    if (wm && wm._ibWorld) {
+      hideLegacyCard();
+      wm.insideBuilding = false;
+      if (roomDyn && fin(wm.x)) { roomDyn.x = wm.x; roomDyn.z = wm.z; }
+    }
+    if (plannerOpen()) {
+      hideAct();
+    } else if (wm && wm._ibWorld && exploreOf(wm.insideDoor)) {
       rank = exploreOf(wm.insideDoor);
       mode = atInsideDoor(wm) ? 'exit' : 'build';
     } else {
@@ -843,11 +1001,12 @@
     if (mode) paintAct(mode, rank);
     else hideAct();
     var card = typeof document !== 'undefined' && document.getElementById && document.getElementById('walk-interior');
-    var inside = !!(card && card.classList && card.classList.contains('show') && wm && wm.insideBuilding);
+    var inRoom = !!(wm && wm._ibWorld);
+    var inside = inRoom || !!(card && card.classList && card.classList.contains('show') && wm && wm.insideBuilding);
     var pc = typeof document !== 'undefined' && document.getElementById && document.getElementById('pcFps');
     if (pc && pc.style) pc.style.zIndex = inside ? '97' : '';
     if (walkFps && walkFps.classList) {
-      var useDom = inside && !(pc && pc.getBoundingClientRect && pc.getBoundingClientRect().width > 8);
+      var useDom = inRoom || (inside && !(pc && pc.getBoundingClientRect && pc.getBoundingClientRect().width > 8));
       walkFps.classList.toggle('show', !!useDom);
       if (useDom) {
         var v = typeof fps === 'number' ? fps : 0;
@@ -888,16 +1047,22 @@
 
   function hook() {
     hookWalk();
+    hookIntegrate();
     hookPaint();
     hookShow();
     hookEnter();
     hookLeave();
+    ensureDyn();
   }
 
   function bootUi() {
+    try {
     ensureBtn();
     ensureContext();
     hook();
+    } catch (err) {
+      try { window.IB_ERR = String(err && err.stack || err); } catch (e) {}
+    }
     if (typeof window !== 'undefined' && window.syncEnterBldBtn && !window.syncEnterBldBtn._ib) {
       var origSync = window.syncEnterBldBtn;
       var wrappedSync = function () {
@@ -956,6 +1121,8 @@
     leftThroughDoor: leftThroughDoor,
     holdCar: holdCar,
     leaveToCar: leaveToCar,
-    enterExplore: enterExplore
+    enterExplore: enterExplore,
+    activePack: activePack,
+    originFor: originFor
   };
 })();

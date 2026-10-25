@@ -53,13 +53,13 @@ const live = boot(memStore());
 const IB = live.INTERIOR_BUILDER;
 assert(IB, 'INTERIOR_BUILDER is on the page');
 const fresh = IB.feetFor({ purpose: 'HOME', building: { purpose: 'HOME' } }, 'HOME');
-assert.strictEqual(fresh.fw, 30, 'no saved style starts at the planner 30 ft width');
-assert.strictEqual(fresh.fd, 40, 'no saved style starts at the planner 40 ft depth');
+assert.strictEqual(fresh.fw, 60, 'HOME starts at 60 ft so the outdoor walker fits');
+assert.strictEqual(fresh.fd, 80, 'HOME starts at 80 ft so the outdoor walker fits');
 live.HOUSE_ROW = { pick: function () { return { look: { name: 'Glass loft', w: 24, d: 18 } }; } };
 const sized = IB.feetFor({ purpose: 'HOME', building: { purpose: 'HOME' } }, 'HOME');
-assert(Math.abs(sized.fw - 24 / FT) < 0.02, 'a current room width becomes feet');
-assert(Math.abs(sized.fd - 18 / FT) < 0.02, 'a current room depth becomes feet');
-assert.strictEqual(sized.title, 'Glass loft');
+assert.strictEqual(sized.fw, 60, 'the old house look does not shrink the walk-in');
+assert.strictEqual(sized.fd, 80, 'the old house look does not shrink the walk-in');
+assert.strictEqual(sized.title, 'HOME 1');
 live.CITY = {
   BL: [
     { id: 19, oid: 16, kind: 'b', purpose: 'NOS', sign: { t: 'NOS', word: 'NOS' } },
@@ -104,26 +104,47 @@ assert(again.INTERIOR_BUILDER.blocks('HOME:7', 5 * FT, 5 * FT), 'undo puts the t
 assert(!again.INTERIOR_BUILDER.blocks('HOME:7', 14 * FT, 5 * FT), 'undo clears the new spot');
 
 again.walkRoomStep = function () { throw new Error('default walk should stay unused'); };
+again.walkIntegrate = function (w, d) {
+  var yaw = w.yaw || 0;
+  var step = 3.6 * d;
+  if (again.K.ArrowUp || again.K.KeyW) {
+    w.x += Math.sin(yaw) * step;
+    w.z += Math.cos(yaw) * step;
+  }
+};
 again.K = {};
 again.WALK_MODE = {};
+again.P = { x: 4, z: 4, y: 0, yaw: 0, v: 0, ground: true, driveMode: 'street' };
 assert.strictEqual(again.INTERIOR_BUILDER.hook(), undefined);
+const origin = again.INTERIOR_BUILDER.originFor({ purpose: 'HOME', n: 1 });
 const w = {
-  insideDoor: { purpose: 'HOME', building: { oid: 7, purpose: 'HOME' } },
-  room: { x: 12 * FT, z: 0.5, yaw: 0, _ib: 1, petX: 1, petZ: 1, tx: null, tz: null }
+  insideDoor: { purpose: 'HOME', building: { oid: 7, purpose: 'HOME', sign: { t: 'HOME 1' } } },
+  _ibWorld: 1,
+  _ibOrigin: origin,
+  onFoot: true,
+  insideBuilding: false,
+  x: origin.x + 16 * FT,
+  z: origin.z + 0.8,
+  yaw: Math.PI
 };
 again.K.ArrowUp = 1;
-again.walkRoomStep(w, 0.5);
-assert.strictEqual(w.room.z, 0.5, 'walking into a wall does not pass through it');
+again.walkIntegrate(w, 0.5);
+assert(Math.abs((w.z - origin.z) - 0.8) < 0.05, 'walking into a wall does not pass through it');
 again.K.ArrowUp = 0;
-again.K.ArrowRight = 1;
-const x0 = w.room.x;
-again.walkRoomStep(w, 0.2);
-assert(w.room.x > x0, 'walking along open floor moves');
-again.K.ArrowRight = 0;
-again.K.ArrowDown = 1;
-const z0 = w.room.z;
-again.walkRoomStep(w, 0.2);
-assert(w.room.z > z0, 'walking away from the wall moves');
+w.yaw = Math.PI / 2;
+const x0 = w.x;
+again.walkIntegrate = function (walker, d) {
+  walker.x += Math.sin(walker.yaw || 0) * 3.6 * d;
+  walker.z += Math.cos(walker.yaw || 0) * 3.6 * d;
+};
+again.INTERIOR_BUILDER.hook();
+again.K.ArrowUp = 1;
+again.walkIntegrate(w, 0.2);
+assert(w.x > x0, 'walking along open floor moves');
+w.yaw = 0;
+const z0 = w.z;
+again.walkIntegrate(w, 0.2);
+assert(w.z > z0, 'walking away from the wall moves');
 
 const plain = {
   insideDoor: { purpose: 'GARAGE', building: { oid: 3, purpose: 'GARAGE' } },
@@ -169,18 +190,23 @@ const savedDoors = again.INTERIOR_BUILDER.pack('HOME:9').doors;
 assert(savedDoors && savedDoors.length === 1, 'the saved door is kept');
 assert(again.INTERIOR_BUILDER.nearDoor(again.INTERIOR_BUILDER.pack('HOME:9'), 10 * FT, 0.4), 'the gap is the exit');
 assert(!again.INTERIOR_BUILDER.nearDoor(again.INTERIOR_BUILDER.pack('HOME:9'), 10 * FT, 4), 'the middle of the room is not the exit');
-again.P = { x: 3, z: 4, y: 1, yaw: 0.2, v: 5, hd: 0.2 };
+again.P = { x: 3, z: 4, y: 1, yaw: 0.2, v: 5, hd: 0.2, ground: true, driveMode: 'street' };
 again.K = { ArrowUp: 1 };
+const leaveOrigin = again.INTERIOR_BUILDER.originFor({ purpose: 'HOME', n: 1 });
 const leaving = {
-  insideDoor: { purpose: 'HOME', building: { oid: 9, purpose: 'HOME' } },
-  insideBuilding: true,
+  insideDoor: { purpose: 'HOME', building: { oid: 9, purpose: 'HOME', sign: { t: 'HOME 1' } } },
+  insideBuilding: false,
   onFoot: true,
-  room: { x: 10 * FT, z: 0.5, yaw: 0, _ib: 1, petX: 1, petZ: 1, tx: null, tz: null },
+  _ibWorld: 1,
+  _ibOrigin: leaveOrigin,
+  x: leaveOrigin.x + 10 * FT,
+  z: leaveOrigin.z + 0.5,
+  yaw: Math.PI,
   _ibCar: { x: 8, z: -4, y: 0, yaw: 1.2 }
 };
-again.walkRoomStep(leaving, 0.5);
+again.walkIntegrate(leaving, 0.5);
 assert.strictEqual(leaving.onFoot, false, 'walking out the door puts Bob back at the car');
-assert.strictEqual(leaving.insideBuilding, false, 'the room closes on the way out');
+assert.strictEqual(leaving._ibWorld, 0, 'the outdoor room closes on the way out');
 assert.strictEqual(again.P.x, 8, 'the car is where it was parked');
 assert.strictEqual(again.P.z, -4, 'exit returns to the parked car');
 assert.strictEqual(again.P.v, 0, 'the parked car is stopped');
