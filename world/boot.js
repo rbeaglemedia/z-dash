@@ -18,6 +18,10 @@ function render(){const _vs=visApply();
   let cy=ty+dy;if(cy<1){cy=1;const dyA=cy-ty,horiz=Math.sqrt(Math.max(0,D*D-dyA*dyA));dx=-Math.sin(aim)*horiz;dz=-Math.cos(aim)*horiz;}
   cam.x=P.x+dx;cam.y=cy;cam.z=P.z+dz;
   {const lx=P.x-cam.x,ly=ty-cam.y,lz=P.z-cam.z;cam.yaw=Math.atan2(lx,lz);cam.pitch=Math.atan2(-ly,Math.hypot(lx,lz));}cam.roll=0;} /* locked chase cam: behind on heading+pitch, car dead centre, horizon level */
+  if(typeof camStabilizeFlightPitch==='function')camStabilizeFlightPitch();
+  // Car GL runs while #c still shows the last finished frame. The clear below
+  // then only covers the 2D city pass.
+  if(typeof zPrep==='function'){try{zPrep();}catch(e){}}
   const glOn=window.GLCITY&&GLCITY.active();
   if(glOn)GLCITY.beginUnder();
   let items;

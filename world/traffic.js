@@ -2,8 +2,9 @@
 // Neon World road traffic. Every car is the player's 370Z.
 // The GLB is the one already loaded on ZD.Xray.car. Traffic clones that graph once
 // (shared geometry, no second download) into its own scene and bakes view sprites
-// with X.renderer only. It never calls X.render, never touches X.car after the
-// clone, and never opens the player's wings. Far cars are boxes or light dots.
+// on a private canvas while the menu is up, then drops that context. Driving
+// keeps the player's one WebGL context. It never calls X.render, never touches
+// X.car after the clone, and never opens the player's wings. Far cars are boxes or light dots.
 // Lanes come from CITY.ROADS. A meeting slows this car and leaves his Z where it is.
 const TRAFFIC = (() => {
   const T = window.TRAFFIC_TUNE;
@@ -13,6 +14,7 @@ const TRAFFIC = (() => {
   function lim(v, a, b) { return v < a ? a : v > b ? b : v; }
   function angDiff(a, b) { return Math.atan2(Math.sin(a - b), Math.cos(a - b)); }
   const lanes = [];
+  let laneGrid = null, laneCell = 48;
   const cars = [];
   const cache = new Map();
   const sparks = [];
@@ -173,6 +175,7 @@ const TRAFFIC = (() => {
     }
     for (const L of lanes) L.turns.sort((a, b) => a.s - b.s);
     aprons = readAprons();
+    indexLanes();
     if (!again) {
       for (let i = 0; i < T.simCap; i++) cars.push(blank(true));
       for (let i = 0; i < T.dotCap; i++) cars.push(blank(false));
@@ -326,18 +329,49 @@ const TRAFFIC = (() => {
       c.z = p[1] + dz * k;
     }
   }
+  function indexLanes() {
+    const cell = 48, grid = new Map();
+    for (const L of lanes) {
+      const step = 40;
+      for (let s = 0; s < L.len - 3; s += step) {
+        const s1 = Math.min(L.len, s + step);
+        const a = L.at(s), b = L.at(s1);
+        const ix0 = Math.floor(Math.min(a[0], b[0]) / cell), ix1 = Math.floor(Math.max(a[0], b[0]) / cell);
+        const iz0 = Math.floor(Math.min(a[1], b[1]) / cell), iz1 = Math.floor(Math.max(a[1], b[1]) / cell);
+        const seg = {L, s0:s, s1};
+        for (let ix = ix0; ix <= ix1; ix++) for (let iz = iz0; iz <= iz1; iz++) {
+          const k = ix + ',' + iz;
+          let list = grid.get(k);
+          if (!list) { list = []; grid.set(k, list); }
+          list.push(seg);
+        }
+      }
+    }
+    laneGrid = grid; laneCell = cell;
+  }
+  // Cars are picked from the road cells in the ring around P, not from a
+  // uniform draw over the whole city (that almost never lands nearby).
   function spot(minR, maxR, sim) {
     const px = P.x, pz = P.z;
-    for (let n = 0; n < 70; n++) {
-      const L = lanes[(rnd() * lanes.length) | 0];
-      if (!L) return null;
-      const s = 3 + rnd() * (L.len - 6);
-      if (blocked(L, s) || blockedAhead(L, s)) continue;
-      const p = L.at(s), d = Math.hypot(p[0] - px, p[1] - pz);
+    if (!laneGrid || !(maxR > minR)) return null;
+    const cell = laneCell;
+    const i0 = Math.floor((px - maxR) / cell), i1 = Math.floor((px + maxR) / cell);
+    const j0 = Math.floor((pz - maxR) / cell), j1 = Math.floor((pz + maxR) / cell);
+    const w = i1 - i0 + 1, h = j1 - j0 + 1;
+    if (w <= 0 || h <= 0) return null;
+    const tries = Math.min(120, w * h);
+    for (let n = 0; n < tries; n++) {
+      const list = laneGrid.get((i0 + ((rnd() * w) | 0)) + ',' + (j0 + ((rnd() * h) | 0)));
+      if (!list || !list.length) continue;
+      const seg = list[(rnd() * list.length) | 0];
+      const span = Math.max(1, seg.s1 - seg.s0);
+      const s = lim(seg.s0 + rnd() * span, 3, seg.L.len - 3);
+      if (blocked(seg.L, s) || blockedAhead(seg.L, s)) continue;
+      const p = seg.L.at(s), d = Math.hypot(p[0] - px, p[1] - pz);
       if (d < minR || d > maxR) continue;
       if (runway(p[0], p[1]) || solidAt(p[0], p[1])) continue;
-      if (tooClose(L, s, sim)) continue;
-      return {L, s, x:p[0], z:p[1]};
+      if (tooClose(seg.L, s, sim)) continue;
+      return {L:seg.L, s, x:p[0], z:p[1]};
     }
     return null;
   }
@@ -350,17 +384,21 @@ const TRAFFIC = (() => {
     if (!sp) { c.on = false; return; }
     c.on = true; c.lane = sp.L; c.s = sp.s; c.x = sp.x; c.z = sp.z; c.yaw = sp.L.yaw; c.y = c.sim ? groundY(sp.x, sp.z) : 0;
     c.pi = (rnd() * T.paints.length) | 0; c.v0 = rollSpeed(sp.L.kind); c.v = c.v0;
-    c._yb = null; c._eb = null; c._band = ''; c._held = null; c._key = '';
+    c._yb = null; c._eb = null; c._band = ''; c._held = null; c._heldKey = ''; c._key = '';
     c.turn = null; c.rollS = -1; c.blend = 0; c.was = false; c.utT = 0; c.arc = null;
     c.braking = false; c.yawRate = 0; c.accel = 0; c.bodyRoll = 0; c.pitch = 0; c.slip = 0;
     c.suspY = 0; c.suspV = 0; c.ground = true; c.gy = c.y; c.airVx = 0; c.airVz = 0;
     c.rampSeen = 0; c.rampYes = false;
   }
   function blendDur() { return (T.blendMin || 0.65) + rnd() * ((T.blendMax || 0.85) - (T.blendMin || 0.65)); }
+  function forgetPhoto(c) {
+    c._yb = null; c._eb = null; c._held = null; c._heldKey = ''; c._key = '';
+  }
   function switchTo(c, lane, s) {
     s = lim(s, 0.4, lane.len - 0.4);
     if (blocked(lane, s)) { respawn(c); return; }
     const p = lane.at(s);
+    if (Math.abs(angDiff(lane.yaw, c.yaw)) > 0.8) forgetPhoto(c);
     const jump = Math.hypot(c.x - p[0], c.z - p[1]);
     const mx = (c.x + p[0]) / 2, mz = (c.z + p[1]) / 2;
     if (jump < 16 && jump > 0.4 && !solidAt(mx, mz) && !runway(mx, mz)) {
@@ -1130,36 +1168,57 @@ const TRAFFIC = (() => {
     ctx.restore();
   }
   const sparkSlot = {draw(){ drawSparks(); }};
+  // A held photo is the previous heading. After a U-turn the new view is often
+  // not cached yet. Showing the old photo puts the tail lights on the nose.
+  function photoNear(c) {
+    if (!c._held || !c._heldKey || !c._key) return false;
+    const a = c._heldKey.split(':'), b = c._key.split(':');
+    if (a[0] !== b[0]) return false;
+    let dy = Math.abs((+a[1]) - (+b[1]));
+    dy = Math.min(dy, 24 - dy);
+    return dy <= 1 && Math.abs((+a[2]) - (+b[2])) <= 1;
+  }
   function drawOne(c) {
     if (!c.on) return;
     const dist = c._dist || Math.hypot(c.x - cam.x, c.y - cam.y, c.z - cam.z);
     const b = c._band || band(c, dist);
     if (b === 'off') return;
     ctx.save();
+    try {
     ctx.globalAlpha = c.fade == null ? 1 : c.fade;
     if (c.sim && (b === 'sprite' || b === 'box')) shadow(c);
     if (c.hit || b === 'sprite') {
       const cv = c._key && cache.get(c._key);
       if (cv) {
         cache.delete(c._key); cache.set(c._key, cv);
-        c._held = cv;
+        c._held = cv; c._heldKey = c._key;
       }
-      const show = cv || c._held;
-      if (show && blit(show, c)) { if (c.sim && !c.hit) dress(c); ctx.restore(); return; }
+      const show = cv || (photoNear(c) ? c._held : null);
+      if (show && blit(show, c)) { if (c.sim && !c.hit) dress(c); return; }
       drawBox(c); lights(c, dist);
     } else if (b === 'box') { drawBox(c); lights(c, dist); }
     else lights(c, dist);
     if (c.sim && !c.hit) dress(c);
-    ctx.restore();
+    } finally { ctx.restore(); }
   }
 
   let runErr = '';
+  function releasePhoto() {
+    if (!photoR) return;
+    try { photoR.dispose(); if (photoR.forceContextLoss) photoR.forceContextLoss(); } catch (e) {}
+    photoR = null; photoCv = null;
+  }
   function update(dt) {
     if (OFF || !T) return;
     try {
     build();
     aprons = readAprons();
     if (!lanes.length) return;
+    // The photo context is menu-only. Drop it before the city frame so a drive
+    // has one WebGL context (the player's car). A second live context is what
+    // flashed the whole phone screen when the car context cleared.
+    if (typeof flying !== 'undefined' && flying) releasePhoto();
+    else warmStep();
     dt = Math.min(0.05, dt || 0.016);
     maintain();
     stepSparks(dt);
@@ -1170,7 +1229,6 @@ const TRAFFIC = (() => {
   function collect(items) {
     if (OFF || !built) return;
     try {
-    if (typeof flying === 'undefined' || !flying) warmStep();
     for (const c of cars) {
       if (!c.on) continue;
       const dx = c.x - cam.x, dy = (c.y + 0.6) - cam.y, dz = c.z - cam.z;
@@ -1212,6 +1270,6 @@ const TRAFFIC = (() => {
     return {n, onRunway, inSolid, offLane};
   }
   function ensure() { build(); }
-  return {update, collect, stats, audit, ensure, _bake:bake, get cars(){ return cars; }, get lanes(){ return lanes; }, get _cache(){ return cache; }};
+  return {update, collect, stats, audit, ensure, releasePhoto, _bake:bake, get cars(){ return cars; }, get lanes(){ return lanes; }, get _cache(){ return cache; }};
 })();
 window.TRAFFIC = TRAFFIC;

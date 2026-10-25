@@ -1,0 +1,136 @@
+{
+  "base": "f05d3d08e311723d3dd9319fdb4b36c482a3fcbd",
+  "liveWorld": "42",
+  "testWorld": "34",
+  "note": "Headless Chrome SwiftShader. Means are not phone FPS. Finished frames never went fully black; the flash is the extra live WebGL context plus the clear-before-draw window.",
+  "before": {
+    "glLog": [
+      "300x150 webgl2",
+      "160x160 webgl2",
+      "300x150 webgl2"
+    ],
+    "gl": 3,
+    "flying": true,
+    "resized": false,
+    "canvas": "1688x780",
+    "runErr": "",
+    "darkFinished": 0.453,
+    "alive": 30,
+    "nearInView": "roads empty at the boulevard camera"
+  },
+  "after": {
+    "blvd": {
+      "near": 3,
+      "ring": 11,
+      "alive": 30,
+      "dots": 18,
+      "sample": [
+        {
+          "x": -457.5,
+          "z": 400.4,
+          "yaw": 3.14,
+          "d": 7.5
+        },
+        {
+          "x": -442.5,
+          "z": 370.4,
+          "yaw": 0,
+          "d": 30.5
+        },
+        {
+          "x": -461.1,
+          "z": 420,
+          "yaw": 3.14,
+          "d": 22.8
+        }
+      ],
+      "mean": 83.19,
+      "p95": 222.3,
+      "max": 234.3,
+      "low1": 4.3,
+      "glLive": 1,
+      "glSizes": [
+        "300x150"
+      ],
+      "err": "",
+      "bakes": 30,
+      "cache": 30
+    },
+    "blvdBytes": 82942,
+    "field": {
+      "near": 4,
+      "ring": 11,
+      "alive": 30,
+      "dots": 18,
+      "sample": [
+        {
+          "x": 575.1,
+          "z": 855,
+          "yaw": 1.57,
+          "d": 75.2
+        },
+        {
+          "x": 478.7,
+          "z": 855,
+          "yaw": 1.57,
+          "d": 21.9
+        },
+        {
+          "x": 530.2,
+          "z": 865,
+          "yaw": -1.57,
+          "d": 30.6
+        },
+        {
+          "x": 462.4,
+          "z": 855,
+          "yaw": 1.57,
+          "d": 37.9
+        }
+      ],
+      "mean": 33.2,
+      "p95": 133.2,
+      "max": 462.7,
+      "low1": 2.2,
+      "glLive": 1,
+      "glSizes": [
+        "300x150"
+      ],
+      "err": "",
+      "bakes": 30,
+      "cache": 30
+    },
+    "fieldBytes": 75789,
+    "turned": {
+      "face": "7:-12:0",
+      "now": "7:0:0",
+      "held": "7:-12:0",
+      "dy": 12,
+      "rejected": true
+    },
+    "turnBytes": 75385,
+    "darks": [
+      0.10986064189189189,
+      0.3142947635135135,
+      0.4447212837837838,
+      0.45008445945945946,
+      0.4531461148648649,
+      0.45377956081081083
+    ],
+    "off": {
+      "mean": 4.64,
+      "p95": 7.1,
+      "max": 17.1,
+      "low1": 58.5
+    },
+    "gBlvd": 75107,
+    "gField": 67466,
+    "gFieldN": 3
+  },
+  "ruledOut": {
+    "canvasResizePerFrame": false,
+    "drawException": "render.err and runErr empty",
+    "finishedFrameBlack": false,
+    "nanEarlyReturn": "no render error; cars have finite positions in the sample"
+  }
+}
