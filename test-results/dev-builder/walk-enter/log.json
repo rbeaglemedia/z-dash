@@ -1,0 +1,228 @@
+{
+  "steps": [
+    {
+      "step": "driving",
+      "state": {
+        "y": 0.2,
+        "wy": 0,
+        "roof": null,
+        "onFoot": false,
+        "world": false,
+        "x": -252,
+        "v": 14,
+        "ground": true,
+        "room": "",
+        "walk": false,
+        "legacy": false,
+        "enter": "",
+        "dev": {
+          "id": "devOpen",
+          "x": 111,
+          "y": 145,
+          "w": 51,
+          "h": 44
+        },
+        "jump": {
+          "id": "brk",
+          "x": 20,
+          "y": 142,
+          "w": 83,
+          "h": 83
+        },
+        "devHitsJump": false,
+        "err": ""
+      }
+    },
+    {
+      "step": "parked",
+      "state": {
+        "y": 0.2,
+        "wy": 0,
+        "roof": null,
+        "onFoot": false,
+        "world": false,
+        "x": -224,
+        "v": 0,
+        "ground": true,
+        "room": "",
+        "walk": false,
+        "legacy": false,
+        "enter": "",
+        "dev": {
+          "id": "devOpen",
+          "x": 111,
+          "y": 145,
+          "w": 51,
+          "h": 44
+        },
+        "jump": {
+          "id": "brk",
+          "x": 20,
+          "y": 142,
+          "w": 83,
+          "h": 83
+        },
+        "devHitsJump": false,
+        "err": ""
+      }
+    },
+    {
+      "step": "on-foot",
+      "state": {
+        "y": 0.2,
+        "wy": 0.2,
+        "roof": null,
+        "onFoot": true,
+        "world": false,
+        "x": -224,
+        "v": 0,
+        "ground": true,
+        "room": "",
+        "walk": false,
+        "legacy": false,
+        "enter": "",
+        "dev": {
+          "id": "devOpen",
+          "x": 111,
+          "y": 145,
+          "w": 51,
+          "h": 44
+        },
+        "jump": {
+          "id": "brk",
+          "x": 20,
+          "y": 142,
+          "w": 83,
+          "h": 83
+        },
+        "devHitsJump": false,
+        "err": ""
+      }
+    },
+    {
+      "step": "room",
+      "state": {
+        "y": 0.2,
+        "wy": 0,
+        "roof": null,
+        "onFoot": true,
+        "world": true,
+        "x": 9009.144,
+        "v": 0,
+        "ground": true,
+        "room": "HOME",
+        "walk": true,
+        "legacy": false,
+        "enter": "",
+        "dev": {
+          "id": "devOpen",
+          "x": 8,
+          "y": 60,
+          "w": 51,
+          "h": 44
+        },
+        "jump": {
+          "id": "brk",
+          "x": 20,
+          "y": 142,
+          "w": 83,
+          "h": 83
+        },
+        "devHitsJump": false,
+        "err": ""
+      }
+    },
+    {
+      "step": "jump-roof",
+      "before": {
+        "y": 0.2,
+        "wy": 0,
+        "roof": null,
+        "onFoot": false,
+        "world": false,
+        "x": -224,
+        "v": 0,
+        "ground": true,
+        "room": "",
+        "walk": false,
+        "legacy": false,
+        "enter": "",
+        "dev": {
+          "id": "devOpen",
+          "x": 111,
+          "y": 145,
+          "w": 51,
+          "h": 44
+        },
+        "jump": {
+          "id": "brk",
+          "x": 20,
+          "y": 142,
+          "w": 83,
+          "h": 83
+        },
+        "devHitsJump": false,
+        "err": ""
+      },
+      "after": {
+        "y": 0.2,
+        "wy": 0,
+        "roof": null,
+        "onFoot": true,
+        "world": true,
+        "x": 9009.144,
+        "v": 0,
+        "ground": true,
+        "room": "JUMP",
+        "walk": true,
+        "legacy": false,
+        "enter": "",
+        "dev": {
+          "id": "devOpen",
+          "x": 8,
+          "y": 60,
+          "w": 51,
+          "h": 44
+        },
+        "jump": {
+          "id": "brk",
+          "x": 20,
+          "y": 142,
+          "w": 83,
+          "h": 83
+        },
+        "devHitsJump": false,
+        "err": ""
+      }
+    }
+  ],
+  "home": {
+    "purpose": "HOME",
+    "n": 1,
+    "oid": 1,
+    "top": 11,
+    "x": -224,
+    "z": -654,
+    "yaw": 1.5707963267948966,
+    "dx": -230,
+    "dz": -654,
+    "nx": 1,
+    "nz": 0
+  },
+  "jump": {
+    "purpose": "SKY_DROP",
+    "top": 62,
+    "x": -224,
+    "z": 1176,
+    "yaw": 1.5707963267948966,
+    "name": "SKY-DROP HELIPAD DECK"
+  },
+  "getOut": "out",
+  "tapped": {
+    "via": "enterDoor",
+    "before": 0.2,
+    "after": 0.2,
+    "label": "🚪 ENTERBUILDING"
+  },
+  "ok": true
+}

@@ -11,7 +11,7 @@
   var ROOM_FW = 60;
   var ROOM_FD = 80;
   var RAD = 0.35;
-  var WALK = { HOME: 1, SHOWROOM: 1, NEON_PAINT: 1, GARAGE: 1, DANCE: 1, PETS: 1, CAFE: 1, ARCADE: 1, BUILDER: 1, SOCCER: 1 };
+  var WALK = { HOME: 1, SHOWROOM: 1, NEON_PAINT: 1, GARAGE: 1, DANCE: 1, PETS: 1, CAFE: 1, ARCADE: 1, BUILDER: 1, SOCCER: 1, SKY_DROP: 1 };
   var rooms = {};
   var frame = null;
   var btn = null;
@@ -410,6 +410,8 @@
       var o = w._ibOrigin || { x: 0, z: 0 };
       var x0 = w.x, z0 = w.z;
       orig.call(this, w, d);
+      w.y = 0;
+      w._roofY = null;
       var pack = activePack(w.insideDoor);
       if (!pack) return;
       var lx0 = x0 - o.x, lz0 = z0 - o.z, lx = w.x - o.x, lz = w.z - o.z;
@@ -1079,6 +1081,8 @@
     self._ibOrigin = origin;
     self.y = 0;
     self._roofY = null;
+    self.jumpY = 0;
+    self.jumpVy = 0;
     self.vx = 0;
     self.vz = 0;
     self.speed = 0;
@@ -1131,10 +1135,14 @@
         if (!(dist <= maxDist) || (best && dist >= best.dist)) continue;
         var nx = door[2] || 0, nz = door[3] || 0;
         if ((x - door[0]) * nx + (z - door[1]) * nz < -2) continue;
+        var rank = !WALK[b.purpose] ? 0 : (b.purpose === 'SKY_DROP' ? 1 : 2);
+        if (!rank) continue;
+        if (best && (rank < best.rank || (rank === best.rank && dist >= best.dist))) continue;
         best = {
-          x: door[0], z: door[1], nx: nx, nz: nz, dist: dist, y: 0,
+          x: door[0], z: door[1], nx: nx, nz: nz, dist: dist, y: 0, rank: rank,
           buildingId: b.id, building: b,
-          purpose: b.purpose, purposeLabel: b.purposeLabel, color: b.c
+          purpose: b.purpose, purposeLabel: b.purposeLabel, color: b.c,
+          top: 0, cx: b.cx, cz: b.cz
         };
       }
     }
@@ -1364,17 +1372,47 @@
     walkFps.style.left = 'auto';
   }
 
+  function roomDoor() {
+    var near = outsideDoor();
+    if (near && exploreOf(near)) return near;
+    var target = null;
+    try { target = typeof walkEntryTarget === 'function' ? walkEntryTarget() : null; } catch (e) {}
+    var door = withBuilding(target && target.door);
+    if (door && exploreOf(door)) return door;
+    return null;
+  }
+
+  function hookAct() {
+    if (typeof walkAct !== 'function' || walkAct._ibRoom) return;
+    var orig = walkAct;
+    var wrapped = function (door) {
+      if (door && door.purpose === 'SKY_DROP') return;
+      return orig.apply(this, arguments);
+    };
+    wrapped._ibRoom = 1;
+    try { walkAct = wrapped; } catch (e) {}
+    try { window.walkAct = wrapped; } catch (e2) {}
+  }
+
   function hookEnter() {
     var fn = typeof walkEnterDoor === 'function' ? walkEnterDoor : null;
     if (!fn || fn._ibPark) return;
     var orig = fn._ibOrig || fn;
     var wrapped = function () {
       var self = (this && typeof this.nearestDoor === 'function') ? this : (typeof WALK_MODE !== 'undefined' ? WALK_MODE : null);
-      var explore = outsideDoor();
-      if (explore && self && !self.insideBuilding) return enterExplore(self, explore, orig);
-      var target = typeof walkEntryTarget === 'function' ? walkEntryTarget() : null;
-      var door = withBuilding(target && target.door);
-      if (door && self && exploreOf(door) && !self.insideBuilding) return enterExplore(self, door, orig);
+      var room = null;
+      try { room = roomDoor(); } catch (e) { room = null; }
+      if (room && self && !self._ibWorld) {
+        try { return enterExplore(self, room, orig); }
+        catch (err) {
+          try { window.IB_ERR = String(err && err.stack || err); } catch (e2) {}
+          return false;
+        }
+      }
+      if (room && self && self._ibWorld) return true;
+      var target = null;
+      try { target = typeof walkEntryTarget === 'function' ? walkEntryTarget() : null; } catch (e3) {}
+      if (target && target.door && target.door.purpose === 'SKY_DROP') return false;
       return orig.apply(this, arguments);
     };
     wrapped._ibPark = 1;
@@ -1399,6 +1437,7 @@
     hookIntegrate();
     hookPaint();
     hookShow();
+    hookAct();
     hookEnter();
     hookLeave();
     hookMotion();

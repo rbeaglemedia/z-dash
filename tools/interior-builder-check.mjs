@@ -170,6 +170,10 @@ assert.strictEqual(ranked.n, 1, 'HOME 1 is an explore door');
 const garage = IB.exploreOf({ purpose: 'GARAGE', building: { oid: 3, purpose: 'GARAGE' } });
 assert.strictEqual(garage.purpose, 'GARAGE', 'every enterable building gets a room');
 assert.strictEqual(IB.exploreOf({ purpose: 'NOS', building: { oid: 4, purpose: 'NOS' } }), null, 'a pump is not an indoor room');
+const sky = IB.exploreOf({ purpose: 'SKY_DROP', building: { oid: 9, purpose: 'SKY_DROP', sign: { t: 'JUMP' } } });
+assert.strictEqual(sky.purpose, 'SKY_DROP', 'a jump-roof door opens a floor-level room');
+assert.strictEqual(IB.exploreOf({ purpose: 'SNACK', building: { oid: 5, purpose: 'SNACK' } }), null, 'a snack stand is not an indoor room');
+assert(fs.readFileSync(path.join(root, 'test/world/interior-builder.js'), 'utf8').includes("door.purpose === 'SKY_DROP'"), 'door ENTER does not run the rooftop teleport');
 
 live.P = { x: 1, z: 1, y: 0.2, yaw: 0.3, v: 2 };
 const shoved = IB.parkSpot({

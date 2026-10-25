@@ -1512,10 +1512,44 @@
       left = r.left + miniHit.x * sx + 8;
     }
     var vw = window.innerWidth || 800, vh = window.innerHeight || 600;
-    if (left < 48) left = 48;
-    if (left > vw - 92) left = Math.max(48, vw - 92);
-    if (top < 48) top = 48;
-    if (top > vh - 100) top = Math.max(48, vh - 100);
+    if (left < 8) left = 8;
+    if (left > vw - 92) left = Math.max(8, vw - 92);
+    if (top < 8) top = 8;
+    if (top > vh - 56) top = Math.max(8, vh - 56);
+    var bw = 64, bh = 48, guard = 0;
+    function hudRect(id) {
+      var el = document.getElementById(id);
+      if (!el || !el.getBoundingClientRect) return null;
+      var view = el.ownerDocument && el.ownerDocument.defaultView;
+      var s = view && view.getComputedStyle ? view.getComputedStyle(el) : null;
+      if (s && (s.display === 'none' || s.visibility === 'hidden' || s.opacity === '0')) return null;
+      var r = el.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2) return null;
+      return r;
+    }
+    function hitOf(x, y) {
+      var ids = ['brk', 'nos', 'tup', 'wng', 'emoteBtn', 'exitCarBtn', 'enterBldBtn', 'kMenuB', 'zdWalkAct', 'zdWalkExit'];
+      for (var i = 0; i < ids.length; i++) {
+        var r = hudRect(ids[i]);
+        if (!r) continue;
+        if (x < r.right + 6 && x + bw > r.left - 6 && y < r.bottom + 6 && y + bh > r.top - 6) return r;
+      }
+      return null;
+    }
+    while (guard < 8) {
+      var hit = hitOf(left, top);
+      if (!hit) break;
+      var nextLeft = Math.round(hit.right + 8);
+      if (nextLeft + bw < vw - 4) left = nextLeft;
+      else {
+        var above = Math.round(hit.top - bh - 8);
+        top = above >= 8 ? above : Math.round(hit.bottom + 8);
+      }
+      if (left < 8) left = 8;
+      if (top < 8) top = 8;
+      if (top > vh - bh) top = Math.max(8, vh - bh);
+      guard++;
+    }
     devBtn.style.left = Math.round(left) + 'px';
     devBtn.style.top = Math.round(top) + 'px';
   }
