@@ -51,8 +51,10 @@ assert(embed.includes('walkOn'), 'the walk-in uses the planner camera');
 assert(embed.includes('zd-interior-back'), 'save returns to the walk-in');
 assert(embed.includes('ESP.sim = null'), 'the walk-in does not start preset characters');
 assert(!fs.existsSync(path.join(root, 'test/planner/src/sim.js')), 'people simulation was not ported');
-assert(src.includes('zdWalkCrew'), 'the real walker is drawn on the planner room');
-assert(src.includes('insideBuilding = true'), 'the city loop pauses inside the room');
+assert(!src.includes('zdWalkCrew'), 'the walk-in does not use the 2D crew overlay');
+assert(src.includes('actorSegs'), 'the player and pet are sent into the planner room');
+assert(src.includes('_ibHold'), 'the city loop pauses without the old interior flag');
+assert(!src.includes('insideBuilding = true'), 'these doors do not turn on the old interior');
 assert(fs.readFileSync(path.join(root, 'test/planner/src/main.js'), 'utf8').includes('bootEmbed'), 'the planner boots the room embed');
 
 const live = boot(memStore());
@@ -160,12 +162,14 @@ let usedDefault = 0;
 again.walkRoomStep = function () { usedDefault++; };
 again.INTERIOR_BUILDER.hook();
 again.walkRoomStep(plain, 0.16);
-assert.strictEqual(usedDefault, 1, 'a room without a saved layout keeps the current interior');
+assert.strictEqual(usedDefault, 0, 'an enterable building does not use the old room step');
 
 const ranked = IB.exploreOf({ purpose: 'HOME', building: { oid: 19, purpose: 'HOME', sign: { t: 'HOME 1' } } });
 assert.strictEqual(ranked.purpose, 'HOME');
 assert.strictEqual(ranked.n, 1, 'HOME 1 is an explore door');
-assert.strictEqual(IB.exploreOf({ purpose: 'GARAGE', building: { oid: 3, purpose: 'GARAGE' } }), null, 'a garage is not this enter button');
+const garage = IB.exploreOf({ purpose: 'GARAGE', building: { oid: 3, purpose: 'GARAGE' } });
+assert.strictEqual(garage.purpose, 'GARAGE', 'every enterable building gets a room');
+assert.strictEqual(IB.exploreOf({ purpose: 'NOS', building: { oid: 4, purpose: 'NOS' } }), null, 'a pump is not an indoor room');
 
 live.P = { x: 1, z: 1, y: 0.2, yaw: 0.3, v: 2 };
 const shoved = IB.parkSpot({

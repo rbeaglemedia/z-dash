@@ -5,12 +5,9 @@ import { ESP } from './app/runtime.js';
 import { deserialize, serialize } from './grid.js';
 import { rectPoly, wallRects, floorOf, floorBounds, placeDoor } from './walls.js';
 import { dims, def } from './logic.js';
+import * as THREE from 'three';
 
 const FT = 0.3048;
-/* Outdoor chase, written in planner feet: 4.5 m back, eye 1.85 m, look 1.10 m. */
-const WALK_BACK = 4.5 / FT;
-const WALK_EYE = 1.85 / FT;
-const WALK_LOOK = 1.10 / FT;
 
 function query() {
   let q;
@@ -66,45 +63,31 @@ export function embedSolids() {
   };
 }
 
-function walkTarget() {
+function frameRoom() {
   const p = ESP.walkPoseData;
-  if (p && Number.isFinite(p.x) && Number.isFinite(p.z)) return p;
-  const fw = ESP.EMBED && ESP.EMBED.fw || 60;
-  const fd = ESP.EMBED && ESP.EMBED.fd || 80;
-  return { x: fw / 2, z: Math.min(6, fd * 0.12), y: 0, yaw: 0 };
-}
-
-function placeWalkCam() {
-  const p = walkTarget();
-  const y = Number.isFinite(p.y) ? p.y : 0;
-  const yaw = Number.isFinite(p.yaw) ? p.yaw : 0;
-  const cx = p.x - Math.sin(yaw) * WALK_BACK;
-  const cz = p.z - Math.cos(yaw) * WALK_BACK;
-  ESP.camera.position.set(cx, y + WALK_EYE, cz);
-  ESP.camera.lookAt(p.x, y + WALK_LOOK, p.z);
-  ESP.camera.updateMatrixWorld();
+  const b = floorBounds(floorOf(ESP.S.walls));
+  const x = p && Number.isFinite(p.x) ? p.x : (b.minX + b.maxX) / 2;
+  const z = p && Number.isFinite(p.z) ? p.z : b.minZ + Math.min(8, (b.maxZ - b.minZ) * 0.2);
+  ESP.V.tx = x;
+  ESP.V.tz = z;
+  ESP.V.yaw = Math.PI / 4;
+  ESP.V.pitch = 0.95;
+  ESP.V.dist = 38;
+  if (typeof ESP.placeCam === 'function') ESP.placeCam();
 }
 
 function installWalkCam() {
-  if (!ESP.placeCam || ESP.placeCam._walk) return;
-  const orbit = ESP.placeCam;
-  const wrapped = function placeCamWalk() {
-    if (ESP.walkOn) { placeWalkCam(); return; }
-    orbit();
-  };
-  wrapped._walk = 1;
-  ESP.placeCam = wrapped;
+  if (ESP.placeCam && ESP.placeCam._walk) return;
+  if (ESP.placeCam) ESP.placeCam._walk = 1;
   if (typeof ESP.overlays === 'function' && !ESP.overlays._walk) {
     const overlays = ESP.overlays;
     const wrappedOverlays = function overlaysWalk() {
-      if (ESP.walkOn) {
-        if (ESP.grid1) ESP.grid1.visible = false;
-        if (ESP.grid10) ESP.grid10.visible = false;
-        if (ESP.grid100) ESP.grid100.visible = false;
-        if (ESP.cursorDot) ESP.cursorDot.visible = false;
-        return;
-      }
       overlays();
+      if (!ESP.walkOn) return;
+      if (ESP.grid1) ESP.grid1.visible = true;
+      if (ESP.grid10) ESP.grid10.visible = false;
+      if (ESP.grid100) ESP.grid100.visible = false;
+      if (ESP.cursorDot) ESP.cursorDot.visible = false;
     };
     wrappedOverlays._walk = 1;
     ESP.overlays = wrappedOverlays;
@@ -143,8 +126,214 @@ function walkStyle() {
   if (document.getElementById('zdWalkCss')) return;
   const css = document.createElement('style');
   css.id = 'zdWalkCss';
-  css.textContent = 'body.zd-walk header.bar,body.zd-walk #modes,body.zd-walk #toolsBuild,body.zd-walk #toolsPlace,body.zd-walk #drawTools,body.zd-walk #presets,body.zd-walk #rail,body.zd-walk #hist,body.zd-walk #snapHint,body.zd-walk #lvlBar,body.zd-walk #hint,body.zd-walk #btnClear,body.zd-walk .ver,body.zd-walk #simBar,body.zd-walk #labels,body.zd-walk #presetTip,body.zd-walk #stampBar,body.zd-walk #selBar,body.zd-walk #sheet{display:none!important}';
+  css.textContent = ''
+    + 'body.zd-walk header.bar,body.zd-walk #modes,body.zd-walk #toolsBuild,body.zd-walk #toolsPlace,body.zd-walk #drawTools,body.zd-walk #presets,body.zd-walk #hist,body.zd-walk #snapHint,body.zd-walk #lvlBar,body.zd-walk #hint,body.zd-walk #btnClear,body.zd-walk .ver,body.zd-walk #simBar,body.zd-walk #labels,body.zd-walk #presetTip,body.zd-walk #stampBar,body.zd-walk #selBar,body.zd-walk #btnShare,body.zd-walk #btnRun,body.zd-walk #btnQuote{display:none!important}'
+    + 'body.zd-walk #rail{display:grid!important;grid-auto-flow:column;align-content:start;justify-items:stretch}'
+    + 'body.zd-walk #rail svg{display:none!important}'
+    + 'body.zd-walk #rail button{justify-content:center;line-height:1.15;overflow:hidden}'
+    + 'body.zd-walk #sheet{z-index:12}';
   document.head.appendChild(css);
+}
+
+const actor = { group: null, mats: [], meshes: [], geo: null, head: null };
+
+function ensureActor() {
+  if (actor.group || !ESP.scene) return;
+  actor.group = new THREE.Group();
+  actor.group.name = 'zdWalkActor';
+  actor.geo = new THREE.CylinderGeometry(0.5, 0.5, 1, 6);
+  actor.head = new THREE.SphereGeometry(0.5, 8, 6);
+  ESP.scene.add(actor.group);
+}
+
+function boneMesh(head) {
+  const mat = new THREE.MeshBasicMaterial({ color: 0xff4ad8 });
+  const mesh = new THREE.Mesh(head ? actor.head : actor.geo, mat);
+  mesh.frustumCulled = false;
+  actor.group.add(mesh);
+  actor.mats.push(mat);
+  actor.meshes.push(mesh);
+  return mesh;
+}
+
+function drawActor(segs) {
+  ensureActor();
+  if (!actor.group) return;
+  const list = segs || [];
+  while (actor.meshes.length < list.length) boneMesh(!!(list[actor.meshes.length] && list[actor.meshes.length].head));
+  const up = new THREE.Vector3(0, 1, 0);
+  const dir = new THREE.Vector3();
+  for (let i = 0; i < actor.meshes.length; i++) {
+    const mesh = actor.meshes[i];
+    const seg = list[i];
+    if (!seg || !seg.a || !seg.b) { mesh.visible = false; continue; }
+    const ax = +seg.a[0], ay = +seg.a[1], az = +seg.a[2];
+    const bx = +seg.b[0], by = +seg.b[1], bz = +seg.b[2];
+    const len = Math.hypot(bx - ax, by - ay, bz - az) || 0.04;
+    const r = Math.max(0.12, (+seg.r || 0.08) * 1.7);
+    mesh.visible = true;
+    mesh.material.color.set(seg.c || '#ff4ad8');
+    if (seg.head) {
+      mesh.position.set(ax, ay, az);
+      mesh.scale.set(r * 2, r * 2, r * 2);
+      mesh.quaternion.identity();
+      continue;
+    }
+    mesh.position.set((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2);
+    mesh.scale.set(r * 2, len, r * 2);
+    dir.set(bx - ax, by - ay, bz - az).multiplyScalar(1 / len);
+    mesh.quaternion.setFromUnitVectors(up, dir);
+  }
+}
+
+function walkFloor(on) {
+  if (!ESP.floorMat) return;
+  if (on) {
+    ESP.floorMat.color.set(0x0c2038);
+    ESP.floorMat.transparent = true;
+    ESP.floorMat.opacity = 0.72;
+    ESP.floorMat.depthWrite = false;
+  } else {
+    ESP.floorMat.color.set(0xffffff);
+    ESP.floorMat.transparent = false;
+    ESP.floorMat.opacity = 1;
+    ESP.floorMat.depthWrite = true;
+  }
+}
+
+function mountWalkRail() {
+  const rail = ESP.$('#rail');
+  if (!rail) return;
+  const anchor = ESP.$('#btnTop') || rail.firstChild;
+  ['btnAdd', 'btnSame', 'btnEvents'].forEach(function (id) {
+    const b = ESP.$('#' + id);
+    if (!b) return;
+    if (!b.dataset.railHome && b.parentElement) b.dataset.railHome = b.parentElement.id || '';
+    rail.insertBefore(b, anchor);
+  });
+  ['btnShare', 'btnRun', 'btnQuote'].forEach(function (id) {
+    const b = ESP.$('#' + id);
+    if (b) b.classList.add('hidden');
+  });
+  fitWalkRail();
+}
+
+function restoreWalkRail() {
+  const place = ESP.$('#toolsPlace');
+  ['btnSame', 'btnEvents', 'btnAdd'].forEach(function (id) {
+    const b = ESP.$('#' + id);
+    if (!b) return;
+    b.style.height = '';
+    b.style.minHeight = '';
+    b.style.width = '';
+    b.style.fontSize = '';
+    b.style.padding = '';
+    b.style.whiteSpace = '';
+    if (place) place.appendChild(b);
+  });
+  const share = ESP.$('#btnShare');
+  if (share) share.classList.remove('hidden');
+  const rail = ESP.$('#rail');
+  if (!rail) return;
+  delete rail.dataset.fit;
+  rail.style.top = '';
+  rail.style.right = '';
+  rail.style.left = '';
+  rail.style.gap = '';
+  rail.style.width = '';
+  rail.style.maxHeight = '';
+  rail.style.gridTemplateRows = '';
+  rail.style.gridTemplateColumns = '';
+  [].forEach.call(rail.querySelectorAll('button'), function (b) {
+    b.style.height = '';
+    b.style.minHeight = '';
+    b.style.width = '';
+    b.style.fontSize = '';
+    b.style.padding = '';
+    b.style.whiteSpace = '';
+  });
+}
+
+function parentHudBox(id) {
+  let doc = document;
+  try {
+    if (window.parent && window.parent.document && window.parent.document.getElementById) doc = window.parent.document;
+  } catch (e) {}
+  const el = doc.getElementById(id);
+  if (!el || !el.getBoundingClientRect) return null;
+  const view = (el.ownerDocument && el.ownerDocument.defaultView) || window;
+  const s = view.getComputedStyle(el);
+  if (s.display === 'none' || s.visibility === 'hidden' || s.opacity === '0') return null;
+  const r = el.getBoundingClientRect();
+  if (r.width < 2 || r.height < 2) return null;
+  let x = r.left;
+  let y = r.top;
+  let right = r.right;
+  let bottom = r.bottom;
+  if (el.ownerDocument !== document && window.frameElement && window.frameElement.getBoundingClientRect) {
+    const fr = window.frameElement.getBoundingClientRect();
+    x -= fr.left;
+    y -= fr.top;
+    right -= fr.left;
+    bottom -= fr.top;
+  }
+  return { x: x, y: y, r: right, b: bottom };
+}
+
+function fitWalkRail() {
+  const rail = ESP.$('#rail');
+  if (!rail) return;
+  const w = window.innerWidth || 844;
+  const h = window.innerHeight || 390;
+  const buttons = [].filter.call(rail.querySelectorAll('button'), function (b) {
+    return !b.classList.contains('hidden');
+  });
+  const n = Math.max(1, buttons.length);
+  const gap = 4;
+  const btnW = 72;
+  const minH = 18;
+  const obs = ['kMenuB', 'exitCarBtn', 'tup', 'nos', 'brk', 'wng', 'emoteBtn', 'zdWalkAct', 'zdWalkExit', 'devOpen', 'enterBldBtn'].map(parentHudBox).filter(Boolean);
+  const rightJoy = obs.filter(function (o) { return o.x > w * 0.45 && o.b > h * 0.4; });
+  const floor = (rightJoy.length ? Math.min.apply(null, rightJoy.map(function (o) { return o.y; })) : h) - 8;
+  function planFor(cols) {
+    const rows = Math.ceil(n / cols);
+    const railW = cols * btnW + (cols - 1) * gap;
+    const left = w - 8 - railW;
+    let top = 8;
+    obs.forEach(function (o) {
+      if (o.y >= floor - 4) return;
+      const iw = Math.min(w - 8, o.r) - Math.max(left, o.x);
+      if (iw > 2 && o.b + 6 > top) top = Math.ceil(o.b + 6);
+    });
+    const avail = floor - top;
+    let btnH = Math.floor((avail - gap * (rows - 1)) / rows);
+    if (btnH > 44) btnH = 44;
+    const need = rows * minH + gap * (rows - 1);
+    return { cols: cols, rows: rows, top: top, btnH: btnH, avail: avail, railW: railW, ok: btnH >= minH && avail + 1 >= need };
+  }
+  let plan = planFor(1);
+  if (!plan.ok) plan = planFor(2);
+  if (!plan.ok) plan.btnH = minH;
+  const sig = [plan.cols, plan.rows, plan.top, plan.btnH, plan.railW, n, Math.round(floor)].join('|');
+  if (rail.dataset.fit === sig) return;
+  rail.dataset.fit = sig;
+  rail.style.top = plan.top + 'px';
+  rail.style.right = '8px';
+  rail.style.left = 'auto';
+  rail.style.gap = gap + 'px';
+  rail.style.width = plan.railW + 'px';
+  rail.style.maxHeight = Math.max(36, Math.floor(plan.avail)) + 'px';
+  rail.style.gridTemplateRows = 'repeat(' + plan.rows + ', ' + plan.btnH + 'px)';
+  rail.style.gridTemplateColumns = 'repeat(' + plan.cols + ', ' + btnW + 'px)';
+  buttons.forEach(function (b) {
+    b.style.height = plan.btnH + 'px';
+    b.style.minHeight = '0px';
+    b.style.width = btnW + 'px';
+    b.style.fontSize = '10px';
+    b.style.padding = '1px 2px';
+    b.style.overflow = 'hidden';
+    b.style.whiteSpace = 'nowrap';
+  });
 }
 
 function post(type) {
@@ -231,24 +420,38 @@ export function bootEmbed() {
   }
   ESP.walkPose = function walkPose(p) {
     ESP.walkPoseData = p || null;
-    if (ESP.walkOn && ESP.frame) ESP.frame();
+    drawActor(p && p.segs);
+    if (ESP.walkOn) frameRoom();
+    if (ESP.frame) ESP.frame();
+  };
+  ESP.sheetOpen = function sheetOpen() {
+    const sheet = ESP.$('#sheet');
+    return !!(sheet && !sheet.classList.contains('hidden'));
   };
   ESP.setWalk = function setWalk(on) {
     ESP.walkOn = !!on;
     ESP.sim = null;
     if (typeof ESP.simStop === 'function') ESP.simStop();
     if (document.body) document.body.classList.toggle('zd-walk', !!on);
+    if (typeof ESP.setWallsView === 'function') ESP.setWallsView('low');
+    walkFloor(!!on);
     if (on) {
       ESP.select(null);
       if (typeof ESP.endStamp === 'function') ESP.endStamp();
       if (typeof ESP.closeSheet === 'function') ESP.closeSheet();
-      if (typeof ESP.setWallsView === 'function') ESP.setWallsView('full');
-    } else if (typeof ESP.setWallsView === 'function') {
-      ESP.setWallsView('low');
+      if (ESP.phase !== 'place' && typeof ESP.setPhase === 'function') ESP.setPhase('place');
+      mountWalkRail();
+      frameRoom();
+      ensureActor();
+    } else {
+      restoreWalkRail();
+      if (typeof ESP.setPhase === 'function') ESP.setPhase('build');
     }
     if (typeof ESP.resize === 'function') ESP.resize();
     if (ESP.frame) ESP.frame();
   };
+  ESP.fitWalkRail = fitWalkRail;
+  addEventListener('resize', function () { if (ESP.walkOn) fitWalkRail(); });
   if (embed.walk) ESP.setWalk(true);
   if (document.body) document.body.dataset.ready = '1';
   try { window.ESP = ESP; } catch (e) {}

@@ -1,10 +1,8 @@
-/* Interior Builder. HOME 1-4 and CAFE 1-4 open the event planner's 3D room
-   (its meshes, its camera, one foot per unit). The outdoor on-foot move drives
-   Neon World's real player and pet. Preset NPC actions stay out: that people
-   simulation was not ported. The city loop pauses so only the room renders.
-   Until a layout is saved the room is 60 by 80 ft, and BUILD can resize it.
-   The old flat house screen stays off these doors. This file does not write
-   zdash.house.v1. */
+/* Interior Builder. Any enterable building opens one blank planner room.
+   Floor, walls, and furniture come only from that building's saved BUILD data.
+   The outdoor on-foot player and pet walk inside the angled room. The city
+   loop pauses. The old flat house screen stays off these doors. This file
+   does not write zdash.house.v1. DEV Builder is unchanged. */
 'use strict';
 (function () {
   if (window.INTERIOR_BUILDER) return;
@@ -310,11 +308,11 @@
       var esp = frameEsp();
       if (esp && typeof esp.setWalk === 'function') esp.setWalk(true);
       setWalkPointer(false);
-      if (wm && wm._ibWorld) {
-        wm.insideBuilding = true;
+        if (wm && wm._ibWorld) {
         wm.onFoot = true;
         hideLegacyCard();
         settle(wm);
+        holdCity(true);
       }
       return;
     }
@@ -358,7 +356,7 @@
           hideLegacyCard();
           var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
           if (wm && !wm._ibWorld) enterExplore(wm, door, null);
-          else if (wm) { wm.insideBuilding = true; wm.onFoot = true; }
+          else if (wm) { wm.onFoot = true; holdCity(true); }
           return;
         }
         var out = orig.apply(this, arguments);
@@ -391,8 +389,8 @@
     var orig = walkRoomStep;
     var wrapped = function (w, d) {
       if (w && exploreOf(w.insideDoor)) {
-        if (!w._ibWorld) enterExplore(w, w.insideDoor, null);
-        else { w.insideBuilding = true; w.onFoot = true; hideLegacyCard(); }
+        if (!w._ibWorld && w.onFoot) enterExplore(w, w.insideDoor, null);
+        else { w.onFoot = true; hideLegacyCard(); holdCity(true); }
         return;
       }
       return orig(w, d);
@@ -575,24 +573,10 @@
     var b = (door && door.building) || door || {};
     var live = liveOf(b) || b;
     var purpose = (door && door.purpose) || live.purpose || b.purpose || '';
-    if (purpose !== 'HOME' && purpose !== 'CAFE') return null;
-    var named = rowMatch(signText(live) + ' ' + signText(b) + ' ' + (b.name || '') + ' ' + (live.purposeLabel || '') + ' ' + (door.purposeLabel || ''));
-    if (named && named.purpose === purpose) return named;
-    if (typeof CITY === 'undefined' || !CITY.BL) return { purpose: purpose, n: 1 };
-    var list = [];
-    for (var i = 0; i < CITY.BL.length; i++) {
-      var o = CITY.BL[i];
-      if (!o || o.purpose !== purpose || rowMatch(signText(o))) continue;
-      list.push(o);
-    }
-    list.sort(function (a, c) { return (a.oid || 0) - (c.oid || 0); });
-    if (list.length > 4) return null;
-    var id = live.oid != null ? live.oid : (live.id != null ? live.id : b.id);
-    for (var j = 0; j < list.length && j < 4; j++) {
-      var oid = list[j].oid != null ? list[j].oid : list[j].id;
-      if (oid === id) return { purpose: purpose, n: j + 1 };
-    }
-    return null;
+    if (!WALK[purpose]) return null;
+    var named = rowMatch(signText(live) + ' ' + signText(b) + ' ' + (b.name || '') + ' ' + (live.purposeLabel || '') + ' ' + ((door && door.purposeLabel) || ''));
+    var title = (named && named.purpose === purpose) ? (named.purpose + ' ' + named.n) : (signText(live) || signText(b) || (door && door.purposeLabel) || purpose);
+    return { purpose: purpose, n: named && named.purpose === purpose ? named.n : 1, title: title || purpose };
   }
 
   function nearDoor(pack, x, z) {
@@ -713,10 +697,8 @@
     return exploreOf(door) ? defaultPack(door) : null;
   }
 
-  function originFor(rank) {
-    var n = rank && rank.n || 1;
-    var lane = rank && rank.purpose === 'CAFE' ? 4 : 0;
-    return { x: 9000, z: 9000 + (lane + n - 1) * 160 };
+  function originFor() {
+    return { x: 9000, z: 9000 };
   }
 
   function spawnOf(pack) {
@@ -820,115 +802,136 @@
     CITY.DYN.push(roomDyn);
   }
 
-  var crewCv = null;
-  var crewCtx = null;
-
   function frameEsp() {
     var iframe = frame && frame.querySelector ? frame.querySelector('iframe') : null;
     try { return iframe && iframe.contentWindow && iframe.contentWindow.ESP; } catch (e) { return null; }
   }
 
-  function setWalkPointer(editing) {
+  function setWalkPointer() {
     if (!frame || !frame.style) return;
-    frame.style.pointerEvents = editing ? 'auto' : 'none';
+    frame.style.pointerEvents = 'auto';
     var iframe = frame.querySelector ? frame.querySelector('iframe') : null;
-    if (iframe && iframe.style) iframe.style.pointerEvents = editing ? 'auto' : 'none';
+    if (iframe && iframe.style) iframe.style.pointerEvents = 'auto';
   }
 
-  function hideCrew() {
-    if (crewCv && crewCv.style) crewCv.style.display = 'none';
-  }
+  function hideCrew() {}
 
-  function ensureCrew() {
-    if (crewCv || typeof document === 'undefined' || !document.body) return;
-    crewCv = document.createElement('canvas');
-    crewCv.id = 'zdWalkCrew';
-    crewCv.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:221;pointer-events:none;background:transparent';
-    document.body.appendChild(crewCv);
-    crewCtx = crewCv.getContext('2d');
-  }
+  var LOOK = {
+    girl: { hip: .10, shoulder: .15, thigh: .40, shin: .38, torso: .40, neck: .045, head: .125, uarm: .26, farm: .23, armR: .036, legR: .055, pony: 1,
+      cloth: '#1c0e22', cloth2: '#2a1434', trim: '#ff4ad8', accent: '#3ee6ff', sole: '#ffe14d', hair: '#ff4ad8' },
+    boy: { hip: .11, shoulder: .185, thigh: .42, shin: .40, torso: .42, neck: .05, head: .12, uarm: .28, farm: .24, armR: .042, legR: .06, hood: 1,
+      cloth: '#10161f', cloth2: '#1a2838', trim: '#3ee6ff', accent: '#7aa6ff', sole: '#b6ff4a', hair: '#102033' }
+  };
 
-  function sizeCrew() {
-    var city = typeof document !== 'undefined' && document.getElementById && document.getElementById('c');
-    if (!city || !crewCv) return;
-    if (crewCv.width !== city.width) crewCv.width = city.width;
-    if (crewCv.height !== city.height) crewCv.height = city.height;
+  function V3(x, y, z) { return { x: x, y: y, z: z }; }
+  function add3(a, b) { return V3(a.x + b.x, a.y + b.y, a.z + b.z); }
+  function mul3(a, s) { return V3(a.x * s, a.y * s, a.z * s); }
+  function rx3(p, a) { var c = Math.cos(a), s = Math.sin(a); return V3(p.x, p.y * c - p.z * s, p.y * s + p.z * c); }
+  function rz3(p, a) { var c = Math.cos(a), s = Math.sin(a); return V3(p.x * c - p.y * s, p.x * s + p.y * c, p.z); }
+  function basis3(forward, out) {
+    return { x: rz3(V3(1, 0, 0), out), y: rz3(rx3(V3(0, 1, 0), -forward), out), z: rz3(rx3(V3(0, 0, 1), -forward), out) };
   }
-
-  function roomCam(w) {
-    var o = w._ibOrigin || { x: 0, z: 0 };
-    var yaw = w.yaw || 0;
-    var px = (w.x - o.x) / FT;
-    var pz = (w.z - o.z) / FT;
-    var py = (w.y || 0) / FT;
-    var back = 4.5 / FT;
+  function apply3(B, p) { return V3(B.x.x * p.x + B.y.x * p.y + B.z.x * p.z, B.x.y * p.x + B.y.y * p.y + B.z.y * p.z, B.x.z * p.x + B.y.z * p.y + B.z.z * p.z); }
+  function chain3(forward, bend, l1, l2, out) {
+    var B = basis3(forward, out);
+    var knee = mul3(apply3(B, V3(0, -1, 0)), l1);
+    var ankle = add3(knee, mul3(apply3(B, rx3(V3(0, -1, 0), bend)), l2));
+    return { knee: knee, ankle: ankle };
+  }
+  function figurePts(look, spec) {
+    var hip = V3((spec.sway || 0) * .04, look.thigh + look.shin + (spec.bob || 0), 0);
+    var sway = spec.sway || 0, lean = spec.lean || 0;
+    var up = rz3(rx3(V3(0, 1, 0), lean), sway), side = rz3(rx3(V3(1, 0, 0), lean), sway);
+    var chest = add3(hip, mul3(up, look.torso)), neck = add3(chest, mul3(up, look.neck)), head = add3(neck, mul3(up, look.head * .85));
+    var shL = add3(chest, mul3(side, -look.shoulder)), shR = add3(chest, mul3(side, look.shoulder));
+    var hpL = add3(hip, V3(-look.hip, -.02, 0)), hpR = add3(hip, V3(look.hip, -.02, 0));
+    var out = spec.armOut == null ? 0.2 : spec.armOut;
+    var aL = chain3(spec.armL || 0, spec.elbL || 0, look.uarm, look.farm, -out);
+    var aR = chain3(spec.armR || 0, spec.elbR || 0, look.uarm, look.farm, out);
+    var lL = chain3(spec.legL || 0, spec.kneeL || 0, look.thigh, look.shin, -.05);
+    var lR = chain3(spec.legR || 0, spec.kneeR || 0, look.thigh, look.shin, .05);
     return {
-      px: px, py: py, pz: pz,
-      cx: px - Math.sin(yaw) * back,
-      cy: py + 1.85 / FT,
-      cz: pz - Math.cos(yaw) * back,
-      lx: px, ly: py + 1.10 / FT, lz: pz
+      hip: hip, chest: chest, head: head, shL: shL, shR: shR, hpL: hpL, hpR: hpR,
+      elL: add3(shL, aL.knee), wrL: add3(shL, aL.ankle), elR: add3(shR, aR.knee), wrR: add3(shR, aR.ankle),
+      knL: add3(hpL, lL.knee), anL: add3(hpL, lL.ankle), knR: add3(hpR, lR.knee), anR: add3(hpR, lR.ankle),
+      ftL: add3(add3(hpL, lL.ankle), V3(0, -.02, .09)), ftR: add3(add3(hpR, lR.ankle), V3(0, -.02, .09))
     };
   }
-
-  function roomProj(x, y, z) {
-    var w = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
-    if (!w || !w._ibOrigin || !(typeof W === 'number' && W > 2) || !(typeof H === 'number' && H > 2)) return null;
-    var cam = roomCam(w);
-    var fx = (x - w._ibOrigin.x) / FT;
-    var fy = y / FT;
-    var fz = (z - w._ibOrigin.z) / FT;
-    var zx = cam.cx - cam.lx, zy = cam.cy - cam.ly, zz = cam.cz - cam.lz;
-    var zl = Math.hypot(zx, zy, zz) || 1;
-    zx /= zl; zy /= zl; zz /= zl;
-    var xx = zz, xy = 0, xz = -zx;
-    var xl = Math.hypot(xx, xy, xz) || 1;
-    xx /= xl; xy /= xl; xz /= xl;
-    var yx = zy * xz - zz * xy;
-    var yy = zz * xx - zx * xz;
-    var yz = zx * xy - zy * xx;
-    var vx = fx - cam.cx, vy = fy - cam.cy, vz = fz - cam.cz;
-    var cx = vx * xx + vy * xy + vz * xz;
-    var cyv = vx * yx + vy * yy + vz * yz;
-    var cz = vx * zx + vy * zy + vz * zz;
-    var depth = -cz;
-    if (!(depth > 0.25)) return null;
-    var focal = (H * 0.5) / Math.tan(20 * Math.PI / 180);
-    var sx = W / 2 + (cx / depth) * focal;
-    var sy = H / 2 - (cyv / depth) * focal;
-    var fakeZ = depth * FT * (H * 0.9) / focal;
-    return [sx, sy, fakeZ];
+  function roomPt(p, x, y, z, yaw, o) {
+    var c = Math.cos(yaw || 0), s = Math.sin(yaw || 0);
+    return [(x - o.x + p.x * c + p.z * s) / FT, (y + p.y) / FT, (z - o.z - p.x * s + p.z * c) / FT];
+  }
+  function seg(segs, a, b, r, col) {
+    if (!a || !b) return;
+    segs.push({ a: a, b: b, r: r / FT, c: col });
+  }
+  function actorSegs(w) {
+    var segs = [];
+    var o = w._ibOrigin || { x: 0, z: 0 };
+    var st = (typeof CREW !== 'undefined' && CREW && CREW.state) || {};
+    var who = st.who === 'boy' ? 'boy' : 'girl';
+    var look = LOOK[who];
+    var gait = w.gait || st.gait || 'idle';
+    var phase = w.stridePhase || 0;
+    var spec = { bob: 0, sway: 0, lean: 0, armL: .1, armR: .1, elbL: .28, elbR: .28, legL: 0, legR: 0, kneeL: .06, kneeR: .06 };
+    if (typeof CREW !== 'undefined' && CREW && typeof CREW.debugHuman === 'function') {
+      try { spec = CREW.debugHuman(gait, (performance.now() / 1000), phase) || spec; } catch (e) {}
+    }
+    var pts = figurePts(look, spec);
+    var y = (w.y || 0) + (w.jumpY || 0);
+    var yaw = w.yaw || 0;
+    function P(k) { return roomPt(pts[k], w.x, y, w.z, yaw, o); }
+    seg(segs, P('hpL'), P('knL'), look.legR, look.cloth);
+    seg(segs, P('knL'), P('anL'), look.legR * .82, look.cloth2);
+    seg(segs, P('hpR'), P('knR'), look.legR, look.cloth);
+    seg(segs, P('knR'), P('anR'), look.legR * .82, look.cloth2);
+    seg(segs, P('anL'), P('ftL'), look.legR * .7, look.sole);
+    seg(segs, P('anR'), P('ftR'), look.legR * .7, look.sole);
+    seg(segs, P('shL'), P('elL'), look.armR, look.cloth);
+    seg(segs, P('elL'), P('wrL'), look.armR * .85, look.accent);
+    seg(segs, P('shR'), P('elR'), look.armR, look.cloth);
+    seg(segs, P('elR'), P('wrR'), look.armR * .85, look.accent);
+    seg(segs, P('shL'), P('shR'), look.armR, look.trim);
+    seg(segs, P('hpL'), P('hpR'), look.legR, look.trim);
+    seg(segs, P('shL'), P('hpL'), 0.05, look.cloth);
+    seg(segs, P('shR'), P('hpR'), 0.05, look.cloth);
+    var head = P('head');
+    segs.push({ a: head, b: [head[0], head[1] + look.head / FT, head[2]], r: look.head / FT, c: look.hair, head: 1 });
+    var pet = st.petWorld;
+    var px = pet && fin(pet.x) ? pet.x : (w.x - Math.cos(yaw) * 0.65 - Math.sin(yaw) * 0.52);
+    var pz = pet && fin(pet.z) ? pet.z : (w.z + Math.sin(yaw) * 0.65 - Math.cos(yaw) * 0.52);
+    var pyaw = pet && fin(pet.yaw) ? pet.yaw : yaw;
+    var pgait = (pet && pet.gait) || gait;
+    var type = st.petType || 'fox';
+    var D = window.CREWDATA;
+    if (D && typeof D.petFk === 'function' && typeof CREW !== 'undefined' && CREW && typeof CREW.debugGround === 'function') {
+      try {
+        var q = CREW.debugGround(type, pgait, phase, performance.now() / 1000) || {};
+        q.yaw = pyaw * 180 / Math.PI + (q.yaw || 0);
+        var J = D.petFk(q, type);
+        var parts = D.petParts(type) || [];
+        var scale = 1.25;
+        var glow = st.petGlow || '#ffb020';
+        function pj(name) {
+          var v = J[name];
+          if (!v) return null;
+          return [(px - o.x + v[0] * scale) / FT, (y + v[1] * scale) / FT, (pz - o.z + v[2] * scale) / FT];
+        }
+        for (var i = 0; i < parts.length; i++) {
+          var part = parts[i];
+          var a = pj(part[0]), b = pj(part[1]);
+          if (!a || !b) continue;
+          if (part[0] === part[1]) segs.push({ a: a, b: [a[0], a[1] + part[2] * scale / FT, a[2]], r: part[2] * scale / FT, c: glow, head: 1 });
+          else seg(segs, a, b, part[2] * scale, glow);
+        }
+      } catch (err) {}
+    }
+    return segs;
   }
 
-  function paintCrew(w) {
-    if (!w || !openOpts || openOpts.mode !== 'walk') { hideCrew(); return; }
+  function stepCrew() {
     if (typeof CREW === 'undefined' || !CREW || typeof CREW.update !== 'function') return;
-    if (typeof proj !== 'function' || typeof ctx === 'undefined' || !ctx) return;
-    ensureCrew();
-    sizeCrew();
-    if (!crewCtx) return;
-    if (crewCv && crewCv.style) crewCv.style.display = 'block';
-    var savedCtx = ctx;
-    var savedProj = proj;
-    var savedDw = typeof drawWaterline === 'function' ? drawWaterline : null;
-    var savedInside = w.insideBuilding;
-    try {
-      var dpr = typeof DPR === 'number' && DPR > 0 ? DPR : 1;
-      crewCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      crewCtx.clearRect(0, 0, W, H);
-      ctx = crewCtx;
-      proj = roomProj;
-      drawWaterline = undefined;
-      w.insideBuilding = false;
-      CREW.update();
-    } catch (err) {
-      try { window.IB_CREW = String(err && err.stack || err); } catch (e) {}
-    } finally {
-      ctx = savedCtx;
-      proj = savedProj;
-      if (savedDw) drawWaterline = savedDw;
-      w.insideBuilding = savedInside;
-    }
+    try { CREW.update(); } catch (e) {}
   }
 
   function pushPose(w) {
@@ -940,7 +943,8 @@
       x: (w.x - o.x) / FT,
       z: (w.z - o.z) / FT,
       y: (w.y || 0) / FT,
-      yaw: w.yaw || 0
+      yaw: w.yaw || 0,
+      segs: actorSegs(w)
     });
   }
 
@@ -948,6 +952,14 @@
     var esp = frameEsp();
     if (esp && typeof esp.walkFps === 'number' && esp.walkFps > 0) return esp.walkFps;
     return typeof fps === 'number' ? fps : 0;
+  }
+
+  function sheetOpen() {
+    var esp = frameEsp();
+    if (esp && typeof esp.sheetOpen === 'function') {
+      try { return !!esp.sheetOpen(); } catch (e) {}
+    }
+    return false;
   }
 
   function openWalk(door) {
@@ -981,7 +993,6 @@
       openOpts.mode = 'edit';
       esp.setWalk(false);
       setWalkPointer(true);
-      hideCrew();
       return;
     }
     var rec = rooms[id];
@@ -997,24 +1008,43 @@
     });
   }
 
+  function holdCity(on) {
+    var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
+    if (!wm) return;
+    wm._ibHold = on ? 1 : 0;
+    if (wm._ibHeld) return;
+    var value = !!wm.insideBuilding;
+    try {
+      Object.defineProperty(wm, 'insideBuilding', {
+        configurable: true,
+        enumerable: true,
+        get: function () {
+          if (this._ibHold) {
+            var stack = '';
+            try { stack = String(new Error().stack || ''); } catch (e) {}
+            if (stack.indexOf('walkCityLoop') !== -1) return true;
+          }
+          return value;
+        },
+        set: function (v) { value = !!v; }
+      });
+      wm._ibHeld = 1;
+    } catch (e) {}
+  }
+
   function hookMotion() {
     var wm = typeof WALK_MODE !== 'undefined' ? WALK_MODE : null;
     if (!wm || typeof wm._update !== 'function' || wm._update._ib) return false;
     var orig = wm._update;
     var wrapped = function (d) {
       if (this._ibWorld && exploreOf(this.insideDoor)) {
-        this.insideBuilding = false;
         this.onFoot = true;
         hideLegacyCard();
-        try { orig.call(this, d); }
-        finally {
-          if (this._ibWorld && exploreOf(this.insideDoor)) {
-            this.insideBuilding = true;
-            if (openOpts && openOpts.mode === 'walk') {
-              paintCrew(this);
-              pushPose(this);
-            } else hideCrew();
-          }
+        holdCity(true);
+        orig.call(this, d);
+        if (this._ibWorld && exploreOf(this.insideDoor) && openOpts && openOpts.mode === 'walk') {
+          stepCrew();
+          pushPose(this);
         }
         return;
       }
@@ -1028,9 +1058,9 @@
   function enterExplore(self, door, orig) {
     if (!self || !door) return false;
     if (self._ibWorld && self.insideDoor === door) {
-      self.insideBuilding = true;
       self.onFoot = true;
       hideLegacyCard();
+      holdCity(true);
       openWalk(door);
       return true;
     }
@@ -1040,7 +1070,7 @@
     var origin = originFor(rank);
     var spawn = spawnOf(pack);
     self.onFoot = true;
-    self.insideBuilding = true;
+    self.insideBuilding = false;
     self.insideDoor = door;
     self.door = null;
     self.parking = null;
@@ -1064,6 +1094,7 @@
     }
     holdCar();
     hideLegacyCard();
+    holdCity(true);
     openWalk(door);
     if (typeof document !== 'undefined' && document.body && document.body.dataset) {
       document.body.dataset.ibRoom = rank.purpose + ' ' + rank.n;
@@ -1137,12 +1168,20 @@
     if (actBtn || typeof document === 'undefined' || !document.body || !document.createElement) return;
     var css = document.createElement('style');
     css.id = 'zdWalkActCss';
-    css.textContent = '#zdWalkAct{position:fixed;left:50%;bottom:calc(20px + min(92px, 23vh) + 10px);transform:translateX(-50%);z-index:234;display:none;min-width:180px;height:56px;padding:0 18px;border-radius:16px;border:3px solid #fff;margin:0;background:#7dff6b;color:#04140c;font:900 18px/1 Orbitron,sans-serif;letter-spacing:.6px;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;cursor:pointer;box-shadow:0 0 18px #7dff6b}'
-      + '#zdWalkAct small{font:800 13px Rajdhani,sans-serif;letter-spacing:.4px}'
+    css.textContent = '#zdWalkAct{position:fixed;top:calc(env(safe-area-inset-top, 0px) + 8px);left:calc(env(safe-area-inset-left, 0px) + 8px);z-index:232;display:none;min-width:78px;height:44px;padding:0 10px;border-radius:12px;border:2px solid #fff;margin:0;background:#7dff6b;color:#04140c;font:800 11px/1 Orbitron,sans-serif;letter-spacing:.3px;align-items:center;justify-content:center;gap:4px;touch-action:manipulation;cursor:pointer}'
+      + '#zdWalkAct small{font:700 9px Rajdhani,sans-serif;letter-spacing:.3px}'
       + '#zdWalkAct.show{display:inline-flex}'
-      + '#zdWalkAct[data-mode="exit"]{background:#ff4fd8;color:#240014;box-shadow:0 0 18px #ff4fd8}'
-      + '#zdWalkFps{position:fixed;top:calc(env(safe-area-inset-top, 0px) + 6px);right:calc(env(safe-area-inset-right, 0px) + 8px);z-index:233;display:none;pointer-events:none;margin:0;padding:2px 7px;border-radius:8px;border:1px solid rgba(232,255,244,.55);font:700 13px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#e8fff4;background:rgba(7,4,16,.86)}'
+      + '#zdWalkExit{position:fixed;top:calc(env(safe-area-inset-top, 0px) + 8px);left:calc(env(safe-area-inset-left, 0px) + 94px);z-index:232;display:none;min-width:78px;height:44px;padding:0 10px;border-radius:12px;border:2px solid #fff;margin:0;background:#ff4fd8;color:#240014;font:800 11px/1 Orbitron,sans-serif;align-items:center;justify-content:center;touch-action:manipulation;cursor:pointer}'
+      + '#zdWalkExit.show{display:inline-flex}'
+      + 'body[data-ib-room] #zdWalkExit{pointer-events:auto!important}'
+      + '#zdWalkFps{position:fixed;top:calc(env(safe-area-inset-top, 0px) + 8px);right:calc(env(safe-area-inset-right, 0px) + 88px);z-index:232;display:none;pointer-events:none;margin:0;padding:2px 7px;border-radius:8px;border:1px solid rgba(232,255,244,.55);font:700 13px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#e8fff4;background:rgba(7,4,16,.86)}'
+      + 'body[data-ib-room] #devOpen{top:60px!important;left:8px!important}'
       + '#zdWalkFps.show{display:block}'
+      + 'body[data-ib-room] #kid{z-index:230!important;background:transparent!important;pointer-events:none!important}'
+      + 'body[data-ib-room] #kid .kbody{background:transparent!important;pointer-events:none!important}'
+      + 'body[data-ib-room] #c{visibility:hidden!important}'
+      + 'body[data-ib-room] #tup,body[data-ib-room] #nos,body[data-ib-room] #brk,body[data-ib-room] #wng,body[data-ib-room] #emoteBtn,body[data-ib-room] #exitCarBtn,body[data-ib-room] #kMenuB,body[data-ib-room] #zdWalkAct,body[data-ib-room] #devOpen{pointer-events:auto!important}'
+      + 'body[data-ib-sheet] #tup,body[data-ib-sheet] #nos,body[data-ib-sheet] #brk,body[data-ib-sheet] #wng,body[data-ib-sheet] #emoteBtn,body[data-ib-sheet] #exitCarBtn{visibility:hidden!important}'
       + 'body[data-ib-room] #enterBldBtn{display:none!important}';
     if (document.head) document.head.appendChild(css);
     actBtn = document.createElement('button');
@@ -1163,6 +1202,17 @@
       if (near && wm) enterExplore(wm, near, window.walkEnterDoor && window.walkEnterDoor._ibOrig);
     });
     document.body.appendChild(actBtn);
+    var exitBtn = document.createElement('button');
+    exitBtn.id = 'zdWalkExit';
+    exitBtn.type = 'button';
+    exitBtn.textContent = 'EXIT';
+    exitBtn.setAttribute('aria-label', 'EXIT');
+    exitBtn.addEventListener('click', function (ev) {
+      if (ev.preventDefault) ev.preventDefault();
+      var wm = window.WALK_MODE;
+      if (wm) leaveToCar(wm);
+    });
+    document.body.appendChild(exitBtn);
     walkFps = document.createElement('div');
     walkFps.id = 'zdWalkFps';
     walkFps.setAttribute('aria-label', 'Frames per second');
@@ -1195,12 +1245,19 @@
     var mode = '';
     var rank = null;
     if (wm && wm._ibCar) holdCar();
+    var editing = plannerOpen() && openOpts && openOpts.mode === 'edit';
+    var inWalk = !!(wm && wm._ibWorld && !editing);
     if (wm && wm._ibWorld) {
       hideLegacyCard();
-      wm.insideBuilding = true;
       wm.onFoot = true;
+      holdCity(inWalk);
+    } else holdCity(false);
+    if (document.body && document.body.dataset) {
+      if (inWalk) document.body.dataset.ibRoom = (exploreOf(wm.insideDoor) || {}).title || 'room';
+      else delete document.body.dataset.ibRoom;
+      if (inWalk && sheetOpen()) document.body.dataset.ibSheet = '1';
+      else delete document.body.dataset.ibSheet;
     }
-    var editing = plannerOpen() && openOpts && openOpts.mode === 'edit';
     var dev = typeof document !== 'undefined' && document.getElementById && document.getElementById('devOpen');
     if (dev && dev.style) dev.style.zIndex = (wm && wm._ibWorld) ? '236' : '65';
     if (editing) {
@@ -1208,7 +1265,7 @@
       hideCrew();
     } else if (wm && wm._ibWorld && exploreOf(wm.insideDoor)) {
       rank = exploreOf(wm.insideDoor);
-      mode = atInsideDoor(wm) ? 'exit' : 'build';
+      mode = 'build';
     } else {
       var door = outsideDoor();
       if (door) { rank = exploreOf(door); mode = 'enter'; }
@@ -1221,19 +1278,90 @@
     if (step && step.style) step.style.visibility = mode ? 'hidden' : '';
     if (mode) paintAct(mode, rank);
     else hideAct();
+    var exitBtn = typeof document !== 'undefined' && document.getElementById && document.getElementById('zdWalkExit');
+    if (exitBtn && exitBtn.classList) exitBtn.classList.toggle('show', !!(inWalk && wm && atInsideDoor(wm)));
     var card = typeof document !== 'undefined' && document.getElementById && document.getElementById('walk-interior');
     var inRoom = !!(wm && wm._ibWorld);
     var inside = inRoom || !!(card && card.classList && card.classList.contains('show') && wm && wm.insideBuilding);
     var pc = typeof document !== 'undefined' && document.getElementById && document.getElementById('pcFps');
-    if (pc && pc.style) pc.style.zIndex = inside ? '97' : '';
+    if (pc && pc.style) {
+      pc.style.zIndex = inside ? '97' : '';
+      pc.style.visibility = inRoom ? 'hidden' : '';
+    }
+    if (inWalk) {
+      try {
+        var frFit = document.getElementById('zdInteriorFrame');
+        var espFit = frFit && frFit.contentWindow && frFit.contentWindow.ESP;
+        if (espFit && typeof espFit.fitWalkRail === 'function') espFit.fitWalkRail();
+      } catch (eFit) {}
+    }
     if (walkFps && walkFps.classList) {
-      var useDom = inRoom || (inside && !(pc && pc.getBoundingClientRect && pc.getBoundingClientRect().width > 8));
-      walkFps.classList.toggle('show', !!useDom);
+      var useDom = !!inRoom;
+      walkFps.classList.toggle('show', useDom);
       if (useDom) {
         var v = roomFps();
         walkFps.textContent = Math.round(v) + ' FPS';
+        placeWalkFps();
       }
     }
+  }
+
+  function hudBox(el) {
+    if (!el || !el.getBoundingClientRect) return null;
+    var s = getComputedStyle(el);
+    if (s.display === 'none' || s.visibility === 'hidden' || s.opacity === '0') return null;
+    var r = el.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) return null;
+    return { x: r.left, y: r.top, r: r.right, b: r.bottom };
+  }
+
+  function placeWalkFps() {
+    if (!walkFps) return;
+    var obs = [];
+    ['kMenuB', 'exitCarBtn', 'tup', 'nos', 'brk', 'wng', 'emoteBtn', 'zdWalkAct', 'zdWalkExit', 'devOpen', 'enterBldBtn'].forEach(function (id) {
+      var b = hudBox(document.getElementById(id));
+      if (b) obs.push(b);
+    });
+    var frame = document.getElementById('zdInteriorFrame');
+    var doc = frame && frame.contentDocument;
+    var rail = doc && doc.getElementById('rail');
+    if (rail && frame) {
+      var fr = frame.getBoundingClientRect();
+      [].forEach.call(rail.querySelectorAll('button'), function (btn) {
+        if (btn.classList && btn.classList.contains('hidden')) return;
+        var q = btn.getBoundingClientRect();
+        if (q.width < 2 || q.height < 2) return;
+        obs.push({ x: q.left + fr.left, y: q.top + fr.top, r: q.right + fr.left, b: q.bottom + fr.top });
+      });
+    }
+    var fw = Math.max(walkFps.offsetWidth || 0, 86);
+    var fh = Math.max(walkFps.offsetHeight || 0, 22);
+    function clearOf(box) {
+      for (var i = 0; i < obs.length; i++) {
+        var o = obs[i];
+        if (Math.min(box.r, o.r) - Math.max(box.x, o.x) > 2 && Math.min(box.b, o.b) - Math.max(box.y, o.y) > 2) return false;
+      }
+      return true;
+    }
+    var rights = [88, 170, 252, 8];
+    var tops = [8, 36, 64, 96];
+    var pick = null;
+    for (var ri = 0; ri < rights.length && !pick; ri++) {
+      for (var ti = 0; ti < tops.length; ti++) {
+        var x = window.innerWidth - rights[ri] - fw;
+        if (x < 188) continue;
+        var box = { x: x, y: tops[ti], r: x + fw, b: tops[ti] + fh };
+        if (box.b > window.innerHeight - 4) continue;
+        if (clearOf(box)) { pick = { right: rights[ri], top: tops[ti] }; break; }
+      }
+    }
+    if (!pick) pick = { right: 88, top: 8 };
+    var sig = pick.top + '|' + pick.right;
+    if (walkFps.dataset.fit === sig) return;
+    walkFps.dataset.fit = sig;
+    walkFps.style.top = 'calc(env(safe-area-inset-top, 0px) + ' + pick.top + 'px)';
+    walkFps.style.right = 'calc(env(safe-area-inset-right, 0px) + ' + pick.right + 'px)';
+    walkFps.style.left = 'auto';
   }
 
   function hookEnter() {

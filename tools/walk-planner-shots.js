@@ -14,7 +14,9 @@ const PORT = Number(process.env.PORT || 8794);
 const GALAXY_UA = 'Mozilla/5.0 (Linux; Android 14; SM-S911B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36';
 const ALL_VIEWPORTS = [
   { id: 'phone-844', width: 844, height: 390, dpr: 2, mobile: true, ua: GALAXY_UA },
-  { id: 'galaxy-780', width: 780, height: 360, dpr: 3, mobile: true, ua: GALAXY_UA }
+  { id: 'galaxy-780', width: 780, height: 360, dpr: 3, mobile: true, ua: GALAXY_UA },
+  { id: 'ipad-1024', width: 1024, height: 768, dpr: 1, mobile: true, ua: '' },
+  { id: 'pc-1366', width: 1366, height: 768, dpr: 1, mobile: false, ua: '' }
 ];
 const VIEWPORTS = process.env.ONLY
   ? ALL_VIEWPORTS.filter((v) => v.id.indexOf(process.env.ONLY) >= 0)
@@ -233,23 +235,64 @@ const STATE = `(function () {
       return !!(doc && doc.body && doc.body.dataset.ready === '1' && !doc.body.classList.contains('zd-walk'));
     })(),
     hold: WALK_MODE ? (WALK_MODE.cityHoldFrames || 0) : 0,
-    crew: (function () {
-      var c = document.getElementById('zdWalkCrew');
-      if (!c || c.width < 8 || c.style.display === 'none') return 0;
-      try {
-        var g = c.getContext('2d');
-        var rw = Math.max(8, Math.round(c.width * 0.28));
-        var rh = Math.max(8, Math.round(c.height * 0.42));
-        var x0 = Math.round((c.width - rw) / 2);
-        var y0 = Math.round(c.height * 0.22);
-        var d = g.getImageData(x0, y0, rw, rh).data;
-        var n = 0;
-        for (var i = 3; i < d.length; i += 64) if (d[i] > 24) n++;
-        return n;
-      } catch (e) { return 0; }
+    paused: !!(WALK_MODE && WALK_MODE._ibHold),
+    actor: (function () {
+      var f = document.getElementById('zdInteriorFrame');
+      var esp = f && f.contentWindow && f.contentWindow.ESP;
+      if (!esp || !esp.scene) return 0;
+      var n = 0;
+      esp.scene.traverse(function (o) {
+        if (o.name === 'zdWalkActor') n = o.children.filter(function (c) { return c.visible; }).length;
+      });
+      return n;
     })(),
-    crewErr: window.IB_CREW || ''
+    rail: (function () {
+      var f = document.getElementById('zdInteriorFrame');
+      var doc = f && f.contentDocument;
+      var rail = doc && doc.getElementById('rail');
+      return rail ? (rail.innerText || '').replace(/\\s+/g, ' ').trim() : '';
+    })(),
+    hud: (function () {
+      var b = document.getElementById('tup');
+      if (!b) return '';
+      var r = b.getBoundingClientRect();
+      return ((b.textContent || '') + ' ' + Math.round(r.width) + 'x' + Math.round(r.height)).replace(/\\s+/g, ' ');
+    })(),
+    crewErr: window.IB_ERR || ''
   });
+})()`;
+
+const OVERLAP = `(function () {
+  function box(el) {
+    if (!el) return null;
+    var view = (el.ownerDocument && el.ownerDocument.defaultView) || window;
+    var s = view.getComputedStyle(el);
+    if (s.display === 'none' || s.visibility === 'hidden' || s.opacity === '0') return null;
+    var r = el.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) return null;
+    var x = r.left, y = r.top, right = r.right, bottom = r.bottom;
+    if (view !== window && view.frameElement) {
+      var fr = view.frameElement.getBoundingClientRect();
+      x += fr.left; y += fr.top; right += fr.left; bottom += fr.top;
+    }
+    return { name: el.id || (el.textContent || '').slice(0, 24), x: x, y: y, r: right, b: bottom, w: r.width, h: r.height };
+  }
+  var nodes = ['tup','nos','brk','wng','emoteBtn','exitCarBtn','kMenuB','zdWalkAct','zdWalkExit','zdWalkFps','devOpen'].map(function (id) { return box(document.getElementById(id)); }).filter(Boolean);
+  var frame = document.getElementById('zdInteriorFrame');
+  var doc = frame && frame.contentDocument;
+  if (doc) {
+    var rail = doc.getElementById('rail');
+    if (rail) [].forEach.call(rail.querySelectorAll('button'), function (b) { var q = box(b); if (q) nodes.push(q); });
+  }
+  var hits = [];
+  for (var i = 0; i < nodes.length; i++) for (var j = i + 1; j < nodes.length; j++) {
+    var a = nodes[i], c = nodes[j];
+    var iw = Math.min(a.r, c.r) - Math.max(a.x, c.x);
+    var ih = Math.min(a.b, c.b) - Math.max(a.y, c.y);
+    if (iw > 2 && ih > 2) hits.push(a.name + ' x ' + c.name + ' ' + Math.round(iw) + 'x' + Math.round(ih));
+  }
+  var clip = nodes.filter(function (n) { return n.x < -1 || n.y < -1 || n.r > innerWidth + 1 || n.b > innerHeight + 1; }).map(function (n) { return n.name; });
+  return JSON.stringify({ bad: hits.length > 0 || clip.length > 0, hits: hits, clip: clip, n: nodes.length, boxes: nodes.map(function (n) { return n.name + ' ' + Math.round(n.x) + ',' + Math.round(n.y) + ' ' + Math.round(n.w) + 'x' + Math.round(n.h); }) });
 })()`;
 
 const CLICK_ACT = `(function () {
@@ -329,6 +372,7 @@ const ALL_DOORS = `(function () {
       name: rank.purpose + ' ' + rank.n,
       world: !!WALK_MODE._ibWorld,
       inside: !!WALK_MODE.insideBuilding,
+      paused: !!WALK_MODE._ibHold,
       onFoot: !!WALK_MODE.onFoot,
       far: WALK_MODE.x > 8000,
       legacy: legacy,
@@ -437,7 +481,7 @@ async function runViewport(vp) {
 
     const clicked = await evalJson(chrome.cdp, CLICK_ACT);
     if (clicked !== 'clicked') throw new Error('enter click ' + clicked);
-    const inside = await waitState(chrome.cdp, (s) => s.world && s.onFoot && s.inside && s.walk && s.planner && !s.legacy && s.act.indexOf('show:build') === 0 && s.x > 8000 && s.crew > 8 && s.hold > 2, 'walk-in room');
+    const inside = await waitState(chrome.cdp, (s) => s.world && s.onFoot && s.walk && s.planner && !s.legacy && s.act.indexOf('show:build') === 0 && s.x > 8000 && s.actor > 4 && s.hold > 2 && /Add item/.test(s.rail) && /WALK/.test(s.hud), 'walk-in room');
     await sleep(900);
     inside.render = JSON.parse(await evalJson(chrome.cdp, `(function(){
       var t=document.getElementById('zdWalkFps');
@@ -456,6 +500,9 @@ async function runViewport(vp) {
     if (/WELCOME HOME|STEP BACK|GLOWING PET|PLAYER HOUSE|DJ BOOTH/i.test(inside.legacyText || '')) {
       throw new Error('legacy room ' + inside.legacyText);
     }
+    const overlap = JSON.parse(await evalJson(chrome.cdp, OVERLAP));
+    inside.overlap = overlap;
+    if (overlap.bad) throw new Error('overlap ' + JSON.stringify({ hits: overlap.hits, clip: overlap.clip, boxes: overlap.boxes }));
     log.steps.push({ step: 'room', state: inside });
     await evalJson(chrome.cdp, labelExpr(vp.id + '  HOME 1 walk-in  BUILD ROOM  ' + inside.fps));
     await sleep(400);
@@ -476,7 +523,7 @@ async function runViewport(vp) {
 
     const placed = await evalJson(chrome.cdp, PLACE);
     log.placed = placed;
-    const back = await waitState(chrome.cdp, (s) => s.world && s.walk && s.planner && s.act.indexOf('show:build') === 0 && s.crew > 8, 'back in room');
+    const back = await waitState(chrome.cdp, (s) => s.world && s.walk && s.planner && s.act.indexOf('show:build') === 0 && s.actor > 4, 'back in room');
     await sleep(900);
     back.render = JSON.parse(await evalJson(chrome.cdp, `(function(){
       var t=document.getElementById('zdWalkFps');
@@ -501,7 +548,7 @@ async function runViewport(vp) {
 
     const doors = JSON.parse(await evalJson(chrome.cdp, ALL_DOORS));
     log.doors = doors;
-    const bad = doors.filter((d) => !d.world || !d.inside || !d.onFoot || !d.far || d.legacy || d.fw < 59 || d.fd < 79);
+    const bad = doors.filter((d) => !d.world || d.inside || !d.paused || !d.onFoot || !d.far || d.legacy || d.fw < 59 || d.fd < 79);
     if (bad.length) throw new Error('a door still opens the old room ' + JSON.stringify(bad));
     if (doors.length < 8) throw new Error('expected 8 explore doors, got ' + doors.length);
     log.ok = true;
