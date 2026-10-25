@@ -1,10 +1,11 @@
 'use strict';
-// Neon World road traffic: Z TAKEOVER level 4 (every car is the player's 370Z).
+// Neon World road traffic. Every car is the player's 370Z.
 // The GLB is the one already loaded on ZD.Xray.car. Traffic clones that graph once
 // (shared geometry, no second download) into its own scene and bakes view sprites
-// with X.renderer only. It never calls X.render, never touches X.car after the
-// clone, and never opens the player's wings. Far cars are boxes or light dots.
-// physics.js / tune.js untouched. A hit wrecks the traffic car (WANTED wKnock / wFlip).
+// on a private canvas while the menu is up, then drops that context. Driving
+// keeps the player's one WebGL context. It never calls X.render, never touches
+// X.car after the clone, and never opens the player's wings. Far cars are boxes or light dots.
+// Lanes come from CITY.ROADS. A meeting slows this car and leaves his Z where it is.
 const TRAFFIC = (() => {
   const T = window.TRAFFIC_TUNE;
   const OFF = /[?&]notraffic=1/.test(location.search);
@@ -13,17 +14,12 @@ const TRAFFIC = (() => {
   function lim(v, a, b) { return v < a ? a : v > b ? b : v; }
   function angDiff(a, b) { return Math.atan2(Math.sin(a - b), Math.cos(a - b)); }
   const lanes = [];
+  let laneGrid = null, laneCell = 48;
   const cars = [];
   const cache = new Map();
-  // Sprites on screen this frame. Eviction may drop an old angle, not one of these.
-  const hot = new Set();
   const sparks = [];
-  let bakes = 0, bakeMs = 0, bakeErr = '', cloned = 0, built = false, sparkN = 0;
-  // Raised only while this visit is filling the view grid. Phone and PC stay
-  // on cacheMax until the warm-up asks for the grid, so a short visit does
-  // not evict the sprites it just paid for.
-  let warmCapOn = 0, warmKeys = null, warmAt = 0, warmFail = 0;
-  const WARM_BYTE_CAP = 170 * 1024 * 1024;
+  let bakes = 0, bakeErr = '', cloned = 0, built = false, sparkN = 0, roadSig = 0;
+  let aprons = [];
   let wingHinges = 0, crewN = 0;
 
   function kidOf(p) {
@@ -56,10 +52,41 @@ const TRAFFIC = (() => {
   }
 
   const towOid = id => { const ts = CITY.TOWS || []; for (let i = 0; i < ts.length; i++) if (ts[i].oid === id) return true; return false; };
+  function roadsSig() {
+    const R = CITY && CITY.ROADS;
+    if (!R || !R.edges) return 0;
+    let h = (R.nodes ? R.nodes.length : 0) * 100003 + R.edges.length;
+    for (let i = 0; i < R.edges.length; i++) {
+      const e = R.edges[i];
+      if (!e) { h = (h * 33 + 7) | 0; continue; }
+      h = (h * 33 + (((e.len || 0) * 10) | 0) + (e.a | 0) * 17 + (e.b | 0) * 131 + (((e.w || 0) * 4) | 0)) | 0;
+    }
+    return h >>> 0;
+  }
+  function readAprons() {
+    const out = [];
+    const BL = (CITY && (CITY.BL || CITY.buildings)) || [];
+    for (let i = 0; i < BL.length; i++) {
+      const b = BL[i];
+      if (!b || b.purpose !== 'NOS' || !b.nosStation || !b.nosStation.lane) continue;
+      const lane = b.nosStation.lane;
+      if (lane.x1 > lane.x0 && lane.z1 > lane.z0) out.push({x0:lane.x0, x1:lane.x1, z0:lane.z0, z1:lane.z1});
+    }
+    return out;
+  }
   function build() {
-    if (built) return;
+    const sig = roadsSig();
+    if (built && sig === roadSig) return;
+    const again = built;
+    if (again) {
+      lanes.length = 0;
+      for (const c of cars) { c.on = false; c.lane = null; c.turn = null; c.arc = null; c.blend = 0; }
+    }
+    const R = CITY && CITY.ROADS;
+    if (!R || !R.edges) { built = false; return; }
     built = true;
-    const R = CITY.ROADS, nodes = R.nodes;
+    roadSig = sig;
+    const nodes = R.nodes;
     const edges = [];
     for (const e of R.edges) {
       if (!e || !e.lanes || !e.lanes.length || e.len < 8) continue;
@@ -147,41 +174,204 @@ const TRAFFIC = (() => {
       }
     }
     for (const L of lanes) L.turns.sort((a, b) => a.s - b.s);
-    for (let i = 0; i < T.simCap; i++) cars.push(blank(true));
-    for (let i = 0; i < T.dotCap; i++) cars.push(blank(false));
+    aprons = readAprons();
+    indexLanes();
+    if (!again) {
+      for (let i = 0; i < T.simCap; i++) cars.push(blank(true));
+      for (let i = 0; i < T.dotCap; i++) cars.push(blank(false));
+    }
   }
   function blank(sim) {
     const c = {sim, on:false, lane:null, s:0, v:0, v0:0, yaw:0, x:0, z:0, y:0, pi:0, turn:null, rollS:-1, blend:0, blend0:0, bx:0, bz:0, by:0, utT:0, was:false, tick:0, hit:false, hitT:0, fade:1, vx:0, vy:0, vz:0, spin:0, roll:0, vroll:0, braking:false, yawRate:0, accel:0, bodyRoll:0, pitch:0, slip:0, suspY:0, suspV:0, ground:true, gy:0, airVx:0, airVz:0, arc:null, rampSeen:0, rampYes:false};
-    c.slot = {draw:() => drawOne(c), traffic:1};
+    c.slot = {draw:() => drawOne(c), traffic:1, car:c};
     return c;
   }
+  function fastKind(kind) { return kind === 'highway' || kind === 'bridge' || kind === 'tunnel'; }
   function rollSpeed(kind) {
-    const add = (kind === 'highway' || kind === 'bridge' || kind === 'tunnel') ? T.highwayAdd : 0;
-    return T.speedMin + add + rnd() * (T.speedMax - T.speedMin);
+    const fast = fastKind(kind);
+    const lo = fast ? (T.fastMin || 16) : T.speedMin;
+    const hi = fast ? (T.fastMax || 20) : T.speedMax;
+    return lo + rnd() * Math.max(0, hi - lo);
+  }
+  function centreGap(c) {
+    const bumper = fastKind(c.lane && c.lane.kind) ? (T.gapFastBumper || 12.75) : (T.gapTownBumper || 8.5);
+    return bumper + T.carL;
   }
   function tooClose(L, s, sim) {
     if (!sim) return false;
+    const need = (fastKind(L.kind) ? (T.gapFastBumper || 12.75) : (T.gapTownBumper || 8.5)) + T.carL;
     for (const o of cars) {
       if (!o.on || !o.sim || o.lane !== L) continue;
       let ds = Math.abs(o.s - s);
       ds = Math.min(ds, L.len - ds);
-      if (ds < T.gap) return true;
-      if (Math.hypot(o.x - L.at(s)[0], o.z - L.at(s)[1]) < T.gap * 0.8) return true;
+      if (ds < need) return true;
+      if (Math.hypot(o.x - L.at(s)[0], o.z - L.at(s)[1]) < need * 0.8) return true;
     }
     return false;
   }
+  function laneHalf() { return ((CITY.ROADS && CITY.ROADS.laneW) || 3.4) * 0.5; }
+  function playerRel(c) {
+    if (!P || P.x == null) return null;
+    const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw);
+    const dx = P.x - c.x, dz = P.z - c.z;
+    return {
+      fwd: dx * fx + dz * fz,
+      lat: dx * Math.cos(c.yaw) - dz * Math.sin(c.yaw),
+      dist: Math.hypot(dx, dz),
+      v: P.v || 0
+    };
+  }
+  function playerAhead(c) {
+    const r = playerRel(c);
+    if (!r || Math.abs(r.lat) > laneHalf() || r.fwd <= 0.4) return null;
+    const need = centreGap(c) + (T.leadExtra || T.carL);
+    if (r.fwd > need + 2) return null;
+    return r;
+  }
+  function playerBeside(c) {
+    const r = playerRel(c);
+    if (!r) return false;
+    return Math.abs(r.fwd) <= T.carL * 0.65 && Math.abs(r.lat) <= laneHalf() && Math.abs(r.lat) > 0.35;
+  }
+  function nextCrossS(c) {
+    const L = c.lane;
+    if (!L) return null;
+    for (let i = 0; i < L.turns.length; i++) if (L.turns[i].s > c.s + 1) return L.turns[i].s;
+    return null;
+  }
+  function nearPoint(x, z, r, self) {
+    const r2 = r * r;
+    for (const o of cars) {
+      if (o === self || !o.on || !o.sim) continue;
+      const dx = o.x - x, dz = o.z - z;
+      if (dx * dx + dz * dz < r2) return true;
+    }
+    if (P && P.x != null) {
+      const dx = P.x - x, dz = P.z - z;
+      if (dx * dx + dz * dz < r2) return true;
+    }
+    return false;
+  }
+  function rayBox(x, z, fx, fz, box, maxD) {
+    let t0 = 0, t1 = maxD;
+    const axes = [[fx, x, box.x0, box.x1], [fz, z, box.z0, box.z1]];
+    for (let i = 0; i < axes.length; i++) {
+      const d = axes[i][0], o = axes[i][1], a = axes[i][2], b = axes[i][3];
+      if (Math.abs(d) < 1e-8) { if (o < a || o > b) return null; continue; }
+      let ta = (a - o) / d, tb = (b - o) / d;
+      if (ta > tb) { const s = ta; ta = tb; tb = s; }
+      if (ta > t0) t0 = ta;
+      if (tb < t1) t1 = tb;
+      if (t0 > t1) return null;
+    }
+    if (t1 < 0) return null;
+    return t0 < 0 ? 0 : t0;
+  }
+  function inBox(x, z, box, m) {
+    return x >= box.x0 - m && x <= box.x1 + m && z >= box.z0 - m && z <= box.z1 + m;
+  }
+  function boxBusy(box, self) {
+    for (const o of cars) if (o !== self && o.on && o.sim && inBox(o.x, o.z, box, 0.4)) return true;
+    return !!(P && P.x != null && inBox(P.x, P.z, box, 1));
+  }
+  function apronAhead(c) {
+    if (!aprons.length) return null;
+    const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw);
+    const maxD = (T.stopDist || 18) + 2;
+    let best = null;
+    for (let i = 0; i < aprons.length; i++) {
+      const t = rayBox(c.x, c.z, fx, fz, aprons[i], maxD);
+      if (t == null) continue;
+      if (!best || t < best.t) best = {t:t, box:aprons[i]};
+    }
+    return best;
+  }
+  function holdLine(c) {
+    let stop = false, roll = false;
+    const box = T.crossBox || 6;
+    const reach = T.stopDist || 18;
+    const sCross = nextCrossS(c);
+    if (sCross != null) {
+      const edge = sCross - box;
+      const dist = edge - c.s;
+      const inside = c.s >= edge && c.s <= sCross + box;
+      if (!inside && dist < reach && dist > -1.5) {
+        const p = c.lane.at(sCross);
+        if (nearPoint(p[0], p[1], box, c)) stop = true;
+        else roll = true;
+      }
+    }
+    const ap = apronAhead(c);
+    if (ap && ap.t > 0.2 && ap.t < reach) {
+      if (boxBusy(ap.box, c)) stop = true;
+      else roll = true;
+    }
+    return {stop:stop, roll:roll && !stop};
+  }
+  function turnRadius(c) {
+    const dest = c.turn && c.turn.to;
+    if (!dest) return 99;
+    const ang = Math.abs(angDiff(dest.yaw, c.yaw));
+    if (ang < 0.2) return 99;
+    const p2 = dest.at(lim((c.turn.s2 || 0) + 4.2, 0.8, dest.len - 0.8));
+    const chord = Math.hypot(p2[0] - c.x, p2[1] - c.z);
+    return chord / (2 * Math.sin(Math.min(ang, 3) / 2));
+  }
+  function holdLane(c) {
+    if (!c.lane || c.arc || c.blend > 0 || c.hop) return;
+    const p = c.lane.at(c.s);
+    const dx = c.x - p[0], dz = c.z - p[1];
+    const dist = Math.hypot(dx, dz);
+    const hold = T.laneHold || 0.3;
+    if (dist > hold) {
+      const k = hold / dist;
+      c.x = p[0] + dx * k;
+      c.z = p[1] + dz * k;
+    }
+  }
+  function indexLanes() {
+    const cell = 48, grid = new Map();
+    for (const L of lanes) {
+      const step = 40;
+      for (let s = 0; s < L.len - 3; s += step) {
+        const s1 = Math.min(L.len, s + step);
+        const a = L.at(s), b = L.at(s1);
+        const ix0 = Math.floor(Math.min(a[0], b[0]) / cell), ix1 = Math.floor(Math.max(a[0], b[0]) / cell);
+        const iz0 = Math.floor(Math.min(a[1], b[1]) / cell), iz1 = Math.floor(Math.max(a[1], b[1]) / cell);
+        const seg = {L, s0:s, s1};
+        for (let ix = ix0; ix <= ix1; ix++) for (let iz = iz0; iz <= iz1; iz++) {
+          const k = ix + ',' + iz;
+          let list = grid.get(k);
+          if (!list) { list = []; grid.set(k, list); }
+          list.push(seg);
+        }
+      }
+    }
+    laneGrid = grid; laneCell = cell;
+  }
+  // Cars are picked from the road cells in the ring around P, not from a
+  // uniform draw over the whole city (that almost never lands nearby).
   function spot(minR, maxR, sim) {
     const px = P.x, pz = P.z;
-    for (let n = 0; n < 70; n++) {
-      const L = lanes[(rnd() * lanes.length) | 0];
-      if (!L) return null;
-      const s = 3 + rnd() * (L.len - 6);
-      if (blocked(L, s) || blockedAhead(L, s)) continue;
-      const p = L.at(s), d = Math.hypot(p[0] - px, p[1] - pz);
+    if (!laneGrid || !(maxR > minR)) return null;
+    const cell = laneCell;
+    const i0 = Math.floor((px - maxR) / cell), i1 = Math.floor((px + maxR) / cell);
+    const j0 = Math.floor((pz - maxR) / cell), j1 = Math.floor((pz + maxR) / cell);
+    const w = i1 - i0 + 1, h = j1 - j0 + 1;
+    if (w <= 0 || h <= 0) return null;
+    const tries = Math.min(120, w * h);
+    for (let n = 0; n < tries; n++) {
+      const list = laneGrid.get((i0 + ((rnd() * w) | 0)) + ',' + (j0 + ((rnd() * h) | 0)));
+      if (!list || !list.length) continue;
+      const seg = list[(rnd() * list.length) | 0];
+      const span = Math.max(1, seg.s1 - seg.s0);
+      const s = lim(seg.s0 + rnd() * span, 3, seg.L.len - 3);
+      if (blocked(seg.L, s) || blockedAhead(seg.L, s)) continue;
+      const p = seg.L.at(s), d = Math.hypot(p[0] - px, p[1] - pz);
       if (d < minR || d > maxR) continue;
       if (runway(p[0], p[1]) || solidAt(p[0], p[1])) continue;
-      if (tooClose(L, s, sim)) continue;
-      return {L, s, x:p[0], z:p[1]};
+      if (tooClose(seg.L, s, sim)) continue;
+      return {L:seg.L, s, x:p[0], z:p[1]};
     }
     return null;
   }
@@ -194,16 +384,21 @@ const TRAFFIC = (() => {
     if (!sp) { c.on = false; return; }
     c.on = true; c.lane = sp.L; c.s = sp.s; c.x = sp.x; c.z = sp.z; c.yaw = sp.L.yaw; c.y = c.sim ? groundY(sp.x, sp.z) : 0;
     c.pi = (rnd() * T.paints.length) | 0; c.v0 = rollSpeed(sp.L.kind); c.v = c.v0;
+    c._yb = null; c._eb = null; c._band = ''; c._held = null; c._heldKey = ''; c._key = '';
     c.turn = null; c.rollS = -1; c.blend = 0; c.was = false; c.utT = 0; c.arc = null;
     c.braking = false; c.yawRate = 0; c.accel = 0; c.bodyRoll = 0; c.pitch = 0; c.slip = 0;
     c.suspY = 0; c.suspV = 0; c.ground = true; c.gy = c.y; c.airVx = 0; c.airVz = 0;
     c.rampSeen = 0; c.rampYes = false;
   }
   function blendDur() { return (T.blendMin || 0.65) + rnd() * ((T.blendMax || 0.85) - (T.blendMin || 0.65)); }
+  function forgetPhoto(c) {
+    c._yb = null; c._eb = null; c._held = null; c._heldKey = ''; c._key = '';
+  }
   function switchTo(c, lane, s) {
     s = lim(s, 0.4, lane.len - 0.4);
     if (blocked(lane, s)) { respawn(c); return; }
     const p = lane.at(s);
+    if (Math.abs(angDiff(lane.yaw, c.yaw)) > 0.8) forgetPhoto(c);
     const jump = Math.hypot(c.x - p[0], c.z - p[1]);
     const mx = (c.x + p[0]) / 2, mz = (c.z + p[1]) / 2;
     if (jump < 16 && jump > 0.4 && !solidAt(mx, mz) && !runway(mx, mz)) {
@@ -233,7 +428,7 @@ const TRAFFIC = (() => {
   }
   function crowd(c) {
     const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw);
-    let hold = null, hd = T.gap;
+    let hold = null, hd = centreGap(c);
     const see = o => {
       if (!o || o.x == null) return;
       const dx = o.x - c.x, dz = o.z - c.z, d = Math.hypot(dx, dz);
@@ -251,9 +446,12 @@ const TRAFFIC = (() => {
     c.braking = false;
     const h = crowd(c);
     if (h) {
-      const cap = h.d < T.carL + 1.2 ? 1.5 : (h.o.v == null ? c.v : h.o.v);
+      const cap = h.d < centreGap(c) ? Math.max(0, h.o.v || 0) : (h.o.v == null ? c.v : h.o.v);
       if (cap < c.v - 0.35) c.braking = true;
     }
+    const lead = playerAhead(c);
+    if (lead && lead.v < c.v - 0.35) c.braking = true;
+    if (c.hold && (c.hold.stop || (c.hold.roll && c.v > (T.rollMs || 4) + 0.4))) c.braking = true;
     const ds = c.turn ? c.turn.s - c.s : 99;
     if (c.arc || (c.turn && ds < (T.cornerDist || 18) && ds > -2)) {
       if (c.v > (T.cornerFrac || 0.58) * c.v0 + 0.4) c.braking = true;
@@ -264,17 +462,34 @@ const TRAFFIC = (() => {
     let target = c.v0;
     const h = noteBrake(c);
     if (h) {
-      const cap = h.d < T.carL + 1.2 ? 1.5 : (h.o.v == null ? c.v : h.o.v);
+      const need = centreGap(c);
+      let cap = h.o.v == null ? c.v : (h.o.v || 0);
+      if (h.d < need) cap = Math.min(cap, Math.max(0, (h.o.v || 0) * (h.d / need)));
+      if (h.d < T.carL * 0.9) cap = 0;
       if (cap < target) target = cap;
     }
+    const lead = playerAhead(c);
+    if (lead) {
+      const need = centreGap(c) + (T.leadExtra || T.carL);
+      let cap = lead.v;
+      if (lead.v < 0.6) cap = 0;
+      else if (lead.d < need) cap = Math.max(0, lead.v * Math.min(1, lead.d / need));
+      if (cap < target) target = cap;
+    }
+    if (playerBeside(c)) target = Math.min(target, P.v || 0);
     const ds = c.turn ? c.turn.s - c.s : 99;
     if (c.arc || (c.turn && ds < (T.cornerDist || 18) && ds > -2)) {
       const corner = (T.cornerFrac || 0.58) * c.v0;
       if (corner < target) target = corner;
     }
-    if (c.v < target) c.v = Math.min(target, c.v + (T.accel || 5.5) * dt);
+    if ((c.arc && c.arc.tight) || (c.turn && turnRadius(c) < (T.minRadius || 7))) {
+      target = Math.min(target, T.crawl || 2.2);
+    }
+    if (c.hold && c.hold.stop) target = 0;
+    else if (c.hold && c.hold.roll) target = Math.min(target, T.rollMs || 4);
+    if (target <= 0.05) c.v = Math.max(0, c.v - (T.brake || 6.8) * dt);
+    else if (c.v < target) c.v = Math.min(target, c.v + (T.accel || 5.5) * dt);
     else c.v = Math.max(target, c.v - (T.brake || 6.8) * dt);
-    if (c.v < 0.4) c.v = 0.4;
   }
   function beginArc(c) {
     const dest = c.turn && c.turn.to;
@@ -286,7 +501,10 @@ const TRAFFIC = (() => {
     const apex = c.lane.at(lim(c.turn.s, 0.2, c.lane.len - 0.2));
     const ctrl = [2 * apex[0] - 0.5 * (p0[0] + p2[0]), 2 * apex[1] - 0.5 * (p0[1] + p2[1])];
     const dur = blendDur();
-    c.arc = {p0, p2, ctrl, yaw0:c.yaw, yaw2:dest.yaw, t:0, dur, lane:dest, s2};
+    const ang = Math.abs(angDiff(dest.yaw, c.yaw));
+    const chord = Math.hypot(p2[0] - p0[0], p2[1] - p0[1]);
+    const rad = ang < 0.2 ? 99 : chord / (2 * Math.sin(Math.min(ang, 3) / 2));
+    c.arc = {p0, p2, ctrl, yaw0:c.yaw, yaw2:dest.yaw, t:0, dur, lane:dest, s2, tight:rad < (T.minRadius || 7)};
     c.blend0 = dur; c.blend = dur;
     return true;
   }
@@ -427,6 +645,7 @@ const TRAFFIC = (() => {
   }
   function advance(c, dt) {
     const prevX = c.x, prevZ = c.z, prevY = c.y || 0, prevYaw = c.yaw || 0, prevV = c.v || 0;
+    if (c.sim) c.hold = holdLine(c);
     if (c.sim) noteBrake(c);
     if (c.sim && window.TOWDRIVE && TOWDRIVE.ride(c, dt)) {
       afterTow(c, dt, prevX, prevZ, prevY, prevYaw, prevV);
@@ -468,6 +687,25 @@ const TRAFFIC = (() => {
       return;
     }
     const step = c.v * dt;
+    if (c.sim && c.hold && c.hold.stop) {
+      const box = T.crossBox || 6;
+      const sCross = nextCrossS(c);
+      let limS = null;
+      if (sCross != null) {
+        const edge = sCross - box - T.carL * 0.5;
+        if (c.s <= edge + 0.05) limS = edge;
+      }
+      const ap = apronAhead(c);
+      if (ap && ap.t > 0.2) {
+        const room = c.s + Math.max(0, ap.t - T.carL * 0.5);
+        if (limS == null || room < limS) limS = room;
+      }
+      if (limS != null && c.s + step > limS) {
+        c.s = limS; c.v = 0; place(c); holdLane(c);
+        vertSim(c, dt, prevX, prevZ); body(c, dt, prevYaw, prevV);
+        return;
+      }
+    }
     if (!c.sim && c.turn && c.s + step >= c.turn.s) { switchTo(c, c.turn.to, c.turn.s2); return; }
     if (blockedAhead(L, c.s + step)) { if (c.utT > 0) respawn(c); else doUturn(c); return; }
     c.s += step;
@@ -486,6 +724,7 @@ const TRAFFIC = (() => {
     place(c);
     if (c.blend > 0) c.blend = Math.max(0, c.blend - dt);
     if (c.sim) rampSeek(c, dt);
+    if (c.sim) holdLane(c);
     if (c.sim || (c.tick++ % 18) === 0) {
       if (c.ground !== false && (runway(c.x, c.z) || solidAt(c.x, c.z))) { if (c.utT > 0) respawn(c); else doUturn(c); return; }
     }
@@ -505,30 +744,19 @@ const TRAFFIC = (() => {
     const fx = Math.sin(yaw), fz = Math.cos(yaw), rx = Math.cos(yaw), rz = -Math.sin(yaw);
     return hl * Math.abs(fx * ux + fz * uz) + hw * Math.abs(rx * ux + rz * uz);
   }
-  function bump(c) {
-    if (!c.sim || !c.on || c.hit || P.wreck || P.loop) { c.was = false; return; }
-    if (Math.abs((P.y || 0) - c.y) >= 2.2) { c.was = false; return; }
-    const hl = T.carL / 2, hw = T.carW / 2;
-    const axes = [[Math.sin(P.yaw), Math.cos(P.yaw)], [Math.cos(P.yaw), -Math.sin(P.yaw)], [Math.sin(c.yaw), Math.cos(c.yaw)], [Math.cos(c.yaw), -Math.sin(c.yaw)]];
-    let best = 1e9, nx = 0, nz = 0, hit = true;
-    for (const ax of axes) {
-      const dist = (P.x - c.x) * ax[0] + (P.z - c.z) * ax[1];
-      const pen = projR(P.yaw || 0, hl, hw, ax[0], ax[1]) + projR(c.yaw, hl, hw, ax[0], ax[1]) - Math.abs(dist);
-      if (pen <= 0) { hit = false; break; }
-      if (pen < best) { best = pen; const s = dist < 0 ? -1 : 1; nx = ax[0] * s; nz = ax[1] * s; }
+  function giveRoom(c, dt) {
+    if (!c.sim || !c.on || !c.lane) return;
+    const r = playerRel(c);
+    if (!r || Math.abs(r.lat) > laneHalf() || r.fwd <= 0) return;
+    if (r.fwd < T.carL && r.dist < T.carL) {
+      c.s = Math.max(0.4, c.s - 3 * dt);
+      c.v = 0;
+      place(c);
+      holdLane(c);
     }
-    if (!hit) { c.was = false; return; }
-    P.x += nx * Math.min(best, 0.35); P.z += nz * Math.min(best, 0.35);
-    const side = Math.sign((c.x - P.x) * Math.cos(P.yaw) - (c.z - P.z) * Math.sin(P.yaw)) || (rnd() < 0.5 ? -1 : 1);
-    P.v = Math.max(0, P.v * T.bumpKeep);
-    P.yaw = (P.yaw || 0) + side * T.bumpYaw; P.hd = P.yaw;
-    const fx = Math.sin(P.yaw), fz = Math.cos(P.yaw), rx = Math.cos(P.yaw), rz = -Math.sin(P.yaw);
-    const fwdV = Math.max(c.v, P.v * 0.88) + 4, sideV = side * (7 + P.v * 0.18);
-    c.hit = true; c.hitT = 0; c.fade = 1; c.was = true;
-    c.vx = fx * fwdV + rx * sideV; c.vz = fz * fwdV + rz * sideV;
-    c.vy = 3.8 + Math.min(5, P.v * 0.08);
-    c.spin = side * (5.5 + rnd() * 3.0); c.roll = 0; c.vroll = side * (4.5 + rnd() * 2.5);
-    burst(c);
+  }
+  function bump() {
+    // Kept so an old caller cannot move his Z. Yielding lives in pace() and giveRoom().
   }
   function burst(c) {
     const cols = ['#ffe14d', '#ffffff', '#ff4fd8'];
@@ -569,16 +797,39 @@ const TRAFFIC = (() => {
   }
 
   function viewKey(c) {
-    const dx = cam.x - c.x, dz = cam.z - c.z, dy = cam.y - (c.y + 0.6);
+    const dx = cam.x - c.x, dz = cam.z - c.z, dy = cam.y - ((c.y || 0) + 0.6);
     const hd = Math.hypot(dx, dz) || 0.001;
-    const visYaw = c.yaw + (c.slip || 0);
-    const rel = Math.atan2(Math.sin(Math.atan2(dx, dz) - visYaw), Math.cos(Math.atan2(dx, dz) - visYaw));
-    const elev = Math.atan2(dy, hd) - (c.pitch || 0) * 0.9;
+    // The photo is the car's heading and the camera height, not this frame's
+    // slip or pitch. Those move a few degrees every frame and used to cross
+    // the 15° bucket, so the baked picture swapped every other frame.
+    const rel = Math.atan2(Math.sin(Math.atan2(dx, dz) - c.yaw), Math.cos(Math.atan2(dx, dz) - c.yaw));
+    const elev = Math.atan2(dy, hd);
     const step = T.yawStep || (Math.PI / 12);
     let yb = Math.round(rel / step);
     yb = ((yb + 12) % 24 + 24) % 24 - 12;
-    const eb = lim(Math.round(elev / 0.35), -1, 5);
+    let eb = lim(Math.round(elev / 0.35), -1, 5);
+    const yawHold = (T.yawHold == null ? 0.62 : T.yawHold) * step;
+    const elevHold = T.elevHold == null ? 0.22 : T.elevHold;
+    if (c._yb != null && Math.abs(angDiff(rel, c._yb * step)) < yawHold) yb = c._yb;
+    if (c._eb != null && Math.abs(elev - c._eb * 0.35) < elevHold) eb = c._eb;
+    c._yb = yb; c._eb = eb;
     return c.pi + ':' + yb + ':' + eb;
+  }
+  function band(c, dist) {
+    const h = T.bandHold == null ? 12 : T.bandHold;
+    const raw = dist < T.fullDist ? 'sprite' : dist < T.boxDist ? 'box' : dist < T.dotDist ? 'lights' : 'off';
+    const prev = c._band;
+    const order = {off:0, lights:1, box:2, sprite:3};
+    if (!prev || prev === raw || Math.abs(order[raw] - order[prev]) > 1) { c._band = raw; return raw; }
+    const keep = (prev === 'sprite' && raw === 'box' && dist < T.fullDist + h)
+      || (prev === 'box' && raw === 'sprite' && dist > T.fullDist - h)
+      || (prev === 'box' && raw === 'lights' && dist < T.boxDist + h)
+      || (prev === 'lights' && raw === 'box' && dist > T.boxDist - h)
+      || (prev === 'lights' && raw === 'off' && dist < T.dotDist + h)
+      || (prev === 'off' && raw === 'lights' && dist > T.dotDist - h);
+    if (keep) return prev;
+    c._band = raw;
+    return raw;
   }
   const packs = [];
   function stdMat() {
@@ -703,75 +954,110 @@ const TRAFFIC = (() => {
         }
       });
       wingHinges = wing; crewN = crew; cloned = baked.length;
-      for (let i = 0; i < T.paints.length; i++) bake(i + ':0:0');
       return cloned > 0;
     } catch (e) { bakeErr = String(e); try { ZGL.set(g0); } catch (e2) {} cloned = -1; return false; }
   }
+  let warmQ = null, warmI = 0;
+  function buildWarm() {
+    const q = [];
+    for (let pi = 0; pi < T.paints.length; pi++) q.push(pi + ':0:0');
+    for (let pi = 0; pi < T.paints.length; pi++) {
+      for (let yb = -12; yb <= 11; yb++) {
+        for (let eb = -1; eb <= 5; eb++) {
+          if (yb === 0 && eb === 0) continue;
+          q.push(pi + ':' + yb + ':' + eb);
+        }
+      }
+    }
+    warmQ = q; warmI = 0;
+  }
+  function gridCap() { return Math.max(T.cacheMax || 0, (T.paints.length || 0) * 24 * 7); }
+  let photoR = null, photoCv = null;
+  // A 160px renderer of its own, so a photo never resizes the city view.
+  function photoRenderer() {
+    if (photoR) return photoR;
+    const X = window.ZD && ZD.Xray;
+    if (!X || !X.renderer) return null;
+    const px = T.spritePx;
+    const cv = document.createElement('canvas');
+    cv.width = px; cv.height = px;
+    let aa = false;
+    try { aa = !!((X.renderer.getContext().getContextAttributes() || {}).antialias); } catch (e) {}
+    photoR = new X.renderer.constructor({ canvas: cv, alpha: true, antialias: aa, preserveDrawingBuffer: true });
+    photoR.setPixelRatio(1);
+    photoR.setSize(px, px, false);
+    photoR.setClearColor(0x000000, 0);
+    photoCv = cv;
+    return photoR;
+  }
+  function shoot(pi, yb, eb) {
+    const R = photoRenderer();
+    if (!R || !TRAFFIC._clone || !TRAFFIC._scene || !TRAFFIC._cam) return null;
+    applyPaint(TRAFFIC._clone, pi);
+    const yaw = yb * (T.yawStep || Math.PI / 12), elev = eb * 0.35;
+    const dist = 7 / (2 * Math.tan(13 * Math.PI / 180)), ty = 0.6;
+    const camT = TRAFFIC._cam;
+    camT.fov = 26; camT.aspect = 1; camT.near = 0.05; camT.far = 80;
+    camT.position.set(Math.cos(yaw) * Math.cos(elev) * dist, ty + Math.sin(elev) * dist, Math.sin(yaw) * Math.cos(elev) * dist);
+    camT.lookAt(0, ty, 0);
+    camT.updateProjectionMatrix();
+    camT.updateMatrixWorld();
+    if (R.clear) R.clear();
+    R.render(TRAFFIC._scene, camT);
+    if (!photoCv || photoCv.width < 8) return null;
+    const px = T.spritePx;
+    const cv = document.createElement('canvas');
+    cv.width = px; cv.height = px;
+    cv.getContext('2d', { alpha: true }).drawImage(photoCv, 0, 0, photoCv.width, photoCv.height, 0, 0, px, px);
+    return cv;
+  }
+  function storePhoto(key, cv) {
+    const cap = gridCap();
+    while (cache.size >= cap) {
+      const oldest = cache.keys().next().value;
+      if (oldest == null) break;
+      cache.delete(oldest);
+    }
+    cache.set(key, cv); bakes++;
+  }
+  // Menu frames only. Driving never calls this.
+  function bakeSlice(tEnd) {
+    let n = 0;
+    try {
+      while (warmI < warmQ.length) {
+        const key = warmQ[warmI];
+        if (cache.has(key)) { warmI++; continue; }
+        const parts = key.split(':').map(Number);
+        const cv = shoot(parts[0], parts[1], parts[2]);
+        if (!cv) break;
+        storePhoto(key, cv); n++; warmI++;
+        if (performance.now() >= tEnd) break;
+      }
+      return n;
+    } catch (e) { bakeErr = String(e); return n; }
+  }
+  function warmStep() {
+    if (typeof flying !== 'undefined' && flying) return;
+    if (!warmQ) buildWarm();
+    if (warmI >= warmQ.length) return;
+    const X = window.ZD && ZD.Xray;
+    if (!X || !X.ready || !X.renderer) return;
+    if (!TRAFFIC._clone && !ensureClone()) return;
+    const budget = T.warmMs == null ? 48 : T.warmMs;
+    bakeSlice(performance.now() + Math.max(1, budget));
+  }
   function bake(key) {
-    const tB = performance.now();
     const X = window.ZD && ZD.Xray;
     if (!X || !X.renderer) return false;
     if (!TRAFFIC._clone && !ensureClone()) return false;
-    if (!TRAFFIC._clone || !TRAFFIC._scene || !TRAFFIC._cam) return false;
     const [pi, yb, eb] = key.split(':').map(Number);
     if (!T.paints[pi]) return false;
-    const R = X.renderer, px = T.spritePx;
-    const box = {set(w, h){ this.w = w; this.h = h; return this; }, w:1, h:1};
-    const dpr = R.getPixelRatio ? R.getPixelRatio() : 1;
-    const rt = R.getRenderTarget ? R.getRenderTarget() : null;
-    const scissor = R.getScissorTest ? R.getScissorTest() : false;
-    if (R.getSize) R.getSize(box);
     try {
-      applyPaint(TRAFFIC._clone, pi);
-      const yaw = yb * (T.yawStep || Math.PI / 12), elev = eb * 0.35;
-      const dist = 7 / (2 * Math.tan(13 * Math.PI / 180)), ty = 0.6;
-      const camT = TRAFFIC._cam;
-      camT.fov = 26; camT.aspect = 1; camT.near = 0.05; camT.far = 80;
-      camT.position.set(Math.cos(yaw) * Math.cos(elev) * dist, ty + Math.sin(elev) * dist, Math.sin(yaw) * Math.cos(elev) * dist);
-      camT.lookAt(0, ty, 0);
-      camT.updateProjectionMatrix();
-      camT.updateMatrixWorld();
-      if (R.setRenderTarget) R.setRenderTarget(null);
-      if (R.setScissorTest) R.setScissorTest(false);
-      if (R.setPixelRatio) R.setPixelRatio(1);
-      R.setSize(px, px, false);
-      if (R.setViewport) R.setViewport(0, 0, px, px);
-      R.setClearColor(0x000000, 0);
-      if (R.clear) R.clear();
-      R.render(TRAFFIC._scene, camT);
-      const src = R.domElement || X.canvas;
-      if (!src || src.width < 8) return false;
-      const cv = document.createElement('canvas');
-      cv.width = px; cv.height = px;
-      cv.getContext('2d', {alpha:true}).drawImage(src, 0, 0, src.width, src.height, 0, 0, px, px);
-      const pxN = px | 0 || 160;
-      const bytes = cache.size * pxN * pxN * 4;
-      let cap = warmCapOn || T.cacheMax || 140;
-      if (bytes >= WARM_BYTE_CAP) cap = cache.size;
-      while (cache.size >= cap) {
-        let oldest = null;
-        for (const k of cache.keys()) { if (!hot.has(k)) { oldest = k; break; } }
-        if (oldest == null) break;
-        cache.delete(oldest);
-      }
-      cache.set(key, cv); bakes++;
+      const cv = shoot(pi, yb, eb);
+      if (!cv) return false;
+      storePhoto(key, cv);
       return true;
     } catch (e) { bakeErr = String(e); return false; }
-    finally {
-      bakeMs += performance.now() - tB;
-      if (window.Z_PERF && window.Z_PERF.on && window.Z_WARM && window.Z_WARM.phase === 'done') {
-        window.Z_PERF.trafficBake = (window.Z_PERF.trafficBake || 0) + 1;
-        window.Z_PERF.trafficBakeAt = performance.now();
-      }
-      try {
-        if (R.setPixelRatio) R.setPixelRatio(dpr);
-        R.setSize(box.w || 1, box.h || 1, false);
-        if (R.setViewport) R.setViewport(0, 0, box.w || 1, box.h || 1);
-        if (R.setScissorTest) R.setScissorTest(scissor);
-        if (rt && R.setRenderTarget) R.setRenderTarget(rt);
-      } catch (e2) {}
-      X._w = 0; X._h = 0;
-    }
   }
   function shadow(c) {
     const gy = c.gy || 0, hAir = Math.max(0, (c.y || 0) - gy);
@@ -882,74 +1168,78 @@ const TRAFFIC = (() => {
     ctx.restore();
   }
   const sparkSlot = {draw(){ drawSparks(); }};
+  // A held photo is the previous heading. After a U-turn the new view is often
+  // not cached yet. Showing the old photo puts the tail lights on the nose.
+  function photoNear(c) {
+    if (!c._held || !c._heldKey || !c._key) return false;
+    const a = c._heldKey.split(':'), b = c._key.split(':');
+    if (a[0] !== b[0]) return false;
+    let dy = Math.abs((+a[1]) - (+b[1]));
+    dy = Math.min(dy, 24 - dy);
+    return dy <= 1 && Math.abs((+a[2]) - (+b[2])) <= 1;
+  }
   function drawOne(c) {
     if (!c.on) return;
     const dist = c._dist || Math.hypot(c.x - cam.x, c.y - cam.y, c.z - cam.z);
-    if (dist > T.dotDist) return;
+    const b = c._band || band(c, dist);
+    if (b === 'off') return;
     ctx.save();
+    try {
     ctx.globalAlpha = c.fade == null ? 1 : c.fade;
-    if (c.sim && dist < T.boxDist) shadow(c);
-    if (c.hit || dist < T.fullDist) {
-      const cv = cache.get(c._key);
-      if (cv) { cache.delete(c._key); cache.set(c._key, cv); }
-      if (cv && blit(cv, c)) { if (c.sim && !c.hit) dress(c); ctx.restore(); return; }
+    if (c.sim && (b === 'sprite' || b === 'box')) shadow(c);
+    if (c.hit || b === 'sprite') {
+      const cv = c._key && cache.get(c._key);
+      if (cv) {
+        cache.delete(c._key); cache.set(c._key, cv);
+        c._held = cv; c._heldKey = c._key;
+      }
+      const show = cv || (photoNear(c) ? c._held : null);
+      if (show && blit(show, c)) { if (c.sim && !c.hit) dress(c); return; }
       drawBox(c); lights(c, dist);
-    } else if (dist < T.boxDist) { drawBox(c); lights(c, dist); }
+    } else if (b === 'box') { drawBox(c); lights(c, dist); }
     else lights(c, dist);
     if (c.sim && !c.hit) dress(c);
-    ctx.restore();
+    } finally { ctx.restore(); }
   }
 
   let runErr = '';
+  function releasePhoto() {
+    if (!photoR) return;
+    try { photoR.dispose(); if (photoR.forceContextLoss) photoR.forceContextLoss(); } catch (e) {}
+    photoR = null; photoCv = null;
+  }
   function update(dt) {
     if (OFF || !T) return;
     try {
     build();
+    aprons = readAprons();
     if (!lanes.length) return;
+    // The photo context is menu-only. Drop it before the city frame so a drive
+    // has one WebGL context (the player's car). A second live context is what
+    // flashed the whole phone screen when the car context cleared.
+    if (typeof flying !== 'undefined' && flying) releasePhoto();
+    else warmStep();
     dt = Math.min(0.05, dt || 0.016);
     maintain();
     stepSparks(dt);
     for (const c of cars) if (c.on) { if (c.hit) knocked(c, dt); else advance(c, dt); }
-    for (const c of cars) if (c.on && c.sim && !c.hit) bump(c);
+    for (const c of cars) if (c.on && c.sim && !c.hit) giveRoom(c, dt);
     } catch (e) { runErr = String(e && e.stack || e); }
-  }
-  // collect runs before the player car. A bake on the car's own frame stacks the dip
-  // that presents at ~55 FPS. One miss may bake on a skipped car frame instead.
-  function flightBakeCap() {
-    if (typeof ZV === 'undefined') return 1;
-    const warm = window.Z_WARM;
-    if (warm && warm.phase === 'done' && warm.total > 0 && warm.at >= warm.total) return 0;
-    const every = ZV.every | 0 || 1;
-    const heavyNext = every <= 1 || ((ZV.frame + 1) % every) === 0;
-    if (heavyNext) return 0;
-    return 1;
   }
   function collect(items) {
     if (OFF || !built) return;
     try {
-    hot.clear();
-    const misses = [];
     for (const c of cars) {
       if (!c.on) continue;
       const dx = c.x - cam.x, dy = (c.y + 0.6) - cam.y, dz = c.z - cam.z;
       const dist = Math.hypot(dx, dy, dz);
       c._dist = dist;
-      if (dist > T.dotDist) continue;
-      if (dist < T.fullDist) {
-        c._key = viewKey(c);
-        hot.add(c._key);
-        if (!cache.has(c._key)) misses.push(c._key);
-      }
-      if (typeof itemPush === 'function') itemPush(items, dx * dx + dz * dz, 't', c.slot);
-      else items.push([dx * dx + dz * dz, 't', c.slot]);
+      const b = band(c, dist);
+      if (b === 'off') continue;
+      if (b === 'sprite') c._key = viewKey(c);
+      items.push([dx * dx + dz * dz, 't', c.slot]);
     }
-    const cap = flightBakeCap();
-    let baked = 0;
-    for (let i = 0; i < misses.length && baked < cap; i++) { if (bake(misses[i])) baked++; }
-    if (sparks.length) {
-      if (typeof itemPush === 'function') itemPush(items, 0, 't', sparkSlot);
-      else items.push([0, 't', sparkSlot]);
-    }
+    if (sparks.length) items.push([0, 't', sparkSlot]);
     } catch (e) { runErr = String(e && e.stack || e); }
   }
   function stats() {
@@ -960,9 +1250,9 @@ const TRAFFIC = (() => {
       enabled:!OFF, model:'z370', clonedMeshes:cloned, simCap:T.simCap, dotCap:T.dotCap,
       sim, dots, alive:sim + dots, lanes:lanes.length, straight, turns,
       fullDist:T.fullDist, boxDist:T.boxDist, dotDist:T.dotDist,
-      speedMin:T.speedMin, speedMax:T.speedMax, highwayAdd:T.highwayAdd,
-      paints:T.paints.map(p => p.id), cache:cache.size, bakes, bakeMs:Math.round(bakeMs), bakeErr, runErr,
-      warmAt, warmTotal: warmKeys ? warmKeys.length : 0, cacheBytes: cache.size * (T.spritePx | 0 || 160) * (T.spritePx | 0 || 160) * 4,
+      speedMin:T.speedMin, speedMax:T.speedMax, fastMin:T.fastMin, fastMax:T.fastMax,
+      paints:T.paints.map(p => p.id), cache:cache.size, bakes, bakeErr, runErr,
+      warmLeft: warmQ ? warmQ.length - warmI : -1, warmTotal: warmQ ? warmQ.length : 0,
       wingHinges, crewN, sparkN, sparks:sparks.length
     };
   }
@@ -980,87 +1270,6 @@ const TRAFFIC = (() => {
     return {n, onRunway, inSolid, offLane};
   }
   function ensure() { build(); }
-  // View grid in the order a chase cam actually needs: street and a mild
-  // climb first, steep look-down last. A CDN sheet can skip this and call
-  // warmFromUrl instead. One sheet is one paint: 24 columns of yaw
-  // (-12..11) by one row per elev bucket.
-  function warmGrid(elevs) {
-    const ebs = elevs && elevs.length ? elevs : [0, 1, 2, 3, 4, -1, 5];
-    const keys = [];
-    for (let e = 0; e < ebs.length; e++) {
-      const eb = ebs[e] | 0;
-      for (let yb = -12; yb <= 11; yb++) {
-        for (let pi = 0; pi < T.paints.length; pi++) keys.push(pi + ':' + yb + ':' + eb);
-      }
-    }
-    warmKeys = keys;
-    warmAt = 0;
-    warmFail = 0;
-    warmCapOn = keys.length;
-    return keys.length;
-  }
-  function cacheBytes() {
-    const px = T.spritePx | 0 || 160;
-    return cache.size * px * px * 4;
-  }
-  function warmStep(budgetMs) {
-    if (!warmKeys) warmGrid();
-    const px = T.spritePx | 0 || 160;
-    const t0 = performance.now();
-    let n = 0;
-    while (warmAt < warmKeys.length && performance.now() - t0 < (budgetMs || 8)) {
-      if (cacheBytes() + px * px * 4 > WARM_BYTE_CAP) break;
-      const k = warmKeys[warmAt];
-      if (cache.has(k)) { warmAt++; continue; }
-      if (!bake(k)) {
-        warmFail++;
-        if (warmFail > 12) { warmAt++; warmFail = 0; continue; }
-        break;
-      }
-      warmFail = 0;
-      warmAt++;
-      n++;
-    }
-    return {
-      at: warmAt, total: warmKeys.length, n: n, cache: cache.size, bytes: cacheBytes(),
-      done: warmAt >= warmKeys.length || cacheBytes() + px * px * 4 > WARM_BYTE_CAP,
-      bakeMs: Math.round(bakeMs)
-    };
-  }
-  function installAtlas(img, pack, paintIndex) {
-    const cell = (pack.atlas && pack.atlas.cell) || (T.spritePx | 0) || 160;
-    const cols = (pack.atlas && pack.atlas.columns) || 24;
-    const elev = (pack && pack.elev) || [0, 1, 2, 3, 4, -1, 5];
-    const rows = (pack.atlas && pack.atlas.rows) || elev.length;
-    if (!warmKeys) warmGrid(elev);
-    warmCapOn = Math.max(warmCapOn, warmKeys.length);
-    const pi0 = paintIndex | 0;
-    for (let row = 0; row < rows; row++) {
-      const eb = elev[row];
-      if (eb == null) continue;
-      for (let col = 0; col < cols; col++) {
-        const cv = document.createElement('canvas');
-        cv.width = cell; cv.height = cell;
-        cv.getContext('2d').drawImage(img, col * cell, row * cell, cell, cell, 0, 0, cell, cell);
-        cache.set(pi0 + ':' + (col - 12) + ':' + eb, cv);
-      }
-    }
-  }
-  function warmFromUrl(pack) {
-    const sheets = pack && pack.atlas && pack.atlas.sheets;
-    if (!sheets || !sheets.length) return Promise.resolve(false);
-    const loadOne = sh => new Promise(res => {
-      if (!sh || !sh.url) { res(false); return; }
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => { try { installAtlas(img, pack, sh.paintIndex | 0); res(true); } catch (e) { res(false); } };
-      img.onerror = () => res(false);
-      img.src = sh.url;
-    });
-    let chain = Promise.resolve(true);
-    for (let i = 0; i < sheets.length; i++) chain = chain.then(ok => ok ? loadOne(sheets[i]) : false);
-    return chain.then(ok => { if (ok && warmKeys) warmAt = warmKeys.length; return ok; });
-  }
-  return {update, collect, stats, audit, ensure, warmGrid, warmStep, warmFromUrl, _bake:bake, get cars(){ return cars; }, get lanes(){ return lanes; }, get _cache(){ return cache; }};
+  return {update, collect, stats, audit, ensure, releasePhoto, _bake:bake, get cars(){ return cars; }, get lanes(){ return lanes; }, get _cache(){ return cache; }};
 })();
 window.TRAFFIC = TRAFFIC;
