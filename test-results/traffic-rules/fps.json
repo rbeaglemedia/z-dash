@@ -1,0 +1,58 @@
+{
+  "note": "Headless Chrome software WebGL. Phone 844x390, deviceScaleFactor 2, touch on. Five interleaved pairs, 69 frames each after 1.2s. p95 is the 95th percentile frame time. 1% low is 1000 divided by the 99th percentile frame time. Not Bob's phone.",
+  "commit": "f2dd9a8",
+  "before": {
+    "frames": 345,
+    "medianMs": 66.6,
+    "p95Ms": 66.7,
+    "p95Fps": 14.99,
+    "low1Ms": 100,
+    "low1Fps": 10
+  },
+  "after": {
+    "frames": 345,
+    "medianMs": 66.6,
+    "p95Ms": 66.7,
+    "p95Fps": 14.99,
+    "low1Ms": 83.4,
+    "low1Fps": 11.99
+  },
+  "shots": {
+    "beforeStop": {
+      "mode": "stop",
+      "crossS": 83.3,
+      "carS": 93.8,
+      "carV": 12,
+      "px": -450,
+      "pz": 1645,
+      "kind": "street"
+    },
+    "afterStop": {
+      "mode": "stop",
+      "crossS": 83.3,
+      "carS": 75.2,
+      "carV": 0,
+      "px": -450,
+      "pz": 1645,
+      "kind": "street"
+    },
+    "beforeYield": {
+      "mode": "yield",
+      "crossS": 83.3,
+      "carS": 38.1,
+      "carV": 14,
+      "px": -409,
+      "pz": 1645,
+      "kind": "street"
+    },
+    "afterYield": {
+      "mode": "yield",
+      "crossS": 83.3,
+      "carS": 38,
+      "carV": 0,
+      "px": -409,
+      "pz": 1645,
+      "kind": "street"
+    }
+  }
+}
