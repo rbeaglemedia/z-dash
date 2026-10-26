@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" width="760" height="320">
+  <title>370Z on the Homestead launch ramp</title>
+  <rect width="760" height="320" fill="#100818"/>
+  <text x="24" y="32" fill="#fff2c0" font-family="system-ui,Arial,sans-serif" font-size="16" font-weight="700">Homestead launch ramp</text>
+  <text x="24" y="52" fill="#8a7a9d" font-family="system-ui,Arial,sans-serif" font-size="12">The car is a Z34 370Z: long hood, cabin set back, fastback, short deck.</text>
+  <!-- ground -->
+  <line x1="20" y1="286" x2="740" y2="286" stroke="#3ee6ff" stroke-width="2" opacity="0.45"/>
+  <!-- ramp: gentle rise, lip, neon edges. Car sits on the slope. -->
+  <polygon points="70,286 470,214 520,214 560,232 150,286" fill="#1a1030" stroke="#ff4fd8" stroke-width="3"/>
+  <line x1="150" y1="250" x2="500" y2="214" stroke="#3ee6ff" stroke-width="2" stroke-dasharray="8 6"/>
+  <circle cx="520" cy="214" r="16" fill="none" stroke="#ffe14d" stroke-width="3"/>
+  <text x="536" y="208" fill="#ffe14d" font-family="system-ui,Arial,sans-serif" font-size="12" font-weight="700">LIP</text>
+  <text x="70" y="308" fill="#8a7a9d" font-family="system-ui,Arial,sans-serif" font-size="12">Before unlock: a small hop back into the yard. After unlock: the lip adds a neon push that reaches the sky line.</text>
+  <defs>
+    <clipPath id="zBodyClip">
+      <path d="
+        M78 150
+        C66 150 58 138 62 124
+        C66 110 76 102 94 100
+        L118 98
+        C136 94 150 84 164 70
+        C176 58 192 50 214 48
+        L240 48
+        C256 48 266 56 274 72
+        L292 100
+        L344 104
+        C360 102 372 94 380 84
+        C386 94 388 110 382 126
+        C376 140 364 150 346 152
+        L96 152
+        Z"/>
+    </clipPath>
+  </defs>
+  <!-- Z34, nose to the right, mild climb matching the ramp.
+       Axles sit near 20% and 80% of the length. Cabin starts past mid-car. -->
+  <g transform="translate(155,72) rotate(-8 190 148)">
+    <!-- body first: straight rocker, fenders described by the upper shape -->
+    <path fill="#c5c8ce" stroke="#1b1d22" stroke-width="1.5" d="
+      M78 150
+      C66 150 58 138 62 124
+      C66 110 76 102 94 100
+      L118 98
+      C136 94 150 84 164 70
+      C176 58 192 50 214 48
+      L240 48
+      C256 48 266 56 274 72
+      L292 100
+      L344 104
+      C360 102 372 94 380 84
+      C386 94 388 110 382 126
+      C376 140 364 150 346 152
+      L96 152
+      Z"/>
+    <!-- punch clean arches so the tires sit in round openings -->
+    <g clip-path="url(#zBodyClip)">
+      <circle cx="118" cy="150" r="30" fill="#100818"/>
+      <circle cx="300" cy="150" r="30" fill="#100818"/>
+    </g>
+    <!-- fender lips -->
+    <path d="M88 150 A 30 30 0 0 0 148 150" fill="none" stroke="#8b9098" stroke-width="3"/>
+    <path d="M270 150 A 30 30 0 0 0 330 150" fill="none" stroke="#8b9098" stroke-width="3"/>
+    <!-- tires and a simple 5-spoke, no badge -->
+    <g fill="#141414">
+      <circle cx="118" cy="150" r="26"/>
+      <circle cx="300" cy="150" r="26"/>
+    </g>
+    <g fill="#4a4f57">
+      <circle cx="118" cy="150" r="14"/>
+      <circle cx="300" cy="150" r="14"/>
+    </g>
+    <g stroke="#d5d8de" stroke-width="2" fill="none">
+      <path d="M118 138 L118 162 M106 150 L130 150 M109 141 L127 159 M127 141 L109 159"/>
+      <path d="M300 138 L300 162 M288 150 L312 150 M291 141 L309 159 M309 141 L291 159"/>
+    </g>
+    <!-- glass: short roof, steep windshield, small quarter -->
+    <path fill="#1a2430" d="M178 60 C194 52 220 50 238 54 L254 74 L216 98 L178 94 C166 84 166 70 178 60 Z"/>
+    <path d="M214 56 L206 96" stroke="#8aa0b0" stroke-width="2" fill="none"/>
+    <!-- beltline kicks up into the rear haunch -->
+    <path d="M330 108 C270 114 220 116 180 108 C158 102 140 92 124 82" fill="none" stroke="#2a2d33" stroke-width="2.2"/>
+    <!-- front fender vent -->
+    <path d="M250 114 L236 128" stroke="#2a2d33" stroke-width="3" stroke-linecap="round"/>
+    <!-- door shut and handle on the belt -->
+    <path d="M198 64 L190 116" stroke="#2a2d33" stroke-width="1.4" fill="none"/>
+    <rect x="164" y="104" width="12" height="3" rx="1" fill="#2a2d33"/>
+    <!-- boomerang headlamp -->
+    <path d="M348 100 L378 88 L370 110 Z" fill="#e8f7ff" stroke="#3ee6ff" stroke-width="1"/>
+    <!-- stacked round tail lamps -->
+    <circle cx="70" cy="114" r="5.5" fill="#ff2a3d"/>
+    <circle cx="70" cy="130" r="5.5" fill="#ff2a3d"/>
+    <!-- stock deck lip, not a wing -->
+    <path d="M98 98 L114 93" stroke="#1b1d22" stroke-width="2.4" fill="none"/>
+  </g>
+</svg>
