@@ -1,0 +1,631 @@
+{
+  "current": {
+    "name": "current",
+    "problems": [],
+    "sizes": {
+      "GARAGE": 2,
+      "SKY_DROP": 2,
+      "SHOWROOM": 2,
+      "NOS": 2,
+      "HOME": 2,
+      "NEON_PAINT": 2,
+      "DANCE": 2,
+      "ARCADE": 2,
+      "PETS": 2,
+      "CAFE": 2,
+      "SOCCER": 2,
+      "BUILDER": 2
+    },
+    "n": 24
+  },
+  "A": {
+    "name": "A",
+    "problems": [],
+    "sizes": {
+      "GARAGE": 2,
+      "SKY_DROP": 2,
+      "SHOWROOM": 2,
+      "NOS": 2,
+      "HOME": 2,
+      "NEON_PAINT": 2,
+      "DANCE": 2,
+      "ARCADE": 2,
+      "PETS": 2,
+      "CAFE": 2,
+      "SOCCER": 2,
+      "BUILDER": 2
+    },
+    "n": 24
+  },
+  "B": {
+    "name": "B",
+    "problems": [],
+    "sizes": {
+      "GARAGE": 2,
+      "SKY_DROP": 2,
+      "SHOWROOM": 2,
+      "NOS": 2,
+      "HOME": 2,
+      "NEON_PAINT": 2,
+      "DANCE": 2,
+      "ARCADE": 2,
+      "PETS": 2,
+      "CAFE": 2,
+      "SOCCER": 2,
+      "BUILDER": 2
+    },
+    "n": 24
+  }
+}
+---COUNTS current---
+[
+  {
+    "label": "runway spawn",
+    "x": 0,
+    "z": 40,
+    "near170": 0,
+    "names": "",
+    "draw950": 13
+  },
+  {
+    "label": "south home street",
+    "x": -400,
+    "z": 300,
+    "near170": 1,
+    "names": "10PAINT",
+    "draw950": 15
+  },
+  {
+    "label": "south dance",
+    "x": -190,
+    "z": 100,
+    "near170": 1,
+    "names": "8NOS",
+    "draw950": 15
+  },
+  {
+    "label": "sky drop west",
+    "x": -200,
+    "z": 600,
+    "near170": 1,
+    "names": "2SKY DROP",
+    "draw950": 22
+  },
+  {
+    "label": "north home street",
+    "x": -400,
+    "z": 900,
+    "near170": 3,
+    "names": "11PAINT 14HOME 16PETS",
+    "draw950": 18
+  },
+  {
+    "label": "north dance",
+    "x": -190,
+    "z": 950,
+    "near170": 0,
+    "names": "",
+    "draw950": 22
+  },
+  {
+    "label": "auto south road",
+    "x": -400,
+    "z": 1400,
+    "near170": 2,
+    "names": "4NOS 17CAFE",
+    "draw950": 14
+  },
+  {
+    "label": "open highway",
+    "x": -450,
+    "z": 1650,
+    "near170": 1,
+    "names": "4NOS",
+    "draw950": 11
+  },
+  {
+    "label": "auto north road",
+    "x": 300,
+    "z": 1600,
+    "near170": 0,
+    "names": "",
+    "draw950": 12
+  },
+  {
+    "label": "east play",
+    "x": 320,
+    "z": 450,
+    "near170": 2,
+    "names": "9GARAGE 13ARCADE",
+    "draw950": 18
+  },
+  {
+    "label": "option B deck",
+    "x": 296,
+    "z": 600,
+    "near170": 1,
+    "names": "13ARCADE",
+    "draw950": 20
+  },
+  {
+    "label": "tower face",
+    "x": 380,
+    "z": 1200,
+    "near170": 4,
+    "names": "5SKY TOWER 18DANCE 19CAFE 22SOCCER",
+    "draw950": 20
+  },
+  {
+    "label": "stadium gate",
+    "x": 640,
+    "z": 300,
+    "near170": 2,
+    "names": "9GARAGE 21SOCCER",
+    "draw950": 15
+  },
+  {
+    "label": "builder bridge",
+    "x": 200,
+    "z": 1900,
+    "near170": 2,
+    "names": "23BUILDER 24BUILDER",
+    "draw950": 9
+  },
+  {
+    "label": "air south",
+    "x": 0,
+    "z": -200,
+    "near170": 0,
+    "names": "",
+    "draw950": 10
+  }
+]
+---COUNTS A---
+[
+  {
+    "label": "runway spawn",
+    "x": 0,
+    "z": 40,
+    "near170": 0,
+    "names": "",
+    "draw950": 13
+  },
+  {
+    "label": "south home street",
+    "x": -400,
+    "z": 300,
+    "near170": 3,
+    "names": "6HOME 15PETS 17CAFE",
+    "draw950": 13
+  },
+  {
+    "label": "south dance",
+    "x": -190,
+    "z": 100,
+    "near170": 1,
+    "names": "12DANCE",
+    "draw950": 13
+  },
+  {
+    "label": "sky drop west",
+    "x": -200,
+    "z": 600,
+    "near170": 1,
+    "names": "2SKY DROP",
+    "draw950": 18
+  },
+  {
+    "label": "north home street",
+    "x": -400,
+    "z": 900,
+    "near170": 3,
+    "names": "14HOME 16PETS 19CAFE",
+    "draw950": 17
+  },
+  {
+    "label": "north dance",
+    "x": -190,
+    "z": 950,
+    "near170": 2,
+    "names": "16PETS 18DANCE",
+    "draw950": 21
+  },
+  {
+    "label": "auto south road",
+    "x": -400,
+    "z": 1400,
+    "near170": 4,
+    "names": "1GARAGE 7SHOWROOM 9GARAGE 10PAINT",
+    "draw950": 17
+  },
+  {
+    "label": "open highway",
+    "x": -450,
+    "z": 1650,
+    "near170": 1,
+    "names": "7SHOWROOM",
+    "draw950": 14
+  },
+  {
+    "label": "auto north road",
+    "x": 300,
+    "z": 1600,
+    "near170": 2,
+    "names": "3SHOWROOM 4NOS",
+    "draw950": 14
+  },
+  {
+    "label": "east play",
+    "x": 320,
+    "z": 450,
+    "near170": 3,
+    "names": "13ARCADE 21SOCCER 22SOCCER",
+    "draw950": 14
+  },
+  {
+    "label": "option B deck",
+    "x": 296,
+    "z": 600,
+    "near170": 1,
+    "names": "13ARCADE",
+    "draw950": 17
+  },
+  {
+    "label": "tower face",
+    "x": 380,
+    "z": 1200,
+    "near170": 1,
+    "names": "5SKY TOWER",
+    "draw950": 20
+  },
+  {
+    "label": "stadium gate",
+    "x": 640,
+    "z": 300,
+    "near170": 2,
+    "names": "21SOCCER 22SOCCER",
+    "draw950": 8
+  },
+  {
+    "label": "builder bridge",
+    "x": 200,
+    "z": 1900,
+    "near170": 2,
+    "names": "23BUILDER 24BUILDER",
+    "draw950": 11
+  },
+  {
+    "label": "air south",
+    "x": 0,
+    "z": -200,
+    "near170": 0,
+    "names": "",
+    "draw950": 8
+  }
+]
+---COUNTS B---
+[
+  {
+    "label": "runway spawn",
+    "x": 0,
+    "z": 40,
+    "near170": 0,
+    "names": "",
+    "draw950": 13
+  },
+  {
+    "label": "south home street",
+    "x": -400,
+    "z": 300,
+    "near170": 3,
+    "names": "6HOME 15PETS 17CAFE",
+    "draw950": 13
+  },
+  {
+    "label": "south dance",
+    "x": -190,
+    "z": 100,
+    "near170": 1,
+    "names": "12DANCE",
+    "draw950": 13
+  },
+  {
+    "label": "sky drop west",
+    "x": -200,
+    "z": 600,
+    "near170": 0,
+    "names": "",
+    "draw950": 18
+  },
+  {
+    "label": "north home street",
+    "x": -400,
+    "z": 900,
+    "near170": 3,
+    "names": "14HOME 16PETS 19CAFE",
+    "draw950": 17
+  },
+  {
+    "label": "north dance",
+    "x": -190,
+    "z": 950,
+    "near170": 2,
+    "names": "16PETS 18DANCE",
+    "draw950": 21
+  },
+  {
+    "label": "auto south road",
+    "x": -400,
+    "z": 1400,
+    "near170": 4,
+    "names": "1GARAGE 7SHOWROOM 9GARAGE 10PAINT",
+    "draw950": 16
+  },
+  {
+    "label": "open highway",
+    "x": -450,
+    "z": 1650,
+    "near170": 1,
+    "names": "7SHOWROOM",
+    "draw950": 14
+  },
+  {
+    "label": "auto north road",
+    "x": 300,
+    "z": 1600,
+    "near170": 2,
+    "names": "3SHOWROOM 4NOS",
+    "draw950": 15
+  },
+  {
+    "label": "east play",
+    "x": 320,
+    "z": 450,
+    "near170": 4,
+    "names": "2SKY DROP 13ARCADE 21SOCCER 22SOCCER",
+    "draw950": 14
+  },
+  {
+    "label": "option B deck",
+    "x": 296,
+    "z": 600,
+    "near170": 2,
+    "names": "2SKY DROP 13ARCADE",
+    "draw950": 17
+  },
+  {
+    "label": "tower face",
+    "x": 380,
+    "z": 1200,
+    "near170": 1,
+    "names": "5SKY TOWER",
+    "draw950": 20
+  },
+  {
+    "label": "stadium gate",
+    "x": 640,
+    "z": 300,
+    "near170": 2,
+    "names": "21SOCCER 22SOCCER",
+    "draw950": 8
+  },
+  {
+    "label": "builder bridge",
+    "x": 200,
+    "z": 1900,
+    "near170": 2,
+    "names": "23BUILDER 24BUILDER",
+    "draw950": 11
+  },
+  {
+    "label": "air south",
+    "x": 0,
+    "z": -200,
+    "near170": 0,
+    "names": "",
+    "draw950": 8
+  }
+]
+---WORST---
+{
+  "current": {
+    "max": 5,
+    "sample": [
+      {
+        "label": "road 350,300",
+        "x": 350,
+        "z": 300,
+        "names": [
+          "1GARAGE",
+          "6HOME",
+          "7SHOWROOM",
+          "9GARAGE",
+          "21SOCCER"
+        ]
+      }
+    ],
+    "gridMax": 5,
+    "gridAt": {
+      "x": 320,
+      "z": 280,
+      "names": [
+        "1GARAGE",
+        "6HOME",
+        "7SHOWROOM",
+        "9GARAGE",
+        "21SOCCER"
+      ]
+    }
+  },
+  "A": {
+    "max": 4,
+    "sample": [
+      {
+        "label": "road -450,1300",
+        "x": -450,
+        "z": 1300,
+        "names": [
+          "1GARAGE",
+          "7SHOWROOM",
+          "9GARAGE",
+          "10PAINT"
+        ]
+      },
+      {
+        "label": "road -450,1500",
+        "x": -450,
+        "z": 1500,
+        "names": [
+          "1GARAGE",
+          "7SHOWROOM",
+          "9GARAGE",
+          "10PAINT"
+        ]
+      },
+      {
+        "label": "road -350,900",
+        "x": -350,
+        "z": 900,
+        "names": [
+          "14HOME",
+          "16PETS",
+          "18DANCE",
+          "19CAFE"
+        ]
+      },
+      {
+        "label": "road 350,1700",
+        "x": 350,
+        "z": 1700,
+        "names": [
+          "3SHOWROOM",
+          "4NOS",
+          "8NOS",
+          "24BUILDER"
+        ]
+      },
+      {
+        "label": "road 450,1700",
+        "x": 450,
+        "z": 1700,
+        "names": [
+          "4NOS",
+          "8NOS",
+          "11PAINT",
+          "24BUILDER"
+        ]
+      },
+      {
+        "label": "at GARAGE1",
+        "x": -396,
+        "z": 1396,
+        "names": [
+          "1GARAGE",
+          "7SHOWROOM",
+          "9GARAGE",
+          "10PAINT"
+        ]
+      }
+    ],
+    "gridMax": 5,
+    "gridAt": {
+      "x": -340,
+      "z": 800,
+      "names": [
+        "2SKY DROP",
+        "14HOME",
+        "16PETS",
+        "18DANCE",
+        "19CAFE"
+      ]
+    }
+  },
+  "B": {
+    "max": 4,
+    "sample": [
+      {
+        "label": "road -450,1300",
+        "x": -450,
+        "z": 1300,
+        "names": [
+          "1GARAGE",
+          "7SHOWROOM",
+          "9GARAGE",
+          "10PAINT"
+        ]
+      },
+      {
+        "label": "road -450,1500",
+        "x": -450,
+        "z": 1500,
+        "names": [
+          "1GARAGE",
+          "7SHOWROOM",
+          "9GARAGE",
+          "10PAINT"
+        ]
+      },
+      {
+        "label": "road -350,900",
+        "x": -350,
+        "z": 900,
+        "names": [
+          "14HOME",
+          "16PETS",
+          "18DANCE",
+          "19CAFE"
+        ]
+      },
+      {
+        "label": "road 350,500",
+        "x": 350,
+        "z": 500,
+        "names": [
+          "2SKY DROP",
+          "13ARCADE",
+          "21SOCCER",
+          "22SOCCER"
+        ]
+      },
+      {
+        "label": "road 350,1700",
+        "x": 350,
+        "z": 1700,
+        "names": [
+          "3SHOWROOM",
+          "4NOS",
+          "8NOS",
+          "24BUILDER"
+        ]
+      },
+      {
+        "label": "road 450,1700",
+        "x": 450,
+        "z": 1700,
+        "names": [
+          "4NOS",
+          "8NOS",
+          "11PAINT",
+          "24BUILDER"
+        ]
+      }
+    ],
+    "gridMax": 5,
+    "gridAt": {
+      "x": 360,
+      "z": 1780,
+      "names": [
+        "3SHOWROOM",
+        "4NOS",
+        "8NOS",
+        "23BUILDER",
+        "24BUILDER"
+      ]
+    }
+  }
+}
+---PLAZA---
+{"A":["13 ARCADE lot 160,240,310,490","17 CAFE lot -540,-472,310,490"],"B":["13 ARCADE lot 160,240,310,490","17 CAFE lot -540,-472,310,490"]}
+---TUNNEL---
+{"changes":"none","A":[{"label":"south","nearest":"17 CAFE","meters":144},{"label":"north","nearest":"19 CAFE","meters":143}],"B":[{"label":"south","nearest":"17 CAFE","meters":144},{"label":"north","nearest":"19 CAFE","meters":143}]}
+svg written
