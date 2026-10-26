@@ -1,0 +1,450 @@
+{
+  "ok": false,
+  "sha": "5bd1e6ab361f54fcb5ae29b7b90d5482a70c05d0",
+  "branch": "HEAD",
+  "label": "PR 78 5bd1e6a",
+  "checkerError": "",
+  "findings": [
+    {
+      "rule": 1,
+      "severity": "fail",
+      "id": "close-shape",
+      "title": "Close copy does not match his Z",
+      "detail": "rear: Silhouette does not match his Z (IoU 0.42). three: Silhouette does not match his Z (IoU 0.27).",
+      "shots": [
+        "close-rear.png",
+        "close-three.png"
+      ]
+    }
+  ],
+  "shots": [
+    {
+      "id": "rear",
+      "range": "close",
+      "dist": 11,
+      "iou": 0.424,
+      "sourcePx": 480,
+      "displayed": 412,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 1,
+      "trafficBlobs": 1,
+      "player": {
+        "maskN": 76983,
+        "sat": 0.746,
+        "lum": 49.4,
+        "lumStd": 43,
+        "edge": 0.112,
+        "w": 1088,
+        "h": 460
+      },
+      "traffic": {
+        "maskN": 75435,
+        "sat": 0.762,
+        "lum": 47.1,
+        "lumStd": 38.2,
+        "edge": 0.119,
+        "w": 902,
+        "h": 460
+      },
+      "satRatio": 1.02,
+      "lumRatio": 0.89,
+      "edgeRatio": 1.06,
+      "silverExtra": 0,
+      "verdict": {
+        "ok": false,
+        "farLod": false,
+        "reasons": [
+          "Silhouette does not match his Z (IoU 0.42)."
+        ]
+      },
+      "file": "close-rear.png"
+    },
+    {
+      "id": "front",
+      "range": "close",
+      "dist": 12,
+      "iou": 0.658,
+      "sourcePx": 480,
+      "displayed": 378,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 4,
+      "trafficBlobs": 4,
+      "player": {
+        "maskN": 80816,
+        "sat": 0.717,
+        "lum": 56.5,
+        "lumStd": 48.1,
+        "edge": 0.1,
+        "w": 1006,
+        "h": 460
+      },
+      "traffic": {
+        "maskN": 86300,
+        "sat": 0.748,
+        "lum": 51.7,
+        "lumStd": 40.3,
+        "edge": 0.109,
+        "w": 956,
+        "h": 460
+      },
+      "satRatio": 1.04,
+      "lumRatio": 0.84,
+      "edgeRatio": 1.09,
+      "silverExtra": 0,
+      "verdict": {
+        "ok": true,
+        "farLod": false,
+        "reasons": []
+      },
+      "file": "close-front.png"
+    },
+    {
+      "id": "side",
+      "range": "close",
+      "dist": 12,
+      "iou": 0.564,
+      "sourcePx": 480,
+      "displayed": 378,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 4,
+      "trafficBlobs": 2,
+      "player": {
+        "maskN": 157960,
+        "sat": 0.73,
+        "lum": 66.9,
+        "lumStd": 45.9,
+        "edge": 0.125,
+        "w": 1488,
+        "h": 460
+      },
+      "traffic": {
+        "maskN": 137457,
+        "sat": 0.75,
+        "lum": 59.7,
+        "lumStd": 44.5,
+        "edge": 0.113,
+        "w": 1278,
+        "h": 460
+      },
+      "satRatio": 1.03,
+      "lumRatio": 0.97,
+      "edgeRatio": 0.9,
+      "silverExtra": -2,
+      "verdict": {
+        "ok": true,
+        "farLod": false,
+        "reasons": []
+      },
+      "file": "close-side.png"
+    },
+    {
+      "id": "three",
+      "range": "close",
+      "dist": 13,
+      "iou": 0.271,
+      "sourcePx": 480,
+      "displayed": 349,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 0,
+      "trafficBlobs": 0,
+      "player": {
+        "maskN": 64301,
+        "sat": 0.768,
+        "lum": 48.4,
+        "lumStd": 40.9,
+        "edge": 0.105,
+        "w": 814,
+        "h": 460
+      },
+      "traffic": {
+        "maskN": 50361,
+        "sat": 0.761,
+        "lum": 47.1,
+        "lumStd": 39.3,
+        "edge": 0.111,
+        "w": 728,
+        "h": 460
+      },
+      "satRatio": 0.99,
+      "lumRatio": 0.96,
+      "edgeRatio": 1.06,
+      "silverExtra": 0,
+      "verdict": {
+        "ok": false,
+        "farLod": false,
+        "reasons": [
+          "Silhouette does not match his Z (IoU 0.27)."
+        ]
+      },
+      "file": "close-three.png"
+    },
+    {
+      "id": "rear",
+      "range": "far",
+      "dist": 260,
+      "iou": 0.724,
+      "sourcePx": 480,
+      "displayed": 17,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 6,
+      "trafficBlobs": 3,
+      "player": {
+        "maskN": 71186,
+        "sat": 0.655,
+        "lum": 71.6,
+        "lumStd": 69.2,
+        "edge": 0.05,
+        "w": 579,
+        "h": 420
+      },
+      "traffic": {
+        "maskN": 114324,
+        "sat": 0.68,
+        "lum": 56.2,
+        "lumStd": 47.8,
+        "edge": 0.018,
+        "w": 768,
+        "h": 420
+      },
+      "verdict": {
+        "ok": true,
+        "farLod": true,
+        "reasons": [
+          "Far LOD. A simpler shape is allowed past the close range."
+        ]
+      },
+      "file": "far-rear.png"
+    },
+    {
+      "id": "front",
+      "range": "far",
+      "dist": 260,
+      "iou": 0.752,
+      "sourcePx": 480,
+      "displayed": 17,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 4,
+      "trafficBlobs": 2,
+      "player": {
+        "maskN": 72629,
+        "sat": 0.642,
+        "lum": 78.3,
+        "lumStd": 74.8,
+        "edge": 0.048,
+        "w": 579,
+        "h": 420
+      },
+      "traffic": {
+        "maskN": 114969,
+        "sat": 0.678,
+        "lum": 56,
+        "lumStd": 47.5,
+        "edge": 0.018,
+        "w": 768,
+        "h": 420
+      },
+      "verdict": {
+        "ok": true,
+        "farLod": true,
+        "reasons": [
+          "Far LOD. A simpler shape is allowed past the close range."
+        ]
+      },
+      "file": "far-front.png"
+    },
+    {
+      "id": "side",
+      "range": "far",
+      "dist": 260,
+      "iou": 0.627,
+      "sourcePx": 480,
+      "displayed": 17,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 6,
+      "trafficBlobs": 1,
+      "player": {
+        "maskN": 93383,
+        "sat": 0.631,
+        "lum": 83.5,
+        "lumStd": 63.8,
+        "edge": 0.062,
+        "w": 700,
+        "h": 420
+      },
+      "traffic": {
+        "maskN": 140803,
+        "sat": 0.648,
+        "lum": 67.1,
+        "lumStd": 59.7,
+        "edge": 0.022,
+        "w": 871,
+        "h": 420
+      },
+      "verdict": {
+        "ok": true,
+        "farLod": true,
+        "reasons": [
+          "Far LOD. A simpler shape is allowed past the close range."
+        ]
+      },
+      "file": "far-side.png"
+    },
+    {
+      "id": "three",
+      "range": "far",
+      "dist": 280,
+      "iou": 0.338,
+      "sourcePx": 480,
+      "displayed": 16,
+      "tunePx": 480,
+      "playerPx": 0,
+      "usesSprite": true,
+      "tinyWheelDraws": 0,
+      "wheelDecal": false,
+      "playerBlobs": 7,
+      "trafficBlobs": 2,
+      "player": {
+        "maskN": 60391,
+        "sat": 0.623,
+        "lum": 85.1,
+        "lumStd": 67.9,
+        "edge": 0.073,
+        "w": 656,
+        "h": 420
+      },
+      "traffic": {
+        "maskN": 67925,
+        "sat": 0.652,
+        "lum": 62,
+        "lumStd": 45.5,
+        "edge": 0.023,
+        "w": 630,
+        "h": 420
+      },
+      "verdict": {
+        "ok": true,
+        "farLod": true,
+        "reasons": [
+          "Far LOD. A simpler shape is allowed past the close range."
+        ]
+      },
+      "file": "far-three.png"
+    }
+  ],
+  "fps": {
+    "bakeMs": 1430,
+    "on": 321.2,
+    "off": 304.2,
+    "delta": 17,
+    "samplesOn": [
+      317.5,
+      319.5,
+      321.2,
+      330.4,
+      331
+    ],
+    "samplesOff": [
+      286.5,
+      299.7,
+      304.2,
+      311.4,
+      314.4
+    ],
+    "alive": 12,
+    "noise": 27.9
+  },
+  "gl": "WebKit WebGL / WebKit",
+  "boot": {
+    "ok": true,
+    "errors": [],
+    "gl": "WebKit WebGL / WebKit",
+    "source": {
+      "ok": true,
+      "reasons": [],
+      "file": "assets/370z.glb",
+      "source": "glb",
+      "bytesha": "fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf",
+      "embedSha": "fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf",
+      "creditSha": "fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf",
+      "script": "shared/assets/370z-glb.js",
+      "bytes": 1800836,
+      "playerVerts": 34275,
+      "cloneVerts": 0,
+      "sharedGeom": 0,
+      "fetched": []
+    },
+    "cloned": 66,
+    "cars": 30,
+    "flags": {
+      "tunePx": 480,
+      "fullDist": 150,
+      "boxDist": 400
+    },
+    "playerPaint": ""
+  },
+  "source": {
+    "script": "shared/assets/370z-glb.js",
+    "file": "assets/370z.glb",
+    "bytes": 1800836,
+    "bytesha": "fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf",
+    "runtime": {
+      "ok": true,
+      "reasons": [],
+      "file": "assets/370z.glb",
+      "source": "glb",
+      "bytesha": "fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf",
+      "embedSha": "fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf",
+      "creditSha": "fdba257f6422e0bb3c4a4f0d2eb874c29a959b56cd90fced549ed4fe5b03e5bf",
+      "script": "shared/assets/370z-glb.js",
+      "bytes": 1800836,
+      "playerVerts": 34275,
+      "cloneVerts": 0,
+      "sharedGeom": 0,
+      "fetched": []
+    }
+  },
+  "static": {
+    "spritePx": 480,
+    "usesCloseSprite": true,
+    "wheelDecal": false,
+    "wheelPx": 0
+  },
+  "shotNotes": [
+    "- `close-rear.png` close rear — FAIL",
+    "- `close-front.png` close front — pass",
+    "- `close-side.png` close side — pass",
+    "- `close-three.png` close three — FAIL",
+    "- `far-rear.png` far rear — pass",
+    "- `far-front.png` far front — pass",
+    "- `far-side.png` far side — pass",
+    "- `far-three.png` far three — pass"
+  ]
+}

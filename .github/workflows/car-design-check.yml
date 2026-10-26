@@ -1,0 +1,127 @@
+name: CAR-DESIGN-CHECK
+
+on:
+  pull_request:
+    paths:
+      - 'world/traffic.js'
+      - 'shared/traffic-tune.js'
+      - 'shared/car-draw.js'
+      - 'shared/car-model.js'
+      - 'shared/car-wire.js'
+      - 'shared/zd-embed.js'
+      - 'shared/assets/370z-glb.js'
+      - 'neon-paint.html'
+      - 'world/garage.js'
+      - 'world/garagez.js'
+      - 'world/neon-paint.js'
+      - 'world.html'
+      - 'world-split.html'
+      - 'docs/CAR-DESIGN-CHECK.md'
+      - 'tools/car-design-check.mjs'
+      - 'tools/car-design-browser.js'
+      - '.github/workflows/car-design-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: car-design-check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  car-design-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Chrome
+        id: chrome
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "path=$(command -v google-chrome)" >> "$GITHUB_OUTPUT"
+          else
+            sudo apt-get update
+            wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+            sudo apt-get install -y /tmp/chrome.deb || sudo apt-get -f install -y
+            echo "path=$(command -v google-chrome)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Review the 370Z and its copies
+        id: review
+        env:
+          CHROME: ${{ steps.chrome.outputs.path }}
+        run: |
+          set +e
+          node tools/car-design-check.mjs --review --out test-results/car-design-check
+          code=$?
+          echo "exit=$code" >> "$GITHUB_OUTPUT"
+          if [ "$code" -eq 2 ]; then
+            exit 1
+          fi
+          exit 0
+
+      - name: Show verdict
+        if: always()
+        run: |
+          if [ -f test-results/car-design-check/comment.md ]; then
+            cat test-results/car-design-check/comment.md
+          else
+            echo "CAR-DESIGN-CHECK produced no comment. The checker did not finish."
+            exit 1
+          fi
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: car-design-check
+          path: test-results/car-design-check
+          if-no-files-found: warn
+
+      - name: Post CAR-DESIGN-CHECK comment
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'test-results/car-design-check/comment.md';
+            if (!fs.existsSync(path)) {
+              core.warning('No CAR-DESIGN-CHECK comment file');
+              return;
+            }
+            const marker = '<!-- CAR-DESIGN-CHECK -->';
+            const body = fs.readFileSync(path, 'utf8');
+            if (!body.includes(marker)) {
+              core.warning('Comment file is missing the CAR-DESIGN-CHECK marker');
+              return;
+            }
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100
+            });
+            const existing = comments.find((c) => c.user && c.user.type === 'Bot' && c.body && c.body.includes(marker))
+              || comments.find((c) => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              });
+            }
