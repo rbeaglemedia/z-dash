@@ -1,0 +1,12 @@
+{
+  "note": "Headless Chrome, SwiftShader. Phone slot 844x390. The dashboard is jr.html. Neon World is a separate page (world.html), so its own loop does not include the dashboard. The benefit is that the menu you leave from is idle.",
+  "before_menu_over_live_dashboard": { "rafPerS": 51, "intervalFiresPerS": 38, "music": true },
+  "before_dashboard_open": { "rafPerS": 33, "intervalFiresPerS": 28, "music": true },
+  "before_neon_world_start_card": { "rafPerS": 17, "music": false },
+  "after_startup_menu": { "rafPerS": 0, "music": false, "sim": false, "idle": true, "shifts": 41 },
+  "after_dashboard_tile": { "rafPerS": 7.5, "music": true, "sim": true, "shifts": 41 },
+  "after_back": { "rafPerS": 0, "music": false, "sim": false, "shifts": 41, "savedShifts": 41 },
+  "after_neon_world": { "rafPerS": 0.3, "href": "/world.html", "music": false, "savedShifts": 41 },
+  "direct_neon_world_start_card": { "rafPerS": 2, "readyButton": true },
+  "save_shape": "zdash.kid.v1 still the existing profile object. shifts stayed 41 through open and back."
+}
