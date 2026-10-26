@@ -1,0 +1,175 @@
+{
+  "sha": "d4deed17ebf486969833138d8ed84c420746554d",
+  "page": "world.html",
+  "loaded": {
+    "href": "http://127.0.0.1:8791/world.html",
+    "ready": true,
+    "xray": true,
+    "boot": true,
+    "rs": "loading"
+  },
+  "shots": [
+    {
+      "id": "phone",
+      "probe": {
+        "err": null,
+        "ready": true,
+        "xray": true,
+        "noz": false,
+        "zgl": true,
+        "hasZV": true,
+        "lastPx": 240,
+        "frame": 4,
+        "scr": [
+          0.5,
+          0.5
+        ],
+        "W": 844,
+        "H": 390,
+        "flying": false,
+        "paused": true,
+        "px": 0,
+        "pz": 0,
+        "py": 0,
+        "sprite": {
+          "w": 480,
+          "h": 480,
+          "opaque": 656,
+          "colors": 136,
+          "step": 28
+        },
+        "css": {
+          "x": 422,
+          "y": 195,
+          "px": 240
+        },
+        "center": {
+          "opaque": 2304,
+          "colors": 241,
+          "cw": 1688,
+          "ch": 780
+        },
+        "rect": {
+          "w": 844,
+          "h": 390
+        },
+        "over": "none"
+      },
+      "box": {
+        "x": 140,
+        "y": 0,
+        "w": 564,
+        "h": 367
+      },
+      "spritePng": true
+    },
+    {
+      "id": "ipad",
+      "probe": {
+        "err": null,
+        "ready": true,
+        "xray": true,
+        "noz": false,
+        "zgl": true,
+        "hasZV": true,
+        "lastPx": 512,
+        "frame": 22,
+        "scr": [
+          0.5,
+          0.5
+        ],
+        "W": 1180,
+        "H": 820,
+        "flying": false,
+        "paused": true,
+        "px": 0,
+        "pz": 0,
+        "py": 0,
+        "sprite": {
+          "w": 1024,
+          "h": 1024,
+          "opaque": 634,
+          "colors": 129,
+          "step": 131
+        },
+        "css": {
+          "x": 590,
+          "y": 410,
+          "px": 512
+        },
+        "center": {
+          "opaque": 2304,
+          "colors": 224,
+          "cw": 1180,
+          "ch": 820
+        },
+        "rect": {
+          "w": 1180,
+          "h": 820
+        },
+        "over": "none"
+      },
+      "box": {
+        "x": 47,
+        "y": 0,
+        "w": 1086,
+        "h": 771
+      },
+      "spritePng": true
+    },
+    {
+      "id": "pc",
+      "probe": {
+        "err": null,
+        "ready": true,
+        "xray": true,
+        "noz": false,
+        "zgl": true,
+        "hasZV": true,
+        "lastPx": 448,
+        "frame": 42,
+        "scr": [
+          0.5,
+          0.5
+        ],
+        "W": 1280,
+        "H": 720,
+        "flying": false,
+        "paused": true,
+        "px": 0,
+        "pz": 0,
+        "py": 0,
+        "sprite": {
+          "w": 448,
+          "h": 448,
+          "opaque": 638,
+          "colors": 140,
+          "step": 25
+        },
+        "css": {
+          "x": 683,
+          "y": 384,
+          "px": 477.8666666666667
+        },
+        "center": {
+          "opaque": 2304,
+          "colors": 271,
+          "cw": 1280,
+          "ch": 720
+        },
+        "rect": {
+          "w": 1366,
+          "h": 768
+        },
+        "over": "none"
+      },
+      "box": {
+        "x": 122,
+        "y": 0,
+        "w": 1123,
+        "h": 722
+      },
+      "spritePng": true
+    }
+  ]
+}

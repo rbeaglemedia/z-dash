@@ -1,0 +1,2242 @@
+{
+  "base": "origin/main",
+  "reports": [
+    {
+      "pr": 88,
+      "title": "Add the kid-app integration map and checker",
+      "branch": "origin/cursor/integration-check-b88c",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/88",
+      "agent": "",
+      "systems": [],
+      "gaps": [],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 87,
+      "title": "Room hook for placed furniture and screens",
+      "branch": "origin/cursor/room-place-hook-52fc",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/87",
+      "agent": "Neon World Interiors",
+      "systems": [
+        "planner",
+        "interiors"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "query-version",
+          "system": "cache",
+          "summary": "Script ?v= does not match ZD_WORLD 30",
+          "owner": "Neon World Interiors (`cursor/room-place-hook-52fc`, PR #87)",
+          "ownerId": "self",
+          "detail": "world.html / world-split.html advertise ?v=30, 33 while shared/version.js ZD_WORLD is 30. One token has to win, and it has to be the cache build."
+        },
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Neon World Interiors (`cursor/room-place-hook-52fc`, PR #87)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (world-split.html, world.html, world/house.js, world/planner-props.js, world/style-sampler.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": true,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 86,
+      "title": "Minimap follows the boulevard city layout",
+      "branch": "origin/cursor/minimap-boulevards-f039",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/86",
+      "agent": "Neon World minimap (split-map)",
+      "systems": [
+        "cache",
+        "layout",
+        "minimap"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "test-mirror",
+          "system": "pages",
+          "summary": "Hidden /test preview does not load world/city-layout.js",
+          "owner": "Neon World minimap (split-map) (`cursor/minimap-boulevards-f039`, PR #86)",
+          "ownerId": "self",
+          "detail": "test/world.html and test/world-split.html do not reference world/city-layout.js. The JR preview and the live JR page would disagree."
+        },
+        {
+          "severity": "gap",
+          "id": "query-version",
+          "system": "cache",
+          "summary": "Script ?v= does not match ZD_WORLD 31",
+          "owner": "Neon World minimap (split-map) (`cursor/minimap-boulevards-f039`, PR #86)",
+          "ownerId": "self",
+          "detail": "world.html / world-split.html advertise ?v=30, 31 while shared/version.js ZD_WORLD is 31. One token has to win, and it has to be the cache build."
+        },
+        {
+          "severity": "gap",
+          "id": "layout-minimap-span",
+          "system": "minimap",
+          "summary": "Minimap zoom span was not updated for the new city size",
+          "owner": "Neon World minimap (split-map) (`split-map`, PR #37)",
+          "ownerId": "minimap",
+          "detail": "world/hud.js changed with the layout, and shared/minimap-tune.js did not. spanFar is still 3400 m. Option 1 runs past that (highway to z 3000, track to x -1620, homestead south of z -660), so the altitude map crops the city. Neon World minimap (split-map) (`split-map`, PR #37) owns that tune file."
+        },
+        {
+          "severity": "gap",
+          "id": "weather",
+          "system": "weather",
+          "summary": "Weather bands are stored and nothing draws them",
+          "owner": "No weather agent yet",
+          "ownerId": "weather",
+          "detail": "The layout data lists Sand, Fog, and Rain rectangles and marks them not built. There is no world/weather.js and no weather branch. Air physics, the minimap, and traffic have no weather hook yet. No agent owns this."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": true
+      }
+    },
+    {
+      "pr": 85,
+      "title": "Option 1 boulevards, NOS stations, and a fresh minimap",
+      "branch": "origin/cursor/city-boulevards-ef23",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/85",
+      "agent": "Neon world city layout plan",
+      "systems": [
+        "soccer",
+        "cache",
+        "layout",
+        "interiors",
+        "minimap",
+        "buttons",
+        "nos",
+        "resume",
+        "traffic"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "test-mirror",
+          "system": "pages",
+          "summary": "Hidden /test preview does not load world/city-layout.js, world/gl-city.js, world/nos-station.js, world/resume-safe.js",
+          "owner": "Neon world city layout plan (`cursor/city-boulevards-ef23`, PR #85)",
+          "ownerId": "self",
+          "detail": "test/world.html and test/world-split.html do not reference world/city-layout.js, world/gl-city.js, world/nos-station.js, world/resume-safe.js. The JR preview and the live JR page would disagree."
+        },
+        {
+          "severity": "gap",
+          "id": "adult-index",
+          "system": "pages",
+          "summary": "Adult index.html was edited",
+          "owner": "Neon world city layout plan (`cursor/city-boulevards-ef23`, PR #85)",
+          "ownerId": "self",
+          "detail": "Kid App work does not change adult index.html. The kid build stamp lives in shared/version.js. Revert the adult page unless Bob has already accepted that hunk."
+        },
+        {
+          "severity": "gap",
+          "id": "layout-minimap-span",
+          "system": "minimap",
+          "summary": "Minimap zoom span was not updated for the new city size",
+          "owner": "Neon World minimap (split-map) (`split-map`, PR #37)",
+          "ownerId": "minimap",
+          "detail": "world/hud.js changed with the layout, and shared/minimap-tune.js did not. spanFar is still 3400 m. Option 1 runs past that (highway to z 3000, track to x -1620, homestead south of z -660), so the altitude map crops the city. Neon World minimap (split-map) (`split-map`, PR #37) owns that tune file."
+        },
+        {
+          "severity": "gap",
+          "id": "weather",
+          "system": "weather",
+          "summary": "Weather bands are stored and nothing draws them",
+          "owner": "No weather agent yet",
+          "ownerId": "weather",
+          "detail": "The layout data lists Sand, Fog, and Rain rectangles and marks them not built. There is no world/weather.js and no weather branch. Air physics, the minimap, and traffic have no weather hook yet. No agent owns this."
+        }
+      ],
+      "notes": [
+        "Traffic lanes rebuild from CITY.ROADS on the next page load. They do not refresh mid-session (no roadsSig). That is enough for a full reload and not enough for builder-mode road edits.",
+        "Hot Drop still uses CITY.ROADS, so the beacon follows the new streets without a second coordinate list.",
+        "Both world pages must gain any new script together. Adult index.html stays untouched."
+      ],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": true,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": true,
+        "bumped": true
+      }
+    },
+    {
+      "pr": 84,
+      "title": "Add the 370Z design check",
+      "branch": "origin/cursor/car-design-check-f3d2",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/84",
+      "agent": "",
+      "systems": [],
+      "gaps": [],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 83,
+      "title": "Keep adult driver code off the Kid App menu and settings",
+      "branch": "origin/cursor/kid-lazy-driver-9e5c",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/83",
+      "agent": "",
+      "systems": [],
+      "gaps": [],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 82,
+      "title": "Planner port plan and stand-in proof",
+      "branch": "origin/cursor/planner-port-plan-cbd5",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/82",
+      "agent": "Planner Port: Builder Mode + Props",
+      "systems": [
+        "planner"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "frozen-world",
+          "system": "pages",
+          "summary": "Builders, building redesigns, or a city redesign belong on a new world page",
+          "owner": "Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82)",
+          "ownerId": "self",
+          "detail": "After the Option 1 Boulevards bundle, world.html and world-split.html take bug fixes, FPS fixes, Ellie's interiors, and the planner drop-objects placement tool. This PR adds builders and building redesign. This branch does not add the new page yet, so that part still points at the frozen Neon World. Build that part on a new world page, and keep Ellie's shared save keys (zdash.kid.v1, zdash.house.v1, zdash.char.v1, zdash.pet.v1, zdash.crew.v1, zdash.neonpaint.v1, zdash_vinyls_v1, zdash_neon_paint_v1, zdash_garage_v1, zdash_paint3d_v1, zdash.customdance.v1, zdash.petdance.v1)."
+        },
+        {
+          "severity": "gap",
+          "id": "catalog",
+          "system": "planner",
+          "summary": "Interiors and props do not use the shared catalog",
+          "owner": "Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+          "ownerId": "interiors",
+          "detail": "The prop list is on this branch and world/house.js, world/detail.js, world/walk-items.js, world/style-sampler.js do not reference PROP-CATALOG or PLANNER_PROPS. Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) must place from that catalog. Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82) keeps it the only list."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 81,
+      "title": "Style sampler: eight rooms, furnished from the planner catalog",
+      "branch": "origin/cursor/style-sampler-52fc",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/81",
+      "agent": "Neon World Interiors",
+      "systems": [
+        "interiors"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "query-version",
+          "system": "cache",
+          "summary": "Script ?v= does not match ZD_WORLD 30",
+          "owner": "Neon World Interiors (`cursor/style-sampler-52fc`, PR #81)",
+          "ownerId": "self",
+          "detail": "world.html / world-split.html advertise ?v=30, 31 while shared/version.js ZD_WORLD is 30. One token has to win, and it has to be the cache build."
+        },
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Neon World Interiors (`cursor/style-sampler-52fc`, PR #81)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (world-split.html, world.html, world/house.js, world/style-sampler.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        },
+        {
+          "severity": "gap",
+          "id": "catalog",
+          "system": "interiors",
+          "summary": "Interiors do not use the shared prop catalog",
+          "owner": "Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+          "ownerId": "interiors",
+          "detail": "This branch changes interiors or walk-in props and does not reference docs/planner/PROP-CATALOG.json. Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82) owns the catalog (PR #82). Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) has to place sofas, counters, and kit pieces from it instead of a second size list."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 80,
+      "title": "Idle Kid App Spotify, OBD, and cross-app links on /test/",
+      "branch": "origin/cursor/kid-idle-net-9e5c",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/80",
+      "agent": "",
+      "systems": [],
+      "gaps": [],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 79,
+      "title": "Save Ellie's Neon World spot so she can resume a challenge",
+      "branch": "origin/cursor/world-save-resume-b8a9",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/79",
+      "agent": "Neon World Save & Resume",
+      "systems": [
+        "resume",
+        "layout",
+        "minimap",
+        "paint",
+        "objectives"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "test-mirror",
+          "system": "pages",
+          "summary": "Hidden /test preview does not load world/resume.js",
+          "owner": "Neon World Save & Resume (`cursor/world-save-resume-b8a9`, PR #79)",
+          "ownerId": "self",
+          "detail": "test/world.html and test/world-split.html do not reference world/resume.js. The JR preview and the live JR page would disagree."
+        },
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Neon World Save & Resume (`cursor/world-save-resume-b8a9`, PR #79)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (world-split.html, world.html, world/boot.js, world/city.js, world/hud.js, world/icon-garage.js, world/objectives.js, world/resume.js, …) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": true,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 78,
+      "title": "Pose near traffic on the current photo",
+      "branch": "origin/cursor/traffic-option-b-2bdb",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/78",
+      "agent": "Neon World Traffic Physics",
+      "systems": [
+        "traffic"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "query-version",
+          "system": "cache",
+          "summary": "Script ?v= does not match ZD_WORLD 30",
+          "owner": "Neon World Traffic Physics (`cursor/traffic-option-b-2bdb`, PR #78)",
+          "ownerId": "self",
+          "detail": "world.html / world-split.html advertise ?v=30, 31 while shared/version.js ZD_WORLD is 30. One token has to win, and it has to be the cache build."
+        },
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Neon World Traffic Physics (`cursor/traffic-option-b-2bdb`, PR #78)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (shared/traffic-tune.js, world-split.html, world.html, world/traffic.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": true,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 77,
+      "title": "Open Garage Z and the dance stage from their buildings",
+      "branch": "origin/cursor/garage-dance-doors-0eec",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/77",
+      "agent": "Ellie's Neon Drawing agent",
+      "systems": [
+        "dance",
+        "paint",
+        "interiors",
+        "buttons"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "query-version",
+          "system": "cache",
+          "summary": "Script ?v= does not match ZD_WORLD 30",
+          "owner": "Ellie's Neon Drawing agent (`cursor/garage-dance-doors-0eec`, PR #77)",
+          "ownerId": "self",
+          "detail": "world.html / world-split.html advertise ?v=30, 32, 34, 31 while shared/version.js ZD_WORLD is 30. One token has to win, and it has to be the cache build."
+        },
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Ellie's Neon Drawing agent (`cursor/garage-dance-doors-0eec`, PR #77)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (dance-stage.html, jr.html, neon-paint.html, world-split.html, world.html, world/dance-stage.js, world/house.js, world/input.js, …) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 76,
+      "title": "NOS drive-up station — canopy, two pumps, claim at the pump",
+      "branch": "origin/cursor/nos-driveup-58d4",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/76",
+      "agent": "Neon World buildings glow WebGL",
+      "systems": [
+        "cache",
+        "nos",
+        "layout",
+        "interiors",
+        "buttons",
+        "traffic"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "both-pages",
+          "system": "pages",
+          "summary": "JR page and world-split load different scripts",
+          "owner": "Neon World buildings glow WebGL (`cursor/nos-driveup-58d4`, PR #76)",
+          "ownerId": "self",
+          "detail": "world.html is the page the JR menu opens. only on world-split.html: world/gl-city.js. Both pages have to load the same kid scripts."
+        },
+        {
+          "severity": "gap",
+          "id": "test-mirror",
+          "system": "pages",
+          "summary": "Hidden /test preview does not load world/gl-city.js, world/nos-station.js",
+          "owner": "Neon World buildings glow WebGL (`cursor/nos-driveup-58d4`, PR #76)",
+          "ownerId": "self",
+          "detail": "test/world.html and test/world-split.html do not reference world/gl-city.js, world/nos-station.js. The JR preview and the live JR page would disagree."
+        },
+        {
+          "severity": "gap",
+          "id": "adult-index",
+          "system": "pages",
+          "summary": "Adult index.html was edited",
+          "owner": "Neon World buildings glow WebGL (`cursor/nos-driveup-58d4`, PR #76)",
+          "ownerId": "self",
+          "detail": "Kid App work does not change adult index.html. The kid build stamp lives in shared/version.js. Revert the adult page unless Bob has already accepted that hunk."
+        },
+        {
+          "severity": "gap",
+          "id": "frozen-world",
+          "system": "pages",
+          "summary": "Builders, building redesigns, or a city redesign belong on a new world page",
+          "owner": "Neon World buildings glow WebGL (`cursor/nos-driveup-58d4`, PR #76)",
+          "ownerId": "self",
+          "detail": "After the Option 1 Boulevards bundle, world.html and world-split.html take bug fixes, FPS fixes, Ellie's interiors, and the planner drop-objects placement tool. This PR adds building redesign. This branch wires it into world.html and world-split.html. Take that part off the frozen pages. Build that part on a new world page, and keep Ellie's shared save keys (zdash.kid.v1, zdash.house.v1, zdash.char.v1, zdash.pet.v1, zdash.crew.v1, zdash.neonpaint.v1, zdash_vinyls_v1, zdash_neon_paint_v1, zdash_garage_v1, zdash_paint3d_v1, zdash.customdance.v1, zdash.petdance.v1)."
+        },
+        {
+          "severity": "follow",
+          "id": "resume-nos",
+          "system": "resume",
+          "summary": "Resume spots were not rechecked against the NOS pads",
+          "owner": "Neon World Save & Resume (`cursor/world-save-resume-b8a9`, PR #79)",
+          "ownerId": "resume",
+          "detail": "The station adds collision on NOS buildings. Resume is not on this branch. Neon World Save & Resume (`cursor/world-save-resume-b8a9`, PR #79) has to re-resolve saved spots (mapStamp / spotClear) so a car is not restored inside a pump."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": true
+      }
+    },
+    {
+      "pr": 75,
+      "title": "Give walking characters chest and back depth",
+      "branch": "origin/cursor/torso-depth-b5e7",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/75",
+      "agent": "Neon World character + pet",
+      "systems": [
+        "crew"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Neon World character + pet (`cursor/torso-depth-b5e7`, PR #75)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (world/crew.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 74,
+      "title": "Interiors plan: a daylight room and a glow-strip room for each walk-in",
+      "branch": "origin/cursor/interiors-plan-52fc",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/74",
+      "agent": "Neon World Interiors",
+      "systems": [
+        "interiors"
+      ],
+      "gaps": [
+        {
+          "severity": "before-build",
+          "id": "catalog",
+          "system": "interiors",
+          "summary": "Interiors do not use the shared prop catalog",
+          "owner": "Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+          "ownerId": "interiors",
+          "detail": "This branch changes interiors or walk-in props and does not reference docs/planner/PROP-CATALOG.json. Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82) owns the catalog (PR #82). Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) has to place sofas, counters, and kit pieces from it instead of a second size list."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 73,
+      "title": "Traffic plan: pose the sprite, do not clone the 3D car",
+      "branch": "origin/cursor/traffic-plan-2bdb",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/73",
+      "agent": "Neon World Traffic Physics",
+      "systems": [
+        "traffic"
+      ],
+      "gaps": [],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 72,
+      "title": "Kid App dashboard is its own menu tile",
+      "branch": "origin/cursor/dash-menu-tile-9e5c",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/72",
+      "agent": "",
+      "systems": [],
+      "gaps": [],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 71,
+      "title": "Open Neon Paint from its building and come back to the same world",
+      "branch": "origin/cursor/neon-paint-studio-door-0eec",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/71",
+      "agent": "Ellie's Neon Drawing agent",
+      "systems": [
+        "paint",
+        "interiors",
+        "buttons"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "query-version",
+          "system": "cache",
+          "summary": "Script ?v= does not match ZD_WORLD 30",
+          "owner": "Ellie's Neon Drawing agent (`cursor/neon-paint-studio-door-0eec`, PR #71)",
+          "ownerId": "self",
+          "detail": "world.html / world-split.html advertise ?v=30, 31 while shared/version.js ZD_WORLD is 30. One token has to win, and it has to be the cache build."
+        },
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Ellie's Neon Drawing agent (`cursor/neon-paint-studio-door-0eec`, PR #71)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (jr.html, neon-paint.html, world-split.html, world.html, world/house.js, world/input.js, world/neon-paint.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 70,
+      "title": "Show Ellie's House on the Home menu preview",
+      "branch": "origin/cursor/home-room-preview-aa6e",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/70",
+      "agent": "",
+      "systems": [
+        "crew",
+        "paint",
+        "interiors",
+        "buttons"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "test-mirror",
+          "system": "pages",
+          "summary": "Hidden /test preview does not load world/walk-items.js",
+          "owner": "Show Ellie's House on the Home menu preview (`cursor/home-room-preview-aa6e`, PR #70)",
+          "ownerId": "self",
+          "detail": "test/world.html and test/world-split.html do not reference world/walk-items.js. The JR preview and the live JR page would disagree."
+        },
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Show Ellie's House on the Home menu preview (`cursor/home-room-preview-aa6e`, PR #70)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (jr.html, world-split.html, world.html, world/crew.js, world/garage-pet.js, world/house.js, world/icon-garage.js, world/input.js, …) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        },
+        {
+          "severity": "gap",
+          "id": "catalog",
+          "system": "interiors",
+          "summary": "Interiors do not use the shared prop catalog",
+          "owner": "Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+          "ownerId": "interiors",
+          "detail": "This branch changes interiors or walk-in props and does not reference docs/planner/PROP-CATALOG.json. Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82) owns the catalog (PR #82). Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) has to place sofas, counters, and kit pieces from it instead of a second size list."
+        }
+      ],
+      "notes": [
+        "world/garage-pet.js loads from jr.html. It is a menu module, so the world pages do not need it.",
+        "world/room-preview.js loads from jr.html. It is a menu module, so the world pages do not need it."
+      ],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 69,
+      "title": "Record decided building modes and who builds each one",
+      "branch": "origin/cursor/building-sense-audit-652e",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/69",
+      "agent": "",
+      "systems": [],
+      "gaps": [],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 68,
+      "title": "Option 1 (Boulevards) is Bob's pick",
+      "branch": "origin/cursor/city-layout-plan-ef23",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/68",
+      "agent": "Neon world city layout plan",
+      "systems": [
+        "layout"
+      ],
+      "gaps": [
+        {
+          "severity": "before-build",
+          "id": "layout-interiors",
+          "system": "interiors",
+          "summary": "Walk-in rooms still follow today's duplicate shops",
+          "owner": "Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+          "ownerId": "interiors",
+          "detail": "Walk-in rooms still follow today's duplicate shops. Option 1 keeps one of each. Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) has to retarget doors when the blocks move. PR #85 already moves city doors (house.js). Room interiors are still this agent."
+        },
+        {
+          "severity": "before-build",
+          "id": "layout-catalog",
+          "system": "planner",
+          "summary": "City-kit pieces (welcome arch, garage bay, NOS canopy, sky pad, snack stand) are not in the shared prop catalog on this branch",
+          "owner": "Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82)",
+          "ownerId": "planner",
+          "detail": "City-kit pieces (welcome arch, garage bay, NOS canopy, sky pad, snack stand) are not in the shared prop catalog on this branch. Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82) owns docs/planner/PROP-CATALOG.json. Interiors must use that list. PR #85 does not reference the catalog either."
+        },
+        {
+          "severity": "before-build",
+          "id": "layout-dance",
+          "system": "dance",
+          "summary": "Option 1 has one dance building whose door opens the stage",
+          "owner": "Ellie's Dance Stage & Camera (`split-dance`, PR #39)",
+          "ownerId": "dance",
+          "detail": "Option 1 has one dance building whose door opens the stage. Ellie's Dance Stage & Camera (`split-dance`, PR #39) and the door branch PR #77 have to follow that single building."
+        },
+        {
+          "severity": "before-build",
+          "id": "layout-paint",
+          "system": "paint",
+          "summary": "Paint studio and Garage Z bays move to one studio and the homestead / kit bays",
+          "owner": "Ellie's Neon Drawing agent (`cursor/neon-paint-studio-door-0eec`, PR #71)",
+          "ownerId": "paint",
+          "detail": "Paint studio and Garage Z bays move to one studio and the homestead / kit bays. Ellie's Neon Drawing agent (`cursor/neon-paint-studio-door-0eec`, PR #71) (PR #71 and #77) has to keep WALK_PAGE and the session return key on the new doors."
+        },
+        {
+          "severity": "before-build",
+          "id": "layout-crew",
+          "system": "crew",
+          "summary": "The pet lounge becomes one homestead building",
+          "owner": "Neon World character + pet (`cursor/torso-depth-b5e7`, PR #75)",
+          "ownerId": "crew",
+          "detail": "The pet lounge becomes one homestead building. Neon World character + pet (`cursor/torso-depth-b5e7`, PR #75) does not need a new pet, and the home preview has to show the moved house."
+        },
+        {
+          "severity": "before-build",
+          "id": "layout-air",
+          "system": "air",
+          "summary": "The runway stays",
+          "owner": "Neon World Air & Flight Physics (`split-phys-air`, PR #45)",
+          "ownerId": "air",
+          "detail": "The runway stays. Sky Drop pads in the city kit still need world/landings.js heights if those pads move. Neon World Air & Flight Physics (`split-phys-air`, PR #45) confirms pads only."
+        },
+        {
+          "severity": "before-build",
+          "id": "layout-weather",
+          "system": "weather",
+          "summary": "The boulevards map hatches sand, fog, and rain",
+          "owner": "No weather agent yet",
+          "ownerId": "weather",
+          "detail": "The boulevards map hatches sand, fog, and rain. There is no world/weather.js and no weather branch. No agent owns it yet. When it appears it also touches air, the minimap, and traffic. PR #85 stores the rectangles and still does not draw them."
+        },
+        {
+          "id": "layout-minimap-span",
+          "severity": "follow",
+          "system": "minimap",
+          "summary": "Minimap zoom span was not updated for the new city size",
+          "owner": "Neon World minimap (split-map) (`split-map`, PR #37)",
+          "ownerId": "minimap",
+          "detail": "world/hud.js changed with the layout, and shared/minimap-tune.js did not. spanFar is still 3400 m. Option 1 runs past that (highway to z 3000, track to x -1620, homestead south of z -660), so the altitude map crops the city. Neon World minimap (split-map) (`split-map`, PR #37) owns that tune file. The layout build is PR #85."
+        },
+        {
+          "id": "layout-traffic",
+          "severity": "follow",
+          "system": "traffic",
+          "summary": "Boulevard roads are on PR #85; mid-session lane rebuild is still PR #78",
+          "owner": "Neon World Traffic Physics (`cursor/traffic-option-b-2bdb`, PR #78)",
+          "ownerId": "traffic",
+          "detail": "PR #85 reads CITY.ROADS, so a reload builds lanes. It has no roadsSig. Neon World Traffic Physics (`cursor/traffic-option-b-2bdb`, PR #78) owns that rebuild on PR #78."
+        },
+        {
+          "id": "test-mirror",
+          "severity": "follow",
+          "system": "pages",
+          "summary": "Hidden /test preview does not load world/city-layout.js, world/gl-city.js, world/nos-station.js, world/resume-safe.js",
+          "owner": "Neon world city layout plan (`cursor/city-boulevards-ef23`, PR #85)",
+          "ownerId": "self",
+          "detail": "test/world.html and test/world-split.html do not reference world/city-layout.js, world/gl-city.js, world/nos-station.js, world/resume-safe.js. The JR preview and the live JR page would disagree. Fix it on PR #85."
+        },
+        {
+          "id": "adult-index",
+          "severity": "follow",
+          "system": "pages",
+          "summary": "Adult index.html was edited",
+          "owner": "Neon world city layout plan (`cursor/city-boulevards-ef23`, PR #85)",
+          "ownerId": "self",
+          "detail": "Kid App work does not change adult index.html. The kid build stamp lives in shared/version.js. Revert the adult page unless Bob has already accepted that hunk. That edit is on PR #85."
+        }
+      ],
+      "notes": [
+        "PR #85 (cursor/city-boulevards-ef23) is the code build of this plan. Live pages, the minimap frame, the soccer center, NOS, the resume guard, and the cache bump are on that branch. What remains is listed below.",
+        "Hot Drop on this branch still derives its spot from CITY.ROADS. It does not need a coordinate edit inside the plan. It does need the roads themselves.",
+        "Both world pages must gain any new script together. Adult index.html stays untouched."
+      ],
+      "flags": {
+        "layoutPlan": true,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 67,
+      "title": "Neon World idea list for Ellie",
+      "branch": "origin/cursor/neon-world-ideas-6ec6",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/67",
+      "agent": "",
+      "systems": [],
+      "gaps": [],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 66,
+      "title": "Add an architecture check for Neon World buildings",
+      "branch": "origin/cursor/arch-check-652e",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/66",
+      "agent": "",
+      "systems": [],
+      "gaps": [],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 65,
+      "title": "Show the companion pet beside Ellie's Z on the garage turntable",
+      "branch": "origin/cursor/companion-pet-turntable-aa6e",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/65",
+      "agent": "",
+      "systems": [
+        "crew",
+        "paint",
+        "interiors",
+        "buttons"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "test-mirror",
+          "system": "pages",
+          "summary": "Hidden /test preview does not load world/walk-items.js",
+          "owner": "Show the companion pet beside Ellie's Z on the garage turntable (`cursor/companion-pet-turntable-aa6e`, PR #65)",
+          "ownerId": "self",
+          "detail": "test/world.html and test/world-split.html do not reference world/walk-items.js. The JR preview and the live JR page would disagree."
+        },
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Show the companion pet beside Ellie's Z on the garage turntable (`cursor/companion-pet-turntable-aa6e`, PR #65)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (jr.html, world-split.html, world.html, world/crew.js, world/garage-pet.js, world/house.js, world/icon-garage.js, world/input.js, …) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        },
+        {
+          "severity": "gap",
+          "id": "catalog",
+          "system": "interiors",
+          "summary": "Interiors do not use the shared prop catalog",
+          "owner": "Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+          "ownerId": "interiors",
+          "detail": "This branch changes interiors or walk-in props and does not reference docs/planner/PROP-CATALOG.json. Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82) owns the catalog (PR #82). Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) has to place sofas, counters, and kit pieces from it instead of a second size list."
+        }
+      ],
+      "notes": [
+        "world/garage-pet.js loads from jr.html. It is a menu module, so the world pages do not need it."
+      ],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 64,
+      "title": "Clamp the Neon World car buffer to the city budget",
+      "branch": "origin/cursor/neon-res-audit-2e8c",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/64",
+      "agent": "",
+      "systems": [
+        "dance",
+        "interiors",
+        "minimap",
+        "paint",
+        "traffic"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Clamp the Neon World car buffer to the city budget (`cursor/neon-res-audit-2e8c`, PR #64)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (shared/car-draw.js, shared/car-model.js, world-split.html, world.html, world/boot.js, world/camera.js, world/dance-stage.js, world/house.js, …) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 63,
+      "title": "Neon World speed plan and Z-DASH / JR separation plan",
+      "branch": "origin/cursor/speed-plan-3b68",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/63",
+      "agent": "",
+      "systems": [],
+      "gaps": [],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 62,
+      "title": "Add an advisory PERF-GUARD bench for Neon World",
+      "branch": "origin/cursor/perf-guard-a3ad",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/62",
+      "agent": "",
+      "systems": [],
+      "gaps": [],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 61,
+      "title": "Add a headless anatomy check for torso depth, walk, and scale",
+      "branch": "origin/cursor/anatomy-check-3de5",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/61",
+      "agent": "",
+      "systems": [],
+      "gaps": [],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 60,
+      "title": "Room prop sheet for Ellie's home",
+      "branch": "origin/cursor/prop-place-menu-aa6e",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/60",
+      "agent": "",
+      "systems": [
+        "crew",
+        "interiors",
+        "paint",
+        "buttons"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "test-mirror",
+          "system": "pages",
+          "summary": "Hidden /test preview does not load world/walk-items.js",
+          "owner": "Room prop sheet for Ellie's home (`cursor/prop-place-menu-aa6e`, PR #60)",
+          "ownerId": "self",
+          "detail": "test/world.html and test/world-split.html do not reference world/walk-items.js. The JR preview and the live JR page would disagree."
+        },
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Room prop sheet for Ellie's home (`cursor/prop-place-menu-aa6e`, PR #60)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (world-split.html, world.html, world/crew.js, world/house.js, world/icon-garage.js, world/input.js, world/walk-items.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        },
+        {
+          "severity": "gap",
+          "id": "catalog",
+          "system": "interiors",
+          "summary": "Interiors do not use the shared prop catalog",
+          "owner": "Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+          "ownerId": "interiors",
+          "detail": "This branch changes interiors or walk-in props and does not reference docs/planner/PROP-CATALOG.json. Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82) owns the catalog (PR #82). Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) has to place sofas, counters, and kit pieces from it instead of a second size list."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 59,
+      "title": "WebGL buildings — purpose designs, map still separate",
+      "branch": "origin/cursor/split-webgl-58d4",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/59",
+      "agent": "Neon World buildings glow WebGL",
+      "systems": [
+        "layout",
+        "traffic"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "both-pages",
+          "system": "pages",
+          "summary": "JR page and world-split load different scripts",
+          "owner": "Neon World buildings glow WebGL (`cursor/split-webgl-58d4`, PR #59)",
+          "ownerId": "self",
+          "detail": "world.html is the page the JR menu opens. only on world-split.html: world/gl-city.js. Both pages have to load the same kid scripts."
+        },
+        {
+          "severity": "gap",
+          "id": "test-mirror",
+          "system": "pages",
+          "summary": "Hidden /test preview does not load world/gl-city.js",
+          "owner": "Neon World buildings glow WebGL (`cursor/split-webgl-58d4`, PR #59)",
+          "ownerId": "self",
+          "detail": "test/world.html and test/world-split.html do not reference world/gl-city.js. The JR preview and the live JR page would disagree."
+        },
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Neon World buildings glow WebGL (`cursor/split-webgl-58d4`, PR #59)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (world-split.html, world/boot.js, world/camera.js, world/city-draw.js, world/gl-city-manifest.json, world/gl-city.js, world/traffic.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        },
+        {
+          "severity": "gap",
+          "id": "frozen-world",
+          "system": "pages",
+          "summary": "Builders, building redesigns, or a city redesign belong on a new world page",
+          "owner": "Neon World buildings glow WebGL (`cursor/split-webgl-58d4`, PR #59)",
+          "ownerId": "self",
+          "detail": "After the Option 1 Boulevards bundle, world.html and world-split.html take bug fixes, FPS fixes, Ellie's interiors, and the planner drop-objects placement tool. This PR adds building redesign. This branch wires it into world.html and world-split.html. Take that part off the frozen pages. Build that part on a new world page, and keep Ellie's shared save keys (zdash.kid.v1, zdash.house.v1, zdash.char.v1, zdash.pet.v1, zdash.crew.v1, zdash.neonpaint.v1, zdash_vinyls_v1, zdash_neon_paint_v1, zdash_garage_v1, zdash_paint3d_v1, zdash.customdance.v1, zdash.petdance.v1)."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 58,
+      "title": "Draw a jointed humanoid in a short closet",
+      "branch": "origin/cursor/avatar-closet-b5e7",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/58",
+      "agent": "",
+      "systems": [
+        "crew",
+        "paint"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Draw a jointed humanoid in a short closet (`cursor/avatar-closet-b5e7`, PR #58)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (char.html, crew.html, shared/char-closet.js, world-split.html, world.html, world/crew-data.js, world/crew.js, world/icon-garage.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 57,
+      "title": "Bright day rooms and a small walking item menu",
+      "branch": "origin/cursor/home-day-rooms-aa6e",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/57",
+      "agent": "",
+      "systems": [
+        "interiors",
+        "paint"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "test-mirror",
+          "system": "pages",
+          "summary": "Hidden /test preview does not load world/walk-items.js",
+          "owner": "Bright day rooms and a small walking item menu (`cursor/home-day-rooms-aa6e`, PR #57)",
+          "ownerId": "self",
+          "detail": "test/world.html and test/world-split.html do not reference world/walk-items.js. The JR preview and the live JR page would disagree."
+        },
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Bright day rooms and a small walking item menu (`cursor/home-day-rooms-aa6e`, PR #57)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (world-split.html, world.html, world/house.js, world/icon-garage.js, world/walk-items.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        },
+        {
+          "severity": "gap",
+          "id": "catalog",
+          "system": "interiors",
+          "summary": "Interiors do not use the shared prop catalog",
+          "owner": "Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+          "ownerId": "interiors",
+          "detail": "This branch changes interiors or walk-in props and does not reference docs/planner/PROP-CATALOG.json. Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82) owns the catalog (PR #82). Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81) has to place sofas, counters, and kit pieces from it instead of a second size list."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 56,
+      "title": "City warm-up, sprite pacing, and a Galaxy flicker detector",
+      "branch": "origin/cursor/ipad-fps-9e5c",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/56",
+      "agent": "",
+      "systems": [
+        "crew",
+        "layout",
+        "dance",
+        "interiors",
+        "minimap",
+        "buttons",
+        "paint",
+        "air",
+        "soccer",
+        "traffic"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "City warm-up, sprite pacing, and a Galaxy flicker detector (`cursor/ipad-fps-9e5c`, PR #56)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (jr.html, shared/car-draw.js, shared/char-closet.js, shared/ipad.js, world-split.html, world.html, world/boot.js, world/camera.js, …) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 55,
+      "title": "Pet recorder opens the back camera, with a flip button",
+      "branch": "origin/cursor/pet-back-camera-b5e7",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/55",
+      "agent": "",
+      "systems": [
+        "dance"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Pet recorder opens the back camera, with a flip button (`cursor/pet-back-camera-b5e7`, PR #55)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (world/dance-stage.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 54,
+      "title": "Record the improve-app compare as video with the live camera",
+      "branch": "origin/cursor/improve-clip-video-9767",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/54",
+      "agent": "",
+      "systems": [
+        "dance"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Record the improve-app compare as video with the live camera (`cursor/improve-clip-video-9767`, PR #54)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (dance-stage.html, world/dance-stage.js) and ZD_WORLD (?), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [
+        "world/dance-stage.js is already on world.html and world-split.html on main. This branch does not remove that tag."
+      ],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 53,
+      "title": "Stop a tow truck from pinning the Z",
+      "branch": "origin/split-traffic-collide",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/53",
+      "agent": "",
+      "systems": [
+        "cache",
+        "layout",
+        "traffic"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Stop a tow truck from pinning the Z (`split-traffic-collide`, PR #53)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (sw.js, world/city.js, world/towdrive.js) and ZD_WORLD (?), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 52,
+      "title": "Load interiors on entry, clip off-screen glow, and recover the phone FPS gap",
+      "branch": "origin/split-pc-fps",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/52",
+      "agent": "",
+      "systems": [
+        "layout",
+        "interiors",
+        "traffic"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Load interiors on entry, clip off-screen glow, and recover the phone FPS gap (`split-pc-fps`, PR #52)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (shared/car-draw.js, world/camera.js, world/city-draw.js, world/detail.js, world/house.js, world/traffic.js) and ZD_WORLD (?), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 51,
+      "title": "Notes: v28 building FPS baseline, proof not built",
+      "branch": "origin/bldg-fps-proof",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/51",
+      "agent": "",
+      "systems": [],
+      "gaps": [],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 50,
+      "title": "Finish the JR main menu and center kid menu tiles",
+      "branch": "origin/split-menus",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/50",
+      "agent": "",
+      "systems": [
+        "crew",
+        "dance",
+        "paint"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Finish the JR main menu and center kid menu tiles (`split-menus`, PR #50)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (crew.html, dance-stage.html, fly3.html, jr.html, neon-paint.html, shared/menu-tiles.css, world-split.html, world.html, …) and ZD_WORLD (?), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        },
+        {
+          "severity": "gap",
+          "id": "adult-index",
+          "system": "pages",
+          "summary": "Adult index.html was edited",
+          "owner": "Finish the JR main menu and center kid menu tiles (`split-menus`, PR #50)",
+          "ownerId": "self",
+          "detail": "Kid App work does not change adult index.html. The kid build stamp lives in shared/version.js. Revert the adult page unless Bob has already accepted that hunk."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 49,
+      "title": "Keep the installed app full screen across kid pages",
+      "branch": "origin/split-polish",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/49",
+      "agent": "",
+      "systems": [
+        "crew",
+        "dance",
+        "paint",
+        "cache",
+        "interiors",
+        "buttons"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Keep the installed app full screen across kid pages (`split-polish`, PR #49)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (char.html, crew.html, dance-stage.html, fly3.html, garage-hub.html, jr.html, manifest-jr.webmanifest, neon-paint.html, …) and ZD_WORLD (?), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        },
+        {
+          "severity": "gap",
+          "id": "adult-index",
+          "system": "pages",
+          "summary": "Adult index.html was edited",
+          "owner": "Keep the installed app full screen across kid pages (`split-polish`, PR #49)",
+          "ownerId": "self",
+          "detail": "Kid App work does not change adult index.html. The kid build stamp lives in shared/version.js. Revert the adult page unless Bob has already accepted that hunk."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 45,
+      "title": "Remove the NOS exhaust sparks",
+      "branch": "origin/split-phys-air",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/45",
+      "agent": "Neon World Air & Flight Physics",
+      "systems": [
+        "air"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Neon World Air & Flight Physics (`split-phys-air`, PR #45)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (world/phys-ground.js) and ZD_WORLD (?), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 44,
+      "title": "Wings color follows drive mode (held, not deployed)",
+      "branch": "origin/split-buttons",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/44",
+      "agent": "Neon World In-Game Buttons & Controls",
+      "systems": [
+        "cache",
+        "buttons"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Neon World In-Game Buttons & Controls (`split-buttons`, PR #44)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (sw.js, world-split.html, world.html, world/input.js) and ZD_WORLD (?), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 43,
+      "title": "Stop brake marks the instant BRAKE is released",
+      "branch": "origin/split-ebrake",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/43",
+      "agent": "",
+      "systems": [
+        "buttons"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Stop brake marks the instant BRAKE is released (`split-ebrake`, PR #43)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (world/input.js) and ZD_WORLD (30), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 39,
+      "title": "Z Company Arts neon dance stage and camera mo-cap",
+      "branch": "origin/split-dance",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/39",
+      "agent": "Ellie's Dance Stage & Camera",
+      "systems": [
+        "dance"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Ellie's Dance Stage & Camera (`split-dance`, PR #39)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (dance-stage.html, world/dance-stage.js) and ZD_WORLD (?), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [
+        "world/dance-stage.js is already on world.html and world-split.html on main. This branch does not remove that tag."
+      ],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 38,
+      "title": "Enter and exit buildings from the top bar",
+      "branch": "origin/split-walk-cam",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/38",
+      "agent": "",
+      "systems": [
+        "interiors"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Enter and exit buildings from the top bar (`split-walk-cam`, PR #38)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (world/house.js) and ZD_WORLD (?), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        },
+        {
+          "severity": "gap",
+          "id": "buttons",
+          "system": "buttons",
+          "summary": "New claim or door has no button or pause-menu update",
+          "owner": "Neon World In-Game Buttons & Controls (`split-buttons`, PR #44)",
+          "ownerId": "buttons",
+          "detail": "A NOS claim, resume entry, or building door was added without world/input.js, world/hud.js, or world/icon-garage.js. Neon World In-Game Buttons & Controls (`split-buttons`, PR #44) or this branch has to add the control."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 37,
+      "title": "Minimap: builder zone, walker, and giant dome stadium",
+      "branch": "origin/split-map",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/37",
+      "agent": "Neon World minimap (split-map)",
+      "systems": [
+        "minimap"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Neon World minimap (split-map) (`split-map`, PR #37)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (world/hud.js) and ZD_WORLD (?), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 36,
+      "title": "Speed-gate neon detail and keep pad streets clear",
+      "branch": "origin/split-detail",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/36",
+      "agent": "",
+      "systems": [
+        "cache",
+        "interiors"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Speed-gate neon detail and keep pad streets clear (`split-detail`, PR #36)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (shared/detail-tune.js, sw.js, world/detail.js) and ZD_WORLD (?), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 35,
+      "title": "Traffic physics: toned-down Z cornering and ramp launches",
+      "branch": "origin/split-traffic",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/35",
+      "agent": "",
+      "systems": [
+        "traffic"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Traffic physics: toned-down Z cornering and ramp launches (`split-traffic`, PR #35)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (shared/traffic-tune.js, world/traffic.js) and ZD_WORLD (?), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 34,
+      "title": "Mount facade signs and add side and rear parking",
+      "branch": "origin/split-stunts",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/34",
+      "agent": "",
+      "systems": [
+        "layout"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Mount facade signs and add side and rear parking (`split-stunts`, PR #34)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (world/city-draw.js, world/city.js, world/ramps.js) and ZD_WORLD (?), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        },
+        {
+          "severity": "gap",
+          "id": "layout-minimap",
+          "system": "minimap",
+          "summary": "City blocks moved and the minimap was not updated",
+          "owner": "Neon World minimap (split-map) (`split-map`, PR #37)",
+          "ownerId": "minimap",
+          "detail": "world/city.js geometry changed. The minimap reads CITY.ROADS for streets, and it also hardcodes MINI bounds, spanFar, the airport dot, and the soccer dome. Neon World minimap (split-map) (`split-map`, PR #37) has to confirm those against the new map."
+        },
+        {
+          "severity": "gap",
+          "id": "layout-resume",
+          "system": "resume",
+          "summary": "Moved city can restore a Resume save inside a wall",
+          "owner": "Neon World Save & Resume (`cursor/world-save-resume-b8a9`, PR #79)",
+          "ownerId": "resume",
+          "detail": "Building or road coordinates changed and this branch has no mapStamp + spotClear resume guard. Neon World Save & Resume (`cursor/world-save-resume-b8a9`, PR #79) has to reject a saved spot that fails CITY.probe and snap to the district or road anchor."
+        }
+      ],
+      "notes": [
+        "Traffic lanes rebuild from CITY.ROADS on the next page load. They do not refresh mid-session (no roadsSig). That is enough for a full reload and not enough for builder-mode road edits.",
+        "Hot Drop still uses CITY.ROADS, so the beacon follows the new streets without a second coordinate list.",
+        "Both world pages must gain any new script together. Adult index.html stays untouched."
+      ],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": true,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    },
+    {
+      "pr": 17,
+      "title": "Build a dome stadium and west tunnel around the bigger pitch",
+      "branch": "origin/split-soccer",
+      "url": "https://github.com/rbeaglemedia/z-dash/pull/17",
+      "agent": "Neon World car soccer field",
+      "systems": [
+        "soccer"
+      ],
+      "gaps": [
+        {
+          "severity": "gap",
+          "id": "cache",
+          "system": "cache",
+          "summary": "Cache version was not bumped",
+          "owner": "Neon World car soccer field (`split-soccer`, PR #17)",
+          "ownerId": "self",
+          "detail": "Kid runtime changed (shared/soccer-tune.js, world/soccer.js) and ZD_WORLD (?), ZD_BUILD_STAMP, and the sw.js VERSION line match main. Bump shared/version.js so world-split-v and the zdash- cache names move."
+        },
+        {
+          "severity": "gap",
+          "id": "minimap-soccer",
+          "system": "minimap",
+          "summary": "Soccer field moved and the minimap fallback did not",
+          "owner": "Neon World minimap (split-map) (`split-map`, PR #37)",
+          "ownerId": "minimap",
+          "detail": "shared/soccer-tune.js field center or size changed. world/hud.js still falls back to the dome at (830, 300) when SOCCER.field is missing. Neon World minimap (split-map) (`split-map`, PR #37) has to match the new pitch."
+        }
+      ],
+      "notes": [],
+      "flags": {
+        "layoutPlan": false,
+        "layoutGeometry": false,
+        "trafficRebuild": false,
+        "catalogUsed": false,
+        "resumeGuard": false,
+        "bumped": false
+      }
+    }
+  ],
+  "rows": [
+    {
+      "pr": 88,
+      "title": "Add the kid-app integration map and checker",
+      "gaps": "none",
+      "owner": "—",
+      "gapCount": 0,
+      "nowCount": 0
+    },
+    {
+      "pr": 87,
+      "title": "Room hook for placed furniture and screens",
+      "gaps": "Script ?v= does not match ZD_WORLD 30; Cache version was not bumped",
+      "owner": "Neon World Interiors (`cursor/room-place-hook-52fc`, PR #87)",
+      "gapCount": 2,
+      "nowCount": 2
+    },
+    {
+      "pr": 86,
+      "title": "Minimap follows the boulevard city layout",
+      "gaps": "Hidden /test preview does not load world/city-layout.js; Script ?v= does not match ZD_WORLD 31; Minimap zoom span was not updated for the new city size; Weather bands are stored and nothing draws them",
+      "owner": "Neon World minimap (split-map) (`cursor/minimap-boulevards-f039`, PR #86); Neon World minimap (split-map) (`split-map`, PR #37); No weather agent yet",
+      "gapCount": 4,
+      "nowCount": 4
+    },
+    {
+      "pr": 85,
+      "title": "Option 1 boulevards, NOS stations, and a fresh minimap",
+      "gaps": "Hidden /test preview does not load world/city-layout.js, world/gl-city.js, world/nos-station.js, world/resume-safe.js; Adult index.html was edited; Minimap zoom span was not updated for the new city size; Weather bands are stored and nothing draws them",
+      "owner": "Neon world city layout plan (`cursor/city-boulevards-ef23`, PR #85); Neon World minimap (split-map) (`split-map`, PR #37); No weather agent yet",
+      "gapCount": 4,
+      "nowCount": 4
+    },
+    {
+      "pr": 84,
+      "title": "Add the 370Z design check",
+      "gaps": "none",
+      "owner": "—",
+      "gapCount": 0,
+      "nowCount": 0
+    },
+    {
+      "pr": 83,
+      "title": "Keep adult driver code off the Kid App menu and settings",
+      "gaps": "none",
+      "owner": "—",
+      "gapCount": 0,
+      "nowCount": 0
+    },
+    {
+      "pr": 82,
+      "title": "Planner port plan and stand-in proof",
+      "gaps": "Builders, building redesigns, or a city redesign belong on a new world page; Interiors and props do not use the shared catalog",
+      "owner": "Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82); Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+      "gapCount": 2,
+      "nowCount": 2
+    },
+    {
+      "pr": 81,
+      "title": "Style sampler: eight rooms, furnished from the planner catalog",
+      "gaps": "Script ?v= does not match ZD_WORLD 30; Cache version was not bumped; Interiors do not use the shared prop catalog",
+      "owner": "Neon World Interiors (`cursor/style-sampler-52fc`, PR #81); Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+      "gapCount": 3,
+      "nowCount": 3
+    },
+    {
+      "pr": 80,
+      "title": "Idle Kid App Spotify, OBD, and cross-app links on /test/",
+      "gaps": "none",
+      "owner": "—",
+      "gapCount": 0,
+      "nowCount": 0
+    },
+    {
+      "pr": 79,
+      "title": "Save Ellie's Neon World spot so she can resume a challenge",
+      "gaps": "Hidden /test preview does not load world/resume.js; Cache version was not bumped",
+      "owner": "Neon World Save & Resume (`cursor/world-save-resume-b8a9`, PR #79)",
+      "gapCount": 2,
+      "nowCount": 2
+    },
+    {
+      "pr": 78,
+      "title": "Pose near traffic on the current photo",
+      "gaps": "Script ?v= does not match ZD_WORLD 30; Cache version was not bumped",
+      "owner": "Neon World Traffic Physics (`cursor/traffic-option-b-2bdb`, PR #78)",
+      "gapCount": 2,
+      "nowCount": 2
+    },
+    {
+      "pr": 77,
+      "title": "Open Garage Z and the dance stage from their buildings",
+      "gaps": "Script ?v= does not match ZD_WORLD 30; Cache version was not bumped",
+      "owner": "Ellie's Neon Drawing agent (`cursor/garage-dance-doors-0eec`, PR #77)",
+      "gapCount": 2,
+      "nowCount": 2
+    },
+    {
+      "pr": 76,
+      "title": "NOS drive-up station — canopy, two pumps, claim at the pump",
+      "gaps": "JR page and world-split load different scripts; Hidden /test preview does not load world/gl-city.js, world/nos-station.js; Adult index.html was edited; Builders, building redesigns, or a city redesign belong on a new world page; Resume spots were not rechecked against the NOS pads",
+      "owner": "Neon World buildings glow WebGL (`cursor/nos-driveup-58d4`, PR #76); Neon World Save & Resume (`cursor/world-save-resume-b8a9`, PR #79)",
+      "gapCount": 5,
+      "nowCount": 5
+    },
+    {
+      "pr": 75,
+      "title": "Give walking characters chest and back depth",
+      "gaps": "Cache version was not bumped",
+      "owner": "Neon World character + pet (`cursor/torso-depth-b5e7`, PR #75)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 74,
+      "title": "Interiors plan: a daylight room and a glow-strip room for each walk-in",
+      "gaps": "before build: interiors",
+      "owner": "Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+      "gapCount": 1,
+      "nowCount": 0
+    },
+    {
+      "pr": 73,
+      "title": "Traffic plan: pose the sprite, do not clone the 3D car",
+      "gaps": "none",
+      "owner": "Neon World Traffic Physics",
+      "gapCount": 0,
+      "nowCount": 0
+    },
+    {
+      "pr": 72,
+      "title": "Kid App dashboard is its own menu tile",
+      "gaps": "none",
+      "owner": "—",
+      "gapCount": 0,
+      "nowCount": 0
+    },
+    {
+      "pr": 71,
+      "title": "Open Neon Paint from its building and come back to the same world",
+      "gaps": "Script ?v= does not match ZD_WORLD 30; Cache version was not bumped",
+      "owner": "Ellie's Neon Drawing agent (`cursor/neon-paint-studio-door-0eec`, PR #71)",
+      "gapCount": 2,
+      "nowCount": 2
+    },
+    {
+      "pr": 70,
+      "title": "Show Ellie's House on the Home menu preview",
+      "gaps": "Hidden /test preview does not load world/walk-items.js; Cache version was not bumped; Interiors do not use the shared prop catalog",
+      "owner": "Show Ellie's House on the Home menu preview (`cursor/home-room-preview-aa6e`, PR #70); Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+      "gapCount": 3,
+      "nowCount": 3
+    },
+    {
+      "pr": 69,
+      "title": "Record decided building modes and who builds each one",
+      "gaps": "none",
+      "owner": "—",
+      "gapCount": 0,
+      "nowCount": 0
+    },
+    {
+      "pr": 68,
+      "title": "Option 1 (Boulevards) is Bob's pick",
+      "gaps": "Minimap zoom span was not updated for the new city size; Boulevard roads are on PR #85; mid-session lane rebuild is still PR #78; Hidden /test preview does not load world/city-layout.js, world/gl-city.js, world/nos-station.js, world/resume-safe.js; Adult index.html was edited | before build: interiors, planner, dance, paint, crew, air, weather",
+      "owner": "Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81); Planner Port: Builder Mode + Props (`cursor/planner-port-plan-cbd5`, PR #82); Ellie's Dance Stage & Camera (`split-dance`, PR #39); Ellie's Neon Drawing agent (`cursor/neon-paint-studio-door-0eec`, PR #71); Neon World character + pet (`cursor/torso-depth-b5e7`, PR #75); Neon World Air & Flight Physics (`split-phys-air`, PR #45); No weather agent yet; Neon World minimap (split-map) (`split-map`, PR #37); Neon World Traffic Physics (`cursor/traffic-option-b-2bdb`, PR #78); Neon world city layout plan (`cursor/city-boulevards-ef23`, PR #85)",
+      "gapCount": 11,
+      "nowCount": 4
+    },
+    {
+      "pr": 67,
+      "title": "Neon World idea list for Ellie",
+      "gaps": "none",
+      "owner": "—",
+      "gapCount": 0,
+      "nowCount": 0
+    },
+    {
+      "pr": 66,
+      "title": "Add an architecture check for Neon World buildings",
+      "gaps": "none",
+      "owner": "—",
+      "gapCount": 0,
+      "nowCount": 0
+    },
+    {
+      "pr": 65,
+      "title": "Show the companion pet beside Ellie's Z on the garage turntable",
+      "gaps": "Hidden /test preview does not load world/walk-items.js; Cache version was not bumped; Interiors do not use the shared prop catalog",
+      "owner": "Show the companion pet beside Ellie's Z on the garage turntable (`cursor/companion-pet-turntable-aa6e`, PR #65); Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+      "gapCount": 3,
+      "nowCount": 3
+    },
+    {
+      "pr": 64,
+      "title": "Clamp the Neon World car buffer to the city budget",
+      "gaps": "Cache version was not bumped",
+      "owner": "Clamp the Neon World car buffer to the city budget (`cursor/neon-res-audit-2e8c`, PR #64)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 63,
+      "title": "Neon World speed plan and Z-DASH / JR separation plan",
+      "gaps": "none",
+      "owner": "—",
+      "gapCount": 0,
+      "nowCount": 0
+    },
+    {
+      "pr": 62,
+      "title": "Add an advisory PERF-GUARD bench for Neon World",
+      "gaps": "none",
+      "owner": "—",
+      "gapCount": 0,
+      "nowCount": 0
+    },
+    {
+      "pr": 61,
+      "title": "Add a headless anatomy check for torso depth, walk, and scale",
+      "gaps": "none",
+      "owner": "—",
+      "gapCount": 0,
+      "nowCount": 0
+    },
+    {
+      "pr": 60,
+      "title": "Room prop sheet for Ellie's home",
+      "gaps": "Hidden /test preview does not load world/walk-items.js; Cache version was not bumped; Interiors do not use the shared prop catalog",
+      "owner": "Room prop sheet for Ellie's home (`cursor/prop-place-menu-aa6e`, PR #60); Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+      "gapCount": 3,
+      "nowCount": 3
+    },
+    {
+      "pr": 59,
+      "title": "WebGL buildings — purpose designs, map still separate",
+      "gaps": "JR page and world-split load different scripts; Hidden /test preview does not load world/gl-city.js; Cache version was not bumped; Builders, building redesigns, or a city redesign belong on a new world page",
+      "owner": "Neon World buildings glow WebGL (`cursor/split-webgl-58d4`, PR #59)",
+      "gapCount": 4,
+      "nowCount": 4
+    },
+    {
+      "pr": 58,
+      "title": "Draw a jointed humanoid in a short closet",
+      "gaps": "Cache version was not bumped",
+      "owner": "Draw a jointed humanoid in a short closet (`cursor/avatar-closet-b5e7`, PR #58)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 57,
+      "title": "Bright day rooms and a small walking item menu",
+      "gaps": "Hidden /test preview does not load world/walk-items.js; Cache version was not bumped; Interiors do not use the shared prop catalog",
+      "owner": "Bright day rooms and a small walking item menu (`cursor/home-day-rooms-aa6e`, PR #57); Neon World Interiors (`cursor/interiors-plan-52fc`, PR #81)",
+      "gapCount": 3,
+      "nowCount": 3
+    },
+    {
+      "pr": 56,
+      "title": "City warm-up, sprite pacing, and a Galaxy flicker detector",
+      "gaps": "Cache version was not bumped",
+      "owner": "City warm-up, sprite pacing, and a Galaxy flicker detector (`cursor/ipad-fps-9e5c`, PR #56)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 55,
+      "title": "Pet recorder opens the back camera, with a flip button",
+      "gaps": "Cache version was not bumped",
+      "owner": "Pet recorder opens the back camera, with a flip button (`cursor/pet-back-camera-b5e7`, PR #55)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 54,
+      "title": "Record the improve-app compare as video with the live camera",
+      "gaps": "Cache version was not bumped",
+      "owner": "Record the improve-app compare as video with the live camera (`cursor/improve-clip-video-9767`, PR #54)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 53,
+      "title": "Stop a tow truck from pinning the Z",
+      "gaps": "Cache version was not bumped",
+      "owner": "Stop a tow truck from pinning the Z (`split-traffic-collide`, PR #53)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 52,
+      "title": "Load interiors on entry, clip off-screen glow, and recover the phone FPS gap",
+      "gaps": "Cache version was not bumped",
+      "owner": "Load interiors on entry, clip off-screen glow, and recover the phone FPS gap (`split-pc-fps`, PR #52)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 51,
+      "title": "Notes: v28 building FPS baseline, proof not built",
+      "gaps": "none",
+      "owner": "—",
+      "gapCount": 0,
+      "nowCount": 0
+    },
+    {
+      "pr": 50,
+      "title": "Finish the JR main menu and center kid menu tiles",
+      "gaps": "Cache version was not bumped; Adult index.html was edited",
+      "owner": "Finish the JR main menu and center kid menu tiles (`split-menus`, PR #50)",
+      "gapCount": 2,
+      "nowCount": 2
+    },
+    {
+      "pr": 49,
+      "title": "Keep the installed app full screen across kid pages",
+      "gaps": "Cache version was not bumped; Adult index.html was edited",
+      "owner": "Keep the installed app full screen across kid pages (`split-polish`, PR #49)",
+      "gapCount": 2,
+      "nowCount": 2
+    },
+    {
+      "pr": 45,
+      "title": "Remove the NOS exhaust sparks",
+      "gaps": "Cache version was not bumped",
+      "owner": "Neon World Air & Flight Physics (`split-phys-air`, PR #45)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 44,
+      "title": "Wings color follows drive mode (held, not deployed)",
+      "gaps": "Cache version was not bumped",
+      "owner": "Neon World In-Game Buttons & Controls (`split-buttons`, PR #44)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 43,
+      "title": "Stop brake marks the instant BRAKE is released",
+      "gaps": "Cache version was not bumped",
+      "owner": "Stop brake marks the instant BRAKE is released (`split-ebrake`, PR #43)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 39,
+      "title": "Z Company Arts neon dance stage and camera mo-cap",
+      "gaps": "Cache version was not bumped",
+      "owner": "Ellie's Dance Stage & Camera (`split-dance`, PR #39)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 38,
+      "title": "Enter and exit buildings from the top bar",
+      "gaps": "Cache version was not bumped; New claim or door has no button or pause-menu update",
+      "owner": "Enter and exit buildings from the top bar (`split-walk-cam`, PR #38); Neon World In-Game Buttons & Controls (`split-buttons`, PR #44)",
+      "gapCount": 2,
+      "nowCount": 2
+    },
+    {
+      "pr": 37,
+      "title": "Minimap: builder zone, walker, and giant dome stadium",
+      "gaps": "Cache version was not bumped",
+      "owner": "Neon World minimap (split-map) (`split-map`, PR #37)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 36,
+      "title": "Speed-gate neon detail and keep pad streets clear",
+      "gaps": "Cache version was not bumped",
+      "owner": "Speed-gate neon detail and keep pad streets clear (`split-detail`, PR #36)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 35,
+      "title": "Traffic physics: toned-down Z cornering and ramp launches",
+      "gaps": "Cache version was not bumped",
+      "owner": "Traffic physics: toned-down Z cornering and ramp launches (`split-traffic`, PR #35)",
+      "gapCount": 1,
+      "nowCount": 1
+    },
+    {
+      "pr": 34,
+      "title": "Mount facade signs and add side and rear parking",
+      "gaps": "Cache version was not bumped; City blocks moved and the minimap was not updated; Moved city can restore a Resume save inside a wall",
+      "owner": "Mount facade signs and add side and rear parking (`split-stunts`, PR #34); Neon World minimap (split-map) (`split-map`, PR #37); Neon World Save & Resume (`cursor/world-save-resume-b8a9`, PR #79)",
+      "gapCount": 3,
+      "nowCount": 3
+    },
+    {
+      "pr": 17,
+      "title": "Build a dome stadium and west tunnel around the bigger pitch",
+      "gaps": "Cache version was not bumped; Soccer field moved and the minimap fallback did not",
+      "owner": "Neon World car soccer field (`split-soccer`, PR #17); Neon World minimap (split-map) (`split-map`, PR #37)",
+      "gapCount": 2,
+      "nowCount": 2
+    }
+  ]
+}
