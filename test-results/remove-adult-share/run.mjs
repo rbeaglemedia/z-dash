@@ -251,7 +251,7 @@ async function main() {
         const xh = x ? x.getBoundingClientRect().height : 0;
         const ch = document.getElementById('btnClose').getBoundingClientRect().height;
         if (!x || xh < 40) problems.push('close X height ' + xh);
-        if (ch < 16) problems.push('close button not visible, height ' + ch);
+        if (ch < 44) problems.push('close button height ' + ch);
         const secs = [...document.querySelectorAll('details.setsec')];
         const opened = [];
         for (const d of secs) {
@@ -361,6 +361,7 @@ async function main() {
   })`, 20000);
   note('adult cache ' + JSON.stringify(sw));
   if (!sw.ok || (sw.names || []).includes('jr.html')) { note('FAIL adult cache'); process.exitCode = 1; }
+  if ((sw.keys || []).some((k) => String(k).startsWith('world-split-'))) { note('FAIL adult visit created world-split'); process.exitCode = 1; }
   await cdp.send('Page.navigate', { url: URL_BASE + '/jr.html?stay=1' });
   const jr = await evalJson(cdp, `new Promise((res) => {
     const t0 = Date.now();
