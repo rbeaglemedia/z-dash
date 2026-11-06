@@ -49,11 +49,7 @@ html, body { margin: 0; height: 100%; background: #000; color: var(--txt); font-
 .big { position: absolute; right: 16px; bottom: 14px; font-family: 'Orbitron'; font-weight: 700; font-size: 12px; letter-spacing: 3px; color: #fff; background: rgba(255,42,61,.12); border: 1px solid var(--red); padding: 10px 18px; cursor: pointer; box-shadow: 0 0 14px rgba(255,42,61,.3); }
 .big.ghost { background: transparent; }
 .big:disabled { opacity: .45; }
-#splash { position: fixed; inset: 0; background: #000; z-index: 50; transition: opacity .6s; } .neonz { position: absolute; z-index: 3; top: calc(env(safe-area-inset-top, 0px) + 10px); right: calc(env(safe-area-inset-right, 0px) + 10px); width: 46px; height: 46px; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: rgba(0,0,0,.6); border: 1px solid #ff2a3d; border-radius: 6px; color: #ff2a8a; border-color: #ff2a8a; cursor: pointer; box-shadow: 0 0 10px rgba(255,42,138,.5), inset 0 0 8px rgba(255,42,138,.25); animation: neonzhue 9s linear infinite; will-change: filter; } @keyframes neonzhue { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } } @media (prefers-reduced-motion: reduce) { .neonz { animation: none; } } .neonz b { font: 900 26px/1 'Orbitron', sans-serif; text-shadow: 0 0 6px #ff2a8a, 0 0 14px #ff2a8a; }
-#hdr { padding-right: 92px; }
-#btnNeonZ.neonz { position: fixed; z-index: 200; top: 4px; right: 8px; width: 76px; height: 46px; pointer-events: auto; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-#btnNeonZ.neonz small { display: block; font: 800 9px/1 'Orbitron', sans-serif; letter-spacing: .6px; color: #fff; text-shadow: 0 0 6px #ff2a8a; }
-body.kidon #btnNeonZ { display: none !important; }
+#splash { position: fixed; inset: 0; background: #000; z-index: 50; transition: opacity .6s; }
 #splash.gone { opacity: 0; pointer-events: none; }
 #splash canvas, .overlay canvas { width: 100%; height: 100%; display: block; }
 .overlay { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.92); display: flex; align-items: center; justify-content: center; }
@@ -704,7 +700,7 @@ body:not(.kidon) #kFpsRow { display: none; }
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Z-DASH">
 <meta name="application-name" content="Z-DASH">
-<script>window.ZD_BUILD = '1792863877-world33';
+<script>window.ZD_BUILD = '1792886859-world42'; /* same stamp as shared/version.js, which sw.js loads */
 /* offline: the service worker caches the app so it runs with no internet after one online visit. Pages load network-first,
    so a new deploy shows straight away. If a newer build takes over while this page is open: reload once by itself when
    nothing is in progress, otherwise show a small "Update ready" button. */
@@ -754,7 +750,6 @@ html.pc-mode .khome:not(.kmain){top:4vh;transform:translate(-50%,0);max-height:9
       <button data-scr="codes" id="tabCodes">CODES<b id="codesBadge" class="badge hidden">0</b></button>
     </nav>
     <div class="right">
-      <a id="btnNeonZ" class="neonz" href="jr.html" title="Kid Z" aria-label="Kid Z"><b>Z</b><small>KID Z</small></a>
       <span id="srcChip" class="chip"><i></i><b>SIM</b></span>
       <button id="btnFs" class="editbtn fsbtn hidden" title="Tap for fullscreen">⛶<span class="lbl"> FULL</span></button><button id="btnLayout" class="editbtn" title="Edit Drive-screen layout (or long-press the Drive screen)">✎<span class="lbl"> LAYOUT</span></button><button id="btnSettings" class="icon" title="Settings">⚙</button>
     </div>
@@ -849,8 +844,6 @@ html.pc-mode .khome:not(.kmain){top:4vh;transform:translate(-50%,0);max-height:9
   <div id="rotate" class="rotate"><div>↻<br>ROTATE YOUR PHONE TO LANDSCAPE</div></div>
   <div id="settings" class="overlay hidden">
     <div class="panel">
-      <div class="kidrow"><button id="tglKid" class="tgl kidtgl">PASSENGER MODE: OFF</button><span class="mute">Kids' version of the dash for a young passenger: DRIVE · CAR · ROAD game · BOOST · GARAGE. Your screens, layout and live data stay exactly as they are, and this same toggle brings them back.</span></div>
-      <div class="kidrow joinrow" id="joinRow"><button id="btnJoin" class="tgl kidtgl">JOIN DAD'S CAR</button><span class="mute" id="joinMsg">Get live data from Dad's phone so real drives count: ×2 coins, part boxes and 0-60 fireworks. Pair with two QR codes.</span></div>
       <div class="linkrow" id="shareRow"><button id="btnShare" class="tgl">SHARE TO PASSENGER</button><span class="mute" id="shareMsg">Send live data from this phone to her iPad's Passenger Mode (same Wi-Fi or this phone's hotspot, no internet needed). Pair once per drive with two QR codes.</span></div>
       <div class="linkrow passrow" id="passRow"><button id="btnPass" class="tgl">SET PARENT PASSCODE</button><span class="mute" id="passStat"></span></div>
       <div class="regrow" id="regRow"><button id="btnRegDrv" class="tgl">REGISTER AS DRIVER DEVICE</button></div>
@@ -11714,7 +11707,7 @@ var qrcode = function() {
       </div>`;
     document.body.appendChild(root);
     root.querySelectorAll('#kTabs button').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.k)));
-    { const hm = root.querySelector('#kHome'); hm.appendChild(root.querySelector('.khdr .kright')); hm.appendChild(root.querySelector('#kTabs')); { const tm = document.createElement('div'); tm.id = 'kTilesM'; tm.className = 'ktilesm'; tm.addEventListener('click', (e) => { const b = e.target.closest('[data-tile]'); if (!b) return; const tk = b.dataset.tile; try { save(); } catch (err) {} const navMap = { fly: 'fly3.html', world: 'world.html', paint: 'neon-paint.html', wall: 'neon-paint.html?mode=wall', dance: 'dance-stage.html?record=character', petdance: 'dance-stage.html?record=dog', crew: 'crew.html', soccer: 'world.html?entry=soccer', skydrop: 'world.html?entry=skydrop' }; if (tk === 'fly' && window.ZD_FLY_NAV) return window.ZD_FLY_NAV(); if (tk === 'world' && window.ZD_WORLD_NAV) return window.ZD_WORLD_NAV(); if (navMap[tk]) { location.assign(navMap[tk]); return; } setTab(tk); }); hm.appendChild(tm); } { const gb = root.querySelector('#kTabs [data-k=garage]'); if (gb) gb.insertAdjacentHTML('afterbegin', kGarageSvg().replace('<svg ', '<svg class=kpgi ')); } /* pause row: small static garage door */
+    { const hm = root.querySelector('#kHome'); hm.appendChild(root.querySelector('.khdr .kright')); hm.appendChild(root.querySelector('#kTabs')); { const tm = document.createElement('div'); tm.id = 'kTilesM'; tm.className = 'ktilesm'; tm.addEventListener('click', (e) => { const b = e.target.closest('[data-tile]'); if (!b) return; const tk = b.dataset.tile; try { save(); } catch (err) {} const navMap = { fly: 'fly3.html', world: 'world.html', paint: 'neon-paint.html', wall: 'neon-paint.html?mode=wall', dance: 'dance-stage.html?record=character', petdance: 'dance-stage.html?record=dog', crew: 'crew.html', soccer: 'world.html?entry=soccer', skydrop: 'world.html?entry=skydrop' }; if (!window.ZD_JR && (tk === 'fly' || tk === 'world' || navMap[tk])) return; if (tk === 'fly' && window.ZD_FLY_NAV) return window.ZD_FLY_NAV(); if (tk === 'world' && window.ZD_WORLD_NAV) return window.ZD_WORLD_NAV(); if (navMap[tk]) { location.assign(navMap[tk]); return; } setTab(tk); }); hm.appendChild(tm); } { const gb = root.querySelector('#kTabs [data-k=garage]'); if (gb) gb.insertAdjacentHTML('afterbegin', kGarageSvg().replace('<svg ', '<svg class=kpgi ')); } /* pause row: small static garage door */
       root.querySelector('#kMenuB').addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); if (K.menuOpen) kResume(); else kPause(); });
       root.querySelector('[data-m="resume"]').addEventListener('click', () => kResume()); root.querySelector('#kPzX').addEventListener('click', (e) => { e.stopPropagation(); kResume(); }); /* ✕ (inside the panel, top-left): RESUME in a game, just close on DRIVE */ root.querySelector('[data-m="home"]').addEventListener('click', () => { setTab('drive'); kMenuShow(true); }); /* HOME = the full-screen main menu */ } // kid MENU / PAUSE
     $('#kGear').addEventListener('click', () => { if (ZD.Settings) ZD.Settings.toggle(); else $('#settings').classList.remove('hidden'); });
@@ -11815,6 +11808,7 @@ var qrcode = function() {
     if (k === 'road' && window.DeviceOrientationEvent && DeviceOrientationEvent.requestPermission) DeviceOrientationEvent.requestPermission().then((r) => { TL.perm = r === 'granted' ? 'granted' : 'denied'; }).catch(() => {}); // iOS asks once (a tab tap counts as a user gesture; ALLOW TILT on the RAMPS intro is the sure way)
   }
   function setOn(on, persist = true) {
+    if (on && !window.ZD_JR) { on = false; persist = false; } // this file is the adult page: never open Passenger Mode (jr.html has its own copy)
     K.on = on; document.body.classList.toggle('kidon', on); $('#kid').classList.toggle('hidden', !on); fpsRow(); if (FP.el) FP.el.classList.toggle('hidden', !(on && FP.on));
     const b = $('#tglKid'); if (b) { b.textContent = `PASSENGER MODE: ${on ? 'ON' : 'OFF'}`; b.classList.toggle('on', on); }
     if (persist) try { localStorage.setItem(MODE, on ? '1' : '0'); } catch (e) {}
@@ -12862,6 +12856,7 @@ var qrcode = function() {
   }
   function kidRouted() { return !!(kidHashTab() || /(?:^|[?&])kmenu=1(?:&|$)/.test(location.search)); }
   function applyKidRoute() {
+    if (!window.ZD_JR) return; // adult page ignores #garage / ?kmenu=1
     const h = kidHashTab();
     const menu = /(?:^|[?&])kmenu=1(?:&|$)/.test(location.search);
     if (!h && !menu) return;
@@ -12880,21 +12875,11 @@ var qrcode = function() {
       if (K.on && RO && !RO.canDrive()) { toast('This is a passenger device', 2600); return; }
       if (K.on && RO && RO.needsPass() && !(await RO.gate('Enter the parent passcode for DAD MODE'))) return;
       setOn(!K.on); if (ZD.Settings) ZD.Settings.close(); else $('#settings').classList.add('hidden'); });
-    /*reopen*/ let sess = null; try { sess = sessionStorage.getItem('zd.sess'); } catch (e) {} const cold = !sess || Q.has('zdcold'), kidDev = !!(ZD.Roles && ZD.Roles.isPassengerDev()), keep = Q.has('zdpwa') ? '?zdpwa' : '';
-    const pwa = Q.has('zdpwa') || !!(window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches), base = location.pathname.replace(/[^/]*$/, '');
-    if (cold && !Q.has('stay') && window.ZD_JR && !kidDev && pwa) { location.replace(base + keep); return; } /* ADULT device: the app always reopens on the driver start screen */
-    if (cold && !Q.has('stay') && !window.ZD_JR && kidDev) { location.replace(base + 'jr.html' + keep); return; } /* KID device: always her own start screen */
-    try { sessionStorage.setItem('zd.sess', '1'); } catch (e) {} K.coldKid = cold && kidDev && !!window.ZD_JR;
-    let on = false; try { on = localStorage.getItem(MODE) === '1'; } catch (e) {} if (cold && !kidDev) on = false; /* ADULT cold launch: never resume Passenger Mode (zdash.kidOn only holds within a session) */
-    { const pn = $('#settings .panel'); if (pn && !$('#zdDevRow')) { const r = document.createElement('div'); r.id = 'zdDevRow'; r.className = 'row zdDevRow'; r.innerHTML = '<button id="btnDrvMode" class="tgl">🚗 DRIVER MODE</button><button id="btnKidDev" class="tgl">MAKE THIS ELLIE\'S DEVICE</button><span class="mute">DRIVER MODE switches this device back to Dad\'s driver app (parent passcode).</span>'; pn.insertBefore(r, pn.firstChild);
-      r.querySelector('#btnDrvMode').addEventListener('click', async () => { const RO = ZD.Roles; if (RO && RO.gate && !(await RO.gate('Enter the parent passcode for DRIVER MODE'))) return; if (RO && RO.setDevMode) RO.setDevMode('adult'); try { localStorage.setItem(MODE, '0'); sessionStorage.removeItem('zd.sess'); } catch (e) {} location.replace(base + keep); });
-      r.querySelector('#btnKidDev').addEventListener('click', () => { const RO = ZD.Roles; if (RO && RO.setDevMode) RO.setDevMode('kid'); toast("This is now Ellie's device: it opens on her start screen", 3200); }); } }
-    if (Q.has('passenger')) on = Q.get('passenger') !== '0';
-    const jr = !!window.ZD_JR || !!(ZD.Roles && ZD.Roles.isPassengerDev()); if (jr) on = true; // Z-DASH JR home-screen icon: always opens straight into Passenger Mode (not saved, so Dad's icon is unaffected)
-    if (Q.get('ktab')) K.tab = Q.get('ktab') === 'ride' ? 'boost' : Q.get('ktab');
-    if (Q.has('notut')) P.tut = 1; // test hook
-    setOn(on, !Q.has('passenger') && !jr); applyKidRoute();
-    if (Q.get('kplay') === '1') { hideOver(); restartRoad(); startBoost(); } // test hook: skip the intro card
+    /* Adult page: do not enter Passenger Mode, do not redirect to jr.html, and do not add an Ellie's-device switch.
+       zdash.kidOn, ?passenger=, ?kmenu=1, ?ktab=, ?kplay=1, and #garage/#road/… are ignored here.
+       jr.html keeps those routes. Share to Passenger on this page stays. */
+    try { sessionStorage.setItem('zd.sess', '1'); } catch (e) {}
+    setOn(false, false);
     requestAnimationFrame(loop);
     ZD.Kid = { setOn, toast };
     window.ZDKID = { kPause: () => kPause(), kResume: () => kResume(), get K() { return K; }, get R() { return R; }, get B() { return B; }, get D() { return D; }, wFinish: (w, y) => wFinish(w, y), WR2, WT2, w2Open: () => w2Open(), w2Key: () => w2Key(), w2Earned: () => w2Earned(), w2Pin: (f) => w2Pin(f), w2Hash: (s) => w2Hash(s), wSelVer: () => wSelVer(), W3B, WTB, wNos: () => wNos(), wanted_on: WANTED_ON, wSteerPref, wSteerSet: (v) => wSteerSet(v), wSteer: (dt) => wSteer(dt), wSqueeze: (d, l) => wSqueeze(d, l), ECON, RANKS, starsEver, rank, STAT, dragOpen, wantedOpen, roadGateOk, gateRows, fps: FP, fpsSet: (on) => fpsSet(on), DYN, DCUT, XSLOTS, xEquip: (id) => xEquip(id), dragStep: (dt) => dragStep(dt), dragRival: (dt) => dragRival(dt), coinBurst, closeFact, HOT_N, hotQ: (id) => hotQ(id, hotPoints(), ZD.Xray), HOT, hotPoints, showroomTap: (e) => showroomTap(e), RLV, RBOOST, roadFinish, roadPace, LANDFX, groundTilt, landGain, trafficLite: () => tLite, dragTraffic: (m) => dragTraffic(m), TGUARD, PRESETS, MYP_MAX, renderGarage, drvShiftTap, simCar, gPick, gSection, GSECS, pairInfo, inRampZone, POS, XMAX, K, P, R, B, SG, RD, D, DR, DLEN, CAT, TL, RAMP, rampSpawn, rampGrade, tiltRead, tiltCenter, screenAngle, tiltIn, DRAG_LOOK, DRAG_HUD, OBST, ROAD_TUNE, roadLevel, look, dragStart, dragTap, dragNos, dragLane, dragReset, dragDown, snapPhoto, HOT, sgPractice, ridePractice, sgTap, sgMoment, sgTick, setOn, setTab, showIntro, showEnd, showDragEnd, showTut, hideOver, restartRoad, startBoost, roadPace, W, WT, wLevel, wStart, wReset, wLane, wNos, wStep, wGen, wHitPiece, wLand, wChase, wCalmGen, wDiff, wIsDad, wLook, showWantedEnd, fireworks: () => fireworks($('#kCv').clientWidth, $('#kCv').clientHeight, 6), shift: (r) => onShift({ rating: r || 'PERFECT', to: 3 }, !!K.own), LROW, lrow, obstacleRow, spawnTraffic, RTK, RTLEN, RTRAF, TLEN, roadBeat, jumpCars, CAR_H, TKIND, TCOL, roadV, PD, PDG, pdStep, pdReset, pdFrame, pdRpm, holdMsg, RIDE, boostEnd, boostHit, GZ, gzStep, WANTED_ON, sgLights, readTick, boostDone, drawPower: (...a) => drawPower(...a) };

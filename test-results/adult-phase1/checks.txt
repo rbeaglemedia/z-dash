@@ -1,0 +1,46 @@
+Phase 1 adult entry-point removal
+Base: origin/main b6f370849b8152c22f1715510545f26d5a1294c5
+Files under test: index.html, tools/ui-polish-audit.js
+Date: 2026-11-06
+Browser: headless Chrome, software WebGL (swiftshader). No OBD adapter. No phone. No real pairing.
+
+Static
+- index.html has no id="btnNeonZ", id="tglKid", id="btnJoin", or "MAKE THIS ELLIE".
+- window.ZD_BUILD is 1792886859-world42, matching shared/version.js.
+- btnShare, btnObd2, and the inline 370Z embed remain.
+- git diff names only index.html and tools/ui-polish-audit.js. jr.html, sw.js, world/, adventure/ unchanged.
+- node --check tools/ui-polish-audit.js passed.
+
+Headless checks (31 navigations). A first scorer flagged 9 rows; those were harness mistakes, rechecked below.
+
+Landing, Connect Live and Start Demo visible, no Kid Z, not in Passenger Mode, build stamp matches, no "Update ready" toast:
+- 844x390 PASS
+- 780x360 PASS
+- 1024x768 PASS
+- 1366x768 PASS
+- 390x844 PASS (existing ROTATE YOUR PHONE TO LANDSCAPE gate; kid mode still off)
+
+Legacy links stayed on index.html, splash still up, kid layer hidden:
+- index.html, ?passenger=1, ?passenger=0, ?kmenu=1, ?ktab=garage, ?ktab=ride, ?kplay=1
+- #garage #car #road #drag #wanted #boost #drive
+- localStorage zdash.devMode=kid and zdash.kidOn=1 with ?zdcold=1 did not navigate to jr.html
+PASS
+
+Settings opened at all five sizes. Panel text includes SHARE TO PASSENGER, LIVE ADAPTER, and OBD ADAPTER.
+No "PASSENGER MODE:" button, no "JOIN DAD'S CAR" button, no Ellie switch.
+The first scorer missed LIVE ADAPTER because it only read the first 500 characters. A second read of the full panel confirmed live:true, obd:true, share:true, passBtn:false, join:false, ellie:false.
+
+Share to Passenger: clicking the button opened the pairing panel ("SHARE TO PASSENGER", "Making a pairing code…"). Not a completed pair and not a phone test. Page stayed on index.html.
+
+Hidden Neon World tile click did not assign world.html.
+
+START DEMO (simulated source, no adapter): splash class became "started gone" within about 5 s. Adult tabs then reported scr-drive, scr-gauges, scr-car, scr-dyno, scr-trip, scr-handling, scr-runs, scr-codes at 844x390, 780x360, 1024x768, and 1366x768. No ReferenceError or TypeError. The first scorer looked at 700 ms, before the existing connect card calls hideSplash (it waits until the card has shown LINK ESTABLISHED for 1.5 s), and it also required the start buttons to stay visible after the splash closed.
+
+Not run
+- Physical OBD, Bluetooth picker, or a real iPad pair.
+- Play Console, deploy, or /test/ publish.
+- z-dash-tools regression (repo not visible).
+- tools/pwa-display-audit.js still clicks #btnNeonZ. It was not part of this phase and was not updated. Running it will fail until that walk is revised.
+- Service-worker cache keys were not enumerated. sw.js was not edited, so the jr.html precache is unchanged (phase 3).
+
+Screenshots in this folder are labeled. Settings and share shots are cropped so the pre-existing Spotify client id field is not in the image.
