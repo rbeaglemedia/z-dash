@@ -1,0 +1,19 @@
+Settings sections. Base ab525d32f96085dce008c97ef73b8d56080a3dcc (PR 116, not merged).
+Headless Chrome, software WebGL, no OBD adapter. 2026-11-06.
+
+Layout
+- Native details/summary. Connection starts open. Display, Music, Logs & Replay, Car & Alerts, and Passenger Sharing start closed.
+- Summaries are at least 44px. Plus mark when closed, minus mark when open.
+- Close X stays on the panel. CLOSE stays outside the sections so it is not inside a collapsed group.
+- Replay a CSV stays with Connection because it is a data source. Replay speed and replay connect animation sit with the drive logs.
+- Stillen bumper stays on the Display row, still hidden unless ?stillenbeta.
+
+Checks
+- 844x390, 780x360, 1024x768, 1366x768: Connection was the only open section. Portrait 390x844 still shows the existing rotate gate.
+- Opening each section at 844x390 showed its controls. The screenshots show the other sections collapsed at the same time.
+- Low detail click stored zdash.lowdetail=1. After reload the button still read LOW DETAIL: ON.
+- Share, with Passenger Sharing open, opened the panel titled SHARE TO PASSENGER. No ReferenceError.
+- Start Demo reached splash class "started gone", source chip SIM, and the eight adult tabs switched.
+- A first overlap script flagged boxes inside closed sections. A second pass that ignored controls inside a closed details found no overlaps at 780x360. The 844x390 screenshots show the buttons and the adapter menu on separate rows.
+
+Not a live adapter test. No deploy.
