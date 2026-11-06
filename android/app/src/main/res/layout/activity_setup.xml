@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#050506"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Z-DASH LX test"
+            android:textColor="#ff2a3d"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:textColor="#e9e3e4"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="12dp"
+            android:text="Pair the OBDLink LX in the phone Bluetooth settings first. This screen lists paired devices only. It does not scan. Pick the LX, then open the dash. Auto-connect stays off until you turn it on."
+            android:textColor="#8a7a7d"
+            android:textSize="14sp" />
+
+        <ListView
+            android:id="@+id/devices"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:paddingTop="8dp" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:text="Auto-connect and collect while the dash is closed"
+            android:textColor="#e9e3e4" />
+
+        <Button
+            android:id="@+id/open"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:text="Open Z-DASH" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:text="Parked check: plug in the LX, turn ignition to the point the adapter wakes, pair it, pick it here, open the dash, tap Connect Live. Do not drive. Background collection shows a notification with Stop. Stop, or this switch off, ends the link and the retries. The screen does not open by itself. A real LX link was not verified on the build machine. Logs stay in the app private folder and are not uploaded."
+            android:textColor="#8a7a7d"
+            android:textSize="13sp" />
+    </LinearLayout>
+</ScrollView>
