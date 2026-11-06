@@ -11,7 +11,7 @@
  *   5. PNG screenshots (and a contact sheet when Pillow is available)
  *   6. adult index.html never loads Kid App scripts or storage, opens on
  *      CONNECT LIVE / START DEMO with no Kid Z launcher, and stays out of
- *      Passenger Mode. Share to Passenger stays on the adult page.
+ *      Passenger Mode. Share to Passenger is gone from the adult page.
  *   7. kid menu buttons and tiles: no underline, text-align center
  *   8. every app page links a fullscreen manifest whose scope covers the
  *      whole directory, and nothing calls exitFullscreen on its own
@@ -98,11 +98,11 @@ const ADULT_PROBE = `
   const splash = document.getElementById('splash');
   const obd = document.getElementById('btnObd2');
   const demo = document.getElementById('btnDemo');
-  const share = document.getElementById('btnShare');
   if (document.getElementById('btnNeonZ')) bad('kid-launcher', 'Kid Z launcher is still on the adult landing screen');
   if (document.getElementById('tglKid') || document.getElementById('btnJoin') || document.getElementById('btnKidDev')) bad('kid-launcher', 'adult settings still has a kid-mode entry');
+  if (document.getElementById('btnShare') || document.getElementById('shareRow')) bad('kid-launcher', 'adult settings still has Share to Passenger');
+  if (window.ZD && window.ZD.Link) bad('kid-launcher', 'adult page still created the passenger link');
   if (document.body.classList.contains('kidon')) bad('kid-launcher', 'adult landing opened in Passenger Mode');
-  if (!share) bad('kid-launcher', 'SHARE TO PASSENGER is missing from the adult page');
   if (!splash || !obd || !demo) {
     bad('kid-launcher', 'landing screen is missing CONNECT LIVE or START DEMO');
   } else {
@@ -156,6 +156,7 @@ function scanAdultIndex() {
   if (html.includes('Z-DASH — PASSENGER MODE') || html.includes('window.ZDKID =')) issues.push({ severity: 'error', kind: 'kid-script', msg: 'adult index.html still embeds the passenger-mode script' });
   if (html.includes('id="tglKid"') || html.includes('id="btnJoin"') || html.includes('MAKE THIS ELLIE')) issues.push({ severity: 'error', kind: 'kid-launcher', msg: 'adult index.html still has a Passenger Mode, Join, or Ellie-device entry' });
   if (html.includes('id="btnPass"') || html.includes('id="tglSync"') || html.includes('id="btnRegDrv"')) issues.push({ severity: 'error', kind: 'kid-launcher', msg: 'adult settings still has the parent passcode, music-sync, or register-as-driver control' });
+  if (html.includes('id="btnShare"') || html.includes('PASSENGER SHARING') || html.includes('ZD.Link') || html.includes('RTCPeerConnection') || html.includes('PHONE → IPAD') || html.includes('DEVICE ROLES')) issues.push({ severity: 'error', kind: 'kid-launcher', msg: 'adult index.html still has passenger sharing, pairing, or passcode code' });
   const version = fs.readFileSync(path.join(ROOT, 'shared/version.js'), 'utf8');
   const world = (version.match(/self\.ZD_WORLD = '([^']+)'/) || [])[1];
   const stamp = (version.match(/self\.ZD_BUILD_STAMP = '([^']+)'/) || [])[1];
