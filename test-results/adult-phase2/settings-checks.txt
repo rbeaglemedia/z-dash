@@ -1,0 +1,31 @@
+Adult Settings cleanup on PR 116. Headless Chrome, software WebGL, no OBD adapter. 2026-11-06.
+
+Removed from the sheet
+- SET PARENT PASSCODE
+- REGISTER AS DRIVER DEVICE (it was already hidden unless the page was in kid mode)
+- MUSIC SYNC (help text said it was the microphone beat for the kid ROAD game; nothing on the adult page listens for those beats)
+- The saved "mic" choice no longer re-arms the microphone on the first tap
+
+Kept
+- SHARE TO PASSENGER, including the sentence that names her iPad, because that is the other end of the link
+- LOW DETAIL, KEEP SCREEN ON, FPS COUNTER
+- DEMO TRACK, SPOTIFY, OFF, client id, connect
+- LIVE ADAPTER, DEMO DRIVE, replay CSV, OBD adapter picker
+- Drive logs, shift light, health limits, Rotrex interval, tank size, replay speed, connect animation, close
+- STILLEN BUMPER stays in the markup and stays hidden unless the page is opened with ?stillenbeta
+
+Checks
+- Settings text at 844x390, 780x360, 1024x768, 1366x768, and 390x844 contained the kept headings and did not contain SET PARENT PASSCODE, MUSIC SYNC, REGISTER AS DRIVER, PASSENGER MODE:, or JOIN DAD.
+- No ReferenceError on load. Close button hid the sheet. Share panel title was SHARE TO PASSENGER.
+- Start Demo reached splash class "started gone" and the source chip read SIM.
+- Fresh adult cache names were zdash-adult-1792886859-world42 and world-split-v42. jr.html was not in them. Offline reload title was Z-DASH · 370Z.
+
+Screenshots, 844x390, client id field blanked in the shot:
+- 01 share, performance, music
+- 02 performance through the OBD heading
+- 03 music through drive logs
+- 04 data source, adapter, logs, shift light
+- 05 adapter through maintenance
+- 06 drive logs through fuel
+- 07 bottom: shift light, health, maintenance, fuel, sim
+On this phone height, health through sim share one screen, so 07 is that whole bottom rather than five identical crops.
