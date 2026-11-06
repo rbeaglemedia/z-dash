@@ -9,8 +9,9 @@
  *   3. text clipping and font sizes under 9px on buttons and pills
  *   4. clutter: control count, duplicate labels, touch gaps under 6px
  *   5. PNG screenshots (and a contact sheet when Pillow is available)
- *   6. adult index.html never loads Kid App scripts or storage, and the
- *      Kid Z launcher stays clickable above the CONNECT LIVE landing screen
+ *   6. adult index.html never loads Kid App scripts or storage, opens on
+ *      CONNECT LIVE / START DEMO with no Kid Z launcher, and stays out of
+ *      Passenger Mode. Share to Passenger stays on the adult page.
  *   7. kid menu buttons and tiles: no underline, text-align center
  *   8. every app page links a fullscreen manifest whose scope covers the
  *      whole directory, and nothing calls exitFullscreen on its own
@@ -94,32 +95,20 @@ const ADULT_PROBE = `
     try { now = localStorage.getItem(k); } catch (e) { bad('kid-storage', 'could not read ' + k); return; }
     if (now !== expect[k]) bad('kid-storage', 'adult index.html changed kid storage ' + k);
   });
-  const btn = document.getElementById('btnNeonZ');
   const splash = document.getElementById('splash');
   const obd = document.getElementById('btnObd2');
   const demo = document.getElementById('btnDemo');
-  if (!btn || !splash || !obd || !demo) {
-    bad('kid-launcher', 'landing screen is missing the Kid Z launcher or CONNECT LIVE / START DEMO');
+  const share = document.getElementById('btnShare');
+  if (document.getElementById('btnNeonZ')) bad('kid-launcher', 'Kid Z launcher is still on the adult landing screen');
+  if (document.getElementById('tglKid') || document.getElementById('btnJoin') || document.getElementById('btnKidDev')) bad('kid-launcher', 'adult settings still has a kid-mode entry');
+  if (document.body.classList.contains('kidon')) bad('kid-launcher', 'adult landing opened in Passenger Mode');
+  if (!share) bad('kid-launcher', 'SHARE TO PASSENGER is missing from the adult page');
+  if (!splash || !obd || !demo) {
+    bad('kid-launcher', 'landing screen is missing CONNECT LIVE or START DEMO');
   } else {
     const ss = getComputedStyle(splash);
     const splashOpen = !splash.classList.contains('gone') && ss.display !== 'none' && parseFloat(ss.opacity) > 0.5 && ss.visibility !== 'hidden';
     if (!splashOpen) bad('kid-launcher', 'CONNECT LIVE / START DEMO landing is not open');
-    const br = btn.getBoundingClientRect();
-    const bs = getComputedStyle(btn);
-    if (bs.display === 'none' || bs.visibility === 'hidden' || parseFloat(bs.opacity) < 0.5 || br.width < 40 || br.height < 40) {
-      bad('kid-launcher', 'Kid Z launcher is not clearly visible');
-    }
-    const x = br.left + br.width / 2, y = br.top + br.height / 2;
-    const top = document.elementFromPoint(x, y);
-    if (!top || (top !== btn && !btn.contains(top))) {
-      bad('kid-launcher', 'Kid Z launcher is covered. elementFromPoint hit ' + (top ? (top.id || top.tagName) : 'nothing'));
-    }
-    const bz = parseInt(bs.zIndex, 10) || 0;
-    const canvas = document.getElementById('cv-splash');
-    const start = document.getElementById('startBtns');
-    const cz = canvas ? (parseInt(getComputedStyle(canvas).zIndex, 10) || 0) : 0;
-    const sz = start ? (parseInt(getComputedStyle(start).zIndex, 10) || 0) : 0;
-    if (!(bz > cz && bz > sz)) bad('kid-launcher', 'Kid Z launcher z-index ' + bz + ' is not above the landing overlay (canvas ' + cz + ', start ' + sz + ')');
     [obd, demo].forEach(function (el) {
       const r = el.getBoundingClientRect();
       const st = getComputedStyle(el);
@@ -163,6 +152,13 @@ function scanAdultIndex() {
   for (const key of KID_KEYS) {
     if (html.includes(key)) issues.push({ severity: 'error', kind: 'kid-storage', msg: 'adult index.html references Kid App storage ' + key });
   }
+  if (html.includes('id="btnNeonZ"')) issues.push({ severity: 'error', kind: 'kid-launcher', msg: 'adult index.html still has the Kid Z launcher' });
+  if (html.includes('id="tglKid"') || html.includes('id="btnJoin"') || html.includes('MAKE THIS ELLIE')) issues.push({ severity: 'error', kind: 'kid-launcher', msg: 'adult index.html still has a Passenger Mode, Join, or Ellie-device entry' });
+  const version = fs.readFileSync(path.join(ROOT, 'shared/version.js'), 'utf8');
+  const world = (version.match(/self\.ZD_WORLD = '([^']+)'/) || [])[1];
+  const stamp = (version.match(/self\.ZD_BUILD_STAMP = '([^']+)'/) || [])[1];
+  const expectBuild = stamp && world ? stamp + '-world' + world : '';
+  if (!expectBuild || !html.includes("window.ZD_BUILD = '" + expectBuild + "'")) issues.push({ severity: 'error', kind: 'build', msg: 'adult ZD_BUILD does not match shared/version.js (' + (expectBuild || 'unreadable') + ')' });
   return issues;
 }
 
@@ -670,7 +666,7 @@ function inject(code) {
 
 const SCREENS = [
   {
-    id: 'adult-landing', title: 'Adult landing — Kid Z launcher, no kid paint',
+    id: 'adult-landing', title: 'Adult landing — Connect Live, no Kid Z',
     url: '/index.html', viewports: ALL_VP,
     budget: 8, wait: '#btnObd2', settle: 500,
     seedScript: KID_SEED, probe: ADULT_PROBE
