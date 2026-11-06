@@ -1,0 +1,63 @@
+Adult Android separation audit — checks
+Commit: b6f370849b8152c22f1715510545f26d5a1294c5
+Date of run: 2026-11-06
+Branch of this log: cursor/adult-android-separation-audit-19b9
+No product code was changed. No OBD adapter was attached. No phone. No Play Console.
+
+1. git fetch origin main
+   HEAD == origin/main == b6f370849b8152c22f1715510545f26d5a1294c5
+   left-right count main...origin/main = 0 0
+   PASS
+
+2. SHA-256, local file vs https://z.beagle.games/<file>
+   index.html                    7462115  b623d4f8a933b9acf94993c05d71f0ec737060185560d9d2d772355548b1d4bf  MATCH
+   jr.html                       7599682  3f0a29781ec9322bc4fe4d8386fbb68b9ccb701be1e98712fef1631916ee3d1f  MATCH
+   sw.js                            7135  1e2159233af221aa92fea209f054e600ff64f93c812b230ba61b2258ad2cec6d  MATCH
+   manifest.webmanifest              694  d0d671eb7533561215007ef63cfe1d82c84de971b911bbcf2d427563e1d8e7eb  MATCH
+   manifest-jr.webmanifest           701  cde9d0d8f4a27c7aa98872bb82a8c4cc4274f960e725e83da8b3d5e84d58a5f1  MATCH
+   .well-known/assetlinks.json       433  a7e830b120cfbd2eea2e2649740abff2669ac05ae60184b36517ec8b999bd60d  MATCH
+   shared/version.js                 279  9f7380d24707944b79d7738872f2f8abd6dfedde868c05456dcceebaa915071b  MATCH
+   PASS
+
+3. Live assetlinks.json body
+   package_name games.beagle.zdash
+   relation delegate_permission/common.handle_all_urls
+   fingerprints:
+     71:B8:34:0D:82:AC:FB:CC:F0:4B:46:6E:92:6B:02:D7:E1:1E:54:09:B6:60:A0:9D:8E:FB:CA:CD:E6:E4:97:36
+     C9:68:F4:7A:3F:14:7D:69:EF:6B:CE:01:38:7E:07:F0:2A:D0:6E:F4:E7:9A:31:19:AD:A6:DC:7D:9A:09:4B:FD
+   Content-Type application/json, HTTP 200
+   PASS (same bytes as git)
+
+4. Adult index.html tag and storage scan
+   script src: shared/ipad.js?v=27 only
+   manifest: manifest.webmanifest
+   page href: jr.html (Kid Z anchor)
+   zLiv count 0, vinyl count 0, neon-paint.js tag count 0
+   zdash_vinyls_v1 / zdash_neon_paint_v1 / NEON_PAINT / window.ZD_JR assignment: absent
+   navigator.geolocation: absent
+   PASS
+
+5. Headless Chrome
+   python3 -m http.server 8876 --bind 127.0.0.1
+   google-chrome --headless=new --disable-gpu --no-sandbox --window-size=1280,720
+     --virtual-time-budget=6000 --screenshot=/tmp/adult-landing.png
+     http://127.0.0.1:8876/index.html
+   PNG written: 219395 bytes, 1280x720, before the process was stopped (exit 124 from a 50s timeout).
+   Software WebGL (swiftshader fallback message). GPU ReadPixels stall logged. No OBD hardware.
+   Screenshot (caption bar added for the audit doc): docs/adult-android-separation/adult-landing-b6f3708.png
+   Visible: KID Z at top right, CONNECT LIVE, START DEMO, adapter selector.
+   dump-dom of the same URL: 7496071 bytes; counts btnNeonZ 4, KID Z 1, href="jr.html" 1, CONNECT LIVE 1
+   PASS for landing UI. Not a phone test.
+
+6. Live URL status
+   GET /test/            200 text/html
+   GET /adventure.html   200 text/html
+   GET /garage-hub.html  200 text/html
+   GET /privacy          404
+   GET /privacy.html     404
+   PASS
+
+7. Not run
+   Chrome DevTools caches.keys() — session hung, process killed. Precache list is sw.js lines 12-14, and live sw.js matches git.
+   OBD adapter, physical car, Play Console, Android Auto.
+   rbeaglemedia/z-dash-tools — repository not visible to this token.
