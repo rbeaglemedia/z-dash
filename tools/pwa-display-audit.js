@@ -5,7 +5,8 @@
  * Headless Chrome on Android and iOS sizes. Standalone is a real --app
  * window (display-mode: standalone). Fullscreen is a matchMedia override
  * because Emulation.setEmulatedMedia ignores display-mode in this Chrome.
- * Walks adult → Kid Z → menu → Neon World → back, then Garage, Paint and
+ * Walks the adult install, then opens jr.html?stay=1 directly (the adult page
+ * no longer has a Kid Z launcher), then Neon World → back, Garage, Paint and
  * Crew. Fails if a navigation calls requestFullscreen / exitFullscreen,
  * opens a second window, or drops the manifest / apple web-app metas.
  *
@@ -330,8 +331,8 @@ async function runProfile(cdp, base, port, profile, errors, shotDir, fullPath) {
   await sleep(200);
   state = await readState(cdp);
   if ((state.fs || []).length) errors.push(profile.name + ' blank tap requested fullscreen ' + JSON.stringify(state.fs));
-  if (!(await waitUntil(cdp, "document.querySelector('#btnNeonZ')", 8000))) errors.push(profile.name + ' no KID Z button');
-  else await clickSel(cdp, '#btnNeonZ');
+  if (await waitUntil(cdp, "document.querySelector('#btnNeonZ')", 500)) errors.push(profile.name + ' adult page still shows Kid Z');
+  await goto(cdp, base + '/jr.html?stay=1');
   if (!(await waitUntil(cdp, "/jr\\.html/.test(location.pathname) && document.querySelector('#btnKStart')", 20000))) {
     errors.push(profile.name + ' did not reach jr start');
     return lines;

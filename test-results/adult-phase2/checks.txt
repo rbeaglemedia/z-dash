@@ -1,0 +1,32 @@
+Phase 2 adult isolation: passenger script removed, adult and kid caches split.
+Stacked on phase 1 head 5951152da3c862a370d837a5d1cb6b796aa45a5b (PR 115, not merged).
+Date: 2026-11-06
+Browser: headless Chrome, software WebGL. No OBD adapter. No phone. No real pairing. No deploy.
+
+UI
+- Landing 844x390, 780x360, 1024x768, 1366x768, 390x844: Connect Live and Start Demo, no Kid Z, build 1792886859-world42, no ReferenceError. Portrait shows the existing rotate gate.
+- Settings at those sizes includes Share to Passenger, Live Adapter, and OBD Adapter, and not a Passenger Mode or Join button. 1024 and 1366 failed a first click that raced the previous page; a second run waited for the new document and both opened. Pass.
+- Legacy adult URLs stayed on index.html: ?passenger=1, ?kmenu=1, ?ktab=garage, ?kplay=1, #garage, #road, #world.
+- Share to Passenger opened its panel.
+- Start Demo (simulated source) reached splash class gone. Chip read SIM. Tabs DRIVE GAUGES CAR DYNO TRIP HANDLING RUNS CODES switched at the four landscape sizes. Gauge numbers in the demo shot are the built-in simulator, not a live adapter.
+
+Caches
+- Fresh adult install cache zdash-adult-1792886859-world42: index.html, adult manifest, four adult icons. No jr.html and no kid icons. world-split-v42 held only ipad.js and ipad.css (the adult page's own shared files).
+- Adult reload offline: title "Z-DASH · 370Z".
+- After opening jr.html?stay=1 online, zdash-jr-1792886859-world42 held jr.html, the kid manifest, and the kid icons. Those files were not in the adult cache. world-split-v42 also stored scripts that jr.html requests (including neon-paint.js). That is the existing on-visit split cache, not the adult precache.
+- Kid reload offline: title "Z-DASH JR · Passenger" at jr.html?stay=1. The check for #btnKStart timed out because this page opens straight into the kid app. The cached document is the kid page, not the adult page.
+- Offline switch back to index.html: adult title again.
+- Fresh kid-only install: zdash-jr cache had jr.html and kid icons. index.html was not precached. Offline reload kept the kid title.
+- Upgrade: a pre-seeded cache zdash-f5f4db3cffe9-world41 containing only a marker jr.html was copied into zdash-jr-1792886859-world42 and the old cache was deleted. The marker was not fetched from the network and was not stored in the adult cache. A real old install that already had the kid icons would copy those too; this run only seeded jr.html.
+
+Not run
+- Physical OBD, Bluetooth picker, or a completed iPad pair.
+- z-dash-tools regression.
+- Full ui-polish-audit and pwa-display-audit runners. Their expectations were updated; they were not executed here.
+- GitHub Pages preview. This repo publishes from main. No preview URL was created.
+
+Screenshots (labeled, phone landscape):
+- test-results/adult-phase2/adult-landing-844x390.png
+- test-results/adult-phase2/adult-settings-844x390.png
+- test-results/adult-phase2/adult-demo-drive-844x390.png
+The settings shot blanks the Spotify client id field. The demo shot is the simulator (SIM), not a live connection.

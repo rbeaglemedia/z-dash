@@ -153,6 +153,7 @@ function scanAdultIndex() {
     if (html.includes(key)) issues.push({ severity: 'error', kind: 'kid-storage', msg: 'adult index.html references Kid App storage ' + key });
   }
   if (html.includes('id="btnNeonZ"')) issues.push({ severity: 'error', kind: 'kid-launcher', msg: 'adult index.html still has the Kid Z launcher' });
+  if (html.includes('Z-DASH — PASSENGER MODE') || html.includes('window.ZDKID =')) issues.push({ severity: 'error', kind: 'kid-script', msg: 'adult index.html still embeds the passenger-mode script' });
   if (html.includes('id="tglKid"') || html.includes('id="btnJoin"') || html.includes('MAKE THIS ELLIE')) issues.push({ severity: 'error', kind: 'kid-launcher', msg: 'adult index.html still has a Passenger Mode, Join, or Ellie-device entry' });
   const version = fs.readFileSync(path.join(ROOT, 'shared/version.js'), 'utf8');
   const world = (version.match(/self\.ZD_WORLD = '([^']+)'/) || [])[1];

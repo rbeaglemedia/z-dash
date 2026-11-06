@@ -742,7 +742,8 @@ body:not(.kidon) #kFpsRow { display: none; }
     if (busy() || sessionStorage.getItem(KEY) === build) return toast(); sessionStorage.setItem(KEY, build); location.reload(); }
   sw.addEventListener('message', function (e) { if (e.data && e.data.type === 'zd-sw') onBuild(e.data.build); });
   sw.addEventListener('controllerchange', function () { if (sw.controller) sw.controller.postMessage('zd-build?'); });
-  addEventListener('load', function () { sw.register('./sw.js', { updateViaCache: 'none' }).then(function (reg) { window.ZD_SWREG = reg;
+  function zdCache(reg) { var w = (reg && (reg.active || reg.waiting || reg.installing)) || (sw.controller); if (w) w.postMessage({ type: 'zd-cache', role: 'jr' }); }
+  addEventListener('load', function () { sw.register('./sw.js', { updateViaCache: 'none' }).then(function (reg) { window.ZD_SWREG = reg; zdCache(reg);
     document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') reg.update().catch(function () {}); }); // home-screen app brought back
     setInterval(function () { reg.update().catch(function () {}); }, 30 * 60 * 1000); }).catch(function (e) { console.warn('SW', e); }); });
 })();</script>
