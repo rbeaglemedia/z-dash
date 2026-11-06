@@ -285,6 +285,21 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
 #settings .panel { position: relative; max-height: calc(100% - 16px); }
 #settings:not(.hidden) { bottom: 0; } /* top is set to the visible top bar's bottom so the tabs and gear stay tappable */
 #settings .panel .closex { position: sticky; top: 0; float: right; z-index: 3; width: 44px; height: 44px; margin: -4px -8px 4px 8px; padding: 0; font-size: 20px; line-height: 1; border: 1px solid var(--red); background: #0a0506; color: #fff; border-radius: 10px; box-shadow: 0 0 10px rgba(255,42,61,.45); }
+/* Settings groups. Native disclosure: no motion, no extra shadow. */
+.setsec { margin: 0 0 8px; border: 1px solid #3a1a1e; background: transparent; }
+.setsec > summary { display: flex; align-items: center; min-height: 44px; padding: 8px 52px 8px 12px; cursor: pointer; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 2px; color: var(--red); list-style: none; }
+.setsec > summary::-webkit-details-marker { display: none; }
+.setsec > summary::marker { content: ''; }
+.setsec > summary .setlab::before { content: '+ '; }
+.setsec[open] > summary .setlab::before { content: '\2212 '; }
+.setsec > summary:focus { outline: none; }
+.setsec > summary:focus-visible { outline: 2px solid #3ee6ff; outline-offset: 2px; }
+.setbody { padding: 0 10px 8px; }
+.setbody .adsel, .setbody .spcid input, .setbody .inl input { max-width: 100%; }
+.setbody .spcid { flex-wrap: wrap; max-width: 100%; }
+.setbody .row { align-items: center; }
+.setclose { margin: 4px 0 0; }
+@media (prefers-reduced-motion: reduce) { .setsec > summary { transition: none; } }
 .wakestat { margin-left: 8px; align-self: center; } .recrow { align-items: center; gap: 8px; }
 .regrow { display: none; justify-content: flex-end; margin: -6px 0 10px; }
 .panel .regrow button { font-size: 10px; padding: 4px 8px; opacity: .45; border-color: #555; color: #aaa; letter-spacing: 1px; }
@@ -453,65 +468,96 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
   <div id="rotate" class="rotate"><div>↻<br>ROTATE YOUR PHONE TO LANDSCAPE</div></div>
   <div id="settings" class="overlay hidden">
     <div class="panel">
-      <div class="linkrow" id="shareRow"><button id="btnShare" class="tgl">SHARE TO PASSENGER</button><span class="mute" id="shareMsg">Send live data from this phone to her iPad's Passenger Mode (same Wi-Fi or this phone's hotspot, no internet needed). Pair once per drive with two QR codes.</span></div>
-      <h3>PERFORMANCE <span class="mute">· for slower phones · saved on this phone</span></h3>
-      <div class="row">
-        <button id="tglLow" class="tgl">LOW DETAIL: OFF</button><button id="tglWake" class="tgl on">KEEP SCREEN ON: ON</button><span id="wakeStat" class="mute small wakestat"></span>
-        <button id="tglFps" class="tgl">FPS COUNTER: OFF</button><button id="tglStillen" class="tgl">STILLEN BUMPER (BETA): OFF</button>
-      </div>
-      <div class="mute small">Low detail: pixel ratio capped at 1×, glow and bloom off, simplified 3D car (fewer edge lines). Use the FPS counter to compare.</div>
-      <h3>MUSIC <span class="mute">· NOW PLAYING panel (turn it on in LAYOUT) · saved on this phone</span></h3>
-      <div id="musicSet">
-        <div class="row"><button data-msrc="demo">DEMO TRACK</button><button data-msrc="spotify">SPOTIFY</button><button data-msrc="off">OFF</button></div>
-        <div class="row"><label class="spcid">SPOTIFY CLIENT ID <input id="spCid" name="spotifyClientId" type="text" autocomplete="off" spellcheck="false" placeholder="paste your own Client ID"></label><button id="spConnect">CONNECT SPOTIFY</button></div>
-        <div class="msg" id="musicMsg"></div>
-        <details class="sphelp"><summary>How to set up Spotify (one time, about 5 minutes)</summary><ol>
-          <li>On a computer, open <b>developer.spotify.com/dashboard</b>, log in with your Spotify account and choose <b>Create app</b> (any name, e.g. "Z-DASH").</li>
-          <li>Under <b>Redirect URIs</b> add exactly <b>https://rbeaglemedia.github.io/z-dash/</b> (with the slash at the end) and tick <b>Web API</b>. Save.</li>
-          <li>Copy the app's <b>Client ID</b> (not the secret) into the box above, then tap <b>CONNECT SPOTIFY</b> on the phone and allow access.</li>
-          <li>Open Z-DASH from that same https link (Spotify only sends you back there). Start music in the Spotify app; Z-DASH shows it within a few seconds.</li></ol>
-          <p>Spotify rules for personal apps (Development Mode, since Feb 2026): the app owner needs Spotify Premium, and only listed users (up to 5) can sign in. Add your Spotify email under <b>User Management</b> if asked. Play, pause and skip also need Premium and an active Spotify device.</p></details>
-      </div>
-      <h3>DATA SOURCE</h3>
-      <div class="row">
-        <button data-src="obd">LIVE ADAPTER</button>
-        <button data-src="sim" class="on">DEMO DRIVE</button>
-        <label class="filebtn">REPLAY A LOG (CSV)<input type="file" id="csvFile" accept=".csv,.txt,text/csv"></label>
-      </div>
-      <p id="srcMsg" class="msg">A live OBD adapter is the main source. The demo runs on simulated data. Saved drive logs (or any CSV) can be replayed.</p>
-      <h3>OBD ADAPTER</h3>
-      <div class="row"><select id="adapterSel" class="adsel"></select></div>
-      <div id="adapterNote" class="mute small"></div>
-      <h3>DRIVE LOGS <span class="mute">· every drive is saved automatically · export and send these for tuning</span></h3>
-      <div class="row recrow"><button id="btnExportRun" class="tgl">EXPORT RUN</button><span id="recStat" class="mute small">Run recorder: idle</span></div>
-      <div id="logList" class="loglist"></div>
-      <h3>SHIFT LIGHT (RPM)</h3>
-      <div class="row">
-        <label class="inl">CRUISE START <input name="shiftLight.cruise.start" data-cfg="shiftLight.cruise.start" type="number" step="100"></label>
-        <label class="inl">SHIFT <input name="shiftLight.cruise.shift" data-cfg="shiftLight.cruise.shift" type="number" step="100"></label>
-        <label class="inl">RACE START <input name="shiftLight.race.start" data-cfg="shiftLight.race.start" type="number" step="100"></label>
-        <label class="inl">SHIFT <input name="shiftLight.race.shift" data-cfg="shiftLight.race.shift" type="number" step="100"></label>
-      </div>
-      <h3>HEALTH WATCH LIMITS</h3>
-      <div class="row">
-        <label class="inl">IAT °F <input name="health.iatMax" data-cfg="health.iatMax" type="number"></label>
-        <label class="inl">OIL °F <input name="health.oilMax" data-cfg="health.oilMax" type="number"></label>
-        <label class="inl">BOOST MAX <input name="health.boostMax" data-cfg="health.boostMax" type="number" step="0.5"></label>
-        <label class="inl">LOW BOOST @WOT <input name="health.boostLowWot" data-cfg="health.boostLowWot" type="number" step="0.5"></label>
-        <label class="inl">MIN ETHANOL % <input name="health.ethanolMin" data-cfg="health.ethanolMin" type="number"></label>
-        <label class="inl">IDLE DIP RPM <input name="health.idleDip" data-cfg="health.idleDip" type="number" step="25"></label>
-        <label class="inl">WARM °F <input name="health.idleWarmF" data-cfg="health.idleWarmF" type="number"></label>
-      </div>
-      <h3>MAINTENANCE</h3>
-      <div class="row"><label class="inl">ROTREX SX150 FLUID EVERY <input name="maint.rotrexIntervalMi" data-cfg="maint.rotrexIntervalMi" type="number" step="500"> MI</label></div>
-      <h3>FUEL</h3>
-      <div class="row"><label class="inl">TANK SIZE <input id="tankGal" type="number" step="0.1" min="5" max="40"> GAL</label><span id="fuelInfo" class="msg"></span></div>
-      <h3>SIM</h3>
-      <div class="row">
-        <button id="btnSpeed">REPLAY SPEED 1×</button>
-        <button id="btnSplash">REPLAY CONNECT ANIMATION</button>
+      <details class="setsec" open>
+        <summary><span class="setlab">CONNECTION</span></summary>
+        <div class="setbody">
+          <div class="row">
+            <button data-src="obd">LIVE ADAPTER</button>
+            <button data-src="sim" class="on">DEMO DRIVE</button>
+            <label class="filebtn">REPLAY A LOG (CSV)<input type="file" id="csvFile" accept=".csv,.txt,text/csv"></label>
+          </div>
+          <p id="srcMsg" class="msg">A live OBD adapter is the main source. The demo runs on simulated data. Saved drive logs (or any CSV) can be replayed.</p>
+          <h3>OBD ADAPTER</h3>
+          <div class="row"><select id="adapterSel" class="adsel"></select></div>
+          <div id="adapterNote" class="mute small"></div>
+        </div>
+      </details>
+      <details class="setsec">
+        <summary><span class="setlab">DISPLAY</span></summary>
+        <div class="setbody">
+          <p class="mute small">For slower phones. Saved on this phone.</p>
+          <div class="row">
+            <button id="tglLow" class="tgl">LOW DETAIL: OFF</button><button id="tglWake" class="tgl on">KEEP SCREEN ON: ON</button><span id="wakeStat" class="mute small wakestat"></span>
+            <button id="tglFps" class="tgl">FPS COUNTER: OFF</button><button id="tglStillen" class="tgl">STILLEN BUMPER (BETA): OFF</button>
+          </div>
+          <div class="mute small">Low detail: pixel ratio capped at 1×, glow and bloom off, simplified 3D car (fewer edge lines). Use the FPS counter to compare.</div>
+        </div>
+      </details>
+      <details class="setsec">
+        <summary><span class="setlab">MUSIC</span></summary>
+        <div class="setbody">
+          <p class="mute small">Now playing panel (turn it on in LAYOUT). Saved on this phone.</p>
+          <div id="musicSet">
+            <div class="row"><button data-msrc="demo">DEMO TRACK</button><button data-msrc="spotify">SPOTIFY</button><button data-msrc="off">OFF</button></div>
+            <div class="row"><label class="spcid">SPOTIFY CLIENT ID <input id="spCid" name="spotifyClientId" type="text" autocomplete="off" spellcheck="false" placeholder="paste your own Client ID"></label><button id="spConnect">CONNECT SPOTIFY</button></div>
+            <div class="msg" id="musicMsg"></div>
+            <details class="sphelp"><summary>How to set up Spotify (one time, about 5 minutes)</summary><ol>
+              <li>On a computer, open <b>developer.spotify.com/dashboard</b>, log in with your Spotify account and choose <b>Create app</b> (any name, e.g. "Z-DASH").</li>
+              <li>Under <b>Redirect URIs</b> add exactly <b>https://rbeaglemedia.github.io/z-dash/</b> (with the slash at the end) and tick <b>Web API</b>. Save.</li>
+              <li>Copy the app's <b>Client ID</b> (not the secret) into the box above, then tap <b>CONNECT SPOTIFY</b> on the phone and allow access.</li>
+              <li>Open Z-DASH from that same https link (Spotify only sends you back there). Start music in the Spotify app; Z-DASH shows it within a few seconds.</li></ol>
+              <p>Spotify rules for personal apps (Development Mode, since Feb 2026): the app owner needs Spotify Premium, and only listed users (up to 5) can sign in. Add your Spotify email under <b>User Management</b> if asked. Play, pause and skip also need Premium and an active Spotify device.</p></details>
+          </div>
+        </div>
+      </details>
+      <details class="setsec">
+        <summary><span class="setlab">LOGS &amp; REPLAY</span></summary>
+        <div class="setbody">
+          <p class="mute small">Every drive is saved automatically. Export and send these for tuning.</p>
+          <div class="row recrow"><button id="btnExportRun" class="tgl">EXPORT RUN</button><span id="recStat" class="mute small">Run recorder: idle</span></div>
+          <div id="logList" class="loglist"></div>
+          <div class="row">
+            <button id="btnSpeed">REPLAY SPEED 1×</button>
+            <button id="btnSplash">REPLAY CONNECT ANIMATION</button>
+          </div>
+        </div>
+      </details>
+      <details class="setsec">
+        <summary><span class="setlab">CAR &amp; ALERTS</span></summary>
+        <div class="setbody">
+          <h3>SHIFT LIGHT (RPM)</h3>
+          <div class="row">
+            <label class="inl">CRUISE START <input name="shiftLight.cruise.start" data-cfg="shiftLight.cruise.start" type="number" step="100"></label>
+            <label class="inl">SHIFT <input name="shiftLight.cruise.shift" data-cfg="shiftLight.cruise.shift" type="number" step="100"></label>
+            <label class="inl">RACE START <input name="shiftLight.race.start" data-cfg="shiftLight.race.start" type="number" step="100"></label>
+            <label class="inl">SHIFT <input name="shiftLight.race.shift" data-cfg="shiftLight.race.shift" type="number" step="100"></label>
+          </div>
+          <h3>HEALTH WATCH LIMITS</h3>
+          <div class="row">
+            <label class="inl">IAT °F <input name="health.iatMax" data-cfg="health.iatMax" type="number"></label>
+            <label class="inl">OIL °F <input name="health.oilMax" data-cfg="health.oilMax" type="number"></label>
+            <label class="inl">BOOST MAX <input name="health.boostMax" data-cfg="health.boostMax" type="number" step="0.5"></label>
+            <label class="inl">LOW BOOST @WOT <input name="health.boostLowWot" data-cfg="health.boostLowWot" type="number" step="0.5"></label>
+            <label class="inl">MIN ETHANOL % <input name="health.ethanolMin" data-cfg="health.ethanolMin" type="number"></label>
+            <label class="inl">IDLE DIP RPM <input name="health.idleDip" data-cfg="health.idleDip" type="number" step="25"></label>
+            <label class="inl">WARM °F <input name="health.idleWarmF" data-cfg="health.idleWarmF" type="number"></label>
+          </div>
+          <h3>MAINTENANCE</h3>
+          <div class="row"><label class="inl">ROTREX SX150 FLUID EVERY <input name="maint.rotrexIntervalMi" data-cfg="maint.rotrexIntervalMi" type="number" step="500"> MI</label></div>
+          <h3>FUEL</h3>
+          <div class="row"><label class="inl">TANK SIZE <input id="tankGal" type="number" step="0.1" min="5" max="40"> GAL</label><span id="fuelInfo" class="msg"></span></div>
+        </div>
+      </details>
+      <details class="setsec">
+        <summary><span class="setlab">PASSENGER SHARING</span></summary>
+        <div class="setbody">
+          <div class="linkrow" id="shareRow"><button id="btnShare" class="tgl">SHARE TO PASSENGER</button><span class="mute" id="shareMsg">Send live data from this phone to her iPad's Passenger Mode (same Wi-Fi or this phone's hotspot, no internet needed). Pair once per drive with two QR codes.</span></div>
+        </div>
+      </details>
+      <div class="row setclose">
         <button id="btnClose" class="accent">CLOSE</button>
       </div>
+
     </div>
   </div>
 </div>
