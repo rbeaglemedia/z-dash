@@ -454,8 +454,6 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
   <div id="settings" class="overlay hidden">
     <div class="panel">
       <div class="linkrow" id="shareRow"><button id="btnShare" class="tgl">SHARE TO PASSENGER</button><span class="mute" id="shareMsg">Send live data from this phone to her iPad's Passenger Mode (same Wi-Fi or this phone's hotspot, no internet needed). Pair once per drive with two QR codes.</span></div>
-      <div class="linkrow passrow" id="passRow"><button id="btnPass" class="tgl">SET PARENT PASSCODE</button><span class="mute" id="passStat"></span></div>
-      <div class="regrow" id="regRow"><button id="btnRegDrv" class="tgl">REGISTER AS DRIVER DEVICE</button></div>
       <h3>PERFORMANCE <span class="mute">· for slower phones · saved on this phone</span></h3>
       <div class="row">
         <button id="tglLow" class="tgl">LOW DETAIL: OFF</button><button id="tglWake" class="tgl on">KEEP SCREEN ON: ON</button><span id="wakeStat" class="mute small wakestat"></span>
@@ -464,8 +462,7 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
       <div class="mute small">Low detail: pixel ratio capped at 1×, glow and bloom off, simplified 3D car (fewer edge lines). Use the FPS counter to compare.</div>
       <h3>MUSIC <span class="mute">· NOW PLAYING panel (turn it on in LAYOUT) · saved on this phone</span></h3>
       <div id="musicSet">
-        <div class="row"><button data-msrc="demo">DEMO TRACK</button><button data-msrc="spotify">SPOTIFY</button><button data-msrc="off">OFF</button>
-          <button id="tglSync" class="tgl">MUSIC SYNC: OFF</button></div>
+        <div class="row"><button data-msrc="demo">DEMO TRACK</button><button data-msrc="spotify">SPOTIFY</button><button data-msrc="off">OFF</button></div>
         <div class="row"><label class="spcid">SPOTIFY CLIENT ID <input id="spCid" name="spotifyClientId" type="text" autocomplete="off" spellcheck="false" placeholder="paste your own Client ID"></label><button id="spConnect">CONNECT SPOTIFY</button></div>
         <div class="msg" id="musicMsg"></div>
         <details class="sphelp"><summary>How to set up Spotify (one time, about 5 minutes)</summary><ol>
@@ -473,7 +470,7 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
           <li>Under <b>Redirect URIs</b> add exactly <b>https://rbeaglemedia.github.io/z-dash/</b> (with the slash at the end) and tick <b>Web API</b>. Save.</li>
           <li>Copy the app's <b>Client ID</b> (not the secret) into the box above, then tap <b>CONNECT SPOTIFY</b> on the phone and allow access.</li>
           <li>Open Z-DASH from that same https link (Spotify only sends you back there). Start music in the Spotify app; Z-DASH shows it within a few seconds.</li></ol>
-          <p>Spotify rules for personal apps (Development Mode, since Feb 2026): the app owner needs Spotify Premium, and only listed users (up to 5) can sign in. Add your Spotify email under <b>User Management</b> if asked. Play, pause and skip also need Premium and an active Spotify device. MUSIC SYNC uses the microphone only to hear the beat for Passenger Mode's ROAD game; nothing is recorded or stored.</p></details>
+          <p>Spotify rules for personal apps (Development Mode, since Feb 2026): the app owner needs Spotify Premium, and only listed users (up to 5) can sign in. Add your Spotify email under <b>User Management</b> if asked. Play, pause and skip also need Premium and an active Spotify device.</p></details>
       </div>
       <h3>DATA SOURCE</h3>
       <div class="row">
@@ -7918,8 +7915,7 @@ var qrcode = function() {
   setInterval(() => M.poll(), 4000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) M.poll(); });
   M.handleRedirect().then(() => M.poll());
-  // a saved "Mic" choice re-arms on the first tap (browsers need a gesture to start audio)
-  if (M.sync === 'mic') addEventListener('pointerdown', function arm() { removeEventListener('pointerdown', arm); M.setSync('mic'); }, { once: true });
+  // Mic beat sync was only for the kid ROAD game. Do not re-arm the microphone on the adult page.
 })();
 /* NOW PLAYING widgets + Settings wiring (Bob's Drive panel, Passenger strip, MUSIC settings) */
 (function () {
@@ -7966,7 +7962,6 @@ var qrcode = function() {
     box.querySelectorAll('[data-msrc]').forEach((b) => b.classList.toggle('on', b.dataset.msrc === M.src));
     const cid = $('#spCid'); if (cid && document.activeElement !== cid) cid.value = M.clientId;
     $('#spConnect').textContent = M.connected() ? 'DISCONNECT SPOTIFY' : 'CONNECT SPOTIFY';
-    $('#tglSync').textContent = `MUSIC SYNC: ${M.sync === 'mic' ? 'MIC' : 'OFF'}`; $('#tglSync').classList.toggle('on', M.sync === 'mic');
     $('#musicMsg').textContent = M.msg || (M.src === 'spotify' ? (M.connected() ? 'Spotify connected.' : 'Not connected yet.') : M.src === 'demo' ? 'Demo track: a made-up sample song, no account needed.' : '');
   }
   function wire() {
@@ -7974,10 +7969,6 @@ var qrcode = function() {
     box.querySelectorAll('[data-msrc]').forEach((b) => b.addEventListener('click', () => M.setSource(b.dataset.msrc)));
     $('#spCid').addEventListener('change', (e) => { M.setClientId(e.target.value); renderSettings(); });
     $('#spConnect').addEventListener('click', () => { M.setClientId($('#spCid').value); M.connected() ? M.disconnect() : M.connect(); });
-    $('#tglSync').addEventListener('click', () => {
-      if (M.sync === 'mic') return M.setSync('off');
-      if (confirm('Music sync uses the microphone to hear the beat of the music in the car, so the ROAD game can move to it.\n\nThe sound is only analysed live on this phone: nothing is recorded, saved or sent.\n\nTurn on Music sync?')) M.setSync('mic');
-    });
     renderSettings();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire();
