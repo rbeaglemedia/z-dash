@@ -278,6 +278,8 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
 .setbody .adsel, .setbody .spcid input, .setbody .inl input { max-width: 100%; }
 .setbody .spcid { flex-wrap: wrap; max-width: 100%; }
 .setbody .row { align-items: center; }
+.setcredit { margin: 0; font-size: 14px; line-height: 1.45; color: var(--txt); }
+.setcredit a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; color: #3ee6ff; }
 .setclose { margin: 4px 0 0; }
 #settings #btnClose { min-height: 44px; padding: 10px 18px; }
 @media (prefers-reduced-motion: reduce) { .setsec > summary { transition: none; } }
@@ -511,6 +513,12 @@ body:has(#alert:not(.hidden)) .toast { top: calc(env(safe-area-inset-top, 0px) +
           <div class="row"><label class="inl">ROTREX SX150 FLUID EVERY <input name="maint.rotrexIntervalMi" data-cfg="maint.rotrexIntervalMi" type="number" step="500"> MI</label></div>
           <h3>FUEL</h3>
           <div class="row"><label class="inl">TANK SIZE <input id="tankGal" type="number" step="0.1" min="5" max="40"> GAL</label><span id="fuelInfo" class="msg"></span></div>
+        </div>
+      </details>
+      <details class="setsec" id="aboutCredits">
+        <summary><span class="setlab">ABOUT &amp; CREDITS</span></summary>
+        <div class="setbody">
+          <p class="setcredit" id="modelCredit">3D car model: '<a href="https://sketchfab.com/3d-models/nissan-370z-improved-7e0340261fea49318b55297f974a8200" target="_blank" rel="noopener">NISSAN_370Z_IMPROVED</a>' by WolfGames36, based on '<a href="https://sketchfab.com/3d-models/nissan-370z-63882e8fafd8408a92cc9fde76ef3ffe" target="_blank" rel="noopener">Nissan 370z</a>' by hasancarspro454 (Sketchfab), licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> (https://creativecommons.org/licenses/by/4.0/). Modified for Z-DASH. Z-DASH is not affiliated with or endorsed by Nissan.</p>
         </div>
       </details>
       <div class="row setclose">
@@ -7469,6 +7477,7 @@ void main() {
     el.querySelectorAll('[data-rep]').forEach((b) => b.addEventListener('click', async () => { const text = await S.log.csv(b.dataset.rep); S.demo = false; const src = new ZD.CsvReplaySource(text, 'saved drive'); S.trip = newTrip(); S.scorer.reset(); ZD.Settings.close(); useSource(src); }));
   }
   $('#btnClose').addEventListener('click', () => SET.close());
+  document.querySelectorAll('#modelCredit a').forEach((a) => a.addEventListener('click', (e) => e.stopPropagation()));
   { // Settings close: a pinned ✕ that's always on screen (the CLOSE button sits at the very bottom of a long panel on short phones), tap outside the panel or press Esc
     const st = $('#settings'), pn = st.querySelector('.panel'), x = document.createElement('button'); x.id = 'btnCloseX'; x.className = 'closex'; x.type = 'button'; x.setAttribute('aria-label', 'Close settings'); x.textContent = '✕'; pn.prepend(x);
     const close = () => SET.close(); x.addEventListener('click', close);
